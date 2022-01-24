@@ -214,7 +214,7 @@ AnimEditor AnimEdit;
                      e.draw((event_lit==i) ? LitColor : LitSelColor); if((always_draw_events || AnimEdit.preview.event_op()>=0))
                      {
                         pos.x=e.centerX();
-                        flt w=ts.textWidth(event.name)/2, l=pos.x-w, r=pos.x+w;
+                        flt w=(ts.textWidth(event.name)+ts.size.y)/2, l=pos.x-w, r=pos.x+w;
                         if(l<=last_x)pos.y+=ts.size.y;else pos.y=y;
                         MAX(last_x, r);
                         D.text((event_lit==i) ? ts_lit : ts, pos, event.name);
