@@ -824,6 +824,7 @@ class MulSoundVolumeClass : PropWin
    {
       T.elms=elms;
       activate();
+      if(props.elms())props[0].textline.selectAll().activate();
    }
 
    virtual void update(C GuiPC &gpc)override

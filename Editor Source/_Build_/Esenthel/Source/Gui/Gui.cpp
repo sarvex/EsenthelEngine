@@ -939,6 +939,7 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
    {
       T.elms=elms;
       activate();
+      if(props.elms())props[0].textline.selectAll().activate();
    }
    void MulSoundVolumeClass::update(C GuiPC &gpc)
 {

@@ -167,7 +167,7 @@ class ProjectEx : ProjectHierarchy
 
          if(Gui.kb()==this)
          {
-            KbSc rename(KB_F2), reload(KB_R, KBSC_CTRL_CMD), copyTo(KB_T, KBSC_CTRL_CMD); // check manually, in case 'menu' is not created according to selection
+            KbSc rename(KB_F2), reload(KB_R, KBSC_CTRL_CMD), copyTo(KB_T, KBSC_CTRL_CMD), mulVol(KB_S, KBSC_CTRL_CMD|KBSC_ALT); // check manually, in case 'menu' is not created according to selection
             if(rename.pd())
             {
                rename.eat();
@@ -183,6 +183,12 @@ class ProjectEx : ProjectHierarchy
             {
                copyTo.eat();
                CopyElms.display();
+            }else
+            if(mulVol.pd())
+            {
+               mulVol.eat();
+               Proj.setMenuListSel();
+               if(Proj.menu_list_sel.elms())MulSoundVolume.display(Proj.menu_list_sel);
             }else
             if(!Kb.k.ctrlCmd())
             {
@@ -4315,7 +4321,7 @@ class ProjectEx : ProjectHierarchy
                {
                   FREP(SoundEditor.ImportAsElms)s.New().create(SoundEditor.Import_as[i].name, SoundImportAs, ptr(i));
                   s++;
-                  s.New().create("Multiply Volume by ..", SoundMulVolume, T).desc("This option will multiply volume by manually specified value in all selected sounds");
+                  s.New().create("Multiply Volume by ..", SoundMulVolume, T).desc("This option will multiply volume by manually specified value in all selected sounds").kbsc(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_ALT));
                }
             }
          }
