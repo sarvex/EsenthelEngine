@@ -17,7 +17,7 @@ class CompareProjects : PropWin
       }
    }
 
-   bool test_data=true, test_name=true, test_parent=false, test_publish=false, display_new=false;
+   bool test_data=true, test_name=true, test_parent=true, test_publish=true, display_new=false;
 
    flt              prop_min_y=0;
    Button           select_selected, select_all;

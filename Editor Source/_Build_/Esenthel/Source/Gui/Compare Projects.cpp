@@ -161,7 +161,7 @@ CompareProjects CompareProjs;
          }
       }
    }
-CompareProjects::CompareProjects() : test_data(true), test_name(true), test_parent(false), test_publish(false), display_new(false), prop_min_y(0) {}
+CompareProjects::CompareProjects() : test_data(true), test_name(true), test_parent(true), test_publish(true), display_new(false), prop_min_y(0) {}
 
 CompareProjects::ElmListElm::ElmListElm() : type_name(null), id(UIDZero), type(ELM_NONE) {}
 
