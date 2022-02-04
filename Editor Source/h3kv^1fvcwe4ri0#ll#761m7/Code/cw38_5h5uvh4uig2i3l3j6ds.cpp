@@ -361,7 +361,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    int             vtx_dup_mode=-1;
    flt             vtx_sel_r=0.06, edit_time=0;
    Tabs            mode;
-   Button          axis, box, show_cur_pos, vtxs, vtxs_front, vtxs_normals, light_dir;
+   Button          axis, box, show_cur_pos, vtxs, vtxs_front, vtxs_normals, light_dir, bone_shape;
    Tabs            slot_tabs, bone_tabs, phys_tabs, ragdoll_tabs, trans_tabs;
    Memc<SlotMesh>  slot_meshes;
    Memc<BackMesh>  back_meshes;
@@ -440,14 +440,14 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    }
    int boneTabs()C
    {
-      if(Kb.alt())return BONE_ROT;
       int v=bone_tabs();
+      if(v!=BONE_SCALE && Kb.alt())return BONE_ROT;
       if(v<0)v=BONE_MOVE;
       return v;
    }
    int boneAxis()C
    {
-      if(Kb.alt())return 2;
+      if(Kb.alt())return (bone_tabs()==BONE_SCALE) ? 1 : 2;
       return bone_axis;
    }
    flt posScale()C
@@ -833,8 +833,9 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          int  lit_bone=        T.lit_bone_vis      ,
               sel_bone=(bone ? T.sel_bone_vis : -1),
               sel_slot=(slot ? T.sel_slot     : -1);
-                          FREPAO(skel.bones).draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha));
-         if(mode()==SLOTS)FREPAO(skel.slots).draw((sel_slot==i && lit_slot==i) ? LitSelColor : (sel_slot==i || lit_slot==i) ? SelColor :                            Color(255, 128, 0, 255), SkelSlotSize);
+         if(mode()==BONES && bone_shape())FREPAO(skel.bones).shape.draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha/3));else
+                                          FREPAO(skel.bones).      draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha  ));
+         if(mode()==SLOTS                )FREPAO(skel.slots).      draw((sel_slot==i && lit_slot==i) ? LitSelColor : (sel_slot==i || lit_slot==i) ? SelColor :                            Color(255, 128, 0, 255), SkelSlotSize);
          if(InRange(sel_bone, skel.bones) && mode()==BONES && (bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)){Matrix m=skel.bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, bone_axis);}
          if(InRange(sel_slot, skel.slots)                                                                                           ){Matrix m=skel.slots[sel_slot]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, slot_axis);}
          // draw parent<->children line
@@ -962,6 +963,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    static void NextObj          (ObjView &editor) {Proj.elmNext(editor.obj_id);}
    static void ShowBox          (ObjView &editor) {editor.box .push();}
    static void ShowCur          (ObjView &editor) {editor.show_cur_pos.push();}
+   static void BoneShape        (ObjView &editor) {editor.bone_shape.push();}
    static void VtxsChanged      (ObjView &editor) {editor.vtxs_front.visible(editor.vtxs()); editor.vtxs_normals.visible(editor.vtxs());}
    static void MeshDelete       (ObjView &editor) {editor.meshDelete     ();}   void meshDelete   ();
    static void MeshSplit        (ObjView &editor) {editor.meshSplit      ();}   void meshSplit    ();
@@ -1501,6 +1503,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          v.New().create("Light Direction", LightMode, T).kbsc(KbSc(KB_L, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Previous Object", PrevObj  , T).kbsc(KbSc(KB_PGUP, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Next Object"    , NextObj  , T).kbsc(KbSc(KB_PGDN, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
+         v.New().create("BoneShape"      , BoneShape, T).kbsc(KbSc(KB_S, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          break;
       }
    }
@@ -1549,6 +1552,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       mode.tab(TRANSFORM)+=trans.create(false).pos(mode.tab(TRANSFORM).rect().ld()-Vec2(0, 0.01));
       mode.tab(LOD      )+=lod  .create(     ).pos(mode.tab(0        ).rect().ld()-Vec2(0, 0.01));
       mode.tab(GROUP    )+=group.create(     );
+      mode.tab(BONES    )+=bone_shape.create().focusable(false).rect(Rect_LU(vtxs.rect().min, h)).desc("Bone Shape\nKeyboard Shortcut: Alt+S"); bone_shape.mode=BUTTON_TOGGLE; bone_shape.image="Gui/Misc/capsule.img";
 
       T+=leaf.create();
       param_edit.create(mode.tab(PARAM));
@@ -3543,7 +3547,7 @@ cur_skel_to_saved_skel.bones.del();
       mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16, 0.01), 0.73, 0.06), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
       bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F3");
       bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F4");
-      bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F5");
+      bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F5");
       bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F1");
       bone_tabs.tab(BONE_DEL   ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F2");
       bone_tabs.tab(BONE_RENAME).desc(S+"Rename bone\nKeyboard Shortcut: Shift+F6");
@@ -3680,8 +3684,17 @@ cur_skel_to_saved_skel.bones.del();
                {
                   mesh_undos.set("boneEdit");
                   view.setViewportCamera();
-                  SkelBone *bone=mesh_skel.bones.addr(sel_bone);
                   Vec2      mul =(Kb.shift() ? 0.1 : 1.0)*0.5;
+                  SkelBone *bone=mesh_skel.bones.addr(sel_bone), *bone_mirror=null;
+                  if(bone && Kb.ctrlCmd())
+                  {
+                     Str bone_name=BoneNeutralName(bone.name);
+                     REPA(mesh_skel.bones)if(i!=sel_bone && bone_name==BoneNeutralName(mesh_skel.bones[i].name))
+                     {
+                        bone_mirror=&mesh_skel.bones[i];
+                        break;
+                     }
+                  }
                   switch(bone_tabs)
                   {
                      case BONE_MOVE:
@@ -3744,10 +3757,10 @@ cur_skel_to_saved_skel.bones.del();
                      {
                         if(bone)switch(bone_axis)
                         {
-                           case  0: {flt scale=ScaleFactor(AlignDirToCamEx(bone.cross(), MT.ad(i)*mul)      ); bone.width *=scale;                   } break; // width
-                           case  1: {flt scale=ScaleFactor(AlignDirToCamEx(bone.perp   , MT.ad(i)*mul)      ); bone.width *=scale;                   } break; // width
-                           case  2: {flt scale=ScaleFactor(AlignDirToCamEx(bone.dir    , MT.ad(i)*mul)      ); bone.length*=scale; bone.width/=scale;} break; // length
-                           default: {flt scale=ScaleFactor(                             (MT.ad(i)*mul).sum()); bone.length*=scale;                   } break; // length & width
+                           case  0: {flt scale=ScaleFactor(                                  AlignDirToCamEx(bone.cross(), MT.ad(i)*mul)); bone.width *=scale;                    if(bone_mirror){bone_mirror.width *=scale;                          }} break; // width
+                           case  1: {flt scale=ScaleFactor(Kb.alt() ? (MT.ad(i)*mul).sum() : AlignDirToCamEx(bone.perp   , MT.ad(i)*mul)); bone.width *=scale;                    if(bone_mirror){bone_mirror.width *=scale;                          }} break; // width
+                           case  2: {flt scale=ScaleFactor(                                  AlignDirToCamEx(bone.dir    , MT.ad(i)*mul)); bone.length*=scale; bone.width/=scale; if(bone_mirror){bone_mirror.length*=scale; bone_mirror.width/=scale;}} break; // length
+                           default: {flt scale=ScaleFactor(           (MT.ad(i)*mul).sum()                                              ); bone.length*=scale;                    if(bone_mirror){bone_mirror.length*=scale;                          }} break; // length & width
                         }else
                         {
                            mesh_skel.scale(ScaleFactor((MT.ad(i)*mul).sum()));
@@ -4096,7 +4109,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    void createRagdoll()
    {
       mode.tab(RAGDOLL)+=ragdoll_tabs.create(Rect_RU(mode.tab(RAGDOLL).rect().rd()-Vec2(0, 0.01), 0.40, 0.06), 0, ragdoll_desc, Elms(ragdoll_desc), true).valid(true).set(RAGDOLL_TOGGLE);
-      ragdoll_tabs.tab(RAGDOLL_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc("Change size of a bone\nLeftClick to select a bone\nRightClick to change its size\n\nKeyboard Shortcut: Shift+F2");
+      ragdoll_tabs.tab(RAGDOLL_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc("Change size of a bone\nLeftClick to select a bone\nRightClick to change its size\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F2");
       ragdoll_tabs.tab(RAGDOLL_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc("Change offset of a bone\nLeftClick to select a bone\nRightClick to change its offset\n\nKeyboard Shortcut: Shift+F3");
       ragdoll_tabs.tab(RAGDOLL_TOGGLE).desc("Click on a skeleton bone to toggle it as a ragdoll bone\nKeyboard Shortcut: Shift+F1");
    }
@@ -4133,8 +4146,17 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                {
                   mesh_undos.set("boneEdit");
                   view.setViewportCamera();
-                  SkelBone &bone=mesh_skel.bones[sel_bone];
                       Vec2  mul =(Kb.shift() ? 0.1 : 1.0)*0.5;
+                  SkelBone &bone=mesh_skel.bones[sel_bone], *bone_mirror=null;
+                  if(Kb.ctrlCmd())
+                  {
+                     Str bone_name=BoneNeutralName(bone.name);
+                     REPA(mesh_skel.bones)if(i!=sel_bone && bone_name==BoneNeutralName(mesh_skel.bones[i].name))
+                     {
+                        bone_mirror=&mesh_skel.bones[i];
+                        break;
+                     }
+                  }
                   switch(ragdoll_tabs())
                   {
                      case RAGDOLL_MOVE:
@@ -4154,10 +4176,10 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                      {
                         switch(bone_axis)
                         {
-                           case  0: {flt scale=ScaleFactor(AlignDirToCamEx(bone.cross(), MT.ad(i)*mul)      ); bone.width *=scale;                   } break; // width
-                           case  1: {flt scale=ScaleFactor(AlignDirToCamEx(bone.perp   , MT.ad(i)*mul)      ); bone.width *=scale;                   } break; // width
-                           case  2: {flt scale=ScaleFactor(AlignDirToCamEx(bone.dir    , MT.ad(i)*mul)      ); bone.length*=scale; bone.width/=scale;} break; // length
-                           default: {flt scale=ScaleFactor(                             (MT.ad(i)*mul).sum()); bone.width *=scale;                   } break; // width
+                           case  0: {flt scale=ScaleFactor(                                  AlignDirToCamEx(bone.cross(), MT.ad(i)*mul)); bone.width *=scale;                    if(bone_mirror){bone_mirror.width *=scale;                          }} break; // width
+                           case  1: {flt scale=ScaleFactor(Kb.alt() ? (MT.ad(i)*mul).sum() : AlignDirToCamEx(bone.perp   , MT.ad(i)*mul)); bone.width *=scale;                    if(bone_mirror){bone_mirror.width *=scale;                          }} break; // width
+                           case  2: {flt scale=ScaleFactor(                                  AlignDirToCamEx(bone.dir    , MT.ad(i)*mul)); bone.length*=scale; bone.width/=scale; if(bone_mirror){bone_mirror.length*=scale; bone_mirror.width/=scale;}} break; // length
+                           default: {flt scale=ScaleFactor(           (MT.ad(i)*mul).sum()                                              ); bone.length*=scale;                    if(bone_mirror){bone_mirror.length*=scale;                          }} break; // length & width
                         }
                      }break;
                   }

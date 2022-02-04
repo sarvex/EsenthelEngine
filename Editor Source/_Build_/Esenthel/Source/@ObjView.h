@@ -159,7 +159,7 @@ public:
    int             vtx_dup_mode;
    flt             vtx_sel_r, edit_time;
    Tabs            mode;
-   Button          axis, box, show_cur_pos, vtxs, vtxs_front, vtxs_normals, light_dir;
+   Button          axis, box, show_cur_pos, vtxs, vtxs_front, vtxs_normals, light_dir, bone_shape;
    Tabs            slot_tabs, bone_tabs, phys_tabs, ragdoll_tabs, trans_tabs;
    Memc<SlotMesh>  slot_meshes;
    Memc<BackMesh>  back_meshes;
@@ -259,6 +259,7 @@ public:
    static void NextObj          (ObjView &editor);
    static void ShowBox          (ObjView &editor);
    static void ShowCur          (ObjView &editor);
+   static void BoneShape        (ObjView &editor);
    static void VtxsChanged      (ObjView &editor);                     
    static void MeshDelete       (ObjView &editor);void meshDelete   ();
    static void MeshSplit        (ObjView &editor);void meshSplit    ();
