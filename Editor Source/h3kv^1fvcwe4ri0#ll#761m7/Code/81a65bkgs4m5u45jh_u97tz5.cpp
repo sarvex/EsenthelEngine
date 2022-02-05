@@ -3498,7 +3498,7 @@ class ProjectEx : ProjectHierarchy
                      {
                         elmToggle(elm);
                         list.tapped_vis =list.cur;
-                        list.tapped_time=Time.appTime()+Time.ad()+(MT.touch(i) ? TouchDoubleClickTime : DoubleClickTime); // disable mouse buttons during this time
+                        list.tapped_time=Time.appTime()+Time.ad()+(MT.mouse(i) ? DoubleClickTime : TouchDoubleClickTime); // disable mouse buttons during this time
                         list.tapped_open=false; // disable
                      }
                   }break;
@@ -3508,7 +3508,7 @@ class ProjectEx : ProjectHierarchy
                      if(MT.tappedFirst(i))
                      {
                         list.tapped_vis =list.cur;
-                        list.tapped_time=Time.appTime()+Time.ad()+(MT.touch(i) ? TouchDoubleClickTime : DoubleClickTime); // wait until potential double click, if it won't occur, then open element
+                        list.tapped_time=Time.appTime()+Time.ad()+(MT.mouse(i) ? DoubleClickTime : TouchDoubleClickTime); // wait until potential double click, if it won't occur, then open element
                         list.tapped_open=true; // open
                      }else
                      if(MT.bd(i))

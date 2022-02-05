@@ -713,7 +713,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          D.depthLock(false);
          SetMatrix(trans.matrix);
-         int  bone_tabs=boneTabs(), bone_axis=boneAxis();
+         int  bone_tabs=boneTabs();
          byte alpha=((mode()==SKIN && skin_tabs()==SKIN_SEL_BONE || mode()==BONES) ? 153 : 100);
          bool bone =(mode()==BONES && (bone_tabs==BONE_ADD || bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)
                   || mode()==SKIN),
@@ -724,8 +724,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          if(mode()==BONES && bone_shape())FREPAO(skel->bones).shape.draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha/3));else
                                           FREPAO(skel->bones).      draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha  ));
          if(mode()==SLOTS                )FREPAO(skel->slots).      draw((sel_slot==i && lit_slot==i) ? LitSelColor : (sel_slot==i || lit_slot==i) ? SelColor :                            Color(255, 128, 0, 255), SkelSlotSize);
-         if(InRange(sel_bone, skel->bones) && mode()==BONES && (bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)){Matrix m=skel->bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, bone_axis);}
-         if(InRange(sel_slot, skel->slots)                                                                                           ){Matrix m=skel->slots[sel_slot]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, slot_axis);}
+         if(InRange(sel_bone, skel->bones) && mode()==BONES && (bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)){Matrix m=skel->bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, boneAxis());}
+         if(InRange(sel_slot, skel->slots)                                                                                           ){Matrix m=skel->slots[sel_slot]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, slot_axis );}
          // draw parent<->children line
          if(C SkelBone *bone=skel->bones.addr(lit_bone))if(C SkelBone *parent=skel->bones.addr(bone->parent))D.line(PURPLE, bone->pos, parent->center());
          if(C SkelSlot *slot=skel->slots.addr(lit_slot))
@@ -744,7 +744,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          SetMatrix(trans.matrix);
          FREPA (mesh_skel->bones)if(mesh_skel->bones[i].flag&BONE_RAGDOLL)mesh_skel->bones[i].shape.draw(ColorAlpha(                                                  ORANGE    , (lit_bone==i) ? 1 : 0.55f), false, 16);
          FREPAO(mesh_skel->bones)                                                                .draw(ColorAlpha(FlagTest(mesh_skel->bones[i].flag, BONE_RAGDOLL) ? RED : CYAN, (lit_bone==i) ? 1 : 0.60f));
-         if(ragdoll_tabs()!=RAGDOLL_TOGGLE)if(InRange(sel_bone, mesh_skel->bones)){Matrix m=mesh_skel->bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, bone_axis);}
+         if(ragdoll_tabs()!=RAGDOLL_TOGGLE)if(InRange(sel_bone, mesh_skel->bones)){Matrix m=mesh_skel->bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, boneAxis());}
          D.depthUnlock();
       }
       
@@ -3058,8 +3058,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
             case SLOT_ROT:
             case SLOT_SCALE:
             {
-               if(MT.bp(i) && !MT.touch(i))sel_slot=lit_slot;
-               if(mesh_skel && InRange(sel_slot, mesh_skel->slots))if(MT.touch(i) ? MT.b(i) : MT.b(i, 1))
+               if(MT.bp(i) && MT.mouse(i))sel_slot=lit_slot;
+               if(mesh_skel && InRange(sel_slot, mesh_skel->slots))if(MT.b(i, MT.mouse(i)))
                {
                   mesh_undos.set("slotEdit");
                   view->setViewportCamera();
@@ -3404,11 +3404,11 @@ cur_skel_to_saved_skel.bones.del();
          // operate on bones
          REPA(MT)if(Edit::Viewport4::View *view=v4.getView(MT.guiObj(i)))switch(bone_tabs)
          {
-            case -1: if(MT.bp(i) && !MT.touch(i))selectLit(); break;
+            case -1: if(MT.bp(i) && MT.mouse(i))selectLit(); break;
 
             case BONE_ADD:
             {
-               if(MT.bp(i) && !MT.touch(i))selectLit();
+               if(MT.bp(i) && MT.mouse(i))selectLit();
                if(MT.bp(i, 1))
                {
                   getSkelElm(); // create new skeleton if doesn't exist yet
@@ -3457,11 +3457,12 @@ cur_skel_to_saved_skel.bones.del();
             case BONE_ROT:
             case BONE_SCALE:
             {
-               if(MT.bp(i) && !MT.touch(i))selectLit();
-               if(mesh_skel)if(MT.touch(i) ? MT.b(i) : MT.b(i, 1))
+               if(MT.bp(i) && MT.mouse(i))selectLit();
+               if(mesh_skel)if(MT.b(i, MT.mouse(i)))
                {
                   mesh_undos.set("boneEdit");
                   view->setViewportCamera();
+                  if(bone_tabs!=BONE_MOVE)MT.freeze(i);
                   Vec2      mul =(Kb.shift() ? 0.1f : 1.0f)*0.5f;
                   SkelBone *bone=mesh_skel->bones.addr(sel_bone), *bone_mirror=null;
                   if(bone && Kb.ctrlCmd())
@@ -3722,7 +3723,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
 
          REPA(MT)if(Edit::Viewport4::View *view=v4.getView(MT.guiObj(i)))
          {
-            if(MT.bp(i) && !MT.touch(i))setPhys(lit_phys);
+            if(MT.bp(i) && MT.mouse(i))setPhys(lit_phys);
             switch(phys_tabs())
             {
                case PHYS_DEL:
@@ -3735,7 +3736,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                case PHYS_SCALE:
                {
                   if(phys && InRange(sel_phys, phys->parts) && phys->parts[sel_phys].type()==PHYS_SHAPE)
-                     if(MT.touch(i) ? MT.b(i) : MT.b(i, 1))
+                     if(MT.b(i, MT.mouse(i)))
                   {
                      CacheLock cl(PhysBodies);
                      Shape &shape=phys->parts[sel_phys].shape;
@@ -3878,8 +3879,9 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
             case RAGDOLL_MOVE :
             case RAGDOLL_SCALE:
             {
-               if(MT.bp(i) && !MT.touch(i))selectLit();
-               if(InRange(sel_bone, mesh_skel->bones))if(MT.touch(i) ? MT.b(i) : MT.b(i, 1))
+               int bone_axis=boneAxis();
+               if(MT.bp(i) && MT.mouse(i))selectLit();
+               if(InRange(sel_bone, mesh_skel->bones))if(MT.b(i, MT.mouse(i)))
                {
                   mesh_undos.set("boneEdit");
                   view->setViewportCamera();
@@ -3911,6 +3913,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
 
                      case RAGDOLL_SCALE:
                      {
+                        MT.freeze(i);
                         switch(bone_axis)
                         {
                            case  0: {flt scale=ScaleFactor(                                  AlignDirToCamEx(bone.cross(), MT.ad(i)*mul)); bone.width *=scale;                    if(bone_mirror){bone_mirror->width *=scale;                          }} break; // width

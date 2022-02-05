@@ -368,7 +368,7 @@ MaterialRegion MtrlEdit;
    void MaterialRegion::RGB(MaterialRegion &mr)
    {
       mr.undos.set("brightness");
-      Vec2 d=0; int on=0, pd=0; REPA(MT)if(MT.b(i) && MT.guiObj(i)==&mr.brightness){d+=MT.ad(i); if(!MT.touch(i))Ms.freeze(); if(MT.bp(i))pd++;else on++;}
+      Vec2 d=0; int on=0, pd=0; REPA(MT)if(MT.b(i) && MT.guiObj(i)==&mr.brightness){d+=MT.ad(i); MT.freeze(i); if(MT.bp(i))pd++;else on++;}
       Vec &rgb=mr.edit.color_s.xyz; if(pd && !on){mr.mouse_edit_value=rgb; mr.mouse_edit_delta=0;} flt d_sum=d.sum(); if(mr.red)d_sum*=mr.red->mouse_edit_speed; mr.mouse_edit_delta+=d_sum;
       flt  max=mr.mouse_edit_value.max(), lum=max+mr.mouse_edit_delta;
       if(mr.red)
@@ -385,7 +385,7 @@ MaterialRegion MtrlEdit;
    void MaterialRegion::Emissive(MaterialRegion &mr)
    {
       mr.undos.set("Emissive");
-      Vec2 d=0; int on=0, pd=0; REPA(MT)if(MT.b(i) && MT.guiObj(i)==&mr.emissive){d+=MT.ad(i); if(!MT.touch(i))Ms.freeze(); if(MT.bp(i))pd++;else on++;}
+      Vec2 d=0; int on=0, pd=0; REPA(MT)if(MT.b(i) && MT.guiObj(i)==&mr.emissive){d+=MT.ad(i); MT.freeze(i); if(MT.bp(i))pd++;else on++;}
       Vec &rgb=mr.edit.emissive_s; if(pd && !on){mr.mouse_edit_value=rgb; mr.mouse_edit_delta=0;} flt d_sum=d.sum(); if(mr.emit_red)d_sum*=mr.emit_red->mouse_edit_speed; mr.mouse_edit_delta+=d_sum;
       flt  max=mr.mouse_edit_value.max(), lum=max+mr.mouse_edit_delta;
       if(mr.emit_red)

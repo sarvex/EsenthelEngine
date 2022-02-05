@@ -3255,11 +3255,11 @@ int MatrixAxis(C Vec2 &screen_pos, C Matrix &matrix)
 }
 void MatrixAxis(Edit::Viewport4 &v4, C Matrix &matrix, int &axis, Vec *axis_vec)
 {
-   int editing=-1; REPA(MT)if(MT.b(i, MT.touch(i) ? 0 : 1) && v4.getView(MT.guiObj(i))){editing=i; break;}
+   int editing=-1; REPA(MT)if(MT.b(i, MT.mouse(i)) && v4.getView(MT.guiObj(i))){editing=i; break;}
    if( editing<0)
    {
       axis=-1;
-      if(editing< 0)REPA(MT)if(!MT.touch(i) && v4.getView(MT.guiObj(i))){editing=i; break;} // get mouse
+      if(editing< 0)REPA(MT)if(MT.mouse(i) && v4.getView(MT.guiObj(i))){editing=i; break;} // get mouse
       if(editing>=0)if(Edit::Viewport4::View *view=v4.getView(MT.guiObj(editing)))
       {
          view->setViewportCamera();
