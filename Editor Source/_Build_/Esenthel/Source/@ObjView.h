@@ -624,8 +624,8 @@ public:
    enum RAGDOLL_MODE
    {
       RAGDOLL_TOGGLE,
-      RAGDOLL_SCALE ,
       RAGDOLL_MOVE  ,
+      RAGDOLL_SCALE ,
    };
    static cchar8 *ragdoll_desc[]
 ;

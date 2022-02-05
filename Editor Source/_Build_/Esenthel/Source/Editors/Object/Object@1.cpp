@@ -114,8 +114,8 @@ ObjView ObjEdit;
    cchar8 *ObjView::ragdoll_desc[]=
    {
       "Toggle Bone",
-      "  ", // scale
       "  ", // move
+      "  ", // scale
    };
 /******************************************************************************/
    void SlotMesh::set(C MeshPtr &mesh, C Str &name) {T.mesh=mesh; T.name=name;}
@@ -3847,9 +3847,9 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    void ObjView::createRagdoll()
    {
       mode.tab(RAGDOLL)+=ragdoll_tabs.create(Rect_RU(mode.tab(RAGDOLL).rect().rd()-Vec2(0, 0.01f), 0.40f, 0.06f), 0, ragdoll_desc, Elms(ragdoll_desc), true).valid(true).set(RAGDOLL_TOGGLE);
-      ragdoll_tabs.tab(RAGDOLL_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc("Change size of a bone\nLeftClick to select a bone\nRightClick to change its size\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F2");
-      ragdoll_tabs.tab(RAGDOLL_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc("Change offset of a bone\nLeftClick to select a bone\nRightClick to change its offset\n\nKeyboard Shortcut: Shift+F3");
       ragdoll_tabs.tab(RAGDOLL_TOGGLE).desc("Click on a skeleton bone to toggle it as a ragdoll bone\nKeyboard Shortcut: Shift+F1");
+      ragdoll_tabs.tab(RAGDOLL_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc("Change offset of a bone\nLeftClick to select a bone\nRightClick to change its offset\n\nKeyboard Shortcut: Shift+F2");
+      ragdoll_tabs.tab(RAGDOLL_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc("Change size of a bone\nLeftClick to select a bone\nRightClick to change its size\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F3");
    }
    void ObjView::updateRagdoll()
    {
