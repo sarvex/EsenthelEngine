@@ -3266,6 +3266,23 @@ cur_skel_to_saved_skel.removeBone(bone->name);
          }
       }
    }
+   void ObjView::BoneTarget(ObjView &editor) {editor.boneTarget();}
+          void ObjView::boneTarget()
+   {
+      if(mesh_skel)
+      {
+         mesh_undos.set("boneTarget");
+         SkelBone *bone  =mesh_skel->bones.addr(sel_bone); if(!bone  ){Gui.msgBox(S, "No Bone Selected"     ); return;}
+         SkelBone *target=mesh_skel->bones.addr(lit_bone); if(!target){Gui.msgBox(S, "No Target Highlighted"); return;}
+         if(AdjustBoneOrns::SetTarget(*bone, target->pos))
+         {
+            mesh_skel->setBoneTypes(); // bone orientation may affect bone type indexes
+            setChangedSkel(true);
+            mesh.skeleton(mesh_skel, true).skeleton(null);
+            setChangedMesh(true, false);
+         }
+      }
+   }
    void ObjView::BoneRotX(ObjView &editor) {editor.boneRot( PI_2, 0, 0);}
    void ObjView::BoneRotXN(ObjView &editor) {editor.boneRot(-PI_2, 0, 0);}
    void ObjView::BoneRotY(ObjView &editor) {editor.boneRot(0,  PI_2, 0);}
@@ -3351,6 +3368,8 @@ cur_skel_to_saved_skel.bones.del();
          n++;
          n.New().create("Set Mirrored from Selection", SkelSetMirrorSel, T).kbsc(KbSc(KB_M, KBSC_CTRL_CMD           )).desc("This option will set bone transformation from the other side as mirrored version of the selected bone");
          n.New().create("Set Selection from Mirrored", SkelSetSelMirror, T).kbsc(KbSc(KB_M, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This option will set selected bone transformation as mirrored version of the bone from the other side");
+         n++;
+         n.New().create("Set Target", BoneTarget, T).kbsc(KbSc(KB_T, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This option will set bone target to highlighted bone.\nTo use:\n-Select Bone\n-Highlight Target Bone with Mouse\n-Press Keyboard Shortcut");
          n++;
          n.New().create("Rotate +X", BoneRotX , T).kbsc(KbSc(KB_X, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT           )).desc("Rotate selected bone along its X axis");
          n.New().create("Rotate -X", BoneRotXN, T).kbsc(KbSc(KB_X, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT|KBSC_SHIFT)).desc("Rotate selected bone along its -X axis");

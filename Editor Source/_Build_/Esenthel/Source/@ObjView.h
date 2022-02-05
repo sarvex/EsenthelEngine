@@ -519,6 +519,8 @@ public:
           void skelSetSelMirror(bool set_other);
 
    void boneRot(flt x, flt y, flt z);
+   static void BoneTarget(ObjView &editor);
+          void boneTarget();
    static void BoneRotX (ObjView &editor);
    static void BoneRotXN(ObjView &editor);
    static void BoneRotY (ObjView &editor);

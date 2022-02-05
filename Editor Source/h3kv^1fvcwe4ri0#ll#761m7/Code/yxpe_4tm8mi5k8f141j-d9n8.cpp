@@ -321,16 +321,11 @@ class AdjustBoneOrns : PropWin
                   if(!i)child_pos=child.pos;else
                   if(!Equal(child_pos, child.pos))goto different;
                }
-               if(SetTarget(bone, child_pos))continue;
+               if(SetTarget(bone, child_pos))goto next;
             different:;
             }
 
-            // try setting from main sub child first
-            if(bone.type && bone.type!=BONE_SHOULDER) // avoid things like shoulder pads
-               if(SkelBone *child=skel.findBone(bone.type, bone.type_index, bone.type_sub+1))
-                  if(SetTarget(bone, child.pos))continue;
-
-            // try setting from main child type
+            // get main child type
             BONE_TYPE child_type;
             switch(bone.type)
             {
@@ -343,9 +338,22 @@ class AdjustBoneOrns : PropWin
                case BONE_UPPER_LEG: child_type=BONE_LOWER_LEG; break;
                case BONE_LOWER_LEG: child_type=BONE_FOOT     ; break;
             }
+            
+            // first check if there's any child of main child type directly connected to this bone (this is for cases when processing ARM that has children ARM TWIST and FOREARM, there we want to set target as FOREARM and not ARM TWIST)
+            FREP(bone.children_num)
+               if(SkelBone *child=skel.bones.addr(bone.children_offset+i))
+                  if(child.type==child_type)
+                     if(SetTarget(bone, child.pos))goto next;
+
+            // try setting from main sub child first
+            if(bone.type && bone.type!=BONE_SHOULDER) // avoid things like shoulder pads
+               if(SkelBone *child=skel.findBone(bone.type, bone.type_index, bone.type_sub+1))
+                  if(SetTarget(bone, child.pos))goto next;
+
+            // try setting from main child type
             if(child_type)
                if(SkelBone *child=skel.findBone(child_type, bone.type_index))
-                  if(SetTarget(bone, child.pos))continue;
+                  if(SetTarget(bone, child.pos))goto next;
 
             // try setting from secondary child type
             switch(bone.type)
@@ -355,7 +363,7 @@ class AdjustBoneOrns : PropWin
             }
             if(child_type)
                if(SkelBone *child=skel.findBone(child_type, bone.type_index))
-                  if(SetTarget(bone, child.pos))continue;
+                  if(SetTarget(bone, child.pos))goto next;
 
             // try setting from parent
          from_parent:
@@ -363,9 +371,10 @@ class AdjustBoneOrns : PropWin
             {
                bone.rotateToDir(parent.dir);
                SetBoneLength(skel, bone, min_length);
-               continue;
+               goto next;
             }
          }
+      next:;
       }
       if(reset_perp)FREPA(skel.bones) // process parents first
       {
