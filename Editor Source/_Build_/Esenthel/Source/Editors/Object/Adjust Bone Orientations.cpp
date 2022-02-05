@@ -44,7 +44,7 @@
    {
       Vec dir=pos-bone.pos;
       flt length=dir.normalize();
-      if( length>0.004f) // in case the target is different (it may be the same if bones are located at the same position)
+      if( length>0.002f) // in case the target is different (it may be the same if bones are located at the same position)
       {
          bone.length=length;
          bone.rotateToDir(dir);
@@ -98,7 +98,8 @@
    }
    bool AdjustBoneOrns::adjustDo(Skeleton &skel, Mesh *mesh) // return if mesh was changed
    {
-      const flt min_length=0.05f, shoulder_frac=0.25f;
+      Box box=skel;
+      const flt min_length=Max(0.002f, box.size().max()*0.0125f), shoulder_frac=0.25f;
 
       bool mesh_changed=false, added_bone=false;
 

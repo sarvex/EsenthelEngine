@@ -84,7 +84,7 @@ class AdjustBoneOrns : PropWin
    {
       Vec dir=pos-bone.pos;
       flt length=dir.normalize();
-      if( length>0.004) // in case the target is different (it may be the same if bones are located at the same position)
+      if( length>0.002) // in case the target is different (it may be the same if bones are located at the same position)
       {
          bone.length=length;
          bone.rotateToDir(dir);
@@ -138,7 +138,8 @@ class AdjustBoneOrns : PropWin
    }
    bool adjustDo(Skeleton &skel, Mesh *mesh=null) // return if mesh was changed
    {
-      const flt min_length=0.05, shoulder_frac=0.25;
+      Box box=skel;
+      const flt min_length=Max(0.002, box.size().max()*0.0125), shoulder_frac=0.25;
 
       bool mesh_changed=false, added_bone=false;
 
