@@ -338,7 +338,11 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    }
    int ObjView::boneAxis()C
    {
-      if(Kb.alt())return (bone_tabs()==BONE_SCALE) ? 1 : 2;
+      if(Kb.alt())switch(mode())
+      {
+         case BONES  : return (   bone_tabs()==   BONE_SCALE) ? 1 : 2;
+         case RAGDOLL: return (ragdoll_tabs()==RAGDOLL_SCALE) ? 1 : 2;
+      }
       return bone_axis;
    }
    flt ObjView::posScale()C
