@@ -19,15 +19,18 @@ struct Capsule // Capsule Shape
    Flt area  ()C {return PI2*r*   h            ;} // get surface area
    Flt volume()C {return PI *r*r*(h-r*(2.0f/3));} // get volume
 
-   Vec pointD()C {return pos-up*(h*0.5f-r);       } // get lower ball center point
-   Vec pointU()C {return pos+up*(h*0.5f-r);       } // get upper ball center point
-   Ball ballD()C {return Ball(r, pointD());       } // get lower ball
-   Ball ballU()C {return Ball(r, pointU());       } // get upper ball
-   Edge edge ()C {return Edge(pointD(), pointU());} // get edge between lower and upper ball center points
+   Vec  bottom  ()C {return pos-up*(h*0.5f  );           } // get bottom
+   Vec  top     ()C {return pos+up*(h*0.5f  );           } // get top
+   Vec  ballDPos()C {return pos-up*(h*0.5f-r);           } // get lower ball center
+   Vec  ballUPos()C {return pos+up*(h*0.5f-r);           } // get upper ball center
+   Ball ballD   ()C {return Ball(r, ballDPos());         } // get lower ball
+   Ball ballU   ()C {return Ball(r, ballUPos());         } // get upper ball
+   Edge fullEdge()C {return Edge(bottom  (), top     ());} // get edge between bottom and top
+   Edge ballEdge()C {return Edge(ballDPos(), ballUPos());} // get edge between lower  and upper ball centers
 
    Vec nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
-   Bool isBall()C {return h<=r*2+EPS;} // if this capsule is actually a ball (total height is smaller than 2*radius)
+   Bool isBall()C {return h<=r*2;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description
 
@@ -81,15 +84,18 @@ struct CapsuleM // Capsule Shape (mixed precision)
    Flt area  ()C {return PI2*r*   h            ;} // get surface area
    Flt volume()C {return PI *r*r*(h-r*(2.0f/3));} // get volume
 
-   VecD pointD()C {return pos-up*(h*0.5f-r);        } // get lower ball center point
-   VecD pointU()C {return pos+up*(h*0.5f-r);        } // get upper ball center point
-   BallM ballD()C {return BallM(r, pointD());       } // get lower ball
-   BallM ballU()C {return BallM(r, pointU());       } // get upper ball
-   EdgeD edge ()C {return EdgeD(pointD(), pointU());} // get edge between lower and upper ball center points
+   VecD  bottom  ()C {return pos-up*(h*0.5f  );            } // get bottom
+   VecD  top     ()C {return pos+up*(h*0.5f  );            } // get top
+   VecD  ballDPos()C {return pos-up*(h*0.5f-r);            } // get lower ball center
+   VecD  ballUPos()C {return pos+up*(h*0.5f-r);            } // get upper ball center
+   BallM ballD   ()C {return BallM(r, ballDPos());         } // get lower ball
+   BallM ballU   ()C {return BallM(r, ballUPos());         } // get upper ball
+   EdgeD fullEdge()C {return EdgeD(bottom  (), top     ());} // get edge between bottom and top
+   EdgeD ballEdge()C {return EdgeD(ballDPos(), ballUPos());} // get edge between lower  and upper ball centers
 
    VecD nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
-   Bool isBall()C {return h<=r*2+EPS;} // if this capsule is actually a ball (total height is smaller than 2*radius)
+   Bool isBall()C {return h<=r*2;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description
 

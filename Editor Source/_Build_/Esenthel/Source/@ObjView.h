@@ -259,7 +259,7 @@ public:
    static void NextObj          (ObjView &editor);
    static void ShowBox          (ObjView &editor);
    static void ShowCur          (ObjView &editor);
-   static void BoneShape        (ObjView &editor);
+   static void BoneShapeChange  (ObjView &editor);
    static void VtxsChanged      (ObjView &editor);                     
    static void MeshDelete       (ObjView &editor);void meshDelete   ();
    static void MeshSplit        (ObjView &editor);void meshSplit    ();
@@ -325,6 +325,8 @@ public:
    static void MeshRemVtxColor  (ObjView &editor);                  
    static void MeshRemVtxSkin   (ObjView &editor);                  
    static void MeshDisableLQLODs(ObjView &editor);void meshDisableLQLODs();
+
+   static void BoneShapeChanged(ObjView &editor);
 
    void modeS(int i);
 

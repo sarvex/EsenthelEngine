@@ -853,7 +853,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    void ObjView::NextObj(ObjView &editor) {Proj.elmNext(editor.obj_id);}
    void ObjView::ShowBox(ObjView &editor) {editor.box .push();}
    void ObjView::ShowCur(ObjView &editor) {editor.show_cur_pos.push();}
-   void ObjView::BoneShape(ObjView &editor) {editor.bone_shape.push();}
+   void ObjView::BoneShapeChange(ObjView &editor) {editor.bone_shape.push();}
    void ObjView::VtxsChanged(ObjView &editor) {editor.vtxs_front.visible(editor.vtxs()); editor.vtxs_normals.visible(editor.vtxs());}
    void ObjView::MeshDelete(ObjView &editor) {editor.meshDelete     ();}
    void ObjView::MeshSplit(ObjView &editor) {editor.meshSplit      ();}
@@ -919,6 +919,11 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    void ObjView::MeshRemVtxColor(ObjView &editor) {editor.remVtx(VTX_COLOR                 , true);}
    void ObjView::MeshRemVtxSkin(ObjView &editor) {editor.remVtx(VTX_SKIN                  , true);}
    void ObjView::MeshDisableLQLODs(ObjView &editor) {editor.meshDisableLQLODs();}
+   void ObjView::BoneShapeChanged(ObjView &editor)
+   {
+      editor.bone_children .hidden(editor.bone_shape());
+      editor.bone_move_tabs.hidden(editor.bone_shape());
+   }
    void ObjView::modeS(int i)
    {
       switch(mode())
@@ -1071,10 +1076,11 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          view->setViewportCamera();
          if(bone_i)
          {
+            bool bone_shape=(T.bone_shape() && T.bone_shape.visibleOnActiveDesktop());
             REPA(skel->bones)
             {
              C SkelBone &bone=skel->bones[i];
-               flt d; if(Distance2D(screen_pos, Edge(bone.pos, bone.to())*trans.matrix, d, 0))
+               flt d; if(Distance2D(screen_pos, (bone_shape ? bone.shape.fullEdge() : Edge(bone.pos, bone.to()))*trans.matrix, d, 0))
                   if(*bone_i<0 || d<dist){*bone_i=i; dist=d;}
             }
          }
@@ -1383,7 +1389,6 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          v.New().create("Light Direction", LightMode, T).kbsc(KbSc(KB_L, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Previous Object", PrevObj  , T).kbsc(KbSc(KB_PGUP, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Next Object"    , NextObj  , T).kbsc(KbSc(KB_PGDN, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
-         v.New().create("BoneShape"      , BoneShape, T).kbsc(KbSc(KB_S, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          break;
       }
    }
@@ -1432,7 +1437,6 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       mode.tab(TRANSFORM)+=trans.create(false).pos(mode.tab(TRANSFORM).rect().ld()-Vec2(0, 0.01f));
       mode.tab(LOD      )+=lod  .create(     ).pos(mode.tab(0        ).rect().ld()-Vec2(0, 0.01f));
       mode.tab(GROUP    )+=group.create(     );
-      mode.tab(BONES    )+=bone_shape.create().focusable(false).rect(Rect_LU(vtxs.rect().min, h)).desc("Bone Shape\nKeyboard Shortcut: Alt+S"); bone_shape.mode=BUTTON_TOGGLE; bone_shape.image="Gui/Misc/capsule.img";
 
       T+=leaf.create();
       param_edit.create(mode.tab(PARAM));
@@ -3344,7 +3348,7 @@ cur_skel_to_saved_skel.bones.del();
    {
       mode.tab(BONES)+=adjust_bone_orns.create();
       mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16f, 0.01f), 0.73f, 0.06f), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
-      bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F3");
+      bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F3");
       bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F4");
       bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F5");
       bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F1");
@@ -3356,8 +3360,11 @@ cur_skel_to_saved_skel.bones.del();
       bone_move_tabs.tab(BONE_MOVE_START).desc("Move only start of the bone");
       bone_move_tabs.tab(BONE_MOVE_END  ).desc("Move only end of the bone");
 
-      bone_tabs.tab(BONE_MOVE)+=bone_children    .create(Rect_L(bone_move_tabs.rect().right()+Vec2(0.02f, 0), 0.54f, bone_move_tabs.rect().h()), bone_child_desc, Elms(bone_child_desc)).set(BONE_CHILDREN_NEAREST);
-      bone_tabs.tab(BONE_ROT )+=bone_children_rot.create(Rect_U(bone_tabs.tab(BONE_ROT).rect().down()-Vec2(0, 0.01f), 0.54f, 0.055f), bone_child_rot_desc, Elms(bone_child_rot_desc)).set(0);
+      bone_tabs.tab(BONE_MOVE)+=bone_children    .create(Rect_L(bone_move_tabs.rect().right()+Vec2(0.02f, 0), 0.54f, bone_move_tabs.rect().h()), bone_child_desc, Elms(bone_child_desc)).set(BONE_CHILDREN_NEAREST).focusable(false);
+      bone_tabs.tab(BONE_ROT )+=bone_children_rot.create(Rect_U(bone_tabs.tab(BONE_ROT).rect().down()-Vec2(0, 0.01f), 0.54f, 0.055f), bone_child_rot_desc, Elms(bone_child_rot_desc)).set(0).focusable(false);
+
+      flt h=bone_tabs.rect().h();
+      mode.tab(BONES)+=bone_shape.create().func(BoneShapeChanged, T).focusable(false).rect(Rect_RU(bone_tabs.rect().lu()-Vec2(h, 0), h)).desc("Bone Shape\nKeyboard Shortcut: Alt+S"); bone_shape.mode=BUTTON_TOGGLE; bone_shape.image="Gui/Misc/capsule.img";
 
       {
          Node<MenuElm> n;
@@ -3382,6 +3389,7 @@ cur_skel_to_saved_skel.bones.del();
          n++;
          n.New().create("Delete Bones", SkelDelBones, T).desc("Delete all Skeleton Bones");
          n.New().create("Delete Leaf Bones without Skin", SkelDelLeafBones, T).desc("Delete all Skeleton Bones that have no children and no mesh connection");
+         n.New().create("BoneShape", BoneShapeChange, T).kbsc(KbSc(KB_S, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          mode.tab(BONES)+=bone_ops.create(Rect_LU(bone_tabs.rect().ru(), bone_tabs.rect().h()), n); bone_ops.flag|=COMBOBOX_CONST_TEXT;
       }
       {
@@ -3487,13 +3495,13 @@ cur_skel_to_saved_skel.bones.del();
                   view->setViewportCamera();
                   if(bone_tabs!=BONE_MOVE)MT.freeze(i);
                   Vec2      mul =(Kb.shift() ? 0.1f : 1.0f)*0.5f;
-                  SkelBone *bone=mesh_skel->bones.addr(sel_bone), *bone_mirror=null;
+                  SkelBone *bone=mesh_skel->bones.addr(sel_bone), *bone_mirror=null; int mirror_bone=-1;
                   if(bone && Kb.ctrlCmd())
                   {
                      Str bone_name=BoneNeutralName(bone->name);
                      REPA(mesh_skel->bones)if(i!=sel_bone && bone_name==BoneNeutralName(mesh_skel->bones[i].name))
                      {
-                        bone_mirror=&mesh_skel->bones[i];
+                        bone_mirror=&mesh_skel->bones[mirror_bone=i];
                         break;
                      }
                   }
@@ -3512,22 +3520,31 @@ cur_skel_to_saved_skel.bones.del();
                         }
                         if(bone)
                         {
-                           switch(bone_move_tabs())
+                           Vec dm(-d.x, d.y, d.z);
+                           if(bone_shape())
                            {
-                              case BONE_MOVE_START: bone->setFromTo(bone->pos+d, bone->to()  ); break;
-                              case BONE_MOVE_END  : bone->setFromTo(bone->pos  , bone->to()+d); break;
-                              default             : bone->pos+=d                            ; break;
-                           }
-                           if(bone_children()!=BONE_CHILDREN_NONE && bone_move_tabs()!=BONE_MOVE_START)
-                              REPA(mesh_skel->bones)if(i!=sel_bone)
+                              bone->offset+=d; if(bone_mirror)bone_mirror->offset+=dm;
+                           }else
                            {
-                              SkelBone &bone=mesh_skel->bones[i];
-                              if(bone_children()==BONE_CHILDREN_NEAREST)
+                              switch(bone_move_tabs())
                               {
-                                 if(bone.parent==sel_bone)bone.setFromTo(bone.pos+d, bone.to());
-                              }else
+                                 case BONE_MOVE_START: bone->setFromTo(bone->pos+d, bone->to()  ); if(bone_mirror)bone_mirror->setFromTo(bone_mirror->pos+dm, bone_mirror->to()   ); break;
+                                 case BONE_MOVE_END  : bone->setFromTo(bone->pos  , bone->to()+d); if(bone_mirror)bone_mirror->setFromTo(bone_mirror->pos   , bone_mirror->to()+dm); break;
+                                 default             : bone->pos+=d                            ; if(bone_mirror)bone_mirror->pos+=dm                                           ; break;
+                              }
+                              if(bone_children()!=BONE_CHILDREN_NONE && bone_move_tabs()!=BONE_MOVE_START)
+                                 REPA(mesh_skel->bones)if(i!=sel_bone && i!=mirror_bone)
                               {
-                                 if(mesh_skel->contains(sel_bone, i))bone+=d;
+                                 SkelBone &bone=mesh_skel->bones[i];
+                                 if(bone_children()==BONE_CHILDREN_NEAREST)
+                                 {
+                                    if(                  bone.parent==   sel_bone)bone.setFromTo(bone.pos+d , bone.to());else
+                                    if(mirror_bone>=0 && bone.parent==mirror_bone)bone.setFromTo(bone.pos+dm, bone.to());
+                                 }else
+                                 {
+                                    if(                  mesh_skel->contains(   sel_bone, i))bone+=d ;else
+                                    if(mirror_bone>=0 && mesh_skel->contains(mirror_bone, i))bone+=dm;
+                                 }
                               }
                            }
                         }else mesh_skel->move(d);
