@@ -523,6 +523,10 @@ public:
    void boneRot(flt x, flt y, flt z);
    static void BoneTarget(ObjView &editor);
           void boneTarget();
+   
+   static void BoneSetShape(ObjView &editor);
+          void boneSetShape();
+
    static void BoneRotX (ObjView &editor);
    static void BoneRotXN(ObjView &editor);
    static void BoneRotY (ObjView &editor);
@@ -538,11 +542,11 @@ public:
 
    enum BONE_MODE
    {
-      BONE_ADD,
-      BONE_DEL,
       BONE_MOVE,
       BONE_ROT,
       BONE_SCALE,
+      BONE_DEL,
+      BONE_ADD,
       BONE_RENAME,
       BONE_PARENT,
    };

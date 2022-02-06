@@ -641,7 +641,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          // points
          const bool draw_skin=(mode()==SKIN || mode()==BONES && lit_bone>=0);
-         const byte bone=((lit_bone>=0) ? lit_bone : sel_bone)+1;
+         const byte bone=((lit_bone>=0) ? lit_bone : sel_bone)+VIRTUAL_ROOT_BONE;
          const flt  r=0.0045;
          D.depthLock(false);
        C MeshLod &lod=getDrawLod(); REPAD(p, lod)
@@ -3256,13 +3256,13 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                      case SLOT_ROT:
                      {
                         Ms.freeze();
-                        flt mul=(Kb.shift() ? 0.1 : 1.0)*0.5;
+                        flt mul=(Kb.shift() ? 0.1 : 1.0)*0.5, angle=-MT.ad(i).sum()*mul;
                         switch(slot_axis)
                         {
-                           case  0: slot.rotateCross(MT.ad(i).sum()*mul); break;
-                           case  1: slot.rotatePerp (MT.ad(i).sum()*mul); break;
-                           case  2: slot.rotateDir  (MT.ad(i).sum()*mul); break;
-                           default: slot.Orient.mul(Matrix3().setRotate(ActiveCam.matrix.z, MT.ad(i).sum()*mul)); break;
+                           case  0: slot.rotateCross(angle); break;
+                           case  1: slot.rotatePerp (angle); break;
+                           case  2: slot.rotateDir  (angle); break;
+                           default: slot.Orient.mul(Matrix3().setRotate(ActiveCam.matrix.z, angle)); break;
                         }
                         setChangedSkel(false);
                      }break;
@@ -3461,6 +3461,55 @@ cur_skel_to_saved_skel.removeBone(bone.name);
          }
       }
    }
+   
+   static void BoneSetShape(ObjView &editor) {editor.boneSetShape();}
+          void boneSetShape()
+   {
+      if(mesh_skel)
+      {
+         mesh_undos.set("boneSetShape");
+         int       bone_i=(sel_bone>=0 ? sel_bone : lit_bone);
+         SkelBone *bone  =mesh_skel.bones.addr(bone_i); if(!bone){Gui.msgBox(S, "No Bone Selected"); return;}
+         {
+            byte    bone_b=bone_i+VIRTUAL_ROOT_BONE;
+            bool    has=false;
+            Box     box;
+            Matrix3 bone_matrix=*bone;
+            Matrix  transform=bone_matrix/mesh_matrix; // bone in mesh space
+                    transform.inverse(); // inverse because we want to convert mesh vertexes relative to bone
+            REPA(mesh.parts)
+            {
+                 MeshBase &base =mesh.parts[i].base;
+               if(C Vec   *pos  =base.vtx.pos   ())
+               if(C VecB4 *mtrx =base.vtx.matrix())
+               if(C VecB4 *blend=base.vtx.blend ())
+               {
+                  REPA(base.vtx)
+                  {
+                     VecB4 m=mtrx[i], b=blend[i];
+                     int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i];
+                     if( weight>=128)
+                     {
+                        Vec p=pos[i]*transform;
+                        if(has)box|=p;else{box=p; has=true;}
+                     }
+                  }
+               }
+            }
+            if(has)
+            {
+               Vec center=box.center()*bone_matrix;
+               bone.offset=center-bone.center();
+               bone.width =Avg(box.w(), box.h())/2/bone.length;
+            }
+          //mesh_skel.setBoneTypes(); // bone orientation may affect bone type indexes
+            setChangedSkel(true);
+          //mesh.skeleton(mesh_skel, true).skeleton(null);
+          //setChangedMesh(true, false);
+         }
+      }
+   }
+
    static void BoneRotX (ObjView &editor) {editor.boneRot( PI_2, 0, 0);}
    static void BoneRotXN(ObjView &editor) {editor.boneRot(-PI_2, 0, 0);}
    static void BoneRotY (ObjView &editor) {editor.boneRot(0,  PI_2, 0);}
@@ -3517,21 +3566,21 @@ cur_skel_to_saved_skel.bones.del();
 
    enum BONE_MODE
    {
-      BONE_ADD,
-      BONE_DEL,
       BONE_MOVE,
       BONE_ROT,
       BONE_SCALE,
+      BONE_DEL,
+      BONE_ADD,
       BONE_RENAME,
       BONE_PARENT,
    }
    static cchar8 *bone_desc[]=
    {
-      "+1",
-      "-1",
       "  ", // move
       "  ", // rot
       "  ", // scale
+      "-1",
+      "+1",
       "Rename",
       "Set Parent",
    };
@@ -3571,11 +3620,11 @@ cur_skel_to_saved_skel.bones.del();
    {
       mode.tab(BONES)+=adjust_bone_orns.create();
       mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16, 0.01), 0.73, 0.06), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
-      bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F3");
-      bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F4");
-      bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F5");
-      bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F1");
-      bone_tabs.tab(BONE_DEL   ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F2");
+      bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F1");
+      bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F2");
+      bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F3");
+      bone_tabs.tab(BONE_DEL   ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F4");
+      bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F5");
       bone_tabs.tab(BONE_RENAME).desc(S+"Rename bone\nKeyboard Shortcut: Shift+F6");
       bone_tabs.tab(BONE_PARENT).desc(S+"Set bone parent:\nClick on a child bone and drag it to a desired parent bone (or nothing) to set it as the parent.\n\nKeyboard Shortcut: Shift+F7");
 
@@ -3599,7 +3648,8 @@ cur_skel_to_saved_skel.bones.del();
          n.New().create("Set Mirrored from Selection", SkelSetMirrorSel, T).kbsc(KbSc(KB_M, KBSC_CTRL_CMD           )).desc("This option will set bone transformation from the other side as mirrored version of the selected bone");
          n.New().create("Set Selection from Mirrored", SkelSetSelMirror, T).kbsc(KbSc(KB_M, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This option will set selected bone transformation as mirrored version of the bone from the other side");
          n++;
-         n.New().create("Set Target", BoneTarget, T).kbsc(KbSc(KB_T, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This option will set bone target to highlighted bone.\nTo use:\n-Select Bone\n-Highlight Target Bone with Mouse\n-Press Keyboard Shortcut");
+         n.New().create("Set Target", BoneTarget  , T).kbsc(KbSc(KB_T, KBSC_CTRL_CMD|KBSC_SHIFT         )).desc("This option will set bone target to highlighted bone.\nTo use:\n-Select Bone\n-Highlight Target Bone with Mouse\n-Press Keyboard Shortcut");
+         n.New().create("Set Shape" , BoneSetShape, T).kbsc(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT)).desc("This option will set bone shape");
          n++;
          n.New().create("Rotate +X", BoneRotX , T).kbsc(KbSc(KB_X, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT           )).desc("Rotate selected bone along its X axis");
          n.New().create("Rotate -X", BoneRotXN, T).kbsc(KbSc(KB_X, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT|KBSC_SHIFT)).desc("Rotate selected bone along its -X axis");
@@ -3775,7 +3825,7 @@ cur_skel_to_saved_skel.bones.del();
 
                      case BONE_ROT:
                      {
-                        flt angle=MT.ad(i).sum()*mul.x;
+                        flt angle=-MT.ad(i).sum()*mul.x;
                         if(bone)
                         {
                            Vec axis;
@@ -4055,12 +4105,13 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                         {
                            phys_undos.set("rot");
                            Matrix m;
+                           flt    angle=-(MT.ad(i)*mul).sum();
                            switch(phys_axis)
                            {
-                              case  0: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.x, (MT.ad(i)*mul).sum())); break;
-                              case  1: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.y, (MT.ad(i)*mul).sum())); break;
-                              case  2: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.z, (MT.ad(i)*mul).sum())); break;
-                              default: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate( ActiveCam.matrix.z, (MT.ad(i)*mul).sum())); break;
+                              case  0: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.x, angle)); break;
+                              case  1: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.y, angle)); break;
+                              case  2: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate(!phys_part_matrix.z, angle)); break;
+                              default: m.setTransformAtPos(phys_part_matrix.pos, Matrix3().setRotate( ActiveCam.matrix.z, angle)); break;
                            }
                            phys_part_matrix*=m;
                            shape           *=m;
