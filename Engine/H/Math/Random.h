@@ -38,8 +38,10 @@ struct Randomizer // Randomizer is multi-threaded safe
    Vec  operator()(C Edge    &edge                     ); // return random point on        edge
    Vec2 operator()(C Tri2    &tri    , Bool inside=true); // return random point on/inside triangle
    Vec  operator()(C Tri     &tri    , Bool inside=true); // return random point on/inside triangle
+   VecD operator()(C TriD    &tri    , Bool inside=true); // return random point on/inside triangle
    Vec2 operator()(C Quad2   &quad   , Bool inside=true); // return random point on/inside quad
    Vec  operator()(C Quad    &quad   , Bool inside=true); // return random point on/inside quad
+   VecD operator()(C QuadD   &quad   , Bool inside=true); // return random point on/inside quad
    Vec2 operator()(C Rect    &rect   , Bool inside=true); // return random point on/inside rectangle
    Vec  operator()(C Box     &box    , Bool inside=true); // return random point on/inside box
    Vec  operator()(C OBox    &obox   , Bool inside=true); // return random point on/inside oriented box
@@ -53,10 +55,13 @@ struct Randomizer // Randomizer is multi-threaded safe
    Vec  operator()(C Pyramid &pyramid, Bool inside=true); // return random point on/inside pyramid
    Vec  operator()(C Shape   &shape  , Bool inside=true); // return random point on/inside shape
 
-   Vec  operator()(C MeshBase   &mshb, C AnimatedSkeleton *anim_skel=null); // return random point on MeshBase   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   Vec  operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel=null); // return random point on MeshRender surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   Vec  operator()(C MeshPart   &part, C AnimatedSkeleton *anim_skel=null); // return random point on MeshPart   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   Vec  operator()(C Mesh       &mesh, C AnimatedSkeleton *anim_skel=null); // return random point on Mesh       surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
+   Vec  operator()(C         Skeleton &     skel); // return random point inside skeleton bone shape
+   VecD operator()(C AnimatedSkeleton &anim_skel); // return random point inside skeleton bone shape
+
+   VecD operator()(C MeshBase   &mshb, C AnimatedSkeleton *anim_skel=null); // return random point on MeshBase   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
+   VecD operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel=null); // return random point on MeshRender surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
+   VecD operator()(C MeshPart   &part, C AnimatedSkeleton *anim_skel=null); // return random point on MeshPart   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
+   VecD operator()(C Mesh       &mesh, C AnimatedSkeleton *anim_skel=null); // return random point on Mesh       surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
 
    Str password  (Int length, Bool chars, Bool digits, Bool symbols=false); // generate a random password, 'length'=length of the password, 'chars'=if use characters in the password, 'digits'=if use digits in the password, 'symbols'=if use symbols in the password
    Str licenseKey(); // generate a random license key in "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" format

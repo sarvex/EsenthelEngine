@@ -88,6 +88,7 @@ struct  SkeletonBone : OrientP, BoneID // Skeleton Bone
    Flt     toY()C {return pos.y+dir.y* length      ;} // get bone ending position Y
    Vec center ()C {return pos  +dir  *(length*0.5f);} // get bone center position
    Flt centerY()C {return pos.y+dir.y*(length*0.5f);} // get bone center position Y
+   Flt volume ()C {return shape.volume()           ;} // get bone shape  volume
 
    // set
    SkeletonBone& setFromTo(C Vec &from, C Vec &to); // set bone position, direction and length according to 'from' and 'to' position parameters and adjust existing 'perp' to match the new settings
@@ -199,6 +200,8 @@ struct Skeleton // Animation Skeleton - base skeleton used by 'AnimatedSkeleton'
    Int  boneRoot         (Int bone                )C; // get bone root  , this iterates bones starting from 'bone' through its parents and returns the last encountered bone that has no parent, if 'bone' has no parent then 'bone' is returned, if 'bone' is not a valid bone index, then -1 is returned
    Int  findParent       (Int bone, BONE_TYPE type)C; // get index of the first parent of 'bone' which has 'type' BONE_TYPE      , -1 is returned if none were found
    Int  findRagdollParent(Int bone                )C; // get index of the first parent of 'bone' which has 'BONE_RAGDOLL' enabled, -1 is returned if none were found
+
+   Flt volume()C; // get volume of all bone shapes
 
    UInt memUsage()C; // get memory usage
 

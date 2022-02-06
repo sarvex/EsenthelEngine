@@ -21,6 +21,7 @@ class AdjustBoneOrns : PropWin
       FOOT_SKIP,
       FOOT_DEFAULT,
       FOOT_DOWN,
+      FOOT_AVG,
       FOOT_PARENT,
    };
    static cchar8 *FootMode[]

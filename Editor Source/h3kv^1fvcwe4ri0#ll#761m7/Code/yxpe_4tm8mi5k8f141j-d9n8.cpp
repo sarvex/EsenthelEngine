@@ -25,6 +25,7 @@ class AdjustBoneOrns : PropWin
       FOOT_SKIP,
       FOOT_DEFAULT,
       FOOT_DOWN,
+      FOOT_AVG,
       FOOT_PARENT,
    }
    static cchar8 *FootMode[]=
@@ -32,6 +33,7 @@ class AdjustBoneOrns : PropWin
       "Skip",
       "Default",
       "Down",
+      "Average Toe",
       "Parent Bone",
    };
 
@@ -284,6 +286,15 @@ class AdjustBoneOrns : PropWin
                   bone.rotateToDir(Vec(0, -1, 0));
                   if(bone.pos.y>0)bone.length=Max(0.02, bone.pos.y); // above ground, for feet use a small min_length in case the bone.length is actually used for something
                   else            bone.length=Max(0.02, BoneMeshLength(bone));
+               }break;
+
+               case FOOT_AVG:
+               {
+                  Vec pos=0; int num=0;
+                  FREP(bone.children_num)
+                     if(SkelBone *child=skel.bones.addr(bone.children_offset+i))
+                        if(child.type==BONE_TOE){pos+=child.pos; num++;}
+                  if(num)SetTarget(bone, pos/num);
                }break;
             }
          }else

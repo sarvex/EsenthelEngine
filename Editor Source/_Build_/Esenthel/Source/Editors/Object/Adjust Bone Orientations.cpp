@@ -20,6 +20,7 @@
       "Skip",
       "Default",
       "Down",
+      "Average Toe",
       "Parent Bone",
    };
    cchar8 *AdjustBoneOrns::RotShoulder[]=
@@ -244,6 +245,15 @@
                   bone.rotateToDir(Vec(0, -1, 0));
                   if(bone.pos.y>0)bone.length=Max(0.02f, bone.pos.y); // above ground, for feet use a small min_length in case the bone.length is actually used for something
                   else            bone.length=Max(0.02f, BoneMeshLength(bone));
+               }break;
+
+               case FOOT_AVG:
+               {
+                  Vec pos=0; int num=0;
+                  FREP(bone.children_num)
+                     if(SkelBone *child=skel.bones.addr(bone.children_offset+i))
+                        if(child->type==BONE_TOE){pos+=child->pos; num++;}
+                  if(num)SetTarget(bone, pos/num);
                }break;
             }
          }else

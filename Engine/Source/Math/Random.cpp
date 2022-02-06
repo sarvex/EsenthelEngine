@@ -343,6 +343,34 @@ Vec Randomizer::operator()(C Tri &tri, Bool inside)
                return      tri.p[0];
    }
 }
+VecD Randomizer::operator()(C TriD &tri, Bool inside)
+{
+   if(inside)
+   {
+      Flt u=f(),
+          v=f();
+      if(u+v>1)
+      {
+         u=1-u;
+         v=1-v;
+      }
+      return           tri.p[0]
+            +(tri.p[1]-tri.p[0])*u
+            +(tri.p[2]-tri.p[0])*v;
+   }else
+   {
+      Dbl l01=Dist(tri.p[0], tri.p[1]),
+          l12=Dist(tri.p[1], tri.p[2]),
+          l20=Dist(tri.p[2], tri.p[0]),
+          l  =f   (l01+l12+l20);
+
+      // when changing codes watch for division by zero
+      if(l<l01)return Lerp(tri.p[0], tri.p[1], l/l01); l-=l01;
+      if(l<l12)return Lerp(tri.p[1], tri.p[2], l/l12); l-=l12;
+      if(l<l20)return Lerp(tri.p[2], tri.p[0], l/l20);
+               return      tri.p[0];
+   }
+}
 /******************************************************************************/
 Vec2 Randomizer::operator()(C Quad2 &quad, Bool inside)
 {
@@ -385,6 +413,33 @@ Vec Randomizer::operator()(C Quad &quad, Bool inside)
    }else
    {
       Flt l01=Dist(quad.p[0], quad.p[1]),
+          l12=Dist(quad.p[1], quad.p[2]),
+          l23=Dist(quad.p[2], quad.p[3]),
+          l30=Dist(quad.p[3], quad.p[0]),
+          l  =f   (l01+l12+l23+l30);
+
+      // when changing codes watch for division by zero
+      if(l<l01)return Lerp(quad.p[0], quad.p[1], l/l01); l-=l01;
+      if(l<l12)return Lerp(quad.p[1], quad.p[2], l/l12); l-=l12;
+      if(l<l23)return Lerp(quad.p[2], quad.p[3], l/l23); l-=l23;
+      if(l<l30)return Lerp(quad.p[3], quad.p[0], l/l30);
+               return      quad.p[0];
+   }
+}
+VecD Randomizer::operator()(C QuadD &quad, Bool inside)
+{
+   if(inside)
+   {
+      TriD t0=quad.tri013(),
+           t1=quad.tri123();
+      Dbl  a0=t0  .area  (),
+           a1=t1  .area  ();
+      Dbl  a =f(a0+a1);
+      if(  a<=a0)return T(t0);
+                 return T(t1);
+   }else
+   {
+      Dbl l01=Dist(quad.p[0], quad.p[1]),
           l12=Dist(quad.p[1], quad.p[2]),
           l23=Dist(quad.p[2], quad.p[3]),
           l30=Dist(quad.p[3], quad.p[0]),
@@ -660,7 +715,33 @@ Vec Randomizer::operator()(C Shape &shape, Bool inside)
    }
 }
 /******************************************************************************/
-Vec Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
+Vec Randomizer::operator()(C Skeleton &skel)
+{
+   Flt vol_rnd=f(skel.volume()), vol=0;
+   REPA(skel.bones)
+   {
+    C SkelBone &bone=skel.bones[i];
+      vol+=bone.volume();
+      if(vol>=vol_rnd || !i)return T(bone.shape, true);
+   }
+   return 0;
+}
+VecD Randomizer::operator()(C AnimatedSkeleton &anim_skel)
+{
+   if(C Skeleton *skel=anim_skel.skeleton())
+   {
+      Flt vol_rnd=f(skel->volume()), vol=0;
+      REP(anim_skel.minBones())
+      {
+       C SkelBone &bone=skel->bones[i];
+         vol+=bone.volume();
+         if(vol>=vol_rnd || !i)return T(bone.shape, true)*anim_skel.bones[i].matrix();
+      }
+   }
+   return 0;
+}
+/******************************************************************************/
+VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
 {
    if(  Int  faces=mshb.faces  ())
    if(C Vec *pos  =mshb.vtx.pos())
@@ -679,9 +760,9 @@ Vec Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
             Byte msb_a=bone[ind.x].c[weight[ind.x].maxI()], // for performance reasons only one bone with biggest weight is used
                  msb_b=bone[ind.y].c[weight[ind.y].maxI()],
                  msb_c=bone[ind.z].c[weight[ind.z].maxI()];
-            return T(Tri(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                         b*anim_skel->boneRoot(msb_b-1).matrix(),
-                         c*anim_skel->boneRoot(msb_c-1).matrix()));
+            return T(TriD(a*anim_skel->boneRoot(msb_a-1).matrix(),
+                          b*anim_skel->boneRoot(msb_b-1).matrix(),
+                          c*anim_skel->boneRoot(msb_c-1).matrix()));
          }else // static
          {
             return T(Tri(a, b, c));
@@ -700,10 +781,10 @@ Vec Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
                  msb_b=bone[ind.y].c[weight[ind.y].maxI()],
                  msb_c=bone[ind.z].c[weight[ind.z].maxI()],
                  msb_d=bone[ind.w].c[weight[ind.w].maxI()];
-            return T(Quad(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                          b*anim_skel->boneRoot(msb_b-1).matrix(),
-                          c*anim_skel->boneRoot(msb_c-1).matrix(),
-                          d*anim_skel->boneRoot(msb_d-1).matrix()));
+            return T(QuadD(a*anim_skel->boneRoot(msb_a-1).matrix(),
+                           b*anim_skel->boneRoot(msb_b-1).matrix(),
+                           c*anim_skel->boneRoot(msb_c-1).matrix(),
+                           d*anim_skel->boneRoot(msb_d-1).matrix()));
          }else // static
          {
             return T(Quad(a, b, c, d));
@@ -712,9 +793,9 @@ Vec Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
    }
    return 0;
 }
-Vec Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
+VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
 {
-   Vec out(0);
+   VecD out=0;
    if(mshr.tris())
    {
       Int pos_ofs =mshr.vtxOfs(VTX_POS);
@@ -764,9 +845,9 @@ Vec Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
                      tris+=bs.tris;
                   }
                }*/
-               out=T(Tri(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                         b*anim_skel->boneRoot(msb_b-1).matrix(),
-                         c*anim_skel->boneRoot(msb_c-1).matrix()));
+               out=T(TriD(a*anim_skel->boneRoot(msb_a-1).matrix(),
+                          b*anim_skel->boneRoot(msb_b-1).matrix(),
+                          c*anim_skel->boneRoot(msb_c-1).matrix()));
             }else // static
             {
                out=T(Tri(a, b, c));
@@ -778,11 +859,11 @@ Vec Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
    }
    return out;
 }
-Vec Randomizer::operator()(C MeshPart &part, C AnimatedSkeleton *anim_skel)
+VecD Randomizer::operator()(C MeshPart &part, C AnimatedSkeleton *anim_skel)
 {
    return part.base.faces() ? T(part.base, anim_skel) : T(part.render, anim_skel);
 }
-Vec Randomizer::operator()(C Mesh &mesh, C AnimatedSkeleton *anim_skel)
+VecD Randomizer::operator()(C Mesh &mesh, C AnimatedSkeleton *anim_skel)
 {
    return mesh.parts.elms() ? T(mesh.parts[T(mesh.parts.elms())], anim_skel) : 0;
 }

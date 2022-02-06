@@ -462,6 +462,7 @@ Bool Skeleton::contains(Int parent, Int child)C
    }
    return false;
 }
+Flt  Skeleton::volume()C {Flt vol=0; REPA(bones)vol+=bones[i].volume(); return vol;}
 UInt Skeleton::memUsage()C
 {
    return bones.memUsage()

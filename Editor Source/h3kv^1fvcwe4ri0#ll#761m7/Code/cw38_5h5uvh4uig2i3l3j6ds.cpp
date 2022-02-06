@@ -3469,7 +3469,7 @@ cur_skel_to_saved_skel.removeBone(bone.name);
       {
          mesh_undos.set("boneSetShape");
          int       bone_i=(sel_bone>=0 ? sel_bone : lit_bone);
-         SkelBone *bone  =mesh_skel.bones.addr(bone_i); if(!bone){Gui.msgBox(S, "No Bone Selected"); return;}
+         SkelBone *bone  =mesh_skel.bones.addr(bone_i); if(!bone){/*Gui.msgBox(S, "No Bone Selected"); */return;}
          {
             byte    bone_b=bone_i+VIRTUAL_ROOT_BONE;
             bool    has=false;
