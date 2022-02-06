@@ -3308,16 +3308,13 @@ cur_skel_to_saved_skel.removeBone(bone->name);
                if(C Vec   *pos  =base.vtx.pos   ())
                if(C VecB4 *mtrx =base.vtx.matrix())
                if(C VecB4 *blend=base.vtx.blend ())
-               {
                   REPA(base.vtx)
+               {
+                //VecB4 m=mtrx[i], b=blend[i]; int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i]; if(weight>=128)
+                  if(mtrx[i].x==bone_b) // if most significant bone is this one, check X because bones are always sorted by most significant first
                   {
-                     VecB4 m=mtrx[i], b=blend[i];
-                     int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i];
-                     if( weight>=128)
-                     {
-                        Vec p=pos[i]*transform;
-                        if(has)box|=p;else{box=p; has=true;}
-                     }
+                     Vec p=pos[i]*transform;
+                     if(has)box|=p;else{box=p; has=true;}
                   }
                }
             }
