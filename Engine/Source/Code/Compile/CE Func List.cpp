@@ -287,7 +287,7 @@ void CodeEditor::createFuncList()
       && !(func.modifiers&Symbol::MODIF_FUNC_PARAM) // which are not function parameters "Mems& Mems::sort(Int Compare(C TYPE &a, C TYPE &b));"
       && !func.isTemplateFunc() // skip templates
       && func.fullyPublic() // this and all parents are public, skip "class Parent { private class Child { void func(); } }"
-      && func.source && func.source->ee_header) // only stuff from EE headers
+      && func.source && func.source->engine_header) // only stuff from Engine headers
       {
 // TODO: skip functions which accept pointers to functions as parameters
 Bool has_func_param=false; REPA(func.params)if(func.params[i]->type==Symbol::FUNC){has_func_param=true; break;} if(has_func_param)continue;
@@ -366,7 +366,7 @@ Bool has_func_param=false; REPA(func.params)if(func.params[i]->type==Symbol::FUN
       && !Class.isTemplateClass() // skip templates
       && !(Class.modifiers&Symbol::MODIF_NAMELESS) // skip nameless classes
       &&  Class.fullyPublic() // this and all parents are public, skip "class Parent { private class Child { void func(); } }"
-      &&  Class.source && Class.source->ee_header) // only stuff from EE headers
+      &&  Class.source && Class.source->engine_header) // only stuff from Engine headers
       {
          if(Class.hasDestructor() && !FindChild(S+'~'+Class, &Class, null, false)) // should have destructor but doesn't
          {
@@ -425,7 +425,7 @@ Bool has_func_param=false; REPA(func.params)if(func.params[i]->type==Symbol::FUN
       if(var.isVar() // variables
       && var.isGlobalOrStatic()
       && var.fullyPublic()
-      && var.source && var.source->ee_header) // only stuff from EE headers
+      && var.source && var.source->engine_header) // only stuff from Engine headers
       {
          Str short_name=var.fullCppName();
          if(Contains(short_name, "PVRTC", true))continue; // skip anything PVRTC related so that the EXE is not bigger due to PVRTC compression libraries

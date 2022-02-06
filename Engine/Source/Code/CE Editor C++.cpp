@@ -455,7 +455,7 @@ void CodeEditor::generateHeadersH(Memc<Symbol*> &sorted_classes, EXPORT_MODE exp
          Symbol &symbol   =Symbols.lockedData(i);
          Bool    processed=false;
          if( symbol.type==Symbol::KEYWORD           )processed=true; // keywords are already processed
-         if(!symbol.source || !symbol.source->active)processed=true; // symbols which aren't in current build files (for example EE headers) set as processed
+         if(!symbol.source || !symbol.source->active)processed=true; // symbols which aren't in current build files (for example Engine headers) set as processed
          FlagSet(symbol.helper, Symbol::HELPER_PROCESSED|Symbol::HELPER_PROCESSED_FULL, processed);
 
          if(!processed)
@@ -845,7 +845,7 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
             ft.putLine(S+"#include \""+UnixPath(bin_path+"EsenthelEngine\\_\\System\\end.h")+'"');
          }
 
-         // EE headers (second)
+         // Engine headers (second)
          ft.putLine(S+"#include \""+UnixPath(bin_path+"EsenthelEngine\\EsenthelEngine.h")+'"');
 
          if(!build_headers_in_cpp)ft.putLine(UnixPath(S+"#include \"Source\\"+UNIQUE_NAME+UNIQUE_NAME+"headers.h\""));

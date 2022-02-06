@@ -846,7 +846,7 @@ CAST_MATCH Expr::calculate(Compiler &compiler)
 
          Symbol *f=matches.sort(CompareLowest).first().func;
          func.symbol=func.symbol_origin=f; // change function symbol from FUNC_LIST to the actual FUNC (do this before calling 'castParentToSymbolClass')
-         if(f && f->source && f->source->ee_header) // check if this is EE function
+         if(f && f->source && f->source->engine_header) // check if this is EE function
             if(func.func_call=FindFuncCall(FuncName(*f))) // if this function was found on the list
                func.func_call_mask=((f->hasResult() ? FC_RESULT : 0) | (f->isClassNonStaticFunc() ? FC_PARENT : 0)); // setup call mask (use 'f' when checking for hasResult and not T.symbol.value!=void because 'f' was used during creation of the func list, and all functions there, never have templates)
 

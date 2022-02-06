@@ -157,7 +157,7 @@ Bool CodeEnvironment::VerifySymbols(Memc<Message> &msgs, Memc<Symbol*> &sorted_c
       Symbol &symbol   =Symbols.lockedData(i); symbol.dependencies.del(); // clear dependencies
       Bool    processed=false;
       if( symbol.type==Symbol::KEYWORD           )processed=true; // keywords are already processed
-      if(!symbol.source || !symbol.source->active)processed=true; // symbols which aren't in current build files (for example EE headers) set as processed
+      if(!symbol.source || !symbol.source->active)processed=true; // symbols which aren't in current build files (for example Engine headers) set as processed
       FlagSet(symbol.helper, Symbol::HELPER_PROCESSED|Symbol::HELPER_PROCESSED_FULL, processed);
    }
 

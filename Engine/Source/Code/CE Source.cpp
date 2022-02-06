@@ -936,14 +936,14 @@ Source::~Source()
 /******************************************************************************/
 enum
 {
-   HEADER   =1<<0,
-   EE_HEADER=1<<1,
-   CPP      =1<<2,
-   SRC_CONST=1<<3,
+          HEADER=1<<0,
+   ENGINE_HEADER=1<<1,
+   CPP          =1<<2,
+   SRC_CONST    =1<<3,
 };
 Bool Source::save(File &f, StrLibrary &sl)C
 {
-   f.putByte((header ? HEADER : 0)|(ee_header ? EE_HEADER : 0)|(cpp ? CPP : 0)|(Const ? SRC_CONST : 0));
+   f.putByte((header ? HEADER : 0)|(engine_header ? ENGINE_HEADER : 0)|(cpp ? CPP : 0)|(Const ? SRC_CONST : 0));
    sl.putStr(f, loc.file_name);
    if(!modify_time.save(f))return false;
    f.cmpUIntV(symbols.elms()); FREPA(symbols){C SymbolDef  &symbol=symbols[i]; sl.putStr(f, symbol.name()); if(!symbol->save(f, sl))return false;} // write before 'lines'
@@ -960,10 +960,10 @@ Bool Source::save(File &f, StrLibrary &sl)C
 Bool Source::load(File &f, StrLibrary &sl, Str &temp)
 {
    Byte flag; f>>flag;
-   header   =FlagTest(flag, HEADER   );
-   ee_header=FlagTest(flag, EE_HEADER);
-   cpp      =FlagTest(flag, CPP      );
-   Const    =FlagTest(flag, SRC_CONST);
+   header       =FlagTest(flag,        HEADER);
+   engine_header=FlagTest(flag, ENGINE_HEADER);
+   cpp          =FlagTest(flag, CPP          );
+   Const        =FlagTest(flag, SRC_CONST    );
    sl.getStr(f, loc.file_name); loc.setFile(loc.file_name);
    if(!modify_time.load(f))goto error;
 #if SOURCE_DEBUG_SPEED_SIZE
@@ -1078,7 +1078,7 @@ Source::Source() : undos(true, this, 15)
 {
    lit_symbol=null;
    win_io_save=null;
-   active=was_active=header=ee_header=false; opened=false; Const=false; view_comments=view_funcs=view_func_bodies=true; view_private_members=false;
+   active=was_active=header=engine_header=false; opened=false; Const=false; view_comments=view_funcs=view_func_bodies=true; view_private_members=false;
    recursive=parse_count=0; preproc_line_changed=highlight_line=-1; highlight_time=0; cur=0; sel=sel_temp=-1; lc_offset.zero(); delUndo();
    create().skin(&CE.source_skin, false); kb_lit=false; setScroll(); setHideSlideBar();
    T+=suggestions_region  .create().hide();

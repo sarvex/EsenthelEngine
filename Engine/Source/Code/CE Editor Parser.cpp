@@ -38,7 +38,7 @@ void CodeEditor::parseHeaderEx(Str h, C Str &parent_path, Bool try_system, Memc<
          s->header=true;
          if(ee)
          {
-            s->ee_header=s->Const=true;
+            s->engine_header=s->Const=true;
 
             // replace STRUCT, STRUCT_PRIVATE
             FREPAD(l, s->lines)
@@ -67,7 +67,7 @@ void CodeEditor::parseHeaderEx(Str h, C Str &parent_path, Bool try_system, Memc<
                #endif
                }else
                {
-                  if(Starts(_SkipWhiteChars(line), "#define const_mem_addr", true, WHOLE_WORD_STRICT)) // for generation of the EE header we need to remove definition of 'const_mem_addr' as a macro, because in Code Editor it is used as a keyword
+                  if(Starts(_SkipWhiteChars(line), "#define const_mem_addr", true, WHOLE_WORD_STRICT)) // for generation of the Engine header we need to remove definition of 'const_mem_addr' as a macro, because in Code Editor it is used as a keyword
                   {
                      s->lines.removeValid(l, true);
                      if(InRange(l, s->lines) && !Is(_SkipWhiteChars(s->lines[l])))s->lines.removeValid(l, true); // if the next line is empty then remove it

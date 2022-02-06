@@ -3,8 +3,8 @@
 
 // C++ HEADERS PARSING:
 // using namespace;
-// EE basic data types to ES types (only in EE headers) ?
-// EE headers hide private stuff (after calculating symbols/tokens ?)
+// Engine basic data types to ES types (only in Engine headers) ?
+// Engine headers hide private stuff (after calculating symbols/tokens ?)
 
 // add comments for all builtin keywords (sample usage..)
 
@@ -144,7 +144,7 @@ Keyword NativeKeywords[]=
    {"inline"        , true , true , false, true, true, VAR_NONE},
    {"__forceinline" , false, true , false, true, true, VAR_NONE},
    {"friend"        , true , true , false, true, true, VAR_NONE},
-   {"const_mem_addr", true , true , false, true, true, VAR_NONE}, // cpp too because it's used in EE headers
+   {"const_mem_addr", true , true , false, true, true, VAR_NONE}, // cpp too because it's used in Engine headers
 
    {"switch"  , true , false, false, false, true, VAR_NONE},
    {"case"    , true , true , false, false, true, VAR_NONE},
@@ -1700,11 +1700,11 @@ void CodeEditor::draw()
 /******************************************************************************/
 void CodeEditor::rebuild3rdPartyHeaders()
 {
-   // reset headers (except EE headers)
+   // reset headers (except Engine headers)
    REPA(sources)
    {
       Source &src=sources[i];
-      if(src.header && !src.ee_header)
+      if(src.header && !src.engine_header)
       {
          src.header=false; // first clear 'header' before resetting symbols
          src.resetSymbols();

@@ -208,7 +208,7 @@ const_mem_addr struct Source : Region
    };
 
    SourceLoc        loc; // how this source is stored
-   Bool             active, was_active, header, ee_header, // if source is included in current build and symbols generation
+   Bool             active, was_active, header, engine_header, // if source is included in current build and symbols generation
                     cpp, // if source is C++ style file (not .es)
                     opened, Const;
    Int              highlight_line, recursive, parse_count, preproc_line_changed;

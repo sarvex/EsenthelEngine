@@ -9,8 +9,8 @@ Bool Find::FilterScope(Source *source, UInt scope)
 {
    //Find::OPENED : return source->opened;
    if(source)return (scope&CUR_FILE) && CE.cur()==source
-                 || (scope&ACT_APP ) && source->used() && !source->ee_header
-                 || (scope&ESENTHEL) &&                    source->ee_header;
+                 || (scope&ACT_APP ) && source->used() && !source->engine_header
+                 || (scope&ENGINE  ) &&                    source->engine_header;
    return false;
 }
 /******************************************************************************/
