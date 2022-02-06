@@ -98,7 +98,7 @@ const_mem_addr struct SoundBuffer // can be moved however 'memAddressChanged' ne
 
    Int buffers()C
    {
-   #if ESENTHEL_AUDIO
+   #if CUSTOM_AUDIO
       return _voice ? _voice->buffers : 0;
    #else
       return 2; // all other audios use only 2 half buffers
@@ -148,7 +148,7 @@ private:
    SL3DDopplerItf                player_doppler;
    SL3DSourceItf                 player_source;
    Mems<Byte>                   _data;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    AudioVoice *_voice;
    Bool        _3d;
    Flt         _volume; // used only if _3d
@@ -159,7 +159,7 @@ private:
 /******************************************************************************/
 #if XAUDIO
 extern IXAudio2 *XAudio;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
 extern Thread AudioThread;
 extern Int    AudioOutputFreq, AudioOutputFrameSamples, AudioOutputFrameSize;
 extern Ptr    AudioOutputFrameData;

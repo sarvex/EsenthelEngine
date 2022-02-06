@@ -992,7 +992,7 @@ void CodeEditor::genSymbols(C Str &ee_editor_bin)
    // TODO: remove this after adding support for detection of "using namespace .." in sources
    EEUsings.New().find("EE");
 
-   replacePath(ee_h_path, EE_PATH);
+   replacePath(ee_h_path, ENGINE_PATH);
    SortItems(items);
 
    // remove macros

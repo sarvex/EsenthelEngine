@@ -903,8 +903,8 @@ Skeleton& Skeleton::setBoneTypes()
 
       if(BoneName(bone, "Shoulder") || BoneName(bone, "Clavicle") || BoneName(bone, "CollarBone"))type=BONE_SHOULDER;else
       if(BoneName(bone, "ForeArm") || BoneName(bone, "LowerArm") || BoneName(bone, "Elbow"))type=BONE_LOWER_ARM;else
-      if(BoneName(bone, "Hand") || BoneName(bone, "Wrist") || BoneName(bone, "Palm") && !BoneName(bone, "LegPalm"))type=BONE_HAND;else
       if(BoneName(bone, "Finger") || BoneName(bone, "Fingers"))type=BONE_FINGER;else // "Fingers" used by "Troll"
+      if(BoneName(bone, "Hand") || BoneName(bone, "Wrist") || BoneName(bone, "Palm") && !BoneName(bone, "LegPalm"))type=BONE_HAND;else
 
       if(BoneName(bone, "Calf") || BoneName(bone, "Crus") || BoneName(bone, "Shin") || BoneName(bone, "LowerLeg") || BoneName(bone, "HorseLink") || BoneName(bone, "Knee"))type=BONE_LOWER_LEG;else
       if(BoneName(bone, "Toe") || BoneName(bone, "Toes") || Equal(bone.name, "FootL0") || Equal(bone.name, "FootR0"))type=BONE_TOE;else // "Toes" used by "Cyclop", "FootL0/FootR0" is from the EE recommended naming system

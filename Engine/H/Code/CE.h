@@ -114,7 +114,7 @@ struct CodeEditorInterface
    void paste(C Str &text         , GuiObj *obj, C Vec2 &screen_pos); // paste text             at specified position
    void paste(C Str &text                                          ); // paste text             at current   position
 
- C Memx<Item>& items(); // get Esenthel Engine items
+ C Memx<Item>& items(); // get Engine items
 
    void        play();
    void       debug();
@@ -724,8 +724,8 @@ const_mem_addr struct CodeEditor
    void configAPI  (Byte     api  );
    void configEXE  (EXE_TYPE exe  );
 
-   void createFuncList      ();
-   void playEsenthelCompiler();
+   void createFuncList    ();
+   void playEngineCompiler();
 
    // sources
    void    cur                 (Source *cur);

@@ -2105,7 +2105,7 @@ EXTENSION_TYPE ExtType(C Str &ext)
    if(ext=="3ds" || ext=="ase" || ext=="obj"  || ext=="ms3d" || ext=="b3d" || ext=="dae"  || ext=="fbx"  || ext=="psk"  || ext=="psa"  || ext=="bvh"                                                                                                                                   )return EXT_MESH;
    if(ext=="avi" || ext=="mpg" || ext=="mpeg" || ext=="mp4"  || ext=="m4v" || ext=="mkv"  || ext=="wmv"  || ext=="rmvb" || ext=="divx" || ext=="ogm" || ext=="ogv" || ext=="webm" || ext=="vob"  || ext=="flv"  || ext=="theora"                                                       )return EXT_VIDEO;
 
-   // Esenthel formats
+   // Engine formats
    if(ext=="img" )return EXT_IMAGE;
    if(ext=="mesh")return EXT_MESH;
  //if(ext=="mtrl")return EXT_MATERIAL;

@@ -1762,14 +1762,14 @@ Bool Pak::create(C CMemPtr<Str> &files, C Str &pak_name, UInt flag, Cipher *dest
       if(ftc.files.elms()==1) // one file
       {
          if(ftc.files[0].fi.type!=FSTD_DRIVE)
-         { // when packing "c:/esenthel" create "c:/esenthel.pak"
+         { // when packing "C:/Data" create "C:/Data.pak"
             pn=ftc.files[0].name;
          }
       }else
       if(ftc.files.elms()>1) // multiple files
       {
          if(ftc.files[0].fi.type!=FSTD_DRIVE)
-         { // when packing ["c:/esenthel/1", "c:/esenthel/2", ..] create "c:/esenthel/esenthel.pak"
+         { // when packing ["C:/Data/1", "C:/Data/2", ..] create "C:/Data/Data.pak"
             pn=GetPath(ftc.files[0].name);
             if(pn.is())pn.tailSlash(true)+=GetBase(pn);
          }

@@ -572,7 +572,7 @@ void ShaderBuffer::create(Int size) // no locks needed because this is called on
 {
    del();
 #if GL_MULTIPLE_UBOS
-/* Test Results for viewing "Fantasy Demo" World in Esenthel Editor on Mac
+/* Test Results for viewing "Fantasy Demo" World in Editor on Mac
 1 - 8.0 fps
 2 - 12.0 fps
 4 - 14.0 fps

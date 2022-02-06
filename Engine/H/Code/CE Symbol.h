@@ -52,7 +52,7 @@ struct Symbol : Str // C++ Symbol
       MODIF_OUTSIDE_METHOD  =1<<23, // this is a class method defined outside of class body (FUNC type) "class A {void func();}   void A::func() {}"
       MODIF_TYPEDEF         =1<<24, // for struct/class/union/enum: class A was defined with typedef before it "typedef class A {} B", for typedef: typedef B was defined directly after class definition "typedef class A {} B"
       MODIF_CPP_MODIFIER    =1<<25, // if the symbol is a C++ modifier (const, static, virtual, friend, mutable, explicit, ..)
-      MODIF_ES_ONLY         =1<<26, // if the symbol is a keyword supported only in Esenthel Script (not pure C++)
+      MODIF_ES_ONLY         =1<<26, // if the symbol is a keyword supported only in Code Editor (not pure C++)
       MODIF_ALL_UP_CASE     =1<<27, // if base name of the symbol is made completely out of upper case characters (used in suggestions)
 
       MODIF_SAME_FUNC      =MODIF_FUNC_CONST, // virtual should not be included

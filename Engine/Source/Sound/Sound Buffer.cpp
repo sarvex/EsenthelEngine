@@ -44,7 +44,7 @@ static SL3DDopplerItf           SLListenerDoppler;
 static SL3DCommitItf            SLListenerCommit;
 
 #define SL_POS_UNIT 0.001f // milimeter
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
 static Memx<AudioBuffer> AudioBuffers;
 static Memx<AudioVoice>  AudioVoices;
 static AudioVoice       *AudioVoiceFirst;
@@ -70,7 +70,7 @@ static void Get3DParams(C Vec &pos, Flt range, Flt volume, Flt &out_volume, Flt 
    out_pan   =Dot(delta, Listener.right())/((dist>EarRadius) ? dist : EarRadius); // normalize only if length is greater than 'EarRadius' so that we can still have pan when distance is less than 'EarRadius'
 }
 /******************************************************************************/
-#if ESENTHEL_AUDIO
+#if CUSTOM_AUDIO
 AudioVoice::~AudioVoice() // !! requires 'AudioLock' !!
 {
    REP(buffers)AudioBuffers.removeData(buffer[i]);
@@ -124,7 +124,7 @@ void SoundBuffer::zero()
    player_location     =null;
    player_doppler      =null;
    player_source       =null;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
   _voice =null;
   _3d    =false;
   _volume=1;
@@ -161,7 +161,7 @@ void SoundBuffer::del()
       if(player_object)(*player_object)->Destroy(player_object);
    }
   _data.del(); // delete the buffer after 'player_object'
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->remove=true; // mark for removal, it will be processed on the audio thread as long as this voice is included in the list
 #endif
    zero();
@@ -304,7 +304,7 @@ Bool SoundBuffer::create(Int frequency, Int bits, Int channels, Int samples, Boo
             }
          }
       }
-   #elif ESENTHEL_AUDIO
+   #elif CUSTOM_AUDIO
       if(bits==16) // audio renderer supports only 16-bit for now
       {
         _par.size=MEMBER_SIZE(AudioBuffer, data)/_par.block*_par.block; // here set size for a single buffer
@@ -384,7 +384,7 @@ Bool SoundBuffer::is3D()C {return _3d       ;}
 #elif OPEN_SL
 Bool SoundBuffer::is  ()C {return player_object!=null;}
 Bool SoundBuffer::is3D()C {return _3d                ;}
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
 Bool SoundBuffer::is  ()C {return _voice!=null;}
 Bool SoundBuffer::is3D()C {return _3d         ;}
 #else
@@ -421,7 +421,7 @@ Int SoundBuffer::raw()C
        //if(UInt buffer_time=_par.size/_par.block*1000/_par.frequency) // length of sound buffer in milliseconds, this is useless because this is an approximation due to integer division losing fraction
          return (U64(time)*_par.frequency/1000*_par.block)%_par.size; // need to convert to U64 so it won't overflow, mul by block at the end to make sure that this is a multiple of block
    }
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)return _voice->total_raw;
 #endif
    return 0;
@@ -477,7 +477,7 @@ void SoundBuffer::volume(Flt volume) // 'volume' should be in range 0..1
          SOUND_API_LOCK_WEAK; (*player_volume)->SetVolumeLevel(player_volume, linear);
       }
    }
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_3d)
    {
       T._volume=volume; // this will be used later in 'set3DParams'
@@ -489,7 +489,7 @@ void SoundBuffer::volume(Flt volume) // 'volume' should be in range 0..1
    }
 #endif
 }
-#if XAUDIO || ESENTHEL_AUDIO
+#if XAUDIO || CUSTOM_AUDIO
 static Flt ChannelAzimuths[16]; // all zeros
 void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
 {
@@ -535,7 +535,7 @@ void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
       }
       if(speed)_sv->SetFrequencyRatio(SoundSpeed(sound._actual_speed*dsp.DopplerFactor), OPERATION_SET);
    }
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)
    {
       if(pos_range)
@@ -578,7 +578,7 @@ void SoundBuffer::speed(Flt speed)
       (*player_playback_rate)->GetRateRange(player_playback_rate, 0, &min_rate, &max_rate, &step_size, &capabilities);
       (*player_playback_rate)->SetRate     (player_playback_rate, Mid(Round(speed*1000), min_rate, max_rate));
    }
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->speed=Flt(_par.frequency)/AudioOutputFreq*speed;
 #endif
 }
@@ -586,7 +586,7 @@ void SoundBuffer::pos(C Vec &pos)
 {
 #if DIRECT_SOUND
    if(_s3d){SOUND_API_LOCK_WEAK; _s3d->SetPosition(pos.x, pos.y, pos.z, DS3D_DEFERRED);}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // handled in 'set3DParams'
 #elif OPEN_AL
    if(_source && _3d){SOUND_API_LOCK_WEAK; alSource3f(_source, AL_POSITION, pos.x, pos.y, pos.z);}
@@ -603,7 +603,7 @@ Vec SoundBuffer::pos()C
 {
 #if DIRECT_SOUND
    if(_s3d){D3DVECTOR pos; SOUND_API_LOCK_WEAK; if(OK(_s3d->GetPosition(&pos)))return Vec(pos.x, pos.y, pos.z);}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // unavailable
 #elif OPEN_AL
    if(_source && _3d){Vec pos; SOUND_API_LOCK_WEAK; alGetSource3f(_source, AL_POSITION, &pos.x, &pos.y, &pos.z); return pos;}
@@ -626,7 +626,7 @@ void SoundBuffer::vel(C Vec &vel)
 {
 #if DIRECT_SOUND
    if(_s3d){SOUND_API_LOCK_WEAK; _s3d->SetVelocity(vel.x, vel.y, vel.z, DS3D_DEFERRED);}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // handled in 'set3DParams'
 #elif OPEN_AL
    if(_source && _3d){SOUND_API_LOCK_WEAK; alSource3f(_source, AL_VELOCITY, vel.x, vel.y, vel.z);}
@@ -642,7 +642,7 @@ Vec SoundBuffer::vel()C
 {
 #if DIRECT_SOUND
    if(_s3d){D3DVECTOR vel; SOUND_API_LOCK_WEAK; if(OK(_s3d->GetVelocity(&vel)))return Vec(vel.x, vel.y, vel.z);}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // unavailable
 #elif OPEN_AL
    if(_source && _3d){Vec vel; SOUND_API_LOCK_WEAK; alGetSource3f(_source, AL_VELOCITY, &vel.x, &vel.y, &vel.z); return vel;}
@@ -662,7 +662,7 @@ void SoundBuffer::range(Flt range)
    MAX(range, 0.0f);
 #if DIRECT_SOUND
    if(_s3d){SOUND_API_LOCK_WEAK; _s3d->SetMinDistance(range*DIRECT_SOUND_RANGE_SCALE, DS3D_DEFERRED);}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // handled in 'set3DParams'
 #elif OPEN_AL
    if(_source){SOUND_API_LOCK_WEAK; alSourcef(_source, AL_REFERENCE_DISTANCE, range*OPEN_AL_RANGE_SCALE);}
@@ -675,7 +675,7 @@ Flt SoundBuffer::range()C
 {
 #if DIRECT_SOUND
    if(_s3d){Flt range=0; SOUND_API_LOCK_WEAK; if(OK(_s3d->GetMinDistance(&range)))return range/DIRECT_SOUND_RANGE_SCALE;}
-#elif XAUDIO || ESENTHEL_AUDIO
+#elif XAUDIO || CUSTOM_AUDIO
    // unavailable
 #elif OPEN_AL
    Flt range=0; if(_source){SOUND_API_LOCK_WEAK; alGetSourcef(_source, AL_REFERENCE_DISTANCE, &range);} return range/OPEN_AL_RANGE_SCALE;
@@ -707,7 +707,7 @@ void SoundBuffer::stop()
    SOUND_API_LOCK_WEAK;
    if(player_play        )(*player_play        )->SetPlayState(player_play        , SL_PLAYSTATE_STOPPED);
    if(player_buffer_queue)(*player_buffer_queue)->Clear       (player_buffer_queue                      ); _processed=0; // clear the queue
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->play=false;
 #endif
 }
@@ -721,7 +721,7 @@ void SoundBuffer::pause()
    if(_source){SOUND_API_LOCK_WEAK; alSourcePause(_source);}
 #elif OPEN_SL
    if(player_play){SOUND_API_LOCK_WEAK; (*player_play)->SetPlayState(player_play, SL_PLAYSTATE_PAUSED);}
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->play=false;
 #endif
 }
@@ -735,7 +735,7 @@ void SoundBuffer::toggle(Bool loop)
    if(_source){SOUND_API_LOCK_WEAK; if(playing())alSourcePause(_source);else alSourcePlay(_source);}
 #elif OPEN_SL
    if(player_play){SOUND_API_LOCK_WEAK; (*player_play)->SetPlayState(player_play, playing() ? SL_PLAYSTATE_PAUSED : SL_PLAYSTATE_PLAYING);}
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->play^=1;
 #endif
 }
@@ -750,7 +750,7 @@ Bool SoundBuffer::playing()C
    Int state=AL_STOPPED; if(_source){SOUND_API_LOCK_WEAK; alGetSourcei(_source, AL_SOURCE_STATE, &state);} return state==AL_PLAYING;
 #elif OPEN_SL
    SLuint32 state=SL_PLAYSTATE_STOPPED; if(player_play){SOUND_API_LOCK_WEAK; (*player_play)->GetPlayState(player_play, &state);} return state==SL_PLAYSTATE_PLAYING;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    return _voice ? _voice->play : false;
 #else
    return false;
@@ -766,7 +766,7 @@ void SoundBuffer::play(Bool loop)
    if(_source){SOUND_API_LOCK_WEAK; alSourcePlay(_source);} // don't touch AL_LOOPING because OpenAL buffers won't swap
 #elif OPEN_SL
    if(player_play){SOUND_API_LOCK_WEAK; (*player_play)->SetPlayState(player_play, SL_PLAYSTATE_PLAYING);}
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(_voice)_voice->play=true;
 #endif
 }
@@ -915,7 +915,7 @@ static UInt GetSpeakerConfig()
 }
 #pragma runtime_checks("", restore)
 /******************************************************************************/
-#if ESENTHEL_AUDIO
+#if CUSTOM_AUDIO
 void AudioVoice::update()
 {
    if(play && queued)
@@ -1059,7 +1059,7 @@ void InitSound()
    if(NS::InitSound())
 #endif
 
-#if ESENTHEL_AUDIO // create this in addition to above
+#if CUSTOM_AUDIO // create this in addition to above
    if(AudioOutputFreq
    && AudioOutputFrameSamples
    && AudioOutputFrameSize
@@ -1083,7 +1083,7 @@ void ShutSound()
    ShutMusic ();
 
    SOUND_API_LOCK_FORCE; // lock after deleting 'SoundThread'
-#if ESENTHEL_AUDIO
+#if CUSTOM_AUDIO
    AudioThread .del(); // thread first
    AudioBuffers.del(); // can remove all buffers first fast, so when removing voices, the individual remove buffer commands will be ignored
    AudioVoiceFirst=null;

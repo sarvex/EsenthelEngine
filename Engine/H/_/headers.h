@@ -82,8 +82,8 @@
    #define XAUDIO              (WINDOWS     && !DIRECT_SOUND)                             // use XAudio                on Windows when DirectSound is unused
    #define OPEN_AL             (APPLE || LINUX || WEB)                                    // use OpenAL                on Apple, Linux and Web. OpenAL on Windows requires OpenAL DLL file, however it can be enabled just for testing the implementation.
    #define OPEN_SL             ANDROID                                                    // use OpenSL                on Android
-   #define ESENTHEL_AUDIO      SWITCH
-   #if (DIRECT_SOUND+XAUDIO+OPEN_AL+OPEN_SL+ESENTHEL_AUDIO)>1
+   #define CUSTOM_AUDIO        SWITCH
+   #if (DIRECT_SOUND+XAUDIO+OPEN_AL+OPEN_SL+CUSTOM_AUDIO)>1
       #error Can't use more than 1 API
    #endif
 

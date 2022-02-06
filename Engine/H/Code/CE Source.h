@@ -487,7 +487,7 @@ const_mem_addr struct Source : Region
    Bool isFirstVar(Symbol &symbol);
 
    CChar8* adjustDot  (                            Int i); // replace '.' with "->" or "::", returns string only if change is needed
-   void    adjustToken(Memc<CodeLine> &code_lines, Int i); // adjust token from Esenthel Script to C++
+   void    adjustToken(Memc<CodeLine> &code_lines, Int i); // adjust token to C++
 
    void writeClassPath(CodeLine &line, Int col, Symbol *parent, Symbol *cur_namespace, Bool global, Memc<Symbol::Modif> *templates=null, bool start_separator=true);
 

@@ -14,8 +14,8 @@ struct Find : Region
    {
       CUR_FILE=1<<0,
       ACT_APP =1<<1,
-      ESENTHEL=1<<2,
-      ALL     =CUR_FILE|ACT_APP|ESENTHEL,
+      ENGINE  =1<<2,
+      ALL     =CUR_FILE|ACT_APP|ENGINE,
    };
 
    struct ResultRegion : Region
@@ -54,7 +54,7 @@ struct Find : Region
    Tabs         mode;
    ResultRegion result;
 
-   UInt scope()C {return (cur_file() ? CUR_FILE : 0)|(active_app() ? ACT_APP : 0)|(engine() ? ESENTHEL : 0);}
+   UInt scope()C {return (cur_file() ? CUR_FILE : 0)|(active_app() ? ACT_APP : 0)|(engine() ? ENGINE : 0);}
 
            void  create    ();
            void  resize    ();

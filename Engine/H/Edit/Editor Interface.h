@@ -261,7 +261,7 @@ struct EditorInterface
    Bool    connect  (Str &message, Int timeout=-1); //    connect to a running instance of Esenthel Editor, 'timeout'=time in milliseconds (-1=default) to wait for a connection, false on fail
 
    // editor
-   Str editorPath(); // get path where the Esenthel Editor folder is located
+   Str editorPath(); // get path where the Editor folder is located
 
    // projects
    Str  projectsPath(           ); // get path where your projects are located

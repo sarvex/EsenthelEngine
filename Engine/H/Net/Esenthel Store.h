@@ -7,7 +7,7 @@
       This testing can be done for example in following way:
          1. Ask the user for license key
          2. Test that license key (optionally with Device ID of the user's device)
-         3. Allow to play the game only based on successful response from Esenthel Store
+         3. Allow to play the game only based on successful response from the Store
 
    'EsenthelStore' class can also be used for making In-App purchases.
 
@@ -21,16 +21,16 @@ struct EsenthelStore // class allowing to communicate with Esenthel Store
       INVALID_LICENSE_KEY_FORMAT, // 'license_key' was specified however it is not of the "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" format
       INVALID_EMAIL_FORMAT      , // 'email'       was specified however it is not of correct format
       INVALID_ACCESS_KEY        , // 'access_key'  was specified however it is not of correct format
-      CONNECTING                , // connecting to Esenthel Store at the moment
-      CANT_CONNECT              , // could not connect to Esenthel Store
-      NOT_SECURE                , // connection to Esenthel Store was not secure
-      INVALID_RESPONSE          , // received an invalid response from Esenthel Store
-      DATABASE_ERROR            , // Esenthel Store replied that it couldn't connect to the DataBase
-      EMAIL_NOT_FOUND           , // Esenthel Store replied that given email was not found
-      ACCESS_KEY_FAIL           , // Esenthel Store replied that given access key is not valid
-      LICENSE_KEY_FAIL          , // Esenthel Store replied that given license is not valid for the specified item
-      DEVICE_ID_FAIL            , // Esenthel Store replied that given license is     valid for the specified item however 'DeviceID' did not match   the one in the store
-      OK                        , // Esenthel Store replied that given license is     valid for the specified item and     'DeviceID'         matches the one in the store
+      CONNECTING                , // connecting to Store at the moment
+      CANT_CONNECT              , // could not connect to Store
+      NOT_SECURE                , // connection to Store was not secure
+      INVALID_RESPONSE          , // received an invalid response from Store
+      DATABASE_ERROR            , // Store replied that it couldn't connect to the DataBase
+      EMAIL_NOT_FOUND           , // Store replied that given email was not found
+      ACCESS_KEY_FAIL           , // Store replied that given access key is not valid
+      LICENSE_KEY_FAIL          , // Store replied that given license is not valid for the specified item
+      DEVICE_ID_FAIL            , // Store replied that given license is     valid for the specified item however 'DeviceID' did not match   the one in the store
+      OK                        , // Store replied that given license is     valid for the specified item and     'DeviceID'         matches the one in the store
    };
 
    static void RegisterAccount(); // this function will open Esenthel Store website in a System Browser for the purpose of registering a new account there

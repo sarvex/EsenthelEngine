@@ -36,7 +36,7 @@ ALIGN_ASSERT(_Sound, _callback); // must have native alignment because we use it
 
 #define DEL_BUFFER_WHEN_NOT_PLAYING 1 // 0 is not fully implemented so don't use
 
-#define SOUND_API_THREAD_SAFE (DIRECT_SOUND || XAUDIO || OPEN_AL || ESENTHEL_AUDIO) // DirectSound, XAudio, OpenAL, EsenthelAudio are thread-safe, OpenSL is thread-safe only with SL_ENGINEOPTION_THREADSAFE flag enabled which however is not used in Esenthel since thread-safety is handled manually
+#define SOUND_API_THREAD_SAFE (DIRECT_SOUND || XAUDIO || OPEN_AL || CUSTOM_AUDIO) // DirectSound, XAudio, OpenAL, CustomAudio are thread-safe, OpenSL is thread-safe only with SL_ENGINEOPTION_THREADSAFE flag enabled which however is not used in Esenthel since thread-safety is handled manually
 
 #define UPDATE_2X WINDOWS_NEW // on WINDOWS_NEW we have to operate 2x faster due to low-latency sound recording, TODO: can this be improved so we don't have to call 2x more frequently? perhaps do sound recording on a separate dedicated thread
 
@@ -53,7 +53,7 @@ ALIGN_ASSERT(_Sound, _callback); // must have native alignment because we use it
    #define SOUND_API_LOCK_SET  locker.set(SoundAPILockDo)
 #endif
 
-#if XAUDIO || ESENTHEL_AUDIO
+#if XAUDIO || CUSTOM_AUDIO
 static UInt ListenerChanged;
 #elif OPEN_AL
 static Mems< Mems<Byte> > SoundThreadBuffer;
@@ -317,7 +317,7 @@ Long _Sound::preciseRaw()C // !! requires 'SoundAPILock' !!
       if(buffer_pos>buffer_half)pos-=_buffer._par.size;
    }
  //static Int last; LogName(S); LogN(S+last_buffer+' '+buffer_pos+'/'+_buffer._par.size+", rp:"+raw_pos+", pos:"+pos+", d:"+(pos-last)); last=pos;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    if(C AudioVoice *voice=_buffer._voice)
       if(last_buffer<voice->buffers-1) // skip for last buffer
    {
@@ -514,7 +514,7 @@ Bool _Sound::setBuffer(Byte buffer, Int thread_index) // this manages locking on
       return (*_buffer.player_buffer_queue)->Enqueue(_buffer.player_buffer_queue, data, size)==SL_RESULT_SUCCESS; // !! requires 'SoundAPILock' !!
    }
    return false;
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    AudioVoice  *voice=_buffer._voice;
    AudioBuffer *voice_buffer=voice->buffer[buffer];
    setBufferData(voice_buffer->data, voice->buffer_size);
@@ -527,7 +527,7 @@ Bool _Sound::setBuffer(Byte buffer, Int thread_index) // this manages locking on
 /******************************************************************************/
 inline Bool _Sound::setNextBuffer(Int thread_index)
 { // !! Remember that 'last_buffer' can be 0xFF !! however this is called at a stage where it shouldn't be
-#if ESENTHEL_AUDIO
+#if CUSTOM_AUDIO
    return setBuffer((last_buffer+1)%buffers(), thread_index);
 #else
    return setBuffer(!last_buffer, thread_index);
@@ -572,7 +572,7 @@ Bool _Sound::testBuffer(Int thread_index) // this manages locking on its own
       AtomicSub(_buffer._processed, processed);
       // unlike OpenAL we don't need to check if buffer is no longer playing due to running out of buffers, because OpenSL will auto-play when adding new buffers if it's in play mode, check comments on 'Enqueue' function - https://www.khronos.org/registry/sles/specs/OpenSL_ES_Specification_1.0.1.pdf
    }
-#elif ESENTHEL_AUDIO
+#elif CUSTOM_AUDIO
    REP(buffers()-_buffer._voice->queued)if(!setNextBuffer(thread_index))return false;
 #endif
    return true;
@@ -634,17 +634,17 @@ void _Sound::updatePlaying(Int thread_index)
       if(!_buffer_playing)AtomicOr(T.flag, SOUND_CHANGED_VOLUME|SOUND_CHANGED_SPEED|SOUND_CHANGED_TIME); // if not playing yet then we need to apply volume and speed because they are affected by global parameters, also reset the time because it's modified when sound is paused
    #endif
       UInt flag=AtomicGet(T.flag), handled=SOUND_CHANGED_POS|SOUND_CHANGED_VEL|SOUND_CHANGED_ORN|SOUND_CHANGED_RANGE|SOUND_CHANGED_VOLUME|SOUND_CHANGED_SPEED|SOUND_CHANGED_TIME|SOUND_CHANGING_TIME; // flags handled here, need to check for SOUND_CHANGED_ORN because of Listener changes
-   #if XAUDIO || ESENTHEL_AUDIO
+   #if XAUDIO || CUSTOM_AUDIO
       flag|=ListenerChanged;
    #endif
       if(flag&handled)
       {
          flag=AtomicDisable(T.flag, handled); // disable these flags first, so in case the user modifies parameters while this function is running, it will be activated again, don't surround this with another 'if' (to avoid extra branching) because most likely they will return handled flags
-      #if XAUDIO || ESENTHEL_AUDIO
+      #if XAUDIO || CUSTOM_AUDIO
          flag|=ListenerChanged;
       #endif
          SOUND_API_LOCK_COND; // below !! requires 'SoundAPILock' !!
-         if(flag&SOUND_CHANGED_VOLUME)setVolume(); // !! call this first before 'set3DParams' because ESENTHEL_AUDIO needs this !!
+         if(flag&SOUND_CHANGED_VOLUME)setVolume(); // !! call this first before 'set3DParams' because CUSTOM_AUDIO needs this !!
       #if XAUDIO
          if(_is3D)
          {
@@ -655,7 +655,7 @@ void _Sound::updatePlaying(Int thread_index)
          {
             if(flag&SOUND_CHANGED_SPEED){setSpeed(); _buffer.speed(SoundSpeed(_actual_speed));}
          }
-      #elif ESENTHEL_AUDIO
+      #elif CUSTOM_AUDIO
          if(_is3D)
          {
             if(flag&SOUND_CHANGED_SPEED)setSpeed(); // !! call this first before 'set3DParams' !!
@@ -958,7 +958,7 @@ again:
          {
          #if XAUDIO
             if(XAudio)XAudio->StopEngine(); // !! requires 'SoundAPILock' !!
-         #elif ESENTHEL_AUDIO
+         #elif CUSTOM_AUDIO
             AudioThread.pause();
          #else
             REPAO(SoundMemxPlaying)->_buffer.pause(); // !! requires 'SoundAPILock' !! pause all playing sounds
@@ -968,7 +968,7 @@ again:
          {
          #if XAUDIO
             if(XAudio)XAudio->StartEngine(); // !! requires 'SoundAPILock' !!
-         #elif ESENTHEL_AUDIO
+         #elif CUSTOM_AUDIO
             AudioThread.resume();
          #else
             REPAO(SoundMemxPlaying)->_buffer.play(true); // !! requires 'SoundAPILock' !! unpause all playing sounds
@@ -1051,7 +1051,7 @@ again:
 
       if(SoundMemxPlaying.elms())
       {
-      #if XAUDIO || ESENTHEL_AUDIO
+      #if XAUDIO || CUSTOM_AUDIO
          ListenerChanged=
       #endif
             Listener.updateNoLock(); // !! requires 'SoundAPILock' !!

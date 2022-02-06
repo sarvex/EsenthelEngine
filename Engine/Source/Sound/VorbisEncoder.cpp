@@ -164,7 +164,7 @@ Bool OggVorbisEncoder::finish()
    return _encoder ? ((_OggVorbisEncoder*)_encoder)->finish() : true;
 }
 /******************************************************************************/
-// ESENTHEL SND VORBIS
+// ENGINE SND VORBIS
 /******************************************************************************
 
    Vorbis generates packets with variable frame size (not constant like Opus)

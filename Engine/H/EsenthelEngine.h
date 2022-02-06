@@ -1,7 +1,7 @@
 /******************************************************************************/
 #pragma once // include the header only once
 /******************************************************************************/
-#define ENGINE_BUILD 70 // this is an integer value specifying the build iteration of Esenthel Engine, this gets incremented with each new release
+#define ENGINE_BUILD 70 // this is an integer value specifying build iteration of the Engine, this gets incremented with each new release
 /******************************************************************************
 
    Following defines are available, they are always set to 0 (disabled) or 1 (enabled)
@@ -117,7 +117,7 @@
 #endif
 /******************************************************************************/
 #if EE_PRIVATE>=2
-   #include "Esenthel Config.h" // include engine configuration created by "Esenthel Builder" or the default one if not available, this needs to be done after platform detection
+   #include "Esenthel Config.h" // include Engine configuration created by "Esenthel Builder" or the default one if not available, this needs to be done after platform detection
 #endif
 #include "_/headers.h"
 #include "_/types.h"

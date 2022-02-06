@@ -11,7 +11,7 @@ using namespace Edit;
       Str EditorPath="Editor/"; // this will get updated to full path
       Str EditorSourcePath="Editor Source/_Build_/Esenthel/"; // this will get updated to full path
       Str ThirdPartyLibsPath="ThirdPartyLibs/"; // this will get updated to full path
-      Str EsenthelPath; // this will be set to Esenthel Root full path
+      Str RootPath; // this will be set to Engine Root full path
 const Str      VSEngineProject="EsenthelEngine.sln";
 const Str      VSEditorProject="Project.sln";
 const Str   XcodeEngineProject="EsenthelEngine.xcodeproj";
@@ -504,7 +504,7 @@ void MakeWebLibs()
 
    params.space()+=S+"-o \""+dest+'"';
    Build().set("emcc.bat", params).run();
-   if(!FExistSystem(dest))Gui.msgBox("Error", "Can't create Esenthel Web Lib BitCode");
+   if(!FExistSystem(dest))Gui.msgBox("Error", "Can't create Engine Web Lib BitCode");
 }
 /******************************************************************************/
 void TestDirForObjFiles(C Str &name, Str &obj_files)
@@ -524,7 +524,7 @@ void MakeLinuxLibs()
 
    // get a list of all possible libraries
    Memc<Str> lib_paths;
-   lib_paths.add(EnginePath+LinuxEngineProject+"build/Release"); // Esenthel Engine
+   lib_paths.add(EnginePath+LinuxEngineProject+"build/Release"); // Engine
    lib_paths.add(ThirdPartyLibsPath+"PVRTC/PVRTex/Linux_x86_64/Static/build/Release"); // PVRTC (because it's stored inside a separate folder)
    lib_paths.add(ThirdPartyLibsPath+"VP/Linux"); // VP (because it's manually built)
    if(Options.physics()==PHYS_ENGINE_PHYSX)lib_paths.add(ThirdPartyLibsPath+"PhysX/physx/bin/linux.clang/release/obj"); // PhysX (because it's stored inside a separate folder and should be linked only if PhysX is selected as physics engine)
@@ -536,7 +536,7 @@ void MakeLinuxLibs()
 
    // make lib
    Build().set(ARPath(), S+"-q \""+UnixPath(engine_lib)+"\" "+obj_files).run();
-   if(!FExistSystem(engine_lib))Gui.msgBox("Error", "Can't create Esenthel Linux Lib");
+   if(!FExistSystem(engine_lib))Gui.msgBox("Error", "Can't create Engine Linux Lib");
 }
 Str EngineAndroidLibName(C Str &abi) {return EditorPath+"Bin/Android/EsenthelEngine-"+abi+".a";}
 void MakeAndroidLibs(C Str &abi)
@@ -546,7 +546,7 @@ void MakeAndroidLibs(C Str &abi)
 
    // get a list of all possible libraries
    Memc<Str> lib_paths;
-   lib_paths.add(EnginePath+AndroidProject+"obj/local/"+abi); // Esenthel Engine
+   lib_paths.add(EnginePath+AndroidProject+"obj/local/"+abi); // Engine
    // iterate all Third Party Libs
    for(FileFind ff(ThirdPartyLibsPath); ff(); )if(ff.type==FSTD_DIR)
       if(Options.physics()==PHYS_ENGINE_PHYSX || ff.name!="PhysX") // link PhysX only if we want it
@@ -556,13 +556,13 @@ void MakeAndroidLibs(C Str &abi)
    Str obj_files; FREPA(lib_paths){TestDirForObjFiles(lib_paths[i], obj_files); FList(lib_paths[i], GatherObjFiles, obj_files);}
 
    // make lib
-   if(FExistSystem(engine_lib))Gui.msgBox("Error", S+"Can't remove Esenthel Android "+abi+" Lib");else
+   if(FExistSystem(engine_lib))Gui.msgBox("Error", S+"Can't remove Engine Android "+abi+" Lib");else
    {
       Str params=S+"-q \""+UnixPath(engine_lib)+"\" "+obj_files;
       if(WINDOWS && params.length()>=32000)Gui.msgBox("Warning", "Command Line may exceed Windows 32768 character limit");
       if(Build().set(ARPath(), params).run())
       {
-         if(!FExistSystem(engine_lib))Gui.msgBox("Error", S+"Can't create Esenthel Android "+abi+" Lib");
+         if(!FExistSystem(engine_lib))Gui.msgBox("Error", S+"Can't create Engine Android "+abi+" Lib");
       }else
       {
          Explore(engine_lib); // creating archive can sometimes fail, in that case there's a temp generated file that needs to be deleted manually
@@ -732,7 +732,7 @@ void CompileLinux(C Str &project, C Str &config, void func()=null)
 /******************************************************************************/
 Bool CheckNintendoSwitch()
 {
-   Str path=EsenthelPath+"NintendoSwitch";
+   Str path=RootPath+"NintendoSwitch";
    if(FExistSystem(path))return true;
    Gui.msgBox("Error", S+"Nintendo Switch pack not found:\n"+path); return false;
 }
@@ -1006,19 +1006,19 @@ void InitPre()
 
    for(Str path=GetPath(App.exe()); ; path=GetPath(path))
    {
-      if(!path.is())Exit("Can't find Esenthel Root Path");
+      if(!path.is())Exit("Can't find Engine Root Path");
       if(FExistSystem(path+"/Data")
       && FExistSystem(path+"/Editor Data")
       && FExistSystem(path+"/Editor")
       && FExistSystem(path+"/Engine"))
       {
-         EsenthelPath=path.tailSlash(true);
-         if(!FullPath(    EngineDataPath))    EngineDataPath=EsenthelPath+    EngineDataPath;
-         if(!FullPath(    EditorDataPath))    EditorDataPath=EsenthelPath+    EditorDataPath;
-         if(!FullPath(        EnginePath))        EnginePath=EsenthelPath+        EnginePath;
-         if(!FullPath(        EditorPath))        EditorPath=EsenthelPath+        EditorPath;
-         if(!FullPath(  EditorSourcePath))  EditorSourcePath=EsenthelPath+  EditorSourcePath;
-         if(!FullPath(ThirdPartyLibsPath))ThirdPartyLibsPath=EsenthelPath+ThirdPartyLibsPath;
+         RootPath=path.tailSlash(true);
+         if(!FullPath(    EngineDataPath))    EngineDataPath=RootPath+    EngineDataPath;
+         if(!FullPath(    EditorDataPath))    EditorDataPath=RootPath+    EditorDataPath;
+         if(!FullPath(        EnginePath))        EnginePath=RootPath+        EnginePath;
+         if(!FullPath(        EditorPath))        EditorPath=RootPath+        EditorPath;
+         if(!FullPath(  EditorSourcePath))  EditorSourcePath=RootPath+  EditorSourcePath;
+         if(!FullPath(ThirdPartyLibsPath))ThirdPartyLibsPath=RootPath+ThirdPartyLibsPath;
          break;
       }
    }
@@ -1027,7 +1027,7 @@ void InitPre()
 
    // extract LIB files that are too big for GitHub to handle
 #if WINDOWS
-   Extract(EsenthelPath+"ThirdPartyLibs/Xbox Live/2018.6.20181010.2/x64.zip");
+   Extract(RootPath+"ThirdPartyLibs/Xbox Live/2018.6.20181010.2/x64.zip");
 #endif
 }
 void SetPaths()

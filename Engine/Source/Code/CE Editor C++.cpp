@@ -436,7 +436,7 @@ void CodeEditor::generateHeadersH(Memc<Symbol*> &sorted_classes, EXPORT_MODE exp
    f+="#define  intptr  IntPtr //   signed integer capable of storing full memory address";
    f+="#define uintptr UIntPtr // unsigned integer capable of storing full memory address";
    f++;
-   f+="#define class struct // Esenthel Script \"class\" is a C++ \"struct\"";
+   f+="#define class struct // Code Editor \"class\" is a C++ \"struct\"";
 
    // forward headers
    f+=SEP_LINE;

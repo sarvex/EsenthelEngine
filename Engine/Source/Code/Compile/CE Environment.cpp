@@ -474,13 +474,13 @@ Bool CodeEnvironment::create(Memc<Message> &msgs)
    return false;
 }
 /******************************************************************************/
-void CodeEditor::playEsenthelCompiler()
+void CodeEditor::playEngineCompiler()
 {
    Bool debug=CE.config_debug;
 
    CE.stopBuild ();
    CE.buildClear();
-   CE.buildNew  ().set(S+"Compiling Project (using Esenthel compiler, "+(debug ? "Debug" : "Release")+" configuration)");
+   CE.buildNew  ().set(S+"Compiling Project (using Engine compiler, "+(debug ? "Debug" : "Release")+" configuration)");
    CE.buildNew  ().set("-------------");
 
    Memc<Message>   msgs;
