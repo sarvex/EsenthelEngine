@@ -27,7 +27,7 @@
 #define  intptr  IntPtr //   signed integer capable of storing full memory address
 #define uintptr UIntPtr // unsigned integer capable of storing full memory address
 
-#define class struct // Esenthel Script "class" is a C++ "struct"
+#define class struct // Code Editor "class" is a C++ "struct"
 /******************************************************************************/
 // DEFINES
 #define STEAM   0

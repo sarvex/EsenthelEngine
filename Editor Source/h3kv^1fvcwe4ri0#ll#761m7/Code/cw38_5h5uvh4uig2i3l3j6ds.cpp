@@ -1195,14 +1195,34 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       if(C Skeleton *skel=getVisSkel())if(Edit.Viewport4.View *view=v4.getView(go))
       {
          view.setViewportCamera();
+         bool bone_shape=(T.bone_shape() && T.bone_shape.visibleOnActiveDesktop());
          if(bone_i)
          {
-            bool bone_shape=(T.bone_shape() && T.bone_shape.visibleOnActiveDesktop());
+            Vec  pos, dir, move;
+            Edge edge;
+            if(bone_shape)
+            {
+               ScreenToPosDir(screen_pos, pos, dir);
+               move=dir*D.viewRange();
+             //edge.set(pos, pos+move);
+            }
             REPA(skel.bones)
             {
              C SkelBone &bone=skel.bones[i];
-               flt d; if(Distance2D(screen_pos, (bone_shape ? bone.shape.fullEdge() : Edge(bone.pos, bone.to()))*trans.matrix, d, 0))
-                  if(*bone_i<0 || d<dist){*bone_i=i; dist=d;}
+               if(bone_shape)
+               {
+                  Vec2 screen;
+                  if(PosToScreen(bone.shape.pos, screen))
+                  {
+                     flt d=Dist(screen_pos, screen);
+                   //if((*bone_i<0 || d<dist) && Cuts(Shape(edge), bone.shape)){*bone_i=i; dist=d;}
+                     if((*bone_i<0 || d<dist) && SweepPointCapsule(pos, move, bone.shape)){*bone_i=i; dist=d;}
+                  }
+               }else
+               {
+                  flt d; if(Distance2D(screen_pos, (bone_shape ? bone.shape.fullEdge() : Edge(bone.pos, bone.to()))*trans.matrix, d, 0))
+                     if(*bone_i<0 || d<dist){*bone_i=i; dist=d;}
+               }
             }
          }
          if(slot_i)
@@ -1214,9 +1234,9 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                   if(*slot_i<0 && (!bone_i || *bone_i<0) || d<dist){*slot_i=i; dist=d; if(bone_i)*bone_i=-1;}
             }
          }
-         if(bone_i && *bone_i>=0
+         if(bone_i && *bone_i>=0 && !bone_shape
          || slot_i && *slot_i>=0)
-            if(dist>0.03){if(bone_i)*bone_i=-1; if(slot_i)*slot_i=-1;}
+            if(dist>0.04){if(bone_i)*bone_i=-1; if(slot_i)*slot_i=-1;}
       }
    }
    void getSkelSlot(C Vec2 &screen_pos)
