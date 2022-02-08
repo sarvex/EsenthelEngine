@@ -79,7 +79,7 @@ struct  SkeletonBone : OrientP, BoneID // Skeleton Bone
            children_num   , // number of children
            flag           ; // BONE_FLAG                     , default=0
    Flt     length         , // bone length                   , default=0.3
-           width          ; // bone width                    , default=0.2
+           width          ; // bone width                    , default=0.2 (proportionally to 'length')
    Vec     offset         ; // bone offset applied to 'shape', default=(0, 0, 0)
    Capsule shape          ; // shape covering the bone, automatically set by 'Skeleton.setBoneShapes' method, depending on bone position, orientation, length, width and being a ragdoll bone
 
@@ -88,6 +88,7 @@ struct  SkeletonBone : OrientP, BoneID // Skeleton Bone
    Flt     toY()C {return pos.y+dir.y* length      ;} // get bone ending position Y
    Vec center ()C {return pos  +dir  *(length*0.5f);} // get bone center position
    Flt centerY()C {return pos.y+dir.y*(length*0.5f);} // get bone center position Y
+   Flt radius ()C {return width*length             ;} // get bone actual radius
    Flt volume ()C {return shape.volume()           ;} // get bone shape  volume
 
    // set

@@ -119,13 +119,13 @@ SkelBone::SkeletonBone()
    length=0.3f;
    width =0.2f;
    offset.zero();
-   shape .set(width*length, length, Vec(0, 0, 0.5f));
+   shape .set(radius(), length, Vec(0, 0, 0.5f));
 }
 void SkelBone::draw(C Color &color)C
 {
    Vec drf=pos+dir*length*BONE_FRAC,
        to =pos+dir*length;
-   Vec p =      perp; p*=width*length*SQRT2_2;
+   Vec p =      perp; p*=radius()*SQRT2_2;
    Vec pp=Cross(dir , p);
    Vec p1=drf+p+pp,
        p2=drf+p-pp,
@@ -586,8 +586,8 @@ void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
    REPA(bones)
    {
     C SkelBone &bone=bones[i];
-      if(DistPointPlane(pos, bone.pos, bone.dir)>=-0.5f*BONE_FRAC *bone.length &&
-         DistPointLine (pos, bone.pos, bone.dir)<= 2.5f*bone.width*bone.length)
+      if(DistPointPlane(pos, bone.pos, bone.dir)>=-0.5f*bone.length*BONE_FRAC &&
+         DistPointLine (pos, bone.pos, bone.dir)<= 2.5f*bone.radius())
       {
          Flt d=DistPointEdge(pos, bone.pos, bone.to());
          if(find[0]<0 || d<dist[0])
@@ -1092,8 +1092,8 @@ Skeleton& Skeleton::setBoneTypes()
 }
 static Bool ChildOK(C SkelBone &parent, C SkelBone &child)
 {
-   Flt parent_width=parent.width*parent.length,
-       x=DistPointLine (child.pos, parent.pos, parent.dir)/parent_width ,
+   Flt parent_radius=parent.radius(),
+       x=DistPointLine (child.pos, parent.pos, parent.dir)/parent_radius,
        y=DistPointPlane(child.pos, parent.pos, parent.dir)/parent.length;
    return y > x*x + 0.5; // +0.5 because we want to test points at least half way from parent start to end
 }
