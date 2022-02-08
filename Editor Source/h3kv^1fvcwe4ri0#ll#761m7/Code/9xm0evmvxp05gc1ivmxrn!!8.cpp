@@ -63,7 +63,7 @@ class PanelEditor : PropWin
    static void ParamsBarColor   (EditPanel &e, C Str &t) {e.   bar_color=TextVec4(t); e.   bar_color_time.getUTC();}
    static void ParamsBorderColor(EditPanel &e, C Str &t) {e.border_color=TextVec4(t); e.border_color_time.getUTC();}
    static void ParamsSideColor  (EditPanel &e, C Str &t) {e.  side_color=TextVec4(t); e.  side_color_time.getUTC();}
-   static void ParamsBlurColor  (EditPanel &e, C Str &t) {e.  blur_color=TextVec4(t); e.  blur_color_time.getUTC();}
+   static void ParamsBlurColor  (EditPanel &e, C Str &t) {e.  blur_color=TextVec4(t); e.  blur_color_time.getUTC(); e.blur_color.a=0;} // force A to 0 because it's always ignored, and this way we can use faster optimization when drawing Panel by checking Color.any()
 
    static void ParamsShadowOpacity(EditPanel &e, C Str &t) {e.shadow_opacity=TextInt (t); e.shadow_opacity_time.getUTC();}
    static void ParamsShadowRadius (EditPanel &e, C Str &t) {e.shadow_radius =TextFlt (t); e. shadow_radius_time.getUTC();}

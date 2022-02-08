@@ -48,7 +48,7 @@ PanelEditor PanelEdit;
    void PanelEditor::ParamsBarColor(EditPanel &e, C Str &t) {e.   bar_color=TextVec4(t); e.   bar_color_time.getUTC();}
    void PanelEditor::ParamsBorderColor(EditPanel &e, C Str &t) {e.border_color=TextVec4(t); e.border_color_time.getUTC();}
    void PanelEditor::ParamsSideColor(EditPanel &e, C Str &t) {e.  side_color=TextVec4(t); e.  side_color_time.getUTC();}
-   void PanelEditor::ParamsBlurColor(EditPanel &e, C Str &t) {e.  blur_color=TextVec4(t); e.  blur_color_time.getUTC();}
+   void PanelEditor::ParamsBlurColor(EditPanel &e, C Str &t) {e.  blur_color=TextVec4(t); e.  blur_color_time.getUTC(); e.blur_color.a=0;}
    void PanelEditor::ParamsShadowOpacity(EditPanel &e, C Str &t) {e.shadow_opacity=TextInt (t); e.shadow_opacity_time.getUTC();}
    void PanelEditor::ParamsShadowRadius(EditPanel &e, C Str &t) {e.shadow_radius =TextFlt (t); e. shadow_radius_time.getUTC();}
    void PanelEditor::ParamsShadowOffset(EditPanel &e, C Str &t) {e.shadow_offset =TextFlt (t); e. shadow_offset_time.getUTC();}

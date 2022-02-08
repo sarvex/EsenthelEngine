@@ -43,7 +43,7 @@ public:
    static void ParamsBarColor   (EditPanel &e, C Str &t);
    static void ParamsBorderColor(EditPanel &e, C Str &t);
    static void ParamsSideColor  (EditPanel &e, C Str &t);
-   static void ParamsBlurColor  (EditPanel &e, C Str &t);
+   static void ParamsBlurColor  (EditPanel &e, C Str &t); // force A to 0 because it's always ignored, and this way we can use faster optimization when drawing Panel by checking Color.any()
 
    static void ParamsShadowOpacity(EditPanel &e, C Str &t);
    static void ParamsShadowRadius (EditPanel &e, C Str &t);

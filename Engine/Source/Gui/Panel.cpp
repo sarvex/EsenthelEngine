@@ -269,7 +269,9 @@ void Panel::drawSide(C Color &color, C Rect &rect)C
 void Panel::draw(C Rect &rect)C
 {
 #if !MOBILE // too slow
-   if(blur_color.a)
+   if( blur_color.any() // fast check
+ //&& (blur_color.r || blur_color.g || blur_color.b) // precise check, because 'blur_color.a' is ignored !! can ignore this check because Editor always clears 'blur_color.a' !!
+   )
    {
       const Bool    hi   =true;
       const Int     shift=(hi ? 1 : 2);
@@ -298,11 +300,11 @@ void Panel::draw(C Rect &rect)C
       }
       if(secondary) // for secondary we need to force rt.alpha to 1.0
       {
-         D.alphaFactor(Color(blur_color.a, blur_color.a, blur_color.a, 255)); MaterialClear(); // 'MaterialClear' must be called when changing 'D.alphaFactor'
-         D.alpha(ALPHA_FACTOR); Sh.Color[0]->set(Color(center_color.r, center_color.g, center_color.b, 0)); Sh.Color[1]->set(Color(blur_color.r, blur_color.g, blur_color.b, 255)); Sh.DrawC->draw(rt0, &rect);
+         D.alphaFactor(Color(center_color.a, center_color.a, center_color.a, 255)); MaterialClear(); // 'MaterialClear' must be called when changing 'D.alphaFactor'
+         D.alpha(ALPHA_FACTOR); Sh.Color[0]->set(Color(blur_color.r, blur_color.g, blur_color.b, 0)); Sh.Color[1]->set(Color(center_color.r, center_color.g, center_color.b, 255)); Sh.DrawC->draw(rt0, &rect);
       }else
       {
-         D.alpha(ALPHA_BLEND ); Sh.Color[0]->set(Color(center_color.r, center_color.g, center_color.b, 0)); Sh.Color[1]->set(blur_color); Sh.DrawC->draw(rt0, &rect);
+         D.alpha(ALPHA_BLEND ); Sh.Color[0]->set(Color(blur_color.r, blur_color.g, blur_color.b, 0)); Sh.Color[1]->set(center_color); Sh.DrawC->draw(rt0, &rect);
       }
          D.alpha(alpha       );
    }else
@@ -325,8 +327,10 @@ void Panel::draw(C Color &color, C Rect &rect)C
            side_color  =ColorMul(T.  side_color  , color);
 
 #if !MOBILE // too slow
-   Color blur_color=ColorMul(T.blur_color, color);
-   if(   blur_color.a)
+   Color blur_color=ColorMulZeroAlpha(T.blur_color, color); // !! because of 'ColorMulZeroAlpha' we can ignore precise check below !!
+   if(   blur_color.any() // fast check
+ //&&   (blur_color.r || blur_color.g || blur_color.b) // precise check, because 'blur_color.a' is ignored !! can ignore this check because of 'ColorMulZeroAlpha' above !!
+   )
    {
       const Bool    hi   =true;
       const Int     shift=(hi ? 1 : 2);
@@ -355,11 +359,11 @@ void Panel::draw(C Color &color, C Rect &rect)C
       }
       if(secondary) // for secondary we need to force rt.alpha to 1.0
       {
-         D.alphaFactor(Color(blur_color.a, blur_color.a, blur_color.a, 255)); MaterialClear(); // 'MaterialClear' must be called when changing 'D.alphaFactor'
-         D.alpha(ALPHA_FACTOR); Sh.Color[0]->set(Color(center_color.r, center_color.g, center_color.b, 0)); Sh.Color[1]->set(Color(blur_color.r, blur_color.g, blur_color.b, 255)); Sh.DrawC->draw(rt0, &rect);
+         D.alphaFactor(Color(center_color.a, center_color.a, center_color.a, 255)); MaterialClear(); // 'MaterialClear' must be called when changing 'D.alphaFactor'
+         D.alpha(ALPHA_FACTOR); Sh.Color[0]->set(Color(blur_color.r, blur_color.g, blur_color.b, 0)); Sh.Color[1]->set(Color(center_color.r, center_color.g, center_color.b, 255)); Sh.DrawC->draw(rt0, &rect);
       }else
       {
-         D.alpha(ALPHA_BLEND ); Sh.Color[0]->set(Color(center_color.r, center_color.g, center_color.b, 0)); Sh.Color[1]->set(blur_color); Sh.DrawC->draw(rt0, &rect);
+         D.alpha(ALPHA_BLEND ); Sh.Color[0]->set(Color(blur_color.r, blur_color.g, blur_color.b, 0)); Sh.Color[1]->set(center_color); Sh.DrawC->draw(rt0, &rect);
       }
          D.alpha(alpha       );
    }else
@@ -428,7 +432,7 @@ struct PanelDesc2
 Bool Panel::save(File &f, CChar *path)C
 {
    f.putUInt (CC4_GSTL);
-   f.cmpUIntV(8       ); // version
+   f.cmpUIntV(9       ); // version
 
    PanelDesc desc;
 
@@ -473,6 +477,50 @@ Bool Panel::load(File &f, CChar *path)
 {
    if(f.getUInt()==CC4_GSTL)switch(f.decUIntV()) // version
    {
+      case 9:
+      {
+         PanelDesc desc; if(f.getFast(desc))
+         {
+            Unaligned(       center_stretch  , desc.       center_stretch  );
+            Unaligned(       center_shadow   , desc.       center_shadow   );
+            Unaligned(       shadow_opacity  , desc.       shadow_opacity  );
+            Unaligned(         side_mode     , desc.         side_mode     );
+            Unaligned(       center_color    , desc.       center_color    );
+            Unaligned(          bar_color    , desc.          bar_color    );
+            Unaligned(       border_color    , desc.       border_color    );
+            Unaligned(         side_color    , desc.         side_color    );
+            Unaligned(         blur_color    , desc.         blur_color    );
+            Unaligned(       shadow_radius   , desc.       shadow_radius   );
+            Unaligned(       shadow_offset   , desc.       shadow_offset   );
+            Unaligned(       center_scale    , desc.       center_scale    );
+            Unaligned(          bar_size     , desc.          bar_size     );
+            Unaligned(       border_size     , desc.       border_size     );
+            Unaligned(         side_min_scale, desc.         side_min_scale);
+            Unaligned(          top_size     , desc.          top_size     );
+            Unaligned(       bottom_size     , desc.       bottom_size     );
+            Unaligned(   left_right_size     , desc.   left_right_size     );
+            Unaligned(   top_corner_size     , desc.   top_corner_size     );
+            Unaligned(bottom_corner_size     , desc.bottom_corner_size     );
+            Unaligned(          top_offset   , desc.          top_offset   );
+            Unaligned(       bottom_offset   , desc.       bottom_offset   );
+            Unaligned(   left_right_offset   , desc.   left_right_offset   );
+            Unaligned(   top_corner_offset   , desc.   top_corner_offset   );
+            Unaligned(bottom_corner_offset   , desc.bottom_corner_offset   );
+
+            center_image.require(f.getAssetID(), path);
+               bar_image.require(f.getAssetID(), path);
+            border_image.require(f.getAssetID(), path);
+               top_image.require(f.getAssetID(), path);
+            bottom_image.require(f.getAssetID(), path);
+        left_right_image.require(f.getAssetID(), path);
+        top_corner_image.require(f.getAssetID(), path);
+     bottom_corner_image.require(f.getAssetID(), path);
+             panel_image.require(f.getAssetID(), path);
+
+            if(f.ok())return true;
+         }
+      }break;
+
       case 8:
       {
          PanelDesc desc; if(f.getFast(desc))
@@ -513,6 +561,7 @@ Bool Panel::load(File &f, CChar *path)
      bottom_corner_image.require(f.getAssetID(), path);
              panel_image.require(f.getAssetID(), path);
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -557,6 +606,7 @@ Bool Panel::load(File &f, CChar *path)
              panel_image.require(f.getAssetID(), path);
               side_mode=SM_DEFAULT;
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -597,6 +647,7 @@ Bool Panel::load(File &f, CChar *path)
              panel_image.require(f.getAssetID(), path);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1; if(desc.side_stretch && top_image){bar_color=side_color; bar_size=top_size; Swap(bar_image, top_image);}
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -637,6 +688,7 @@ Bool Panel::load(File &f, CChar *path)
              panel_image.require(f._getAsset(), path);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1; if(desc.side_stretch && top_image){bar_color=side_color; bar_size=top_size; Swap(bar_image, top_image);}
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -688,6 +740,7 @@ Bool Panel::load(File &f, CChar *path)
             center_shadow=!Equal(shadow_offset, 0);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1;
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -725,6 +778,7 @@ Bool Panel::load(File &f, CChar *path)
             center_shadow=!Equal(shadow_offset, 0);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1;
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -762,6 +816,7 @@ Bool Panel::load(File &f, CChar *path)
             center_shadow=!Equal(shadow_offset, 0);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1;
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
@@ -807,6 +862,7 @@ Bool Panel::load(File &f, CChar *path)
             center_shadow=!Equal(shadow_offset, 0);
               side_mode=SM_DEFAULT; bar_color=TRANSPARENT; bar_size=0; bar_image.clear(); side_min_scale=1;
 
+            if(blur_color.a){Swap(blur_color, center_color); blur_color.a=0;}
             if(f.ok())return true;
          }
       }break;
