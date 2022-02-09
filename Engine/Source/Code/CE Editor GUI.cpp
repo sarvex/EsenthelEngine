@@ -59,7 +59,7 @@ ColorTheme ThemeLight=
    Color(128, 128, 128), // TOKEN_LINE_NUM
 }, ThemeDark=
 {
-   Color( 30,  30,  30), // NONE
+   Color( 26,  26,  26), // NONE
    TRANSPARENT,          // REMOVE
    Color(220, 220, 220), // OPERATOR
    Color( 86, 156, 214), // KEYWORD

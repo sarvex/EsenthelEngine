@@ -3737,9 +3737,10 @@ Color BackgroundColor()
 }
 Color BackgroundColorLight()
 {
-   Color col=BackgroundColor();
-   byte  lum=col.lum(), add=44; Color col_add(add); if(lum)col_add=ColorMul(col, flt(add)/lum); // set normalized color (col/col.lum)*add
-   return ColorAdd(col, col_add);
+   if(Gui.skin)
+      if(Gui.skin->window.active)
+         return ColorMul(Gui.skin->window.active->center_color, Gui.skin->window.active_color);
+   return Gui.backgroundColor();
 }
 Color GuiListTextColor()
 {
