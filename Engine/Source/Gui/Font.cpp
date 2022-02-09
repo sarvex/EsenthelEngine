@@ -571,6 +571,7 @@ struct SystemFont
    Int size=0,
        base_line=-1, // unknown
        base_line_offset=0;
+   Flt scale=1;
 #if WINDOWS_OLD
    HFONT font=null;
 #endif
@@ -619,10 +620,13 @@ struct SystemFont
    }
    void setBaseLine(Int base_line)
    {
-      T.base_line=base_line;
-        base_line_offset=((base_line>=0) ? Round(0.8f*size-base_line) : 0); // 0.8 is the default baseline (was 80 when measured on Arial 100)
+      T.base_line       =  base_line;
+        base_line_offset=((base_line>=0) ? Round(
+           0.8f*size-base_line // base line offset - 0.8 is the default baseline (was 80 when measured on Arial 100)
+          +base_line/scale-base_line // difference between unscaled baseline (base_line/scale) and scaled baseline
+        ) : 0);
    }
-   Bool create(C Str &system_font, Int size, Font::MODE mode, Flt weight)
+   Bool create(C Str &system_font, Int size, Font::MODE mode, Flt weight, Flt scale) // here 'size' is already scaled
    {
       del();
    #if WINDOWS_OLD
@@ -630,6 +634,7 @@ struct SystemFont
          if(HDC dc=CreateCompatibleDC(null))
       {
          T.size=size;
+         T.scale=scale;
          SelectObject(dc, font);
 
          // base line
@@ -677,6 +682,7 @@ struct SystemFont
       }
    #elif USE_FREE_TYPE
       T.size=size;
+      T.scale=scale;
    #if LINUX
       T.system_font=system_font;
       if(GetBase(T.system_font)==T.system_font) // not path
@@ -706,7 +712,7 @@ struct SystemFont
          [attributes setObject:font forKey:NSFontAttributeName];
          [attributes setObject:style forKey:NSParagraphStyleAttributeName];
          [attributes setObject:[NSColor whiteColor] forKey:NSForegroundColorAttributeName];
-         T.size=size; setBaseLine(Round(font.ascender*size/(font.ascender-font.descender))); // 'descender' is negative
+         T.size=size; T.scale=scale; setBaseLine(Round(font.ascender*size/(font.ascender-font.descender))); // 'descender' is negative
          return true;
       }
    #endif
@@ -1049,10 +1055,10 @@ struct FontCreate : FontCreateBase
    }
    Bool createFont()
    {
-      if(fonts.New().create(system_font, scaled_size, mode, weight))
+      if(fonts.New().create(system_font, scaled_size, mode, weight, scale))
       {// create alternatives in case primary font doesn't have needed characters
          CChar8 *alternatives[]={"Tahoma"}; ASSERT(ELMS(alternatives)+1==TOTAL_CREATE_FONTS); // "Tahoma" was chosen because it has a nice version of '⏎'
-         FREPA(  alternatives)if(!fonts.New().create(alternatives[i], scaled_size, mode, weight))fonts.removeLast();
+         FREPA(  alternatives)if(!fonts.New().create(alternatives[i], scaled_size, mode, weight, scale))fonts.removeLast();
          return true;
       }
       return false;
