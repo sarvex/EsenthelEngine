@@ -3517,7 +3517,7 @@ cur_skel_to_saved_skel.removeBone(bone.name);
             {
                Vec center=box.center()*bone_matrix;
                bone.offset=center-bone.center();
-               bone.width =Avg(box.w(), box.h())/2/bone.length;
+               bone.width =Max(0.01, Avg(box.w(), box.h())/2/bone.length);
             }
           //mesh_skel.setBoneTypes(); // bone orientation may affect bone type indexes
             setChangedSkel(true);
