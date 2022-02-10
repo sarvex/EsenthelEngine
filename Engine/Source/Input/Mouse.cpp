@@ -158,7 +158,7 @@ MouseClass::MouseClass()
 {
 #if 0 // there's only one 'MouseClass' global 'Ms' and it doesn't need clearing members to zero
    REPAO(_button)=0;
-  _selecting=_dragging=_first=_detected=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=false;
+  _selecting=_dragging=_first=_detected=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=_swapped=false;
   _start_time=_wheel_time=0;
   _pos=_delta_rel_sm=_delta_clp=_delta_rel=_start_pos=_move_offset=_wheel=_wheel_f=0;
   _window_pixeli=_desktop_pixeli=_delta_pixeli_clp=_wheel_i=0;
@@ -204,6 +204,7 @@ void MouseClass::create()
 {
    if(LogInit)LogN("Mouse.create");
 #if WINDOWS_OLD
+  _swapped=(GetSystemMetrics(SM_SWAPBUTTON)!=0);
 #if MS_RAW_INPUT
    RAWINPUTDEVICE rid[1];
 

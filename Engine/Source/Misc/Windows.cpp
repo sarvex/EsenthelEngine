@@ -1061,8 +1061,8 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
                   // check releases because WM_*BUTTONUP aren't processed when mouse is outside window client even when app is still active
                   if(raw.data.mouse.usButtonFlags&(RI_MOUSE_BUTTON_1_UP|RI_MOUSE_BUTTON_2_UP|RI_MOUSE_BUTTON_3_UP|RI_MOUSE_BUTTON_4_UP|RI_MOUSE_BUTTON_5_UP))
                   {
-                     if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_1_UP)Ms.release(0);
-                     if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_2_UP)Ms.release(1);
+                     if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_1_UP)Ms.release( Ms._swapped); // 0
+                     if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_2_UP)Ms.release(!Ms._swapped); // 1
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_3_UP)Ms.release(2);
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_4_UP)Ms.release(3);
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_5_UP)Ms.release(4);

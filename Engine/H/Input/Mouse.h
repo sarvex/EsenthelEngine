@@ -143,7 +143,7 @@ struct MouseClass // Mouse Input
 private:
 #endif
    BS_FLAG          _button[8];
-   Bool             _selecting, _dragging, _first, _detected, _on_client, _visible, _clip_rect_on, _clip_window, _freeze, _frozen, _action, _want_cur_hw, _locked;
+   Bool             _selecting, _dragging, _first, _detected, _on_client, _visible, _clip_rect_on, _clip_window, _freeze, _frozen, _action, _want_cur_hw, _locked, _swapped;
    Int              _cur;
    Flt              _speed;
    Dbl              _start_time, _wheel_time;
