@@ -1121,17 +1121,74 @@ static void NextChild(C Skeleton &skel, Int i, Vec &to)
       }
    }
 }
+static Flt ColRadius(C SkelBone &bone)
+{
+   return Min(bone.radius(), bone.length*0.5f);
+}
+static Bool AlwaysConnect(C SkelBone &bone) // always connect these bones, because they're usually always forced up, to allow animation compatibility
+{
+   switch(bone.type)
+   {
+      case BONE_SPINE:
+      case BONE_NECK:
+      case BONE_HEAD:
+         return true;
+   }
+   return false;
+}
 Skeleton& Skeleton::setBoneShapes()
 {
    REPA(bones)
    {
-      SkelBone &sbon=bones[i];
-      Vec       from=sbon.pos, to=sbon.to();
-      Flt       r   =sbon.width*sbon.length;
-      if(sbon.flag&BONE_RAGDOLL)NextChild(T, i, to);
-      Vec       dir =!(to-from);
-      if(sbon.parent!=0xFF)from-=dir*r;
-      sbon.shape.set(r, Max(Dist(from, to), 2.0f*r), Avg(from, to)+sbon.offset, dir);
+      SkelBone &bone=bones[i];
+      Bool      always_connect=AlwaysConnect(bone);
+      Vec       from=bone.pos, to=bone.to();
+      Flt       radius=bone.radius(), col_rad=ColRadius(bone);
+      if(bone.flag&BONE_RAGDOLL)NextChild(T, i, to);
+
+      const Bool reduce_merge_by_dist=true;
+
+      Vec center=Avg(from, to)+bone.offset, dir=to-from; Flt length=Max(dir.normalize(), 2*radius);
+      if(bone.children_num)
+      {
+         Vec to_offset; if(reduce_merge_by_dist)to_offset=to+bone.offset;
+         Flt fwd=0; REP(bone.children_num)if(SkelBone *child=bones.addr(bone.children_offset+i))if(Equal(to, child->pos) || always_connect && AlwaysConnect(*child))
+         {
+            Flt r=Min(col_rad, ColRadius(*child));
+            if(reduce_merge_by_dist)r-=Dist(to_offset, child->pos+child->offset);
+            MAX(fwd, r);
+         }
+         if(fwd>0)
+         {
+            length+= fwd;
+            center+=(fwd*0.5)*dir;
+         }
+      }
+      if(SkelBone *parent=bones.addr(bone.parent))
+      {
+         Flt bck;
+         if(!bone.type_sub && // always apply full back extend for first bone of following types
+         (   bone.type==BONE_TAIL
+          || bone.type==BONE_EAR
+          || bone.type==BONE_UPPER_LEG
+         ))
+         {
+            bck=col_rad; goto apply_bck;
+         }
+         if(Equal(parent->to(), from) || always_connect && AlwaysConnect(*parent))
+         {
+            bck=Min(col_rad, ColRadius(*parent));
+            if(reduce_merge_by_dist)bck-=Dist(from+bone.offset, parent->to()+parent->offset);
+         apply_bck:
+            if(bck>0)
+            {
+               length+= bck;
+               center-=(bck*0.5)*dir;
+            }
+         }
+      }
+
+      bone.shape.set(radius, length, center, dir);
    }
    return T;
 }
