@@ -719,7 +719,7 @@ INLINE void SkeletonBlendInstance::addBlend(BLST &blst, C Material &material, C 
 }
 INLINE void SkeletonBlendInstance::addFur(Shader &shader, C Material &material, C MeshPart &mesh)
 {
-   newInstance(shader, material, BlendInstance::STATIC_FUR); Renderer._has_fur=true;
+   newInstance(shader, material, BlendInstance::STATIC_FUR);
    SkeletonBlendShaderMaterialMeshInstances.New().set(mesh);
 }
 /******************************************************************************/
@@ -838,7 +838,7 @@ INLINE BlendInstance& BlendInstancesClass::add(BLST &blst, C Material &material,
 }
 INLINE BlendInstance& BlendInstancesClass::addFur(Shader &shader, C Material &material, C MeshPart &mesh, C MeshPart::Variation &variation)
 {
-   BlendInstance &obj=New(); obj.type=BlendInstance::STATIC_FUR; Renderer._has_fur=true;
+   BlendInstance &obj=New(); obj.type=BlendInstance::STATIC_FUR;
 #if 1
    obj.stat.shader   =&shader;
    obj.stat.material =&material;
@@ -1512,7 +1512,7 @@ void MeshPart::drawBlend(C Vec4 *color)C
        C Material &material=variation.getMaterial();
          SetSkinning();
          D.cull        (material.cull);
-         D.depthOnWrite(true, material._depth_write); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
+         D.depthOnWrite(true, material.hasDepthWrite()); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
          D.alpha       (              Renderer._mesh_blend_alpha );
          D.stencil     ((STENCIL_MODE)Renderer._mesh_stencil_mode);
          material.setBlendForce();
@@ -1542,7 +1542,7 @@ void MeshPart::drawBlend(C Material &material, C Vec4 *color)C
       {
          SetSkinning();
          D.cull        (material.cull);
-         D.depthOnWrite(true, material._depth_write); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
+         D.depthOnWrite(true, material.hasDepthWrite()); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
          D.alpha       (              Renderer._mesh_blend_alpha );
          D.stencil     ((STENCIL_MODE)Renderer._mesh_stencil_mode);
          material.setBlendForce();

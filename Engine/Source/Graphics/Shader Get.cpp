@@ -159,10 +159,12 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    alpha_blend_light   =(                                          materials==1 &&              !heightmap && m->hasAlphaBlendLight  ()); // this shouldn't require a texture, we can do alpha blending with just material color
     mtrl_blend         =(                                          materials> 1 && layout>=2 && D.materialBlend()                      ); // this is per-pixel multi-material blending (blending between multiple materials)
    tesselate           =(normal && (lod_index<=0) && D.shaderModel()>=SM_5 && D.tesselation() && (!heightmap || D.tesselationHeightmap()));
-   fx                  =(grass ? (m->hasGrass2D() ? FX_GRASS_2D : FX_GRASS_3D) : leaf ? (m->hasLeaf2D() ? (size ? FX_LEAFS_2D : FX_LEAF_2D) : (size ? FX_LEAFS_3D : FX_LEAF_3D)) : FX_NONE);
+   fx                  =(grass ? (m->hasGrass2D() ? FX_GRASS_2D : FX_GRASS_3D) : leaf ? (m->hasLeaf2D() ? (size ? FX_LEAFS_2D : FX_LEAF_2D) : (size ? FX_LEAFS_3D : FX_LEAF_3D)) : FX_NONE); // don't set FX_CLEAR_COAT here, because only Deferred shader supports it, and it's processed manually there
+   clear_coat          =(m->technique==MTECH_CLEAR_COAT && !skin && normal && materials==1 && !heightmap); // currently skin not supported
 
    if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=heightmap=false; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
    if(fx){detail=macro=tesselate=false; MIN(bump, SBUMP_NORMAL);} // shaders with effects currently don't support detail/macro/tesselate/fancy bump
+   if(clear_coat){detail=macro=false; MIN(bump, SBUMP_NORMAL);} // shaders with clear coat currently don't support detail/macro/fancy bump
 }
 Shader* DefaultShaders::EarlyZ()C
 {
@@ -178,7 +180,7 @@ Shader* DefaultShaders::Opaque(Bool mirror)C
       // !! Never return the same shader for Multi-Materials as Single-Materials !!
       //if(fur)return ShaderFiles("Fur")->get(ShaderFurBase(skin, size, layout>0)); don't use FurBase because it's unfinished (doesn't use smooth/rough/normal maps) and the only difference is being affected by FurCol however difference is minimal
       Bool detail=T.detail, tesselate=T.tesselate; Byte bump=T.bump; if(mirror){detail=tesselate=false; MIN(bump, SBUMP_NORMAL);} // disable detail, tesselation and fancy bump for mirror
-      return ShaderFiles("Deferred")->get(ShaderDeferred(skin, materials, layout, bump, alpha_test, detail, macro, color, mtrl_blend, heightmap, fx, tesselate));
+      return ShaderFiles("Deferred")->get(ShaderDeferred(skin, materials, layout, bump, alpha_test, detail, macro, color, mtrl_blend, heightmap, clear_coat ? FX_CLEAR_COAT : fx, tesselate));
    }
    return null;
 }

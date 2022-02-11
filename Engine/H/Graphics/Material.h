@@ -4,6 +4,15 @@
    'Materials' are usually created in the 'Material Editor' tool, and used by 'Meshes'.
 
 /******************************************************************************/
+#if EE_PRIVATE
+enum HAS_FLAG
+{
+   HAS_GLOW      =1<<0,
+   HAS_CLEAR_COAT=1<<1,
+   HAS_FUR       =1<<2,
+};
+#endif
+/******************************************************************************/
 enum MATERIAL_TECHNIQUE : Byte // Material Techniques
 {
    MTECH_OPAQUE                , // standard rendering of opaque materials
@@ -22,6 +31,7 @@ enum MATERIAL_TECHNIQUE : Byte // Material Techniques
    MTECH_LEAF_2D               , // mesh vertexes will bend on the wind like tree leafs, to use this technique mesh must also contain leaf attachment positions, which can be generated in the Model Editor tool through menu options
    MTECH_DEPTH_BLEND           , // works like MTECH_BLEND with additional Depth-Writing which enables correct Depth-Sorting
    MTECH_ALPHA_TEST_DITHER     , // indicates that textures alpha channel will be used as models transparency (this is slightly slower than Default as alpha testing may disable some hardware-level optimizations)
+   MTECH_CLEAR_COAT            , // can be used for metallic car surfaces
    MTECH_NUM                   , // number of Material Techniques
 };
 Bool HasAlpha          (MATERIAL_TECHNIQUE technique); // if 'technique' involves Alpha-Testing or Alpha-Blending
@@ -133,7 +143,8 @@ struct Material : MaterialParams // Mesh Rendering Material - contains render pa
 #if !EE_PRIVATE
 private:
 #endif
-   Bool  _depth_write, _has_alpha_test, _has_glow;
+   Bool  _depth_write, _has_alpha_test;
+   Byte  _has;
    Color _alpha_factor;
    struct Multi
    {

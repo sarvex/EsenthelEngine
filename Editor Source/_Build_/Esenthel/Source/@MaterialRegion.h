@@ -87,7 +87,7 @@ public:
       cchar             *desc;
    };
    static MaterialTech mtrl_techs[]
-; ASSERT(MTECH_NUM==16);
+; ASSERT(MTECH_NUM==17);
    static Str  Tech(C MaterialRegion &mr          );
    static void Tech(  MaterialRegion &mr, C Str &t);
 

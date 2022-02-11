@@ -763,16 +763,16 @@ void PS
    BackFlip(nrm, front);
 #endif
 
-   output.color      (col    );
-   output.glow       (glow   );
-   output.normal     (nrm    );
-   output.translucent(FX==FX_GRASS_3D || FX==FX_LEAF_3D || FX==FX_LEAFS_3D);
-   output.rough      (rough  );
-   output.reflect    (reflect);
+   output.color     (col    );
+   output.glow      (glow   );
+   output.normal    (nrm    );
+   output.mode      ((FX==FX_GRASS_3D || FX==FX_LEAF_3D || FX==FX_LEAFS_3D) ? PSM_TRANSLUCENT : (FX==FX_CLEAR_COAT) ? PSM_CLEAR_COAT : PSM_NONE);
+   output.rough     (rough  );
+   output.reflect   (reflect);
 #if USE_VEL
-   output.motion     (I.projected_prev_pos_xyw, pixel);
+   output.motion    (I.projected_prev_pos_xyw, pixel);
 #else
-   output.motionZero ();
+   output.motionZero();
 #endif
 }
 /******************************************************************************/

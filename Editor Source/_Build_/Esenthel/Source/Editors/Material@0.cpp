@@ -24,6 +24,7 @@ MaterialRegion MtrlEdit;
       {MTECH_TEST_BLEND_LIGHT      , "Test Blend Light"      , u"Works like Blend Light technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
       {MTECH_TEST_BLEND_LIGHT_GRASS, "Test Blend Light Grass", u"Works like Blend Light Grass technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
       {MTECH_TEST_BLEND_LIGHT_LEAF , "Test Blend Light Leaf" , u"Works like Blend Light Leaf technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
+      {MTECH_CLEAR_COAT            , "Clear Coat"            , u"Can be used for metallic car surfaces."},
    };
    cchar8 *MaterialRegion::DownsizeTexMobileText[]=
    {

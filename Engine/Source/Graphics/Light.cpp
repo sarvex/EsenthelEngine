@@ -59,6 +59,7 @@ static Bool        CurrentLightOn  [2];
 static Rect        CurrentLightRect[2];
 static Vec2        CurrentLightZRange; // Current Light Z range, relative to Camera position, to be used for 'OMSetDepthBounds'. Dbl precision not required since it's relative to Camera
 static MeshRender  LightMeshBall, LightMeshCone;
+static Int         LightMode;
 /******************************************************************************/
 static inline Int      HsmX        (DIR_ENUM dir) {return dir& 1;}
 static inline Int      HsmY        (DIR_ENUM dir) {return dir>>1;}
@@ -1105,56 +1106,56 @@ INLINE Shader* GetShdDir  (Int map_num, Bool clouds, Bool multi_sample) {Shader*
 INLINE Shader* GetShdPoint(                          Bool multi_sample) {Shader* &s=Sh.ShdPoint                 [multi_sample]; if(SLOW_SHADER_LOAD && !s)s=Sh.getShdPoint(                 multi_sample); return s;}
 INLINE Shader* GetShdCone (                          Bool multi_sample) {Shader* &s=Sh.ShdCone                  [multi_sample]; if(SLOW_SHADER_LOAD && !s)s=Sh.getShdCone (                 multi_sample); return s;}
 /******************************************************************************/
-INLINE Shader* GetDrawLightDir   (Int multi_sample, Bool shadow, Bool water            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightDir   [diffuse][multi_sample][shadow][water]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightDir   (diffuse, multi_sample, shadow, water       ); return s;}
-INLINE Shader* GetDrawLightPoint (Int multi_sample, Bool shadow, Bool water            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightPoint [diffuse][multi_sample][shadow][water]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightPoint (diffuse, multi_sample, shadow, water       ); return s;}
-INLINE Shader* GetDrawLightLinear(Int multi_sample, Bool shadow, Bool water            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightLinear[diffuse][multi_sample][shadow][water]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightLinear(diffuse, multi_sample, shadow, water       ); return s;}
-INLINE Shader* GetDrawLightCone  (Int multi_sample, Bool shadow, Bool water, Bool image) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightCone  [diffuse][multi_sample][shadow][water][image]; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightCone  (diffuse, multi_sample, shadow, water, image); return s;}
+INLINE Shader* GetDrawLightDir   (Int multi_sample, Int light_mode, Bool shadow            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightDir   [diffuse][multi_sample][light_mode][shadow]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightDir   (diffuse, multi_sample, light_mode, shadow       ); return s;}
+INLINE Shader* GetDrawLightPoint (Int multi_sample, Int light_mode, Bool shadow            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightPoint [diffuse][multi_sample][light_mode][shadow]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightPoint (diffuse, multi_sample, light_mode, shadow       ); return s;}
+INLINE Shader* GetDrawLightLinear(Int multi_sample, Int light_mode, Bool shadow            ) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightLinear[diffuse][multi_sample][light_mode][shadow]       ; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightLinear(diffuse, multi_sample, light_mode, shadow       ); return s;}
+INLINE Shader* GetDrawLightCone  (Int multi_sample, Int light_mode, Bool shadow, Bool image) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightCone  [diffuse][multi_sample][light_mode][shadow][image]; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightCone  (diffuse, multi_sample, light_mode, shadow, image); return s;}
 #if !DEPTH_CLIP_SUPPORTED
-INLINE Shader* GetDrawLightConeFlat(Int multi_sample, Bool shadow, Bool water, Bool image) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightConeFlat[diffuse][multi_sample][shadow][water][image]; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightConeFlat(diffuse, multi_sample, shadow, water, image); return s;}
+INLINE Shader* GetDrawLightConeFlat(Int multi_sample, Int light_mode, Bool shadow, Bool image) {DIFFUSE_MODE diffuse=D.diffuseMode(); Shader* &s=Sh.DrawLightConeFlat[diffuse][multi_sample][light_mode][shadow][image]; if(SLOW_SHADER_LOAD && !s)s=Sh.getDrawLightConeFlat(diffuse, multi_sample, light_mode, shadow, image); return s;}
 #endif
 /******************************************************************************/
-static void DrawLightDir(Int multi_sample, Bool water)
+static void DrawLightDir(Int multi_sample, Int light_mode)
 {
    if(TEST_LIGHT_RECT){D.depthUnlock(); REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())Sh.clear(Vec4(0.3f, 0.3f, 0.3f, 0), &CurrentLight.rect); D.depthLock(true);}
    // Flat
-   Shader *shader=GetDrawLightDir(multi_sample, CurrentLight.shadow, water);
+   Shader *shader=GetDrawLightDir(multi_sample, light_mode, CurrentLight.shadow);
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())shader->draw(&CurrentLight.rect);
 }
-static void DrawLightPoint(C MatrixM &light_matrix, Int multi_sample, Bool water)
+static void DrawLightPoint(C MatrixM &light_matrix, Int multi_sample, Int light_mode)
 {
    if(TEST_LIGHT_RECT){D.depthUnlock(); REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())Sh.clear(Vec4(0.3f, 0.3f, 0.3f, 0), &CurrentLight.rect); D.depthLock(true);}
 #if 1 // Geom
-   Shader *shader=GetDrawLightPoint(multi_sample, CurrentLight.shadow, water); shader->startTex(); LightMeshBall.set();
+   Shader *shader=GetDrawLightPoint(multi_sample, light_mode, CurrentLight.shadow); shader->startTex(); LightMeshBall.set();
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye()){SetFastMatrix(light_matrix); shader->commit(); LightMeshBall.draw();}
 #else // Flat
-   Shader *shader=GetDrawLightPointFlat(multi_sample, CurrentLight.shadow, water); D.depth2DOn();
+   Shader *shader=GetDrawLightPointFlat(multi_sample, light_mode, CurrentLight.shadow); D.depth2DOn();
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())shader->draw(&CurrentLight.rect);
 #endif
 }
-static void DrawLightLinear(C MatrixM &light_matrix, Int multi_sample, Bool water)
+static void DrawLightLinear(C MatrixM &light_matrix, Int multi_sample, Int light_mode)
 {
    if(TEST_LIGHT_RECT){D.depthUnlock(); REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())Sh.clear(Vec4(0.3f, 0.3f, 0.3f, 0), &CurrentLight.rect); D.depthLock(true);}
 #if 1 // Geom
-   Shader *shader=GetDrawLightLinear(multi_sample, CurrentLight.shadow, water); shader->startTex(); LightMeshBall.set();
+   Shader *shader=GetDrawLightLinear(multi_sample, light_mode, CurrentLight.shadow); shader->startTex(); LightMeshBall.set();
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye()){SetFastMatrix(light_matrix); shader->commit(); LightMeshBall.draw();}
 #else // Flat
-   Shader *shader=GetDrawLightLinearFlat(multi_sample, CurrentLight.shadow, water); D.depth2DOn();
+   Shader *shader=GetDrawLightLinearFlat(multi_sample, light_mode, CurrentLight.shadow); D.depth2DOn();
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())shader->draw(&CurrentLight.rect);
 #endif
 }
-static void DrawLightCone(C MatrixM &light_matrix, Int multi_sample, Bool water)
+static void DrawLightCone(C MatrixM &light_matrix, Int multi_sample, Int light_mode)
 {
    if(TEST_LIGHT_RECT){D.depthUnlock(); REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())Sh.clear(Vec4(0.3f, 0.3f, 0.3f, 0), &CurrentLight.rect); D.depthLock(true);}
 #if !DEPTH_CLIP_SUPPORTED // Flat
    if(!D._depth_clip && CurrentLightZRange.y>D.viewRange()) // if light is behind far plane
    { // draw as Flat
-      Shader *shader=GetDrawLightConeFlat(multi_sample, CurrentLight.shadow, water, CurrentLight.image!=null);
+      Shader *shader=GetDrawLightConeFlat(multi_sample, light_mode, CurrentLight.shadow, CurrentLight.image!=null);
       REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye())shader->draw(&CurrentLight.rect);
       return;
    }
 #endif
    // Geom
-   Shader *shader=GetDrawLightCone(multi_sample, CurrentLight.shadow, water, CurrentLight.image!=null);
+   Shader *shader=GetDrawLightCone(multi_sample, light_mode, CurrentLight.shadow, CurrentLight.image!=null);
    shader->startTex(); LightMeshCone.set();
    REPS(Renderer._eye, Renderer._eye_num)if(SetLightEye()){SetFastMatrix(light_matrix); shader->commit(); LightMeshCone.draw();}
 }
@@ -1239,7 +1240,7 @@ void Light::draw()
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightDir(0, true);
+            DrawLightDir(0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.stencil(STENCIL_NONE);
@@ -1268,18 +1269,18 @@ void Light::draw()
          D.depth2DOn(depth_func);
          if(!Renderer._ds->multiSample()) // 1-sample
          {
-            DrawLightDir(0, false);
+            DrawLightDir(0, LightMode);
          }else // multi-sample
          {
             if(Renderer.hasStencilAttached()) // if we can use stencil tests, then process 1-sample pixels using 1-sample shader, if we can't use stencil then all pixels will be processed using multi-sample shader later below
             {
                D.stencil(STENCIL_MSAA_TEST, 0);
-               DrawLightDir(1, false);
+               DrawLightDir(1, LightMode);
             }
             SetLumMS(clear);
             D.depth2DOn(depth_func);
           /*if(Renderer.hasStencilAttached()) not needed because stencil tests are disabled without stencil RT */D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA);
-            DrawLightDir(2, false);
+            DrawLightDir(2, LightMode);
             D.stencil(STENCIL_NONE);
          }
       }break;
@@ -1318,7 +1319,7 @@ void Light::draw()
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightPoint(light_matrix, 0, true);
+            DrawLightPoint(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.stencil(STENCIL_NONE);
@@ -1347,18 +1348,18 @@ void Light::draw()
          D.depth2DOn(depth_func);
          if(!Renderer._ds->multiSample()) // 1-sample
          {
-            DrawLightPoint(light_matrix, 0, false);
+            DrawLightPoint(light_matrix, 0, LightMode);
          }else // multi-sample
          {
             if(Renderer.hasStencilAttached()) // if we can use stencil tests, then process 1-sample pixels using 1-sample shader, if we can't use stencil then all pixels will be processed using multi-sample shader later below
             {
                D.stencil(STENCIL_MSAA_TEST, 0);
-               DrawLightPoint(light_matrix, 1, false);
+               DrawLightPoint(light_matrix, 1, LightMode);
             }
             SetLumMS(clear);
             D.depth2DOn(depth_func);
           /*if(Renderer.hasStencilAttached()) not needed because stencil tests are disabled without stencil RT */D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA);
-            DrawLightPoint(light_matrix, 2, false);
+            DrawLightPoint(light_matrix, 2, LightMode);
             D.stencil(STENCIL_NONE);
          }
       }break;
@@ -1397,7 +1398,7 @@ void Light::draw()
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightLinear(light_matrix, 0, true);
+            DrawLightLinear(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.stencil(STENCIL_NONE);
@@ -1426,18 +1427,18 @@ void Light::draw()
          D.depth2DOn(depth_func);
          if(!Renderer._ds->multiSample()) // 1-sample
          {
-            DrawLightLinear(light_matrix, 0, false);
+            DrawLightLinear(light_matrix, 0, LightMode);
          }else // multi-sample
          {
             if(Renderer.hasStencilAttached()) // if we can use stencil tests, then process 1-sample pixels using 1-sample shader, if we can't use stencil then all pixels will be processed using multi-sample shader later below
             {
                D.stencil(STENCIL_MSAA_TEST, 0);
-               DrawLightLinear(light_matrix, 1, false);
+               DrawLightLinear(light_matrix, 1, LightMode);
             }
             SetLumMS(clear);
             D.depth2DOn(depth_func);
           /*if(Renderer.hasStencilAttached()) not needed because stencil tests are disabled without stencil RT */D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA);
-            DrawLightLinear(light_matrix, 2, false);
+            DrawLightLinear(light_matrix, 2, LightMode);
             D.stencil(STENCIL_NONE);
          }
       }break;
@@ -1474,7 +1475,7 @@ void Light::draw()
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightCone(light_matrix, 0, true);
+            DrawLightCone(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.stencil(STENCIL_NONE);
@@ -1508,18 +1509,18 @@ void Light::draw()
          D.depth2DOn(depth_func);
          if(!Renderer._ds->multiSample()) // 1-sample
          {
-            DrawLightCone(light_matrix, 0, false);
+            DrawLightCone(light_matrix, 0, LightMode);
          }else // multi-sample
          {
             if(Renderer.hasStencilAttached()) // if we can use stencil tests, then process 1-sample pixels using 1-sample shader, if we can't use stencil then all pixels will be processed using multi-sample shader later below
             {
                D.stencil(STENCIL_MSAA_TEST, 0);
-               DrawLightCone(light_matrix, 1, false);
+               DrawLightCone(light_matrix, 1, LightMode);
             }
             SetLumMS(clear);
             D.depth2DOn(depth_func);
           /*if(Renderer.hasStencilAttached()) not needed because stencil tests are disabled without stencil RT */D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA);
-            DrawLightCone(light_matrix, 2, false);
+            DrawLightCone(light_matrix, 2, LightMode);
             D.stencil(STENCIL_NONE);
          }
       }break;
@@ -1594,7 +1595,7 @@ void Light::drawForward(ALPHA_MODE alpha)
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightDir(0, true);
+            DrawLightDir(0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.depth2DOff(); D.stencil(STENCIL_NONE);
@@ -1671,7 +1672,7 @@ void Light::drawForward(ALPHA_MODE alpha)
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightPoint(light_matrix, 0, true);
+            DrawLightPoint(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.depth2DOff(); D.depthClip(true); D.stencil(STENCIL_NONE);
@@ -1748,7 +1749,7 @@ void Light::drawForward(ALPHA_MODE alpha)
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightLinear(light_matrix, 0, true);
+            DrawLightLinear(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.depth2DOff(); D.depthClip(true); D.stencil(STENCIL_NONE);
@@ -1822,7 +1823,7 @@ void Light::drawForward(ALPHA_MODE alpha)
 
             SetWaterLum();
             D.depth2DOn(depth_func);
-            DrawLightCone(light_matrix, 0, true);
+            DrawLightCone(light_matrix, 0, LIGHT_MODE_WATER);
 
             Sh.Depth->set(Renderer._ds_1s); // restore default depth
             D.depth2DOff(); D.depthClip(true); D.stencil(STENCIL_NONE);
@@ -1917,6 +1918,7 @@ void DrawLights()
 {
    if(Lights.elms())
    {
+      LightMode=((Renderer._has&HAS_CLEAR_COAT) ? LIGHT_MODE_CLEAR_COAT : LIGHT_MODE_DEFAULT);
       REPAO(Lights).draw(); // apply in backward order to leave main shadow map in the end
 
       if(!ALWAYS_RESTORE_FRUSTUM) // here use !ALWAYS_RESTORE_FRUSTUM because we have to set frustum only if it wasn't restored before, if it was then it means we already have 'FrustumMain'

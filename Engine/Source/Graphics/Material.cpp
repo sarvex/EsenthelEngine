@@ -16,6 +16,7 @@ namespace EE{
       BC1 offers better quality for Green channel (6 bits) compared to Red (5 bits), and Smooth needs more precision, because Metal in most cases is 0.0 or 1.0, so it's better to put Smooth in Green and Metal to Red.
 
    https://seblagarde.wordpress.com/2011/08/17/feeding-a-physical-based-lighting-mode/
+   https://google.github.io/filament/Filament.html#table_commonmatreflectance
 
    Water Reflectivity, Index of Refraction (IOR) of Water is 1.33:
       F(0)=Sqr(1.33-1)/Sqr(1.33+1)=0.020059312=~0.02 (2%)
@@ -23,7 +24,7 @@ namespace EE{
       Ice              0.018
       Water            0.02
       Eye              0.025
-      Skin             0.028, 0.033
+      Skin             0.028
       Plant,Leaf,Grass 0.035
       Rock, Bark       0.039
       Glass            0.04
@@ -31,6 +32,7 @@ namespace EE{
       Fabric           0.04 .. 0.056
       Sand             0.046
       Hair             0.047
+      Teeth            0.058
       Asphalt          0.06
       Ruby             0.077271957
       Crystal          0.111111111
@@ -201,6 +203,7 @@ Bool HasDepthWrite(MATERIAL_TECHNIQUE technique)
       case MTECH_GRASS_3D              :
       case MTECH_LEAF_2D               :
       case MTECH_DEPTH_BLEND           :
+      case MTECH_CLEAR_COAT            :
          return true;
       default: return false;
    }
@@ -351,7 +354,11 @@ Material& Material::validate() // #MaterialTextureLayout
   _depth_write   =HasDepthWrite      (technique); // !! call 'HasDepthWrite' instead of 'hasDepthWrite' because that one just uses '_depth_write'    which we're setting here !!
 //_coverage      =HasAlphaTestNoBlend(technique);
   _alpha_factor.set(0, 0, 0, FltToByte(T.glow));
-  _has_glow      =(_alpha_factor.a || emissive_glow>EPS_COL8);
+
+  _has=0;
+   if(_alpha_factor.a || emissive_glow>EPS_COL8)_has|=HAS_GLOW;
+   if(technique==MTECH_CLEAR_COAT              )_has|=HAS_CLEAR_COAT;
+   if(technique==MTECH_FUR                     )_has|=HAS_FUR;
 
    // set multi
    {
@@ -420,7 +427,7 @@ void Material::setOpaque()C
       MaterialLast    =this;
       MaterialLast4[0]=null; // because they use the same shader images
 
-      if(_has_glow)Renderer._has_glow=true;
+      Renderer._has|=_has;
       Sh.Col[0]  ->set(      base_0());
       Sh.Nrm[0]  ->set(      base_1());
       Sh.Ext[0]  ->set(      base_2());
@@ -441,7 +448,7 @@ void Material::setEmissive()C
       MaterialLast4[0]=null; // because they use the same shader images
 
       // textures needed for alpha-test #MaterialTextureLayout
-    //if(_has_glow)Renderer._has_glow=true; already processed in 'setOpaque'
+    //Renderer._has|=_has; already processed in 'setOpaque'
       Sh.Col[0]  ->set(base_0      ());
       Sh.Lum     ->set(emissive_map());
       Sh.Material->set<MaterialParams>(T); // params needed for alpha-test and emissive
@@ -457,7 +464,7 @@ void Material::setBlend()C
       MaterialLast=this;
     //MaterialLast4[0]=null; not needed since multi materials not rendered in blend mode
 
-      D.alphaFactor(_alpha_factor); if(_alpha_factor.a)Renderer._has_glow=true; // here operate only on '_alpha_factor.a' instead of '_has_glow' because blend shaders use glow only from alpha factor but not 'emissive_glow'
+      D.alphaFactor(_alpha_factor); if(_alpha_factor.a)Renderer._has|=HAS_GLOW; // here operate only on '_alpha_factor.a' instead of '_has' because blend shaders use glow only from alpha factor but not 'emissive_glow'
 
       Sh.Col[0]  ->set(      base_0());
       Sh.Nrm[0]  ->set(      base_1());
@@ -483,7 +490,7 @@ void Material::setBlendForce()C
       if(MaterialLast==this)return;
          MaterialLast= this;
 
-      D.alphaFactor(_alpha_factor); if(_alpha_factor.a)Renderer._has_glow=true; // here operate only on '_alpha_factor.a' instead of '_has_glow' because blend shaders use glow only from alpha factor but not 'emissive_glow'
+      D.alphaFactor(_alpha_factor); if(_alpha_factor.a)Renderer._has|=HAS_GLOW; // here operate only on '_alpha_factor.a' instead of '_has' because blend shaders use glow only from alpha factor but not 'emissive_glow'
    }
 
    Sh.Col[0]  ->set(      base_0());
@@ -538,7 +545,7 @@ void Material::setMulti(Int i)C
             MaterialLast4[i]=this;
       if(!i)MaterialLast    =null; // because they use the same shader images
 
-      if(_has_glow)Renderer._has_glow=true;
+      Renderer._has|=_has;
 
       Sh.Col          [i]->set(  base_0  ());
       Sh.Nrm          [i]->set(  base_1  ());

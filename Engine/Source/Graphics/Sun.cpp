@@ -37,7 +37,7 @@ void Astro::Draw()
    if(is() && Frustum(BallM(D.viewRange()*size*SQRT2, CamMatrix.pos+pos*D.viewRange())))
    {
       // TODO: apply per-pixel softing based on depth buffer, exactly like particle softing (draw closer to camera, but scale XY size, along CamMatrix.xy) and modify pixel shader
-      Renderer._has_glow|=(glow!=0);
+      if(glow)Renderer._has|=HAS_GLOW;
       D .alphaFactor(VecB4(0, 0, 0, glow)); MaterialClear(); // 'MaterialClear' must be called when changing 'D.alphaFactor'
       D .alpha      (Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR);
       VI.image      (image());

@@ -145,6 +145,15 @@
 #define ColorLumWeight  VecH(0.2126, 0.7152, 0.0722)
 #define ColorLumWeight2 VecH(0.2990, 0.5870, 0.1140)
 
+// Pixel Shade Mode #PIXEL_SHADE_MODE This can be [0..3] only, because we have R10G10B10A2 2 bits - 4 values
+#define PSM_NONE        0
+#define PSM_TRANSLUCENT 1 // used for double sided lighting for plants
+#define PSM_CLEAR_COAT  2 // used for car surfaces
+
+Bool IsPSM        (Flt value, Int mode) {return Abs(value-mode/3.0)<=0.5/3.0;}
+Bool IsTranslucent(Flt value          ) {return IsPSM(value, PSM_TRANSLUCENT);}
+Bool IsClearCoat  (Flt value          ) {return IsPSM(value, PSM_CLEAR_COAT );}
+
 #define TRANSLUCENT_VAL 0.5
 
 #define REFLECT_OCCL 0 // if apply occlusion for reflectivity below 0.02 #SpecularReflectionFromZeroSmoothReflectivity
@@ -1951,18 +1960,36 @@ Half Vis_SmithFastInv(Half rough, Half NdotL, Half NdotV) // fast approximation 
 	Half light=NdotV*(NdotL*(1-rough)+rough);
 	return (view+light)*2;
 }
-/*Half D_GGX(Half rough, Flt NdotH) // Trowbridge-Reitz, High Precision required
+/*Half Vis_Kelemen(Half VdotH)
 {
+   return (0.25/PI)/Sqr(VdotH);
+}
+Half D_GGX(Half rough, Flt NdotH) // Trowbridge-Reitz, High Precision required
+{
+#if 1
    Flt rough2=Sqr(rough);
    Flt f=(NdotH*rough2-NdotH)*NdotH+1;
    return rough2/(f*f); // NaN
+#else // alternative formula
+   Flt a=NdotH*rough;
+   Flt k=rough/(1 - NdotH*NdotH + a*a); // NaN
+   return k*k;
+#endif
 }*/
-Half D_GGX_Vis_Smith(Half rough, Flt NdotH, Half NdotL, Half NdotV, Bool quality) // D_GGX and Vis_Smith combined together
+Half D_GGX_Vis_Smith(Half rough, Flt NdotH, Half NdotL, Half NdotV, Bool quality) // 'D_GGX' and 'Vis_Smith' combined together, High Precision required
 {
    Half rough2=Sqr(rough);
    Flt  f=(NdotH*rough2-NdotH)*NdotH+1;
    Flt  div=f*f*(quality ? Vis_SmithR2Inv(rough2, NdotL, NdotV) : Vis_SmithFastInv(rough, NdotL, NdotV));
    return div ? rough2/div : HALF_MAX;
+}
+// !! HERE USE 'Flt' FOR 'rough' AND 'rough2' TO WORKAROUND https://github.com/Esenthel/EsenthelEngine/issues/21 !!
+Half D_GGX_Vis_Kelemen(Flt rough, Flt NdotH, Half VdotH) // 'D_GGX' and 'Vis_Kelemen' combined together, but without (0.25/PI), High Precision required
+{
+   Flt rough2=Sqr(rough);
+   Flt f=(NdotH*rough2-NdotH)*NdotH+1;
+   Flt div=f*f*Sqr(VdotH);
+   return div ? Min(rough2/div, HALF_MAX) : HALF_MAX; // this version can get very big, so have to clamp it to avoid black pixels, probably due to infinity
 }
 /******************************************************************************
 Popular game engines use only metalness texture, and calculate "Diffuse{return (1-metal)*base_color}" and "ReflectCol{return Lerp(0.04, base_color, metal)}"
@@ -2064,7 +2091,8 @@ struct LightParams
    #endif
    }
 
-   VecH specular(Half rough, Half reflectivity, VecH reflect_col, Bool quality, Half light_radius_frac=0.0036)
+   #define DEFAULT_LIGHT_RADIUS_FRAC 0.0036
+   VecH specular(Half rough, Half reflectivity, VecH reflect_col, Bool quality, Half light_radius_frac=DEFAULT_LIGHT_RADIUS_FRAC)
    { // currently specular can be generated even for smooth=0 and reflectivity=0 #SpecularReflectionFromZeroSmoothReflectivity
    #if 0
       if( Q)rough=Lerp(Pow(light_radius_frac, E ? 1.0/4 : 1.0/2), Pow(1, E ? 1.0/4 : 1.0/2), rough);
@@ -2084,6 +2112,29 @@ struct LightParams
       Half D_Vis=D_GGX_Vis_Smith(rough, NdotH_HP, NdotL, Abs(NdotV), quality); // use "Abs(NdotV)" as it helps greatly with faces away from the camera
       return F*(D_Vis/PI);
    #endif
+   }
+   VecH specularEx(Half rough, Half reflectivity, VecH reflect_col, Bool clear_coat, Half light_radius_frac=DEFAULT_LIGHT_RADIUS_FRAC)
+   {
+      VecH spec=specular(rough, reflectivity, reflect_col, true, light_radius_frac);
+      BRANCH if(clear_coat)
+      {
+         Half clear_coat_rough=0;
+         Half clear_coat_reflect=0.04;
+
+         clear_coat_rough =Sqr(clear_coat_rough);
+         clear_coat_rough+=light_radius_frac*(1-clear_coat_rough); // rough=Lerp(light_radius_frac, 1, rough);
+
+         Half clear_coat=F_Schlick(clear_coat_reflect, 1, VdotH);
+         spec*=1-clear_coat;
+         // TODO: should this also be applied to diffuse?
+
+      #if 1 // faster but still good quality
+         spec+=clear_coat*D_GGX_Vis_Kelemen(clear_coat_rough, NdotH_HP, VdotH)*(0.25/PI);
+      #else // slower
+         spec+=clear_coat*D_GGX_Vis_Smith(clear_coat_rough, NdotH_HP, NdotL, Abs(NdotV), true)/PI; // use "Abs(NdotV)" as it helps greatly with faces away from the camera
+      #endif
+      }
+      return spec;
    }
 };
 /******************************************************************************/
@@ -2315,7 +2366,7 @@ struct DeferredOutput // use this structure in Pixel Shader for setting the outp
 {
    // #RTOutput
    VecH4 out0:TARGET0; // Col, Glow
-   VecH4 out1:TARGET1; // Nrm XYZ, Translucent
+   VecH4 out1:TARGET1; // Nrm XYZ, #PIXEL_SHADE_MODE
    VecH2 out2:TARGET2; // Rough, Reflect
    VecH2 out3:TARGET3; // Motion (UV delta)
 
@@ -2330,7 +2381,7 @@ struct DeferredOutput // use this structure in Pixel Shader for setting the outp
       out1.xyz=normal*0.5+0.5; // -1..1 -> 0..1
    #endif
    }
-   void translucent(Half translucent) {out1.w=translucent;}
+   void mode(Int mode) {out1.w=mode/3.0;}
 
    void rough  (Half rough  ) {out2.x=rough  ;}
    void reflect(Half reflect) {out2.y=reflect;}

@@ -709,7 +709,7 @@ void DrawBlendInstances() // !! this function should be safe to call 2 times in 
             // this doesn't use velocities
             Shader     &shader  =*object->stat.shader  ; shader.start();
          opaque_shader:
-          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material._depth_write); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
+          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material.hasDepthWrite()); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
          opaque_shader_material:
           C MeshRender &render  = object->stat.mesh->render.set();
            _SetHighlight         (object->stat.highlight);
@@ -776,7 +776,7 @@ void DrawBlendInstances() // !! this function should be safe to call 2 times in 
             DisableSkinning();
             Shader     &shader  = object->stat.shader->asBlendShader(); shader.start();
          opaque_blst_shader:
-          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material._depth_write); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
+          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material.hasDepthWrite()); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
          opaque_blst_shader_material:
           C MeshRender &render  = object->stat.mesh->render.set();
            _SetHighlight         (object->stat.highlight);
@@ -851,7 +851,7 @@ void DrawBlendInstances() // !! this function should be safe to call 2 times in 
             SetShaderParamChanges(object->stat.shader_param_changes);
 
             Shader     &shader  =*object->stat.shader;
-          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material._depth_write); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
+          C Material   &material=*object->stat.material; material.setBlend(); D.cull(material.cull); D.depthWrite(material.hasDepthWrite()); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
           C MeshRender &render  = object->stat.mesh->render.set();
             shader.begin(); DrawFur(render, shader, scale);
             SetShaderParamChanges(); // this must be called here before setting new shader params, because we may have some 'ShaderParamRestore' that we need to apply before any new shader params, for example if we don't call it here, and a new material is set, and we process 'SetShaderParamChanges' later, then it could restore the material values that are now old because new material was already set
@@ -872,7 +872,7 @@ void DrawBlendInstances() // !! this function should be safe to call 2 times in 
                Shader &shader=skel_shader->shader->getBlendShader(skel_shader->type==BlendInstance::STATIC_BLST); shader.start();
                for(SkeletonShaderMaterial *skel_shader_material=&skel_shader->material; ; )
                {
-                C Material &material=*skel_shader_material->material; material.setBlend(); D.cull(material.cull); D.depthWrite(material._depth_write); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
+                C Material &material=*skel_shader_material->material; material.setBlend(); D.cull(material.cull); D.depthWrite(material.hasDepthWrite()); Renderer.needDepthTest(); shader.commitTex(); // !! 'needDepthTest' after 'depthWrite' !!
                   Bool shader_params_changed=true;
                   for(SkeletonBlendShaderMaterialMeshInstance *instance=&SkeletonBlendShaderMaterialMeshInstances[skel_shader_material->first_mesh_instance]; ; )
                   {

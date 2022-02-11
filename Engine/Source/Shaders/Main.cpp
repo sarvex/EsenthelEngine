@@ -500,13 +500,13 @@ void ClearDeferred_PS(NOPERSP Vec projected_prev_pos_xyw:PREV_POS,
                       NOPERSP PIXEL,
    out DeferredOutput output) // #RTOutput
 {
-   output.color      (0);
-   output.glow       (0);
-   output.normal     (VecH(0, 0, -1)); // set -1 because of AO #NRM_CLEAR
-   output.translucent(0);
-   output.rough      (1);
-   output.reflect    (0);
-   output.motion     (projected_prev_pos_xyw, pixel);
+   output.color  (0);
+   output.glow   (0);
+   output.normal (VecH(0, 0, -1)); // set -1 because of AO #NRM_CLEAR
+   output.mode   (PSM_NONE);
+   output.rough  (1);
+   output.reflect(0);
+   output.motion (projected_prev_pos_xyw, pixel);
 }
 /******************************************************************************/
 void ClearLight_PS(out VecH lum :TARGET0,

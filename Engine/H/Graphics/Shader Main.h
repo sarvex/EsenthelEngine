@@ -328,23 +328,23 @@ struct MainShaderClass
 
    // LIGHT
    Shader
-      *DrawLightDir   [DIFFUSE_NUM][3][2][2]   , // [Diffuse] [MultiSample] [Shadow] [Water]
-      *DrawLightPoint [DIFFUSE_NUM][3][2][2]   , // [Diffuse] [MultiSample] [Shadow] [Water]
-      *DrawLightLinear[DIFFUSE_NUM][3][2][2]   , // [Diffuse] [MultiSample] [Shadow] [Water]
-      *DrawLightCone  [DIFFUSE_NUM][3][2][2][2]; // [Diffuse] [MultiSample] [Shadow] [Water] [Image]
-   Shader* getDrawLightDir   (Int diffuse, Int multi_sample, Bool shadow, Bool water);
-   Shader* getDrawLightPoint (Int diffuse, Int multi_sample, Bool shadow, Bool water);
-   Shader* getDrawLightLinear(Int diffuse, Int multi_sample, Bool shadow, Bool water);
-   Shader* getDrawLightCone  (Int diffuse, Int multi_sample, Bool shadow, Bool water, Bool image);
+      *DrawLightDir   [DIFFUSE_NUM][3][LIGHT_MODE_NUM][2]   , // [Diffuse] [MultiSample] [LightMode] [Shadow]
+      *DrawLightPoint [DIFFUSE_NUM][3][LIGHT_MODE_NUM][2]   , // [Diffuse] [MultiSample] [LightMode] [Shadow]
+      *DrawLightLinear[DIFFUSE_NUM][3][LIGHT_MODE_NUM][2]   , // [Diffuse] [MultiSample] [LightMode] [Shadow]
+      *DrawLightCone  [DIFFUSE_NUM][3][LIGHT_MODE_NUM][2][2]; // [Diffuse] [MultiSample] [LightMode] [Shadow] [Image]
+   Shader* getDrawLightDir   (Int diffuse, Int multi_sample, Int light_mode, Bool shadow);
+   Shader* getDrawLightPoint (Int diffuse, Int multi_sample, Int light_mode, Bool shadow);
+   Shader* getDrawLightLinear(Int diffuse, Int multi_sample, Int light_mode, Bool shadow);
+   Shader* getDrawLightCone  (Int diffuse, Int multi_sample, Int light_mode, Bool shadow, Bool image);
 #if !DEPTH_CLIP_SUPPORTED
-   Shader *   DrawLightConeFlat[DIFFUSE_NUM][3][2][2][2]; // [Diffuse] [MultiSample] [Shadow] [Water] [Image]
-   Shader* getDrawLightConeFlat(Int diffuse, Int multi_sample, Bool shadow, Bool water, Bool image);
+   Shader *   DrawLightConeFlat[DIFFUSE_NUM][3][LIGHT_MODE_NUM][2][2]; // [Diffuse] [MultiSample] [LightMode] [Shadow] [Image]
+   Shader* getDrawLightConeFlat(Int diffuse, Int multi_sample, Int light_mode, Bool shadow, Bool image);
 #endif
 
    // APPLY LIGHT
    Shader
-      *ApplyLight[3][2][2][2][2][2]; // [MultiSample] [AmbientOcclusion] [CelShade] [NightShade] [Glow] [Reflect]
-   Shader* getApplyLight(Int multi_sample, Bool ao, Bool cel_shade, Bool night_shade, Bool glow, Bool reflect);
+      *ApplyLight[3][3][2][2][2][2]; // [MultiSample] [ReflectMode] [AmbientOcclusion] [CelShade] [NightShade] [Glow]
+   Shader* getApplyLight(Int multi_sample, Int reflect_mode, Bool ao, Bool cel_shade, Bool night_shade, Bool glow);
 
    // BLOOM
    ShaderParam
@@ -540,7 +540,8 @@ struct DefaultShaders
         fur, grass, leaf,
         alpha, alpha_blend, alpha_blend_no_light, alpha_blend_light,
         skin,
-        tesselate;
+        tesselate,
+        clear_coat;
    Byte materials, alpha_test, layout, bump, emissive, fx;
 
    void      init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Bool heightmap);

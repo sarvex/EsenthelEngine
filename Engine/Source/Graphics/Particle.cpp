@@ -45,7 +45,7 @@ Bool DrawParticleBegin(C Image &image, Byte glow, Bool motion_affects_alpha)
    switch(Renderer())
    {
       default         : return false;
-      case RM_BLEND   : shader=Sh.Particle[false][soft][0][motion_affects_alpha]; ColorFunc=ColorAlpha; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); Renderer._has_glow|=(glow!=0); break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
+      case RM_BLEND   : shader=Sh.Particle[false][soft][0][motion_affects_alpha]; ColorFunc=ColorAlpha; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); if(glow)Renderer._has|=HAS_GLOW; break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
       case RM_PALETTE :
       case RM_PALETTE1: shader=Sh.Particle[true ][soft][0][motion_affects_alpha]; ColorFunc=ColorMul  ; D.alpha(ALPHA_ADD                                                       ); break;
    }
@@ -86,7 +86,7 @@ Bool DrawAnimatedParticleBegin(C Image &image, Byte glow, Bool motion_affects_al
    switch(Renderer())
    {
       default         : return false;
-      case RM_BLEND   : shader=Sh.Particle[false][soft][1+D.particlesSmoothAnim()][motion_affects_alpha]; ColorFunc=ColorAlpha; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); Renderer._has_glow|=(glow!=0); break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
+      case RM_BLEND   : shader=Sh.Particle[false][soft][1+D.particlesSmoothAnim()][motion_affects_alpha]; ColorFunc=ColorAlpha; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); if(glow)Renderer._has|=HAS_GLOW; break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
       case RM_PALETTE :
       case RM_PALETTE1: shader=Sh.Particle[true ][soft][1+D.particlesSmoothAnim()][motion_affects_alpha]; ColorFunc=ColorMul  ; D.alpha(ALPHA_ADD                                                       ); break;
    }
@@ -762,7 +762,7 @@ void RawParticles::draw()C
       switch(Renderer())
       {
          default         : return;
-         case RM_BLEND   : shader=Sh.Particle[false][soft][0][motion_affects_alpha]; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); Renderer._has_glow|=(glow!=0); break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
+         case RM_BLEND   : shader=Sh.Particle[false][soft][0][motion_affects_alpha]; D.alpha(Renderer.fastCombine() ? ALPHA_BLEND : ALPHA_RENDER_BLEND_FACTOR); D.alphaFactor(Color(0, 0, 0, glow)); MaterialClear(); if(glow)Renderer._has|=HAS_GLOW; break; // 'MaterialClear' must be called when changing 'D.alphaFactor'
          case RM_PALETTE :
          case RM_PALETTE1: shader=Sh.Particle[true ][soft][0][motion_affects_alpha]; D.alpha(ALPHA_ADD                                                       ); break;
       }

@@ -94,7 +94,7 @@ void DrawLaser(C Color &color, C Color &middle_color, Flt middle_exponent, Flt r
          VI.color (       color);
          VI.color1(middle_color);
          Sh.Step->set(middle_exponent);
-         if(color.a || middle_color.a)Renderer._has_glow=true;
+         if(color.a || middle_color.a)Renderer._has|=HAS_GLOW;
       }
       VI.cull   (true);
       VI.setType(normals ? VI_3D_LASER : VI_3D_FLAT);

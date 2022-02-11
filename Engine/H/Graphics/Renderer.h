@@ -295,8 +295,8 @@ private:
    RENDER_TYPE           _type, _cur_type;
    RENDER_MODE           _mode;
    ALPHA_MODE            _mesh_blend_alpha;
-   Bool                  _has_glow, _has_fur, _forward_prec, _mirror, _mirror_want, _mirror_shadows, _first_pass, _palette_mode, _eye_adapt_scale_cur, _t_measure, _set_depth_needed, _get_target, _stereo, _mesh_early_z, _mesh_shader_vel, _temporal_use, _temporal_reset;
-   Byte                  _opaque_mode_index, _mesh_stencil_value, _mesh_stencil_mode, _outline, _clear;
+   Bool                  _has_glow, _forward_prec, _mirror, _mirror_want, _mirror_shadows, _first_pass, _palette_mode, _eye_adapt_scale_cur, _t_measure, _set_depth_needed, _get_target, _stereo, _mesh_early_z, _mesh_shader_vel, _temporal_use, _temporal_reset;
+   Byte                  _has, _opaque_mode_index, _mesh_stencil_value, _mesh_stencil_mode, _outline, _clear;
    Int                   _eye, _eye_num, _mirror_priority, _mirror_resolution, _mesh_variation_1;
    UInt                  _frst_light_offset, _blst_light_offset, _mesh_draw_mask;
    Color                 _mesh_highlight;

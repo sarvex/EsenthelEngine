@@ -175,7 +175,7 @@ void Laser_PS(Vec            inPos:TEXCOORD0,
    output.glow (Color[0].a  );
 #endif
    output.normal     (0);
-   output.translucent(0);
+   output.mode       (PSM_NONE);
    output.rough      (1);
    output.reflect    (0);
    output.motionZero ( );

@@ -82,7 +82,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
 
    Bool ms  =(api==API_DX), // if support multi-sampling in shaders
         tess=(api==API_DX); // if support tesselation    in shaders
-   Int  fxs[]={FX_GRASS_2D, FX_GRASS_3D, FX_LEAF_2D, FX_LEAF_3D, FX_LEAFS_2D, FX_LEAFS_3D};
+   Int  fxs[]={FX_GRASS_2D, FX_GRASS_3D, FX_LEAF_2D, FX_LEAF_3D, FX_LEAFS_2D, FX_LEAFS_3D}; // don't list FX_CLEAR_COAT here, because only Deferred shader uses it, so it's processed manually
 
 #ifdef MAIN
 {
@@ -298,29 +298,29 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
    { // LIGHT
       ShaderCompiler::Source &src=compiler.New(src_path+"Light.cpp");
       REPD(diffuse     , DIFFUSE_NUM)
-      REPD(shadow      , 2)
       REPD(multi_sample, ms ? 3 : 1)
-      REPD(water       , 2)
+      REPD(light_mode  , LIGHT_MODE_NUM)
+      REPD(shadow      , 2)
       {
-                           src.New("DrawLightDir"     , "DrawPosXY_VS", "LightDir_PS"   ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "SHADOW", shadow, "WATER", water); // Directional light is always fullscreen, so can use 2D shader
+                           src.New("DrawLightDir"     , "DrawPosXY_VS", "LightDir_PS"   ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "LIGHT_MODE", light_mode, "SHADOW", shadow); // Directional light is always fullscreen, so can use 2D shader
          REPD(gl_es, (api==API_GL) ? 2 : 1) // GL ES doesn't support NOPERSP and 'D.depthClip'
          {
-                           src.New("DrawLightPoint"   , "Geom_VS"     , "LightPoint_PS" ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "SHADOW", shadow, "WATER", water)(                "GL_ES", gl_es).extra("CLAMP_DEPTH", gl_es);  // 3D Geom Mesh (only ball based are depth-clamped, because Dir is fullscreen and Cone has too many artifacts when depth clamping)
-                           src.New("DrawLightLinear"  , "Geom_VS"     , "LightLinear_PS").multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "SHADOW", shadow, "WATER", water)(                "GL_ES", gl_es).extra("CLAMP_DEPTH", gl_es);  // 3D Geom Mesh (only ball based are depth-clamped, because Dir is fullscreen and Cone has too many artifacts when depth clamping)
-            REPD(image, 2){src.New("DrawLightCone"    , "Geom_VS"     , "LightCone_PS"  ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "SHADOW", shadow, "WATER", water)("IMAGE", image, "GL_ES", gl_es)                            ;  // 3D Geom Mesh
-                  if(gl_es)src.New("DrawLightConeFlat", "DrawPosXY_VS", "LightCone_PS"  ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "SHADOW", shadow, "WATER", water)("IMAGE", image                )                            ;} // 2D Flat
+                           src.New("DrawLightPoint"   , "Geom_VS"     , "LightPoint_PS" ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "LIGHT_MODE", light_mode, "SHADOW", shadow)(                "GL_ES", gl_es).extra("CLAMP_DEPTH", gl_es);  // 3D Geom Mesh (only ball based are depth-clamped, because Dir is fullscreen and Cone has too many artifacts when depth clamping)
+                           src.New("DrawLightLinear"  , "Geom_VS"     , "LightLinear_PS").multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "LIGHT_MODE", light_mode, "SHADOW", shadow)(                "GL_ES", gl_es).extra("CLAMP_DEPTH", gl_es);  // 3D Geom Mesh (only ball based are depth-clamped, because Dir is fullscreen and Cone has too many artifacts when depth clamping)
+            REPD(image, 2){src.New("DrawLightCone"    , "Geom_VS"     , "LightCone_PS"  ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "LIGHT_MODE", light_mode, "SHADOW", shadow)("IMAGE", image, "GL_ES", gl_es)                            ;  // 3D Geom Mesh
+                  if(gl_es)src.New("DrawLightConeFlat", "DrawPosXY_VS", "LightCone_PS"  ).multiSample(multi_sample)("DIFFUSE_MODE", diffuse, "MULTI_SAMPLE", multi_sample, "LIGHT_MODE", light_mode, "SHADOW", shadow)("IMAGE", image                )                            ;} // 2D Flat
          }
       }
    }
    { // LIGHT APPLY
       ShaderCompiler::Source &src=compiler.New(src_path+"Light Apply.cpp");
       REPD(multi_sample, ms ? 3 : 1)
+      REPD(reflect_mode, 3) // None, Reflect, Reflect+ClearCoat
       REPD(ao          , 2)
       REPD(  cel_shade , 2)
       REPD(night_shade , 2)
       REPD(glow        , 2)
-      REPD(reflect     , 2)
-         src.New("ApplyLight", "DrawUVPosXY_VS", "ApplyLight_PS")("MULTI_SAMPLE", multi_sample, "AO", ao, "CEL_SHADE", cel_shade, "NIGHT_SHADE", night_shade)("GLOW", glow, "REFLECT", reflect);
+         src.New("ApplyLight", "DrawUVPosXY_VS", "ApplyLight_PS")("MULTI_SAMPLE", multi_sample, "REFLECT_MODE", reflect_mode, "AO", ao, "CEL_SHADE", cel_shade, "NIGHT_SHADE", night_shade)("GLOW", glow);
    }
    { // SHADOW
       ShaderCompiler::Source &src=compiler.New(src_path+"Shadow.cpp");
@@ -788,6 +788,14 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       REPD (bump_mode, 2)
       REPAD(fx       , fxs)
          src.New().deferred(false, 1, layout, bump_mode ? SBUMP_NORMAL : SBUMP_FLAT, true, false, false, color, false, false, fxs[fx], false);
+
+      // clear coat
+      REPD(skin, 1)
+      for(Int layout=0; layout<=2; layout++)
+      for(Int bump_mode=SBUMP_FLAT; bump_mode<=SBUMP_NORMAL; bump_mode++)
+      REPD(tesselate, tess ? 2 : 1)
+      REPD(detail   , 1)
+         src.New().deferred(skin, 1, layout, bump_mode, false, detail, false, color, false, false, FX_CLEAR_COAT, tesselate);
    }
 }
 #endif

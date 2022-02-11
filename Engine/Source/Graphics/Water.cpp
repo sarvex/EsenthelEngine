@@ -315,7 +315,6 @@ void WaterClass::begin()
      _began=true;
 
       WS.load();
-    //Renderer._has_glow=true;
       D.alpha(ALPHA_NONE);
 
       ImageRTDesc rt_desc(Renderer._col->w(), Renderer._col->h(), IMAGERT_SRGB);

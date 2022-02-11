@@ -208,7 +208,8 @@ RendererClass::RendererClass() : material_color_l(null), highlight(null)
 
   _mode=RM_OPAQUE;
   _mesh_blend_alpha=ALPHA_NONE;
-  _has_glow=_has_fur=_mirror=_mirror_want=_mirror_shadows=_palette_mode=_eye_adapt_scale_cur=_t_measure=_set_depth_needed=_get_target=_stereo=_mesh_early_z=_mesh_shader_vel=_temporal_use=_temporal_reset=false;
+  _has_glow=_mirror=_mirror_want=_mirror_shadows=_palette_mode=_eye_adapt_scale_cur=_t_measure=_set_depth_needed=_get_target=_stereo=_mesh_early_z=_mesh_shader_vel=_temporal_use=_temporal_reset=false;
+  _has=0;
   _outline=_clear=0;
   _mirror_priority=_mirror_resolution=0;
   _frst_light_offset=_blst_light_offset=0;
@@ -642,7 +643,7 @@ INLINE Shader* GetReplaceAlpha() {Shader* &s=Sh.ReplaceAlpha; if(SLOW_SHADER_LOA
 /******************************************************************************/
 void RendererClass::cleanup()
 {
-  _has_fur=false; // do not clear '_has_glow' because this is called also for reflections, but if reflections have glow, then it means final result should have glow too
+   FlagDisable(_has, HAS_CLEAR_COAT|HAS_FUR); // !! DO NOT CLEAR 'HAS_GLOW' and '_has_glow' because this is called also for reflections, but if reflections have glow, then it means final result should have glow too !!
 //_final     =null   ; do not clear '_final' because this is called also for reflections, after which we still need '_final'
   _ds        .clear();
 //_ds_1s     .clear(); do not clear '_ds_1s' because 'setDepthForDebugDrawing' may be called after rendering finishes, also 'capture' makes use of it
@@ -715,8 +716,8 @@ RendererClass& RendererClass::operator()(void (&render)())
   _render     =render;
   _stereo     =(VR.active() && D._view_main.full && !combine && !target && !_get_target && D._allow_stereo); // use stereo only for full viewport, if we're not combining (games may use combining to display 3D items/characters in Gui)
   _eye_num    =_stereo+1; // _stereo ? 2 : 1
-  _has_glow   =_has_fur=false;
   _mirror_want=false;
+  _has        =0;
   _outline    =0;
    if(target)
    {
@@ -1252,7 +1253,7 @@ start:
                      ASSERT(!VEL_CLEAR_START); // some of codes below clear velocity to constant value, however we always need to use "ClearDeferred" because of camera angular velocities
 
         _ext.get(rt_desc.type(                    IMAGERT_TWO                                                             ));
-        _nrm.get(rt_desc.type(D.highPrecNrmRT() ? IMAGERT_RGB_A2_H : (D.signedNrmRT() ? IMAGERT_RGB_A2_S : IMAGERT_RGB_A2))); // here Alpha is used for effect type (none, leaf translucency)
+        _nrm.get(rt_desc.type(D.highPrecNrmRT() ? IMAGERT_RGB_A2_H : (D.signedNrmRT() ? IMAGERT_RGB_A2_S : IMAGERT_RGB_A2))); // here Alpha is used for #PIXEL_SHADE_MODE
 
          if(!merged_clear)
          { // clear from last to first to minimize RT changes
@@ -1579,7 +1580,7 @@ void RendererClass::setAlphaFromDepthAndCol()
       GetSetAlphaFromDepthAndCol(sky)->draw();
    }
 }
-INLINE Shader* GetApplyLight(Int multi_sample, Bool ao, Bool cel_shade, Bool night_shade, Bool glow, Bool reflect) {Shader* &s=Sh.ApplyLight[multi_sample][ao][cel_shade][night_shade][glow][reflect]; if(SLOW_SHADER_LOAD && !s)s=Sh.getApplyLight(multi_sample, ao, cel_shade, night_shade, glow, reflect); return s;}
+INLINE Shader* GetApplyLight(Int multi_sample, Int reflect_mode, Bool ao, Bool cel_shade, Bool night_shade, Bool glow) {Shader* &s=Sh.ApplyLight[multi_sample][reflect_mode][ao][cel_shade][night_shade][glow]; if(SLOW_SHADER_LOAD && !s)s=Sh.getApplyLight(multi_sample, reflect_mode, ao, cel_shade, night_shade, glow); return s;}
 void RendererClass::light()
 {
    if(processAlpha() && D.independentBlendAvailable())setAlphaFromDepth(); // setup alpha before applying lights instead of after, because after we end up with '_col' already bound, so doing this before will reduce RT changes
@@ -1616,7 +1617,9 @@ void RendererClass::light()
       getLumRT(); // get in case we still haven't initialized it
 
       // light buffer is ready so we can combine it with color
-      Bool ao=(_ao!=null), env=(D.envMap()!=null), cel_shade=(cel_shade_palette!=null), night_shade=(D.nightShadeColorD().max()>EPS_COL8_NATIVE), glow=(_has_glow && _col->hwTypeInfo().a); // process glow only if some object reported it and we actually have alpha channel in RT (otherwise glow could be always 1.0)
+      Bool ao=(_ao!=null), env=(D.envMap()!=null), cel_shade=(cel_shade_palette!=null), night_shade=(D.nightShadeColorD().max()>EPS_COL8_NATIVE),
+         glow=((_has&HAS_GLOW) && _col->hwTypeInfo().a); // process glow only if some object reported it and we actually have alpha channel in RT (otherwise glow could be always 1.0)
+                                                         // !! AT THIS STAGE WE HAVE TO CHECK "_has&HAS_GLOW" AND NOT '_has_glow' BECAUSE THAT'S NOT SET YET !!
       ImageRTPtr src=_col; // can't read and write to the same RT
       Bool has_last_frag_color=false, // TODO: there would be no need to write to a new RT if we would use gl_LastFragColor/gl_LastFragData[0] using extensions - https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_shader_framebuffer_fetch.txt and https://www.khronos.org/registry/OpenGL/extensions/ARM/ARM_shader_framebuffer_fetch.txt
            use_last_frag_color=(has_last_frag_color && (D.highPrecColRT() ? IMAGE_PRECISION_10 : IMAGE_PRECISION_8)==D.litColRTPrecision());
@@ -1628,6 +1631,7 @@ void RendererClass::light()
         _spec_1s->clearViewport(); if(_spec!=_spec_1s)_spec->clearViewport();
          ao=env=cel_shade=night_shade=false;
       }
+      Int reflect_mode=(env ? (_has&HAS_CLEAR_COAT) ? 2 : 1 : 0);
 
       Sh.Img  [0]->set(_nrm                );
       Sh.Img  [1]->set( src                );
@@ -1648,7 +1652,7 @@ void RendererClass::light()
 
          default: D.depth2DOn(); break;
       }
-      if(!_col->multiSample())GetApplyLight(0, ao, cel_shade, night_shade, glow, env)->draw();else
+      if(!_col->multiSample())GetApplyLight(0, reflect_mode, ao, cel_shade, night_shade, glow)->draw();else
       {
          Sh.ImgMS[0]->set(_nrm );
          Sh.ImgMS[1]->set( src );
@@ -1657,19 +1661,19 @@ void RendererClass::light()
          Sh.ImgXYMS ->set(_ext );
          if(hasStencilAttached())
          {
-            D.stencil   (STENCIL_MSAA_TEST, 0); GetApplyLight(1, ao, cel_shade, night_shade, glow, env)->draw(); // 1 sample
-            if(Sky.isActual())D.depth2DOff();                                                                    // multi-sampled always fill fully when sky will be rendered
-            D.stencilRef(STENCIL_REF_MSAA    ); GetApplyLight(2, ao, cel_shade, night_shade, glow, env)->draw(); // n samples
+            D.stencil   (STENCIL_MSAA_TEST, 0); GetApplyLight(1, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // 1 sample
+            if(Sky.isActual())D.depth2DOff();                                                                             // multi-sampled always fill fully when sky will be rendered
+            D.stencilRef(STENCIL_REF_MSAA    ); GetApplyLight(2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
             D.stencil   (STENCIL_NONE        );
          }else
          {
-            if(Sky.isActual())D.depth2DOff();                                // multi-sampled always fill fully when sky will be rendered
-            GetApplyLight(2, ao, cel_shade, night_shade, glow, env)->draw(); // n samples
+            if(Sky.isActual())D.depth2DOff();                                         // multi-sampled always fill fully when sky will be rendered
+            GetApplyLight(2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
          }
       }
       D.depth2DOff();
-      if(_lum !=_lum_1s  && (  _has_fur ||   stage==RS_LIGHT || stage==RS_LIGHT_AO)){set(_lum_1s , null, true); D.alpha(ALPHA_ADD); if(ambientInLum())Sh.draw(*_lum, Vec4(1), Vec4(-D.ambientColorD(), 0));else Sh.draw(*_lum );} // need to apply multi-sampled lum  to 1-sample for fur and show light stage, if ambient is in _lum and _lum_1s RT's then it means we have to subtract ambient from '_lum' before adding to '_lum_1s', so we don't end up with 2x ambient
-      if(_spec!=_spec_1s && (/*_has_fur ||*/ stage==RS_LIGHT || stage==RS_LIGHT_AO)){set(_spec_1s, null, true); D.alpha(ALPHA_ADD);                                                                             Sh.draw(*_spec);} // need to apply multi-sampled spec to 1-sample for         show light stage
+      if(_lum !=_lum_1s  && (  (_has&HAS_FUR) ||   stage==RS_LIGHT || stage==RS_LIGHT_AO)){set(_lum_1s , null, true); D.alpha(ALPHA_ADD); if(ambientInLum())Sh.draw(*_lum, Vec4(1), Vec4(-D.ambientColorD(), 0));else Sh.draw(*_lum );} // need to apply multi-sampled lum  to 1-sample for fur and show light stage, if ambient is in _lum and _lum_1s RT's then it means we have to subtract ambient from '_lum' before adding to '_lum_1s', so we don't end up with 2x ambient
+      if(_spec!=_spec_1s && (/*(_has&HAS_FUR) ||*/ stage==RS_LIGHT || stage==RS_LIGHT_AO)){set(_spec_1s, null, true); D.alpha(ALPHA_ADD);                                                                             Sh.draw(*_spec);} // need to apply multi-sampled spec to 1-sample for         show light stage
             src    .clear();
            _nrm    .clear();
    //_water_nrm    .clear(); we may still need it for refraction
@@ -1973,7 +1977,7 @@ void RendererClass::blend()
    }
 
    // apply light in case of drawing fur, which samples the light buffer
-   if(_has_fur)
+   if(_has&HAS_FUR)
    {
       if(_ao)
       {

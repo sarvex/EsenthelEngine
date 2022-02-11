@@ -395,7 +395,8 @@ class MaterialRegion : Region
       {MTECH_TEST_BLEND_LIGHT      , "Test Blend Light"      , u"Works like Blend Light technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
       {MTECH_TEST_BLEND_LIGHT_GRASS, "Test Blend Light Grass", u"Works like Blend Light Grass technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
       {MTECH_TEST_BLEND_LIGHT_LEAF , "Test Blend Light Leaf" , u"Works like Blend Light Leaf technique with additional Alpha-Testing and Depth-Writing which enables correct Depth-Sorting."},
-   }; ASSERT(MTECH_NUM==16);
+      {MTECH_CLEAR_COAT            , "Clear Coat"            , u"Can be used for metallic car surfaces."},
+   }; ASSERT(MTECH_NUM==17);
    static Str  Tech(C MaterialRegion &mr          ) {REPA(mtrl_techs)if(mtrl_techs[i].tech==mr.edit.tech)return i; return S;}
    static void Tech(  MaterialRegion &mr, C Str &t) {int i=TextInt(t); if(InRange(i, mtrl_techs)){mr.edit.tech=mtrl_techs[i].tech; mr.edit.tech_time.now(); mr.setChanged(); D.setShader(mr.game());}}
 

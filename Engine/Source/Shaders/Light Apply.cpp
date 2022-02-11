@@ -2,8 +2,16 @@
 #include "!Header.h"
 #include "Light Apply.h"
 
+#ifndef REFLECT_MODE
+#define REFLECT_MODE 1
+#endif
+
 #ifndef REFLECT
-#define REFLECT 1
+#define REFLECT (REFLECT_MODE>0)
+#endif
+
+#ifndef CLEAR_COAT
+#define CLEAR_COAT (REFLECT_MODE>1)
 #endif
 
 #define AO_ALL 1  // !! must be the same as 'D.aoAll()' !! if apply Ambient Occlusion to all lights (not just Ambient), this was disabled in the past, however in LINEAR_GAMMA the darkening was too strong in low light, enabling this option solves that problem
@@ -13,7 +21,7 @@
 /******************************************************************************/
 Half CelShade(Half lum) {return TexLod(Img4, VecH2(lum, 0.5)).x;} // have to use linear filtering
 /******************************************************************************/
-VecH LitCol(VecH base_col, Half glow, Vec nrm, Half rough, Half reflect, VecH lum, VecH spec, Half ao, VecH night_shade_col, Bool night_shade_ao, Vec eye_dir)
+VecH LitCol(VecH base_col, Half glow, Vec nrm, Half rough, Half reflect, VecH lum, VecH spec, Half ao, VecH night_shade_col, Bool night_shade_ao, Vec eye_dir, Flt mode)
 {
    Half max_lum=Max(lum);
    if(CEL_SHADE)
@@ -36,13 +44,34 @@ VecH LitCol(VecH base_col, Half glow, Vec nrm, Half rough, Half reflect, VecH lu
    }
    Half inv_metal=ReflectToInvMetal(reflect), diffuse=Diffuse(inv_metal);
    if(GLOW)ProcessGlow(glow, diffuse);
-   lit_col=lit_col*diffuse+spec;
 #if REFLECT
    Half NdotV      =-Dot(nrm, eye_dir);
    Vec  reflect_dir=ReflectDir(eye_dir, nrm);
    VecH reflect_col=ReflectCol(reflect, base_col, inv_metal);
-   lit_col+=ReflectTex(reflect_dir, rough)*EnvColor*ReflectEnv(rough, reflect, reflect_col, NdotV, true);
+   VecH     env_col=ReflectTex(reflect_dir, rough)*ReflectEnv(rough, reflect, reflect_col, NdotV, true);
+
+   #if CLEAR_COAT
+      BRANCH if(IsClearCoat(mode))
+      {
+         Half clear_coat_rough=0;
+         Half clear_coat_reflect=0.04;
+
+      #if 1 // faster but still good quality
+         Half clear_coat=F_Schlick(clear_coat_reflect, 1, Sat(NdotV));
+      #else
+         Half clear_coat=ReflectEnv(clear_coat_rough, clear_coat_reflect, ReflectCol(clear_coat_reflect, 1), NdotV, true).x;
+      #endif
+
+       //diffuse*=1-clear_coat; // TODO: this should be on?
+
+         env_col*=1-clear_coat;
+         env_col+=ReflectTex(reflect_dir, clear_coat_rough)*clear_coat;
+      }
+   #endif
+
+   spec+=EnvColor*env_col;
 #endif
+   lit_col=lit_col*diffuse+spec;
    if(AO && AO_ALL)lit_col*=ao;
    if(GLOW)ProcessGlow(glow, base_col, lit_col);
    return lit_col;
@@ -60,10 +89,10 @@ VecH4 ApplyLight_PS(NOPERSP Vec2 uv   :UV,
       VecH4 color=   Img1  [pix]; // #RTOutput
       VecH  lum  =   Img2  [pix].rgb;
       VecH  spec =   Img3  [pix].rgb;
-      Vec   nrm  =GetNormal(pix).xyz;
+      Vec4  nrm  =GetNormal(pix);
       VecH2 ext  =GetExt   (pix); // #RTOutput
       if(AO && !AO_ALL)lum+=ambient;
-      color.rgb=LitCol(color.rgb, color.a, nrm, ext.x, ext.y, lum, spec, ao, NightShadeColor, AO && !AO_ALL, eye_dir);
+      color.rgb=LitCol(color.rgb, color.a, nrm.xyz, ext.x, ext.y, lum, spec, ao, NightShadeColor, AO && !AO_ALL, eye_dir, nrm.w);
       return color;
    }else
    if(MULTI_SAMPLE==1) // 1 sample
@@ -71,10 +100,10 @@ VecH4 ApplyLight_PS(NOPERSP Vec2 uv   :UV,
       VecH4  color=TexSample  (ImgMS1, pix, 0); // #RTOutput
       VecH   lum  =   Img2    [        pix   ].rgb; //  Lum1S
       VecH   spec =   Img3    [        pix   ].rgb; // Spec1S
-      Vec    nrm  =GetNormalMS(        pix, 0).xyz;
+      Vec4   nrm  =GetNormalMS(        pix, 0);
       VecH2  ext  =GetExtMS   (        pix, 0); // #RTOutput
       if(AO && !AO_ALL)lum+=ambient;
-      color.rgb=LitCol(color.rgb, color.a, nrm, ext.x, ext.y, lum, spec, ao, NightShadeColor, AO && !AO_ALL, eye_dir);
+      color.rgb=LitCol(color.rgb, color.a, nrm.xyz, ext.x, ext.y, lum, spec, ao, NightShadeColor, AO && !AO_ALL, eye_dir, nrm.w);
       return color;
    }else // n samples
    {
@@ -86,10 +115,10 @@ VecH4 ApplyLight_PS(NOPERSP Vec2 uv   :UV,
          VecH4 color=TexSample  (ImgMS1, pix, i); // #RTOutput
          VecH  lum  =TexSample  (ImgMS2, pix, i).rgb; //  LumMS
          VecH  spec =TexSample  (ImgMS3, pix, i).rgb; // SpecMS
-         Vec   nrm  =GetNormalMS(        pix, i).xyz;
+         Vec4  nrm  =GetNormalMS(        pix, i);
          VecH2 ext  =GetExtMS   (        pix, i); // #RTOutput
          if(AO && !AO_ALL)lum+=ambient;
-         color.rgb =LitCol(color.rgb, color.a, nrm, ext.x, ext.y, lum, spec, ao, (NIGHT_SHADE && AO && !AO_ALL) ? night_shade_col : NightShadeColor, false, eye_dir); // we've already adjusted 'night_shade_col' by 'ao', so set 'night_shade_ao' as false
+         color.rgb =LitCol(color.rgb, color.a, nrm.xyz, ext.x, ext.y, lum, spec, ao, (NIGHT_SHADE && AO && !AO_ALL) ? night_shade_col : NightShadeColor, false, eye_dir, nrm.w); // we've already adjusted 'night_shade_col' by 'ao', so set 'night_shade_ao' as false
          color_sum+=color;
          valid_samples++;
       }

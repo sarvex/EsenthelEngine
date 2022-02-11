@@ -10,6 +10,9 @@
 /******************************************************************************/
 #pragma ruledisable "abs instruction to abs modifier match" // workaround for https://github.com/Esenthel/EsenthelEngine/issues/21 FIXME: TODO: check again in the future if this is still needed
 
+#define WATER      (LIGHT_MODE==LIGHT_MODE_WATER)
+#define CLEAR_COAT (LIGHT_MODE==LIGHT_MODE_CLEAR_COAT)
+
 #include "!Header.h"
 #include "Water.h"
 
@@ -81,7 +84,7 @@ VecH LightDir_PS
    LightParams lp; lp.set(nrm.xyz, light_dir);
    Half lum=lp.NdotL; if(SHADOW)lum*=shadow; if(lum<=EPS_LUM)
    {
-      if(!WATER && nrm.w && -lum>EPS_LUM){outSpec=0; return LightDir.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
+      if(!WATER && IsTranslucent(nrm.w) && -lum>EPS_LUM){outSpec=0; return LightDir.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
       discard; // !! have to skip when "NdotL<=0" to don't apply negative values to RT !!
    }
    if(SHADOW_PERCEPTUAL)lum*=shadow;
@@ -106,8 +109,8 @@ VecH LightDir_PS
    lp.set(nrm.xyz, light_dir, eye_dir);
 
    VecH    lum_rgb=LightDir.color.rgb*lum;
-   outSpec=lum_rgb*lp.specular(ext.x, ext.y, ReflectCol(ext.y, base_col), true, LightDir.radius_frac); // specular #RTOutput
-   return  lum_rgb*lp.diffuse (ext.x                                                                ); // diffuse  #RTOutput
+   outSpec=lum_rgb*lp.specularEx(ext.x, ext.y, ReflectCol(ext.y, base_col), CLEAR_COAT ? IsClearCoat(nrm.w) : false, LightDir.radius_frac); // specular #RTOutput
+   return  lum_rgb*lp.diffuse   (ext.x                                                                                                   ); // diffuse  #RTOutput
 }
 /******************************************************************************/
 VecH LightPoint_PS
@@ -159,7 +162,7 @@ VecH LightPoint_PS
    LightParams lp; lp.set(nrm.xyz, light_dir);
    lum*=lp.NdotL; if(lum<=EPS_LUM)
    {
-      if(!WATER && nrm.w && -lum>EPS_LUM){outSpec=0; return LightPoint.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
+      if(!WATER && IsTranslucent(nrm.w) && -lum>EPS_LUM){outSpec=0; return LightPoint.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
       discard; // !! have to skip when "NdotL<=0" to don't apply negative values to RT !!
    }
    if(SHADOW_PERCEPTUAL)lum*=shadow;
@@ -184,8 +187,8 @@ VecH LightPoint_PS
    lp.set(nrm.xyz, light_dir, eye_dir);
 
    VecH    lum_rgb=LightPoint.color.rgb*lum;
-   outSpec=lum_rgb*lp.specular(ext.x, ext.y, ReflectCol(ext.y, base_col), true); // specular #RTOutput
-   return  lum_rgb*lp.diffuse (ext.x                                          ); // diffuse  #RTOutput
+   outSpec=lum_rgb*lp.specularEx(ext.x, ext.y, ReflectCol(ext.y, base_col), CLEAR_COAT ? IsClearCoat(nrm.w) : false); // specular #RTOutput
+   return  lum_rgb*lp.diffuse   (ext.x                                                                             ); // diffuse  #RTOutput
 }
 /******************************************************************************/
 VecH LightLinear_PS
@@ -237,7 +240,7 @@ VecH LightLinear_PS
    LightParams lp; lp.set(nrm.xyz, light_dir);
    lum*=lp.NdotL; if(lum<=EPS_LUM)
    {
-      if(!WATER && nrm.w && -lum>EPS_LUM){outSpec=0; return LightLinear.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
+      if(!WATER && IsTranslucent(nrm.w) && -lum>EPS_LUM){outSpec=0; return LightLinear.color.rgb*(lum*-TRANSLUCENT_VAL);} // #RTOutput translucent
       discard; // !! have to skip when "NdotL<=0" to don't apply negative values to RT !!
    }
    if(SHADOW_PERCEPTUAL)lum*=shadow;
@@ -262,8 +265,8 @@ VecH LightLinear_PS
    lp.set(nrm.xyz, light_dir, eye_dir);
 
    VecH    lum_rgb=LightLinear.color.rgb*lum;
-   outSpec=lum_rgb*lp.specular(ext.x, ext.y, ReflectCol(ext.y, base_col), true); // specular #RTOutput
-   return  lum_rgb*lp.diffuse (ext.x                                          ); // diffuse  #RTOutput
+   outSpec=lum_rgb*lp.specularEx(ext.x, ext.y, ReflectCol(ext.y, base_col), CLEAR_COAT ? IsClearCoat(nrm.w) : false); // specular #RTOutput
+   return  lum_rgb*lp.diffuse   (ext.x                                                                             ); // diffuse  #RTOutput
 }
 /******************************************************************************/
 VecH LightCone_PS
@@ -317,7 +320,7 @@ VecH LightCone_PS
    LightParams lp; lp.set(nrm.xyz, light_dir);
    lum*=lp.NdotL; if(lum<=EPS_LUM)
    {
-      if(!WATER && nrm.w && -lum>EPS_LUM) // #RTOutput translucent
+      if(!WATER && IsTranslucent(nrm.w) && -lum>EPS_LUM) // #RTOutput translucent
       {
          outSpec=0;
          lum*=-TRANSLUCENT_VAL;
@@ -355,7 +358,7 @@ VecH LightCone_PS
    lum_rgb*=RTex(Img2, dir.xy*(LightMapScale*0.5)+0.5).rgb;
 #endif
 
-   outSpec=lum_rgb*lp.specular(ext.x, ext.y, ReflectCol(ext.y, base_col), true); // specular #RTOutput
-   return  lum_rgb*lp.diffuse (ext.x                                          ); // diffuse  #RTOutput
+   outSpec=lum_rgb*lp.specularEx(ext.x, ext.y, ReflectCol(ext.y, base_col), CLEAR_COAT ? IsClearCoat(nrm.w) : false); // specular #RTOutput
+   return  lum_rgb*lp.diffuse   (ext.x                                                                             ); // diffuse  #RTOutput
 }
 /******************************************************************************/
