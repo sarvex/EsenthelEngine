@@ -4,27 +4,27 @@ namespace EE{
 /******************************************************************************
 
    #RTOutput
-   RT        : Width    , Height   ,                                                                                            Type         , Samples  , Comments
-  _main      : D.   resW, D.   resH,                                                                                            IMAGERT_SRGBA, 1        , COLOR RGB, Opacity
-  _main_ds   : D.   resW, D.   resH,                                                                                            IMAGERT_DS   , 1        , this is the Main DepthStencil buffer to be used together with '_main' RT, on OpenGL (except iOS) it is provided by the system
-  _ds        : D.renderW, D.renderW,                                                                                            IMAGERT_DS   , D.samples
-  _ds_1s     : D.renderW, D.renderW,                                                                                            IMAGERT_DS   , 1        , if '_ds' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_ds'
-  _col       : D.renderW, D.renderH,                                                        D.highPrecColRT ? IMAGERT_SRGBA_P : IMAGERT_SRGBA, D.samples, COLOR RGB, GLOW
-  _nrm       : D.renderW, D.renderH,                D.highPrecNrmRT ? IMAGERT_RGB_A1_H : (D.signedNrmRT ? IMAGERT_RGB_A1_S : IMAGERT_RGB_A1) , D.samples, NRM   XYZ, TRANSLUCENCY (used for double sided lighting for plants)
-  _ext       : D.renderW, D.renderH,                                                                                            IMAGERT_TWO  , D.samples, ROUGH    , REFLECT
-  _vel       : D.renderW, D.renderH,                                                                                            IMAGERT_TWO_H, D.samples, 2D MOTION (UV delta from CUR_POS to PREV_FRAME_POS)
-  _alpha     : D.renderW, D.renderH,                                                                                            IMAGERT_ONE  , D.samples, OPACITY
-  _lum       : D.renderW, D.renderH,                                                         D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB , D.samples, LIGHT RGB
-  _lum_1s    : D.renderW, D.renderH,                                                         D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB , 1        , LIGHT RGB. if '_lum' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_lum'
-  _spec      : D.renderW, D.renderH,                                                         D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB , D.samples, LIGHT SPEC RGB
-  _spec_1s   : D.renderW, D.renderH,                                                         D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB , 1        , LIGHT SPEC RGB. if '_spec' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_spec'
+   RT        : Width    , Height   ,                                                                                           Type           , Samples  , Comments
+  _main      : D.   resW, D.   resH,                                                                                           IMAGERT_SRGBA  , 1        , COLOR RGB, Opacity
+  _main_ds   : D.   resW, D.   resH,                                                                                           IMAGERT_DS     , 1        , this is the Main DepthStencil buffer to be used together with '_main' RT, on OpenGL (except iOS) it is provided by the system
+  _ds        : D.renderW, D.renderW,                                                                                           IMAGERT_DS     , D.samples
+  _ds_1s     : D.renderW, D.renderW,                                                                                           IMAGERT_DS     , 1        , if '_ds' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_ds'
+  _col       : D.renderW, D.renderH,                                                      D.highPrecColRT ? IMAGERT_SRGBA_P  : IMAGERT_SRGBA  , D.samples, COLOR RGB, GLOW
+  _nrm       : D.renderW, D.renderH,                D.highPrecNrmRT ? IMAGERT_RGB_A2_H : (D.signedNrmRT   ? IMAGERT_RGB_A2_S : IMAGERT_RGB_A2), D.samples, NRM   XYZ, TRANSLUCENCY (used for double sided lighting for plants)
+  _ext       : D.renderW, D.renderH,                                                                                           IMAGERT_TWO    , D.samples, ROUGH    , REFLECT
+  _vel       : D.renderW, D.renderH,                                                                                           IMAGERT_TWO_H  , D.samples, 2D MOTION (UV delta from CUR_POS to PREV_FRAME_POS)
+  _alpha     : D.renderW, D.renderH,                                                                                           IMAGERT_ONE    , D.samples, OPACITY
+  _lum       : D.renderW, D.renderH,                                                        D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB   , D.samples, LIGHT RGB
+  _lum_1s    : D.renderW, D.renderH,                                                        D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB   , 1        , LIGHT RGB. if '_lum' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_lum'
+  _spec      : D.renderW, D.renderH,                                                        D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB   , D.samples, LIGHT SPEC RGB
+  _spec_1s   : D.renderW, D.renderH,                                                        D.highPrecLumRT ? IMAGERT_SRGB_H : IMAGERT_SRGB   , 1        , LIGHT SPEC RGB. if '_spec' is Multi-Sampled then this is created as a standalone 1-sampled depth buffer, otherwise it's a duplicate of '_spec'
 
-  _water_col : D.renderW, D.renderH,                                                                                            IMAGERT_SRGB , 1        , COLOR RGB
-  _water_nrm : D.renderW, D.renderH,                                                            D.signedNrmRT ? IMAGERT_RGB_S : IMAGERT_RGB  , 1        , NRM   XYZ
+  _water_col : D.renderW, D.renderH,                                                                                           IMAGERT_SRGB   , 1        , COLOR RGB
+  _water_nrm : D.renderW, D.renderH,                                                           D.signedNrmRT ? IMAGERT_RGB_S : IMAGERT_RGB    , 1        , NRM   XYZ
    there's no _water_ext #WaterExt
-  _water_ds  : D.renderW, D.renderH,                                                                                            IMAGERT_DS   , 1        , Water Depth
-  _water_lum : D.renderW, D.renderH,                                                                                            IMAGERT_SRGB , 1        , LIGHT RGB
-  _water_spec: D.renderW, D.renderH,                                                                                            IMAGERT_SRGB , 1        , LIGHT SPEC RGB
+  _water_ds  : D.renderW, D.renderH,                                                                                           IMAGERT_DS     , 1        , Water Depth
+  _water_lum : D.renderW, D.renderH,                                                                                           IMAGERT_SRGB   , 1        , LIGHT RGB
+  _water_spec: D.renderW, D.renderH,                                                                                           IMAGERT_SRGB   , 1        , LIGHT SPEC RGB
 
    '_gui' is set to '_main', unless stereoscopic rendering is enabled then it's set to VR RT
 

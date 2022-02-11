@@ -572,9 +572,10 @@ static inline Flt GetPixelF(C Byte *data, C Image &image, Bool _2d, Int x, Int y
          return (*(U16*)data)/Flt(0x0000FFFFu);
 
       // 32
-      case IMAGE_D32 :       return GL ? (*(Flt*)data)*2-1 : *(Flt*)data;
-    //case IMAGE_D32I: if(GL)return (*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1; // !! else fall through no break on purpose !!
-      case IMAGE_I32 :
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24:       return GL ? (*(Flt*)data)*2-1 : *(Flt*)data;
+    //case IMAGE_D32I    : if(GL)return (*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1; // !! else fall through no break on purpose !!
+      case IMAGE_I32     :
          return (*(U32*)data)/Dbl(0xFFFFFFFFu); // Dbl required to get best precision
 
       // 24
@@ -1154,8 +1155,9 @@ Vec4 ImageColorF(CPtr data, IMAGE_TYPE hw_type)
 
       // 32
    #if SUPPORT_DEPTH_TO_COLOR
-      case IMAGE_D32 :       return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
-    //case IMAGE_D32I: if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24: return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
+    //case IMAGE_D32I    : if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
    #endif
       case IMAGE_I32:
          return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)), 1); // Dbl required to get best precision
@@ -1214,8 +1216,9 @@ static inline Vec4 GetColorF(CPtr data, C Image &image, Bool _2d, Int x, Int y, 
 
       // 32
    #if SUPPORT_DEPTH_TO_COLOR
-      case IMAGE_D32 :       return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
-    //case IMAGE_D32I: if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24: return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
+    //case IMAGE_D32I    : if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
    #endif
       case IMAGE_I32:
          return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)), 1); // Dbl required to get best precision
@@ -1312,8 +1315,9 @@ Vec4 ImageColorL(CPtr data, IMAGE_TYPE hw_type)
 
       // 32
    #if SUPPORT_DEPTH_TO_COLOR
-      case IMAGE_D32 :       return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
-    //case IMAGE_D32I: if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24: return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
+    //case IMAGE_D32I    : if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
    #endif
       case IMAGE_I32:
          return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)), 1); // Dbl required to get best precision
@@ -1383,8 +1387,9 @@ static inline Vec4 GetColorL(CPtr data, C Image &image, Bool _2d, Int x, Int y, 
 
       // 32
    #if SUPPORT_DEPTH_TO_COLOR
-      case IMAGE_D32 :       return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
-    //case IMAGE_D32I: if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24: return Vec4(Vec(GL ? (*(Flt*)data)*2-1 : *(Flt*)data), 1);
+    //case IMAGE_D32I    : if(GL)return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1), 1); // !! else fall through no break on purpose !!
    #endif
       case IMAGE_I32:
          return Vec4(Vec((*(U32*)data)/Dbl(0xFFFFFFFFu)), 1); // Dbl required to get best precision

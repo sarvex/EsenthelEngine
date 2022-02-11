@@ -1252,7 +1252,7 @@ start:
                      ASSERT(!VEL_CLEAR_START); // some of codes below clear velocity to constant value, however we always need to use "ClearDeferred" because of camera angular velocities
 
         _ext.get(rt_desc.type(                    IMAGERT_TWO                                                             ));
-        _nrm.get(rt_desc.type(D.highPrecNrmRT() ? IMAGERT_RGB_A1_H : (D.signedNrmRT() ? IMAGERT_RGB_A1_S : IMAGERT_RGB_A1))); // here Alpha is unused
+        _nrm.get(rt_desc.type(D.highPrecNrmRT() ? IMAGERT_RGB_A2_H : (D.signedNrmRT() ? IMAGERT_RGB_A2_S : IMAGERT_RGB_A2))); // here Alpha is used for effect type (none, leaf translucency)
 
          if(!merged_clear)
          { // clear from last to first to minimize RT changes

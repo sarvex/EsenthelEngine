@@ -108,16 +108,17 @@ ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the sa
    {"B5G5R5A1"       , false, false,  2, 16,   5, 5, 5, 1,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B5G5R5A1_UNORM, 0)},
    {"B4G4R4A4"       , false, false,  2, 16,   4, 4, 4, 4,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN       , 0)},
 
-   {"D16"            , false, true ,  2, 16,   0, 0, 0, 0,  16,0, 1, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_D16_UNORM        , GL_DEPTH_COMPONENT16 )},
-   {"D24X8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,0, 1, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN          , GL_DEPTH_COMPONENT24 )},
-   {"D24S8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,8, 2, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_D24_UNORM_S8_UINT, GL_DEPTH24_STENCIL8  )},
-   {"D32"            , false, true ,  4, 32,   0, 0, 0, 0,  32,0, 1, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT        , GL_DEPTH_COMPONENT32F)},
+   {"D16"            , false, true ,  2, 16,   0, 0, 0, 0,  16,0, 1, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_D16_UNORM           , GL_DEPTH_COMPONENT16 )},
+   {"D24X8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,0, 1, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN             , GL_DEPTH_COMPONENT24 )},
+   {"D24S8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,8, 2, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_D24_UNORM_S8_UINT   , GL_DEPTH24_STENCIL8  )},
+   {"D32"            , false, true ,  4, 32,   0, 0, 0, 0,  32,0, 1, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT           , GL_DEPTH_COMPONENT32F)},
+   {"D32S8X24"       , false, true ,  8, 64,   0, 0, 0, 0,  32,8, 2, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT_S8X24_UINT, GL_DEPTH32F_STENCIL8 )},
 
    {"ETC1"           , true , false,  0,  4,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_ETC1_RGB8_OES)},
 
    {"R11G11B10F"     , false, true ,  4, 32,  11,11,10, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R11G11B10_FLOAT   , GL_R11F_G11F_B10F)},
    {"R9G9B9E5F"      , false, true ,  4, 32,  14,14,14, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R9G9B9E5_SHAREDEXP, GL_RGB9_E5)},
-}; ASSERT(IMAGE_ALL_TYPES==72);
+}; ASSERT(IMAGE_ALL_TYPES==73);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
 Bool IsSRGB(IMAGE_TYPE type)
@@ -543,9 +544,10 @@ static DXGI_FORMAT Typeless(IMAGE_TYPE type)
       case IMAGE_BC7: case IMAGE_BC7_SRGB: return DXGI_FORMAT_BC7_TYPELESS;
 
       // depth stencil
-      case IMAGE_D16  : return DXGI_FORMAT_R16_TYPELESS;
-      case IMAGE_D24S8: return DXGI_FORMAT_R24G8_TYPELESS;
-      case IMAGE_D32  : return DXGI_FORMAT_R32_TYPELESS;
+      case IMAGE_D16     : return DXGI_FORMAT_R16_TYPELESS;
+      case IMAGE_D24S8   : return DXGI_FORMAT_R24G8_TYPELESS;
+      case IMAGE_D32     : return DXGI_FORMAT_R32_TYPELESS;
+      case IMAGE_D32S8X24: return DXGI_FORMAT_R32G8X24_TYPELESS;
    }
 }
 #endif
@@ -795,7 +797,8 @@ UInt SourceGLFormat(IMAGE_TYPE type)
       case IMAGE_B8G8R8A8_SRGB: // must be GL_BGRA and NOT GL_SBGR_ALPHA
       case IMAGE_B8G8R8A8: return GL_BGRA;
 
-      case IMAGE_D24S8: return GL_DEPTH_STENCIL;
+      case IMAGE_D24S8:
+      case IMAGE_D32S8X24: return GL_DEPTH_STENCIL;
 
       case IMAGE_D16  :
       case IMAGE_D24X8:
@@ -819,10 +822,11 @@ UInt SourceGLType(IMAGE_TYPE type)
       case IMAGE_F32_3:
       case IMAGE_F32_4: return GL_FLOAT;
 
-      case IMAGE_D16  : return GL_UNSIGNED_SHORT;
-      case IMAGE_D24S8: return GL_UNSIGNED_INT_24_8;
-      case IMAGE_D24X8: return GL_UNSIGNED_INT;
-      case IMAGE_D32  : return GL_FLOAT;
+      case IMAGE_D16     : return GL_UNSIGNED_SHORT;
+      case IMAGE_D24S8   : return GL_UNSIGNED_INT_24_8;
+      case IMAGE_D24X8   : return GL_UNSIGNED_INT;
+      case IMAGE_D32     : return GL_FLOAT;
+      case IMAGE_D32S8X24: return GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 
       case IMAGE_I8 : return GL_UNSIGNED_BYTE ;
       case IMAGE_I16: return GL_UNSIGNED_SHORT;
@@ -968,10 +972,11 @@ Bool Image::setInfo()
             D3D11_SHADER_RESOURCE_VIEW_DESC srvd; Zero(srvd);
             switch(hwType())
             {
-               default         : srvd.Format=hwTypeInfo().format; break;
-               case IMAGE_D16  : srvd.Format=DXGI_FORMAT_R16_UNORM; break;
-               case IMAGE_D24S8: srvd.Format=DXGI_FORMAT_R24_UNORM_X8_TYPELESS; break;
-               case IMAGE_D32  : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
+               default            : srvd.Format=hwTypeInfo().format; break;
+               case IMAGE_D16     : srvd.Format=DXGI_FORMAT_R16_UNORM; break;
+               case IMAGE_D24S8   : srvd.Format=DXGI_FORMAT_R24_UNORM_X8_TYPELESS; break;
+               case IMAGE_D32     : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
+               case IMAGE_D32S8X24: srvd.Format=DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS; break;
             }
             if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MipLevels=mipMaps();}else
             if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MipLevels=mipMaps();}else

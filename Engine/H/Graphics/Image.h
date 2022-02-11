@@ -114,10 +114,11 @@ enum IMAGE_TYPE : Byte // Image Type, comments specify in which mode the type is
    IMAGE_B5G5R5A1,
    IMAGE_B4G4R4A4,
 
-   IMAGE_D16  ,
-   IMAGE_D24X8,
-   IMAGE_D24S8,
-   IMAGE_D32  ,
+   IMAGE_D16     ,
+   IMAGE_D24X8   ,
+   IMAGE_D24S8   ,
+   IMAGE_D32     ,
+   IMAGE_D32S8X24,
 
    IMAGE_ETC1, // Ericsson 4-bit lossy RGB compression with no alpha (R,G,B,1), linear gamma, Soft, Android
 

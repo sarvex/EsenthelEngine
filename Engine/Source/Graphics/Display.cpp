@@ -1500,7 +1500,7 @@ again:
          FREPD(d, 3) // depth   - process this with priority #1
          FREPD(s, 2) // stencil - process this with priority #2
          {
-            ds_type=((d==0) ? ((s==0) ? IMAGE_D24S8 : IMAGE_D24X8) : (d==1) ? IMAGE_D32 : IMAGE_D16);
+            ds_type=((d==0) ? ((s==0) ? IMAGE_D24S8 : IMAGE_D24X8) : (d==1) ? ((s==0) ? IMAGE_D32S8X24 : IMAGE_D32) : IMAGE_D16);
             EGLint attribs[]=
             {
                EGL_SURFACE_TYPE   , EGL_WINDOW_BIT,
