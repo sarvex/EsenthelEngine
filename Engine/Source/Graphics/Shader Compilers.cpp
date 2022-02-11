@@ -790,7 +790,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
          src.New().deferred(false, 1, layout, bump_mode ? SBUMP_NORMAL : SBUMP_FLAT, true, false, false, color, false, false, fxs[fx], false);
 
       // clear coat
-      REPD(skin, 1)
+      REPD(skin, 2)
       for(Int layout=0; layout<=2; layout++)
       for(Int bump_mode=SBUMP_FLAT; bump_mode<=SBUMP_NORMAL; bump_mode++)
       REPD(tesselate, tess ? 2 : 1)
