@@ -1306,7 +1306,6 @@ Bool _ImportFBX(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> 
          if( skel     ) skel    ->mirrorX().setBoneTypes(); // call 'setBoneTypes' after 'mirrorX' !!
          if(mesh      ){mesh    ->mirrorX().skeleton(skel).skeleton(null).setBox(); CleanMesh(*mesh);} // !! link with skeleton after calling 'setBoneTypes' !!
       REPAO(animations).anim     .mirrorX().setBoneTypeIndexesFromSkeleton(*skel); // !! call this after 'setBoneTypes' !!
-         if(skeleton  ){skel    ->setBoneShapes();} // here process things that are needed only if we want to import skeleton (and not just operating on temporary local that will get discarded)
 
       if(!Equal(fbx.scale, 1))
       {
@@ -1315,7 +1314,10 @@ Bool _ImportFBX(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> 
             if(xskeleton )xskeleton->scale(fbx.scale);
          REPAO(animations).anim     .scale(fbx.scale);
       }
-      if(mesh) // set LOD distances after scale
+
+      // after scale
+      if(skeleton)skel->setBoneShapes(); // here process things that are needed only if we want to import skeleton (and not just operating on temporary local that will get discarded)
+      if(mesh) // set LOD distances
       {
          Flt dist=2;
          for(Int i=1; i<mesh->lods(); i++, dist*=2)mesh->lod(i).dist(dist);
