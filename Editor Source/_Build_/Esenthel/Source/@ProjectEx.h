@@ -231,6 +231,7 @@ public:
    static void MtrlSetRGB              (ProjectEx &proj);
    static void MtrlMulRGB              (ProjectEx &proj);
    static void MtrlSetRGBCur           (ProjectEx &proj);
+   static void MtrlSetTechCur          (ProjectEx &proj);
    static void MtrlSetBumpCur          (ProjectEx &proj);
    static void MtrlSetNormalCur        (ProjectEx &proj);
    static void MtrlSetSmoothCur        (ProjectEx &proj);
@@ -373,6 +374,7 @@ public:
    void imageResize(C MemPtr<UID> &elm_ids, C VecI2 &size);
    void mtrlResetAlpha(C MemPtr<UID> &elm_ids);
    void mtrlSetRGB(C MemPtr<UID> &elm_ids, C Vec &srgb, bool mul=false);
+   bool mtrlSetTech(C MemPtr<UID> &elm_ids, MATERIAL_TECHNIQUE tech);
    bool mtrlSetBump(C MemPtr<UID> &elm_ids, flt bump, bool mul=false);
    bool mtrlSetNormal(C MemPtr<UID> &elm_ids, flt normal, bool mul=false);
    bool mtrlSetSmooth(C MemPtr<UID> &elm_ids, flt smooth, bool mul=false);

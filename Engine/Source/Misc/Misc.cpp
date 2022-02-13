@@ -802,9 +802,9 @@ Int BitOn(UInt x)
 }
 Int BitOn(ULong x)
 {
-#if WINDOWS
+#if WINDOWS && X64
    return __popcnt64(x);
-#elif 1
+#elif !WINDOWS
    return __builtin_popcountll(x);
 #else
    Int on=0; for(; x; x>>=1)on+=x&1; return on;

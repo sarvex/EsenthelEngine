@@ -85,7 +85,7 @@ CPU::CPU()
 
    #if WINDOWS_OLD
       DWORD_PTR process, system; GetProcessAffinityMask(GetCurrentProcess(), &process, &system);
-     _threads=BitOn(process);
+     _threads=BitOn((UIntPtr)process);
    #elif WINDOWS_NEW
       SYSTEM_INFO sys_info; GetSystemInfo(&sys_info); _threads=sys_info.dwNumberOfProcessors;
    #endif
