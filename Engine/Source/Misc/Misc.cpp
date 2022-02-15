@@ -796,16 +796,43 @@ Int BitOn(UInt x)
    return __popcnt(x);
 #elif 1
    return __builtin_popcount(x);
+#elif 1 // 6.26s
+   x=(x&0x55555555)+((x>> 1)&0x55555555);
+   x=(x&0x33333333)+((x>> 2)&0x33333333);
+   x=(x&0x0F0F0F0F)+((x>> 4)&0x0F0F0F0F);
+   x=(x&0x00FF00FF)+((x>> 8)&0x00FF00FF);
+   x=(x&0x0000FFFF)+((x>>16)&0x0000FFFF);
+   return x;
+#elif 1 // 6.6s
+   x= x             - ((x>>1) &0x55555555); // put count of each 2 bits into those 2 bits
+   x=(x&0x33333333) + ((x>>2) &0x33333333); // put count of each 4 bits into those 4 bits
+   x=(x             +  (x>>4))&0x0F0F0F0F ; // put count of each 8 bits into those 8 bits
+   x=(x*0x01010101)>>24;                    // returns 8 most significant bits of x + (x<<8) + (x<<16) + (x<<24) + ..
+   return x;
+#elif 1 // optimized
+   Int on=0; for(; x; x&=x-1)on++; return on;
 #else
    Int on=0; for(; x; x>>=1)on+=x&1; return on;
 #endif
 }
 Int BitOn(ULong x)
 {
-#if WINDOWS && X64
-   return __popcnt64(x);
-#elif !WINDOWS
+#if WINDOWS
+   #if X64
+      return __popcnt64(x);
+   #else
+      UInt *u=(UInt*)&x; return __popcnt(u[0])+__popcnt(u[1]);
+   #endif
+#elif 1
    return __builtin_popcountll(x);
+#elif 1 // 5.27s
+   x= x                     - ((x>>1) &0x5555555555555555); // put count of each 2 bits into those 2 bits
+   x=(x&0x3333333333333333) + ((x>>2) &0x3333333333333333); // put count of each 4 bits into those 4 bits
+   x=(x                     +  (x>>4))&0x0F0F0F0F0F0F0F0F ; // put count of each 8 bits into those 8 bits
+   x=(x*0x0101010101010101)>>56;                            // returns 8 most significant bits of x + (x<<8) + (x<<16) + (x<<24) + ..
+   return x;
+#elif 1 // optimized
+   Int on=0; for(; x; x&=x-1)on++; return on;
 #else
    Int on=0; for(; x; x>>=1)on+=x&1; return on;
 #endif

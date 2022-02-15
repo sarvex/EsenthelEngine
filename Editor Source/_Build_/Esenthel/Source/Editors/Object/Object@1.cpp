@@ -3295,7 +3295,7 @@ cur_skel_to_saved_skel.removeBone(bone->name);
    {
       if(mesh_skel)
       {
-         mesh_undos.set("boneTarget");
+         mesh_undos.set("boneTarget", true);
          SkelBone *bone  =mesh_skel->bones.addr(sel_bone); if(!bone  ){Gui.msgBox(S, "No Bone Selected"     ); return;}
          SkelBone *target=mesh_skel->bones.addr(lit_bone); if(!target){Gui.msgBox(S, "No Target Highlighted"); return;}
          if(AdjustBoneOrns::SetTarget(*bone, target->pos))
@@ -3312,7 +3312,7 @@ cur_skel_to_saved_skel.removeBone(bone->name);
    {
       if(mesh_skel)
       {
-         mesh_undos.set("boneSetShape");
+         mesh_undos.set("boneSetShape", true);
          int       bone_i=(sel_bone>=0 ? sel_bone : lit_bone);
          SkelBone *bone  =mesh_skel->bones.addr(bone_i); if(!bone){/*Gui.msgBox(S, "No Bone Selected"); */return;}
          {
