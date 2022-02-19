@@ -7,12 +7,12 @@ Str       error;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT(false, false);
+   INIT(false, false);
    App.flag=APP_MINIMIZABLE;
    flt scale=D.screenH()/1080.0;
    D.mode(500*scale, 94*scale).aspectMode(ASPECT_X).shadowMapSize(0);
 #if DEBUG
-   Paks.add(EE_ENGINE_PATH);
+   Paks.add(ENGINE_DATA_PATH);
 #else
    Paks.add("Engine.pak");
 #endif

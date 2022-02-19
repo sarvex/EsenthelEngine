@@ -19,7 +19,7 @@ Game.ObjMap<Destructible> Destructibles;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

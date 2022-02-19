@@ -11,7 +11,7 @@ Mesh box ,
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_MAXIMIZABLE;
 
    Ms.hide();

@@ -13,7 +13,7 @@ AnimatedSkeleton skel;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    D.ambientPowerS(0.1);
    Ms.hide();
    Ms.clip(null, true);

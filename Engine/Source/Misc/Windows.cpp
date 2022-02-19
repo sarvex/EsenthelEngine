@@ -1498,7 +1498,7 @@ void Application::windowCreate()
    if(!_icon)EnumResourceNames(_hinstance, RT_GROUP_ICON, EnumResources, (LONG_PTR)&icon); // _hinstance must be used, only this supports loading icon from DLL (GetModuleHandle(null) and null didn't work)
 
    WNDCLASS wc; Zero(wc);
-   Str class_name=S+"Esenthel|"+name()+'|'+(Ptr)_hinstance+'|'+DateTime().getUTC().asText()+'|'+Random(); // create a unique class name, this was needed so that 2 apps don't use the same name because some issues could occur
+   Str class_name=S+ENGINE_NAME "|"+name()+'|'+(Ptr)_hinstance+'|'+DateTime().getUTC().asText()+'|'+Random(); // create a unique class name, this was needed so that 2 apps don't use the same name because some issues could occur
    wc.style        =((want_buttons && !want_close) ? CS_NOCLOSE : 0);
    wc.lpfnWndProc  =WindowMsg;
    wc.hInstance    =_hinstance;
@@ -1557,7 +1557,7 @@ void Application::windowCreate()
    FIND_ATOM(_NET_FRAME_EXTENTS);
    FIND_ATOM(_MOTIF_WM_HINTS);
 
-   ClassName=S+"Esenthel|"+name()+'|'+DateTime().getUTC().asText()+'|'+Random(); // create a unique class name in case it is needed
+   ClassName=S+ENGINE_NAME "|"+name()+'|'+DateTime().getUTC().asText()+'|'+Random(); // create a unique class name in case it is needed
 
    // GL Config
    int attribs[]=

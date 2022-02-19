@@ -253,7 +253,7 @@ Bool OSUserIcon (Image &image         ); // get the user icon  of currently logg
 void OSMsgBox(C Str &title, C Str &text, Bool error=false); // show OS message box, 'error'=if display as error or message
 
 Bool Explore(C Str &name, Bool select=false                                      ); // explore selected 'name' location, 'select'=if explore the parent location instead, and inside it select desired element. This function will only open folders, drives, URL links using the System File Explorer or Browser, it will never run any programs. If 'name' points to a file, then its parent folder will be opened and the file will always be selected regardless of 'select', false on fail.
-Bool Run    (C Str &name, C Str &params=S, Bool hidden=false, Bool as_admin=false); // run     selected 'name' command/application/file/folder/drive/URL link, 'as_admin'=if run as administrator, Sample Usage: Run("C:/esenthel.exe"), Run("http://www.esenthel.com"), false on fail
+Bool Run    (C Str &name, C Str &params=S, Bool hidden=false, Bool as_admin=false); // run     selected 'name' command/application/file/folder/drive/URL link, 'as_admin'=if run as administrator, Sample Usage: Run("C:/App.exe"), Run("http://www.esenthel.com"), false on fail
 
 Bool OpenAppSettings(); // open application settings, false on fail, this is used only on iOS and Android, after calling this function the OS will open the Application Settings Screen in the System Settings menu
 

@@ -24,7 +24,7 @@
 #include "../../../ThirdPartyLibs/end.h"
 
 namespace EE{
-#define SQLITE_VFS_NAME "Esenthel"
+#define SQLITE_VFS_NAME ENGINE_NAME
 /******************************************************************************/
 enum SQL_VAL_TYPE
 {

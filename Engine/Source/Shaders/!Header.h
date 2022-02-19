@@ -1,7 +1,4 @@
 /******************************************************************************
- * Copyright (c) Grzegorz Slazinski. All Rights Reserved.                     *
- * Esenthel Engine (http://esenthel.com) shader file.                         *
-/******************************************************************************
 
    Optimization guidelines:
       -use MAD wherever possible A*B+C
@@ -1999,7 +1996,7 @@ Unreal:
    float3 ComputeF0(float Specular, float3 BaseColor, float Metallic) {return lerp(DielectricSpecularToF0(Specular).xxx, BaseColor, Metallic.xxx);} which is "lerp(0.04, BaseColor, Metallic)"
 Unity:
    half OneMinusReflectivityMetallic(half metallic) {lerp(dielectricSpec, 1, metallic);} with 'dielectricSpec' defined as 0.04
-To achieve compatibility with a lot of assets for those engines, Esenthel uses a similar formula, however tweaked to preserve original diffuse color and minimize reflectivity at low reflectivity values:
+To achieve compatibility with a lot of assets for those engines, similar formula is used, however tweaked to preserve original diffuse color and minimize reflectivity at low reflectivity values:
    for reflectivities<=0.04 to make 'Diffuse' return 1 and 'ReflectCol' return 'reflectivity'
    for reflectivities> 0.04 there's a minor difference due to the fact that 'ReflectToInvMetal' is slightly modified however the difference is negligible (full compatibility would require a secondary 'Lerp')
 */

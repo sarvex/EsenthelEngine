@@ -6,18 +6,19 @@
 /******************************************************************************/
 // INTRO
 /******************************************************************************/
-bool   InitIntro() {return true;}
-void   ShutIntro() {}
+EngineLogo EL;
+bool   InitIntro() {EL.load(); return true;}
+void   ShutIntro() {EL.del ();}
 bool UpdateIntro()
 {
-   if(Time.stateTime()>3 || Kb.bp(KB_ESC)) // if active state (which here is 'StateIntro') is running for more than 3 seconds or escape pressed
+   if(Time.stateTime()>2 || Kb.bp(KB_ESC)) // if active state (which here is 'StateIntro') is running for more than 2 seconds or escape pressed
       StateMenu.set(1.0);                  // then switch to 'StateMenu' state with 1.0 second smooth fading
    return true;
 }
 void DrawIntro()
 {
-   D.clear(BLACK);
-   D.text (0, 0, "Intro");
+   D.clearCol();
+   EL.draw();
 }
 State StateIntro(UpdateIntro, DrawIntro, InitIntro, ShutIntro);
 /******************************************************************************/
@@ -58,7 +59,7 @@ State StateGame(UpdateGame, DrawGame, InitGame, ShutGame);
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 bool Init()
 {

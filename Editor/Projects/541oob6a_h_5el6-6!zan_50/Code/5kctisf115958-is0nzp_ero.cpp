@@ -44,7 +44,7 @@ Memc<Str> strings; // container of strings used for testing
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 void WriteChunks(File &f)

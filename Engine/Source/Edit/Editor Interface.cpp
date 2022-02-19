@@ -5,7 +5,8 @@ static Int Compare(C Edit::Elm &elm, C UID &id) {return Compare(elm.id, id);}
 namespace Edit{
 /******************************************************************************/
 #define EI_VER 52 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
-#define EI_STR "Esenthel Editor Network Interface"
+#define EI_STR (ENGINE_NAME " Editor Network Interface")
+
 #define CLIENT_WAIT_TIME         (   60*1000) //    60 seconds
 #define CLIENT_WAIT_TIME_LONG    (15*60*1000) // 15*60 seconds, some operations may take a long time to complete (reloading material textures with resizing, getting world objects, ..)
 #define CLIENT_WAIT_TIME_PUBLISH (60*60*1000) // 60*60 seconds, publishing may take very long time (especially when creating PVRTC textures)
@@ -349,8 +350,8 @@ Bool EditorInterface::connect(Str &message, Int timeout)
       if((Time.curTimeMs()-start_time)>=timeout)break; // this code was tested OK for UInt overflow
       Time.wait(1);
    }
-   REPA(c)if(c[i].bad_ver){message="This Application version is not compatible with the opened Esenthel Editor version.\nPlease upgrade your software."; return false;}
-   message="Esenthel Editor does not appears to be opened.\nPlease open Esenthel Editor and enable option \"Allow Incoming Connections\"."; return false;
+   REPA(c)if(c[i].bad_ver){message="This Application version is not compatible with the opened " ENGINE_NAME " Editor version.\nPlease upgrade your software."; return false;}
+   message=ENGINE_NAME " Editor does not appears to be opened.\nPlease open " ENGINE_NAME " Editor and enable option \"Allow Incoming Connections\"."; return false;
 }
 /******************************************************************************/
 // PROJECTS

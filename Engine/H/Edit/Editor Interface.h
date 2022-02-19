@@ -258,7 +258,7 @@ struct EditorInterface
    // connection
    Bool    connected(                            ); // if connected
    void disconnect  (                            ); // disconnect
-   Bool    connect  (Str &message, Int timeout=-1); //    connect to a running instance of Esenthel Editor, 'timeout'=time in milliseconds (-1=default) to wait for a connection, false on fail
+   Bool    connect  (Str &message, Int timeout=-1); //    connect to a running instance of Engine Editor, 'timeout'=time in milliseconds (-1=default) to wait for a connection, false on fail
 
    // editor
    Str editorPath(); // get path where the Editor folder is located

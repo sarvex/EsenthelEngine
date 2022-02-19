@@ -4,7 +4,7 @@ Game.ObjMap<Game.Chr > Chrs;  // container for character objects
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

@@ -9,7 +9,7 @@ void Distribute(File &f, Memc<ClientServer.Client*> &clients) // distribute file
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_WORK_IN_BACKGROUND|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE;
    D.mode(400, 300);
    D.scale(1.5);

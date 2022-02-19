@@ -109,7 +109,7 @@ void InitPre()
       REPA(proc)if(proc[i]!=App.processID())
       {
          Str proc_name=GetBase(ProcName(proc[i]));
-         if( proc_name=="Esenthel.exe")
+         if( proc_name==S+APP_NAME+".exe")
             if(SysWindow window=ProcWindow(proc[i]))
          {
             File f; f.writeMem().putStr(App.cmd_line[0]).pos(0);
@@ -123,20 +123,20 @@ void InitPre()
    
    ASSERT(ELM_NUM==(int)Edit.ELM_NUM); // they must match exactly
    Str path=GetPath(App.exe()).tailSlash(true);
-   InstallerMode=(STEAM ? false : !(FExistSystem(path+"Bin/Code Editor.dat") && FExistSystem(path+"Bin/Engine.pak") && FExistSystem(path+"Bin/Editor.pak") && FExistSystem(path+"Bin/Mobile/Engine.pak") && FExistSystem(path+"Bin/EsenthelEngine/EsenthelEngine.h") && FExistSystem(path+"Bin/Android/Ant")));
+   InstallerMode=(STEAM ? false : !(FExistSystem(path+"Bin/Code Editor.dat") && FExistSystem(path+"Bin/Engine.pak") && FExistSystem(path+"Bin/Editor.pak") && FExistSystem(path+"Bin/Mobile/Engine.pak") && FExistSystem(path+"Bin/Engine/Engine.h") && FExistSystem(path+"Bin/Android/Ant")));
    App.x=App.y=0;
    App.receive_data=ReceiveData;
    D.screen_changed=ScreenChanged;
    D.exclusive(false);
 
    App.flag|=APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE|APP_WORK_IN_BACKGROUND|APP_RESIZABLE;
-   EE_INIT(false, false);
+   INIT(false, false);
 #if DEBUG
    App.flag|=APP_BREAKPOINT_ON_ERROR|APP_MEM_LEAKS|APP_CALLSTACK_ON_ERROR;
-   Paks.add(EE_ENGINE_PATH);
-   Paks.add(GetPath(EE_ENGINE_PATH).tailSlash(true)+"Editor.pak");
+   Paks.add(ENGINE_DATA_PATH);
+   Paks.add(GetPath(ENGINE_DATA_PATH).tailSlash(true)+"Editor.pak");
    if(ForceInstaller<0)InstallerMode=false;else if(ForceInstaller>0)InstallerMode=true;
-   SetFbxDllPath(GetPath(EE_ENGINE_PATH).tailSlash(true)+"FBX32.dll", GetPath(EE_ENGINE_PATH).tailSlash(true)+"FBX64.dll");
+   SetFbxDllPath(GetPath(ENGINE_DATA_PATH).tailSlash(true)+"FBX32.dll", GetPath(ENGINE_DATA_PATH).tailSlash(true)+"FBX64.dll");
 #endif
    if(InstallerMode)
    {
@@ -293,7 +293,7 @@ bool Init()
       ApplySettings(); // !! after 'DefaultEnvironment' !!
       VidOpt.create(); // !! after 'ApplySettings' !!
       SetKbExclusive();
-      AssociateFileType(EsenthelProjectExt, App.exe(), "Esenthel.Editor", "Esenthel Project", App.exe());
+      AssociateFileType(EsenthelProjectExt, App.exe(), ENGINE_NAME ".Editor", ENGINE_NAME " Project", App.exe());
       Initialized=true;
    }
    ScreenChanged();

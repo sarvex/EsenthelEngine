@@ -4,7 +4,7 @@ Vehicle     vehicle;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_RESIZABLE|APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_WORK_IN_BACKGROUND|APP_FULL_TOGGLE;
 #ifdef DEBUG
    App.flag|=APP_MEM_LEAKS|APP_BREAKPOINT_ON_ERROR;

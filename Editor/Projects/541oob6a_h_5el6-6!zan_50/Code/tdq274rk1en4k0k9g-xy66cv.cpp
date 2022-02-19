@@ -3,7 +3,7 @@ flt hour=5; // current hour
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

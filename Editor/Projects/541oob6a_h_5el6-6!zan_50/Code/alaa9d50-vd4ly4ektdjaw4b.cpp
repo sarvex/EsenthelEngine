@@ -1,7 +1,7 @@
 /******************************************************************************/
 void InitPre() // initialize before engine inits
 {
-   EE_INIT(); // call auto-generated function that will setup application name, load engine and project data
+   INIT(); // call auto-generated function that will setup application name, load engine and project data
 }
 /******************************************************************************/
 bool Init() // initialize after engine is ready
@@ -29,6 +29,6 @@ void Draw() // main drawing
    // here you have to tell engine what to draw on the screen
 
    D.clear(AZURE); // clear screen to azure color
-   D.text (0, 0, "Hello to Esenthel Engine !"); // display text at (0, 0) screen coordinates
+   D.text (0, 0, "Hello to " ENGINE_NAME " Engine !"); // display text at (0, 0) screen coordinates
 }
 /******************************************************************************/

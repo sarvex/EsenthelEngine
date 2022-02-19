@@ -349,13 +349,13 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a
-	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a ${OBJECTFILES} 
-	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a
+	${AR} -rv ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a ${OBJECTFILES} 
+	$(RANLIB) ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a
 
 ${OBJECTDIR}/_ext/509ec099/PVRTC.o: ../../ThirdPartyLibs/PVRTC/PVRTC.cpp
 	${MKDIR} -p ${OBJECTDIR}/_ext/509ec099

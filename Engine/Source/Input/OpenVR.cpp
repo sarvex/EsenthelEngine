@@ -157,7 +157,7 @@ Bool OpenVRApi::init()
            _compositor->SetTrackingSpace(vr::TrackingUniverseSeated); // this will have 2 effects: 1) 'ResetSeatedZeroPose' will affect Matrix returned by 'WaitGetPoses' (correct behavior, because without this call, calling recenter does not affect 'WaitGetPoses') 2) it will make "chaperone" bounds disappear (the blue circle at the bottom which specifies play area size)
             if(_overlay=vr::VROverlay())
             {
-              _overlay->CreateOverlay("Esenthel", "UI", &_overlay_id); if(_overlay_id!=vr::k_ulOverlayHandleInvalid)
+              _overlay->CreateOverlay(ENGINE_NAME, "UI", &_overlay_id); if(_overlay_id!=vr::k_ulOverlayHandleInvalid)
                {
                  _overlay->SetHighQualityOverlay(_overlay_id);
                  _overlay->HideOverlay(_overlay_id); _overlay_visible=false;

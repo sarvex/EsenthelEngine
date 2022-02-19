@@ -5,7 +5,7 @@ Controller ctrl     ; // controller - it's meant to be used as a 'character acto
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

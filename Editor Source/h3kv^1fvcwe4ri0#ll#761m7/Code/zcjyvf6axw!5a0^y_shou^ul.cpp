@@ -20,12 +20,12 @@ void InitPre()
 #if WINDOWS
    App.flag|=APP_ALLOW_NO_GPU;
 #endif
-   EE_INIT(false, false);
+   INIT(false, false);
    App.name(ServerAppName);
-   if(!EE_ENGINE_EMBED)
+   if(!EMBED_ENGINE_DATA)
    {
    #if DEBUG
-      Paks.add(EE_ENGINE_PATH);
+      Paks.add(ENGINE_DATA_PATH);
    #else
       Paks.add("Bin/Engine.pak");
    #endif

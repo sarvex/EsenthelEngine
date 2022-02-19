@@ -16,7 +16,7 @@ Memx<Elm> elms  ; // elements
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 void SetVisible(Memt<bool> &elms_visible, Memx<Elm> &elms, bool visible, flt offset)

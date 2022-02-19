@@ -5,7 +5,7 @@ Game.ObjMap<Player> Players ;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    D.viewRange(70).mode(App.desktopW()*0.8, App.desktopH()*0.8);
    Cam.at.set(16, 0, 16);
    Cam.dist = 10;

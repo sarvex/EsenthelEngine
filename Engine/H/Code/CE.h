@@ -277,7 +277,7 @@ const_mem_addr struct CodeEditor
    Bool         config_debug, config_32_bit, symbols_loaded, menu_on_top;
    Byte         config_api;
    EXE_TYPE     config_exe;
-   Str          ee_h_path;
+   Str          engine_h_path;
    TextStyle    ts, ts_small, ts_cjk;
    GuiSkin      source_skin, suggestions_skin, find_result_skin, cjk_skin;
 
@@ -759,7 +759,7 @@ const_mem_addr struct CodeEditor
    void findAllReferences(C UID  &id);
 
    // io
-   void  genSymbols(C Str &ee_editor_bin);
+   void  genSymbols(C Str &editor_bin);
    Bool saveSymbols(C Str &file);
    Bool loadSymbols(C Str &file, Bool all=true);
 

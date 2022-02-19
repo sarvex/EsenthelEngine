@@ -67,7 +67,7 @@ Game.ObjMap<Player   > Players;
 void InitPre()
 {
    App.flag=APP_FULL_TOGGLE;
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.viewRange(30).shadowSoft(1);

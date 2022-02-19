@@ -15,14 +15,14 @@ void Resumed()
 }
 void InitPre()
 {
-   EE_INIT(false, false);
+   INIT(false, false);
    App.flag=APP_RESIZABLE|APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_FULL_TOGGLE;
    App.resumed=Resumed;
    flt scale=D.screenH()/1080.0;
    D.mode(500*scale, 500*scale).shadowMapSize(0);
    Ms.clip(null, 1).hide().smooth(SV_NONE);
 #if DEBUG
-   Paks.add(EE_ENGINE_PATH);
+   Paks.add(ENGINE_DATA_PATH);
 #else
    Paks.add("Engine.pak");
 #endif

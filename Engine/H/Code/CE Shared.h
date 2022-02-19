@@ -10,7 +10,6 @@ namespace Edit{
 #define SEP         '\\'
 #define SEP_FILE    '.'
 #define SEP_LINE    "/******************************************************************************/"
-#define ENGINE_PATH "Esenthel Engine"
 /******************************************************************************/
 enum VAR_TYPE : Byte // native variable type
 {

@@ -142,3 +142,12 @@ void DrawKeyboardHighlight(GuiObj *obj, C Rect &rect, C GuiSkin *skin       ); /
 void DrawDescription      (GuiObj *obj, C Vec2 &pos, CChar *text, Bool mouse); // default Gui Object Description             drawing function
 void DrawIMM              (GuiObj *obj                                      ); // default IMM (Windows Input Method Manager) drawing function
 /******************************************************************************/
+struct EngineLogo
+{
+   Image img;
+
+   void del () {img.del();}
+   void load();
+   void draw(Flt alpha=1);
+};
+/******************************************************************************/

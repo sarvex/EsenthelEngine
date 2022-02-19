@@ -322,7 +322,7 @@ struct DisplayClass : DisplayState, DisplayDraw // Display Control
 
    // Environment
    DisplayClass& envColor(C Vec      &color); C Vec     & envColor()C {return _env_color;} // set/get Environment color (0..1, default=1), the change is         instant, you can call it real-time
-   DisplayClass& envMap  (C ImagePtr &cube ); C ImagePtr& envMap  ()C {return _env_map  ;} // set/get Environment map                    , the change may not be instant, avoid   calling real-time, default=ImagePtr().get("Img/Environment.img"), images passed to this method must be created with IC_ENV_CUBE flag enabled in the 'Image.copy*' functions or have "Environment" mode selected in the "Esenthel Editor \ Image Editor"
+   DisplayClass& envMap  (C ImagePtr &cube ); C ImagePtr& envMap  ()C {return _env_map  ;} // set/get Environment map                    , the change may not be instant, avoid   calling real-time, default=ImagePtr().get("Img/Environment.img"), images passed to this method must be created with IC_ENV_CUBE flag enabled in the 'Image.copy*' functions or have "Environment" mode selected in the "Engine Editor \ Image Editor"
 
    // Shadowing
    DisplayClass& shadowMode         (SHADOW_MODE mode    );   SHADOW_MODE shadowMode         ()C {return _shd_mode      ;} // set/get Shadow Mode                                  (SHADOW_MODE         , default=SHADOW_MAP (SHADOW_NONE for Mobile)), the change is instant, you can call it real-time

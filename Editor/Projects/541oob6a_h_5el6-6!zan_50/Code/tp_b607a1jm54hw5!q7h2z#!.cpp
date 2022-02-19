@@ -10,7 +10,7 @@ flt        TimeToSendPosition;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.x=1;
    App.flag=APP_WORK_IN_BACKGROUND|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE;
    D.mode(400, 300).scale(2);

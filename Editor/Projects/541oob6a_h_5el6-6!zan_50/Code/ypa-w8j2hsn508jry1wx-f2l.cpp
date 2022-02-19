@@ -1,7 +1,7 @@
 /******************************************************************************
 
    !! BEFORE RUNNING THIS TUTORIAL, PLEASE READ THE INSTRUCTIONS ON HOW TO SETUP XBOX LIVE !!
-   !! INSTRUCTIONS ARE IN "Esenthel Engine\Net\Xbox Live" Header File                      !!
+   !! INSTRUCTIONS ARE IN "Engine\Net\Xbox Live" Header File                      !!
 
 /******************************************************************************/
 const bool IHaveReadInstructionsAtTheTop=false; // read the instructions above, then set this to true
@@ -27,7 +27,7 @@ void XboxCallback(XBOXLive.EVENT event, ULong user_id)
 void InitPre()
 {
    ASSERT(IHaveReadInstructionsAtTheTop);
-   EE_INIT();
+   INIT();
    XboxLive.callback=XboxCallback;
    XboxLive.logIn();
 }

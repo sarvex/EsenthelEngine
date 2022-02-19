@@ -4,7 +4,7 @@ MenuBar menu  ; // gui menu bar
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 // here are defined functions which are going to be called by menu commands when activated

@@ -23,7 +23,7 @@ bool                    compared=false; // helper variable used to specify if we
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 bool Init()
 {

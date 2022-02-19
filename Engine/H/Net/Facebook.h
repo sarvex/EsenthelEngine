@@ -4,21 +4,21 @@
 
    In order to use 'Facebook' class, you need to:
 
-      1. Create a "Facebook App" on https://developers.facebook.com/apps/ with exact same name as your Esenthel Application
+      1. Create a "Facebook App" on https://developers.facebook.com/apps/ with exact same name as your Application
          1. Click on the App
          2. Select "Settings" tab on the left side
          3. Click "Add Platform"
          4. Select "Android" and "iOS"
-         5. Set "Package Name" (Android) and "Budle ID" (iOS) to be the same as your Esenthel Application (this can be viewed by double-clicking on Application in Esenthel Editor)
+         5. Set "Package Name" (Android) and "Budle ID" (iOS) to be the same as your Application (this can be viewed by double-clicking on Application in Engine Editor)
          6. Enable "Single Sign On" option for both platforms
          7. For "iOS Platform" set "iPhone/iPad Store ID" to your App "Apple ID" (this can be viewed from https://itunesconnect.apple.com/ "Manage Your Apps\Your App\App Information\Identifiers\Apple ID")
          8. For "Android Platform" set "Key Hashes" from:
-            1. In Esenthel Editor, open Editor options "M\Editor Options"
+            1. In Engine Editor, open Editor options "M\Editor Options"
             2. Go to "Certificates" tab
             3. Click on "Get Android Key Hash for Facebook"
             4. Paste that Key Hash to the "Key Hashes" field on the Facebook App Settings page
          9. Click "Save Changes" on the bottom of the Facebook App page
-      2. Set your Facebook App ID, obtained from https://developers.facebook.com/apps/ to Esenthel Application properties (by double-clicking on Application in Esenthel Editor)
+      2. Set your Facebook App ID, obtained from https://developers.facebook.com/apps/ to Application properties (by double-clicking on Application in Engine Editor)
       3. For Android you need to compile your app in "Release" mode (for iOS it doesn't matter), as only "Release" apps are signed with your certificate, which hash we've set on the Facebook page
       4. Once you will be releasing your application to public, you also need to make your "Facebook App" available to the public on the https://developers.facebook.com/apps/ website under the "Status & Review" - field "Do you want to make this app and all its live features available to the general public?"
 

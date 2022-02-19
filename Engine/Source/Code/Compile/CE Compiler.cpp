@@ -3,7 +3,7 @@
 namespace EE{
 /******************************************************************************
 
-   Esenthel Script functions use following memory diagram: (engine codes which rely on this diagram have "RESULT PARENT PARAMS" near in the comments, use the string to search the engine)
+   Code Editor functions use following memory diagram: (engine codes which rely on this diagram have "RESULT PARENT PARAMS" near in the comments, use the string to search the engine)
 
       Stack:
          0 - Memory for local variables and temporaries
@@ -418,7 +418,7 @@ static void CompileExpr(Expr &expr, Compiler &compiler, Memc<Byte> &code)
             }
             return; // success
          }else
-         if(func.symbol && func.symbol->type==Symbol::FUNC && func.symbol->source && func.symbol->source->active) // Esenthel Script function, RESULT PARENT PARAMS
+         if(func.symbol && func.symbol->type==Symbol::FUNC && func.symbol->source && func.symbol->source->active) // Code Editor function, RESULT PARENT PARAMS
          {
             if(func.params.elms()!=func.symbol->realParams())compiler.msgs.New().error("Invalid number of function parameters", expr.origin);else
             {

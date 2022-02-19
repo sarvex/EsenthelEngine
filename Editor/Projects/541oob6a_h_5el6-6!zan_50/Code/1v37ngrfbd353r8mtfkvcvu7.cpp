@@ -33,7 +33,7 @@ void Create(MeshBase &mshb, SHAPE_TYPE type)
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerL(0);

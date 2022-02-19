@@ -6,7 +6,7 @@ Playlist Battle   , // this is battle playlist used for playing when battles
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 bool Init()

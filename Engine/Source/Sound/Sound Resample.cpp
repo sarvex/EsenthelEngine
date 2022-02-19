@@ -471,7 +471,7 @@ Bool SoundResample(Int src_samples, Int src_channels, I16 *src_data, MemPtr<I16>
                return true;
             }
          }
-         // if failed then fall back to Esenthel Resampler
+         // if failed then fall back to resampler below
       #endif
          SoundResampler resampler(speed, vol, dest_channels, dest_samples, dest_data.data(), src_channels);
          const Int samples_step=16384; // process up to this many samples in one step, because we need Flt precision to be reasonable for interpolation

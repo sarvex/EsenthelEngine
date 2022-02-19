@@ -15,7 +15,7 @@ void SetShader()
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.set_shader=SetShader;

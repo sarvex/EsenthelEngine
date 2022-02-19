@@ -4,7 +4,7 @@ Mesh box , // mesh box
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerL(0);

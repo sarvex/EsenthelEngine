@@ -1,9 +1,9 @@
 LOCAL_PATH := $(call my-dir)
 
-# EsenthelEngine
+# Engine
 include $(CLEAR_VARS)
-LOCAL_MODULE := EsenthelEngine 
-LOCAL_SRC_FILES := ESENTHEL_LIB_PATH/EsenthelEngine-$(TARGET_ARCH_ABI).a
+LOCAL_MODULE := Engine 
+LOCAL_SRC_FILES := ESENTHEL_LIB_PATH/Engine-$(TARGET_ARCH_ABI).a
 include $(PREBUILT_STATIC_LIBRARY)
 
 EXTERNAL_LIBS
@@ -13,7 +13,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE           := Project
 LOCAL_SRC_FILES        := Main.cpp
 LOCAL_LDLIBS           := -llog -landroid -lEGL -lGLESv3 -lz -lOpenSLES
-LOCAL_STATIC_LIBRARIES := EsenthelEngine android_native_app_glue cpufeatures EXTERNAL_STATIC_LIB_NAMES
+LOCAL_STATIC_LIBRARIES := Engine android_native_app_glue cpufeatures EXTERNAL_STATIC_LIB_NAMES
 LOCAL_SHARED_LIBRARIES := EXTERNAL_SHARED_LIB_NAMES
 LOCAL_CFLAGS           := -I.. INCLUDE_DIRS -fshort-wchar -ffast-math -fomit-frame-pointer -fpermissive
 LOCAL_CPPFLAGS         := -I.. INCLUDE_DIRS -fshort-wchar -ffast-math -fomit-frame-pointer -fpermissive -ffriend-injection -fms-extensions -std=c++17 -Wno-invalid-offsetof -Wno-comment -Wno-parentheses -Wno-switch -Wno-address-of-temporary -Wno-null-dereference -Wno-int-to-void-pointer-cast -Wno-dynamic-class-memaccess

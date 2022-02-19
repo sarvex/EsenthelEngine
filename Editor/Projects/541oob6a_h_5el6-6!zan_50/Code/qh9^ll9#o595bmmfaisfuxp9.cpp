@@ -6,7 +6,7 @@ flt   density_factor=0.05;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerS(0.1);

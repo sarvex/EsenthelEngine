@@ -75,7 +75,7 @@ Game.ObjMap<     Player> Players;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

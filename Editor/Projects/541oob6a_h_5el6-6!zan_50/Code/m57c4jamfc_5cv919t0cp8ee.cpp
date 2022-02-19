@@ -41,7 +41,7 @@ void SetTransform(int  transform) {Clamp(transform  , 0 , 8); if(TransFunc!=tran
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_RESIZABLE;
 }
 /******************************************************************************/

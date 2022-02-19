@@ -3486,7 +3486,7 @@ class ProjectEx : ProjectHierarchy
          if(MT.guiObj(i)==&list)
             if(ListElm *elm_gui=list.curToListElm())
       {
-         if(EEItem *item=elm_gui.item) // Esenthel Engine Library (headers+sources+folders, all const)
+         if(EEItem *item=elm_gui.item) // Engine Library (headers+sources+folders, all const)
          {
             if((list.flag&LIST_MULTI_SEL) ? list.selMode()==LSM_SET : true)if(MT.bp(i) && !MT.bd(i))elmToggle(item);
          }else // use 'else' because after 'setList' the 'elm' pointer may be invalid
@@ -3641,7 +3641,7 @@ class ProjectEx : ProjectHierarchy
    }
    void activateSources(int rebuild=0) // -1=never, 0=auto, 1=always
    {
-      UID cur_app=curApp(); if(app_id!=cur_app){CodeEdit.makeAuto(); app_id=cur_app;} // set last app id to currently available, 'makeAuto' because 'EE_APP_NAME' relies on active app
+      UID cur_app=curApp(); if(app_id!=cur_app){CodeEdit.makeAuto(); app_id=cur_app;} // set last app id to currently available, 'makeAuto' because 'APP_NAME' relies on active app
       CodeEdit.clearActiveSources();
       Memt<Elm*> app_elms; getActiveAppElms(app_elms); FREPA(app_elms)if(app_elms[i].type==ELM_CODE)CodeEdit.activateSource(app_elms[i].id);
       if(rebuild>=0)CodeEdit.activateApp(rebuild>=1);else CodeEdit.makeAuto(); // if not activating app then call 'makeAuto' which will activate the auto header
@@ -3730,7 +3730,7 @@ class ProjectEx : ProjectHierarchy
          int      child_i=node.children[i];
          ElmNode &child  =hierarchy[child_i];
          Elm     &elm    =elms     [child_i];
-         if(ee && CompareChildren(*ee, elm)<0){setList(*ee, depth, parent_removed, parent_contains_name); ee=null;} // if "Esenthel Engine" item should be included before this element
+         if(ee && CompareChildren(*ee, elm)<0){setList(*ee, depth, parent_removed, parent_contains_name); ee=null;} // if "Engine" item should be included before this element
          if(!elm.removed() || show_removed() || FlagTest(child.flag, ELM_EDITED|ELM_EDITED_CHILD))if(ElmVisible(elm.type))
          {
             bool this_contains_name=false, child_contains_name=false;

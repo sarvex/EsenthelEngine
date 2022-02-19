@@ -81,7 +81,7 @@ class Projects
       lc[2].desc("If automatically synchronize a project with the Server after opening it.");
       Node<MenuElm> menu_menu;
       {
-         menu_menu.New().create("Help"          , MiscRegion.Help      , Misc).display(MLTC(null, PL, u"Pomoc", DE, u"Hilfe", RU, u"Помощь", PO, u"Ajuda")); //.desc(MLT("Show Esenthel Engine help documentation", PL,"Wyświetl pomoc Esenthel Engine", DE,"Zeige Esenthel Engine Hilfe Dokumentation", RU,"Показать документацию Esenthel Engine", PO,"Mostrar a documentação de ajuda do Esenthel Engine"));
+         menu_menu.New().create("Help"          , MiscRegion.Help      , Misc).display(MLTC(null, PL, u"Pomoc", DE, u"Hilfe", RU, u"Помощь", PO, u"Ajuda")); //.desc(MLT("Show Engine help documentation", PL,"Wyświetl pomoc Engine", DE,"Zeige Engine Hilfe Dokumentation", RU,"Показать документацию Engine", PO,"Mostrar a documentação de ajuda do Engine"));
          menu_menu.New().create("About"         , MiscRegion.About     , Misc);
          menu_menu.New().create("Video Options"         , MiscRegion.VidOpt    , Misc).kbsc(KbSc(KB_F12                )).display(MLTC(null, PL, u"Opcje Grafiki", DE, u"Grafik Optionen", RU, u"Настройки видео", PO, u"Opções de Video")).desc(MLTC(u"Change video options", PL, u"Zmień opcje grafiki", DE, u"Ändert die Grafik Optionen", RU, u"Изменить видео настройки", PO, u"Mudar as opções de video")).flag(MENU_HIDDEN);
          menu_menu.New().create("Video Options Advanced", MiscRegion.VidOptAdv , Misc).kbsc(KbSc(KB_F12, KBSC_CTRL_CMD )).flag(MENU_HIDDEN);
@@ -256,7 +256,7 @@ class Projects
    {
       Project proj; Str error; switch(proj.open(proj_id, name, ProjectsPath+EncodeFileName(proj_id), error))
       {
-         case LOAD_NEWER : Gui.msgBox(S,   "This project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again."); break;
+         case LOAD_NEWER : Gui.msgBox(S,   "This project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again."); break;
          case LOAD_LOCKED: Gui.msgBox(S,   "This project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first."); break;
          case LOAD_ERROR : Gui.msgBox(S, S+"This project failed to load."+(error.is() ? '\n' : '\0')+error); break;
 
@@ -272,7 +272,7 @@ class Projects
       {
          Project proj; Str error; switch(proj.open(proj_id, name, ProjectsPath+EncodeFileName(proj_id), error))
          {
-            case LOAD_NEWER : Gui.msgBox(S,   "This project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again."); break;
+            case LOAD_NEWER : Gui.msgBox(S,   "This project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again."); break;
             case LOAD_LOCKED: Gui.msgBox(S,   "This project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first."); break;
             case LOAD_ERROR : Gui.msgBox(S, S+"This project failed to load."+(error.is() ? '\n' : '\0')+error); break;
 
@@ -297,7 +297,7 @@ class Projects
       if(!FCreateDirs(path))Gui.msgBox(S, S+"Can't write to \""+GetPath(path)+"\"");else
       {
          Str error; LOAD_RESULT result=Proj.open(proj.id, proj.name, path, error, ignore_lock);
-         if(result==LOAD_NEWER )Gui.msgBox(S,   "This project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again.");else
+         if(result==LOAD_NEWER )Gui.msgBox(S,   "This project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again.");else
          if(result==LOAD_ERROR )Gui.msgBox(S, S+"This project failed to load."+(error.is() ? '\n' : '\0')+error);else
          if(result==LOAD_LOCKED)ProjectLock.create(proj.id);else
          {

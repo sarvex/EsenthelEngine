@@ -22,7 +22,7 @@ void ViewportDraw(Viewport &viewport) // function wich will be called when drawi
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 bool Init()

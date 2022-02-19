@@ -1,6 +1,6 @@
 /******************************************************************************
 
-   Esenthel Engine allows you to programatically connect to the Editor,
+   Engine allows you to programatically connect to the Editor,
       and operate on projects and their elements.
 
    This tutorial will present how to connect to the Editor, and obtain a list of projects.
@@ -18,7 +18,7 @@ Edit.Project* FindProject(MemPtr<Edit.Project> projects, C UID &id)
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 bool Init()

@@ -268,7 +268,7 @@ public class EsenthelActivity extends NativeActivity
    static WifiLock             wifi_lock;
    static ViewTreeObserver.OnGlobalLayoutListener global_layout_listener;
 
-   public static final void    log   (String s) {Log.e("Esenthel", s);}
+   public static final void    log   (String s) {Log.e("Titan", s);}
    public static final boolean Is    (String s) {return !TextUtils.isEmpty(s);} // this supports null 's' too
    public static final String  GetExt(String path) {final int last_dot=path.lastIndexOf('.'); return (last_dot>=0) ? path.substring(last_dot+1) : null;}
 

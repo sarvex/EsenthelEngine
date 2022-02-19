@@ -109,7 +109,7 @@ void FileDropped(Memc<Str> &names, GuiObj *focus_obj, C Vec2 &screen_pos) {if(na
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    D.scale(1);
    App.drop=FileDropped;
    App.flag|=APP_WORK_IN_BACKGROUND|APP_MINIMIZABLE;

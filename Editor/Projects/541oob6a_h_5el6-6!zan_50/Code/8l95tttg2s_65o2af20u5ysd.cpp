@@ -3,7 +3,7 @@ Mesh mesh;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    Cam.dist=3;

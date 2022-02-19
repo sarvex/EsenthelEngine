@@ -20,7 +20,7 @@ Game.ObjMap<Game.Item> Items;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    Cam.dist=3;

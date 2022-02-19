@@ -67,7 +67,7 @@ Decal blob_shadow; // decal used for drawing the fast shadow
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    Cam.dist=3;

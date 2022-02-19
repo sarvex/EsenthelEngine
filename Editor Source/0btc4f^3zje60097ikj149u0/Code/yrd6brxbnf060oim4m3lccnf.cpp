@@ -1,5 +1,5 @@
 /******************************************************************************/
-const Str SettingsPath=S+EE_APP_NAME+".txt";
+const Str SettingsPath=S+APP_NAME+".txt";
 const flt Padd=0.015;
 /******************************************************************************/
 bool       LeftFocus, RecordTasks;
@@ -143,16 +143,16 @@ void ExecuteTasks(ptr p) {if(TaskName *tn=TaskNames.addr(intptr(p)))ExecuteTask.
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT(false, false);
+   INIT(false, false);
    App.flag=APP_RESIZABLE|APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_FULL_TOGGLE|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE|APP_WORK_IN_BACKGROUND;
    App.resumed=Resumed;
    App.background_wait=16; // wait to update any progress on UI
    D.mode(App.desktopW()*0.8, App.desktopH()*0.8).shadowMapSize(0);
 #if DEBUG
-   Paks.add(EE_ENGINE_PATH);
+   Paks.add(ENGINE_DATA_PATH);
    App.flag|=APP_BREAKPOINT_ON_ERROR|APP_CALLSTACK_ON_ERROR;
 #else
-   if(!EE_ENGINE_EMBED)Paks.add("Engine.pak");
+   if(!EMBED_ENGINE_DATA)Paks.add("Engine.pak");
 #endif
    D.screen_changed=Resize;
    Gui.window_fade_in_speed=18;

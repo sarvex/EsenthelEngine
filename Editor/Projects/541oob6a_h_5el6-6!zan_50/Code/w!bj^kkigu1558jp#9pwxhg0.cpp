@@ -37,8 +37,8 @@ bool Preload() // this will be called before 'InitPre', in here we'll download e
       finished=true; // set that we're finished, but don't return false yet, do this next frame, so 'SetStatus' is able to update the text
    }else
    {
-      if(! EnginePak.state()) EnginePak.create(EE_ENGINE_PATH ); // initialize engine  data download
-      if(!ProjectPak.state())ProjectPak.create(EE_PROJECT_PATH); // initialize project data download
+      if(! EnginePak.state()) EnginePak.create( ENGINE_DATA_PATH); // initialize engine  data download
+      if(!ProjectPak.state())ProjectPak.create(PROJECT_DATA_PATH); // initialize project data download
       
       int done=EnginePak.done()+ProjectPak.done(),
           size=EnginePak.size()+ProjectPak.size();
@@ -48,9 +48,9 @@ bool Preload() // this will be called before 'InitPre', in here we'll download e
 }
 void InitPre()
 {
-   EE_INIT(false, false); // the engine and project data files aren't included by default, so we can't load them, set false to specify that we're not loading them from files
-   Paks.addMem( EnginePak.data(),  EnginePak.done()                   ); // load data from downloaded file
-   Paks.addMem(ProjectPak.data(), ProjectPak.done(), EE_PROJECT_CIPHER); // load data from downloaded file
+   INIT(false, false); // the engine and project data files aren't included by default, so we can't load them, set false to specify that we're not loading them from files
+   Paks.addMem( EnginePak.data(),  EnginePak.done()                ); // load data from downloaded file
+   Paks.addMem(ProjectPak.data(), ProjectPak.done(), PROJECT_CIPHER); // load data from downloaded file
 
    D.mode(800*D.browserZoom(), 600*D.browserZoom()); // set custom resolution (this is optional, as by default resolution will be taken from the HTML canvas element)
    App.flag=APP_AUTO_FREE_OPEN_GL_ES_DATA|APP_AUTO_FREE_PHYS_BODY_HELPER_DATA|APP_CALLSTACK_ON_ERROR;

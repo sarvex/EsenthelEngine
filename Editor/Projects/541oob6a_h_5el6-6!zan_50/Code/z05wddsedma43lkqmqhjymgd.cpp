@@ -29,7 +29,7 @@ bool                    multiple_paks=true; // if we're using multiple paks for 
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 bool Init()
 {

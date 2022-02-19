@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B9F062B16CD7C6D006A0106 /* EsenthelEngine Mac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9F062A16CD7C6D006A0106 /* EsenthelEngine Mac.a */; };
-		0B80B0021238567700C08944 /* EsenthelEngine iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B80B0011238567700C08944 /* EsenthelEngine iOS.a */; };
+		0B9F062B16CD7C6D006A0106 /* Engine Mac.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B9F062A16CD7C6D006A0106 /* Engine Mac.a */; };
+		0B80B0021238567700C08944 /* Engine iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B80B0011238567700C08944 /* Engine iOS.a */; };
 		3725F1F125237F1300E1ED89 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3725F1F025237F1300E1ED89 /* StoreKit.framework */; };
 		37307DB821AFDF81009ABBF9 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37307DB721AFDF80009ABBF9 /* WebKit.framework */; };
 		37307DBA21AFDF88009ABBF9 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37307DB921AFDF87009ABBF9 /* Security.framework */; };
@@ -33,9 +33,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0B9F062A16CD7C6D006A0106 /* EsenthelEngine Mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "EsenthelEngine Mac.a"; path = "EsenthelEngine Mac.a"; sourceTree = "<absolute>"; };
-		0B80B0011238567700C08944 /* EsenthelEngine iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "EsenthelEngine iOS.a"; path = "EsenthelEngine iOS.a"; sourceTree = "<absolute>"; };
-		0B987D3C12385BE500071DE8 /* EsenthelEngine iOS Simulator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "EsenthelEngine iOS Simulator.a"; path = "EsenthelEngine iOS Simulator.a"; sourceTree = "<absolute>"; };
+		0B9F062A16CD7C6D006A0106 /* Engine Mac.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "Engine Mac.a"; path = "Engine Mac.a"; sourceTree = "<absolute>"; };
+		0B80B0011238567700C08944 /* Engine iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "Engine iOS.a"; path = "Engine iOS.a"; sourceTree = "<absolute>"; };
+		0B987D3C12385BE500071DE8 /* Engine iOS Simulator.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "Engine iOS Simulator.a"; path = "Engine iOS Simulator.a"; sourceTree = "<absolute>"; };
 		3725F1F025237F1300E1ED89 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		37307DB721AFDF80009ABBF9 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		37307DB921AFDF87009ABBF9 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -56,7 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0B9F062B16CD7C6D006A0106 /* EsenthelEngine Mac.a in Frameworks */,
+				0B9F062B16CD7C6D006A0106 /* Engine Mac.a in Frameworks */,
 /* ESENTHEL MAC FRAMEWORKS */
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -68,7 +68,7 @@
 				3725F1F125237F1300E1ED89 /* StoreKit.framework in Frameworks */,
 				37307DBA21AFDF88009ABBF9 /* Security.framework in Frameworks */,
 				37307DB821AFDF81009ABBF9 /* WebKit.framework in Frameworks */,
-				0B80B0021238567700C08944 /* EsenthelEngine iOS.a in Frameworks */,
+				0B80B0021238567700C08944 /* Engine iOS.a in Frameworks */,
 /* ESENTHEL IOS FRAMEWORKS */
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -127,9 +127,9 @@
 				3725F1F025237F1300E1ED89 /* StoreKit.framework */,
 				37307DB921AFDF87009ABBF9 /* Security.framework */,
 				37307DB721AFDF80009ABBF9 /* WebKit.framework */,
-				0B9F062A16CD7C6D006A0106 /* EsenthelEngine Mac.a */,
-				0B80B0011238567700C08944 /* EsenthelEngine iOS.a */,
-				0B987D3C12385BE500071DE8 /* EsenthelEngine iOS Simulator.a */,
+				0B9F062A16CD7C6D006A0106 /* Engine Mac.a */,
+				0B80B0011238567700C08944 /* Engine iOS.a */,
+				0B987D3C12385BE500071DE8 /* Engine iOS Simulator.a */,
 /* ESENTHEL ALL FRAMEWORKS */
 			);
 			name = Frameworks;

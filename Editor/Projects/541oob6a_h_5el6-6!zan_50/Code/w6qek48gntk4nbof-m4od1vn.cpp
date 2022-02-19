@@ -34,13 +34,13 @@ flt snappy_compress_time,
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 bool Init()
 {
    // read the source file, we'll use "Engine.pak" because it's big enough
-   src.mustRead(EE_ENGINE_PATH);
+   src.mustRead(ENGINE_DATA_PATH);
 
    // compress the source into files in memory, using different compression algorithms, and measure the time
    snappy_compress_time=Time.curTime(); src.pos(0); snappy_compressed.writeMem(); Compress(src, snappy_compressed, COMPRESS_SNAPPY); snappy_compress_time=Time.curTime()-snappy_compress_time;

@@ -5,7 +5,7 @@ VecI2       start, end; // start and end position of wanted path
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 bool Init()
 {

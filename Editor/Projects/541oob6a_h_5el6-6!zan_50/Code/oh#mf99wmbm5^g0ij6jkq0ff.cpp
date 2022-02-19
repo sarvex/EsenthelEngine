@@ -22,7 +22,7 @@ ElectricityFx electricity; // electricity effect
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerL(0);

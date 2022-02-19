@@ -4,7 +4,7 @@ Vec   pos(0, 0, 3); // sound position
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

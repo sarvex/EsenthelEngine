@@ -1,7 +1,7 @@
 /******************************************************************************
 
    !! BEFORE RUNNING THIS TUTORIAL, PLEASE READ THE INSTRUCTIONS ON HOW TO SETUP FACEBOOK !!
-   !! INSTRUCTIONS ARE IN "Esenthel Engine\Net\Facebook" Header File                      !!
+   !! INSTRUCTIONS ARE IN "Engine\Net\Facebook" Header File                      !!
 
 /******************************************************************************/
 const bool IHaveReadInstructionsAtTheTop=false; // read the instructions above, then set this to true
@@ -18,7 +18,7 @@ void GetFriends(ptr)
 }
 void MakePostDo(ptr)
 {
-   FB.post("http://www.esenthel.com/", "Esenthel Engine is Awesome");
+   FB.post("http://www.esenthel.com/", ENGINE_NAME " Engine is Awesome");
 }
 void OpenPageDo(ptr)
 {
@@ -32,7 +32,7 @@ void Save()
 void InitPre()
 {
    ASSERT(IHaveReadInstructionsAtTheTop);
-   EE_INIT();
+   INIT();
    App.save_state=Save;
 }
 /******************************************************************************/

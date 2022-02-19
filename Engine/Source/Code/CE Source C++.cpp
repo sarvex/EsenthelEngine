@@ -371,7 +371,7 @@ void Source::adjustToken(Memc<CodeLine> &code_lines, Int i)
                   if(token==';' || token=='{' || token=='}') // encountered end of friend declaration
                   {
                      Token &token=*tokens[i+1];
-                     Bool   is_class=false; // set false because 'class' is macro for 'struct' anyway in Esenthel Script
+                     Bool   is_class=false; // set false because 'class' is macro for 'struct' anyway in Code Editor
                      //j=i+1; Str temp; Memc<Symbol::Modif> templates; Symbol *symbol=GetFullSymbol(tokens, j, temp, , templates);
                      Int col; if(CodeLine *cl=FindLineCol(code_lines, token.pos(), col))cl->insert(col, ' ', TOKEN_NONE).insert(col, is_class ? "class" : "struct", TOKEN_KEYWORD);
                      break;

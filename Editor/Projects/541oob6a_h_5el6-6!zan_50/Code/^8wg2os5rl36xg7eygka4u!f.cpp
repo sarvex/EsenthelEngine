@@ -10,7 +10,7 @@ Button   *ok  =null;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 void ButtonFunction(ptr) // custom function called when button pressed

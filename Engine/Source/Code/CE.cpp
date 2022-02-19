@@ -637,7 +637,7 @@ static CChar8 *ExcludeHeaders[]=
    "Aggregate.h",
    "Android.h",
    "String Borrowed.h",
-   "Esenthel Config.h",
+   "Engine Config.h",
    "MP4.h",
 };
 /*static CChar8 *ReplaceHeaders[][2]=
@@ -664,7 +664,7 @@ static FILE_LIST_MODE AddEEHeader(C FileFind &ff, CodeEditor &ce)
 {
    if(ff.type==FSTD_FILE)
    {
-      Str relative_path=SkipStartPath(ff.pathName(), ce.ee_h_path),
+      Str relative_path=SkipStartPath(ff.pathName(), ce.engine_h_path),
             target_path=relative_path,
                    base=ff.name;
       REPA(ExcludeHeaders)if(base==ExcludeHeaders[i]   )return FILE_LIST_CONTINUE;
@@ -908,7 +908,7 @@ void CodeEditor::create(GuiObj *parent, Bool menu_on_top)
    SystemMacros.sort(CompareCS); // macros need to be sorted
 
    // setup gui
-   if(T.parent) // only if we're adding it to parent, so we can create Code Editor in Esenthel Builder without using GUI at all
+   if(T.parent) // only if we're adding it to parent, so we can create Code Editor in Engine Builder without using GUI at all
    {
       ts.reset();
       ts.align.set(1, -1);
@@ -981,18 +981,18 @@ void CodeEditor::create(GuiObj *parent, Bool menu_on_top)
 
    if(!loadSymbols(CodeEditorDat, false)){}
 }
-void CodeEditor::genSymbols(C Str &ee_editor_bin)
+void CodeEditor::genSymbols(C Str &editor_bin)
 {
-   ee_h_path=Str(ee_editor_bin).tailSlash(true)+"EsenthelEngine";
-   FList(ee_h_path, AddEEHeader, T); // add all headers from folder to 'items'
+   engine_h_path=Str(editor_bin).tailSlash(true)+"Engine";
+   FList(engine_h_path, AddEEHeader, T); // add all headers from folder to 'items'
 
    EEUsings.clear();
    EEMacros=SystemMacros;
-   parseHeader(ee_h_path+"\\EsenthelEngine.h", EEMacros, EEUsings, true);
+   parseHeader(engine_h_path+"\\Engine.h", EEMacros, EEUsings, true);
    // TODO: remove this after adding support for detection of "using namespace .." in sources
    EEUsings.New().find("EE");
 
-   replacePath(ee_h_path, ENGINE_PATH);
+   replacePath(engine_h_path, ENGINE_NAME " Engine");
    SortItems(items);
 
    // remove macros
@@ -1013,7 +1013,7 @@ void CodeEditor::genSymbols(C Str &ee_editor_bin)
    REPAD(d, disable_macros)REPA(EEMacros)if(Equal(EEMacros[i].name, disable_macros[d], true))EEMacros[i].use_for_suggestions=false;
 #endif
 
-   // disable EE basic data types suggestions
+   // disable Engine basic data types suggestions
    SymbolPtr s;
    if(s.find("Bool"   )) FlagEnable(s->modifiers, Symbol::MODIF_SKIP_SUGGESTIONS);
    if(s.find( "Char8" )) FlagEnable(s->modifiers, Symbol::MODIF_SKIP_SUGGESTIONS);
@@ -1047,7 +1047,7 @@ void CodeEditor::genSymbols(C Str &ee_editor_bin)
    Symbols.  lock(); REPA(Symbols){Symbol &symbol=Symbols.lockedData(i); if(symbol[0]=='_')FlagEnable(symbol.modifiers, Symbol::MODIF_SKIP_SUGGESTIONS);}
    Symbols.unlock();
 
-   saveSymbols(Str(ee_editor_bin).tailSlash(true)+"Code Editor.dat");
+   saveSymbols(Str(editor_bin).tailSlash(true)+"Code Editor.dat");
 
  //createFuncList();
 }
@@ -1638,7 +1638,7 @@ void CodeEditor::update(Bool active)
                            }
                         }
                      }
-                     if(Equal(dl.app, "Esenthel") )dl.setApp    ();else
+                     if(Equal(dl.app, ENGINE_NAME))dl.setApp    ();else
                      if(*debug=='D'               )dl.setWarning();else
                      if(*debug=='E' || *debug=='F')dl.setError  ();
                      // filter out unwanted messages

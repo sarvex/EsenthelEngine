@@ -27,13 +27,13 @@ cchar8 *CTText[]= // color transformation description
    "CUSTOM",
    "CUSTOM2",
 };
-ImagePtr logo  ; // Esenthel logo image
+ImagePtr logo  ; // logo image
 Tabs     tabs  ; // transformation tabs
 Slider   slider; // transformation power/alpha
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_MAXIMIZABLE;
 }
 /******************************************************************************/

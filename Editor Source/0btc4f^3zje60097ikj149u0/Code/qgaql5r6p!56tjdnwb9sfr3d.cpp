@@ -923,16 +923,16 @@ Uploader UP;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT(false, false);
+   INIT(false, false);
    App.flag=APP_WORK_IN_BACKGROUND|APP_MINIMIZABLE|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE;
    App.x=1; App.y=-1;
    flt scale=D.screenH()/1080.0;
    D.mode(512*scale, 400*scale).scale(1.66).shadowMapSize(0);
 #if DEBUG
    App.flag|=APP_MEM_LEAKS|APP_BREAKPOINT_ON_ERROR;
-   Paks.add(EE_ENGINE_PATH);
+   Paks.add(ENGINE_DATA_PATH);
 #else
-   if(!EE_ENGINE_EMBED)Paks.add("Engine.pak");
+   if(!EMBED_ENGINE_DATA)Paks.add("Engine.pak");
 #endif
    ASSERT(Elms(InstallerPlatform)==InstallerPlatforms);
 }

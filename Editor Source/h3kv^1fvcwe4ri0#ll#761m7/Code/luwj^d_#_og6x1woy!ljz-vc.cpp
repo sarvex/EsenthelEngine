@@ -22,10 +22,10 @@ class UpdaterClass
       if( rel=="Settings.txt"
       ||  rel=="Server Settings"
       ||  rel=="Projects (Server)"
-      ||  rel=="Esenthel Old.exe"
-      ||  rel=="Esenthel Old.exe.bat" // used by 'App.deleteSelfAtExit'
-      ||  rel=="Esenthel Old.app"
-      ||  rel=="Esenthel Old"
+      ||  rel==S+APP_NAME+" Old.exe"
+      ||  rel==S+APP_NAME+" Old.exe.bat" // used by 'App.deleteSelfAtExit'
+      ||  rel==S+APP_NAME+" Old.app"
+      ||  rel==S+APP_NAME+" Old"
       ||  EqualPath(rel, "Bin/Store.dat")
       ||  EqualPath(rel, "Bin/Code Editor.font")
       ||  EqualPath(rel, "Bin/Update")
@@ -232,7 +232,7 @@ class UpdateWindowClass : ClosableWindow
    void create()
    {
       Gui+=super       .create(Rect_C(0, 0, 1, 0.48)).barVisible(false).hide().fadeIn(); button[2].func(HideEditAct, SCAST(GuiObj, T)).show();
-      T  +=text        .create(Vec2  (clientWidth()/2, -0.19), "An update to Esenthel is available.\nWould you like to apply it now?\n\nWarning: Applying update will restore the default\n\"Tutorials\" project to its original state.\nAny changes you've made to it will be lost.");
+      T  +=text        .create(Vec2  (clientWidth()/2, -0.19), "An update to " ENGINE_NAME " is available.\nWould you like to apply it now?\n\nWarning: Applying update will restore the default\n\"Tutorials\" project to its original state.\nAny changes you've made to it will be lost.");
       T  +=apply       .create(Rect_D(clientWidth()*1/6, -clientHeight()+0.04, 0.26, 0.06), "Apply"       ).focusable(false).func(Apply, T);
       T  +=show_changes.create(Rect_D(clientWidth()/2  , -clientHeight()+0.04, 0.32, 0.06), "Show Changes").focusable(false).func(ShowChanges, T);
       T  +=not_now     .create(Rect_D(clientWidth()*5/6, -clientHeight()+0.04, 0.26, 0.06), "Not Now"     ).focusable(false).func(HideEditAct, SCAST(GuiObj, T));
@@ -258,8 +258,8 @@ bool UpdateDo()
       Str rel=SkipStartPath(App.exe(), Updater.path);
       if(FExistSystem(Updater.update_path+rel)) // if there exists a replacement for that file
       {
-         if(!App.renameSelf(Updater.path+"Esenthel Old."+GetExt(old))){Gui.msgBox(S, "Can't update self"); if(InstallerMode)StateInstall.set(StateFadeTime);else StateProjectList.set(StateFadeTime); return true;}
-         App.deleteSelfAtExit(); // delete the "Esenthel Old" file
+         if(!App.renameSelf(Updater.path+APP_NAME+" Old."+GetExt(old))){Gui.msgBox(S, "Can't update self"); if(InstallerMode)StateInstall.set(StateFadeTime);else StateProjectList.set(StateFadeTime); return true;}
+         App.deleteSelfAtExit(); // delete the "Editor Old" file
       }
    }
 #endif
@@ -291,8 +291,8 @@ bool UpdateDo()
    #else 
       #error unknown platform
    #endif
-      CreateShortcut(Updater.path+"Esenthel"+ext, SystemPath(SP_DESKTOP  ).tailSlash(true)+"Esenthel");
-      CreateShortcut(Updater.path+"Esenthel"+ext, SystemPath(SP_MENU_PROG).tailSlash(true)+"Esenthel");
+      CreateShortcut(Updater.path+APP_NAME+ext, SystemPath(SP_DESKTOP  ).tailSlash(true)+APP_NAME);
+      CreateShortcut(Updater.path+APP_NAME+ext, SystemPath(SP_MENU_PROG).tailSlash(true)+APP_NAME);
    }
 
    // finish
@@ -303,8 +303,8 @@ bool UpdateDo()
    {
       Explore(Updater.path); // open folder so user can see what's happened there
       App.hide(); // hide window because 'OSMsgBox' causes a pause
-      /*if(inside)*/OSMsgBox("Success", InstallerMode ? "Esenthel has installed successfully." : "Esenthel has updated successfully."); // show confirmation using OS msg box
-      //else        Gui.msgBox("Success", "Esenthel has updated properly.");
+      /*if(inside)*/OSMsgBox("Success", InstallerMode ? ENGINE_NAME " has installed successfully." : ENGINE_NAME " has updated successfully."); // show confirmation using OS msg box
+      //else        Gui.msgBox("Success", ENGINE_NAME " has updated properly.");
    }
    /*if(inside)*/return false; // close the application
    //else StateInstall.set(StateFadeTime); // if we're not inside then it means we're an installer
@@ -382,7 +382,7 @@ Str InstallPath()
       path=Replace(NormalizePath(path), '/', '\\');
    }
    if(path.tailSlash(false).is())
-      if(!Contains(path, "Esenthel"))path.tailSlash(true)+="Esenthel";
+      if(!ContainsAny(path, "Esenthel Titan " ENGINE_NAME))path.tailSlash(true)+=ENGINE_NAME;
    return path;
 }
 void SelectInstall(C Str &path, ptr=null)
@@ -443,7 +443,7 @@ void DrawInstall()
 {
    D.clear(BackgroundColor());
    TextStyleParams ts;
-   ts.size=0.055; D.text(ts, 0, D.h()-0.05, InstallIO.visible() ? "Please select path for Esenthel installation" : "Installing to");
+   ts.size=0.055; D.text(ts, 0, D.h()-0.05, InstallIO.visible() ? "Please select path for " ENGINE_NAME " installation" : "Installing to");
    ts.size=0.045; D.text(ts, 0, D.h()-0.11, S+"\""+InstallPath()+'"');
    Gui.draw();
    Draw();

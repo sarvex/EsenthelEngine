@@ -5,7 +5,7 @@ ImageRTC rt  ; // Render Target Image (of IMAGE_RT mode), must be 'ImageRTC' and
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

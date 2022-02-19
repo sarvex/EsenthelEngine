@@ -770,7 +770,7 @@ void Log    (C Str &text)
       fputs(UTF8(t), stdout); fflush(stdout); // without the flush messages won't be displayed immediately
    #elif ANDROID
       Memc<Str> lines=Split(t, '\n'); // android has limit for too long messages
-      FREPA(lines){Str8 line=UTF8(lines[i]); if(line.is())__android_log_write(ANDROID_LOG_INFO, "Esenthel", line.is() ? line : " ");} // '__android_log_write' will crash if text is null or ""
+      FREPA(lines){Str8 line=UTF8(lines[i]); if(line.is())__android_log_write(ANDROID_LOG_INFO, ENGINE_NAME, line.is() ? line : " ");} // '__android_log_write' will crash if text is null or ""
    #elif SWITCH
       NS::Log(false, UTF8(t));
    #elif WEB
@@ -1058,7 +1058,7 @@ Bool ClipSet(C Str &text)
    #else
       if(JClass ClipDataClass=JClass(jni, "android/content/ClipData"))
       if(JMethodID newPlainText=jni.staticFunc(ClipDataClass, "newPlainText", "(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Landroid/content/ClipData;"))
-      if(JString label=JString(jni, "Esenthel"))
+      if(JString label=JString(jni, ENGINE_NAME))
       if(JString jtext=JString(jni, text))
       if(JObject ClipData=JObject(jni, jni->CallStaticObjectMethod(ClipDataClass, newPlainText, label(), jtext())))
       if(JMethodID setPrimaryClip=jni.func(ClipboardManagerClass, "setPrimaryClip", "(Landroid/content/ClipData;)V"))

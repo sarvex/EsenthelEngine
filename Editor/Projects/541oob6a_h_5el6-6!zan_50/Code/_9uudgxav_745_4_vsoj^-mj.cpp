@@ -5,7 +5,7 @@ Button button_a, // gui button
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 void Func(ptr) // custom function which will be called when button pushed

@@ -9,7 +9,7 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
-      <itemPath>../Source/Esenthel Builder.cpp</itemPath>
+      <itemPath>../Source/Engine Builder.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -259,7 +259,7 @@
           <commandLine>-static-libstdc++ -nopie</commandLine>
         </linkerTool>
       </compileType>
-      <item path="../Source/Esenthel Builder.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../Source/Engine Builder.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../stdafx.h" ex="false" tool="3" flavor2="0">
         <customTool>
@@ -510,7 +510,7 @@
           <commandLine>-static-libstdc++ -nopie</commandLine>
         </linkerTool>
       </compileType>
-      <item path="../Source/Esenthel Builder.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../Source/Engine Builder.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../stdafx.h" ex="false" tool="3" flavor2="0">
         <customTool>

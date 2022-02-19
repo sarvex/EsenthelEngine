@@ -7,7 +7,7 @@ bool initialized; // if settings were initialized
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_FULL_TOGGLE;
    Ms.hide();
    Ms.clip(null, 1);

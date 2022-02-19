@@ -32,7 +32,7 @@ void Build(Heightmap &heightmap, Mesh &mesh, PhysPart &phys, Actor &actor) // bu
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

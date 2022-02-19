@@ -5,7 +5,7 @@ Decal decal; // decal pointing character destination target
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    D.viewRange(50);
    Cam.dist = 10;
    Cam.yaw  =-PI_4;

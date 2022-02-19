@@ -827,7 +827,7 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
          Str bin_path=BinPath();
          if(win_headers.elms() || mac_headers.elms() || linux_headers.elms() || android_headers.elms() || ios_headers.elms())
          {
-            ft.putLine(S+"#include \""+UnixPath(bin_path+"EsenthelEngine\\_\\System\\begin.h")+'"');
+            ft.putLine(S+"#include \""+UnixPath(bin_path+"Engine\\_\\System\\begin.h")+'"');
             ListHeaders(ft, win_headers, "defined _WIN32");
             if(mac_headers.elms() || ios_headers.elms())
             {
@@ -842,11 +842,11 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
             ListHeaders(ft,    linux_headers, "defined __linux__ && !defined ANDROID // Android also has '__linux__' defined");
             ListHeaders(ft,  android_headers, "defined ANDROID");
             ListHeaders(ft, nintendo_headers, "defined __NINTENDO__");
-            ft.putLine(S+"#include \""+UnixPath(bin_path+"EsenthelEngine\\_\\System\\end.h")+'"');
+            ft.putLine(S+"#include \""+UnixPath(bin_path+"Engine\\_\\System\\end.h")+'"');
          }
 
          // Engine headers (second)
-         ft.putLine(S+"#include \""+UnixPath(bin_path+"EsenthelEngine\\EsenthelEngine.h")+'"');
+         ft.putLine(S+"#include \""+UnixPath(bin_path+"Engine\\Engine.h")+'"');
 
          if(!build_headers_in_cpp)ft.putLine(UnixPath(S+"#include \"Source\\"+UNIQUE_NAME+UNIQUE_NAME+"headers.h\""));
          OverwriteOnChangeLoud(ft, build_path+"stdafx.h");
@@ -1351,7 +1351,7 @@ Bool CodeEditor::generateVSProj(Int version)
       page=Replace(page, "EE_JS_FILE_NAME", GetBaseNoExt(build_exe         )+".js", true, WHOLE_WORD_STRICT);
       SetFile(src, page, UTF_8_NAKED);
       FCreateDirs(GetPath(build_exe));
-      if(!OverwriteOnChangeLoud(src, GetExtNot(build_exe)+".Esenthel.html"))return false; // use custom suffix name because Emscripten uses GetExtNot(build_exe)+".html"
+      if(!OverwriteOnChangeLoud(src, GetExtNot(build_exe)+"." ENGINE_NAME ".html"))return false; // use custom suffix name because Emscripten uses GetExtNot(build_exe)+".html"
    }
 
    // manifest
@@ -1487,7 +1487,7 @@ Bool CodeEditor::generateVSProj(Int version)
                   // set libs
                   if(XmlParam *dependencies=tool->findParam("AdditionalDependencies"))
                   {
-                     Int pos=TextPosI(dependencies->value, "EsenthelEngine");
+                     Int pos=TextPosI(dependencies->value, "Engine");
                      if( pos>=0)
                      {
                         Int len=TextPosI(dependencies->value()+pos, ".lib"); len+=4;
@@ -1592,7 +1592,7 @@ Bool CodeEditor::generateVSProj(Int version)
             if(XmlNode *dependencies=link->findNode("AdditionalDependencies"))
          {
             Str dest; FREPA(dependencies->data)dest.space()+=dependencies->data[i];
-            Int pos=TextPosI(dest, "EsenthelEngine");
+            Int pos=TextPosI(dest, "Engine");
             if( pos>=0)
             {
                Int len=TextPosI(dest()+pos, ';');
@@ -1825,7 +1825,7 @@ Bool CodeEditor::generateXcodeProj()
                image.nodes.New().set("scale"   , icon.scale);
                image.nodes.New().set("filename", name);
             }
-            TextNode &info=root.nodes.New().setName("info"); info.nodes.New().set("Version", 1); info.nodes.New().set("author", "Esenthel");
+            TextNode &info=root.nodes.New().setName("info"); info.nodes.New().set("Version", 1); info.nodes.New().set("author", ENGINE_NAME);
             FileText f; f.writeMem(); Contents.saveJSON(f); if(!OverwriteOnChangeLoud(f, build_path+"Assets/Images.xcassets/AppIcon.appiconset/Contents.json"))return false;
             FREPA(sizes)
             {
@@ -1858,7 +1858,7 @@ Bool CodeEditor::generateXcodeProj()
                   if(CChar8 *v=splash.subtype)image.nodes.New().set("subtype"               , v);
                }
             }
-            TextNode &info=root.nodes.New().setName("info"); info.nodes.New().set("Version", 1); info.nodes.New().set("author", "Esenthel");
+            TextNode &info=root.nodes.New().setName("info"); info.nodes.New().set("Version", 1); info.nodes.New().set("author", ENGINE_NAME);
             FileText f; f.writeMem(); Contents.saveJSON(f); if(!OverwriteOnChangeLoud(f, build_path+"Assets/Images.xcassets/LaunchImage.launchimage/Contents.json"))return false;
             FREPA(sizes)
             {
@@ -1973,16 +1973,16 @@ Bool CodeEditor::generateXcodeProj()
    }
    if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Mac.plist"))return false;
 
-   str=Replace(str, "path = \"EsenthelEngine Mac.a\""          , UnixPath(S+"path = \""+bin_path+"EsenthelEngine Mac.a\""          ));
-   str=Replace(str, "path = \"EsenthelEngine iOS.a\""          , UnixPath(S+"path = \""+bin_path+"EsenthelEngine iOS.a\""          ));
-   str=Replace(str, "path = \"EsenthelEngine iOS Simulator.a\"", UnixPath(S+"path = \""+bin_path+"EsenthelEngine iOS Simulator.a\""));
-   str=Replace(str, "path = \"Engine.pak\""                    , UnixPath(S+"path = \""+bin_path+"Mobile/Engine.pak\""             ));
-   str=Replace(str, "/* ESENTHEL FRAMEWORK DIRS */"            , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
-   str=Replace(str, "/* ESENTHEL LIBRARY DIRS */"              , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
-   str=Replace(str, "PRODUCT_BUNDLE_IDENTIFIER = \"\";"        , S+"PRODUCT_BUNDLE_IDENTIFIER = \""+CString(app_package       )+"\";");
-   str=Replace(str, "PRODUCT_NAME = \"\";"                     , S+"PRODUCT_NAME = \""             +CString(build_project_name)+"\";");
-   str=Replace(str, "path = Mac.app;"                          , S+"path = \""                     +CString(build_project_name)+".app\";");
-   str=Replace(str, "path = iOS.app;"                          , S+"path = \""                     +CString(build_project_name)+".app\";");
+   str=Replace(str, "path = \"Engine Mac.a\""          , UnixPath(S+"path = \""+bin_path+"Engine Mac.a\""          ));
+   str=Replace(str, "path = \"Engine iOS.a\""          , UnixPath(S+"path = \""+bin_path+"Engine iOS.a\""          ));
+   str=Replace(str, "path = \"Engine iOS Simulator.a\"", UnixPath(S+"path = \""+bin_path+"Engine iOS Simulator.a\""));
+   str=Replace(str, "path = \"Engine.pak\""            , UnixPath(S+"path = \""+bin_path+"Mobile/Engine.pak\""     ));
+   str=Replace(str, "/* ESENTHEL FRAMEWORK DIRS */"    , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
+   str=Replace(str, "/* ESENTHEL LIBRARY DIRS */"      , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
+   str=Replace(str, "PRODUCT_BUNDLE_IDENTIFIER = \"\";", S+"PRODUCT_BUNDLE_IDENTIFIER = \""+CString(app_package       )+"\";");
+   str=Replace(str, "PRODUCT_NAME = \"\";"             , S+"PRODUCT_NAME = \""             +CString(build_project_name)+"\";");
+   str=Replace(str, "path = Mac.app;"                  , S+"path = \""                     +CString(build_project_name)+".app\";");
+   str=Replace(str, "path = iOS.app;"                  , S+"path = \""                     +CString(build_project_name)+".app\";");
    if(apple_team_id.is())
    {
       str=Replace(str, "DevelopmentTeam = \"\";", S+"DevelopmentTeam = \""+CString(apple_team_id)+"\";", true, WHOLE_WORD_STRICT);
@@ -2335,10 +2335,10 @@ Bool CodeEditor::generateAndroidProj()
          lib_path=projects_build_path; lib_path.tailSlash(true); // set target to the same folder for all applications, which means that when using 'CopyFile' we will copy the EE android libs only once for all apps
          Str p;
        //#AndroidArchitecture
-       //p=android_path+"EsenthelEngine-armeabi.a"    ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
-       //p=android_path+"EsenthelEngine-armeabi-v7a.a"; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
-         p=android_path+"EsenthelEngine-arm64-v8a.a"  ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
-       //p=android_path+"EsenthelEngine-x86.a"        ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
+       //p=android_path+"Engine-armeabi.a"    ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
+       //p=android_path+"Engine-armeabi-v7a.a"; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
+         p=android_path+"Engine-arm64-v8a.a"  ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
+       //p=android_path+"Engine-x86.a"        ; CopyFile(p, lib_path+SkipStartPath(p, android_path)); // copy from "Bin" to 'projects_build_path'
          lib_path=GetRelativePath(build_path+"Android/jni", lib_path);
       }
       lib_path.tailSlash(false);
@@ -2571,8 +2571,8 @@ Bool CodeEditor::generateAndroidProj()
          Str src_path=android_path+android_libs[i], dest_path=android_libs_path+android_libs[i], dest_path_local_properties;
          if(C PaksFile *pf=Paks.find(src_path)){if(!FCopy(*pf->pak, *pf->file, dest_path, FILE_OVERWRITE_DIFFERENT))return ErrorWrite(dest_path);}else return ErrorRead(src_path); // copy from "Editor.pak" to 'android_libs_path'
          project.putLine(S+"android.library.reference."+(i+1)+"="+UnixPath(GetRelativePath(build_path+"Android", dest_path)));
-         if(!OverwriteOnChangeLoud(local, dest_path+"/local.properties"))return false; // this file is not included in "Editor.pak", it's skipped in 'FilterEditorPak' function from "Esenthel Builder"
-         FCreateDir(dest_path+"/src"); // an empty folder "src" is required in each library, or else compilation will fail, we can't just create them in "Esenthel\Editor Data\Code\Android" because Git doesn't allow empty folders
+         if(!OverwriteOnChangeLoud(local, dest_path+"/local.properties"))return false; // this file is not included in "Editor.pak", it's skipped in 'FilterEditorPak' function from "Engine Builder"
+         FCreateDir(dest_path+"/src"); // an empty folder "src" is required in each library, or else compilation will fail, we can't just create them in "Editor Data\Code\Android" because Git doesn't allow empty folders
       }
       if(!OverwriteOnChangeLoud(project, build_path+"Android/project.properties"))return false;
    }
@@ -2648,7 +2648,7 @@ Bool CodeEditor::generateLinuxMakeProj()
    FileText f; Str s;
    Str bin_path=BinPath(),
        EE_APP_NAME=UnixEncode(GetBase(build_exe)),
-       EE_LIB_PATH=UnixEncode(bin_path+"EsenthelEngine.a"),
+       EE_LIB_PATH=UnixEncode(bin_path+"Engine.a"),
        EXTERNAL_LIBS,
        EE_HEADER_PATH,
        EE_OBJ_FILES,
@@ -2802,7 +2802,7 @@ Bool CodeEditor::generateLinuxNBProj()
       Str bin_path=BinPath(),
           EE_APP_NAME     =XmlString(build_project_name),
           EE_APP_NAME_SAFE=XmlString(CleanNameForNetBeans(GetBase(build_exe))),
-          EE_LIB_PATH=XmlString(UnixPath(bin_path+"EsenthelEngine.a")),
+          EE_LIB_PATH=XmlString(UnixPath(bin_path+"Engine.a")),
           EXTERNAL_LIBS,
           EE_HEADER_PATH,
           EE_APP_ITEMS,

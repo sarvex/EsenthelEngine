@@ -1,7 +1,7 @@
 /******************************************************************************/
 const uint ProjectVersion     =88, // !! increase this by one if any of engine/editor asset formats have changed !!
            ClientServerVersion=88; // !! client/server version (client will fail if tries to connect to server compiled with different version), increase this by one if any of engine resource formats have changed or if the network protocol has changed or if editor classes formats have changed !!
-const Str  ClientServerString ="Esenthel Editor";
+const Str  ClientServerString =ENGINE_NAME " Editor";
 /******************************************************************************/
 const cchar8       *WorldVerSuffix     ="\\Data",
                    *ProjectsBuildPath  =  "_Build_\\", // !! this will     get deleted in 'CleanAll' !!
@@ -72,9 +72,9 @@ const Edit.Material.TEX_QUALITY MinMtrlTexQualityBase0 =Edit.Material.LOW   , //
 const COMPRESS_TYPE ServerNetworkCompression     =COMPRESS_LZ4, ClientNetworkCompression     =COMPRESS_LZMA, EsenthelProjectCompression     =COMPRESS_LZMA;
 const int           ServerNetworkCompressionLevel=9           , ClientNetworkCompressionLevel=9            , EsenthelProjectCompressionLevel=9;
 const uint          NewElmTime=1; // use 1 instead of 0, so when downloading file, we have no 'param_value' and 'param_value_time' at 0, meaning we need to download the param
-const cchar8       *      AppName="Esenthel Editor",
-                   *ServerAppName="Esenthel Server",
-                   *InstallerName="Esenthel Installer";
+const cchar8       *      AppName=ENGINE_NAME" Editor",
+                   *ServerAppName=ENGINE_NAME" Server",
+                   *InstallerName=ENGINE_NAME" Installer";
 const cchar8       *ObjAccessNames[]=
 {
    "Custom" , // 0

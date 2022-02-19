@@ -4,7 +4,7 @@ Actor ground,
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, true);
 }

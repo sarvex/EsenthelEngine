@@ -12,7 +12,7 @@ void ReportTrigger(ActorInfo &trigger, ActorInfo &actor, PHYS_CONTACT contact)
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

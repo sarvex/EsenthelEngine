@@ -3,7 +3,7 @@ WindowIO wio; // window handling input/ouput
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 void Load(C Str &name, ptr user) // this function will be called when 'WindowIO' will load a file

@@ -101,7 +101,7 @@ Game.ObjMap<     Player> Players; // container for player objects
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

@@ -49,7 +49,7 @@ ImagePtr image_ptr; // define specialized 'ImagePtr' pointer. 'ImagePtr' is a ty
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 Bool Init()

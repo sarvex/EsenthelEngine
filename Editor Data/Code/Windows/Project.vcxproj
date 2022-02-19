@@ -301,7 +301,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineArm32DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineArm32DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -344,7 +344,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineUniversalArm32DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineUniversalArm32DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt;libcpmt</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -391,7 +391,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine64DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine64DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -438,7 +438,7 @@
       <MsExtensions>true</MsExtensions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>EsenthelEngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -487,7 +487,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineUniversal64DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineUniversal64DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt;libcpmt</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -534,7 +534,7 @@
       <MsExtensions>true</MsExtensions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>EsenthelEngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt;libcpmt</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -581,7 +581,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>--memory-init-file 1 -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s WASM=1</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine.bc;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.bc;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -627,7 +627,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>--memory-init-file 1 -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s WASM=1</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine.bc;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.bc;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -672,7 +672,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineArm32DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineArm32DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -717,7 +717,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineUniversalArm32DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineUniversalArm32DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -765,7 +765,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine64DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine64DX11.lib;d3d11.lib;d3d12.lib;d3dcompiler.lib;dinput8.lib;dsound.lib;dxgi.lib;dxguid.lib;Xinput9_1_0.lib;xaudio2.lib;winmm.lib;wininet.lib;ws2_32.lib;imm32.lib;psapi.lib;rpcrt4.lib;version.lib;libcmt.lib;libcpmt.lib;libucrt.lib;libvcruntime.lib;oldnames.lib;iphlpapi.lib;secur32.lib;Setupapi.lib;Dbghelp.lib;comsupp.lib;concrt.lib;Mscms.lib;Advapi32.lib;User32.lib;Shell32.lib;Ole32.lib;OleAut32.lib;Gdi32.lib;uuid.lib;odbc32.lib;Winspool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -818,7 +818,7 @@
       <MsExtensions>true</MsExtensions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>EsenthelEngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -869,7 +869,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/IGNORE:4078 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngineUniversal64DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineUniversal64DX11.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -923,7 +923,7 @@
       <MsExtensions>true</MsExtensions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>EsenthelEngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>EngineNintendoSwitch.a;libz.a;libnn_gll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -971,7 +971,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>--memory-init-file 1 -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s WASM=1</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine.bc;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.bc;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -1018,7 +1018,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>--memory-init-file 1 -s ALLOW_MEMORY_GROWTH=1 -s USE_WEBGL2=1 -s WASM=1</AdditionalOptions>
-      <AdditionalDependencies>EsenthelEngine.bc;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Engine.bc;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>

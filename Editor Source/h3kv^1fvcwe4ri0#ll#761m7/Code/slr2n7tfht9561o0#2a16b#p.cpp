@@ -252,19 +252,16 @@ class StoreClass : ClosableWindow
          T+=terms.create(
             "1. You certify that you have full rights to sell the items that you're submitting to Esenthel Store (you're the creator of the item or you have acquired all legal rights in order to sell it)\n"
             "2. Once item is submitted, it cannot be deleted (users that bought it, can access it forever)\n"
-            "3. You will not encourage to purchase items from your own website instead of Esenthel Store\n"
-            "4. Item price in Esenthel Store will not be higher than on your website\n"
-            "5. Sales are done through PayPal, you need to have a PayPal account in order to get paid, the income will be decreased by PayPal fees\n"
-            "6. 70% of sales will be sold through your PayPal account, 30% of sales will be sold through Esenthel PayPal account (which means that you get 70% income, and 30% goes to Esenthel Store)\n"
-            "7. You will not include files or descriptions related to other game engines than Esenthel Engine\n"
-            "8. After submitting items, they will be verified by Esenthel Staff before they will become available for sale, this process may take up to few days or more, depending on unforeseen circumstances\n"
-            "9. Esenthel Store operators reserve the right to refuse acceptance of items to the store, or remove them afterwards at any time without any specific reason, especially if they consider the items to be offensive or in any way inappropriate\n"
-            "10. Esenthel Store operators reserve the right to perform minor modifications to descriptions of the items that you have submitted\n"
-            "11. You hold full responsibility for providing support to the customers which purchased your items\n"
-            "12. You give permission to Esenthel Store owners to use the items (for making promotional images/videos/demos of the Esenthel Engine, including commercial games) as if they would've bought the item themselves according to the item's Terms of Use\n"
-            "13. These terms may change from time to time, failure to accept the new changes will result in your items being no longer available for sale to new customers (old customers can still access their purchased items according to the old terms)\n"
-            "14. Esenthel Store operators offer no warranty in regards to the Store itself (for example if the Store becomes unavailable; your items disappear from the Store listing; by some technical error they would get accessible for free or at a different price that you've specified - the issues will try to be fixed ASAP, however you're not entitled to any refund/compensation and you will not take any legal action against the Esenthel Staff)\n"
-            "15. Items are by default sold to Users with the Terms listed on Esenthel Store Login Screen, if you wish however to specify your own Terms of Use for the items that you submit, you need to include them in the Item Description visible on the Item Page in Esenthel Store, so the users can read the Terms before they make the purchase."
+            "3. Sales are done through PayPal, you need to have a PayPal account in order to get paid, the income will be decreased by PayPal fees\n"
+            "4. 70% of sales will be sold through your PayPal account, 30% of sales will be sold through Esenthel PayPal account (which means that you get 70% income, and 30% goes to Esenthel Store)\n"
+            "5. After submitting items, they will be verified by Esenthel Staff before they will become available for sale, this process may take up to few days or more, depending on unforeseen circumstances\n"
+            "6. Esenthel Store operators reserve the right to refuse acceptance of items to the store, or remove them afterwards at any time without any specific reason, especially if they consider the items to be offensive or in any way inappropriate\n"
+            "7. Esenthel Store operators reserve the right to perform minor modifications to descriptions of the items that you have submitted\n"
+            "8. You hold full responsibility for providing support to the customers which purchased your items\n"
+            "9. You give permission to Esenthel Store owners to use the items (for making promotional images/videos/demos of the " ENGINE_NAME " Engine, including commercial games) as if they would've bought the item themselves according to the item's Terms of Use\n"
+            "10. These terms may change from time to time, failure to accept the new changes will result in your items being no longer available for sale to new customers (old customers can still access their purchased items according to the old terms)\n"
+            "11. Esenthel Store operators offer no warranty in regards to the Store itself (for example if the Store becomes unavailable; your items disappear from the Store listing; by some technical error they would get accessible for free or at a different price that you've specified - the issues will try to be fixed ASAP, however you're not entitled to any refund/compensation and you will not take any legal action against the Esenthel Staff)\n"
+            "12. Items are by default sold to Users with the Terms listed on Esenthel Store Login Screen, if you wish however to specify your own Terms of Use for the items that you submit, you need to include them in the Item Description visible on the Item Page in Esenthel Store, so the users can read the Terms before they make the purchase."
             , &ts); terms.auto_line=AUTO_LINE_SPACE_SPLIT;
          T+=t_name.create("Item Name"); T+=name.create().maxLength(128);
          T+=b_create.create("Create").func(Create, T);
@@ -436,7 +433,7 @@ class StoreClass : ClosableWindow
          ts.reset().size=0.04; ts.align.set(1, 0);
          super.create(Rect_C(pos, 1.32, 0.30), "Seller").barVisible(false).hide(); button[2].show();
          T+=engine_license.create(Rect_C(clientWidth()/2, -clientHeight()+0.06, 0.5, 0.055), "Buy Engine License").func(EngineLicense, T);
-         T+=text          .create(Rect(0, engine_license.rect().max.y, clientWidth(), 0).extend(-0.05), "In order to sell your own items in Esenthel Store you need to be a Licensed Developer (have an Esenthel Engine License).\nOnce you're a Licensed Developer, you will be able to submit your own items to Esenthel Store and gain income from their sales.", &ts); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text          .create(Rect(0, engine_license.rect().max.y, clientWidth(), 0).extend(-0.05), "In order to sell your own items in Esenthel Store you need to be a Licensed Developer (have an Engine License).\nOnce you're a Licensed Developer, you will be able to submit your own items to Esenthel Store and gain income from their sales.", &ts); text.auto_line=AUTO_LINE_SPACE_SPLIT;
          return T;
       }
    }

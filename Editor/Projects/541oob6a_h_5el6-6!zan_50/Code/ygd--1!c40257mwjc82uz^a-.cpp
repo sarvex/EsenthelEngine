@@ -14,7 +14,7 @@ BlocksMapEx     blocks_map;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_MAXIMIZABLE|APP_MINIMIZABLE;
 
    Ms.hide();

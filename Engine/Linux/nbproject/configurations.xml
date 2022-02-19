@@ -277,7 +277,7 @@
         <itemPath>../H/Sound/Sound Stream.h</itemPath>
         <itemPath>../H/Sound/Sound.h</itemPath>
       </logicalFolder>
-      <itemPath>../H/EsenthelEngine.h</itemPath>
+      <itemPath>../H/Engine.h</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -718,7 +718,7 @@
           </preprocessorList>
         </ccTool>
         <archiverTool>
-          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a</output>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a</output>
         </archiverTool>
       </compileType>
       <item path="../../ThirdPartyLibs/PVRTC/PVRTC.cpp"
@@ -770,7 +770,7 @@
       </item>
       <item path="../H/Edit/Viewport4.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../H/EsenthelEngine.h" ex="false" tool="3" flavor2="0">
+      <item path="../H/Engine.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../H/File/Chunk.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -2128,7 +2128,7 @@
           <developmentMode>5</developmentMode>
         </asmTool>
         <archiverTool>
-          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a</output>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a</output>
         </archiverTool>
       </compileType>
       <item path="../../ThirdPartyLibs/PVRTC/PVRTC.cpp"
@@ -2180,7 +2180,7 @@
       </item>
       <item path="../H/Edit/Viewport4.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../H/EsenthelEngine.h" ex="false" tool="3" flavor2="0">
+      <item path="../H/Engine.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../H/File/Chunk.h" ex="false" tool="3" flavor2="0">
       </item>

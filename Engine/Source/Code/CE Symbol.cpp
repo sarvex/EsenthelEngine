@@ -48,7 +48,7 @@ Symbol* GetFinalSymbol(Symbol *symbol, Memc<Symbol::Modif> *templates) // simpli
 SymbolPtr FindChild(C Str &name, Symbol *parent, Memc<Symbol::Modif> *parent_templates, Bool allow_base, Bool allow_self, RecTest &rt)
 {
    IntLock lock(rt); if(rt)return null;
-   SymbolPtr s; if(allow_self && s.find(parent ? parent->full_name+SEP+name : name))if((s->valid || s->valid_decl) && (CppMode ? !(s->modifiers&Symbol::MODIF_ES_ONLY) : true))return s; // when in CppMode then skip Esenthel Script only keywords
+   SymbolPtr s; if(allow_self && s.find(parent ? parent->full_name+SEP+name : name))if((s->valid || s->valid_decl) && (CppMode ? !(s->modifiers&Symbol::MODIF_ES_ONLY) : true))return s; // when in CppMode then skip Code Editor-only keywords
    if(allow_base && parent && parent->type==Symbol::CLASS)FREPA(parent->base)
    {
       Symbol::Modif base=parent->base[i]; base.proceedToFinal(parent_templates);

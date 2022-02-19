@@ -774,11 +774,11 @@ void Application::showError(CChar *error)
    #elif ANDROID
       // first write to console, use '__android_log_write' with 'ANDROID_LOG_ERROR' instead of 'Log' which uses 'ANDROID_LOG_INFO'
       Memc<Str> lines; Split(lines, error, '\n'); // android has limit for too long messages
-      FREPA(lines){Str8 line=UTF8(lines[i]); if(line.is())__android_log_write(ANDROID_LOG_ERROR, "Esenthel", line.is() ? line : " ");} // '__android_log_write' will crash if text is null or ""
+      FREPA(lines){Str8 line=UTF8(lines[i]); if(line.is())__android_log_write(ANDROID_LOG_ERROR, ENGINE_NAME, line.is() ? line : " ");} // '__android_log_write' will crash if text is null or ""
 
    #if 0 // output the error into root of SD Card so users can send the text file
       Str path=SystemPath(SP_SD_CARD); if(!path.is())path=SystemPath(SP_APP_DATA_PUBLIC); if(!path.is())path=SystemPath(SP_APP_DATA);
-      FileText f; if(f.append(path.tailSlash(true)+"Esenthel Error.txt"))f.putText(error);
+      FileText f; if(f.append(path.tailSlash(true)+ENGINE_NAME " Error.txt"))f.putText(error);
    #endif
       
       if(ActivityClass)

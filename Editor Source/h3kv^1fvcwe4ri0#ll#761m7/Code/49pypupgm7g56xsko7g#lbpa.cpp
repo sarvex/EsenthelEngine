@@ -389,9 +389,9 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
          }
          if(PublishExePath.is())
          {
-            if(!FCopy(GetExtNot(PublishExePath)+".Esenthel.html", PublishPath+GetBaseNoExt(PublishExePath)+".html")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".html\""); return false;}
-            if(!FCopy(GetExtNot(PublishExePath)+".js"           , PublishPath+GetBaseNoExt(PublishExePath)+".js"  )){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".js\""  ); return false;}
-            if(!FCopy(GetExtNot(PublishExePath)+".wasm"         , PublishPath+GetBaseNoExt(PublishExePath)+".wasm")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".wasm\""); return false;}
+            if(!FCopy(GetExtNot(PublishExePath)+"." ENGINE_NAME ".html", PublishPath+GetBaseNoExt(PublishExePath)+".html")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".html\""); return false;}
+            if(!FCopy(GetExtNot(PublishExePath)+".js"                  , PublishPath+GetBaseNoExt(PublishExePath)+".js"  )){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".js\""  ); return false;}
+            if(!FCopy(GetExtNot(PublishExePath)+".wasm"                , PublishPath+GetBaseNoExt(PublishExePath)+".wasm")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".wasm\""); return false;}
          }
       }else
       if(exe_type==Edit.EXE_MAC)

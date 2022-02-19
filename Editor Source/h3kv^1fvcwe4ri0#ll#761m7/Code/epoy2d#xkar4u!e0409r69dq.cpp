@@ -9,7 +9,7 @@ class Mail
 
    void set(C Str &to_name, C Str &to_email, C Str &subject, C Str &body) {T.to_name=to_name; T.to_email=to_email; T.subject=subject; T.body=body;}
 
-   bool send() {return SendMail("Esenthel Server", "no-reply@esenthel_server.com", to_name, to_email, subject, body);}
+   bool send() {return SendMail(APP_NAME, "no-reply@esenthel_server.com", to_name, to_email, subject, body);}
 }
 /******************************************************************************/
 Memc<Mail> Mails;

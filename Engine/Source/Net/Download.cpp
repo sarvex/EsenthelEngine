@@ -71,15 +71,15 @@ static Str8 GetHeaders(C Str8 &url, CChar8 *request)
    Str8    headers =S+request+" /"+GetStartNot(name)+" HTTP/1.1\r\nHost: "+_GetStart(name)+"\r\n";
            headers+="Connection: close\r\n"; // connection will be closed after receiving all data
 #if WINDOWS
-   headers+="User-Agent: Esenthel Windows\r\n";
+   headers+="User-Agent: " ENGINE_NAME " Windows\r\n";
 #elif MAC
-   headers+="User-Agent: Esenthel Mac\r\n";
+   headers+="User-Agent: " ENGINE_NAME " Mac\r\n";
 #elif LINUX
-   headers+="User-Agent: Esenthel Linux\r\n";
+   headers+="User-Agent: " ENGINE_NAME " Linux\r\n";
 #elif ANDROID
-   headers+="User-Agent: Esenthel Android\r\n";
+   headers+="User-Agent: " ENGINE_NAME " Android\r\n";
 #elif IOS
-   headers+=(D.smallSize() ? "User-Agent: Esenthel iPhone\r\n" : "User-Agent: Esenthel iPad\r\n");
+   headers+=(D.smallSize() ? "User-Agent: " ENGINE_NAME " iPhone\r\n" : "User-Agent: " ENGINE_NAME " iPad\r\n");
 #endif
    return headers;
 }

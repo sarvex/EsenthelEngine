@@ -5,7 +5,7 @@ int  fog_type=0; // 0..3
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerS(0.1);

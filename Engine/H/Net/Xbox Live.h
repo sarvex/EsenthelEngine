@@ -19,7 +19,7 @@
 
       6. Set Xbox Live Sandbox ID in the Windows Device Portal - https://docs.microsoft.com/en-us/gaming/xbox-live/test-release/sandboxes/live-sandboxes-creators#windows-device-portal
 
-      7. Configure your Esenthel Application in Esenthel Editor
+      7. Configure your Application in Engine Editor
          1. Double-click your Application Element in the Project to open its properties
          2. Fill out the "Microsoft" and "XboxLive" fields (you can use "Get" buttons to navigate to Microsoft website where you can obtain these values)
 

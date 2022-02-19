@@ -5,7 +5,7 @@ File SaveGame; // file used to store world state
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 

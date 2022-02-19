@@ -272,7 +272,7 @@ void RendererClass::create()
 {
    if(LogInit)LogN("RendererClass.create");
 
-#if 0 // convert DDS from SMAA source to Esenthel Image format
+#if 0 // convert DDS from SMAA source to Engine Image format
    Str in="D:/!/SMAA/", out="C:/Esenthel/Data/Img/";
    Image img;
    img.mustImport(in+"SearchTex.dds", -1, IMAGE_2D); img._type=IMAGE_R8;

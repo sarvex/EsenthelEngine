@@ -2,7 +2,7 @@
 
    This tutorial presents the basics of SQL usage.
 
-   Esenthel Engine supports 4 SQL engines:
+   Engine supports 4 SQL engines:
       MS SQL Server
       MySQL
       PostgreSQL
@@ -125,7 +125,7 @@ void SQLTests()
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 bool Init()
 {

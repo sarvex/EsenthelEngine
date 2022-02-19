@@ -3,7 +3,7 @@ Threads threads;
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerS(0.5).viewRange(200);

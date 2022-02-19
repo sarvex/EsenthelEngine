@@ -23,7 +23,7 @@ Str ComboBoxElmFunc(C ComboBoxElm &elm) // function which transforms ComboBoxElm
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 }
 /******************************************************************************/
 bool Init()

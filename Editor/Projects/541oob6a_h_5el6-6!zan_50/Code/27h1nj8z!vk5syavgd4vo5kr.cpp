@@ -6,7 +6,7 @@ bool             walk ; // if want to walk
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
    D.ambientPowerS(0.1);

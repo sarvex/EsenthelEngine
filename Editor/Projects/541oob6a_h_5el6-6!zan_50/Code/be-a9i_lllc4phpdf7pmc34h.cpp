@@ -10,7 +10,7 @@ Str        data      ; // received data
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_WORK_IN_BACKGROUND|APP_NO_PAUSE_ON_WINDOW_MOVE_SIZE; // specify work in background flag to work also when not focused
    App.x=1;
    D.mode(400, 300);

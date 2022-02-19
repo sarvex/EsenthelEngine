@@ -39,7 +39,7 @@ class CopyElements : ClosableWindow
             if(CopyElms.target.id==Proj.id){CopyElms.dest=&Proj              ; result=LOAD_OK;}
             else                           {CopyElms.dest=&CopyElms.temp_dest; result=CopyElms.dest.open(CopyElms.target.id, CopyElms.target.name, CopyElms.target.path, error); CopyElms.root.zero();} // can't use root because we're not copying to 'Proj'
 
-            if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again.");else
+            if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again.");else
             if(result==LOAD_LOCKED       )Gui.msgBox(S,   "Target project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first.");else
             if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? '\n' : '\0')+error);else
             if(CopyElms.dest.needUpdate())Gui.msgBox(S,   "Target project needs to be updated first.\nPlease first open the target project normally in order to update it.");else
@@ -84,7 +84,7 @@ class CopyElements : ClosableWindow
          if(CopyElms.target.id==Proj.id){         CopyElms.dest=&Proj              ; result=LOAD_OK;}
          else                           {int ver; CopyElms.dest=&CopyElms.temp_dest; result=CopyElms.dest.load3(CopyElms.target.path, ver, error);} // just load data without opening it for editing (so we don't have to close it after this stage yet)
 
-         if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again.");else
+         if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again.");else
          if(result==LOAD_LOCKED       )Gui.msgBox(S,   "Target project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first.");else
          if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? '\n' : '\0')+error);else
          if(CopyElms.dest.needUpdate())Gui.msgBox(S,   "Target project needs to be updated first.\nPlease first open the target project normally in order to update it.");else
@@ -457,7 +457,7 @@ class CopyElements : ClosableWindow
             {
                case PAK_LOAD_OK                 : break;
                case PAK_LOAD_UNSUPPORTED_VERSION: Gui.msgBox(S, "Selected project was created with a newer version of the engine."); return;
-               case PAK_LOAD_INCOMPLETE_DATA    : Gui.msgBox(S, S+"Selected project file is incomplete:\nFile size is: "+FileSize(actual_size)+"\nIt should be: "+FileSize(expected_size)+"\nIf downloaded from Esenthel Store, please make sure that the download was not interrupted.\nConsider downloading using Esenthel Editor which supports resuming interrupted downloads."); return;
+               case PAK_LOAD_INCOMPLETE_DATA    : Gui.msgBox(S, S+"Selected project file is incomplete:\nFile size is: "+FileSize(actual_size)+"\nIt should be: "+FileSize(expected_size)+"\nIf downloaded from Esenthel Store, please make sure that the download was not interrupted.\nConsider downloading using " ENGINE_NAME " Editor which supports resuming interrupted downloads."); return;
                default                          : Gui.msgBox(S, "Can't load selected project"); return;
             }
 
@@ -467,7 +467,7 @@ class CopyElements : ClosableWindow
                case LOAD_EMPTY :
                case LOAD_ERROR :
                case LOAD_LOCKED: Gui.msgBox(S, "Invalid project file"); return;
-               case LOAD_NEWER : Gui.msgBox(S, "This project was created with a newer version of Esenthel Engine.\nPlease upgrade your Esenthel software and try again."); return;
+               case LOAD_NEWER : Gui.msgBox(S, "This project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again."); return;
             }
             if(src_ver<=34 && f.readTry("Settings", esenthel_project_pak))src.loadOldSettings(f); // ver 34 and below had settings in a separate file
             src.setIDPath(UIDZero, S); // set paths too because for example when copying textures, then 'tex_path' is used

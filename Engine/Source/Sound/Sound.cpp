@@ -36,7 +36,7 @@ ALIGN_ASSERT(_Sound, _callback); // must have native alignment because we use it
 
 #define DEL_BUFFER_WHEN_NOT_PLAYING 1 // 0 is not fully implemented so don't use
 
-#define SOUND_API_THREAD_SAFE (DIRECT_SOUND || XAUDIO || OPEN_AL || CUSTOM_AUDIO) // DirectSound, XAudio, OpenAL, CustomAudio are thread-safe, OpenSL is thread-safe only with SL_ENGINEOPTION_THREADSAFE flag enabled which however is not used in Esenthel since thread-safety is handled manually
+#define SOUND_API_THREAD_SAFE (DIRECT_SOUND || XAUDIO || OPEN_AL || CUSTOM_AUDIO) // DirectSound, XAudio, OpenAL, CustomAudio are thread-safe, OpenSL is thread-safe only with SL_ENGINEOPTION_THREADSAFE flag enabled which however is not used in Engine since thread-safety is handled manually
 
 #define UPDATE_2X WINDOWS_NEW // on WINDOWS_NEW we have to operate 2x faster due to low-latency sound recording, TODO: can this be improved so we don't have to call 2x more frequently? perhaps do sound recording on a separate dedicated thread
 

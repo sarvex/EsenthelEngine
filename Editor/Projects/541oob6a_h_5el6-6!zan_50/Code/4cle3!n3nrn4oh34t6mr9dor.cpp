@@ -1,7 +1,7 @@
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    SimulateTouches(true); // enable simulating the 'Touches' behavior using mouse for systems which don't support touch screens
 }
 /******************************************************************************/

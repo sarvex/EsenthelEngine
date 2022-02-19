@@ -7,7 +7,7 @@ const bool TestMode=true; // !! WARNING: if you disable test mode, and click on 
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
 #if !ANDROID && !IOS
    #error Advertisements are not supported on this platform
 #endif

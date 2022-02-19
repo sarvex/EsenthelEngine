@@ -8,7 +8,7 @@ void Drop(Memc<Str> &names, GuiObj *obj, C Vec2 &screen_pos)
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.drop=Drop; // enable Drag & Drop by specifying a custom function which will be called when a file is dropped on the window
 }
 /******************************************************************************/

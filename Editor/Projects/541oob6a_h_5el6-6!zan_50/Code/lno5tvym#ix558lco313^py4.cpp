@@ -10,7 +10,7 @@ void Resize(flt old_width=0, flt old_height=0)
 void InitPre()
 {
    App.flag=APP_MAXIMIZABLE|APP_MINIMIZABLE|APP_RESIZABLE|APP_AUTO_FREE_OPEN_GL_ES_DATA;
-   EE_INIT();
+   INIT();
    D.ambientPowerS(0.25);
    D.screen_changed=Resize;
    Cam.dist =5;

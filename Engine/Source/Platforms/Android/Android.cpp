@@ -782,7 +782,7 @@ static void JavaGetAppName()
       if(JString   sd_card=UnixPath(AndroidSDCardPath))
          Jni->CallVoidMethod(Activity, setSharingPaths, sd_card());
    }
-   if(LogInit && AndroidPublicPath.is() && !EqualPath(AndroidPublicPath, GetPath(LogName()))){Str temp=LogName(); LogN(S+"Found public storage directory and continuing log there: "+AndroidPublicPath); LogName(Str(AndroidPublicPath).tailSlash(true)+"Esenthel Log.txt"); LogN(S+"Continuing log from: "+temp);}
+   if(LogInit && AndroidPublicPath.is() && !EqualPath(AndroidPublicPath, GetPath(LogName()))){Str temp=LogName(); LogN(S+"Found public storage directory and continuing log there: "+AndroidPublicPath); LogName(Str(AndroidPublicPath).tailSlash(true)+ENGINE_NAME " Log.txt"); LogN(S+"Continuing log from: "+temp);}
 }
 static void JavaLooper()
 {
@@ -1154,9 +1154,9 @@ void android_main(android_app *app)
    // init
    if(LogInit)
    {
-      if(FExistSystem("/sdcard"        ))LogName(        "/sdcard/Esenthel Log.txt");else
-      if(FExistSystem("/mnt/sdcard"    ))LogName(    "/mnt/sdcard/Esenthel Log.txt");else
-      if(FExistSystem("/mnt/sdcard-ext"))LogName("/mnt/sdcard-ext/Esenthel Log.txt");
+      if(FExistSystem("/sdcard"        ))LogName(        "/sdcard/" ENGINE_NAME " Log.txt");else
+      if(FExistSystem("/mnt/sdcard"    ))LogName(    "/mnt/sdcard/" ENGINE_NAME " Log.txt");else
+      if(FExistSystem("/mnt/sdcard-ext"))LogName("/mnt/sdcard-ext/" ENGINE_NAME " Log.txt");
    }
    AndroidApp=app;
    JavaInit();

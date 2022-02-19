@@ -9,7 +9,7 @@ void ScreenChanged(flt old_width, flt old_height)
 }
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    App.flag=APP_RESIZABLE;
    App.x=0;
    App.y=0;

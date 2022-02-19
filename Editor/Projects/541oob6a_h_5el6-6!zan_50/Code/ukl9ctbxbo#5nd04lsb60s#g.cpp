@@ -8,7 +8,7 @@ Vec   joint_pos , // joint position (used only for drawing)
 /******************************************************************************/
 void InitPre()
 {
-   EE_INIT();
+   INIT();
    Ms.hide();
    Ms.clip(null, 1);
 }

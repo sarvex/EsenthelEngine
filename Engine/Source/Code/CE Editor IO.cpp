@@ -223,7 +223,7 @@ Bool CodeEditor::load(C SourceLoc &loc, Bool quiet, Bool Const)
             case EE_ERR_ELM_NOT_CODE      : msg=S+"Element \""+loc.asText()+"\" is not a Code"; break;
             case EE_ERR_ELM_NOT_DOWNLOADED: msg=S+"Element \""+loc.asText()+"\" was not yet downloaded, please first:\n1. Upload Code using \"Synchronize Codes\" option on the source machine.\n2. Download Code using \"Synchronize Codes\" option on this machine."; break;
             case EE_ERR_FILE_NOT_FOUND    : msg=S+"Element \""+loc.asText()+"\" file data was not found"; break;
-            case EE_ERR_FILE_INVALID      : msg=S+"Element \""+loc.asText()+"\" file data is invalid, you can try the following:\n-Update Esenthel Editor to a newer version\n-Use \"Synchronize Codes\" option to update your codes\n-Use a backup version of your project"; break;
+            case EE_ERR_FILE_INVALID      : msg=S+"Element \""+loc.asText()+"\" file data is invalid, you can try the following:\n-Update " ENGINE_NAME " Editor to a newer version\n-Use \"Synchronize Codes\" option to update your codes\n-Use a backup version of your project"; break;
             case EE_ERR_FILE_READ_ERROR   : msg=S+"Element \""+loc.asText()+"\" file reading failed"; break;
          }
          Gui.msgBox(S, msg);

@@ -1115,8 +1115,8 @@ struct PakCreator
       Memc<FileTemp> files;
 
       void add(C PakNode &node                                                      ) {                                                                                         files.New().set(node    );}
-      void add(Str name, C FileInfo &fi, Bool (*filter)(C Str &name)                ) {name.tailSlash(false); if(!filter || filter(name))if(!Equal(_GetBase(name), ".DS_Store"))files.New().set(name, fi);}
-      Bool add(Str name,                 Bool (*filter)(C Str &name), PakCreator &pc) {name.tailSlash(false); if(!filter || filter(name)){FileInfo fi; if(!fi.get(name))return pc.setErrorAccess(name); add(name, fi, null);} return true;}
+      void add(Str name, C FileInfo &fi, Bool (*Filter)(C Str &name)                ) {name.tailSlash(false); if(!Filter || Filter(name))if(!Equal(_GetBase(name), ".DS_Store"))files.New().set(name, fi);}
+      Bool add(Str name,                 Bool (*Filter)(C Str &name), PakCreator &pc) {name.tailSlash(false); if(!Filter || Filter(name)){FileInfo fi; if(!fi.get(name))return pc.setErrorAccess(name); add(name, fi, null);} return true;}
 
       void sort()
       {
@@ -1167,6 +1167,7 @@ struct PakCreator
                data_name      =         ft.name ; // here we leave 'data' as empty, because that's for NODE
                modify_time_utc=ft.fi.modify_time_utc;
                type           (ft.fi.type);
+               if(pc.CompressMode)compress_mode=pc.CompressMode(ft.name);
 
                data_size           =
                data_size_compressed=ft.fi.size;
@@ -1285,6 +1286,7 @@ struct PakCreator
    Long                  updated_size; // size after in_place update
    PakProgress          *progress;
    PakInPlace           *in_place;
+   COMPRESS_MODE       (*CompressMode)(C Str &name);
    Str                  *error_message;
    Memc<PakFileEx>       files;
    Memc<DataRangeRel>    holes;
@@ -1296,7 +1298,7 @@ struct PakCreator
    Threads               threads;
    MemtN<Compressor, 16> compressors;
 
-   PakCreator(Pak &pak, UInt pak_flag, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place) : pak(pak)
+   PakCreator(Pak &pak, UInt pak_flag, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, COMPRESS_MODE (*CompressMode)(C Str &name)) : pak(pak)
    {
       if(pak_flag&PAK_NO_FILE)pak_flag|=PAK_NO_DATA;  // if we're not creating any file, then we can't save data either
       if(pak_flag&PAK_NO_DATA)compress=COMPRESS_NONE; // if we're not saving data, then disable compression (because it's not needed, however we still may want to process files for calculating hash)
@@ -1312,6 +1314,7 @@ struct PakCreator
       T.error_message       =error_message; if(error_message)error_message->clear();
       T.progress            =progress     ; if(progress     )progress     ->progress=0;
       T.in_place            =in_place;
+      T.CompressMode        =CompressMode;
       T.write_pos           =T.updated_size=0;
       if(in_place)
       {
@@ -1340,14 +1343,14 @@ struct PakCreator
 
    Bool add(C FileTemp &ft, Int parent_index) {return files.New().set(ft, parent_index, T);}
 
-   void enter(FileTemp &parent, Int parent_index, Bool (*filter)(C Str &name))
+   void enter(FileTemp &parent, Int parent_index, Bool (*Filter)(C Str &name))
    {
       FileTempContainer ftc;
 
       // get files
       switch(parent.type)
       {
-         case FileTemp::STD : if(parent.isDir()     )for(FileFind ff(parent.name); ff(); )ftc.add(ff.pathName(), ff, filter); break;
+         case FileTemp::STD : if(parent.isDir()     )for(FileFind ff(parent.name); ff(); )ftc.add(ff.pathName(), ff, Filter); break;
          case FileTemp::NODE: if(parent.node->exists)FREPA(parent.node->children         )ftc.add(parent.node->children[i] ); break; // don't add children for nodes that are marked as removed
       }
       ftc.sort();
@@ -1360,7 +1363,7 @@ struct PakCreator
          files[parent_index].children_num   =ftc.files.elms();
       }
       FREPA(ftc.files)add  (ftc.files[i], parent_index       );
-      FREPA(ftc.files)enter(ftc.files[i], file_elms+i, filter);
+      FREPA(ftc.files)enter(ftc.files[i], file_elms+i, Filter);
    }
 
    static Str SrcName  (C PakFileEx &src, C PakFile &dest, C Pak &pak) {Str s=src.srcFullName(); return s.is() ? s : pak.fullName(dest);}
@@ -1734,25 +1737,25 @@ struct PakCreator
    }
 };
 /******************************************************************************/
-Bool Pak::create(C Str &file, C Str &pak_name, UInt flag, Cipher *dest_cipher, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Bool (*filter)(C Str &name), Str *error_message, PakProgress *progress)
+Bool Pak::create(C Str &file, C Str &pak_name, UInt flag, Cipher *dest_cipher, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Bool (*Filter)(C Str &name), COMPRESS_MODE (*CompressMode)(C Str &name), Str *error_message, PakProgress *progress)
 {
    Str f=file;
-   return create(MemPtr<Str>(f), pak_name, flag, dest_cipher, src_cipher, compress, compression_level, filter, error_message, progress);
+   return create(CMemPtr<Str>(f), pak_name, flag, dest_cipher, src_cipher, compress, compression_level, Filter, CompressMode, error_message, progress);
 }
-Bool Pak::create(C CMemPtr<Str> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Bool (*filter)(C Str &name), Str *error_message, PakProgress *progress)
+Bool Pak::create(C CMemPtr<Str> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Bool (*Filter)(C Str &name), COMPRESS_MODE (*CompressMode)(C Str &name), Str *error_message, PakProgress *progress)
 {
    if(progress && progress->wantStop(error_message))return false;
    // !! don't delete Pak anywhere here because we still need 'pak_name' which can be a Pak member !!
-   PakCreator pc(T, flag, src_cipher, compress, compression_level, error_message, progress, null);
+   PakCreator pc(T, flag, src_cipher, compress, compression_level, error_message, progress, null, CompressMode);
 
    // get files
-   PakCreator::FileTempContainer ftc; FREPA(files)ftc.add(files[i], filter, pc); ftc.sort();
+   PakCreator::FileTempContainer ftc; FREPA(files)ftc.add(files[i], Filter, pc); ftc.sort();
 
    // add files
-   if(FlagTest(flag, PAK_SHORTEN) && ftc.files.elms()==1 && ftc.files[0].isDir())pc.enter(ftc.files[0], -1, filter);else
+   if(FlagTest(flag, PAK_SHORTEN) && ftc.files.elms()==1 && ftc.files[0].isDir())pc.enter(ftc.files[0], -1, Filter);else
    {
       FREPA(ftc.files)pc.add  (ftc.files[i], -1        );
-      FREPA(ftc.files)pc.enter(ftc.files[i],  i, filter);
+      FREPA(ftc.files)pc.enter(ftc.files[i],  i, Filter);
    }
 
    // adjust Pak name
@@ -1785,7 +1788,7 @@ Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *
 {
    if(progress && progress->wantStop(error_message))return false;
    // !! don't delete Pak anywhere here because we still need 'pak_name' which can be a Pak member !!
-   PakCreator pc(T, flag, null, compress, compression_level, error_message, progress, in_place);
+   PakCreator pc(T, flag, null, compress, compression_level, error_message, progress, in_place, null);
 
    // get files
    PakCreator::FileTempContainer ftc; FREPA(files)ftc.add(files[i]); ftc.sort();

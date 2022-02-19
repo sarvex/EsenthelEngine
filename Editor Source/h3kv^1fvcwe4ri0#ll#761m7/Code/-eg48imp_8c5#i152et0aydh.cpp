@@ -100,7 +100,7 @@ class MiscRegion : Region
    static void Quit           (MiscRegion &mr) {App.close();}
    static void About          (MiscRegion &mr)
    {
-      Str about=S+AppName+(STEAM ? " Steam Edition" : "")+"\nEngine Build: "+ENGINE_BUILD+", Editor Build: "+EE_APP_BUILD+", Network Protocol: "+ClientServerVersion;
+      Str about=S+AppName+(STEAM ? " Steam Edition" : "")+"\nEngine Build: "+ENGINE_BUILD+", Editor Build: "+APP_BUILD+", Network Protocol: "+ClientServerVersion;
       about+='\n'; about+=D.apiName();
       about+=S+" Shader Model "+D.shaderModelName();
       about+=(X64 ? ", 64-bit" : ", 32-bit");
@@ -138,7 +138,7 @@ class MiscRegion : Region
    {
       Node<MenuElm> menu_menu;
       {
-         menu_menu.New().create("Help"           , Help      , T).display(MLTC(null, PL, u"Pomoc"        , DE, u"Hilfe"          , RU, u"Помощь"         , PO, u"Ajuda"             )); //.desc(MLT("Show Esenthel Engine help documentation", PL,"Wyświetl pomoc Esenthel Engine", DE,"Zeige Esenthel Engine Hilfe Dokumentation", RU,"Показать документацию Esenthel Engine", PO,"Mostrar a documentação de ajuda do Esenthel Engine"));
+         menu_menu.New().create("Help"           , Help      , T).display(MLTC(null, PL, u"Pomoc"        , DE, u"Hilfe"          , RU, u"Помощь"         , PO, u"Ajuda"             )); //.desc(MLT("Show Engine help documentation", PL,"Wyświetl pomoc Engine", DE,"Zeige Engine Hilfe Dokumentation", RU,"Показать документацию Engine", PO,"Mostrar a documentação de ajuda do Engine"));
          menu_menu.New().create("About"          , About     , T);
          menu_menu.New().create("Video Options"  , VidOpt    , T).kbsc(KbSc(KB_F12  )).display(MLTC(null, PL, u"Opcje Grafiki", DE, u"Grafik Optionen", RU, u"Настройки видео", PO, u"Opções de Video"   )).desc(MLT("Change video options", PL,"Zmień opcje grafiki", DE,"Ändert die Grafik Optionen", RU,"Изменить видео настройки", PO,"Mudar as opções de video")).flag(MENU_HIDDEN);
          menu_menu.New().create("Fullscreen"     , Fullscreen, T).kbsc(KbSc(KB_F11  )).display(MLTC(null, PL, u"Pełny Ekran"  , DE, u"Vollbild"       , RU, u"Полноэкранный"  , PO, u"Ecrã inteiro"      )).desc(MLT("Toggle fullscreen mode", PL,"Zmień pełny ekran", DE, "Wechseln zu Fullscreen Modus", RU,"Переключить полноэкранный режим", PO,"Accionar modo de ecrã inteiro"));
@@ -229,8 +229,8 @@ class MiscRegion : Region
             {
                Node<MenuElm> &code=(Export+="Code Synchronization"); code.desc("Import/Export Project Source Code which can be synchronized using 3rd party tools.");
                code.New().create("Explore", CodeExplore, T).desc("Open Project Source Code Synchronization folder.");
-               code.New().create("Import" , CodeImport , T).desc("Import Project Source Code from Code Synchronization folder to Esenthel Project.\n\nYou can use this option to import source code from folder that was synchronized using 3rd party tools.");
-               code.New().create("Export" , CodeExport , T).desc("Export Project Source Code from Esenthel Project to Code Synchronization Folder.\n\nYou can use this option to export source code and then synchronize it using 3rd party tools.");
+               code.New().create("Import" , CodeImport , T).desc("Import Project Source Code from Code Synchronization folder to " ENGINE_NAME " Project.\n\nYou can use this option to import source code from folder that was synchronized using 3rd party tools.");
+               code.New().create("Export" , CodeExport , T).desc("Export Project Source Code from " ENGINE_NAME " Project to Code Synchronization Folder.\n\nYou can use this option to export source code and then synchronize it using 3rd party tools.");
             }
          }
          build_menu++;
@@ -265,7 +265,7 @@ class MiscRegion : Region
          /*if(ScriptsSupported())
          {
             build_menu++;
-            build_menu.New().create("Play using Esenthel Compiler", PlayEsenthelCompiler).kbsc(KbSc(KB_P, KBSC_CTRL_CMD));
+            build_menu.New().create("Play using " ENGINE_NAME " Compiler", PlayEsenthelCompiler).kbsc(KbSc(KB_P, KBSC_CTRL_CMD));
          }
       #if DEBUG
          build_menu++;
@@ -309,7 +309,7 @@ class MiscRegion : Region
    virtual void update(C GuiPC &gpc)override
    {
       super.update(gpc);
-      if(screenshot && !--screenshot)Renderer.screenShots(SystemPath(SP_DESKTOP).tailSlash(true)+"Esenthel Editor ScreenShots/", "bmp");
+      if(screenshot && !--screenshot)Renderer.screenShots(SystemPath(SP_DESKTOP).tailSlash(true)+ENGINE_NAME " Editor ScreenShots/", "bmp");
    }
    virtual void draw(C GuiPC &gpc)override
    {
