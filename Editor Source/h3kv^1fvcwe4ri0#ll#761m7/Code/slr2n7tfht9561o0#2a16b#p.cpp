@@ -80,7 +80,9 @@ class StoreClass : ClosableWindow
                   }
                   tag=SkipWhiteChars(tag);
                   FREPA(tag)if(!XmlChar(tag[i]) && !(i==0 && tag[i]=='/')){tag.clip(i); break;}
-                  if(tag=="/h1")out+="\n";else
+                  if(tag=="/h1"
+                  || tag=="/h2"
+                  || tag=="/h3")out+="\n";else
                   if(tag=="br" )out+="\n";else
                   if(tag=="li" )out+="- ";else 
                   if(tag=="/li")out.line();else
