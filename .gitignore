@@ -58,7 +58,7 @@ Desktop.ini
 /ThirdPartyLibs/DLSS
 /ThirdPartyLibs/Xbox Live/2018.6.20181010.2/x64
 !/Clean.bat
-!/Esenthel.sln
+!/Titan.sln
 Lock
 
 # Editor
@@ -77,11 +77,11 @@ Lock
 !/Editor/Projects/541oob6a_h_5el6-6!zan_50
 /Editor/Projects/541oob6a_h_5el6-6!zan_50/Temp
 
-# Esenthel Builder
-!/Esenthel Builder.exe
-!/Esenthel Builder.app
-!/Esenthel Builder
-/Engine/Esenthel Config.h
+# Engine Builder
+!/Engine Builder.exe
+!/Engine Builder.app
+!/Engine Builder
+/Engine/Engine Config.h
 
 # Extra
 !/Extra
