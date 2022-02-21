@@ -289,7 +289,7 @@ void BuildRun(Build &build, Ptr user, Int thread_index) {build.run();}
 CChar8 *separator="/******************************************************************************/";
 CChar8 *copyright="/******************************************************************************\n"
                   " * Copyright (c) Grzegorz Slazinski. All Rights Reserved.                     *\n"
-        " * " ENGINE_NAME " Engine (http://esenthel.com) header file.                            *\n";
+        " * " ENGINE_NAME " Engine (https://esenthel.com) header file.                           *\n";
 /******************************************************************************/
 FILE_LIST_MODE Header(C FileFind &ff, Ptr)
 {
