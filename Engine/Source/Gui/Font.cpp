@@ -963,7 +963,7 @@ struct SystemFontDrawContext
       bitmap_image.clear();
 	   if(NSStringAuto str=chr)
 	   {
-         NSPoint p; p.x=border; p.y=border; [str() drawAtPoint:p withAttributes:font->font->attributes];
+         NSPoint p; p.x=border; p.y=border; [str() drawAtPoint:p withAttributes:font->attributes];
          [context flushGraphics];
       }
 

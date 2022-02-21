@@ -9,7 +9,7 @@
 #ifndef EE_PRIVATE
    #define EE_PRIVATE 1
 #endif
-#include "../../Engine/H/EsenthelEngine.h"
+#include "../../Engine/H/Engine.h"
 
 #include "../begin.h"
 

@@ -741,7 +741,33 @@ VecD Randomizer::operator()(C AnimatedSkeleton &anim_skel)
    return 0;
 }
 /******************************************************************************/
-VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
+Vec Randomizer::operator()(C MeshBase &mshb)
+{
+   if(  Int  faces=mshb.faces  ())
+   if(C Vec *pos  =mshb.vtx.pos())
+   {
+      Int face=T(faces);
+      if( face<mshb.tris()) // triangle
+      {
+       C VecI &ind=mshb.tri.ind(face);
+       C Vec  &a  =pos[ind.x],
+              &b  =pos[ind.y],
+              &c  =pos[ind.z];
+         return T(Tri(a, b, c));
+      }else // quad
+      {
+         face-=mshb.tris();
+       C VecI4 &ind=mshb.quad.ind(face);
+       C Vec   &a  =pos[ind.x],
+               &b  =pos[ind.y],
+               &c  =pos[ind.z],
+               &d  =pos[ind.w];
+         return T(Quad(a, b, c, d));
+      }
+   }
+   return 0;
+}
+VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton &anim_skel)
 {
    if(  Int  faces=mshb.faces  ())
    if(C Vec *pos  =mshb.vtx.pos())
@@ -755,14 +781,14 @@ VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
        C Vec  &a  =pos[ind.x],
               &b  =pos[ind.y],
               &c  =pos[ind.z];
-         if(anim_skel && (bone=mshb.vtx.matrix()) && (weight=mshb.vtx.blend())) // animated
+         if(/*anim_skel &&*/ (bone=mshb.vtx.matrix()) && (weight=mshb.vtx.blend())) // animated
          {
             Byte msb_a=bone[ind.x].c[weight[ind.x].maxI()], // for performance reasons only one bone with biggest weight is used
                  msb_b=bone[ind.y].c[weight[ind.y].maxI()],
                  msb_c=bone[ind.z].c[weight[ind.z].maxI()];
-            return T(TriD(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                          b*anim_skel->boneRoot(msb_b-1).matrix(),
-                          c*anim_skel->boneRoot(msb_c-1).matrix()));
+            return T(TriD(a*anim_skel.boneRoot(msb_a-1).matrix(),
+                          b*anim_skel.boneRoot(msb_b-1).matrix(),
+                          c*anim_skel.boneRoot(msb_c-1).matrix()));
          }else // static
          {
             return T(Tri(a, b, c));
@@ -775,16 +801,16 @@ VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
                &b  =pos[ind.y],
                &c  =pos[ind.z],
                &d  =pos[ind.w];
-         if(anim_skel && (bone=mshb.vtx.matrix()) && (weight=mshb.vtx.blend())) // animated
+         if(/*anim_skel &&*/ (bone=mshb.vtx.matrix()) && (weight=mshb.vtx.blend())) // animated
          {
             Byte msb_a=bone[ind.x].c[weight[ind.x].maxI()], // for performance reasons only one bone with biggest weight is used
                  msb_b=bone[ind.y].c[weight[ind.y].maxI()],
                  msb_c=bone[ind.z].c[weight[ind.z].maxI()],
                  msb_d=bone[ind.w].c[weight[ind.w].maxI()];
-            return T(QuadD(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                           b*anim_skel->boneRoot(msb_b-1).matrix(),
-                           c*anim_skel->boneRoot(msb_c-1).matrix(),
-                           d*anim_skel->boneRoot(msb_d-1).matrix()));
+            return T(QuadD(a*anim_skel.boneRoot(msb_a-1).matrix(),
+                           b*anim_skel.boneRoot(msb_b-1).matrix(),
+                           c*anim_skel.boneRoot(msb_c-1).matrix(),
+                           d*anim_skel.boneRoot(msb_d-1).matrix()));
          }else // static
          {
             return T(Quad(a, b, c, d));
@@ -793,7 +819,38 @@ VecD Randomizer::operator()(C MeshBase &mshb, C AnimatedSkeleton *anim_skel)
    }
    return 0;
 }
-VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
+Vec Randomizer::operator()(C MeshRender &mshr)
+{
+   Vec out=0;
+   if(mshr.tris())
+   {
+      Int pos_ofs =mshr.vtxOfs(VTX_POS);
+      if( pos_ofs>=0)
+      if(C Byte *vtx_data=mshr.vtxLockRead())
+      {
+         if(CPtr ind=mshr.indLockRead())
+         {
+            // calculate random face and its vertexes
+            VecI vtx_ofs;
+            Int  face=T(mshr.tris())*3; // 3 vtx indexes in each triangle
+            if(mshr._ib.bit16()){U16 *d=(U16*)ind; vtx_ofs.set(d[face], d[face+1], d[face+2]);}
+            else                {U32 *d=(U32*)ind; vtx_ofs.set(d[face], d[face+1], d[face+2]);}
+            vtx_ofs*=mshr.vtxSize();
+
+            // get vertex positions
+          C Vec &a=*(Vec*)(vtx_data+vtx_ofs.x+pos_ofs),
+                &b=*(Vec*)(vtx_data+vtx_ofs.y+pos_ofs),
+                &c=*(Vec*)(vtx_data+vtx_ofs.z+pos_ofs);
+
+            out=T(Tri(a, b, c));
+            mshr.indUnlock();
+         }
+         mshr.vtxUnlock();
+      }
+   }
+   return out;
+}
+VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton &anim_skel)
 {
    VecD out=0;
    if(mshr.tris())
@@ -818,7 +875,7 @@ VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
 
             Int bone_ofs,
               weight_ofs;
-            if(anim_skel && ((bone_ofs=mshr.vtxOfs(VTX_MATRIX))>=0) && ((weight_ofs=mshr.vtxOfs(VTX_BLEND))>=0)) // animated
+            if(/*anim_skel &&*/ ((bone_ofs=mshr.vtxOfs(VTX_MATRIX))>=0) && ((weight_ofs=mshr.vtxOfs(VTX_BLEND))>=0)) // animated
             {
              C VecB4 &  bone_a=*(VecB4*)(vtx_data+vtx_ofs.x+  bone_ofs),
                      &  bone_b=*(VecB4*)(vtx_data+vtx_ofs.y+  bone_ofs),
@@ -845,9 +902,9 @@ VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
                      tris+=bs.tris;
                   }
                }*/
-               out=T(TriD(a*anim_skel->boneRoot(msb_a-1).matrix(),
-                          b*anim_skel->boneRoot(msb_b-1).matrix(),
-                          c*anim_skel->boneRoot(msb_c-1).matrix()));
+               out=T(TriD(a*anim_skel.boneRoot(msb_a-1).matrix(),
+                          b*anim_skel.boneRoot(msb_b-1).matrix(),
+                          c*anim_skel.boneRoot(msb_c-1).matrix()));
             }else // static
             {
                out=T(Tri(a, b, c));
@@ -859,14 +916,10 @@ VecD Randomizer::operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel)
    }
    return out;
 }
-VecD Randomizer::operator()(C MeshPart &part, C AnimatedSkeleton *anim_skel)
-{
-   return part.base.faces() ? T(part.base, anim_skel) : T(part.render, anim_skel);
-}
-VecD Randomizer::operator()(C Mesh &mesh, C AnimatedSkeleton *anim_skel)
-{
-   return mesh.parts.elms() ? T(mesh.parts[T(mesh.parts.elms())], anim_skel) : 0;
-}
+Vec  Randomizer::operator()(C MeshPart &part                               ) {return part.base.faces() ? T(part.base           ) : T(part.render           );}
+VecD Randomizer::operator()(C MeshPart &part, C AnimatedSkeleton &anim_skel) {return part.base.faces() ? T(part.base, anim_skel) : T(part.render, anim_skel);}
+Vec  Randomizer::operator()(C Mesh     &mesh                               ) {return mesh.parts.elms() ? T(mesh.parts[T(mesh.parts.elms())]           ) : 0;}
+VecD Randomizer::operator()(C Mesh     &mesh, C AnimatedSkeleton &anim_skel) {return mesh.parts.elms() ? T(mesh.parts[T(mesh.parts.elms())], anim_skel) : 0;}
 /******************************************************************************/
 StrO Randomizer::password(Int length, Bool chars, Bool digs, Bool symbols)
 {

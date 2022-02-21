@@ -390,8 +390,14 @@ void Particles::reset(Int i)
                p.pos=matrix.pos;
             }break;
 
-            case PARTICLE_DYNAMIC_MESH         : p.pos=(_src_mesh ? Random(*_src_mesh                             )*matrix : matrix.pos); break;
-            case PARTICLE_DYNAMIC_MESH_SKELETON: p.pos=(_src_mesh ? Random(*_src_mesh, (AnimatedSkeleton*)_src_ptr)        : matrix.pos); break;
+            case PARTICLE_DYNAMIC_MESH         : p.pos=(_src_mesh ? Random(*_src_mesh)*matrix : matrix.pos); break;
+            case PARTICLE_DYNAMIC_MESH_SKELETON:
+               if(_src_mesh)
+               {
+                  if(_src_ptr)p.pos=Random(*_src_mesh, *(AnimatedSkeleton*)_src_ptr);
+                  else        p.pos=Random(*_src_mesh)*matrix;
+               }else          p.pos=matrix.pos;
+            break;
 
             default: p.pos=matrix.pos; break;
          }

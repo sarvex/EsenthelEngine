@@ -58,10 +58,14 @@ struct Randomizer // Randomizer is multi-threaded safe
    Vec  operator()(C         Skeleton &     skel); // return random point inside skeleton bone shape
    VecD operator()(C AnimatedSkeleton &anim_skel); // return random point inside skeleton bone shape
 
-   VecD operator()(C MeshBase   &mshb, C AnimatedSkeleton *anim_skel=null); // return random point on MeshBase   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   VecD operator()(C MeshRender &mshr, C AnimatedSkeleton *anim_skel=null); // return random point on MeshRender surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   VecD operator()(C MeshPart   &part, C AnimatedSkeleton *anim_skel=null); // return random point on MeshPart   surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
-   VecD operator()(C Mesh       &mesh, C AnimatedSkeleton *anim_skel=null); // return random point on Mesh       surface (if 'anim_skel' is not null then mesh is assumed to be animated by the Skeleton)
+   Vec  operator()(C MeshBase   &mshb                               ); // return random point on MeshBase   surface
+   Vec  operator()(C MeshRender &mshr                               ); // return random point on MeshRender surface
+   Vec  operator()(C MeshPart   &part                               ); // return random point on MeshPart   surface
+   Vec  operator()(C Mesh       &mesh                               ); // return random point on Mesh       surface
+   VecD operator()(C MeshBase   &mshb, C AnimatedSkeleton &anim_skel); // return random point on MeshBase   surface, mesh is assumed to be animated by the skeleton
+   VecD operator()(C MeshRender &mshr, C AnimatedSkeleton &anim_skel); // return random point on MeshRender surface, mesh is assumed to be animated by the skeleton
+   VecD operator()(C MeshPart   &part, C AnimatedSkeleton &anim_skel); // return random point on MeshPart   surface, mesh is assumed to be animated by the skeleton
+   VecD operator()(C Mesh       &mesh, C AnimatedSkeleton &anim_skel); // return random point on Mesh       surface, mesh is assumed to be animated by the skeleton
 
    Str password  (Int length, Bool chars, Bool digits, Bool symbols=false); // generate a random password, 'length'=length of the password, 'chars'=if use characters in the password, 'digits'=if use digits in the password, 'symbols'=if use symbols in the password
    Str licenseKey(); // generate a random license key in "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" format
