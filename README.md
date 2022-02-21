@@ -4,7 +4,7 @@
 Titan Engine developed by Esenthel is The Most Powerful, Free and Open Source Game Engine in the World.<br/>
 Titan strives to be pure perfection!<br/>
 Official version available at: https://github.com/Esenthel/EsenthelEngine<br/>
-Official website: https://esenthel.com
+Official website: https://esenthel.com<br/>
 To continue its development, Titan needs your support:
 * Please donate:
    * https://esenthel.com/?id=store&cat=1
