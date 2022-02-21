@@ -94,7 +94,7 @@
                             WD="../../Engine/Linux"
                             BC="${MAKE} -j7 -f Makefile CONF=Release"
                             CC="${MAKE} -j7 -f Makefile CONF=Release clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
@@ -345,7 +345,7 @@
                             WD="../../Engine/Linux"
                             BC="${MAKE} -j7 -f Makefile CONF=Release"
                             CC="${MAKE} -j7 -f Makefile CONF=Release clean"
-                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/EsenthelEngine.a">
+                            OP="${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/Engine.a">
               </makeArtifact>
             </linkerLibProjectItem>
             <linkerLibProjectItem>
