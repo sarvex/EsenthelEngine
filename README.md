@@ -118,7 +118,7 @@ However if your Source version is newer than the Binary version on Esenthel Webs
 
                                                                                                                                                                          
 ### Branches
-There are 2 branches: Master and Development.
+There are 2 branches: Main and Development.
 
-Master is the one you should be using, as Development is the branch in development, which may fail to compile, contain bugs or even break your project.
+Main is the one you should be using, as Development is the branch in development, which may fail to compile, contain bugs or even break your project.
 Do not use Development.
