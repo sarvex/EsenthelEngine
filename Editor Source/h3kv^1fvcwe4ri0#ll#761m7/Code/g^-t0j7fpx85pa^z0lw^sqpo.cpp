@@ -935,7 +935,7 @@ class Project
       return erased;
    }
 
-   void quickUpdateVersion(int ver) // this is called inside 'load', it occurs when opening projects and loading from EsenthelProject file, we can't modify files here !!
+   void quickUpdateVersion(int ver) // this is called inside 'load', it occurs when opening projects and loading from ProjectPackage file, we can't modify files here !!
    {
       if(ver<0)return;
 
@@ -2210,7 +2210,7 @@ class Project
       if(Sync(cipher_key_time, src.cipher_key_time)){changed=true; Copy(cipher_key, src.cipher_key);}
       return changed;
    }
-   void initSettings(C Project &src) // this is called when finished copying elements to an empty project (for example after importing *.EsenthelProject file)
+   void initSettings(C Project &src) // this is called when finished copying elements to an empty project (for example after importing *.ProjectPackage file)
    {
       syncSettings(src);
       app_id=src.app_id;

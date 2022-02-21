@@ -36,7 +36,7 @@ class Projects
    static void ChangePass (             Projects &projs) {.ChangePass.activate(false);}
    static void NewProj    (             Projects &projs) {.NewProj.activate();}
 
-   static void ImportProj(Projects &projs) {if(!projs.import_proj_io.is())projs.import_proj_io.create(EsenthelProjectExt, S, S, ImportProj); projs.import_proj_io.activate();}
+   static void ImportProj(Projects &projs) {if(!projs.import_proj_io.is())projs.import_proj_io.create(ProjectPackageExt, S, S, ImportProj); projs.import_proj_io.activate();}
    static void ImportProj(C Str &name, ptr user) {CopyElms.display(name);}
 
    static void ImportProj_1_0(Projects &projs) {if(!projs.import_proj_1_0_io.is())projs.import_proj_1_0_io.create(S, S, S, ImportProj_1_0).modeDirSelect(); projs.import_proj_1_0_io.activate(); Gui.msgBox(S, "Please specify path to project data created with Esenthel Engine 1.0");}
@@ -123,7 +123,7 @@ class Projects
       change_pass      .create("Change Password").func(ChangePass, T);
       proj_region      .create()+=proj_list.create(lc, Elms(lc)).elmHeight(0.06).setElmDesc(MEMBER(Elm, desc)); proj_list.sort_column[0]=0; proj_list.cur_mode=LCM_ALWAYS; proj_list.flag|=LIST_MULTI_SEL;
       new_proj         .create("New Project").func(NewProj, T);
-      import_proj      .create(S+"Import *."+EsenthelProjectExt).func(ImportProj, T);
+      import_proj      .create(S+"Import *."+ProjectPackageExt).func(ImportProj, T);
       import_proj_1_0  .create("Import 1.0 Project").func(ImportProj_1_0, T).desc("Import project data created with Esenthel Engine 1.0");
       menu             .create(menu_menu).skin(&NoComboBoxImage).focusable(false).desc("Menu"); menu.text="M"; menu.text_align=0; menu.flag|=COMBOBOX_CONST_TEXT;
       vid_opt          .create().func(MiscRegion.VidOpt, Misc).focusable(false).desc(S+MLTC(u"Video Options", PL, u"Opcje Grafiki", DE, u"Grafik Optionen", RU, u"Настройки видео", PO, u"Opções de Video")+"\nKeyboard Shortcut: F12"); vid_opt.image="Gui/Misc/display.img"; vid_opt.mode=BUTTON_TOGGLE;
@@ -607,7 +607,7 @@ bool InitProjectList()
    ChangePass.create();
    if(App.cmd_line.elms())
    {
-      if(GetExt(App.cmd_line[0])==EsenthelProjectExt)CopyElms.display(App.cmd_line[0]);
+      if(GetExt(App.cmd_line[0])==ProjectPackageExt)CopyElms.display(App.cmd_line[0]);
       App.cmd_line.del(); // don't check again
    }
    return true;

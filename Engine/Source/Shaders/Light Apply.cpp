@@ -62,7 +62,7 @@ VecH LitCol(VecH base_col, Half glow, Vec nrm, Half rough, Half reflect, VecH lu
          Half clear_coat=ReflectEnv(clear_coat_rough, clear_coat_reflect, ReflectCol(clear_coat_reflect, 1), NdotV, true).x;
       #endif
 
-       //diffuse*=1-clear_coat; // TODO: this should be on?
+       //diffuse*=1-clear_coat; // TODO: FIXME: this should be on?
 
          env_col*=1-clear_coat;
          env_col+=ReflectTex(reflect_dir, clear_coat_rough)*clear_coat;

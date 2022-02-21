@@ -657,7 +657,7 @@ class StoreClass : ClosableWindow
                   File temp(down.data(), down.done()), &src=(file_done.size() ? file_done : temp);
                   if(SafeOverwrite(src, dest))
                   {
-                     open.show(); cancel.text="Close"; if(GetExt(file)==EsenthelProjectExt)import.show();
+                     open.show(); cancel.text="Close"; if(GetExt(file)==ProjectPackageExt)import.show();
                      text.set(S+"Done ("+FileSize(down.totalSize())+")");
                   }else text.set("Failed to save file");
                   progress.set(1);
@@ -1318,7 +1318,7 @@ class StoreClass : ClosableWindow
       mode.tab(1)+=buy.create().func(Buy, T);
       mode.tab(1)+=item_refresh.create("Refresh").func(ItemRefresh, T);
       item_tabs.tab(1)+=item_files_region.create();
-      item_files_region+=t_new_files.create(S+"New Files: (Drag and Drop "+EsenthelProjectExt+"/7Z/RAR/ZIP/EXE files here to add them, they will replace all old files)", &ts_desc).hide();
+      item_files_region+=t_new_files.create(S+"New Files: (Drag and Drop "+ProjectPackageExt+"/7Z/RAR/ZIP/EXE files here to add them, they will replace all old files)", &ts_desc).hide();
 
       mode.tab(1)+=e_item_name .create().maxLength(128).desc("Set new Item Name and press Enter to save changes");
       mode.tab(1)+=e_item_video.create().maxLength(256).desc("Set new Item YouTube Video URL and press Enter to save changes");
@@ -1614,7 +1614,7 @@ class StoreClass : ClosableWindow
    bool itemCanUploadFile(Item &item, C Str &file)
    {
       Str ext=GetExt(file);
-      if( ext==EsenthelProjectExt || ext=="7z" || ext=="rar" || ext=="zip" || ext=="exe")
+      if( ext==ProjectPackageExt || ext=="7z" || ext=="rar" || ext=="zip" || ext=="exe")
       {
          if(ValidFileNameForUpload(file))
          {
@@ -1627,7 +1627,7 @@ class StoreClass : ClosableWindow
                return true;
             }else Gui.msgBox(S, S+"Can't upload more than "+EsenthelStoreMaxFileNum+" files per item");
          }else Gui.msgBox(S, S+"Invalid file name \""+file+"\"");
-      }else Gui.msgBox(S, S+"Only "+EsenthelProjectExt+"/7Z/RAR/ZIP/EXE extensions are supported");
+      }else Gui.msgBox(S, S+"Only "+ProjectPackageExt+"/7Z/RAR/ZIP/EXE extensions are supported");
       return false;
    }
    void drop(Memc<Str> &names, GuiObj *obj, C Vec2 &screen_pos)

@@ -137,7 +137,7 @@ class CopyElements : ClosableWindow
    ProjListElm       target;
    UID               root=UIDZero;
    ReplaceElms       replace_elms;
-   Pak               esenthel_project_pak;
+   Pak               project_package_pak;
 
    static void Refresh(CopyElements &ce) {ce.refresh();}
    static void Copy   (CopyElements &ce) {ce.copyDo ();}
@@ -442,7 +442,7 @@ class CopyElements : ClosableWindow
               elms_list.elmHeight(Proj.list.elmHeight()).textSize(Proj.list.textSizeBase(), Proj.list.textSizeRel());
       replace_elms.list.elmHeight(elms_list.elmHeight()).textSize(elms_list.textSizeBase(), elms_list.textSizeRel());
    }
-   void display(C Str &esenthel_project_file=S)
+   void display(C Str &project_package_file=S)
    {
       replace_elms.hide();
                    hide();
@@ -450,10 +450,10 @@ class CopyElements : ClosableWindow
       {
          src_ver=-1;
          root.zero(); if(ListElm *elm=Proj.list.litToListElm())if(elm.elm)root=elm.elm.id;
-         if(esenthel_project_file.is())
+         if(project_package_file.is())
          {
             long expected_size, actual_size;
-            switch(esenthel_project_pak.loadEx(esenthel_project_file, null, 0, &expected_size, &actual_size))
+            switch(project_package_pak.loadEx(project_package_file, null, 0, &expected_size, &actual_size))
             {
                case PAK_LOAD_OK                 : break;
                case PAK_LOAD_UNSUPPORTED_VERSION: Gui.msgBox(S, "Selected project was created with a newer version of the engine."); return;
@@ -462,14 +462,14 @@ class CopyElements : ClosableWindow
             }
 
             src=&temp_src;
-            File f; f.readTry("Data", esenthel_project_pak); switch(src.load(f, src_ver)) // call 'load' always, and not only when 'readTry' succeeded, since we can't update the "EsenthelProject" file, we will update the destination project once it finished copying
+            File f; f.readTry("Data", project_package_pak); switch(src.load(f, src_ver)) // call 'load' always, and not only when 'readTry' succeeded, since we can't update the "ProjectPackage" file, we will update the destination project once it finished copying
             {
                case LOAD_EMPTY :
                case LOAD_ERROR :
                case LOAD_LOCKED: Gui.msgBox(S, "Invalid project file"); return;
                case LOAD_NEWER : Gui.msgBox(S, "This project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again."); return;
             }
-            if(src_ver<=34 && f.readTry("Settings", esenthel_project_pak))src.loadOldSettings(f); // ver 34 and below had settings in a separate file
+            if(src_ver<=34 && f.readTry("Settings", project_package_pak))src.loadOldSettings(f); // ver 34 and below had settings in a separate file
             src.setIDPath(UIDZero, S); // set paths too because for example when copying textures, then 'tex_path' is used
             src.setHierarchy();
 
@@ -489,7 +489,7 @@ class CopyElements : ClosableWindow
             replace_elms.check();
          }else
          {
-            esenthel_project_pak.del();
+            project_package_pak.del();
             src=&Proj; src_ver=ProjectVersion;
             Proj.setListSel(sel); sel.sort(Compare);
 
@@ -511,7 +511,7 @@ class CopyElements : ClosableWindow
    }
    void drop(Memc<Str> &names, GuiObj *focus_obj, C Vec2 &screen_pos)
    {
-      REPA(names)if(GetExt(names[i])==EsenthelProjectExt)
+      REPA(names)if(GetExt(names[i])==ProjectPackageExt)
       {
          display(names[i]);
          names.remove(i, true);
@@ -520,7 +520,7 @@ class CopyElements : ClosableWindow
    }
    void close()
    {
-      esenthel_project_pak.del();
+      project_package_pak.del();
 
       if(dest==&Proj)
       {
@@ -531,7 +531,7 @@ class CopyElements : ClosableWindow
       }else if(dest)dest.close();
       dest=null;
 
-      if(src && src!=&Proj)src.del(); src=null; // we shouldn't 'close' 'src' because it's either 'Proj' or an "EsenthelProject" file
+      if(src && src!=&Proj)src.del(); src=null; // we shouldn't 'close' 'src' because it's either 'Proj' or an "ProjectPackage" file
    }
 }
 CopyElements CopyElms;
@@ -545,7 +545,7 @@ bool CopyElmsFunc(Thread &thread)
    int      total =CopyElms.texs_to_copy.elms()+CopyElms.elms_to_copy.elms();
    cchar   *suffix=u"@new";
    Project &src=*CopyElms.src, &dest=*CopyElms.dest;
-   Pak     &pak= CopyElms.esenthel_project_pak;
+   Pak     &pak= CopyElms.project_package_pak;
 
    // copy textures first because elements rely on them
    FREPA(CopyElms.texs_to_copy)
@@ -731,7 +731,7 @@ bool UpdateCopyElms()
 void DrawCopyElms()
 {
    D.clear(BackgroundColor());
-   D.text(0, 0.05, CopyElms.esenthel_project_pak.totalFiles() ? "Importing Elements" : "Copying Elements");
+   D.text(0, 0.05, CopyElms.project_package_pak.totalFiles() ? "Importing Elements" : "Copying Elements");
    GuiPC gpc;
    gpc.visible=gpc.enabled=true; 
    gpc.client_rect=gpc.clip=D.rect();

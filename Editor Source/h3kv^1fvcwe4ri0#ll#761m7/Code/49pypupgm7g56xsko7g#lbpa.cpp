@@ -214,8 +214,8 @@ class PublishResult : ClosableWindow
       path=(PublishProjectDataPath.is() ? PublishProjectDataPath : PublishBinPath);
 
       Gui+=super.create(Rect_C(0, 0, 1, 0.34), "Publishing succeeded"); button[2].show();
-      T+=ok        .create(Rect_D(clientWidth()*(PublishEsProj ? 2 : 1)/4, -clientHeight()+0.04, 0.3, 0.06), "OK"        ).func(OK       , T);
-      T+=size_stats.create(Rect_D(clientWidth()*                     3 /4, -clientHeight()+0.04, 0.3, 0.06), "Size Stats").func(SizeStats, T).hidden(PublishEsProj);
+      T+=ok        .create(Rect_D(clientWidth()*(PublishProjectPackage ? 2 : 1)/4, -clientHeight()+0.04, 0.3, 0.06), "OK"        ).func(OK       , T);
+      T+=size_stats.create(Rect_D(clientWidth()*                             3 /4, -clientHeight()+0.04, 0.3, 0.06), "Size Stats").func(SizeStats, T).hidden(PublishProjectPackage);
       T+=T.text    .create(Rect(0.02, ok.rect().max.y, clientWidth()-0.02, 0), text);
       activate();
    }
@@ -258,7 +258,7 @@ Memc<ImageGenerate> PublishGenerate;
 Memc<ImageConvert>  PublishConvert;
 Memc<Mems<byte>>    PublishFileData; // for file data allocated dynamically
 SyncLock            PublishLock;
-bool                PublishOk, PublishNoCompile, PublishOpenIDE, PublishDataAsPak, PublishDataOnly, PublishEsProj;
+bool                PublishOk, PublishNoCompile, PublishOpenIDE, PublishDataAsPak, PublishDataOnly, PublishProjectPackage;
 int                 PublishAreasLeft, PublishPVRTCUse;
 PUBLISH_STAGE       PublishStage;
 Str                 PublishPath,
@@ -270,7 +270,7 @@ Button              PublishSkipOptimize;
 Edit.EXE_TYPE       PublishExeType  =Edit.EXE_EXE;
 Edit.BUILD_MODE     PublishBuildMode=Edit.BUILD_BUILD;
 PublishResult       PublishRes;
-WindowIO            PublishEsProjIO;
+WindowIO            PublishProjectPackageIO;
 /******************************************************************************/
 bool PublishDataNeedOptimized() {return false /*PublishBuildMode==Edit.BUILD_PUBLISH*/;} // never optimize automatically, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
 bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit.EXE_APK || exe==Edit.EXE_IOS || exe==Edit.EXE_NS;}
@@ -294,31 +294,31 @@ void PublishDo()
 {
    CodeEdit.publish();
 }
-void PublishEsProjAs(C Str &path, ptr user)
+void PublishProjectPackageAs(C Str &path, ptr user)
 {
    StartPublish(S, Edit.EXE_EXE, Edit.BUILD_PUBLISH, true, path, false, true);
 }
-bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build_mode, bool no_compile=false, C Str &custom_project_data_path=S, bool open_ide=false, bool es_proj=false)
+bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build_mode, bool no_compile=false, C Str &custom_project_data_path=S, bool open_ide=false, bool project_package=false)
 {
    PublishRes.del();
 
-   PublishExePath  =exe_name;
-   PublishExeType  =exe_type;
-   PublishBuildMode=build_mode;
-   PublishNoCompile=no_compile;
-   PublishOpenIDE  =open_ide;
-   PublishEsProj   =es_proj;
-   PublishDataOnly =(no_compile && custom_project_data_path.is());
+   PublishExePath       =exe_name;
+   PublishExeType       =exe_type;
+   PublishBuildMode     =build_mode;
+   PublishNoCompile     =no_compile;
+   PublishOpenIDE       =open_ide;
+   PublishProjectPackage=project_package;
+   PublishDataOnly      =(no_compile && custom_project_data_path.is());
    PublishPath           .clear();
    PublishBinPath        .clear();
    PublishProjectDataPath.clear();
 
-   if(PublishEsProj)Publish.cipher.clear(); // EsenthelProject is never encrypted
-   else             Publish.cipher.set(Proj);
+   if(PublishProjectPackage)Publish.cipher.clear(); // ProjectPackage is never encrypted
+   else                     Publish.cipher.set(Proj);
 
-   if(PublishEsProj)CodeEdit.saveChanges();
+   if(PublishProjectPackage)CodeEdit.saveChanges();
 
-   if(PublishDataOnly || PublishEsProj) // data only
+   if(PublishDataOnly || PublishProjectPackage) // data only
    {
       PublishPath           =custom_project_data_path; FCreateDirs(GetPath(PublishPath));
       PublishProjectDataPath=custom_project_data_path;
@@ -527,8 +527,8 @@ bool PublishFunc(Thread &thread)
       if(PublishDataReady())PublishOk=true;else
       {
          PublishOk=false;
-         if(!PublishDataNeedOptimized())PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishEsProj ? EsenthelProjectCompression : Proj.compress_type, PublishEsProj ? EsenthelProjectCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress);
-         if(!PublishOk                 )PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishEsProj ? EsenthelProjectCompression : Proj.compress_type, PublishEsProj ? EsenthelProjectCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); // if 'PakReplaceInPlace' failed or need optimized then recreate
+         if(!PublishDataNeedOptimized())PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress);
+         if(!PublishOk                 )PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); // if 'PakReplaceInPlace' failed or need optimized then recreate
       }
    }else
    {
@@ -922,7 +922,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
    convert  .clear();
    file_data.clear();
 
-   if(PublishEsProj) // publish as *.EsenthelProject
+   if(PublishProjectPackage) // publish as *.ProjectPackage
    {
       Project temp; temp=Proj;
       Memc<UID> remove; Proj.floodRemoved(remove, Proj.root); remove.sort(Compare);
@@ -1065,7 +1065,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
             if(elm.type==ELM_CODE)
             {
                PakFileData &pfd=files.New();
-               pfd.name    =S+"Code/"+EncodeFileName(elm.id)+CodeExt; // keep extension so when using copy elms to another project, we have consistency between copying from both *.EsenthelProject and normal projects
+               pfd.name    =S+"Code/"+EncodeFileName(elm.id)+CodeExt; // keep extension so when using copy elms to another project, we have consistency between copying from both *.ProjectPackage and normal projects
                pfd.data.set(           Proj.codePath(elm.id));
                // don't save code base
             }
@@ -1133,10 +1133,10 @@ void GetPublishFiles(Memb<PakFileData> &files) // this is to be called outside o
    Memc<ImageGenerate> generate;
    Memc<ImageConvert > convert;
    Memc<Mems<byte>   > file_data;
-   PublishDataAsPak=true;
-   PublishDataOnly =true;
-   PublishExeType  =Edit.EXE_EXE;
-   PublishEsProj   =false;
+   PublishDataAsPak     =true;
+   PublishDataOnly      =true;
+   PublishExeType       =Edit.EXE_EXE;
+   PublishProjectPackage=false;
    SetPublishFiles(files, generate, convert, file_data);
 }
 /******************************************************************************/
@@ -1188,7 +1188,7 @@ void PublishSuccess()
    }else
    {
       Str text;
-      if(PublishProjectDataPath.is())text=S+(PublishEsProj ? "Project size: " : "Project data size: ")+FileSize(FSize(PublishProjectDataPath));
+      if(PublishProjectDataPath.is())text=S+(PublishProjectPackage ? "Project size: " : "Project data size: ")+FileSize(FSize(PublishProjectDataPath));
       else                           text="Publishing succeeded";
       PublishSuccess(PublishPath, text);
    }
@@ -1256,7 +1256,7 @@ void DrawPublish()
          {
             case PUBLISH_MTRL_SIMPLIFY: text="Simplifying Materials"; break;
             case PUBLISH_TEX_OPTIMIZE : text=(PublishSkipOptimize() ? PublishPVRTCUse ? "Waiting for PVRTC to finish" : "Copying Textures" : "Optimizing Textures"); break;
-            default                   : text=(PublishEsProj ? "Compressing Project" : "Publishing Project"); break;
+            default                   : text=(PublishProjectPackage ? "Compressing Project" : "Publishing Project"); break;
          }
          D.text(0, 0.05, text);
       }

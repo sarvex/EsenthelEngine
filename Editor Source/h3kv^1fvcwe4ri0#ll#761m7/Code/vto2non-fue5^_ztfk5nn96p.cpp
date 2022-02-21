@@ -7,7 +7,7 @@ const cchar8       *WorldVerSuffix     ="\\Data",
                    *ProjectsBuildPath  =  "_Build_\\", // !! this will     get deleted in 'CleanAll' !!
                    *ProjectsPublishPath="_Publish_\\", // !! this will     get deleted in 'CleanAll' !!
                    *ProjectsCodePath   =   "_Code_\\", // !! this will NOT get deleted in 'CleanAll' !!
-                   *EsenthelProjectExt ="EsenthelProject", 
+                   *ProjectPackageExt  ="EsenthelProject", 
                    *CodeExt            =".cpp", // cpp was selected, because unlike other ideas: "code", "txt" only "cpp" gets correct coloring when opened in Visual Studio
                    *CodeSyncExt        =CodeExt;
 const Str           NullName      ="<None>",
@@ -69,8 +69,8 @@ const Edit.Material.TEX_QUALITY MinMtrlTexQualityBase0 =Edit.Material.LOW   , //
                                 MinMtrlTexQualityMacro =Edit.Material.LOW   , // minimum texture compression quality for Material Macro  Texture (RGB               ) #MaterialTextureLayout      , set to LOW    because can be maximized based on 'ElmMaterial.tex_quality/EditMaterial.tex_quality'
                                 MinMtrlTexQualityLight =Edit.Material.MEDIUM; // minimum texture compression quality for Material Light  Texture (RGB               ) #MaterialTextureLayout      , set to MEDIUM because can't be changed otherwise
 
-const COMPRESS_TYPE ServerNetworkCompression     =COMPRESS_LZ4, ClientNetworkCompression     =COMPRESS_LZMA, EsenthelProjectCompression     =COMPRESS_LZMA;
-const int           ServerNetworkCompressionLevel=9           , ClientNetworkCompressionLevel=9            , EsenthelProjectCompressionLevel=9;
+const COMPRESS_TYPE ServerNetworkCompression     =COMPRESS_LZ4, ClientNetworkCompression     =COMPRESS_LZMA, ProjectPackageCompression     =COMPRESS_LZMA;
+const int           ServerNetworkCompressionLevel=9           , ClientNetworkCompressionLevel=9            , ProjectPackageCompressionLevel=9;
 const uint          NewElmTime=1; // use 1 instead of 0, so when downloading file, we have no 'param_value' and 'param_value_time' at 0, meaning we need to download the param
 const cchar8       *      AppName=ENGINE_NAME" Editor",
                    *ServerAppName=ENGINE_NAME" Server",

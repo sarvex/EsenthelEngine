@@ -59,46 +59,46 @@ class MiscRegion : Region
    static void ConfigWeb    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_WEB  );}
    static void ConfigNS     (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_NS   );}
 
-   static void ProjList       (bool all_saved=true, ptr=null) {if(all_saved)StateProjectList.set(StateFadeTime);}
-   static void ProjList       (MiscRegion &mr) {SaveChanges(ProjList);}
-   static void   HideProj     (MiscRegion &mr) {Proj.visible(!mr.hide_proj());}
-   static void ToggleProj     (MiscRegion &mr) {mr.hide_proj.push();}
-   static void ToggleTheater  (MiscRegion &mr) {Proj.theater.push();}
-   static void ToggleRemoved  (MiscRegion &mr) {Proj.show_removed.push();}
-   static void   FindProj     (MiscRegion &mr) {if(mr.hide_proj())mr.hide_proj.push(); Proj.filter.selectAll().activate();}
-   static void   ModeClose    (MiscRegion &mr) {Mode.closeActive(false);}
-   static void   Mode0        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(0))tab.push();}
-   static void   Mode1        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(1))tab.push();}
-   static void   Mode2        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(2))tab.push();}
-   static void   Mode3        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(3))tab.push();}
-   static void   Mode4        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(4))tab.push();}
-   static void   Mode5        (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(5))tab.push();}
-   static void VidOpt         (MiscRegion &mr) {.VidOpt.visibleToggleActivate();}
-   static void VidOptAdv      (MiscRegion &mr) {.VidOpt.advanced_show.push();}
-   static void BuyLicense     (ptr           ) {Explore("https://esenthel.com/?id=store&cat=0");}
-   static void Help           (MiscRegion &mr) {Explore("https://esenthel.com/forum/");}
-   static void Fullscreen     (MiscRegion &mr) {D.toggle();}
-   static void Screenshot     (MiscRegion &mr) {mr.screenshot=5;}
-   static void CalcShow       (MiscRegion &mr) {Calculator.visibleToggleActivate();}
-   static void VerifyElms     (MiscRegion &mr) {}
-   static void ProjSettings   (MiscRegion &mr) {.ProjSettings.display();}
-   static void Publish        (MiscRegion &mr) {PublishDo();}
-   static void PublishEsProj  (MiscRegion &mr) {if(!PublishEsProjIO.is())PublishEsProjIO.create(EsenthelProjectExt, S, SystemPath(SP_DESKTOP), null, .PublishEsProjAs); PublishEsProjIO.save().name(CleanFileName(Proj.name));}
- //static void SetLicense     (MiscRegion &mr) {LicenseCheck.activate();}
-   static void AppStore       (MiscRegion &mr) {.AppStore.activate();}
-   static void EraseRemoved   (MiscRegion &mr) {.EraseRemoved.activate();}
-   static void MergeSimMtrl   (MiscRegion &mr) {MSM         .activate();}
-   static void DetectSimTex   (MiscRegion &mr) {DST         .activate();}
-   static void CreateMtrls    (MiscRegion &mr) {.CreateMtrls.activate();}
-   static void DataSizeStats  (MiscRegion &mr) {SizeStats   .display(S);}
-   static void UnusedMaterials(MiscRegion &mr) {SizeStats   .displayUnusedMaterials();}
-   static void ShowTexDownsize(MiscRegion &mr) {TexDownsize .toggle();}
-   static void SyncCodes      (MiscRegion &mr) {Proj.syncCodes();}
-   static void EditorOptions  (MiscRegion &mr) {CodeEdit.visibleOptions      (!CodeEdit.visibleOptions      ());}
-   static void CodeOutput     (MiscRegion &mr) {CodeEdit.visibleOutput       (!CodeEdit.visibleOutput       ());}
-   static void CodeDevLog     (MiscRegion &mr) {CodeEdit.visibleAndroidDevLog(!CodeEdit.visibleAndroidDevLog());}
-   static void Quit           (MiscRegion &mr) {App.close();}
-   static void About          (MiscRegion &mr)
+   static void ProjList             (bool all_saved=true, ptr=null) {if(all_saved)StateProjectList.set(StateFadeTime);}
+   static void ProjList             (MiscRegion &mr) {SaveChanges(ProjList);}
+   static void   HideProj           (MiscRegion &mr) {Proj.visible(!mr.hide_proj());}
+   static void ToggleProj           (MiscRegion &mr) {mr.hide_proj.push();}
+   static void ToggleTheater        (MiscRegion &mr) {Proj.theater.push();}
+   static void ToggleRemoved        (MiscRegion &mr) {Proj.show_removed.push();}
+   static void   FindProj           (MiscRegion &mr) {if(mr.hide_proj())mr.hide_proj.push(); Proj.filter.selectAll().activate();}
+   static void   ModeClose          (MiscRegion &mr) {Mode.closeActive(false);}
+   static void   Mode0              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(0))tab.push();}
+   static void   Mode1              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(1))tab.push();}
+   static void   Mode2              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(2))tab.push();}
+   static void   Mode3              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(3))tab.push();}
+   static void   Mode4              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(4))tab.push();}
+   static void   Mode5              (MiscRegion &mr) {if(Tab *tab=Mode.visibleTab(5))tab.push();}
+   static void VidOpt               (MiscRegion &mr) {.VidOpt.visibleToggleActivate();}
+   static void VidOptAdv            (MiscRegion &mr) {.VidOpt.advanced_show.push();}
+   static void BuyLicense           (ptr           ) {Explore("https://esenthel.com/?id=store&cat=0");}
+   static void Help                 (MiscRegion &mr) {Explore("https://esenthel.com/forum/");}
+   static void Fullscreen           (MiscRegion &mr) {D.toggle();}
+   static void Screenshot           (MiscRegion &mr) {mr.screenshot=5;}
+   static void CalcShow             (MiscRegion &mr) {Calculator.visibleToggleActivate();}
+   static void VerifyElms           (MiscRegion &mr) {}
+   static void ProjSettings         (MiscRegion &mr) {.ProjSettings.display();}
+   static void Publish              (MiscRegion &mr) {PublishDo();}
+   static void PublishProjectPackage(MiscRegion &mr) {if(!PublishProjectPackageIO.is())PublishProjectPackageIO.create(ProjectPackageExt, S, SystemPath(SP_DESKTOP), null, PublishProjectPackageAs); PublishProjectPackageIO.save().name(CleanFileName(Proj.name));}
+ //static void SetLicense           (MiscRegion &mr) {LicenseCheck.activate();}
+   static void AppStore             (MiscRegion &mr) {.AppStore.activate();}
+   static void EraseRemoved         (MiscRegion &mr) {.EraseRemoved.activate();}
+   static void MergeSimMtrl         (MiscRegion &mr) {MSM         .activate();}
+   static void DetectSimTex         (MiscRegion &mr) {DST         .activate();}
+   static void CreateMtrls          (MiscRegion &mr) {.CreateMtrls.activate();}
+   static void DataSizeStats        (MiscRegion &mr) {SizeStats   .display(S);}
+   static void UnusedMaterials      (MiscRegion &mr) {SizeStats   .displayUnusedMaterials();}
+   static void ShowTexDownsize      (MiscRegion &mr) {TexDownsize .toggle();}
+   static void SyncCodes            (MiscRegion &mr) {Proj.syncCodes();}
+   static void EditorOptions        (MiscRegion &mr) {CodeEdit.visibleOptions      (!CodeEdit.visibleOptions      ());}
+   static void CodeOutput           (MiscRegion &mr) {CodeEdit.visibleOutput       (!CodeEdit.visibleOutput       ());}
+   static void CodeDevLog           (MiscRegion &mr) {CodeEdit.visibleAndroidDevLog(!CodeEdit.visibleAndroidDevLog());}
+   static void Quit                 (MiscRegion &mr) {App.close();}
+   static void About                (MiscRegion &mr)
    {
       Str about=S+AppName+(STEAM ? " Steam Edition" : "")+"\nEngine Build: "+ENGINE_BUILD+", Editor Build: "+APP_BUILD+", Network Protocol: "+ClientServerVersion;
       about+='\n'; about+=D.apiName();
@@ -202,8 +202,8 @@ class MiscRegion : Region
       #elif LINUX
          build_menu.New().create("Open in NetBeans"     , OpenIDE, T).kbsc(KbSc(KB_F8)).desc("Export the project to C++ files, and open them in NetBeans");
       #endif
-         build_menu.New().create(  "Publish"                      , Publish      , T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD           )).desc("Use this option when you want to publish your application publicly.\nThis will create your application packaged with all needed data.\nApplication will always be compiled in release mode, even if debug is currently selected.");
-         build_menu.New().create(S+"Save as *."+EsenthelProjectExt, PublishEsProj, T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD|KBSC_SHIFT)).desc(S+"Export your project into a single *."+EsenthelProjectExt+" file which can be easily imported by other users.");
+         build_menu.New().create(  "Publish"                     , Publish              , T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD           )).desc("Use this option when you want to publish your application publicly.\nThis will create your application packaged with all needed data.\nApplication will always be compiled in release mode, even if debug is currently selected.");
+         build_menu.New().create(S+"Save as *."+ProjectPackageExt, PublishProjectPackage, T).kbsc(KbSc(KB_F8, KBSC_CTRL_CMD|KBSC_SHIFT)).desc(S+"Export your project into a single *."+ProjectPackageExt+" file which can be easily imported by other users.");
          {
             // #VisualStudio
             Node<MenuElm> &Export=(build_menu+="Export");

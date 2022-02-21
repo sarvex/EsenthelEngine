@@ -40,7 +40,7 @@ void SetShader()
 void Drop(Memc<Str> &names, GuiObj *obj, C Vec2 &screen_pos)
 {
         AppStore.drop(names, obj, screen_pos); // process this before CopyElms, so it can be uploaded to the Store
-        CopyElms.drop(names, obj, screen_pos); // process this first so it will handle importing EsenthelProject's
+        CopyElms.drop(names, obj, screen_pos); // process this first so it will handle importing ProjectPackage's
             Proj.drop(names, obj, screen_pos);
         MtrlEdit.drop(names, obj, screen_pos);
    WaterMtrlEdit.drop(names, obj, screen_pos);
@@ -73,7 +73,7 @@ void ReceiveData(cptr data, int size, C SysWindow &sender_window)
 {
    File f; f.readMem(data, size);
    Str s=f.getStr();
-   if(GetExt(s)==EsenthelProjectExt)CopyElms.display(s);
+   if(GetExt(s)==ProjectPackageExt)CopyElms.display(s);
 }
 void SetTitle()
 {
@@ -293,7 +293,7 @@ bool Init()
       ApplySettings(); // !! after 'DefaultEnvironment' !!
       VidOpt.create(); // !! after 'ApplySettings' !!
       SetKbExclusive();
-      AssociateFileType(EsenthelProjectExt, App.exe(), ENGINE_NAME ".Editor", ENGINE_NAME " Project", App.exe());
+      AssociateFileType(ProjectPackageExt, App.exe(), ENGINE_NAME ".Editor", ENGINE_NAME " Project", App.exe());
       Initialized=true;
    }
    ScreenChanged();
