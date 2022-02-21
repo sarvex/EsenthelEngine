@@ -1,20 +1,20 @@
 /*
 /_Build_/*
-/_Build_/Esenthel/Android
-/_Build_/Esenthel/Bin
-/_Build_/Esenthel/Debug*
-/_Build_/Esenthel/Release*
-/_Build_/Esenthel/x64*
-/_Build_/Esenthel/Emscripten*
-/_Build_/Esenthel/Projects
-/_Build_/Esenthel/*.exe
-/_Build_/Esenthel/*.dll
-/_Build_/Esenthel/Engine.pak
-/_Build_/Esenthel/Project.vcproj
-/_Build_/Esenthel/Settings.txt
+/_Build_/Titan Editor/Android
+/_Build_/Titan Editor/Bin
+/_Build_/Titan Editor/Debug*
+/_Build_/Titan Editor/Release*
+/_Build_/Titan Editor/x64*
+/_Build_/Titan Editor/Emscripten*
+/_Build_/Titan Editor/Projects
+/_Build_/Titan Editor/*.exe
+/_Build_/Titan Editor/*.dll
+/_Build_/Titan Editor/Engine.pak
+/_Build_/Titan Editor/Project.vcproj
+/_Build_/Titan Editor/Settings.txt
 
 !/_Build_
-!/_Build_/Esenthel
+!/_Build_/Titan Editor
 !/0btc4f^3zje60097ikj149u0
 !/h3kv^1fvcwe4ri0#ll#761m7
 !/nop2ha8t22e6eg2!ck1odnk5
