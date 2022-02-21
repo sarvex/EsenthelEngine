@@ -132,6 +132,7 @@ AppPropsEditor AppPropsEdit;
    ImagePtr          CodeView::appImagePortrait(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->image_portrait   .valid())return ImagePtr().get(Proj.gamePath(app_data->image_portrait   )); return super::appImagePortrait();}
    ImagePtr          CodeView::appImageLandscape(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->image_landscape  .valid())return ImagePtr().get(Proj.gamePath(app_data->image_landscape  )); return super::appImageLandscape();}
    ImagePtr          CodeView::appNotificationIcon(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data->notification_icon)); return super::appNotificationIcon();}
+   void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    void CodeView::ImageConvertProcess(ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
    void CodeView::appSpecificFiles(MemPtr<PakFileData> files)

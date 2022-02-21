@@ -876,12 +876,14 @@ static Bool JumpTo(C Str &file, Int line)
       {
          Int l=CE.cur()->findLine(original_id); if(l>=0)original_index=l;
          CE.cur()->highlight(original_index, old!=CE.cur());
+         CE.focus();
          return true;
       }
    }
    if(CE.load(file, true, true)) // if failed to load original source, then display cpp/h file version instead
    {
       CE.cur()->highlight(line, old!=CE.cur());
+      CE.focus();
       return true;
    }
    return false;
@@ -894,6 +896,7 @@ Bool CodeEditor::BuildResult::jumpTo()
       if(CE.load(source_loc))
       {
          CE.cur()->highlight(CE.cur()->findLine(line), old!=CE.cur());
+         CE.focus();
          return true;
       }
    }else // try to parse the text and detect file paths and lines

@@ -102,6 +102,8 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual ImagePtr          appImageLandscape                  ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.image_landscape  .valid())return ImagePtr().get(Proj.gamePath(app_data.image_landscape  )); return super.appImageLandscape();}
    virtual ImagePtr          appNotificationIcon                ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data.notification_icon)); return super.appNotificationIcon();}
 
+   virtual void focus()override {if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
+
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
 

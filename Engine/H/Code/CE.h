@@ -226,6 +226,8 @@ struct CodeEditorInterface
    virtual void elmLocate   (C UID &id              ) {             } // locate    element
    virtual void elmPreview  (C UID &id, C Vec2 &pos, Bool mouse, C Rect &clip) {} // draw element preview at 'pos' position, 'mouse'=if triggered by mouse
 
+   virtual void focus() {}
+
    virtual Str idToText(C UID &id, Bool *valid=null) {if(valid)*valid=false; return S;} // return ID in text format (this can be element/object/waypoint/.. ID)
 
    struct ElmLink
@@ -658,6 +660,7 @@ const_mem_addr struct CodeEditor
    void visibleOutput       (Bool on);
    Bool visibleAndroidDevLog(       );
    void visibleAndroidDevLog(Bool on);
+   void focus() {cei().focus();}
 
    static void HideAndFocusCE(GuiObj &go);
 

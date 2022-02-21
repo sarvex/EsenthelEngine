@@ -69,6 +69,8 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual ImagePtr          appImageLandscape                  ()override;
    virtual ImagePtr          appNotificationIcon                ()override;
 
+   virtual void focus()override;
+
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index);
 
