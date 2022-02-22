@@ -3413,7 +3413,7 @@ cur_skel_to_saved_skel.bones.del();
       mode.tab(BONES)+=adjust_bone_orns.create();
       mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16f, 0.01f), 0.73f, 0.06f), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
       bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F1");
-      bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\n\nKeyboard Shortcut: Shift+F2");
+      bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\nHold Ctrl to also rotate mirrored bone\n\nKeyboard Shortcut: Shift+F2");
       bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F3");
       bone_tabs.tab(BONE_DEL   ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F4");
       bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F5");
@@ -3628,9 +3628,15 @@ cur_skel_to_saved_skel.bones.del();
                               case  2: axis=bone->dir          ; break;
                               default: axis=ActiveCam.matrix.z; break;
                            }
-                           Matrix m; m.setTransformAtPos(bone->pos, Matrix3().setRotate(axis, angle));
-                           bone->transform(m);
+                           Matrix m;
+                           m.setTransformAtPos(bone->pos, Matrix3().setRotate(axis, angle)); bone->transform(m);
                            if(bone_children_rot())REPA(mesh_skel->bones)if(sel_bone!=i && mesh_skel->contains(sel_bone, i))mesh_skel->bones[i].transform(m);
+                           if(bone_mirror)
+                           {
+                              axis.chsY().chsZ();
+                              m.setTransformAtPos(bone_mirror->pos, Matrix3().setRotate(axis, angle)); bone_mirror->transform(m);
+                              if(bone_children_rot())REPA(mesh_skel->bones)if(mirror_bone!=i && mesh_skel->contains(mirror_bone, i))mesh_skel->bones[i].transform(m);
+                           }
                         }else
                         {
                            mesh_skel->transform(Matrix3().setRotate(ActiveCam.matrix.z, angle));
