@@ -253,6 +253,8 @@ public:
    static void ModeS9           (ObjView &editor);
    static void ModeS10          (ObjView &editor);
    static void ModeS11          (ObjView &editor);
+   static void Undo             (ObjView &editor);
+   static void Redo             (ObjView &editor);
    static void Identity         (ObjView &editor);
    static void LightMode        (ObjView &editor);
    static void PrevObj          (ObjView &editor);

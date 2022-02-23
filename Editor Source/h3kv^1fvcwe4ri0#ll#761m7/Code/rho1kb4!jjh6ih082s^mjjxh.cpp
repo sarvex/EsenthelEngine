@@ -831,8 +831,8 @@ class WorldView : Viewport4Region, WorldData
       T+=show_menu.create(Rect_LU(wire.rect().ru(), h)).setData(sn); show_menu.flag|=COMBOBOX_CONST_TEXT;
       REP(show_menu.menu.elms())if(show_menu.menu.elm(i).name=="Objects"){show_menu_objs=show_menu.menu.elm(i).menu(); break;}
 
-      T+=undo  .create(Rect_LU(ctrls.rect().ru()+Vec2(h, 0), h, h)     ).func(Undo  , T).focusable(false).desc("Undo"); undo.image="Gui/Misc/undo.img";
-      T+=redo  .create(Rect_LU( undo.rect().ru()           , h, h)     ).func(Redo  , T).focusable(false).desc("Redo"); redo.image="Gui/Misc/redo.img";
+      T+=undo  .create(Rect_LU(ctrls.rect().ru()+Vec2(h, 0), h, h)     ).func(Undo  , T).focusable(false).desc("Undo\nKeyboard Shortcut: Ctrl+Z"      ); undo.image="Gui/Misc/undo.img";
+      T+=redo  .create(Rect_LU( undo.rect().ru()           , h, h)     ).func(Redo  , T).focusable(false).desc("Redo\nKeyboard Shortcut: Ctrl+Shift+Z"); redo.image="Gui/Misc/redo.img";
       T+=locate.create(Rect_LU( redo.rect().ru()           , h, h), "L").func(Locate, T).focusable(false).desc("Locate this element in the Project");
 
       T+=mode.create(Rect_LU(locate.rect().ru()+Vec2(h, 0), 0.63, h), 0, mode_t, Elms(mode_t), true).func(ModeChanged, T, true); // set immediate func call so Brush visibility will be set instantly

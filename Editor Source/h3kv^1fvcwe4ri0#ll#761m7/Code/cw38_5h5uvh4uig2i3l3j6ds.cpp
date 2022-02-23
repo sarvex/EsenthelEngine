@@ -961,6 +961,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    static void ModeS9           (ObjView &editor) {editor.modeS(9);}
    static void ModeS10          (ObjView &editor) {editor.modeS(10);}
    static void ModeS11          (ObjView &editor) {editor.modeS(11);}
+   static void Undo             (ObjView &editor) {if(editor.mode()==PHYS)editor.phys_undos.undo();else if(editor.mode()==PARAM)editor.param_edit.undos.undo();else editor.mesh_undos.undo();}
+   static void Redo             (ObjView &editor) {if(editor.mode()==PHYS)editor.phys_undos.redo();else if(editor.mode()==PARAM)editor.param_edit.undos.redo();else editor.mesh_undos.redo();}
    static void Identity         (ObjView &editor) {editor.axis.push();}
    static void LightMode        (ObjView &editor) {editor.light_dir.push();}
    static void PrevObj          (ObjView &editor) {Proj.elmNext(editor.obj_id, -1);}
@@ -1534,6 +1536,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          v.New().create("Light Direction", LightMode, T).kbsc(KbSc(KB_L, KBSC_ALT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Previous Object", PrevObj  , T).kbsc(KbSc(KB_PGUP, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
          v.New().create("Next Object"    , NextObj  , T).kbsc(KbSc(KB_PGDN, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN|MENU_TOGGLABLE);
+         v.New().create("Undo" , Undo, T).kbsc(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_REPEAT));
+         v.New().create("Redo" , Redo, T).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_REPEAT)).kbsc2(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
          break;
       }
    }
@@ -1559,8 +1563,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       T+=light_dir   .create(Rect_LU(vtxs_normals.rect().ru(), h)).setImage(Proj.icon_env).focusable(false).desc("Set Vertical Light Direction\nKeyboard Shortcut: Alt+L"); light_dir.mode=BUTTON_TOGGLE;
       cam_spherical.hide(); cam_lock.pos(cam_spherical.pos());
 
-      T+=mesh_undo.create(Rect_LU(ctrls    .rect().ru()+Vec2(h, 0), h, h)     ).func(MeshUndo, T).focusable(false).desc("Undo"); mesh_undo.image="Gui/Misc/undo.img";
-      T+=mesh_redo.create(Rect_LU(mesh_undo.rect().ru()           , h, h)     ).func(MeshRedo, T).focusable(false).desc("Redo"); mesh_redo.image="Gui/Misc/redo.img";
+      T+=mesh_undo.create(Rect_LU(ctrls    .rect().ru()+Vec2(h, 0), h, h)     ).func(MeshUndo, T).focusable(false).desc("Undo\nKeyboard Shortcut: Ctrl+Z"      ); mesh_undo.image="Gui/Misc/undo.img";
+      T+=mesh_redo.create(Rect_LU(mesh_undo.rect().ru()           , h, h)     ).func(MeshRedo, T).focusable(false).desc("Redo\nKeyboard Shortcut: Ctrl+Shift+Z"); mesh_redo.image="Gui/Misc/redo.img";
       T+=locate   .create(Rect_LU(mesh_redo.rect().ru()           , h, h), "L").func(Locate  , T).focusable(false).desc("Locate this element in the Project");
 
       T+=mode.create(Rect_LU(locate.rect().ru()+Vec2(h, 0), 1.84, h), 0, mode_t, Elms(mode_t), true).func(ModeChanged, T);
