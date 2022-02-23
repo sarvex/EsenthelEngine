@@ -5,11 +5,13 @@ Titan Engine developed by Esenthel is The Most Powerful, Free and Open Source Ga
 Titan strives to be pure perfection!<br/>
 Official version available at: https://github.com/Esenthel/EsenthelEngine<br/>
 Official website: https://esenthel.com<br/>
-To continue its development, Titan needs your support:
+To continue its development, Esenthel needs your support:
 * Please donate:
    * https://esenthel.com/?id=store&cat=1
    * https://github.com/sponsors/GregSlazinski
-* Or submit source code patches, thank you!
+* Submit source code patches
+* Spread the word
+* Thank you!
 
 
 ### License
