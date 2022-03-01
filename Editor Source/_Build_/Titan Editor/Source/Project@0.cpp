@@ -2634,7 +2634,11 @@ void DrawProject()
             }
          }
          if(file_changed)Server.setElmLong(anim->id);else Server.setElmShort(anim->id);
-         if(AnimEdit.elm==anim)AnimEdit.toGui();
+         if(AnimEdit.elm==anim)
+         {
+            AnimEdit.setMeshSkel();
+            AnimEdit.toGui();
+         }
       }
       if(changed)refresh(false, false);
    }
