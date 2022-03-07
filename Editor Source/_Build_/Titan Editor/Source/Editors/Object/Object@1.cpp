@@ -3328,17 +3328,21 @@ cur_skel_to_saved_skel.removeBone(bone->name);
                     transform.inverse(); // inverse because we want to convert mesh vertexes relative to bone
             REPA(mesh.parts)
             {
-                 MeshBase &base =mesh.parts[i].base;
-               if(C Vec   *pos  =base.vtx.pos   ())
-               if(C VecB4 *mtrx =base.vtx.matrix())
-               if(C VecB4 *blend=base.vtx.blend ())
-                  REPA(base.vtx)
+               MeshPart &part=mesh.parts[i];
+               if(!(part.part_flag&MSHP_HIDDEN))
                {
-                //VecB4 m=mtrx[i], b=blend[i]; int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i]; if(weight>=128)
-                  if(mtrx[i].x==bone_b) // if most significant bone is this one, check X because bones are always sorted by most significant first
+                    MeshBase &base =part.base;
+                  if(C Vec   *pos  =base.vtx.pos   ())
+                  if(C VecB4 *mtrx =base.vtx.matrix())
+                  if(C VecB4 *blend=base.vtx.blend ())
+                     REPA(base.vtx)
                   {
-                     Vec p=pos[i]*transform;
-                     if(has)box|=p;else{box=p; has=true;}
+                   //VecB4 m=mtrx[i], b=blend[i]; int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i]; if(weight>=128)
+                     if(mtrx[i].x==bone_b) // if most significant bone is this one, check X because bones are always sorted by most significant first
+                     {
+                        Vec p=pos[i]*transform;
+                        if(has)box|=p;else{box=p; has=true;}
+                     }
                   }
                }
             }
