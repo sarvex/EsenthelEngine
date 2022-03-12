@@ -23,7 +23,7 @@ enum VI_TYPE : Byte // VertexIndex vertex type
    VI_3D_BILB_ANIM    , // pos+color+tex+size+frame
    VI_3D_LASER        , // pos+nrm
    VI_3D_SIMPLE       , // pos+nrm+tex+color
-   VI_3D_STANDARD     , // pos+nrm+tan+bin+tex0+tex1+color
+   VI_3D_STANDARD     , // pos+nrm+tan+bin+tex+color
    VI_3D_FULL         , // pos+nrm+tan+bin+hlp+tex+blend+matrix
 };
 enum VI_FLAG // VertexIndex flags

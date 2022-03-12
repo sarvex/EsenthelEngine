@@ -206,10 +206,15 @@ inline void DrawParticle(C Image &image, Byte glow, C Color &color, Flt opacity,
 
 // manually draw a set of animated particles
 Bool DrawAnimatedParticleBegin(C Image &image, Byte glow, Bool motion_affects_alpha, Int x_frames, Int y_frames     ); // call this at start of drawing animated particles, 'glow'=glow amount 0..255, 'motion_affects_alpha'=if motion stretching affects opacity, 'x_frames'=number of frames in image width, 'y_frames'=number of frames in image height, false on fail, this function should be called only in RM_PALETTE, RM_PALETTE1 and RM_BLEND rendering modes
-void DrawAnimatedParticleAdd  (C Color &color, Flt opacity, Flt radius, Flt angle, C Vec &pos, C Vec &vel, Flt frame); // call this repeatedly for each particle, 'frame'=current frame (0..1)
-void DrawAnimatedParticleEnd  (                                                                                     ); // call this after drawing  all  particles
+void DrawAnimatedParticleAdd  (C Color &color, Flt opacity, Flt radius, Flt angle, C Vec &pos, C Vec &vel, Flt frame); // call this repeatedly for each animated particle, 'frame'=current frame (0..1)
+void DrawAnimatedParticleEnd  (                                                                                     ); // call this after drawing  all  animated particles
 
-Flt ParticleOpacity(Flt particle_life, Flt particle_life_max, Bool particles_smooth_fade);   // calculate opacity of a single particle by specifying its current life 'Particle.life', maximum life 'Particle.life_max' and if smooth fade 'Particles.smooth_fade' is enabled
+// manually draw a set of animated material particles
+Bool DrawAnimatedMaterialParticleBegin(C Material &material, Int x_frames, Int y_frames            ); // call this at start of drawing animated material particles, 'x_frames'=number of frames in image width, 'y_frames'=number of frames in image height, false on fail, this function should be called only in RM_OPAQUE for opaque materials
+void DrawAnimatedMaterialParticleAdd  (C Color &color, Flt radius, Flt angle, C Vec &pos, Int frame); // call this repeatedly for each animated material particle, 'frame'=current frame (0 .. x_frames*y_frames-1)
+void DrawAnimatedMaterialParticleEnd  (                                                            ); // call this after drawing  all  animated material particles
+
+Flt ParticleOpacity(Flt particle_life, Flt particle_life_max, Bool particles_smooth_fade); // calculate opacity of a single particle by specifying its current life 'Particle.life', maximum life 'Particle.life_max' and if smooth fade 'Particles.smooth_fade' is enabled
 /******************************************************************************/
 extern Cache<Particles> ParticlesCache; // Particles Cache
 

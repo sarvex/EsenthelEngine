@@ -53,7 +53,7 @@ Bool DrawParticleBegin(C Image &image, Byte glow, Bool motion_affects_alpha)
    D .depthOnWrite(true, false); 
    VI.image       (&image );
    VI.shader      ( shader);
-   VI.setFirst    ( VI_3D_BILB, VI_QUAD_IND);
+   VI.setType     ( VI_3D_BILB, VI_QUAD_IND);
 #if GL // needed for iOS PVRTC Pow2 #ParticleImgPart
    Sh.ImgSize->setConditional(image._part.xy);
 #endif
@@ -94,7 +94,7 @@ Bool DrawAnimatedParticleBegin(C Image &image, Byte glow, Bool motion_affects_al
    D .depthOnWrite(true, false); 
    VI.image       (&image );
    VI.shader      ( shader);
-   VI.setFirst    ( VI_3D_BILB_ANIM, VI_QUAD_IND);
+   VI.setType     ( VI_3D_BILB_ANIM, VI_QUAD_IND);
    Sh.ParticleFrames->set(VecI2(x_frames, y_frames));
 #if GL // needed for iOS PVRTC Pow2 #ParticleImgPart
    Sh.ImgSize->setConditional(image._part.xy);
@@ -117,6 +117,75 @@ void DrawAnimatedParticleAdd(C Color &color, Flt opacity, Flt radius, Flt angle,
    }
 }
 void DrawAnimatedParticleEnd()
+{
+   VI.end();
+}
+/******************************************************************************/
+struct AnimatedMaterialParticle
+{
+   Int   frames_x, frames_all;
+   Vec2  frame_size;
+   Vec   nrm;
+   Vec4  tan;
+ //Vec2 *part; can ignore because material based particles should have TexPow2 size in the image
+}AMP;
+Bool DrawAnimatedMaterialParticleBegin(C Material &material, Int x_frames, Int y_frames)
+{
+   if(Shader *shader=DefaultShaders(&material, VTX_POS|VTX_NRM_TAN_BIN|VTX_COLOR|VTX_TEX0, 0, false).get(Renderer()))
+   {
+      DisableSkinning();
+      material.setAuto();
+      VI.shader (shader);
+    //VI.cull   (material.cull); can ignore because particles are always faced toward the camera
+      VI.setType(VI_3D_STANDARD, VI_QUAD_IND);
+      MAX(x_frames, 1);
+      MAX(y_frames, 1);
+      AMP.frames_x  =x_frames;
+      AMP.frames_all=x_frames*y_frames;
+      AMP.frame_size.set(1.0f/x_frames, 1.0f/y_frames);
+      AMP.nrm =   -ActiveCam.matrix.z;
+      AMP.tan .set(ActiveCam.matrix.x, 1);
+    //AMP.part=((material.base_0 && material.base_0->partial()) ? &material.base_0->_part.xy : null);
+      return true;
+   }
+   return false;
+}
+void DrawAnimatedMaterialParticleAdd(C Color &color, Flt radius, Flt angle, C Vec &pos, Int frame)
+{
+   if(Vtx3DStandard *v=(Vtx3DStandard*)VI.addVtx(4))
+   {
+      Vec x, y;
+      if(angle)
+      {
+         Flt cos, sin; CosSin(cos, sin, angle);
+         cos*=radius;
+         sin*=radius;
+         x=ActiveCam.matrix.y*sin + ActiveCam.matrix.x*cos;
+         y=ActiveCam.matrix.y*cos - ActiveCam.matrix.x*sin;
+      }else
+      {
+         x=ActiveCam.matrix.x*radius;
+         y=ActiveCam.matrix.y*radius;
+      }
+      frame=Mod(frame, AMP.frames_all);
+      Int frame_x=frame%AMP.frames_x;
+      Int frame_y=frame/AMP.frames_x;
+      Vec2 uv(frame_x*AMP.frame_size.x, frame_y*AMP.frame_size.y), uv1=uv+AMP.frame_size;
+      v[0].pos=pos-x+y;
+      v[1].pos=pos+x+y;
+      v[2].pos=pos+x-y;
+      v[3].pos=pos-x-y;
+      v[0].tex.set(uv .x, uv .y);
+      v[1].tex.set(uv1.x, uv .y);
+      v[2].tex.set(uv1.x, uv1.y);
+      v[3].tex.set(uv .x, uv1.y);
+      v[0].nrm  =v[1].nrm  =v[2].nrm  =v[3].nrm  =AMP.nrm;
+      v[0].tan  =v[1].tan  =v[2].tan  =v[3].tan  =AMP.tan;
+      v[0].color=v[1].color=v[2].color=v[3].color=color;
+    //if(AMP.part)REP(4)v[i].tex*=*AMP.part;
+   }
+}
+void DrawAnimatedMaterialParticleEnd()
 {
    VI.end();
 }

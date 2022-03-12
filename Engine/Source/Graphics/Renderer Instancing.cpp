@@ -42,9 +42,6 @@ void SetStencilMode (  Bool     terrain_only) {Renderer._mesh_stencil_mode =(ter
 void SetBlendAlpha  (ALPHA_MODE alpha       ) {Renderer._mesh_blend_alpha  =alpha;}
 void SetEarlyZ      (  Bool     on          ) {Renderer._mesh_early_z      =on;}
 void SetBehindBias  (  Flt      distance    ) {Sh.BehindBias->setConditional(distance);}
-
-static INLINE void DisableSkinning() {Sh.VtxSkinning->setConditional(false);}
-static INLINE void  EnableSkinning() {Sh.VtxSkinning->setConditional(true );}
 /******************************************************************************
 // SHADER PARAM CHANGES
 /******************************************************************************/

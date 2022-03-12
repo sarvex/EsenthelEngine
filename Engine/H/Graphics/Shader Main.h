@@ -563,5 +563,7 @@ struct DefaultShaders
 
    void set(Shader *shader[RM_SHADER_NUM], FRST **frst, BLST **blst);
 };
+INLINE void DisableSkinning() {Sh.VtxSkinning->setConditional(false);}
+INLINE void  EnableSkinning() {Sh.VtxSkinning->setConditional(true );}
 #endif
 /******************************************************************************/
