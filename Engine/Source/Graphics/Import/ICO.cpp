@@ -311,7 +311,7 @@ Bool Image::ExportICNS(File &f)C // ICNS stores data using RLE, PNG or JPEG 2000
    // Mac OS X (as of 10.10) has following issues that affect opening of apps with those icons (this doesn't apply to opening just the icon themselves)
    // - setting up 1024     size        will make it ignored      (maybe it's because it's "@2x retina"
    // - setting up 16,32,64 size as PNG will make it look corrupt (maybe it's related to 'icp*' instead of 'ic0*' however those were tried too and failed)
-   Int size=Mid(NearestPow2(src->size().avgI()), 16, 512);
+   Int size=Mid((Int)NearestPow2(src->size().avgI()), 16, 512);
    if(size==64)size=128; // because 64 size can't be used as PNG, it has to be done as RLE, and there it is processed as 48, which will be very low res, so use 128 as the max in that case
    if(src->w()!=size || src->h()!=size)if(src->copyTry(temp, size, size, 1, ImageTypeUncompressed(src->type()), IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT))src=&temp;else return false;
    MipAlpha mips[3]; // up to 3 mip-maps, providing mip-maps with Engine high quality filtering allows the OS to use them instead of its own filtering

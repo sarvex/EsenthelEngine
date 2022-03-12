@@ -79,6 +79,7 @@ inline Dbl AbsScale(Dbl x, Dbl base) {return (x>base) ? x/base : base/x;}
 // get middle value
 constexpr Int  Mid(  Int   x,   Int   min,   Int   max) {return (x>=max) ? max : (x<=min) ? min : x;}
 constexpr Long Mid(  Long  x,   Long  min,   Long  max) {return (x>=max) ? max : (x<=min) ? min : x;}
+constexpr Flt  Mid(  Flt   x,   Int   min,   Int   max) {return (x>=max) ? max : (x<=min) ? min : x;}
 constexpr Flt  Mid(  Flt   x,   Int   min,   Flt   max) {return (x>=max) ? max : (x<=min) ? min : x;}
 constexpr Flt  Mid(  Flt   x,   Flt   min,   Int   max) {return (x>=max) ? max : (x<=min) ? min : x;}
 constexpr Flt  Mid(  Flt   x,   Flt   min,   Flt   max) {return (x>=max) ? max : (x<=min) ? min : x;}

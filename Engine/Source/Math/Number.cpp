@@ -46,7 +46,7 @@ Flt Number::asFlt()C
    {
       digits--;
       UInt pos=digits*16+BitHi(Unsigned(d[digits]));
-      Int  exp=Mid(pos+(_real ? -NUMBER_DIGS*16/2 : 0), -127, 127);
+      Int  exp=Mid((Int)pos+(_real ? -NUMBER_DIGS*16/2 : 0), -127, 127);
       UInt significand=0;
       pos--  ; if(pos<NUMBER_DIGS*16)significand|=Shr(d[pos>>4], (pos&15)-22);
       pos-=16; if(pos<NUMBER_DIGS*16)significand|=Shr(d[pos>>4], (pos&15)- 6);
@@ -63,7 +63,7 @@ Dbl Number::asDbl()C
    {
       digits--;
       UInt pos=digits*16+BitHi(Unsigned(d[digits]));
-      Int  exp=Mid(pos+(_real ? -NUMBER_DIGS*16/2 : 0), -1023, 1023);
+      Int  exp=Mid((Int)pos+(_real ? -NUMBER_DIGS*16/2 : 0), -1023, 1023);
       U32  m0=0, m1=0;
       pos--  ; if(pos<NUMBER_DIGS*16) m0|=Shr(d[pos>>4], (pos&15)-19);
       pos-=16; if(pos<NUMBER_DIGS*16){m0|=Shr(d[pos>>4], (pos&15)- 3); m1|=Shr(d[pos>>4], (pos&15)-35);}
