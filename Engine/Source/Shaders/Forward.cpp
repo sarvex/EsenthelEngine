@@ -56,7 +56,11 @@ struct Data
 #endif
 
 #if SET_COL
-   VecH col:COLOR;
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      VecH4 col:COLOR;
+   #else
+      VecH col:COLOR;
+   #endif
 #endif
 
 #if GRASS_FADE
@@ -101,8 +105,13 @@ void VS
 #endif
 
 #if COLORS
-   if(MATERIALS<=1)O.col=vtx.colorFast3()*Material.color.rgb;
-   else            O.col=vtx.colorFast3();
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      if(MATERIALS<=1)O.col=vtx.colorFast()*Material.color;
+      else            O.col=vtx.colorFast();
+   #else
+      if(MATERIALS<=1)O.col=vtx.colorFast3()*Material.color.rgb;
+      else            O.col=vtx.colorFast3();
+   #endif
 #endif
 
    if(FX==FX_LEAF_2D || FX==FX_LEAF_3D)
@@ -252,9 +261,9 @@ void VS
 
       // STORE
       #if LIGHT_IN_COL
-         if(COLORS      )O.col*=total_lum                   ;else
-         if(MATERIALS<=1)O.col =total_lum*Material.color.rgb;else
-                         O.col =total_lum                   ;
+         if(COLORS      )O.col.rgb*=total_lum                   ;else
+         if(MATERIALS<=1)O.col.rgb =total_lum*Material.color.rgb;else
+                         O.col.rgb =total_lum                   ;
       #else
          O.lum=total_lum;
       #endif
@@ -279,7 +288,11 @@ VecH4 PS
 #endif
 ):TARGET
 {
-   VecH col;
+#if ALPHA_TEST==ALPHA_TEST_DITHER
+   VecH4 col;
+#else
+   VecH  col;
+#endif
 #if PIXEL_NORMAL
    VecH nrmh;
 #endif
@@ -287,8 +300,12 @@ VecH4 PS
 
 #if SET_COL
    col=I.col;
-#else
-   if(MATERIALS<=1)col=Material.color.rgb;
+#elif MATERIALS<=1
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      col=Material.color;
+   #else
+      col=Material.color.rgb;
+   #endif
 #endif
 
 #if MATERIALS==1
@@ -303,7 +320,7 @@ VecH4 PS
       rough  =Material.  rough_add;
       reflect=Material.reflect_add;
       glow   =Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #elif LAYOUT==1
    {
@@ -316,14 +333,14 @@ VecH4 PS
       #if ALPHA_TEST==ALPHA_TEST_YES
          MaterialAlphaTest(tex_col.a);
       #elif ALPHA_TEST==ALPHA_TEST_DITHER
-         MaterialAlphaTestDither(tex_col.a, pixel.xy, I.face_id);
+         col.a*=tex_col.a; MaterialAlphaTestDither(col.a, pixel.xy, I.face_id);
       #endif
       }
-      col   *=tex_col.rgb;
-      rough  =Material.  rough_add;
-      reflect=Material.reflect_add;
-      glow   =Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      col.rgb*=tex_col.rgb;
+      rough   =Material.  rough_add;
+      reflect =Material.reflect_add;
+      glow    =Material.glow;
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #elif LAYOUT==2
    {
@@ -336,15 +353,15 @@ VecH4 PS
       #if ALPHA_TEST==ALPHA_TEST_YES
          MaterialAlphaTest(tex_col.a);
       #elif ALPHA_TEST==ALPHA_TEST_DITHER
-         MaterialAlphaTestDither(tex_col.a, pixel.xy, I.face_id);
+         col.a*=tex_col.a; MaterialAlphaTestDither(col.a, pixel.xy, I.face_id);
       #endif
       }
       VecH4 tex_ext=RTex(Ext, I.uv);
-      col   *=tex_col.rgb;
-      rough  =tex_ext.BASE_CHANNEL_ROUGH*Material.  rough_mul+Material.  rough_add; // saturated later below
-      reflect=tex_ext.BASE_CHANNEL_METAL*Material.reflect_mul+Material.reflect_add;
-      glow   =tex_ext.BASE_CHANNEL_GLOW *Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      col.rgb*=tex_col.rgb;
+      rough   =tex_ext.BASE_CHANNEL_ROUGH*Material.  rough_mul+Material.  rough_add; // saturated later below
+      reflect =tex_ext.BASE_CHANNEL_METAL*Material.reflect_mul+Material.reflect_add;
+      glow    =tex_ext.BASE_CHANNEL_GLOW *Material.glow;
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #endif
 
@@ -436,9 +453,9 @@ VecH4 PS
    if(MATERIALS>=3){VecH col2=RTex(Col2, uv2).rgb; col2.rgb*=MultiMaterial2.color.rgb; if(DETAIL)col2.rgb*=det2.DETAIL_CHANNEL_COLOR; /*if(MACRO)col2.rgb=Lerp(col2.rgb, RTex(Mac2, uv2*MacroScale).rgb, MultiMaterial2.macro*mac_blend);*/ rgb+=I.material.z*col2;}
    if(MATERIALS>=4){VecH col3=RTex(Col3, uv3).rgb; col3.rgb*=MultiMaterial3.color.rgb; if(DETAIL)col3.rgb*=det3.DETAIL_CHANNEL_COLOR; /*if(MACRO)col3.rgb=Lerp(col3.rgb, RTex(Mac3, uv3*MacroScale).rgb, MultiMaterial3.macro*mac_blend);*/ rgb+=I.material.w*col3;}
 #if SET_COL
-   col*=rgb.rgb;
+   col.rgb*=rgb.rgb;
 #else
-   col =rgb.rgb;
+   col.rgb =rgb.rgb;
 #endif
 
    // normal
@@ -468,7 +485,7 @@ VecH4 PS
 
 #endif // MATERIALS
 
-   col+=Highlight.rgb;
+   col.rgb+=Highlight.rgb;
    if(LAYOUT==2 || DETAIL)rough=Sat(rough); // need to saturate to avoid invalid values
 
 #if PIXEL_NORMAL
@@ -487,7 +504,7 @@ VecH4 PS
    Vec2 jitter_value; if(SHADOW)jitter_value=ShadowJitter(pixel.xy);
 
    Half inv_metal  =ReflectToInvMetal(reflect);
-   VecH reflect_col=ReflectCol       (reflect, col, inv_metal); // calc 'reflect_col' from unlit color
+   VecH reflect_col=ReflectCol       (reflect, col.rgb, inv_metal); // calc 'reflect_col' from unlit color
 
    // lighting
    VecH ambient;
@@ -655,7 +672,7 @@ VecH4 PS
       #endif
 
       // glow
-      ApplyGlow(glow, col, diffuse, total_specular);
+      ApplyGlow(glow, col.rgb, diffuse, total_specular);
 
       if(MATERIALS<=1) // emissive, this should be done after 'ApplyGlow' because emissive glow should not be applied to base color
       {
@@ -683,9 +700,9 @@ VecH4 PS
       #endif
       }*/
    }
-   col=col*total_lum*diffuse + total_specular;
+   col.rgb=col.rgb*total_lum*diffuse + total_specular;
 
-   return VecH4(col, glow);
+   return VecH4(col.rgb, glow);
 }
 /******************************************************************************/
 // HULL / DOMAIN

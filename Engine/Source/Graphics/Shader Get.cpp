@@ -192,18 +192,18 @@ Shader* DefaultShaders::Overlay()C
 Shader* DefaultShaders::Emissive()C
 {
 #if SUPPORT_EMISSIVE
-   if(valid && !alpha_blend && emissive)return ShaderFiles("Emissive")->get(ShaderEmissive(skin, alpha_test, emissive-1, fx, tesselate)); // for alpha_blend emissive is in the blend shader, emissive_map=(emissive==2) ? 1 : 0
+   if(valid && !alpha_blend && emissive)return ShaderFiles("Emissive")->get(ShaderEmissive(skin, color, alpha_test, emissive-1, fx, tesselate)); // for alpha_blend emissive is in the blend shader, emissive_map=(emissive==2) ? 1 : 0
 #endif
    return null;
 }
 Shader* DefaultShaders::Outline()C
 {
-   if(valid && !alpha_blend && !fx)return ShaderFiles("Set Color")->get(ShaderSetColor(skin, alpha_test, tesselate));
+   if(valid && !alpha_blend && !fx)return ShaderFiles("Set Color")->get(ShaderSetColor(skin, color, alpha_test, tesselate));
    return null;
 }
 Shader* DefaultShaders::Behind()C
 {
-   if(valid && !fx)return ShaderFiles("Behind")->get(ShaderBehind(skin, alpha_test));
+   if(valid && !fx)return ShaderFiles("Behind")->get(ShaderBehind(skin, color, alpha_test));
    return null;
 }
 Shader* DefaultShaders::Fur()C
@@ -213,7 +213,7 @@ Shader* DefaultShaders::Fur()C
 }
 Shader* DefaultShaders::Shadow()C
 {
-   if(valid && (!alpha_blend || alpha_test))return ShaderFiles("Position")->get(ShaderPosition(skin, alpha_test, alpha_test && alpha_blend_light, fx, tesselate));
+   if(valid && (!alpha_blend || alpha_test))return ShaderFiles("Position")->get(ShaderPosition(skin, color, alpha_test, alpha_test && alpha_blend_light, fx, tesselate));
    return null;
 }
 Shader* DefaultShaders::Blend()C

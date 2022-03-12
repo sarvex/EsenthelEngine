@@ -1,13 +1,19 @@
 /******************************************************************************/
 #include "!Header.h"
 /******************************************************************************
-SKIN, ALPHA_TEST, TESSELATE
+SKIN, COLORS, ALPHA_TEST, TESSELATE
+/******************************************************************************/
+#define SET_ALPHA (COLORS && ALPHA_TEST==ALPHA_TEST_DITHER)
 /******************************************************************************/
 struct Data
 {
 #if TESSELATE
    Vec  pos:POS;
    VecH nrm:NORMAL;
+#endif
+
+#if SET_ALPHA
+   Half alpha:ALPHA;
 #endif
 
 #if ALPHA_TEST
@@ -52,9 +58,15 @@ void VS
    #endif
         pos=          TransformPos(vtx.pos(), bone, vtx.weight());
    }
+
+#if SET_ALPHA
+   O.alpha=vtx.colorFastA()*Material.color.a;
+#endif
+
 #if TESSELATE
    O.pos=pos;
 #endif
+
    vpos=Project(pos);
 }
 /******************************************************************************/
@@ -71,7 +83,12 @@ VecH4 PS
 #if ALPHA_TEST==ALPHA_TEST_YES
    MaterialAlphaTest(RTex(Col, I.uv).a);
 #elif ALPHA_TEST==ALPHA_TEST_DITHER
-   MaterialAlphaTestDither(RTex(Col, I.uv).a, pixel.xy, I.face_id);
+   #if SET_ALPHA
+      Half alpha=I.alpha;
+   #else
+      Half alpha=Material.color.a;
+   #endif
+   MaterialAlphaTestDither(RTex(Col, I.uv).a*alpha, pixel.xy, I.face_id);
 #endif
 
    return Highlight;
@@ -96,6 +113,9 @@ Data HS
    Data O;
    O.pos=I[cp_id].pos;
    O.nrm=I[cp_id].nrm;
+#if SET_ALPHA
+   O.alpha=I[cp_id].alpha;
+#endif
 #if ALPHA_TEST
    O.uv =I[cp_id].uv;
 #endif
@@ -114,6 +134,10 @@ void DS
    out Vec4 pixel:POSITION
 )
 {
+#if SET_ALPHA
+   O.alpha=I[0].alpha*B.z + I[1].alpha*B.x + I[2].alpha*B.y;
+#endif
+
 #if ALPHA_TEST
    O.uv=I[0].uv*B.z + I[1].uv*B.x + I[2].uv*B.y;
 #endif

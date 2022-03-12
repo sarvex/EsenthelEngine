@@ -1,13 +1,19 @@
 /******************************************************************************/
 #include "!Header.h"
 /******************************************************************************
-SKIN, ALPHA_TEST, TEST_BLEND, FX, TESSELATE
+SKIN, COLORS, ALPHA_TEST, TEST_BLEND, FX, TESSELATE
+/******************************************************************************/
+#define SET_ALPHA (COLORS && ALPHA_TEST==ALPHA_TEST_DITHER)
 /******************************************************************************/
 struct Data
 {
 #if TESSELATE
    Vec  pos:POS;
    VecH nrm:NORMAL;
+#endif
+
+#if SET_ALPHA
+   Half alpha:ALPHA;
 #endif
 
 #if ALPHA_TEST
@@ -64,6 +70,10 @@ void VS
       if(TESSELATE)nrm=Normalize(TransformDir(nrm, bone, vtx.weight()));
    }
 
+#if SET_ALPHA
+   O.alpha=vtx.colorFastA()*Material.color.a;
+#endif
+
 #if ALPHA_TEST
    O.uv=vtx.uv();
 #endif
@@ -95,7 +105,12 @@ void PS
 #elif ALPHA_TEST==ALPHA_TEST_YES
    MaterialAlphaTest(RTex(Col, I.uv).a);
 #elif ALPHA_TEST==ALPHA_TEST_DITHER
-   MaterialAlphaTestDither(RTex(Col, I.uv).a, pixel.xy, I.face_id, false); // don't use noise offset for shadows because the shadow texels can be big on the screen and flickering disturbing
+   #if SET_ALPHA
+      Half alpha=I.alpha;
+   #else
+      Half alpha=Material.color.a;
+   #endif
+   MaterialAlphaTestDither(RTex(Col, I.uv).a*alpha, pixel.xy, I.face_id, false); // don't use noise offset for shadows because the shadow texels can be big on the screen and flickering disturbing
 #endif
 }
 /******************************************************************************/
@@ -114,8 +129,11 @@ Data HS(InputPatch<Data,3> I, UInt cp_id:SV_OutputControlPointID)
    Data O;
    O.pos=I[cp_id].pos;
    O.nrm=I[cp_id].nrm;
+#if SET_ALPHA
+   O.alpha=I[cp_id].alpha;
+#endif
 #if ALPHA_TEST
-   O.uv =I[cp_id].uv;
+   O.uv=I[cp_id].uv;
 #endif
 #if ALPHA_TEST==ALPHA_TEST_DITHER
    O.face_id=I[cp_id].face_id;
@@ -132,6 +150,10 @@ void DS
    out Vec4 pixel:POSITION
 )
 {
+#if SET_ALPHA
+   O.alpha=I[0].alpha*B.z + I[1].alpha*B.x + I[2].alpha*B.y;
+#endif
+
 #if ALPHA_TEST
    O.uv=I[0].uv*B.z + I[1].uv*B.x + I[2].uv*B.y;
 #endif

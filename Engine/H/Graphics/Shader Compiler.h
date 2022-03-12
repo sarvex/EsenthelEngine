@@ -177,7 +177,7 @@ struct ShaderCompiler
          return T("TESSELATE", tesselate);
       }
 
-      Shader& position(Int skin, Int alpha_test, Int test_blend, Int fx, Int tesselate) {return T("SKIN", skin, "ALPHA_TEST", alpha_test, "TEST_BLEND", test_blend, "FX", fx).tesselate(tesselate);}
+      Shader& position(Int skin, Int color, Int alpha_test, Int test_blend, Int fx, Int tesselate) {return T("SKIN", skin, "COLORS", color, "ALPHA_TEST", alpha_test, "TEST_BLEND", test_blend, "FX", fx).tesselate(tesselate);}
 
       Shader& deferred(Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int detail, Int macro, Int color, Int mtrl_blend, Int heightmap, Int fx, Int tesselate)
          {return T("SKIN", skin, "MATERIALS", materials, "LAYOUT", layout, "BUMP_MODE", bump_mode)("ALPHA_TEST", alpha_test)("DETAIL", detail, "MACRO", macro)("COLORS", color, "MTRL_BLEND", mtrl_blend, "HEIGHTMAP", heightmap, "FX", fx).tesselate(tesselate);}

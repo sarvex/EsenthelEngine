@@ -56,7 +56,11 @@ struct Data
 #endif
 
 #if COLORS
-   VecH col:COLOR;
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      VecH4 col:COLOR;
+   #else
+      VecH col:COLOR;
+   #endif
 #endif
 
 #if GRASS_FADE
@@ -114,8 +118,13 @@ void VS
 #endif
 
 #if COLORS
-   if(MATERIALS<=1)O.col=vtx.colorFast3()*Material.color.rgb;
-   else            O.col=vtx.colorFast3();
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      if(MATERIALS<=1)O.col=vtx.colorFast()*Material.color;
+      else            O.col=vtx.colorFast();
+   #else
+      if(MATERIALS<=1)O.col=vtx.colorFast3()*Material.color.rgb;
+      else            O.col=vtx.colorFast3();
+   #endif
 #endif
 
    if(FX==FX_LEAF_2D || FX==FX_LEAF_3D)
@@ -258,13 +267,22 @@ void PS
  , out DeferredOutput output
 )
 {
-   VecH col, nrm;
+#if ALPHA_TEST==ALPHA_TEST_DITHER
+   VecH4 col;
+#else
+   VecH  col;
+#endif
+   VecH nrm;
    Half rough, reflect, glow;
 
 #if COLORS
    col=I.col;
-#else
-   if(MATERIALS<=1)col=Material.color.rgb;
+#elif MATERIALS<=1
+   #if ALPHA_TEST==ALPHA_TEST_DITHER
+      col=Material.color;
+   #else
+      col=Material.color.rgb;
+   #endif
 #endif
 
 #if MATERIALS==1
@@ -400,7 +418,7 @@ void PS
       rough  =Material.  rough_add;
       reflect=Material.reflect_add;
       glow   =Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #elif LAYOUT==1
    {
@@ -413,14 +431,14 @@ void PS
       #if ALPHA_TEST==ALPHA_TEST_YES
          MaterialAlphaTest(tex_col.a);
       #elif ALPHA_TEST==ALPHA_TEST_DITHER
-         MaterialAlphaTestDither(tex_col.a, pixel.xy, I.face_id);
+         col.a*=tex_col.a; MaterialAlphaTestDither(col.a, pixel.xy, I.face_id);
       #endif
       }
-      col   *=tex_col.rgb;
-      rough  =Material.  rough_add;
-      reflect=Material.reflect_add;
-      glow   =Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      col.rgb*=tex_col.rgb;
+      rough   =Material.  rough_add;
+      reflect =Material.reflect_add;
+      glow    =Material.glow;
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #elif LAYOUT==2
    {
@@ -433,20 +451,20 @@ void PS
       #if ALPHA_TEST==ALPHA_TEST_YES
          MaterialAlphaTest(tex_col.a);
       #elif ALPHA_TEST==ALPHA_TEST_DITHER
-         MaterialAlphaTestDither(tex_col.a, pixel.xy, I.face_id);
+         col.a*=tex_col.a; MaterialAlphaTestDither(col.a, pixel.xy, I.face_id);
       #endif
       }
       VecH4 tex_ext=RTex(Ext, I.uv);
-      col   *=tex_col.rgb;
-      rough  =tex_ext.BASE_CHANNEL_ROUGH*Material.  rough_mul+Material.  rough_add; // no need to saturate because we store this value in 0..1 RT
-      reflect=tex_ext.BASE_CHANNEL_METAL*Material.reflect_mul+Material.reflect_add;
-      glow   =tex_ext.BASE_CHANNEL_GLOW *Material.glow;
-      if(DETAIL){col*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
+      col.rgb*=tex_col.rgb;
+      rough   =tex_ext.BASE_CHANNEL_ROUGH*Material.  rough_mul+Material.  rough_add; // no need to saturate because we store this value in 0..1 RT
+      reflect =tex_ext.BASE_CHANNEL_METAL*Material.reflect_mul+Material.reflect_add;
+      glow    =tex_ext.BASE_CHANNEL_GLOW *Material.glow;
+      if(DETAIL){col.rgb*=det.DETAIL_CHANNEL_COLOR; APPLY_DETAIL_ROUGH(rough, det.DETAIL_CHANNEL_ROUGH);} // #MaterialTextureLayoutDetail
    }
    #endif
 
 #if MACRO
-   col=Lerp(col, RTex(Mac, I.uv*MacroScale).rgb, LerpRS(MacroFrom, MacroTo, Length(I.pos))*MacroMax);
+   col.rgb=Lerp(col.rgb, RTex(Mac, I.uv*MacroScale).rgb, LerpRS(MacroFrom, MacroTo, Length(I.pos))*MacroMax);
 #endif
 
    // normal
@@ -723,9 +741,9 @@ void PS
    if(MATERIALS>=3){VecH col2=RTex(Col2, uv2).rgb; col2.rgb*=MultiMaterial2.color.rgb; if(DETAIL)col2.rgb*=det2.DETAIL_CHANNEL_COLOR; if(MACRO)col2.rgb=Lerp(col2.rgb, RTex(Mac2, uv2*MacroScale).rgb, MultiMaterial2.macro*mac_blend); rgb+=I.material.z*col2;}
    if(MATERIALS>=4){VecH col3=RTex(Col3, uv3).rgb; col3.rgb*=MultiMaterial3.color.rgb; if(DETAIL)col3.rgb*=det3.DETAIL_CHANNEL_COLOR; if(MACRO)col3.rgb=Lerp(col3.rgb, RTex(Mac3, uv3*MacroScale).rgb, MultiMaterial3.macro*mac_blend); rgb+=I.material.w*col3;}
 #if COLORS
-   col*=rgb.rgb;
+   col.rgb*=rgb.rgb;
 #else
-   col =rgb.rgb;
+   col.rgb =rgb.rgb;
 #endif
 
    // normal
@@ -753,7 +771,7 @@ void PS
 
 #endif // MATERIALS
 
-   col+=Highlight.rgb;
+   col.rgb+=Highlight.rgb;
 
 #if BUMP_MODE!=SBUMP_ZERO
    nrm=Normalize(nrm); // transforming by matrix might scale normal in >SBUMP_FLAT, and in SBUMP_FLAT normal is interpolated linearly and normalization will push to full range, however we're storing to 0..1 range, so have to normalize
@@ -763,7 +781,7 @@ void PS
    BackFlip(nrm, front);
 #endif
 
-   output.color     (col    );
+   output.color     (col.rgb);
    output.glow      (glow   );
    output.normal    (nrm    );
    output.mode      ((FX==FX_GRASS_3D || FX==FX_LEAF_3D || FX==FX_LEAFS_3D) ? PSM_TRANSLUCENT : (FX==FX_CLEAR_COAT) ? PSM_CLEAR_COAT : PSM_NONE);

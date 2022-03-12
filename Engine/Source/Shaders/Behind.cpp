@@ -1,18 +1,26 @@
 /******************************************************************************/
 #include "!Header.h"
 /******************************************************************************
-SKIN, ALPHA_TEST
+SKIN, COLORS, ALPHA_TEST
+/******************************************************************************/
+#define SET_ALPHA (COLORS && ALPHA_TEST==ALPHA_TEST_DITHER)
 /******************************************************************************/
 struct Data
 {
+   Vec  pos:POS;
+   VecH nrm:NORMAL; // !! not Normalized !!
+
+#if SET_ALPHA
+   Half alpha:ALPHA;
+#endif
+
 #if ALPHA_TEST
    Vec2 uv:UV;
 #endif
+
 #if ALPHA_TEST==ALPHA_TEST_DITHER
    NOINTERP VecU2 face_id:FACE_ID;
 #endif
-   VecH nrm:NORMAL; // !! not Normalized !!
-   Vec  pos:POS;
 };
 /******************************************************************************/
 void VS
@@ -23,9 +31,14 @@ void VS
    out Vec4 vpos:POSITION
 )
 {
+#if SET_ALPHA
+   O.alpha=vtx.colorFastA()*Material.color.a;
+#endif
+
 #if ALPHA_TEST
    O.uv=vtx.uv();
 #endif
+
 #if ALPHA_TEST==ALPHA_TEST_DITHER
    O.face_id=vtx.faceID();
 #endif
@@ -51,7 +64,14 @@ VecH4 PS
 #if ALPHA_TEST==ALPHA_TEST_YES
    MaterialAlphaTest(RTex(Col, I.uv).a);
 #elif ALPHA_TEST==ALPHA_TEST_DITHER
-   MaterialAlphaTestDither(RTex(Col, I.uv).a, pixel.xy, I.face_id);
+   {
+      #if SET_ALPHA
+         Half alpha=I.alpha;
+      #else
+         Half alpha=Material.color.a;
+      #endif
+      MaterialAlphaTestDither(RTex(Col, I.uv).a*alpha, pixel.xy, I.face_id);
+   }
 #endif
 
    Half alpha=Sat((Half(I.pos.z-TexDepthPix(pixel.xy))-BehindBias)/0.3);

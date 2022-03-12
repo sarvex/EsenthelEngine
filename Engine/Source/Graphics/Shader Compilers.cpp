@@ -47,14 +47,14 @@ Str8 ShaderDeferred   (Int skin, Int materials, Int layout, Int bump_mode, Int a
 Str8 ShaderBlendLight (Int skin, Int color    , Int layout, Int bump_mode, Int alpha_test, Int alpha, Int reflect, Int emissive_map, Int fx, Int per_pixel, Int shadow_maps, Int tesselate) {return S8+skin+color+layout+bump_mode+alpha_test+alpha+reflect+emissive_map+fx+per_pixel+shadow_maps+tesselate;}
 Str8 ShaderForward    (Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int reflect, Int emissive_map, Int detail, Int color, Int mtrl_blend, Int heightmap, Int fx, Int per_pixel,   Int light_dir, Int light_dir_shd, Int light_dir_shd_num,   Int light_point, Int light_point_shd,   Int light_linear, Int light_linear_shd,   Int light_cone, Int light_cone_shd,   Int tesselate) {return S8+skin+materials+layout+bump_mode+alpha_test+reflect+emissive_map+detail+color+mtrl_blend+heightmap+fx+per_pixel+light_dir+light_dir_shd+light_dir_shd_num+light_point+light_point_shd+light_linear+light_linear_shd+light_cone+light_cone_shd+tesselate;}
 
-Str8 ShaderBehind     (Int skin, Int alpha_test) {return S8+skin+alpha_test;}
+Str8 ShaderBehind     (Int skin, Int color, Int alpha_test) {return S8+skin+color+alpha_test;}
 Str8 ShaderBlend      (Int skin, Int color, Int layout, Int bump_mode, Int reflect, Int emissive_map) {return S8+skin+color+layout+bump_mode+reflect+emissive_map;}
 Str8 ShaderEarlyZ     (Int skin) {return S8+skin;}
-Str8 ShaderEmissive   (Int skin, Int alpha_test, Int emissive_map, Int fx, Int tesselate) {return S8+skin+alpha_test+emissive_map+fx+tesselate;}
+Str8 ShaderEmissive   (Int skin, Int color, Int alpha_test, Int emissive_map, Int fx, Int tesselate) {return S8+skin+color+alpha_test+emissive_map+fx+tesselate;}
 Str8 ShaderFurBase    (Int skin, Int size, Int diffuse) {return S8+"Base"+skin+size+diffuse;}
 Str8 ShaderFurSoft    (Int skin, Int size, Int diffuse) {return S8+"Soft"+skin+size+diffuse;}
-Str8 ShaderPosition   (Int skin, Int alpha_test, Int test_blend, Int fx, Int tesselate) {return S8+skin+alpha_test+test_blend+fx+tesselate;}
-Str8 ShaderSetColor   (Int skin, Int alpha_test, Int tesselate) {return S8+skin+alpha_test+tesselate;}
+Str8 ShaderPosition   (Int skin, Int color, Int alpha_test, Int test_blend, Int fx, Int tesselate) {return S8+skin+color+alpha_test+test_blend+fx+tesselate;}
+Str8 ShaderSetColor   (Int skin, Int color, Int alpha_test, Int tesselate) {return S8+skin+color+alpha_test+tesselate;}
 Str8 ShaderOverlay    (Int skin, Int tesselate) {return S8+skin+tesselate;}
 Str8 ShaderMeshOverlay(Int skin, Int normal, Int layout) {return S8+skin+normal+layout;}
 /******************************************************************************/
@@ -434,10 +434,10 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
 #ifdef BEHIND
 {
    ShaderCompiler::Source &src=ShaderCompilers.New().set(dest_path+"Behind", model, api, flag).New(src_path+"Behind.cpp");
-
    REPD(skin      , 2)
+   REPD(color     , 2)
    REPD(alpha_test, ALPHA_TEST_NUM)
-      src.New()("SKIN", skin, "ALPHA_TEST", alpha_test);
+      src.New()("SKIN", skin, "COLORS", color, "ALPHA_TEST", alpha_test);
 }
 #endif
 
@@ -528,18 +528,20 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
 #ifdef EMISSIVE
 {
    ShaderCompiler::Source &src=ShaderCompilers.New().set(dest_path+"Emissive", model, api, flag).New(src_path+"Emissive.cpp");
+   REPD(color, 2)
+   {
+      REPD(skin        , 2)
+      REPD(alpha_test  , ALPHA_TEST_NUM)
+      REPD(emissive_map, 2)
+      REPD(tesselate   , tess ? 2 : 1)
+         src.New()("SKIN", skin, "COLORS", color, "ALPHA_TEST", alpha_test, "EMISSIVE_MAP", emissive_map, "FX", FX_NONE).tesselate(tesselate);
 
-   REPD(skin        , 2)
-   REPD(alpha_test  , ALPHA_TEST_NUM)
-   REPD(emissive_map, 2)
-   REPD(tesselate   , tess ? 2 : 1)
-      src.New()("SKIN", skin, "ALPHA_TEST", alpha_test, "EMISSIVE_MAP", emissive_map, "FX", FX_NONE).tesselate(tesselate);
-
-   // grass + leaf
-   REPD (emissive_map, 2  )
-   REPAD(fx          , fxs)
-   REPD (tesselate   , tess ? 2 : 1)
-      src.New()("SKIN", false, "ALPHA_TEST", true, "EMISSIVE_MAP", emissive_map, "FX", fxs[fx]).tesselate(tesselate);
+      // grass + leaf
+      REPD (emissive_map, 2  )
+      REPAD(fx          , fxs)
+      REPD (tesselate   , tess ? 2 : 1)
+         src.New()("SKIN", false, "COLORS", color, "ALPHA_TEST", true, "EMISSIVE_MAP", emissive_map, "FX", fxs[fx]).tesselate(tesselate);
+   }
 }
 #endif
 
@@ -643,16 +645,19 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
 #ifdef POSITION
 {
    ShaderCompiler::Source &src=ShaderCompilers.New().set(dest_path+"Position", model, api, flag).New(src_path+"Position.cpp");
-   REPD(tesselate , tess ? 2 : 1)
-   REPD(skin      , 2)
-   REPD(alpha_test, ALPHA_TEST_NUM)
-   REPD(test_blend, alpha_test ? 2 : 1)
-      src.New().position(skin, alpha_test, test_blend, FX_NONE, tesselate);
+   REPD(color, 2)
+   {
+      REPD(tesselate , tess ? 2 : 1)
+      REPD(skin      , 2)
+      REPD(alpha_test, ALPHA_TEST_NUM)
+      REPD(test_blend, alpha_test ? 2 : 1)
+         src.New().position(skin, color, alpha_test, test_blend, FX_NONE, tesselate);
 
-   // grass + leafs
-   REPD (test_blend, 2)
-   REPAD(fx        , fxs)
-      src.New().position(0, true, test_blend, fxs[fx], 0);
+      // grass + leafs
+      REPD (test_blend, 2)
+      REPAD(fx        , fxs)
+         src.New().position(0, color, true, test_blend, fxs[fx], 0);
+   }
 }
 #endif
 
@@ -661,8 +666,9 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
    ShaderCompiler::Source &src=ShaderCompilers.New().set(dest_path+"Set Color", model, api, flag).New(src_path+"Set Color.cpp");
    REPD(tesselate , tess ? 2 : 1)
    REPD(skin      , 2)
+   REPD(color     , 2)
    REPD(alpha_test, ALPHA_TEST_NUM)
-      src.New()("SKIN", skin, "ALPHA_TEST", alpha_test).tesselate(tesselate);
+      src.New()("SKIN", skin, "COLORS", color, "ALPHA_TEST", alpha_test).tesselate(tesselate);
 }
 #endif
 

@@ -1420,11 +1420,13 @@ struct VtxInput // Vertex Input, use this class to access vertex data in vertex 
    VecH  color3    () {return       SRGBToLinear    (_color.rgb)           ;} // sRGB vertex color (precise)
    VecH4 colorFast () {return VecH4(SRGBToLinearFast(_color.rgb), _color.a);} // sRGB vertex color (fast)
    VecH  colorFast3() {return       SRGBToLinearFast(_color.rgb)           ;} // sRGB vertex color (fast)
+   Half  colorFastA() {return                                     _color.a ;} // sRGB vertex color (fast)
 #else
    VecH4 color     () {return _color                                       ;} // sRGB vertex color (precise)
    VecH  color3    () {return _color.rgb                                   ;} // sRGB vertex color (precise)
    VecH4 colorFast () {return _color                                       ;} // sRGB vertex color (fast)
    VecH  colorFast3() {return _color.rgb                                   ;} // sRGB vertex color (fast)
+   Half  colorFastA() {return _color.a                                     ;} // sRGB vertex color (fast)
 #endif
    VecH4 colorF    () {return _color                                       ;} // linear vertex color
    VecH  colorF3   () {return _color.rgb                                   ;} // linear vertex color
@@ -1653,9 +1655,9 @@ void MaterialAlphaTestDither(Half alpha, VecI2 pixel, VecU2 face, bool noise_off
    pixel=pixel+(noise_offset ? NoiseOffset : 0)+face; // can't use xor because it would destroy noise image continuity, adjust by face to make sure that multiple faces on top of each other would use different weights (example #0 face with alpha=0.5 and then #1 face with alpha=0.5 drawn on top of #0 would use the same pixels, but with face index variation they will use different)
    Half scale=1-1.0/1024; // this is needed to preserve fully opaque =1 alphas 
 #if 0 // 64-step cbuffer
-   alpha=alpha*Material.color.a+(Noise1D_64  (pixel)*     scale -0.5);
+   alpha=alpha+(Noise1D_64  (pixel)*     scale -0.5);
 #else // blue noise image
-   alpha=alpha*Material.color.a+(Noise1D_Blue(pixel)*(0.5*scale)-0.5);
+   alpha=alpha+(Noise1D_Blue(pixel)*(0.5*scale)-0.5);
 #endif
    if(alpha<=0)discard;
 }
