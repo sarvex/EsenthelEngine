@@ -545,6 +545,10 @@ void MouseClass::acquire(Bool on)
 #if SET_HOOK
    if(on)SetHook();else UnHook();
 #endif
+   if(on) // when restoring access to mouse
+   {
+     _delta_rel.zero(); // clear any deltas (to disable processing mouse movement when app was inactive)
+   }
 #endif
    if(_frozen || _clip_rect_on || _clip_window)clipUpdate(); // this gets called when app gets de/activated, so we have to update clip only if we want any clip (to enable it when activating and disable when deactivating)
    resetCursor();
