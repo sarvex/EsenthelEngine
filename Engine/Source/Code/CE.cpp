@@ -1452,7 +1452,7 @@ void CodeEditor::update(Bool active)
                   switch(build_exe_type)
                   {
                      case EXE_EXE: Run(build_exe); break;
-                     case EXE_WEB: goto publish; // when playing for WEB we will create PAK's after compilation, so call publish success to do so
+                     case EXE_WEB: goto publish; // when playing for WEB we will create PAKs after compilation, so call publish success to do so
                   }
                }break;
              //case BUILD_DEBUG  : if(build_exe_type==EXE_EXE)VSRun(build_project_file); break; // no need to call this because building was done by launching VS and it will automatically run the app

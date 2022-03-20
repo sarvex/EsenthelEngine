@@ -3626,12 +3626,16 @@ bool ParamTypeID        (PARAM_TYPE type           ) {return type==PARAM_ID || t
 bool ParamTypeCompatible(PARAM_TYPE a, PARAM_TYPE b) {return a==b || (ParamTypeID(a) && ParamTypeID(b));}
 bool ParamCompatible    (C Param   &a, C Param   &b) {return a.name==b.name && ParamTypeCompatible(a.type, b.type);}
 /******************************************************************************/
-class Rename
+class SrcDest
 {
    Str src, dest;
 
-   Rename& set(C Str &src, C Str &dest) {T.src=src; T.dest=dest; return T;}
-   
+   SrcDest& set(C Str &src, C Str &dest) {T.src=src; T.dest=dest; return T;}
+
+   SrcDest& set(C Str &src, C Str &dest, C Str &name) {T.src=src+name; T.dest=dest+name; return T;}
+}
+class Rename : SrcDest
+{
    bool operator==(C Rename &rename)C {return Equal(src, rename.src, true) && Equal(dest, rename.dest, true);}
    bool operator!=(C Rename &rename)C {return !(T==rename);}
    

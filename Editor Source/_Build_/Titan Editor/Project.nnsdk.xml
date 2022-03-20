@@ -11,7 +11,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug DX11|Emscripten</Name>
@@ -21,7 +21,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug DX11|NX64</Name>
@@ -31,7 +31,7 @@
           <Value>$(NINTENDO_SDK_ROOT)</Value>
         </SdkRoot>
         <Spec>NX</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug DX11|x64</Name>
@@ -41,7 +41,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug Universal DX11|ARM</Name>
@@ -51,7 +51,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug Universal DX11|Emscripten</Name>
@@ -61,7 +61,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug Universal DX11|NX64</Name>
@@ -71,7 +71,7 @@
           <Value>$(NINTENDO_SDK_ROOT)</Value>
         </SdkRoot>
         <Spec>NX</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Debug Universal DX11|x64</Name>
@@ -81,7 +81,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release DX11|ARM</Name>
@@ -91,7 +91,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release DX11|Emscripten</Name>
@@ -101,7 +101,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release DX11|NX64</Name>
@@ -121,7 +121,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release Universal DX11|ARM</Name>
@@ -131,7 +131,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release Universal DX11|Emscripten</Name>
@@ -141,7 +141,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
       <ConfigurationSetting>
         <Name>Release Universal DX11|NX64</Name>
@@ -161,7 +161,7 @@
           <Value />
         </SdkRoot>
         <Spec>Generic</Spec>
-        <BuildType>Develop</BuildType>
+        <BuildType>Release</BuildType>
       </ConfigurationSetting>
     </ConfigurationSettings>
   </ProjectSetting>

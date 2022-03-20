@@ -77,7 +77,7 @@ ReadWriteSync WorldAreaSync;
 TimeStamp     CurTime; // it's set to the current time at the beginning of each frame, it is used to increase chances of 'AreaVer.old' at the moment of area send attempt
 /******************************************************************************/
 Str SDKPath() {return GetPath(App.exe());}
-Str BinPath() {return SDKPath().tailSlash(true)+"Bin";}
+Str BinPath() {return SDKPath().tailSlash(true)+"Bin\\";} // must include tail slash
 /******************************************************************************/
 bool LoadOK(LOAD_RESULT result)
 {

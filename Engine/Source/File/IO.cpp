@@ -834,8 +834,8 @@ Bool FRecycle(C Str &name, Bool hidden)
          Char path[MAX_LONG_PATH+1]; path[SetReturnLength(path, full, Elms(path)-1)+1]=0; // must be "double null terminated" - "\0\0"
          SHFILEOPSTRUCT sh; Zero(sh);
          sh.wFunc = FO_DELETE;
-         sh.pFrom =WChar(path);
          sh.fFlags=(FOF_ALLOWUNDO|(hidden ? FOF_NO_UI : 0));
+         sh.pFrom =WChar(path);
          return !SHFileOperation(&sh);
       }
    #elif WINDOWS_NEW

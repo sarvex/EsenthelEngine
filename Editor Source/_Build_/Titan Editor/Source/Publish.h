@@ -13,6 +13,7 @@ extern Str                 PublishPath,
                     PublishProjectDataPath, // "Project.pak" path
                     PublishExePath, 
                     PublishErrorMessage;
+extern Memc<Str>           PublishKeep;
 extern Button              PublishSkipOptimize;
 extern Edit::EXE_TYPE       PublishExeType  ;
 extern Edit::BUILD_MODE     PublishBuildMode;
@@ -20,9 +21,12 @@ extern WindowIO            PublishProjectPackageIO;
 /******************************************************************************/
 bool PublishDataNeedOptimized();
 bool PublishDataNeeded(Edit::EXE_TYPE exe);
-bool PublishDataReady();
+DATA_STATE PublishDataState();
 void PublishDo();
 void PublishProjectPackageAs(C Str &path, ptr user);
+void KeepPublish(C Str &name);
+FILE_LIST_MODE CleanPublish(C FileFind &ff, bool &OK);
+bool CleanPublish(Memt<SrcDest> &files);
 bool StartPublish(C Str &exe_name, Edit::EXE_TYPE exe_type, Edit::BUILD_MODE build_mode, bool no_compile=false, C Str &custom_project_data_path=S, bool open_ide=false, bool project_package=false);
 void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
 void ImageConvertProcess(ImageConvert &convert, ptr user, int thread_index);

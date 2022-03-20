@@ -3,12 +3,6 @@
 namespace EE{
 /******************************************************************************
 
-   TODO: implement in the Editor Pak Generation / Publishing:
-      Caching of compressed files for future re-use, perhaps in the Project's "Temp" folder, with user permission?
-      Or better reuse existing PAK's, save to new and rename to old on finish.
-
-/******************************************************************************
-
    'Pak._file_name' should always include normalized full path
 
    'PakSet._lock' potentially could be a 'SimpleReadWriteSync', however tests show that 1 thread (most likely scenario) is faster with 'SyncLock'
@@ -661,7 +655,7 @@ PAK_LOAD Pak::loadEx(C Str &name, Cipher *cipher, Long pak_offset, Long *expecte
          }
       }else
       {
-         if(pak_offset) // this is used only for Linux when embedding PAK's into the executable, in that case 'processed' is always false and encryption starts at current position
+         if(pak_offset) // this is used only for Linux when embedding PAKs into the executable, in that case 'processed' is always false and encryption starts at current position
          {
             if(!f.pos(pak_offset))goto error;
             f.cipherOffsetClear();

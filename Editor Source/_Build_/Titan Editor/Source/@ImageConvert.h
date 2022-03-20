@@ -1,5 +1,5 @@
 ﻿/******************************************************************************/
-class ImageConvert
+class ImageConvert : SrcDest // src and dest files
 {
    enum FAMILY
    {
@@ -21,7 +21,6 @@ class ImageConvert
                max_size;
    VecI2           size;
    FAMILY      family  ;
-   Str        src, dest       ; // src and dest files
    DateTime   time            ; // date time to set after converting
    int        type, mode;
 

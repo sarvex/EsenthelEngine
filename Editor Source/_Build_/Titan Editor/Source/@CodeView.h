@@ -56,7 +56,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual Cipher*           appEmbedCipher                     ()override; 
    virtual COMPRESS_TYPE     appEmbedCompress                   ()override; 
    virtual int               appEmbedCompressLevel              ()override; 
-   virtual DateTime          appEmbedSettingsTime               ()override;  // return Max of all params affecting PAK's
+   virtual DateTime          appEmbedSettingsTime               ()override;  // return Max of all params affecting PAKs
    virtual Bool              appPublishProjData                 ()override; 
    virtual Bool              appPublishPhysxDll                 ()override; 
    virtual Bool              appPublishSteamDll                 ()override; 

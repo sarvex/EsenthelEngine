@@ -1,11 +1,6 @@
 ﻿/******************************************************************************/
-/******************************************************************************/
-class Rename
+class Rename : SrcDest
 {
-   Str src, dest;
-
-   Rename& set(C Str &src, C Str &dest);
-   
    bool operator==(C Rename &rename)C;
    bool operator!=(C Rename &rename)C;
    

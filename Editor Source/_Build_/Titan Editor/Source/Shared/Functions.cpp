@@ -3733,7 +3733,8 @@ Mems<FileParams> _DecodeFileParams(C Str &str)
       super::create(src);
       adjust_params=false; // don't adjust params because EE Materials are OK
    }
-   Rename& Rename::set(C Str &src, C Str &dest) {T.src=src; T.dest=dest; return T;}
+   SrcDest& SrcDest::set(C Str &src, C Str &dest) {T.src=src; T.dest=dest; return T;}
+   SrcDest& SrcDest::set(C Str &src, C Str &dest, C Str &name) {T.src=src+name; T.dest=dest+name; return T;}
    bool Rename::operator==(C Rename &rename)C {return Equal(src, rename.src, true) && Equal(dest, rename.dest, true);}
    bool Rename::operator!=(C Rename &rename)C {return !(T==rename);}
 XMaterialEx::XMaterialEx() : base_0_id(UIDZero), base_1_id(UIDZero), base_2_id(UIDZero), detail_id(UIDZero), macro_id(UIDZero), emissive_id(UIDZero), adjust_params(true), has_textures(TEXF_NONE), known_textures(TEXF_NONE) {}

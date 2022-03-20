@@ -29,7 +29,7 @@ class ImageGenerate
       if(mtrl && MergeBaseTextures(base_0, *mtrl)){File f; if(base_0.save(f.writeMem())){f.pos(0); SafeOverwrite(f, dest_base_0, &time);}}
    }
 }
-class ImageConvert
+class ImageConvert : SrcDest // src and dest files
 {
    enum FAMILY
    {
@@ -51,7 +51,6 @@ class ImageConvert
                max_size=    0;
    VecI2           size=    0;
    FAMILY      family  =ELM_IMAGE;
-   Str        src, dest       ; // src and dest files
    DateTime   time            ; // date time to set after converting
    int        type=-1, mode=-1;
 
@@ -266,28 +265,35 @@ Str                 PublishPath,
                     PublishProjectDataPath, // "Project.pak" path
                     PublishExePath, 
                     PublishErrorMessage;
+Memc<Str>           PublishKeep;
 Button              PublishSkipOptimize;
 Edit.EXE_TYPE       PublishExeType  =Edit.EXE_EXE;
 Edit.BUILD_MODE     PublishBuildMode=Edit.BUILD_BUILD;
 PublishResult       PublishRes;
 WindowIO            PublishProjectPackageIO;
 /******************************************************************************/
+enum DATA_STATE
+{
+   DATA_READY ,
+   DATA_CREATE, // need to be fully recreated
+   DATA_UPDATE, // just update
+}
 bool PublishDataNeedOptimized() {return false /*PublishBuildMode==Edit.BUILD_PUBLISH*/;} // never optimize automatically, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
 bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit.EXE_APK || exe==Edit.EXE_IOS || exe==Edit.EXE_NS;}
-bool PublishDataReady() // if desired project data is already availalble
+DATA_STATE PublishDataState() // state of project data
 {
-   if(!PublishProjectDataPath.is())return true; // if we don't want to create project data pak (no file)
+   if(!PublishProjectDataPath.is())return DATA_READY; // if we don't want to create project data pak (no file)
    if(CompareFile(FileInfoSystem(PublishProjectDataPath).modify_time_utc, CodeEdit.appEmbedSettingsTime())>0) // if existing Pak time is newer than settings (compression/encryption)
    {
       bool need_optimized=PublishDataNeedOptimized(); // test if optimized 
       Memt<DataRangeAbs> used_file_ranges;
       Pak pak; if(pak.loadEx(PublishProjectDataPath, Publish.cipher(), 0, null, null, need_optimized ? &used_file_ranges : null)==PAK_LOAD_OK)
       {
-         if(need_optimized && used_file_ranges.elms()!=1)return false; // needs to be optimized
-         return PakEqual(PublishFiles, pak);
+         if(need_optimized && used_file_ranges.elms()!=1)return DATA_CREATE; // needs to be optimized, so fully recreate
+         return PakEqual(PublishFiles, pak) ? DATA_READY : DATA_UPDATE;
       }
    }
-   return false;
+   return DATA_CREATE;
 }
 /******************************************************************************/
 void PublishDo()
@@ -297,6 +303,34 @@ void PublishDo()
 void PublishProjectPackageAs(C Str &path, ptr user)
 {
    StartPublish(S, Edit.EXE_EXE, Edit.BUILD_PUBLISH, true, path, false, true);
+}
+void KeepPublish(C Str &name)
+{
+   PublishKeep.add(SkipStartPath(name, PublishPath));
+}
+FILE_LIST_MODE CleanPublish(C FileFind &ff, bool &OK)
+{
+   Str full=ff.pathName();
+   if(PublishKeep.binaryHas(SkipStartPath(full, PublishPath), ComparePathCI))return FILE_LIST_CONTINUE;
+   bool ok;
+   switch(ff.type)
+   {
+      case FSTD_LINK:
+      case FSTD_FILE: ok=FDelFile(full); break;
+      case FSTD_DIR : ok=FDelDirs(full); break;
+      default       : ok=FDel    (full); break;
+   }
+   OK&=ok;
+   return ok ? FILE_LIST_SKIP : FILE_LIST_CONTINUE; // if deleted OK then we can skip this item (if didn't delete then try to delete files inside)
+}
+bool CleanPublish(Memt<SrcDest> &files)
+{
+               KeepPublish(PublishProjectDataPath); // keep because this will be verified manually
+   FREPA(files)KeepPublish(files[i].dest);
+   PublishKeep.sort(ComparePathCI);
+   bool ok=true; FList(PublishPath, CleanPublish, ok);
+   if( !ok){Gui.msgBox(S, S+"Can't delete \""+PublishPath+'"'); return false;}
+   return true;
 }
 bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build_mode, bool no_compile=false, C Str &custom_project_data_path=S, bool open_ide=false, bool project_package=false)
 {
@@ -312,6 +346,7 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
    PublishPath           .clear();
    PublishBinPath        .clear();
    PublishProjectDataPath.clear();
+   PublishKeep           .clear();
 
    if(PublishProjectPackage)Publish.cipher.clear(); // ProjectPackage is never encrypted
    else                     Publish.cipher.set(Proj);
@@ -326,18 +361,20 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
    }else // executable
    {
       bool physx_dll=false; //(PHYSX_DLL && Physics.engine()==PHYS_ENGINE_PHYSX && CodeEdit.appPublishPhysxDll());
+      Str  bin_path=BinPath();
+      Memt<SrcDest> files, dirs;
+      Memc<Str    > ignore;
       if(exe_type==Edit.EXE_EXE || exe_type==Edit.EXE_DLL)
       {
-         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true); if(!FDelInside(PublishPath)){Gui.msgBox(S, S+"Can't delete \""+PublishPath+'"'); return false;}
+         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true);
          PublishDataAsPak=CodeEdit.appPublishDataAsPak();
          if(!FCreateDirs(PublishPath)){Gui.msgBox(S, S+"Can't create \""+PublishPath+'"'); return false;}
          if(!CodeEdit.appEmbedEngineData() || CodeEdit.appPublishProjData() || physx_dll) // if want to store something in "Bin" folder
          {
-            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;}
+            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;} KeepPublish(PublishBinPath);
             if(CodeEdit.appPublishProjData() && PublishDataAsPak)PublishProjectDataPath=PublishBinPath+"Project.pak";
 
-            Memt<Str> files;
-            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.add("Engine.pak");
+            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.New().set(bin_path, PublishBinPath, "Engine.pak");
             if(physx_dll)
             {
                cchar8 *physx_files32[]=
@@ -350,22 +387,14 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
                   "PhysXDevice64.dll",
                   "PhysXGpu_64.dll",
                };
-               if(CodeEdit.config32Bit())FREPA(physx_files32)files.add(physx_files32[i]);
-               else                      FREPA(physx_files64)files.add(physx_files64[i]);
+               if(CodeEdit.config32Bit())FREPA(physx_files32)files.New().set(bin_path, PublishBinPath, physx_files32[i]);
+               else                      FREPA(physx_files64)files.New().set(bin_path, PublishBinPath, physx_files64[i]);
             }
-            FREPA(files)if(!FCopy(BinPath().tailSlash(true)+files[i], PublishBinPath+GetBase(files[i]))){Gui.msgBox(S, S+"Can't copy \""+files[i]+'"'); return false;}
          }
-         if(CodeEdit.appPublishSteamDll())
-         {
-            cchar8 *name=(CodeEdit.config32Bit() ? "steam_api.dll" : "steam_api64.dll");
-            if(!FCopy(S+"Code/Windows/"+name, PublishPath+name)){Gui.msgBox(S, S+"Can't copy \""+name+'"'); return false;}
-         }
-         if(CodeEdit.appPublishOpenVRDll())
-         {
-            cchar8 *name=(CodeEdit.config32Bit() ? "openvr_api.32.dll" : "openvr_api.64.dll");
-            if(!FCopy(S+"Code/Windows/"+name, PublishPath+"openvr_api.dll")){Gui.msgBox(S, S+"Can't copy \""+name+'"'); return false;}
-         }
-         if(PublishExePath.is())if(!FCopy(PublishExePath, PublishPath+GetBase(PublishExePath))){Gui.msgBox(S, S+"Can't copy \""+GetBase(PublishExePath)+'"'); return false;}
+         if(CodeEdit.appPublishSteamDll ())files.New().set(  "Code/Windows/"                                                                     , PublishPath, CodeEdit.config32Bit() ? "steam_api.dll" : "steam_api64.dll");
+         if(CodeEdit.appPublishOpenVRDll())files.New().set(S+"Code/Windows/"+(CodeEdit.config32Bit() ? "openvr_api.32.dll" : "openvr_api.64.dll"), PublishPath+"openvr_api.dll");
+         if(PublishExePath.is()           )files.New().set(PublishExePath, PublishPath+GetBase(PublishExePath));
+         if(!CleanPublish(files))return false;
       }else
       if(exe_type==Edit.EXE_WEB)
       {
@@ -374,54 +403,58 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
             PublishPath=GetPath(GetPath(PublishExePath)).tailSlash(true); // convert from "../Emscripten/Debug/App.*" to "../Emscripten/" so we can reuse the same "Engine.pak" and "Project.pak" for Debug/Release configurations
          }else
          {
-            PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true); if(!FDelInside(PublishPath)){Gui.msgBox(S, S+"Can't delete \""+PublishPath+'"'); return false;}
+            PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true);
             if(!FCreateDirs(PublishPath)){Gui.msgBox(S, S+"Can't create \""+PublishPath+'"'); return false;}
+            if(!CleanPublish(files))return false;
          }
          PublishDataAsPak=CodeEdit.appPublishDataAsPak();
-         if(1/*!CodeEdit.appEmbedEngineData()*/ || CodeEdit.appPublishProjData()) // if want to store something in "Bin" folder, embed engine data should be ignored (we always need engine.pak for web)
+         if(1/*!CodeEdit.appEmbedEngineData()*/ || CodeEdit.appPublishProjData()) // if want to store something in "Bin" folder, embed engine data should be ignored (we always need "Engine.pak" for Web)
          {
-            PublishBinPath=PublishPath/*+"Bin\\"*/; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;}
+            PublishBinPath=PublishPath/*+"Bin\\"*/; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;} KeepPublish(PublishBinPath);
             if(CodeEdit.appPublishProjData() && PublishDataAsPak)PublishProjectDataPath=PublishBinPath+"Project.pak";
 
-            Memt<Str> files;
-            if(1/*!CodeEdit.appEmbedEngineData()*/ && PublishDataAsPak)files.add("Web/Engine.pak"); // embed engine data should be ignored (we always need Engine.pak for web)
-            FREPA(files)if(!FCopy(BinPath().tailSlash(true)+files[i], PublishBinPath+GetBase(files[i]))){Gui.msgBox(S, S+"Can't copy \""+files[i]+'"'); return false;}
+            if(1/*!CodeEdit.appEmbedEngineData()*/ && PublishDataAsPak)files.New().set(bin_path+"Web/Engine.pak", PublishBinPath+"Engine.pak"); // embed engine data should be ignored (we always need "Engine.pak" for Web)
          }
          if(PublishExePath.is())
          {
-            if(!FCopy(GetExtNot(PublishExePath)+"." ENGINE_NAME ".html", PublishPath+GetBaseNoExt(PublishExePath)+".html")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".html\""); return false;}
-            if(!FCopy(GetExtNot(PublishExePath)+".js"                  , PublishPath+GetBaseNoExt(PublishExePath)+".js"  )){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".js\""  ); return false;}
-            if(!FCopy(GetExtNot(PublishExePath)+".wasm"                , PublishPath+GetBaseNoExt(PublishExePath)+".wasm")){Gui.msgBox(S, S+"Can't copy \""+GetBaseNoExt(PublishExePath)+".wasm\""); return false;}
+            Str exe_src=            GetExtNot   (PublishExePath),
+                exe_dst=PublishPath+GetBaseNoExt(PublishExePath);
+            files.New().set(exe_src+"." ENGINE_NAME ".html", exe_dst+".html");
+            files.New().set(exe_src+".js"                  , exe_dst+".js"  );
+            files.New().set(exe_src+".wasm"                , exe_dst+".wasm");
          }
       }else
       if(exe_type==Edit.EXE_MAC)
       {
-         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true); if(!FDelInside(PublishPath)){Gui.msgBox(S, S+"Can't delete \""+PublishPath+'"'); return false;}
+         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true);
          PublishDataAsPak=CodeEdit.appPublishDataAsPak();
          if(!FCreateDirs(PublishPath)){Gui.msgBox(S, S+"Can't create \""+PublishPath+'"'); return false;}
          if(!CodeEdit.appEmbedEngineData() || CodeEdit.appPublishProjData()) // if want to store something in "Bin" folder
          {
-            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;}
+            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;} KeepPublish(PublishBinPath);
             if(CodeEdit.appPublishProjData() && PublishDataAsPak)PublishProjectDataPath=PublishBinPath+"Project.pak";
 
-            Memt<Str> files;
-            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.add("Engine.pak");
-            FREPA(files)if(!FCopy(BinPath().tailSlash(true)+files[i], PublishBinPath+files[i])){Gui.msgBox(S, S+"Can't copy \""+files[i]+'"'); return false;}
+            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.New().set(bin_path, PublishBinPath, "Engine.pak");
          }
-         if(PublishExePath.is())if((FileInfoSystem(PublishExePath).type==FSTD_FILE) ? !FCopy(PublishExePath, PublishPath+GetBase(PublishExePath)) : !FCopyDir(PublishExePath, PublishPath+GetBase(PublishExePath))){Gui.msgBox(S, S+"Can't copy \""+GetBase(PublishExePath)+'"'); return false;}
+         if(PublishExePath.is())switch(FileInfoSystem(PublishExePath).type)
+         {
+            case FSTD_FILE: files.New().set(PublishExePath, PublishPath+GetBase(PublishExePath)); break;
+            case FSTD_DIR :  dirs.New().set(PublishExePath, PublishPath+GetBase(PublishExePath)); break;
+            default       : Gui.msgBox(S, S+"Unknown file type \""+PublishExePath+'"'); return false;
+         }
+         if(!CleanPublish(files))return false;
       }else
       if(exe_type==Edit.EXE_LINUX)
       {
-         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true); if(!FDelInside(PublishPath)){Gui.msgBox(S, S+"Can't delete \""+PublishPath+'"'); return false;}
+         PublishPath=ProjectsPath+ProjectsPublishPath+GetBase(CodeEdit.appPath(CodeEdit.appName())).tailSlash(true);
          PublishDataAsPak=CodeEdit.appPublishDataAsPak();
          if(!FCreateDirs(PublishPath)){Gui.msgBox(S, S+"Can't create \""+PublishPath+'"'); return false;}
          if(!CodeEdit.appEmbedEngineData() || CodeEdit.appPublishProjData() || physx_dll || CodeEdit.appPublishSteamDll() || CodeEdit.appPublishOpenVRDll()) // if want to store something in "Bin" folder
          {
-            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;}
+            PublishBinPath=PublishPath+"Bin\\"; if(!FCreateDirs(PublishBinPath)){Gui.msgBox(S, S+"Can't create \""+PublishBinPath+'"'); return false;} KeepPublish(PublishBinPath);
             if(CodeEdit.appPublishProjData() && PublishDataAsPak)PublishProjectDataPath=PublishBinPath+"Project.pak";
 
-            Memt<Str> files;
-            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.add("Engine.pak");
+            if(!CodeEdit.appEmbedEngineData() && PublishDataAsPak)files.New().set(bin_path, PublishBinPath, "Engine.pak");
             if(physx_dll)
             {
                cchar8 *physx_files[]=
@@ -431,13 +464,13 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
                   "libPhysX3Cooking_x64.so",
                   "libPxFoundation_x64.so",
                };
-               FREPA(physx_files)files.add(physx_files[i]);
+               FREPA(physx_files)files.New().set(bin_path, PublishBinPath, physx_files[i]);
             }
-            if(CodeEdit.appPublishSteamDll ())files.add("libsteam_api.so");
-            if(CodeEdit.appPublishOpenVRDll())files.add("libopenvr_api.so");
-            FREPA(files)if(!FCopy(BinPath().tailSlash(true)+files[i], PublishBinPath+files[i])){Gui.msgBox(S, S+"Can't copy \""+files[i]+'"'); return false;}
+            if(CodeEdit.appPublishSteamDll ())files.New().set(bin_path, PublishBinPath, "libsteam_api.so");
+            if(CodeEdit.appPublishOpenVRDll())files.New().set(bin_path, PublishBinPath, "libopenvr_api.so");
          }
-         if(PublishExePath.is())if((FileInfoSystem(PublishExePath).type==FSTD_FILE) ? !FCopy(PublishExePath, PublishPath+GetBase(PublishExePath)) : !FCopyDir(PublishExePath, PublishPath+GetBase(PublishExePath))){Gui.msgBox(S, S+"Can't copy \""+GetBase(PublishExePath)+'"'); return false;}
+         if(PublishExePath.is())files.New().set(PublishExePath, PublishPath+GetBase(PublishExePath));
+         if(!CleanPublish(files))return false;
       }else
       if(exe_type==Edit.EXE_UWP)
       {
@@ -478,15 +511,18 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
       {
          Gui.msgBox(S, "Invalid application type."); return false;
       }
+      FILE_OVERWRITE_MODE overwrite=FILE_OVERWRITE_DIFFERENT; // FILE_OVERWRITE_DIFFERENT faster but less safe
+      FREPA(files)if(!FCopy      (files[i].src, files[i].dest, overwrite)){Gui.msgBox(S, S+"Can't copy \""+GetBase(files[i].src)+'"'); return false;}
+      FREPA( dirs)if(!FReplaceDir( dirs[i].src,  dirs[i].dest, overwrite)){Gui.msgBox(S, S+"Can't copy \""+GetBase( dirs[i].src)+'"'); return false;}
    }
 
-   if(build_mode!=Edit.BUILD_PUBLISH) // if there's no need to wait for fully complete data (for example we want to play/debug game on mobile which requires PAK creation)
+   if(build_mode!=Edit.BUILD_PUBLISH) // if there's no need to wait for fully complete data (for example we want to Play/Debug game on mobile which requires PAK creation)
    {
       Proj.flush(); // flush what we've changed
       SetPublishFiles(PublishFiles, PublishGenerate, PublishConvert, PublishFileData); // detect files for packing
       if(!PublishGenerate.elms() && !PublishConvert.elms()) // if there are no elements to generate and convert
          if(PublishDataAsPak) // if we're creating a pak
-            if(PublishDataReady()) // if data already available
+            if(PublishDataState()==DATA_READY) // if data already available
                {PublishSuccess(); return true;} // exit already
    }
 
@@ -524,11 +560,12 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
    if(PublishDataAsPak)
    {
-      if(PublishDataReady())PublishOk=true;else
+      switch(PublishDataState())
       {
-         PublishOk=false;
-         if(!PublishDataNeedOptimized())PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress);
-         if(!PublishOk                 )PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); // if 'PakReplaceInPlace' failed or need optimized then recreate
+         case DATA_READY : PublishOk=true; break;
+         case DATA_UPDATE: PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); if(PublishOk)break;
+         // !! here no break !! fully recreate if 'PakReplaceInPlace' failed
+         default         : PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); break;
       }
    }else
    {
@@ -1099,7 +1136,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
       // Engine.pak files (add this as first to preserve order of loading "Engine.pak" and then "Project.pak", in case some project files overwrite engine files)
       if(!CodeEdit.appEmbedEngineData() && !PublishDataAsPak)
       {
-         Pak engine; if(engine.load(BinPath().tailSlash(true)+"Engine.pak"))FREPA(engine)
+         Pak engine; if(engine.load(BinPath()+"Engine.pak"))FREPA(engine)
          {
           C PakFile     &pf  =engine.file    (i );
           C Str         &name=engine.fullName(pf);
