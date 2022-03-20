@@ -92,7 +92,8 @@ struct SteamWorks
    Str         userName              (            )C; // get user name
    USER_STATUS userStatus            (            )C; // get user status
    Bool        userAvatar            (Image &image)C; // get user avatar
-   CChar8*     appLanguage           (            )C; // get current app language
+   CChar8*     appLanguageText       (            )C; // get current app language text, null         on fail
+   LANG_TYPE   appLanguage           (            )C; // get current app language     , LANG_UNKNOWN on fail
    CChar8*     country               (            )C; // get country code in which user is currently located according to Steam
    DateTime    date                  (            )C; // get current date time in UTC time zone according to Steam
    UInt        curTimeS              (            )C; // get real         time in current moment (seconds since application started, NOT modified by game 'speed', NOT affected by 'smooth' 'skipUpdate' and application pauses)

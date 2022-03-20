@@ -266,12 +266,58 @@ SteamWorks::USER_STATUS SteamWorks::userStatus()C
    return STATUS_UNKNOWN;
 }
 Bool SteamWorks::userAvatar(Image &image)C {return userAvatar(userID(), image);}
-CChar8* SteamWorks::appLanguage()C
+CChar8* SteamWorks::appLanguageText()C
 {
 #if SUPPORT_STEAM
    if(ISteamApps *i=SteamApps())return i->GetCurrentGameLanguage();
 #endif
    return null;
+}
+#if SUPPORT_STEAM
+static struct Locale
+{
+   LANG_TYPE lang;
+   CChar8   *code;
+}locale[]=
+{ // https://partner.steamgames.com/doc/store/localization#supported_languages
+   {(LANG_TYPE)LANG_ARABIC    , "arabic"    },
+   {(LANG_TYPE)LANG_BULGARIAN , "bulgarian" },
+   {(LANG_TYPE)LANG_CHINESE   , "schinese"  }, // simplified
+   {(LANG_TYPE)LANG_CHINESE   , "tchinese"  }, // traditional
+   {(LANG_TYPE)LANG_CZECH     , "czech"     },
+   {(LANG_TYPE)LANG_DANISH    , "danish"    },
+   {(LANG_TYPE)LANG_DUTCH     , "dutch"     },
+   {(LANG_TYPE)LANG_ENGLISH   , "english"   },
+   {(LANG_TYPE)LANG_FINNISH   , "finnish"   },
+   {(LANG_TYPE)LANG_FRENCH    , "french"    },
+   {(LANG_TYPE)LANG_GERMAN    , "german"    },
+   {(LANG_TYPE)LANG_GREEK     , "greek"     },
+   {(LANG_TYPE)LANG_HUNGARIAN , "hungarian" },
+   {(LANG_TYPE)LANG_ITALIAN   , "italian"   },
+   {(LANG_TYPE)LANG_JAPANESE  , "japanese"  },
+   {(LANG_TYPE)LANG_KOREAN    , "korean"    }, // keep in case Steam will change to this
+   {(LANG_TYPE)LANG_KOREAN    , "koreana"   }, // yes "koreana" is correct according to Steam Docs and tests
+   {(LANG_TYPE)LANG_NORWEGIAN , "norwegian" },
+   {(LANG_TYPE)LANG_POLISH    , "polish"    },
+   {(LANG_TYPE)LANG_PORTUGUESE, "portuguese"},
+   {(LANG_TYPE)LANG_PORTUGUESE, "brazilian" }, // Portuguese-Brazil
+   {(LANG_TYPE)LANG_ROMANIAN  , "romanian"  },
+   {(LANG_TYPE)LANG_RUSSIAN   , "russian"   },
+   {(LANG_TYPE)LANG_SPANISH   , "spanish"   },
+   {(LANG_TYPE)LANG_SPANISH   , "latam"     }, // Spanish-Latin America
+   {(LANG_TYPE)LANG_SWEDISH   , "swedish"   },
+   {(LANG_TYPE)LANG_THAI      , "thai"      },
+   {(LANG_TYPE)LANG_TURKISH   , "turkish"   },
+   {(LANG_TYPE)LANG_UKRAINIAN , "ukrainian" },
+   {(LANG_TYPE)LANG_VIETNAMESE, "vietnamese"},
+};
+#endif
+LANG_TYPE SteamWorks::appLanguage()C
+{
+#if SUPPORT_STEAM
+   if(ISteamApps *i=SteamApps())if(auto text=i->GetCurrentGameLanguage())REPA(locale)if(Equal(locale[i].code, text))return locale[i].lang;
+#endif
+   return LANG_UNKNOWN;
 }
 CChar8* SteamWorks::country()C
 {
