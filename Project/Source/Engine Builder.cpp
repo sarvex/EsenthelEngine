@@ -933,11 +933,11 @@ TaskBase TaskBases[]=
    {"Create \"Engine.pak\""     , "Create \"Engine.pak\" file from the \"Data\" folder into the Editor Bin folder"       , EnginePak                , true },
    {"Create \"Editor.pak\""     , "Create \"Editor.pak\" file from the \"Editor Data\" folder into the Editor Bin folder", EditorPak                , true },
 #if WINDOWS
-   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorWindows64DX11 , false},
+   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorWindows64DX11 , true },
 #elif APPLE
-   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorMac           , false},
+   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorMac           , true },
 #elif LINUX
-   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorLinux         , false},
+   {"Compile Editor"            , "Compile the Editor"                                                                 , CompileEditorLinux         , true },
 #endif
 };
 Memc<TaskBase> CustomTasks;
