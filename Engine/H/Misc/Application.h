@@ -215,20 +215,32 @@ void SupportCompressPVRTC(); // call this inside 'InitPre' function to add suppo
 void SupportCompressAll  (); // call this inside 'InitPre' function to add support for compressing all         formats                     , using this will however make your executable file bigger
 /******************************************************************************/
 // Multi Language Text, returns one of the few translations provided depending on current application language
-inline Str MLT(C Str &english                                                                                                                             ) {return english;}
-inline Str MLT(C Str &english, LANG_TYPE l0, C Str &t0                                                                                                    ) {if(App.lang()==l0)return t0; return english;}
-inline Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1                                                                           ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; return english;}
-inline Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2                                                  ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; return english;}
-inline Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3                         ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; if(App.lang()==l3)return t3; return english;}
-inline Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; if(App.lang()==l3)return t3; if(App.lang()==l4)return t4; return english;}
+inline Str MLT(C Str &english) {return english;}
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8, LANG_TYPE l9, C Str &t9);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8, LANG_TYPE l9, C Str &t9, LANG_TYPE l10, C Str &t10);
 
 // Multi Language Text Constant, returns one of the few translations provided depending on current application language
-inline CChar* MLTC(CChar* english                                                                                                                             ) {return english;}
-inline CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0                                                                                                    ) {if(App.lang()==l0)return t0; return english;}
-inline CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1                                                                           ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; return english;}
-inline CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2                                                  ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; return english;}
-inline CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3                         ) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; if(App.lang()==l3)return t3; return english;}
-inline CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4) {if(App.lang()==l0)return t0; if(App.lang()==l1)return t1; if(App.lang()==l2)return t2; if(App.lang()==l3)return t3; if(App.lang()==l4)return t4; return english;}
+inline CChar* MLTC(CChar* english) {return english;}
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8, LANG_TYPE l9, CChar* t9);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8, LANG_TYPE l9, CChar* t9, LANG_TYPE l10, CChar* t10);
 /******************************************************************************/
 #if EE_PRIVATE
 extern Bool LogInit;
