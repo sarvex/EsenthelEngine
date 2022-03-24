@@ -27,14 +27,13 @@ const_mem_addr struct Property // Class Member Gui Control !! must be stored in 
    Slider     slider  ;
 
    // manage
-   T1(TYPE) Property& create   (C Str  &name  ,   TYPE       &member) {return create(name, MemberDesc(member));}
-            Property& create   (C Str  &name  , C MemberDesc &md=MemberDesc());
-            Property& setColor (                                    ); // set as color  type
-            Property& setFile  (C Str  &ext=S , C Str        &desc=S); // set as file   type, 'ext'=list of supported extensions separated with '|' symbol (null for all kinds of extensions), 'desc'=description of supported files types (if specified then it will be used in the window title bar instead of the 1st extension)
-            Property& setEnum  (                                    ); // set as enum   type
-            Property& setEnum  (CChar8 *data[],   Int         elms  ); // set as enum   type and automatically set enum values
-            Property& setEnum  (CChar  *data[],   Int         elms  ); // set as enum   type and automatically set enum values
-            Property& setSlider(                                    ); // set as slider type
+   Property& create   (C Str  &name  , C MemberDesc &md=MemberDesc());
+   Property& setColor (                                             ); // set as color  type
+   Property& setFile  (C Str  &ext=S , C Str        &desc=S         ); // set as file   type, 'ext'=list of supported extensions separated with '|' symbol (null for all kinds of extensions), 'desc'=description of supported files types (if specified then it will be used in the window title bar instead of the 1st extension)
+   Property& setEnum  (                                             ); // set as enum   type
+   Property& setEnum  (CChar8 *data[],   Int         elms           ); // set as enum   type and automatically set enum values
+   Property& setEnum  (CChar  *data[],   Int         elms           ); // set as enum   type and automatically set enum values
+   Property& setSlider(                                             ); // set as slider type
 
    // get / set
    Property& desc(C Str &desc);   C Str& desc()C; // set/get property description

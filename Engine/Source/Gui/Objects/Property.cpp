@@ -48,7 +48,7 @@ Property& Property::create(C Str &name, C MemberDesc &md)
 
    switch(md.type)
    {
-      case DATA_NONE: break;
+      case DATA_NONE: _value_type=GO_NONE; break;
 
       case DATA_BOOL:
       {
@@ -839,12 +839,12 @@ void SaveProperties(C Memx<Property> &properties, MemPtr<TextNode> nodes, Char s
 {
    FREPA(properties)
    {
-    C Property &prop=properties[i]; C Str &name=prop.name(); if(name.is())
+    C Property &prop=properties[i]; if(prop._value_type){C Str &name=prop.name(); if(name.is())
       {
          Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name(), name))same_names++;
          Str temp=name; temp.replace(' ', space_replacement); if(same_names){temp+='@'; temp+=same_names;}
          GetNode(nodes, temp).value=prop.asText();
-      }
+      }}
    }
 }
 void LoadProperties(Memx<Property> &properties, C CMemPtr<TextNode> &nodes, Char space_replacement, Bool handle_same_names)
@@ -865,7 +865,7 @@ void SaveProperties(C Memx<Property> &properties, XmlNode &node, Char space_repl
    if(space_replacement==' ')space_replacement='\0'; // can't allow spaces in XML
    FREPA(properties)
    {
-    C Property &prop=properties[i]; if(prop.name().is())
+    C Property &prop=properties[i]; if(prop._value_type && prop.name().is())
       {
          Str param_name=Replace(prop.name(), ' ', space_replacement);
          if( param_name.is())node.getParam(param_name).value=prop.asText();
