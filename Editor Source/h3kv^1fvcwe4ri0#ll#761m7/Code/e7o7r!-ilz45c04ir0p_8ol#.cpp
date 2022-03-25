@@ -147,12 +147,12 @@ class SoundEditor : PropWin
    void setInfo()
    {
       toGui();
-      if(length  )length  .name.set(S+"Length: "   +TextReal(sound.length(), -2)+'s');
-      if(channels)channels.name.set(S+"Channels: " +((sound.channels()==1) ? S+"Mono" : (sound.channels()==2) ? S+"Stereo" : S+sound.channels()));
-      if(freq    )freq    .name.set(S+"Frequency: "+sound.frequency());
-      if(kbps    )kbps    .name.set(S+"Kbps: "     +DivRound(sound.bitRate(), 1000));
-      if(size    )size    .name.set(S+"Size: "     +FileSize(FSize(sound.name())));
-      if(codec   )codec   .name.set(S+"Codec: "    +sound.codecName());
+      if(length  )length  .display(S+"Length: "   +TextReal(sound.length(), -2)+'s');
+      if(channels)channels.display(S+"Channels: " +((sound.channels()==1) ? S+"Mono" : (sound.channels()==2) ? S+"Stereo" : S+sound.channels()));
+      if(freq    )freq    .display(S+"Frequency: "+sound.frequency());
+      if(kbps    )kbps    .display(S+"Kbps: "     +DivRound(sound.bitRate(), 1000));
+      if(size    )size    .display(S+"Size: "     +FileSize(FSize(sound.name())));
+      if(codec   )codec   .display(S+"Codec: "    +sound.codecName());
    }
 
    virtual void update(C GuiPC &gpc)override

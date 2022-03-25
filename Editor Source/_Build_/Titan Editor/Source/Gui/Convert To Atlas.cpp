@@ -22,7 +22,7 @@ ConvertToAtlasClass ConvertToAtlas;
          del .pos(Vec2(del .pos().x, y));
          name.pos(Vec2(name.pos().x, y));
          y-=del.rect().h()/2;
-         prop           .pos(Vec2(prop.name      .pos().x, y));
+         prop           .pos(Vec2(prop.text      .pos().x, y));
          t_original_size.pos(Vec2(t_original_size.pos().x, y));
          t_scaled_size  .pos(Vec2(t_scaled_size  .pos().x, y));
       }
@@ -588,7 +588,7 @@ Property &mode=add("Atlased Objects", MEMBER(ConvertToAtlasClass, mode)).setEnum
             if(ElmMaterial *mtrl_data=elm->mtrlData())
                if(mtrl.base_0=Proj.texPath(mtrl_data->base_0_tex))
                   mtrl.original_size=mtrl.base_0->size();
-            mtrl.prop.create(S, MemberDesc(MEMBER(Mtrl, scale)).setFunc(Scale, Scale)).range(1.0f/8, 8).mouseEditLinked(true).mouseEditMode(PROP_MOUSE_EDIT_SCALAR).autoData(&mtrl).name.text_style=&ts;
+            mtrl.prop.create(S, MemberDesc(MEMBER(Mtrl, scale)).setFunc(Scale, Scale)).range(1.0f/8, 8).mouseEditLinked(true).mouseEditMode(PROP_MOUSE_EDIT_SCALAR).autoData(&mtrl).text.text_style=&ts;
             region+=mtrl.t_original_size.create(Vec2(mtrl.name.rect().max.x+0.43f, 0-h*0.5f), TexSize(mtrl.original_size));
             region+=mtrl.t_scaled_size  .create(Vec2(mtrl.name.rect().max.x+0.66f, 0-h*0.5f));
             mtrl.prop.addTo(region,             Vec2(mtrl.name.rect().max.x+0.04f, 0), 0, h, 0.25f);

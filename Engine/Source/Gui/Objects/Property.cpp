@@ -108,7 +108,7 @@ Property& Property::create(C Str &name, C MemberDesc &md)
          }
       }break;
    }
-   T.name.create(name);
+   text.create(T.name=name);
    return T;
 }
 /******************************************************************************/
@@ -150,7 +150,7 @@ Property& Property::setColor()
      _value_type=GO_CUSTOM;
 
      _color    .create(this).desc(desc()); // try re-using existing description before deleting objects
-      New(_cp)->create(name()).func(Changed, T, true).hide();
+      New(_cp)->create(text()).func(Changed, T, true).hide();
 
       Delete(_win_io);
       checkbox .del();
@@ -232,6 +232,8 @@ Property& Property::mouseEditDel()
    if(button._func==(Ptr)MouseEdit)button.del();
    return T;
 }
+/******************************************************************************/
+Property& Property::display(C Str &name) {text.set(name); return T;}
 /******************************************************************************/
 C Str& Property::desc()C
 {
@@ -504,7 +506,7 @@ Property& Property::set(C Str &value, SET_MODE mode)
 /******************************************************************************/
 Bool Property::contains(C GuiObj *child)C
 {
-   if(child)return name.contains(child) || checkbox.contains(child) || textline.contains(child) || button.contains(child) || combobox.contains(child) || slider.contains(child) || _color.contains(child);
+   if(child)return text.contains(child) || checkbox.contains(child) || textline.contains(child) || button.contains(child) || combobox.contains(child) || slider.contains(child) || _color.contains(child);
    return false;
 }
 /******************************************************************************/
@@ -546,7 +548,7 @@ Property& Property::hide()
 {
    if(visible())
    {
-      name    .hide();
+      text    .hide();
       checkbox.hide();
       textline.hide();
       button  .hide();
@@ -560,7 +562,7 @@ Property& Property::show()
 {
    if(!visible())
    {
-      name    .show();
+      text    .show();
       checkbox.show();
       textline.show();
       button  .show();
@@ -571,8 +573,8 @@ Property& Property::show()
    return T;
 }
 Property& Property::visible      (Bool on)  {return on ? show() : hide();}
-Bool      Property::visible      (       )C {return name.visible();}
-Property& Property::visibleToggle(       )  {return name.visible() ? hide() : show();}
+Bool      Property::visible      (       )C {return text.visible();}
+Property& Property::visibleToggle(       )  {return text.visible() ? hide() : show();}
 /******************************************************************************/
 Property& Property::moveValue(C Vec2 &delta)
 {
@@ -591,12 +593,12 @@ Property& Property::move(C Vec2 &delta)
 {
    if(delta.any())
    {
-      name.move(delta);
+      text.move(delta);
       moveValue(delta);
    }
    return T;
 }
-Property& Property::pos(C Vec2 &pos) {return move(pos-name.pos());}
+Property& Property::pos(C Vec2 &pos) {return move(pos-text.pos());}
 Property& Property::close()
 {
    if(_cp)_cp->hide();
@@ -604,7 +606,7 @@ Property& Property::close()
 }
 Property& Property::enabled(Bool enabled)
 {
-   name    .enabled(enabled);
+   text    .enabled(enabled);
    checkbox.enabled(enabled);
    textline.enabled(enabled);
    button  .enabled(enabled);
@@ -616,7 +618,7 @@ Property& Property::enabled(Bool enabled)
 }
 Property& Property::parent(GuiObj &parent)
 {
-   parent+=name;
+   parent+=text;
    parent+=checkbox;
    parent+=textline;
    parent+=button;
@@ -767,8 +769,8 @@ Rect Property::addTo(GuiObj &parent, C Vec2 &pos, Flt text_width, Flt height, Fl
    Vec2 p=pos; p.y-=0.5f*height;
 
    // name
-   name.rect(p+Vec2(Lerp(text_width*0.5f, 0.0f, name.text_style ? name.text_style->align.x : 0), 0));
-   parent+=name;
+   text.rect(p+Vec2(Lerp(text_width*0.5f, 0.0f, text.text_style ? text.text_style->align.x : 0), 0));
+   parent+=text;
    p.x   +=text_width+0.01f;
 
    // checkbox
@@ -823,13 +825,13 @@ Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, 
    TextStylePtr ts=text_style; if(!ts && Gui.skin)ts=Gui.skin->text.text_style;
    Flt text_width=0,
        right     =left_up.x;
-   if(ts)FREPA(properties)MAX(text_width, ts->textWidth(properties[i].name()));
+   if(ts)FREPA(properties)MAX(text_width, ts->textWidth(properties[i].text()));
          FREPA(properties)
    {
       Vec2      pos =left_up;
       pos.y-=i*property_height;
       Property &prop=properties[i];
-      prop.name.text_style=ts;
+      prop.text.text_style=ts;
       MAX(right, prop.addTo(parent, pos, text_width, property_height, value_width).max.x);
    }
    return Rect(left_up.x, left_up.y-properties.elms()*property_height, right, left_up.y);
@@ -839,9 +841,9 @@ void SaveProperties(C Memx<Property> &properties, MemPtr<TextNode> nodes, Char s
 {
    FREPA(properties)
    {
-    C Property &prop=properties[i]; if(prop._value_type){C Str &name=prop.name(); if(name.is())
+    C Property &prop=properties[i]; if(prop._value_type){C Str &name=prop.name; if(name.is())
       {
-         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name(), name))same_names++;
+         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name, name))same_names++;
          Str temp=name; temp.replace(' ', space_replacement); if(same_names){temp+='@'; temp+=same_names;}
          GetNode(nodes, temp).value=prop.asText();
       }}
@@ -851,9 +853,9 @@ void LoadProperties(Memx<Property> &properties, C CMemPtr<TextNode> &nodes, Char
 {
    FREPA(properties)
    {
-      Property &prop=properties[i]; C Str &name=prop.name(); if(name.is())
+      Property &prop=properties[i]; C Str &name=prop.name; if(name.is())
       {
-         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name(), name))same_names++;
+         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name, name))same_names++;
          Str temp=name; temp.replace(' ', space_replacement); if(same_names){temp+='@'; temp+=same_names;}
          if(C TextNode *node=CFindNode(nodes, temp))prop.set(node->value, NO_SOUND);
       }
@@ -865,9 +867,9 @@ void SaveProperties(C Memx<Property> &properties, XmlNode &node, Char space_repl
    if(space_replacement==' ')space_replacement='\0'; // can't allow spaces in XML
    FREPA(properties)
    {
-    C Property &prop=properties[i]; if(prop._value_type && prop.name().is())
+    C Property &prop=properties[i]; if(prop._value_type && prop.name.is())
       {
-         Str param_name=Replace(prop.name(), ' ', space_replacement);
+         Str param_name=Replace(prop.name, ' ', space_replacement);
          if( param_name.is())node.getParam(param_name).value=prop.asText();
       }
    }
@@ -877,9 +879,9 @@ void LoadProperties(Memx<Property> &properties, C XmlNode &node, Char space_repl
    if(space_replacement==' ')space_replacement='\0'; // can't allow spaces in XML
    FREPA(properties)
    {
-      Property &prop=properties[i]; if(prop.name().is())
+      Property &prop=properties[i]; if(prop.name.is())
       {
-         Str param_name=Replace(prop.name(), ' ', space_replacement);
+         Str param_name=Replace(prop.name, ' ', space_replacement);
          if( param_name.is())if(C XmlParam *param=node.findParam(param_name))prop.set(param->value, NO_SOUND);
       }
    }

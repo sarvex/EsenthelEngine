@@ -448,8 +448,8 @@ if(full)
       Rect prop_rect=AddProperties(props, T, Vec2(0.01, -0.01), prop_height, 0.18, &ts); REPAO(props).autoData(this).changed(Changed); prop_rect.min.y-=0.01;
       if(anchor_p)anchor_p.combobox.resize(Vec2(0.11, 0));
       REPD(a, 3)REPD(i, 2)T+=rot[a][i].create(Rect_LU(rot_p[a].button.rect().ru()+Vec2(0.01+prop_height*i, 0), prop_height)).setImage(i ? "Gui/arrow_right_big.img" : "Gui/arrow_left_big.img").func(i ? Inc90 : Dec90, *rot_p[a]);
-      if(scale_normal){scale_normal.name.set("Scale Normal"); scale_normal.moveValue(Vec2(0.09, 0));}
-      if(keep_uv     ){keep_uv     .name.set("Keep UV"     ); keep_uv     .moveValue(Vec2(0.09, 0));}
+      if(scale_normal){scale_normal.display("Scale Normal"); scale_normal.moveValue(Vec2(0.09, 0));}
+      if(keep_uv     ){keep_uv     .display("Keep UV"     ); keep_uv     .moveValue(Vec2(0.09, 0));}
       if(!full)
       {
          T+=rescale_width    .create(Rect_LU(prop_rect.min.x, prop_rect.min.y, 0.29, elm_height), "Rescale Width to:").func(RescaleWidth  , T); T+=rescale_width_value .create(Rect_LU(rescale_width .rect().max.x+e, prop_rect.min.y, 0.09, elm_height), "1"); prop_rect.min.y-=prop_height;

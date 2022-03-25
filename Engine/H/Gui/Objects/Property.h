@@ -19,7 +19,8 @@ const_mem_addr struct Property // Class Member Gui Control !! must be stored in 
    Int                  real_precision      ; //             default=MAX_INT (auto-detect)
 
    MemberDesc md      ;
-   TextNoTest name    ;
+   Str        name    ;
+   TextNoTest text    ;
    CheckBox   checkbox;
    TextLine   textline;
    Button     button  ;
@@ -36,6 +37,8 @@ const_mem_addr struct Property // Class Member Gui Control !! must be stored in 
    Property& setSlider(                                             ); // set as slider type
 
    // get / set
+   Property& display(C Str &name);   C Str& display()C {return text();} // set/get property display name
+
    Property& desc(C Str &desc);   C Str& desc()C; // set/get property description
 
    Property& autoData(Ptr object);   Ptr autoData()C {return _auto_data;} // set/get automatic data setting

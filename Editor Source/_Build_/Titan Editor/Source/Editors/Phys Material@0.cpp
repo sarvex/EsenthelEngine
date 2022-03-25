@@ -132,10 +132,10 @@ PhysMtrlEditor PhysMtrlEdit;
       T+=redo  .create(Rect_LU(undo.rect().ru(), 0.05f, 0.05f)).func(Redo, T).focusable(false).desc("Redo"); redo.image="Gui/Misc/redo.img";
       T+=locate.create(Rect_LU(redo.rect().ru()+Vec2(0.01f, 0), 0.14f, 0.05f), "Locate").func(Locate, T).focusable(false).desc("Locate this element in the Project");
       // set text after creating properties so its length will not affect spacing
-      df ->name.set(S+"Default Material (Green) :");
-      dfs->name.set(S+"Friction Static: " +Physics.mtrl_default.frictionStatic ());
-      dfd->name.set(S+"Friction Dynamic: "+Physics.mtrl_default.frictionDynamic());
-      dfb->name.set(S+"Bounciness: "      +Physics.mtrl_default.bounciness     ());
+      df ->display(S+"Default Material (Green) :");
+      dfs->display(S+"Friction Static: " +Physics.mtrl_default.frictionStatic ());
+      dfd->display(S+"Friction Dynamic: "+Physics.mtrl_default.frictionDynamic());
+      dfb->display(S+"Bounciness: "      +Physics.mtrl_default.bounciness     ());
       T+=viewport.create(Draw); viewport.fov=PreviewFOV;
       rect(Rect_C(0, 0, Min(1.7f, D.w()*2), Min(1.12f, D.h()*2)));
       cam.setSpherical(Vec(0), 0, 0, 0, 24);

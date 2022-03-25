@@ -289,7 +289,7 @@ class PanelImageEditor : PropWin
       flt y=editor.prop_h*-0.5; FREPA(editor.props)
       {
          Property &prop=editor.props[i];
-         bool visible=(!editor.filter().is() || ContainsAll(prop.name(), editor.filter()));
+         bool visible=(!editor.filter().is() || ContainsAll(prop.display(), editor.filter()));
          prop.visible(visible); if(visible){prop.pos(Vec2(editor.prop_x, y)); y-=editor.prop_h;}
       }
    }

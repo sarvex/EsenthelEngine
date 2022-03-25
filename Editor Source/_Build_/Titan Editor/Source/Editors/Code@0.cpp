@@ -815,10 +815,10 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       p_image_portrait   ->move(Vec2(rect.w()  /3, h  ));
       p_image_landscape  ->move(Vec2(rect.w()*2/3, h*2));
       p_notification_icon->move(Vec2(rect.w()*2/3, h*7));
-      icon             .create(MEMBER(ElmApp, icon             ), MEMBER(ElmApp,              icon_time), T, Rect_LU(p_icon             ->name.rect().left()-Vec2(0, h/2), 0.3f));
-      image_portrait   .create(MEMBER(ElmApp, image_portrait   ), MEMBER(ElmApp,    image_portrait_time), T, Rect_LU(p_image_portrait   ->name.rect().left()-Vec2(0, h/2), 0.3f));
-      image_landscape  .create(MEMBER(ElmApp, image_landscape  ), MEMBER(ElmApp,   image_landscape_time), T, Rect_LU(p_image_landscape  ->name.rect().left()-Vec2(0, h/2), 0.3f));
-      notification_icon.create(MEMBER(ElmApp, notification_icon), MEMBER(ElmApp, notification_icon_time), T, Rect_LU(p_notification_icon->name.rect().left()-Vec2(0, h/2), 0.13f));
+      icon             .create(MEMBER(ElmApp, icon             ), MEMBER(ElmApp,              icon_time), T, Rect_LU(p_icon             ->text.rect().left()-Vec2(0, h/2), 0.3f));
+      image_portrait   .create(MEMBER(ElmApp, image_portrait   ), MEMBER(ElmApp,    image_portrait_time), T, Rect_LU(p_image_portrait   ->text.rect().left()-Vec2(0, h/2), 0.3f));
+      image_landscape  .create(MEMBER(ElmApp, image_landscape  ), MEMBER(ElmApp,   image_landscape_time), T, Rect_LU(p_image_landscape  ->text.rect().left()-Vec2(0, h/2), 0.3f));
+      notification_icon.create(MEMBER(ElmApp, notification_icon), MEMBER(ElmApp, notification_icon_time), T, Rect_LU(p_notification_icon->text.rect().left()-Vec2(0, h/2), 0.13f));
       clientRect(Rect_C(0, 0, 1.3f, -icon.rect().min.y+0.02f));
    }
    void AppPropsEditor::toGui()

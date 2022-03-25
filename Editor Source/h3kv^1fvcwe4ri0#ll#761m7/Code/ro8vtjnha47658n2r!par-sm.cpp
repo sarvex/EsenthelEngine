@@ -366,10 +366,10 @@ Property &mode=add("De-Atlased Objects", MEMBER(ConvertToDeAtlasClass, mode)).se
       if(gpc.visible && visible())
       {
          VecI2 size=finalSize();
-         if(sw)sw.name.set(S+"Source Width: " +source_rect.w());
-         if(sh)sh.name.set(S+"Source Height: "+source_rect.h());
-         if(w)w.name.set(S+"Width: " +size.x);
-         if(h)h.name.set(S+"Height: "+size.y);
+         if(sw)sw.display(S+"Source Width: " +source_rect.w());
+         if(sh)sh.display(S+"Source Height: "+source_rect.h());
+         if(w ) w.display(S+"Width: " +size.x);
+         if(h ) h.display(S+"Height: "+size.y);
       }
    }
 }

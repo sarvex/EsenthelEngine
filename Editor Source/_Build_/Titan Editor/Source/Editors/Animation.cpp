@@ -372,7 +372,7 @@ AnimEditor AnimEdit;
          obj->textline.resize(Vec2(h, 0));
          prop_max_x=r.max.x;
          T+=split.create(Rect_RU(r.max.x, r.max.y, 0.15f, 0.055f), "Split").func(Split, T).desc(S+"Split Animation\nKeyboard Shortcut: "+Kb.ctrlCmdName()+"+S");
-         T+=apply_speed.create(Rect_R(r.max.x, play->name.rect().centerY(), 0.23f, h), "Apply Speed").func(ApplySpeed, T).desc("Animation length/speed will be adjusted according to current \"Anim Speed\".");
+         T+=apply_speed.create(Rect_R(r.max.x, play->text.rect().centerY(), 0.23f, h), "Apply Speed").func(ApplySpeed, T).desc("Animation length/speed will be adjusted according to current \"Anim Speed\".");
          T+=edit.create(Rect_L(r.max.x/2, r.min.y, 0.17f, 0.055f), "Edit").func(Fullscreen, AnimEdit).focusable(false).desc(S+"Edit Animation KeyFrames\nKeyboard Shortcut: "+Kb.ctrlCmdName()+"+E");
          T+=locate.create(Rect_R(r.max.x/2-0.01f, r.min.y, 0.17f, 0.055f), "Locate").func(Locate, AnimEdit).focusable(false).desc("Locate this element in the Project");
          T+=viewport.create(Draw); viewport.fov=PreviewFOV;
@@ -387,7 +387,7 @@ AnimEditor AnimEdit;
       void AnimEditor::Preview::toGui()
       {
          super::toGui();
-         if(length)length->name.set(S+"Length: "+(anim() ? S+TextReal(anim()->length(), -2)+"s" : S));
+         if(length)length->display(S+"Length: "+(anim() ? S+TextReal(anim()->length(), -2)+"s" : S));
       }
       ::AnimEditor::Preview& AnimEditor::Preview::hide(            )  {if(!AnimEdit.fullscreen)AnimEdit.set(null); super::hide(); return T;}
       Rect     AnimEditor::Preview::sizeLimit(            )C {Rect r=super::sizeLimit(); r.min.set(1.0f, 0.9f); return r;}
@@ -397,7 +397,7 @@ AnimEditor AnimEdit;
          track   .rect(Rect(prop_max_x, -clientHeight(), clientWidth(), -clientHeight()+0.09f).extend(-0.02f));
          viewport.rect(Rect(prop_max_x, track.rect().max.y+0.01f, clientWidth(), 0).extend(-0.02f));
          event_op.move(Vec2(0, track.rect().min.y-event_op.rect().min.y));
-         if(event)event->name.pos(event_op.rect().lu()+Vec2(0, 0.025f));
+         if(event)event->text.pos(event_op.rect().lu()+Vec2(0, 0.025f));
          return T;
       }
       void AnimEditor::Preview::update(C GuiPC &gpc)
@@ -478,9 +478,9 @@ AnimEditor AnimEdit;
             refresh_needed=false;
             if(src)anim=*src;else anim.del();
             File f;
-            if(     file_size){anim.save(f.writeMem());      file_size->name.set(S+     "File Size: "+FileSizeKB(f.size()));}
+            if(     file_size){anim.save(f.writeMem());      file_size->display(S+     "File Size: "+FileSizeKB(f.size()));}
             optimizeDo(anim);
-            if(optimized_size){anim.save(f.reset   ()); optimized_size->name.set(S+"Optimized Size: "+FileSizeKB(f.size()));}
+            if(optimized_size){anim.save(f.reset   ()); optimized_size->display(S+"Optimized Size: "+FileSizeKB(f.size()));}
          }
          return preview ? &anim : src;
       }

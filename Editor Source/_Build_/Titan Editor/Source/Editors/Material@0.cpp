@@ -700,9 +700,9 @@ MaterialRegion MtrlEdit;
       {
          if(edit.smooth_map.is())
          {
-          //if(tweak){smooth.name.set("Smooth Tweak"); smooth.range(-1, 1);}else
-                     {smooth->name.set("Smoothness"  ); smooth->range( 0, 4);}
-         }else       {smooth->name.set("Smoothness"  ); smooth->range( 0, 1);}
+          //if(tweak){smooth.display("Smooth Tweak"); smooth.range(-1, 1);}else
+                     {smooth->display("Smoothness"  ); smooth->range( 0, 4);}
+         }else       {smooth->display("Smoothness"  ); smooth->range( 0, 1);}
       }
    }
    void MaterialRegion::create()

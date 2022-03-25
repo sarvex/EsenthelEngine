@@ -45,11 +45,11 @@ class VideoEditor : PropWin
    }
    void setInfo()
    {
-      if(width )width .name.set(S+"Width: " +video.width ());
-      if(height)height.name.set(S+"Height: "+video.height());
-      if(kbps  )kbps  .name.set(S+"Kbps: "  +DivRound(video.bitRate(), 1000));
-      if(fps   )fps   .name.set(S+"FPS: "   +TextReal(video.fps(), -1));
-      if(codec )codec .name.set(S+"Codec: " +video.codecName());
+      if(width )width .display(S+"Width: " +video.width ());
+      if(height)height.display(S+"Height: "+video.height());
+      if(kbps  )kbps  .display(S+"Kbps: "  +DivRound(video.bitRate(), 1000));
+      if(fps   )fps   .display(S+"FPS: "   +TextReal(video.fps(), -1));
+      if(codec )codec .display(S+"Codec: " +video.codecName());
    }
 
    virtual void update(C GuiPC &gpc)override

@@ -225,7 +225,7 @@ class NewLodClass : ClosableWindow
       stop=true;
       change_id++;
       finished=false;
-      if(quality)quality.name.set(S+"Quality: Calculating..");
+      if(quality)quality.display(S+"Quality: Calculating..");
    }
 
    static void Import  (C Str &name, ptr=null) {ImportEx(name, 0xFFFF);}
@@ -382,7 +382,7 @@ draw_at_distance_prop=&props.New().create("Draw at Distance", MEMBER(NewLodClass
                          f=VisibleTrisTotal(ObjEdit.mesh);
                      flt q=Avg(v ? flt(VisibleVtxs     (simplified))/v : 1,
                                f ? flt(VisibleTrisTotal(simplified))/f : 1);
-                     quality.name.set(S+"Quality: "+Round(q*100)+'%');
+                     quality.display(S+"Quality: "+Round(q*100)+'%');
                   }
                }
             }

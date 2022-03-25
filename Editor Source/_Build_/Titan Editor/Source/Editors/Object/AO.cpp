@@ -41,7 +41,7 @@ MeshAOClass MeshAO;
    {
       change_id++;
       finished=false;
-      if(info)info->name.set("Processing..");
+      if(info)info->display("Processing..");
    }
    bool MeshAOClass::needRebuild()C {return src_id!=baked_src_id || change_id!=baked_change_id;}
    bool MeshAOClass::Process(Thread &thread) {return ((MeshAOClass*)thread.user)->process();}
@@ -130,7 +130,7 @@ MeshAOClass MeshAO;
                if(baked_change_id==change_id)
                {
                   finished=true;
-                  if(info)info->name.clear();
+                  if(info)info->text.clear();
                }
             }
          }

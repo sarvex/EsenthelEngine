@@ -50,7 +50,7 @@ class MeshAOClass : ClosableWindow
    {
       change_id++;
       finished=false;
-      if(info)info.name.set("Processing..");
+      if(info)info.display("Processing..");
    }
 
    bool needRebuild()C {return src_id!=baked_src_id || change_id!=baked_change_id;}
@@ -143,7 +143,7 @@ class MeshAOClass : ClosableWindow
                if(baked_change_id==change_id)
                {
                   finished=true;
-                  if(info)info.name.clear();
+                  if(info)info.text.clear();
                }
             }
          }
