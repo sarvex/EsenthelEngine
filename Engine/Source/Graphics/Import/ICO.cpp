@@ -93,6 +93,12 @@ Bool Image::ExportICO(File &f)C
             VecI2 size=src->size()/2; if(size.max()<16)break;
             if(src->copyTry(temp, Max(1, size.x), Max(1, size.y), 1, ImageTypeUncompressed(src->type()), IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT))src=&temp;else break;
          }
+#if 0 // fix for Steam, after export, open in VS and save as
+   if(src->copyTry(temp, -1, -1, 1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT)) // ICO uses BGRA
+   {
+      src=&temp; if(src->ExportBMPRaw(mip.data.writeMem(), 4, true)){mip.size=src->size(); full_size_included=true; continue;}
+   }
+#endif
          if(src->ExportPNG(mip.data.writeMem(), 1)){mip.size=src->size(); full_size_included=true;}else mip.data.del();
       }
    }

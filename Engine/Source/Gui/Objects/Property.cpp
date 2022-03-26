@@ -763,6 +763,7 @@ Property& Property::funcImmediate(Bool immediate)
 if(_cp)_cp->funcImmediate(immediate);
    return T;
 }
+static const Flt NameValueSpace=0.01f;
 Rect Property::addTo(GuiObj &parent, C Vec2 &pos, Flt text_width, Flt height, Flt value_width)
 {
    Flt  value_height=height*0.92f;
@@ -771,7 +772,7 @@ Rect Property::addTo(GuiObj &parent, C Vec2 &pos, Flt text_width, Flt height, Fl
    // name
    text.rect(p+Vec2(Lerp(text_width*0.5f, 0.0f, text.text_style ? text.text_style->align.x : 0), 0));
    parent+=text;
-   p.x   +=text_width+0.01f;
+   p.x   +=text_width+NameValueSpace;
 
    // checkbox
    if(checkbox.is())
@@ -820,13 +821,14 @@ Rect Property::addTo(GuiObj &parent, C Vec2 &pos, Flt text_width, Flt height, Fl
 /******************************************************************************/
 // MAIN
 /******************************************************************************/
-Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, Flt property_height, Flt value_width, C TextStylePtr &text_style)
+Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, Flt property_height, Flt value_width, C TextStylePtr &text_style, Flt *parent_width)
 {
    TextStylePtr ts=text_style; if(!ts && Gui.skin)ts=Gui.skin->text.text_style;
    Flt text_width=0,
        right     =left_up.x;
    if(ts)FREPA(properties)MAX(text_width, ts->textWidth(properties[i].text()));
-         FREPA(properties)
+   if(parent_width)MIN(value_width, *parent_width-left_up.x-text_width-NameValueSpace);
+   FREPA(properties)
    {
       Vec2      pos =left_up;
       pos.y-=i*property_height;
@@ -843,7 +845,7 @@ void SaveProperties(C Memx<Property> &properties, MemPtr<TextNode> nodes, Char s
    {
     C Property &prop=properties[i]; if(prop._value_type){C Str &name=prop.name; if(name.is())
       {
-         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name, name))same_names++;
+         Int same_names=0; if(handle_same_names)REPD(j, i){C Property &p=properties[j]; if(p._value_type && Equal(p.name, name))same_names++;}
          Str temp=name; temp.replace(' ', space_replacement); if(same_names){temp+='@'; temp+=same_names;}
          GetNode(nodes, temp).value=prop.asText();
       }}
@@ -853,12 +855,12 @@ void LoadProperties(Memx<Property> &properties, C CMemPtr<TextNode> &nodes, Char
 {
    FREPA(properties)
    {
-      Property &prop=properties[i]; C Str &name=prop.name; if(name.is())
+      Property &prop=properties[i]; if(prop._value_type){C Str &name=prop.name; if(name.is())
       {
-         Int same_names=0; if(handle_same_names)REPD(j, i)if(Equal(properties[j].name, name))same_names++;
+         Int same_names=0; if(handle_same_names)REPD(j, i){C Property &p=properties[j]; if(p._value_type && Equal(p.name, name))same_names++;}
          Str temp=name; temp.replace(' ', space_replacement); if(same_names){temp+='@'; temp+=same_names;}
          if(C TextNode *node=CFindNode(nodes, temp))prop.set(node->value, NO_SOUND);
-      }
+      }}
    }
 }
 /******************************************************************************/
@@ -879,7 +881,7 @@ void LoadProperties(Memx<Property> &properties, C XmlNode &node, Char space_repl
    if(space_replacement==' ')space_replacement='\0'; // can't allow spaces in XML
    FREPA(properties)
    {
-      Property &prop=properties[i]; if(prop.name.is())
+      Property &prop=properties[i]; if(prop._value_type && prop.name.is())
       {
          Str param_name=Replace(prop.name, ' ', space_replacement);
          if( param_name.is())if(C XmlParam *param=node.findParam(param_name))prop.set(param->value, NO_SOUND);
