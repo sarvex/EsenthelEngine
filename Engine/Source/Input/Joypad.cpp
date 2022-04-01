@@ -465,6 +465,14 @@ void Joypad::acquire(Bool on)
 void Joypad::sensors(Bool calculate) {}
 #endif
 /******************************************************************************/
+void ApplyDeadZone(Vec2 &v, Flt dead_zone)
+{
+   Flt len =v.length();
+   if( len<=dead_zone)v.zero();else // zero
+   if( len>=1        )v/=len  ;else // normalize
+                      v*=LerpR(dead_zone, 1, len)/len; // scale from dead_zone..1 -> 0..1
+}
+/******************************************************************************/
 Bool JoypadSensors() {return CalculateJoypadSensors;}
 void JoypadSensors(Bool calculate)
 {

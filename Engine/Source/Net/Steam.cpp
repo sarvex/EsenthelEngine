@@ -45,11 +45,13 @@ static struct SteamCallbacks // !! do not remove this !!
    STEAM_CALLBACK(SteamCallbacks, MicroTxnAuthorizationResponse, MicroTxnAuthorizationResponse_t, m_MicroTxnAuthorizationResponse);
    STEAM_CALLBACK(SteamCallbacks, PersonaStateChange           ,            PersonaStateChange_t, m_PersonaStateChange           );
    STEAM_CALLBACK(SteamCallbacks, AvatarImageLoaded            ,             AvatarImageLoaded_t, m_AvatarImageLoaded            );
+   STEAM_CALLBACK(SteamCallbacks, GameOverlayActivated         ,          GameOverlayActivated_t, m_GameOverlayActivated         );
 
    SteamCallbacks() : // this will register the callbacks using Steam API, using callbacks requires 'SteamUpdate' to be called
       m_MicroTxnAuthorizationResponse(this, &SteamCallbacks::MicroTxnAuthorizationResponse),
       m_PersonaStateChange           (this, &SteamCallbacks::PersonaStateChange           ),
-      m_AvatarImageLoaded            (this, &SteamCallbacks::AvatarImageLoaded            )
+      m_AvatarImageLoaded            (this, &SteamCallbacks::AvatarImageLoaded            ),
+      m_GameOverlayActivated         (this, &SteamCallbacks::GameOverlayActivated         )
    {}
 }SC;
 
@@ -94,6 +96,10 @@ void SteamCallbacks::PersonaStateChange(PersonaStateChange_t *change)
 void SteamCallbacks::AvatarImageLoaded(AvatarImageLoaded_t *avatar) // called when 'GetLargeFriendAvatar' was requested but not yet available, simply notify user with callback that new avatar is available for a user
 {
    if(avatar)if(auto callback=Steam.friend_state_changed)callback(avatar->m_steamID.ConvertToUint64(), SteamWorks::FRIEND_STATE_CHANGE_Avatar);
+}
+void SteamCallbacks::GameOverlayActivated(GameOverlayActivated_t *data)
+{
+   if(data)Steam._overlay_visible=data->m_bActive;
 }
 #endif
 SteamWorks Steam;

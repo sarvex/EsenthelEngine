@@ -182,6 +182,8 @@ private:
 };
 extern MemtN<Joypad, 4> Joypads;
 /******************************************************************************/
+void ApplyDeadZone(Vec2 &v, Flt dead_zone); // apply dead zone to analog direction vector, 'dead_zone'=0..1, this can be optionally called per-frame for 'Joypad.dir_a' vectors
+
 void JoypadSensors(Bool calculate); // if want Joypad sensors to be calculated (accelerometer, gyroscope, orientation)
 Bool JoypadSensors();               // if want Joypad sensors to be calculated (accelerometer, gyroscope, orientation)
 

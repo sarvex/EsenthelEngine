@@ -99,6 +99,7 @@ struct SteamWorks
    UInt        curTimeS              (            )C; // get real         time in current moment (seconds since application started, NOT modified by game 'speed', NOT affected by 'smooth' 'skipUpdate' and application pauses)
    Bool        overlayAvailable      (            )C; // get if "Steam Game Overlay" can be displayed to the user if needed (it is required for making any purchases), please note that the overlay could take a few seconds to start, so this function will initially return false while the overlay is loading
    Bool        overlayAvailableMsgBox(            )C; // this method works like 'overlayAvailable', however on failure it additionally displays a message box, instructing the user to enable the Overlay through Steam Settings
+   Bool        overlayVisible        (            )C {return _overlay_visible;} // get if "Steam Game Overlay" is currently visible
    Bool        drmExit               (            )C; // perform a DRM (Digital Rights Management) check if the app should be closed. Calling this method is optional. If called then this method should be used in 'InitPre' function in the following way: "if(Steam.drmExit())return;" This method performs a check if the application was started by Steam Client. If it was, then false is returned and the app can continue to operate. If it was not started by Steam Client, then: APP_EXIT_IMMEDIATELY is added to the 'App.flag' (so that the App will exit after 'InitPre'), true is returned so you can return from 'InitPre' immediately, Steam Client will restart the app. If you're using "Steam DRM Wrapper" described in https://partner.steamgames.com/documentation/drm then you don't need this check.
 
    // friends
@@ -146,7 +147,7 @@ private:
       UInt  type;
       ULong order_id;
    };
-   Bool            _initialized=false;
+   Bool            _initialized=false, _overlay_visible=false;
    UInt            _start_time_s=0;
    Str8            _web_api_key;
    Memx<Operation> _operations;
