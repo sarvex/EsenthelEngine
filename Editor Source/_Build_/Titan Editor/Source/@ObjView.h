@@ -586,10 +586,10 @@ public:
    /////////////////////////////////////////
    enum PHYS_MODE
    {
-      PHYS_DEL,
       PHYS_MOVE,
       PHYS_ROT,
       PHYS_SCALE,
+      PHYS_DEL,
       PHYS_TOGGLE,
    };
    static cchar8 *phys_desc[]
@@ -602,8 +602,8 @@ public:
 
    static void NewBox    (ObjView &editor);
    static void NewBall   (ObjView &editor);
-   static void NewCapsule(ObjView &editor);
    static void NewTube   (ObjView &editor);
+   static void NewCapsule(ObjView &editor);
    static void Convex8   (ObjView &editor);
    static void Convex16  (ObjView &editor);
    static void Convex24  (ObjView &editor);
@@ -612,6 +612,7 @@ public:
    static void PhysMesh  (ObjView &editor);
    static void PhysDel   (ObjView &editor);
    static void PhysCopy  (ObjView &editor);
+   static void PhysGround(ObjView &editor);
 
    static Str  PhysDensity(C ObjView &editor             );
    static void PhysDensity(  ObjView &editor, C Str &text);
@@ -622,6 +623,7 @@ public:
    void physSetConvex(int max_vtxs);
    void physSetMesh();
    void physCopy();
+   void physGround();
    void physDel();   
    void createPhys();
    void setPhysPartMatrix();

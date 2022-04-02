@@ -3923,18 +3923,18 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    /////////////////////////////////////////
    enum PHYS_MODE
    {
-      PHYS_DEL,
       PHYS_MOVE,
       PHYS_ROT,
       PHYS_SCALE,
+      PHYS_DEL,
       PHYS_TOGGLE,
    }
    static cchar8 *phys_desc[]=
    {
-      "-1",
       "  ",     // move
       "  ",     // rot
       "  ",     // scale
+      "-1",
       "Toggle Parts", // toggle
    };
 
@@ -3943,10 +3943,19 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
 
    static void PhysChanged(ObjView &editor) {if(editor.phys_tabs()==PHYS_DEL)editor.setPhys(-1);}
 
-   static void NewBox    (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("box"    ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      {CacheLock cl(PhysBodies); editor.phys->parts.New().create(OBox(Box(Max(box.w(), 0.01), Max(box.h(), 0.01), Max(box.d(), 0.01), box.center()))); editor.phys->setBox();} editor.setChangedPhys();}}
-   static void NewBall   (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("ball"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Ball ball=m; MAX(ball.r , 0.005); {CacheLock cl(PhysBodies); editor.phys->parts.New().create(ball                                                                               ); editor.phys->setBox();} editor.setChangedPhys();}}
-   static void NewCapsule(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      {CacheLock cl(PhysBodies); editor.phys->parts.New().create(Capsule(Max(box.xz().size().max()/2, 0.005), Max(box.h(), 0.01), box.center())     ); editor.phys->setBox();} editor.setChangedPhys();}}
-   static void NewTube   (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("tube"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      {CacheLock cl(PhysBodies); editor.phys->parts.New().create(Tube   (Max(box.xz().size().max()/2, 0.005), Max(box.h(), 0.01), box.center())     ); editor.phys->setBox();} editor.setChangedPhys();}}
+   static void NewBox    (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("box"    ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      OBox    obox   (Box(Max(box.w(), 0.01), Max(box.h(), 0.01), Max(box.d(), 0.01), box.center())); {CacheLock cl(PhysBodies); editor.phys->parts.New().create(obox   ); editor.phys->setBox();} editor.setChangedPhys();}}
+   static void NewBall   (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("ball"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Ball ball=m; MAX(ball.r , 0.005);                                                                                                 {CacheLock cl(PhysBodies); editor.phys->parts.New().create(ball   ); editor.phys->setBox();} editor.setChangedPhys();}}
+   static void NewTube   (ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("tube"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      Tube    tube   (Max(box.xz().size().max()/2, 0.005), Max(box.h(), 0.01), box.center());         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(tube   ); editor.phys->setBox();} editor.setChangedPhys();}}
+   static void NewCapsule(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;
+      if(Kb.ctrl() || Kb.shift())MAX(box.min.y, 0);
+      if(Kb.ctrl()              )box-=box.center().x0z();
+      Capsule capsule;
+      if(Kb.shift())capsule.set(Max(box.size().xy  .max()/2, 0.005), Max(box.d(), 0.01), box.center(), Vec(0, 0, 1));
+      else          capsule.set(Max(box.size().xz().max()/2, 0.005), Max(box.h(), 0.01), box.center());
+      {CacheLock cl(PhysBodies); editor.phys->parts.New().create(capsule); editor.phys->setBox();}
+      editor.setChangedPhys();
+      }
+   }
    static void Convex8   (ObjView &editor) {editor.physSetConvex( 8);}
    static void Convex16  (ObjView &editor) {editor.physSetConvex(16);}
    static void Convex24  (ObjView &editor) {editor.physSetConvex(24);}
@@ -3955,6 +3964,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    static void PhysMesh  (ObjView &editor) {editor.physSetMesh  ();}
    static void PhysDel   (ObjView &editor) {editor.physDel      ();}
    static void PhysCopy  (ObjView &editor) {editor.physCopy     ();}
+   static void PhysGround(ObjView &editor) {editor.physGround   ();}
 
    static Str  PhysDensity(C ObjView &editor             ) {return editor.phys ? editor.phys->density : 1;}
    static void PhysDensity(  ObjView &editor, C Str &text)
@@ -4017,6 +4027,15 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
          setChangedPhys();
       }
    }
+   void physGround()
+   {
+      if(phys && InRange(sel_phys, phys->parts) && phys->parts[sel_phys].type()==PHYS_SHAPE)
+      {
+         phys_undos.set("ground");
+         {CacheLock cl(PhysBodies); Shape &shape=phys->parts[sel_phys].shape; shape-=Vec(0, Box(shape).min.y, 0); phys->setBox();}
+         setChangedPhys();
+      }
+   }
    void physDel() {if(phys){phys_undos.set("del"); CacheLock cl(PhysBodies); phys->del(); setChangedPhys(); setPhys(-1);}}
    void createPhys()
    {
@@ -4033,7 +4052,8 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
 
       {
          Node<MenuElm> n;
-         n.New().create("Copy", PhysCopy, T).kbsc(KbSc(KB_D, KBSC_CTRL_CMD)).desc("Copy selected physical parts");
+         n.New().create("Copy"           , PhysCopy  , T).kbsc(KbSc(KB_D, KBSC_CTRL_CMD)).desc("Copy selected physical parts");
+         n.New().create("Align To Ground", PhysGround, T).kbsc(KbSc(KB_G, KBSC_CTRL_CMD)).desc("Align selected physical parts to ground");
          parent+=phys_ops.create(Rect_LU(phys_tabs.rect().ru(), d), n).focusable(false); phys_ops.flag|=COMBOBOX_CONST_TEXT;
       }
 
