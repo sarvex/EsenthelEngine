@@ -663,6 +663,7 @@ Bool ToFullScreenRect(C BallM &ball, Rect &rect)
 }
 Bool ToScreenRect(C Capsule &capsule, Rect &rect)
 {
+   if(capsule.isBall())return ToScreenRect(Ball(capsule), rect);
    if(!FrustumMain(capsule))return false;
    if(Cuts(CamMatrix.pos, capsule)){rect=D.viewRect(); return true;}
 #if 1
@@ -726,6 +727,7 @@ Bool ToScreenRect(C Capsule &capsule, Rect &rect)
 }
 Bool ToScreenRect(C CapsuleM &capsule, Rect &rect)
 {
+   if(capsule.isBall())return ToScreenRect(BallM(capsule), rect);
    if(!FrustumMain(capsule))return false;
    if(Cuts(CamMatrix.pos, capsule)){rect=D.viewRect(); return true;}
    Flt   l, s, c;

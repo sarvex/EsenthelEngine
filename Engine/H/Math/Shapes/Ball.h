@@ -36,8 +36,8 @@ struct Ball // Ball Shape
    friend Ball operator/ (C Ball &ball, C Matrix  &m) {return Ball(ball)/=m;}
 
    // get
-   Flt area  ()C {return (PI*4  )*r*r  ;} // get surface area
-   Flt volume()C {return (PI*4/3)*r*r*r;} // get volume
+   Flt area  ()C {return (PI*4  )*Sqr (r);} // get surface area
+   Flt volume()C {return (PI*4/3)*Cube(r);} // get volume
 
    Vec nearest(C Vec &normal)C; // get nearest point on ball towards normal
 
@@ -75,8 +75,9 @@ struct BallM // Ball Shape (mixed precision)
 
    BallM& extend(Flt e) {r+=e; return T;} // extend
 
-   BallM() {}
-   BallM(Flt r, C VecD &pos=VecDZero) {set(r, pos);}
+              BallM() {}
+              BallM(Flt r, C VecD &pos=VecDZero) {set(r, pos);}
+   CONVERSION BallM(C CapsuleM &capsule);
 };
 /******************************************************************************/
 struct BallD // Ball Shape (double precision)

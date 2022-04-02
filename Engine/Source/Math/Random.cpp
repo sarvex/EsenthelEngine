@@ -517,6 +517,7 @@ Vec Randomizer::operator()(C Ball &ball, Bool inside)
 /******************************************************************************/
 Vec Randomizer::operator()(C Capsule &capsule, Bool inside)
 {
+   if(capsule.isBall())return T(Ball(capsule), inside);
    Flt c, s;
    if(inside){c=capsule.volume(); s=Ball(capsule.r).volume();}
    else      {c=capsule.area  (); s=Ball(capsule.r).area  ();}

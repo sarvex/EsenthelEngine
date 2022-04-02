@@ -30,11 +30,12 @@ Ball& Ball::setAnimated(C Extent &ext, C AnimatedSkeleton &anim_skel)
    return T;
 }
 /******************************************************************************/
-Ball::Ball(C Extent  &ext    ) {set(     ext.ext   .length()     , ext    .pos     );}
-Ball::Ball(C Box     &box    ) {set(     box.size().length()*0.5f, box    .center());}
-Ball::Ball(C OBox    &obox   ) {set(obox.box.size().length()*0.5f, obox   .center());}
-Ball::Ball(C Capsule &capsule) {set(              capsule.ballR(), capsule.pos     );}
-Ball::Ball(C Shape   &shape  )
+Ball ::Ball (C Extent   &ext    ) {set(     ext.ext   .length()     , ext    .pos     );}
+Ball ::Ball (C Box      &box    ) {set(     box.size().length()*0.5f, box    .center());}
+Ball ::Ball (C OBox     &obox   ) {set(obox.box.size().length()*0.5f, obox   .center());}
+Ball ::Ball (C Capsule  &capsule) {set(          capsule.ballRSafe(), capsule.pos     );}
+BallM::BallM(C CapsuleM &capsule) {set(          capsule.ballRSafe(), capsule.pos     );}
+Ball ::Ball (C Shape    &shape  )
 {
    switch(shape.type)
    {
