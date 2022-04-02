@@ -33,7 +33,7 @@ Ball& Ball::setAnimated(C Extent &ext, C AnimatedSkeleton &anim_skel)
 Ball::Ball(C Extent  &ext    ) {set(     ext.ext   .length()     , ext    .pos     );}
 Ball::Ball(C Box     &box    ) {set(     box.size().length()*0.5f, box    .center());}
 Ball::Ball(C OBox    &obox   ) {set(obox.box.size().length()*0.5f, obox   .center());}
-Ball::Ball(C Capsule &capsule) {set(               capsule.h*0.5f, capsule.pos     );}
+Ball::Ball(C Capsule &capsule) {set(              capsule.ballR(), capsule.pos     );}
 Ball::Ball(C Shape   &shape  )
 {
    switch(shape.type)

@@ -62,6 +62,7 @@ struct Ball;
 struct BallM;
 struct BallD;
 struct Capsule;
+struct CapsuleM;
 struct Tube;
 struct Torus;
 struct Cone;

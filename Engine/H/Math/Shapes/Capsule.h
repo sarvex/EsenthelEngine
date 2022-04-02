@@ -30,7 +30,8 @@ struct Capsule // Capsule Shape
 
    Vec nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
-   Bool isBall()C {return h<=r*2;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
+   Bool isBall()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
+   Flt  ballR ()C {return Max(r, h*0.5f);} // radius used for ball
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description
 
@@ -95,7 +96,8 @@ struct CapsuleM // Capsule Shape (mixed precision)
 
    VecD nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
-   Bool isBall()C {return h<=r*2;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
+   Bool isBall()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
+   Flt  ballR ()C {return Max(r, h*0.5f);} // radius used for ball
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description
 

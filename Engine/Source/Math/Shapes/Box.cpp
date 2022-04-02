@@ -4,25 +4,26 @@ namespace EE{
 /******************************************************************************/
 Extent::Extent(C Box &box) {ext=box.size()*0.5f; pos=box.min+ext;}
 
-Box ::Box (C Rect    &rect   ) {min.set(rect.min           , 0); max.set(rect.max           , 0);}
-Box ::Box (C Circle  &circle ) {min.set(circle.pos-circle.r, 0); max.set(circle.pos+circle.r, 0);}
-Box ::Box (C Edge    &edge   ) {from(edge.p, Elms(edge.p));}
-BoxD::BoxD(C EdgeD   &edge   ) {from(edge.p, Elms(edge.p));}
-Box ::Box (C Tri     &tri    ) {from(tri .p, Elms(tri .p));}
-BoxD::BoxD(C TriD    &tri    ) {from(tri .p, Elms(tri .p));}
-Box ::Box (C Quad    &quad   ) {from(quad.p, Elms(quad.p));}
-BoxD::BoxD(C QuadD   &quad   ) {from(quad.p, Elms(quad.p));}
-Box ::Box (C BoxD    &box    ) {min=box.min; max=box.max;}
-BoxD::BoxD(C Box     &box    ) {min=box.min; max=box.max;}
-Box ::Box (C BoxI    &box    ) {min=box.min; max=box.max;}
-Box ::Box (C Extent  &ext    ) {min=ext.min(); max=ext.max();}
-Box ::Box (C Ball    &ball   ) {set (ball.r, ball.pos);}
-BoxD::BoxD(C BallM   &ball   ) {set (ball.r, ball.pos);}
-Box ::Box (C Capsule &capsule) {from(capsule.ballDPos(), capsule.ballUPos()); extend (capsule.r);}
-Box ::Box (C Tube    &tube   ) {from(tube   .bottom  (), tube   .top     ()); extendX(CosSin(tube .up.x)*tube.r         ).extendY(CosSin(tube .up.y)*tube.r         ).extendZ(CosSin(tube .up.z)*tube.r         );}
-Box ::Box (C Torus   &torus  ) {T=torus.pos;                                  extendX(CosSin(torus.up.x)*torus.R+torus.r).extendY(CosSin(torus.up.y)*torus.R+torus.r).extendZ(CosSin(torus.up.z)*torus.R+torus.r);}
-Box ::Box (C Pyramid &pyramid) {Vec points[5]; pyramid.toCorners(points); from(points, Elms(points));}
-Box ::Box (C OBox    &obox   )
+Box ::Box (C Rect     &rect   ) {min.set(rect.min           , 0); max.set(rect.max           , 0);}
+Box ::Box (C Circle   &circle ) {min.set(circle.pos-circle.r, 0); max.set(circle.pos+circle.r, 0);}
+Box ::Box (C Edge     &edge   ) {from(edge.p, Elms(edge.p));}
+BoxD::BoxD(C EdgeD    &edge   ) {from(edge.p, Elms(edge.p));}
+Box ::Box (C Tri      &tri    ) {from(tri .p, Elms(tri .p));}
+BoxD::BoxD(C TriD     &tri    ) {from(tri .p, Elms(tri .p));}
+Box ::Box (C Quad     &quad   ) {from(quad.p, Elms(quad.p));}
+BoxD::BoxD(C QuadD    &quad   ) {from(quad.p, Elms(quad.p));}
+Box ::Box (C BoxD     &box    ) {min=box.min; max=box.max;}
+BoxD::BoxD(C Box      &box    ) {min=box.min; max=box.max;}
+Box ::Box (C BoxI     &box    ) {min=box.min; max=box.max;}
+Box ::Box (C Extent   &ext    ) {min=ext.min(); max=ext.max();}
+Box ::Box (C Ball     &ball   ) {                    set(        ball.r , ball   .pos);}
+BoxD::BoxD(C BallM    &ball   ) {                    set(        ball.r , ball   .pos);}
+Box ::Box (C Capsule  &capsule) {if(capsule.isBall())set(capsule.ballR(), capsule.pos);else{from(capsule.ballDPos(), capsule.ballUPos()); extend(capsule.r);}}
+BoxD::BoxD(C CapsuleM &capsule) {if(capsule.isBall())set(capsule.ballR(), capsule.pos);else{from(capsule.ballDPos(), capsule.ballUPos()); extend(capsule.r);}}
+Box ::Box (C Tube     &tube   ) {                                                           from(tube   .bottom  (), tube   .top     ()); extendX(CosSin(tube .up.x)*tube.r         ).extendY(CosSin(tube .up.y)*tube.r         ).extendZ(CosSin(tube .up.z)*tube.r         );}
+Box ::Box (C Torus    &torus  ) {T=torus.pos;                                                                                             extendX(CosSin(torus.up.x)*torus.R+torus.r).extendY(CosSin(torus.up.y)*torus.R+torus.r).extendZ(CosSin(torus.up.z)*torus.R+torus.r);}
+Box ::Box (C Pyramid  &pyramid) {Vec points[5]; pyramid.toCorners(points); from(points, Elms(points));}
+Box ::Box (C OBox     &obox   )
 {
    Vec size=obox.box.size();
     min=max=obox.box.min*obox.matrix;

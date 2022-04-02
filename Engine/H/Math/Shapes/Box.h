@@ -222,11 +222,12 @@ struct BoxD // Box Shape (double precision)
               BoxD(  Dbl    min_x, Dbl min_y, Dbl min_z, Dbl max_x, Dbl max_y, Dbl max_z) {set(min_x, min_y, min_z, max_x, max_y, max_z);}
               BoxD(  Dbl    r,               C VecD &pos=VecDZero                       ) {set(r,       pos                            );}
               BoxD(  Dbl    w, Dbl h, Dbl d, C VecD &pos=VecDZero                       ) {set(w, h, d, pos                            );}
-   CONVERSION BoxD(C EdgeD &edge);
-   CONVERSION BoxD(C TriD  &tri );
-   CONVERSION BoxD(C QuadD &quad);
-   CONVERSION BoxD(C Box   &box );
-   CONVERSION BoxD(C BallM &ball);
+   CONVERSION BoxD(C EdgeD    &edge   );
+   CONVERSION BoxD(C TriD     &tri    );
+   CONVERSION BoxD(C QuadD    &quad   );
+   CONVERSION BoxD(C Box      &box    );
+   CONVERSION BoxD(C BallM    &ball   );
+   CONVERSION BoxD(C CapsuleM &capsule);
 };
 /******************************************************************************/
 struct BoxI // Box Shape (integer)
