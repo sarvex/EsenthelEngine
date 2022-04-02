@@ -110,12 +110,12 @@ Capsule& Capsule::setEdge(Flt r, C Vec &from, C Vec &to)
 /******************************************************************************/
 Vec Capsule::nearest(C Vec &normal)C
 {
-   return isBall() ? pos - normal*ballR()
+   return isBall() ? pos - normal*ballRFast()
                    : pos - normal*r - up*( Sign(Dot(up, normal))*(h*0.5f-r) );
 }
 VecD CapsuleM::nearest(C Vec &normal)C
 {
-   return isBall() ? pos - normal*ballR()
+   return isBall() ? pos - normal*ballRFast()
                    : pos - normal*r - up*( Sign(Dot(up, normal))*(h*0.5f-r) );
 }
 /******************************************************************************/
@@ -132,22 +132,22 @@ void Capsule::draw(C Color &color, Bool fill, Int resolution)C
 /******************************************************************************/
 Flt Dist(C Vec &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-                             if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballR());
-   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up; return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r      ); // 'DistPointEdge' is safe in case edge is zero length
+                             if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballRFast());
+   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up; return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r          ); // 'DistPointEdge' is safe in case edge is zero length
 }
 Flt Dist(C Edge &edge, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballR()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballRFast()
                                   : Dist(capsule.ballEdge(), edge)-capsule.r);
 }
 Flt Dist(C TriN &tri, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , tri)-capsule.ballR()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , tri)-capsule.ballRFast()
                                   : Dist(capsule.ballEdge(), tri)-capsule.r);
 }
 Flt Dist(C Box &box, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , box)-capsule.ballR()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , box)-capsule.ballRFast()
                                   : Dist(capsule.ballEdge(), box)-capsule.r);
 }
 Flt Dist(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"

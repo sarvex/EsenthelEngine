@@ -16,11 +16,11 @@ struct Capsule // Capsule Shape
    Capsule& setEdge(Flt r, C Vec &from, C Vec &to); // 'from' and 'to' are the bottom and top points of capsule inner edge
 
    // get
-   Flt area  ()C {return PI2*r*   h            ;} // get surface area
-   Flt volume()C {return PI *r*r*(h-r*(2.0f/3));} // get volume
+   Flt   areaCapsule()C {return PI2*r*   h            ;} // get surface area, can be used if you know that this is a capsule and not a ball "!isBall"
+   Flt volumeCapsule()C {return PI *r*r*(h-r*(2.0f/3));} // get volume      , can be used if you know that this is a capsule and not a ball "!isBall"
 
-   Flt   areaSafe()C {return isBall() ? (PI*4  )*Sqr (ballR()) : area  ();} // get surface area
-   Flt volumeSafe()C {return isBall() ? (PI*4/3)*Cube(ballR()) : volume();} // get volume
+   Flt   area()C {return isBall() ? (PI*4  )*Sqr (ballRFast()) :   areaCapsule();} // get surface area
+   Flt volume()C {return isBall() ? (PI*4/3)*Cube(ballRFast()) : volumeCapsule();} // get volume
 
    Vec  bottom  ()C {return pos-up*(h*0.5f  );           } // get bottom
    Vec  top     ()C {return pos+up*(h*0.5f  );           } // get top
@@ -34,7 +34,7 @@ struct Capsule // Capsule Shape
    Vec nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
    Bool isBall   ()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
-   Flt  ballR    ()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
+   Flt  ballRFast()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
    Flt  ballRSafe()C {return Max(r, h*0.5f);} // radius used for ball
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description
@@ -86,11 +86,11 @@ struct CapsuleM // Capsule Shape (mixed precision)
    CapsuleM& set(Flt r, Flt h, C VecD &pos=VecDZero, C Vec &up=Vec(0,1,0)) {T.r=r; T.h=h; T.pos=pos; T.up=up; return T;}
 
    // get
-   Flt area  ()C {return PI2*r*   h            ;} // get surface area
-   Flt volume()C {return PI *r*r*(h-r*(2.0f/3));} // get volume
+   Flt   areaCapsule()C {return PI2*r*   h            ;} // get surface area, can be used if you know that this is a capsule and not a ball "!isBall"
+   Flt volumeCapsule()C {return PI *r*r*(h-r*(2.0f/3));} // get volume      , can be used if you know that this is a capsule and not a ball "!isBall"
 
-   Flt   areaSafe()C {return isBall() ? (PI*4  )*Sqr (ballR()) : area  ();} // get surface area
-   Flt volumeSafe()C {return isBall() ? (PI*4/3)*Cube(ballR()) : volume();} // get volume
+   Flt   area()C {return isBall() ? (PI*4  )*Sqr (ballRFast()) :   areaCapsule();} // get surface area
+   Flt volume()C {return isBall() ? (PI*4/3)*Cube(ballRFast()) : volumeCapsule();} // get volume
 
    VecD  bottom  ()C {return pos-up*(h*0.5f  );            } // get bottom
    VecD  top     ()C {return pos+up*(h*0.5f  );            } // get top
@@ -104,7 +104,7 @@ struct CapsuleM // Capsule Shape (mixed precision)
    VecD nearest(C Vec &normal)C; // get nearest point on capsule towards normal
 
    Bool isBall   ()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
-   Flt  ballR    ()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
+   Flt  ballRFast()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
    Flt  ballRSafe()C {return Max(r, h*0.5f);} // radius used for ball
 
    Str asText()C {return S+"Radius: "+r+", Height: "+h+", Pos: "+pos+", Up: "+up;} // get text description

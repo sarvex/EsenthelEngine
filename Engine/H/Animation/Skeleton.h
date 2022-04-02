@@ -89,7 +89,7 @@ struct  SkeletonBone : OrientP, BoneID // Skeleton Bone
    Vec center ()C {return pos  +dir  *(length*0.5f);} // get bone center position
    Flt centerY()C {return pos.y+dir.y*(length*0.5f);} // get bone center position Y
    Flt radius ()C {return width*length             ;} // get bone actual radius
-   Flt volume ()C {return shape.volume()           ;} // get bone shape  volume
+   Flt volume ()C {return shape.volumeCapsule()    ;} // get bone shape  volume
 
    // set
    SkeletonBone& setFromTo(C Vec &from, C Vec &to); // set bone position, direction and length according to 'from' and 'to' position parameters and adjust existing 'perp' to match the new settings
