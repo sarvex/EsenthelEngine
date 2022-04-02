@@ -111,12 +111,12 @@ Capsule& Capsule::setEdge(Flt r, C Vec &from, C Vec &to)
 Vec Capsule::nearest(C Vec &normal)C
 {
    return isBall() ? pos - normal*ballRFast()
-                   : pos - normal*r - up*( Sign(Dot(up, normal))*(h*0.5f-r) );
+                   : pos - normal*r - up*( Sign(Dot(up, normal))*innerHeightHalf() );
 }
 VecD CapsuleM::nearest(C Vec &normal)C
 {
    return isBall() ? pos - normal*ballRFast()
-                   : pos - normal*r - up*( Sign(Dot(up, normal))*(h*0.5f-r) );
+                   : pos - normal*r - up*( Sign(Dot(up, normal))*innerHeightHalf() );
 }
 /******************************************************************************/
 void Capsule::draw(C Color &color, Bool fill, Int resolution)C
@@ -132,8 +132,8 @@ void Capsule::draw(C Color &color, Bool fill, Int resolution)C
 /******************************************************************************/
 Flt Dist(C Vec &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-                             if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballRFast());
-   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up; return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r          ); // 'DistPointEdge' is safe in case edge is zero length
+                            if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballRFast());
+   Vec up=capsule.up*capsule.innerHeightHalf(); return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r          ); // 'DistPointEdge' is safe in case edge is zero length
 }
 Flt Dist(C Edge &edge, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
@@ -180,17 +180,17 @@ Dbl DistCapsulePlane(C CapsuleM &capsule, C VecD &plane, C Vec &normal)
 /******************************************************************************/
 Bool Cuts(C Vec &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up;
+   Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C VecD &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up;
+   Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C VecD &point, C CapsuleM &capsule) // safe in case "capsule.isBall()"
 {
-   Vec up=(capsule.h*0.5f-capsule.r)*capsule.up;
+   Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C Edge &edge, C Capsule &capsule) // safe in case "capsule.isBall()"
@@ -245,7 +245,7 @@ Bool SweepBallCapsule(C Ball &ball, C Vec &move, C Capsule &capsule, Flt *hit_fr
 Bool SweepCapsuleEdge(C Capsule &capsule, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *hit_normal)
 {
    Byte check;
-   Flt  tube_h_2=capsule.h*0.5f-capsule.r;
+   Flt  tube_h_2=capsule.innerHeightHalf();
 
    Matrix matrix; matrix.    setPosDir(capsule.pos, capsule.up);
    Edge2  edge2  (matrix.      convert(edge.p[0]  , true), matrix.convert(edge.p[1], true));

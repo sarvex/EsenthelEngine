@@ -407,7 +407,7 @@ Bool FrustumClass::operator()(C Capsule &capsule)C
  //if(capsule.isBall())return T(Ball(capsule)); // TODO: this is slower but more precise
    Vec up  =capsule.pos-matrix.pos, // no need for 'VecD'
        down=up,
-       d   =capsule.up*(capsule.h*0.5f-capsule.r);
+       d   =capsule.up*capsule.innerHeightHalf();
    up  +=d;
    down-=d;
    if(persp)
@@ -434,7 +434,7 @@ Bool FrustumClass::operator()(C CapsuleM &capsule)C
  //if(capsule.isBall())return T(BallM(capsule)); // TODO: this is slower but more precise
    Vec up  =capsule.pos-matrix.pos, // no need for 'VecD'
        down=up,
-       d   =capsule.up*(capsule.h*0.5f-capsule.r);
+       d   =capsule.up*capsule.innerHeightHalf();
    up  +=d;
    down-=d;
    if(persp)

@@ -383,7 +383,8 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
 {
    if(resolution <0)resolution =12;else MAX(resolution , 3);
    if(resolution2<0)resolution2= 5;else MAX(resolution2, 2);
-   Flt r=Min(capsule.r, capsule.h*0.5f);
+   // FIXME: TODO: handle capsule.isBall
+   Flt ihh=capsule.innerHeightHalf();
    create((resolution+1)*(resolution2-1)*2+2, 0, resolution*2, resolution+(resolution2-2)*resolution*2, flag&VTX_TEX0);
    REPD(y, resolution2-1)
    {
@@ -393,11 +394,11 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
          Flt cx, sx; CosSin(cx, sx, x/Flt(resolution)*PI2);
          Int i0=x+ y               *(resolution+1),
              i1=x+(y+resolution2-1)*(resolution+1);
-              vtx.pos(i0).set(cy*cx*r, capsule.h*0.5f-r+sy*r, cy*sx*r);
+              vtx.pos(i0).set(cy*cx*capsule.r, ihh+sy*capsule.r, cy*sx*capsule.r);
          CHS((vtx.pos(i1)=vtx.pos(i0)).y);
          if(vtx.tex0())
          {
-            vtx.tex0(i0).set(x/Flt(resolution), (y/Flt(resolution2-1)*r + capsule.h*0.5f-r)/(capsule.h*0.5f)*0.5f+0.5f);
+            vtx.tex0(i0).set(x/Flt(resolution), (y/Flt(resolution2-1)*capsule.r + ihh)/(capsule.h*0.5f)*0.5f+0.5f);
             vtx.tex0(i1).set(vtx.tex0(i0).x, 1-vtx.tex0(i0).y);
          }
       }
@@ -434,9 +435,9 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
 MeshBase& MeshBase::createFast(C Tube &tube, Int resolution)
 {
    if(resolution<0)resolution=12;else MAX(resolution, 3);
-   Flt  h_2=tube.h/2;
    create(resolution*2, 0, (resolution-2)*2+resolution*2, 0);
    VecI *tri=T.tri.ind();
+   Flt   h_2=tube.h/2;
    REP(resolution)
    {
       Flt c, s; CosSin(c, s, i*PI2/resolution);

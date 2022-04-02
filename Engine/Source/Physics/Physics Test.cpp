@@ -25,6 +25,8 @@ namespace EE{
    Matrix      A, B;
    PxTransform a, b;   A*B == b*a
 
+   TODO: need to check for capsule.isBall() ?
+
 /******************************************************************************/
 Bool PhysPart::ray(C Vec &pos, C Vec &move, C Matrix *body_matrix, PhysHitBasic *phys_hit, Bool two_sided)C
 {
@@ -245,8 +247,10 @@ Bool PhysicsClass::cuts(C Box &box, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::eANY_HIT | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
-      ReadLock lock(Physics._rws);
-      return Physx.world->overlap(PxBoxGeometry(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f), Physx.matrix(box.center()), buf, qfd);
+      PxBoxGeometry     geom(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(box.center());
+      ReadLock          lock(Physics._rws);
+      return Physx.world->overlap(geom, pose, buf, qfd);
    }
    return false;
 }
@@ -257,8 +261,10 @@ Bool PhysicsClass::cuts(C OBox &obox, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::eANY_HIT | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
-      ReadLock lock(Physics._rws);
-      return Physx.world->overlap(PxBoxGeometry(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f), Physx.matrix(Matrix(obox.center(), obox.matrix.orn())), buf, qfd);
+      PxBoxGeometry     geom(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(Matrix(obox.center(), obox.matrix.orn()));
+      ReadLock          lock(Physics._rws);
+      return Physx.world->overlap(geom, pose, buf, qfd);
    }
    return false;
 }
@@ -269,8 +275,10 @@ Bool PhysicsClass::cuts(C Ball &ball, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::eANY_HIT | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
-      ReadLock lock(Physics._rws);
-      return Physx.world->overlap(PxSphereGeometry(ball.r), Physx.matrix(ball.pos), buf, qfd);
+      PxSphereGeometry  geom(ball.r);
+      PxTransform       pose=Physx.matrix(ball.pos);
+      ReadLock          lock(Physics._rws);
+      return Physx.world->overlap(geom, pose, buf, qfd);
    }
    return false;
 }
@@ -281,8 +289,10 @@ Bool PhysicsClass::cuts(C Capsule &capsule, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::eANY_HIT | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
-      ReadLock lock(Physics._rws);
-      return Physx.world->overlap(PxCapsuleGeometry(capsule.r, capsule.h*0.5f-capsule.r), Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up)), buf, qfd);
+      PxCapsuleGeometry geom(capsule.r, capsule.innerHeightHalf());
+      PxTransform       pose=Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up));
+      ReadLock          lock(Physics._rws);
+      return Physx.world->overlap(geom, pose, buf, qfd);
    }
    return false;
 }
@@ -318,8 +328,10 @@ void PhysicsClass::cuts(C Box &box, PhysCutsCallback &callback, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
+      PxBoxGeometry     geom(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(box.center());
       ReadLock          lock(Physics._rws);
-      Physx.world->overlap(PxBoxGeometry(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f), Physx.matrix(box.center()), buf, qfd, &NoTemp(CutsCallbackAll(callback)));
+      Physx.world->overlap(geom, pose, buf, qfd, &NoTemp(CutsCallbackAll(callback)));
    }
 }
 /******************************************************************************/
@@ -329,8 +341,10 @@ void PhysicsClass::cuts(C OBox &obox, PhysCutsCallback &callback, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
+      PxBoxGeometry     geom(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(Matrix(obox.center(), obox.matrix.orn()));
       ReadLock          lock(Physics._rws);
-      Physx.world->overlap(PxBoxGeometry(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f), Physx.matrix(Matrix(obox.center(), obox.matrix.orn())), buf, qfd, &NoTemp(CutsCallbackAll(callback)));
+      Physx.world->overlap(geom, pose, buf, qfd, &NoTemp(CutsCallbackAll(callback)));
    }
 }
 /******************************************************************************/
@@ -340,8 +354,10 @@ void PhysicsClass::cuts(C Ball &ball, PhysCutsCallback &callback, UInt groups)
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
+      PxSphereGeometry  geom(ball.r);
+      PxTransform       pose=Physx.matrix(ball.pos);
       ReadLock          lock(Physics._rws);
-      Physx.world->overlap(PxSphereGeometry(ball.r), Physx.matrix(ball.pos), buf, qfd, &NoTemp(CutsCallbackAll(callback)));
+      Physx.world->overlap(geom, pose, buf, qfd, &NoTemp(CutsCallbackAll(callback)));
    }
 }
 /******************************************************************************/
@@ -351,8 +367,10 @@ void PhysicsClass::cuts(C Capsule &capsule, PhysCutsCallback &callback, UInt gro
    {
       PxOverlapBuffer   buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER | PxQueryFlag::eNO_BLOCK); qfd.data.word0=groups;
+      PxCapsuleGeometry geom(capsule.r, capsule.innerHeightHalf());
+      PxTransform       pose=Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up));
       ReadLock          lock(Physics._rws);
-      Physx.world->overlap(PxCapsuleGeometry(capsule.r, capsule.h*0.5f-capsule.r), Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up)), buf, qfd, &NoTemp(CutsCallbackAll(callback)));
+      Physx.world->overlap(geom, pose, buf, qfd, &NoTemp(CutsCallbackAll(callback)));
    }
 }
 /******************************************************************************/
@@ -581,7 +599,7 @@ Bool PhysicsClass::sweep(C Capsule &capsule, C Vec &move, PhysHit *phys_hit, UIn
 {
    if(Physx.world && groups)
    {
-      Vec dir=move; Flt length=dir.normalize(); PxCapsuleGeometry geom(capsule.r, capsule.h*0.5f-capsule.r); PxTransform pose=Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up));
+      Vec dir=move; Flt length=dir.normalize(); PxCapsuleGeometry geom(capsule.r, capsule.innerHeightHalf()); PxTransform pose=Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up));
       PxSweepBuffer     buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC); qfd.data.word0=groups;
       ReadLock          lock(Physics._rws);
@@ -628,8 +646,10 @@ void PhysicsClass::sweep(C Box &box, C Vec &move, PhysHitCallback &callback, UIn
       Vec dir=move; Flt length=dir.normalize();
       PxSweepBuffer     buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER); qfd.data.word0=groups;
+      PxBoxGeometry     geom(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(box.center());
       ReadLock          lock(Physics._rws);
-      Physx.world->sweep(PxBoxGeometry(box.w()*0.5f, box.h()*0.5f, box.d()*0.5f), Physx.matrix(box.center()), Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
+      Physx.world->sweep(geom, pose, Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
    }
 }
 void PhysicsClass::sweep(C OBox &obox, C Vec &move, PhysHitCallback &callback, UInt groups)
@@ -639,8 +659,10 @@ void PhysicsClass::sweep(C OBox &obox, C Vec &move, PhysHitCallback &callback, U
       Vec dir=move; Flt length=dir.normalize();
       PxSweepBuffer     buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER); qfd.data.word0=groups;
+      PxBoxGeometry     geom(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f);
+      PxTransform       pose=Physx.matrix(Matrix(obox.center(), obox.matrix.orn()));
       ReadLock          lock(Physics._rws);
-      Physx.world->sweep(PxBoxGeometry(obox.box.w()*0.5f, obox.box.h()*0.5f, obox.box.d()*0.5f), Physx.matrix(Matrix(obox.center(), obox.matrix.orn())), Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
+      Physx.world->sweep(geom, pose, Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
    }
 }
 void PhysicsClass::sweep(C Ball &ball, C Vec &move, PhysHitCallback &callback, UInt groups)
@@ -650,8 +672,10 @@ void PhysicsClass::sweep(C Ball &ball, C Vec &move, PhysHitCallback &callback, U
       Vec dir=move; Flt length=dir.normalize();
       PxSweepBuffer     buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER); qfd.data.word0=groups;
+      PxSphereGeometry  geom(ball.r);
+      PxTransform       pose=Physx.matrix(ball.pos);
       ReadLock          lock(Physics._rws);
-      Physx.world->sweep(PxSphereGeometry(ball.r), Physx.matrix(ball.pos), Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
+      Physx.world->sweep(geom, pose, Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
    }
 }
 void PhysicsClass::sweep(C Capsule &capsule, C Vec &move, PhysHitCallback &callback, UInt groups)
@@ -661,8 +685,10 @@ void PhysicsClass::sweep(C Capsule &capsule, C Vec &move, PhysHitCallback &callb
       Vec dir=move; Flt length=dir.normalize();
       PxSweepBuffer     buf;
       PxQueryFilterData qfd(PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER | PxQueryFlag::ePOSTFILTER); qfd.data.word0=groups;
+      PxCapsuleGeometry geom(capsule.r, capsule.innerHeightHalf());
+      PxTransform       pose=Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up));
       ReadLock          lock(Physics._rws);
-      Physx.world->sweep(PxCapsuleGeometry(capsule.r, capsule.h*0.5f-capsule.r), Physx.matrix(Matrix().setPosRight(capsule.pos, capsule.up)), Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
+      Physx.world->sweep(geom, pose, Physx.vec(dir), length, buf, PxHitFlag::ePOSITION | PxHitFlag::eNORMAL | PxHitFlag::eFACE_INDEX | PxHitFlag::ePRECISE_SWEEP | PxHitFlag::eMESH_MULTIPLE | INITIAL_OVERLAP, qfd, &NoTemp(SweepCallbackAll(callback, length)));
    }
 }
 /******************************************************************************/

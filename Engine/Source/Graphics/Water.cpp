@@ -734,7 +734,7 @@ WaterDrops& WaterDrops::create(Image &image,Int num,Shape *shape,Int shapes)
       if(s.type==SHAPE_CAPSULE)
       {
          Capsule &capsule=s.capsule;
-         Vec      up     =capsule.up*(capsule.h*0.5f-capsule.r);
+         Vec      up     =capsule.up*capsule.innerHeightHalf();
          b.from(capsule.pos-up,capsule.pos+up).extend(capsule.r);
       }else continue;
       if(!box_set){box_set=true; box=b;}else box|=b;

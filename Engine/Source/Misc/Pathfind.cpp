@@ -676,7 +676,8 @@ static Bool ObstacleShapeSupported(SHAPE_TYPE type)
       case SHAPE_CAPSULE:
       case SHAPE_TUBE   :
       case SHAPE_OBOX   :
-      case SHAPE_PYRAMID: return true;
+      case SHAPE_PYRAMID:
+         return true;
 
       default: return false;
    }

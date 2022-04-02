@@ -240,10 +240,10 @@ struct ObjGetCapsule
 
    ObjGetCapsule(MemPtr<Obj*> &objects, C Capsule &capsule, Int obj_type) : obj_type(obj_type), objects(objects)
    {
-      Vec up=(capsule.h*0.5f-capsule.r)*capsule.up;
-      edge.p[0]= capsule.pos-up;
-      edge.p[1]= capsule.pos+up;
-      radius   = capsule.r;
+      Vec    up=capsule.up*capsule.innerHeightHalf();
+      edge.p[0]=capsule.pos-up;
+      edge.p[1]=capsule.pos+up;
+      radius   =capsule.r;
    }
 };
 static void ObjGetAddCapsule(Cell<Area> &cell, ObjGetCapsule &oq)

@@ -22,10 +22,12 @@ struct Capsule // Capsule Shape
    Flt   area()C {return isBall() ? (PI*4  )*Sqr (ballRFast()) :   areaCapsule();} // get surface area
    Flt volume()C {return isBall() ? (PI*4/3)*Cube(ballRFast()) : volumeCapsule();} // get volume
 
+   Flt innerHeightHalf()C {return h*0.5f-r;}
+
    Vec  bottom  ()C {return pos-up*(h*0.5f  );           } // get bottom
    Vec  top     ()C {return pos+up*(h*0.5f  );           } // get top
-   Vec  ballDPos()C {return pos-up*(h*0.5f-r);           } // get lower ball center
-   Vec  ballUPos()C {return pos+up*(h*0.5f-r);           } // get upper ball center
+   Vec  ballDPos()C {return pos-up*innerHeightHalf();    } // get lower ball center
+   Vec  ballUPos()C {return pos+up*innerHeightHalf();    } // get upper ball center
    Ball ballD   ()C {return Ball(r, ballDPos());         } // get lower ball
    Ball ballU   ()C {return Ball(r, ballUPos());         } // get upper ball
    Edge fullEdge()C {return Edge(bottom  (), top     ());} // get edge between bottom and top
@@ -92,10 +94,12 @@ struct CapsuleM // Capsule Shape (mixed precision)
    Flt   area()C {return isBall() ? (PI*4  )*Sqr (ballRFast()) :   areaCapsule();} // get surface area
    Flt volume()C {return isBall() ? (PI*4/3)*Cube(ballRFast()) : volumeCapsule();} // get volume
 
+   Flt innerHeightHalf()C {return h*0.5f-r;}
+
    VecD  bottom  ()C {return pos-up*(h*0.5f  );            } // get bottom
    VecD  top     ()C {return pos+up*(h*0.5f  );            } // get top
-   VecD  ballDPos()C {return pos-up*(h*0.5f-r);            } // get lower ball center
-   VecD  ballUPos()C {return pos+up*(h*0.5f-r);            } // get upper ball center
+   VecD  ballDPos()C {return pos-up*innerHeightHalf();     } // get lower ball center
+   VecD  ballUPos()C {return pos+up*innerHeightHalf();     } // get upper ball center
    BallM ballD   ()C {return BallM(r, ballDPos());         } // get lower ball
    BallM ballU   ()C {return BallM(r, ballUPos());         } // get upper ball
    EdgeD fullEdge()C {return EdgeD(bottom  (), top     ());} // get edge between bottom and top

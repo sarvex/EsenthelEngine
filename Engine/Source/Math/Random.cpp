@@ -528,7 +528,7 @@ Vec Randomizer::operator()(C Capsule &capsule, Bool inside)
    {
       Vec O=T(Ball(capsule.r), inside);
       return O+capsule.pos
-              +capsule.up*((capsule.h*0.5f-capsule.r)*Sign(Dot(O, capsule.up)));
+              +capsule.up*(capsule.innerHeightHalf()*Sign(Dot(O, capsule.up)));
    }
 }
 /******************************************************************************/

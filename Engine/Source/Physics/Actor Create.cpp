@@ -64,7 +64,7 @@ static Bool Add(PxRigidActor &actor, C Ball &ball, C Vec *local_pos)
 static Bool Add(PxRigidActor &actor, C Capsule &capsule, C Vec *local_pos)
 {
    if(capsule.isBall())return Add(actor, Ball(capsule), local_pos);
-   if(PxShape *shape=PxRigidActorExt::createExclusiveShape(actor, PxCapsuleGeometry(capsule.r, capsule.h*0.5f-capsule.r), *Physics.mtrl_default._m))
+   if(PxShape *shape=PxRigidActorExt::createExclusiveShape(actor, PxCapsuleGeometry(capsule.r, capsule.innerHeightHalf()), *Physics.mtrl_default._m))
    {
       Matrix local_matrix; if(local_pos)local_matrix.pos=*local_pos;else local_matrix.pos.zero(); local_matrix.orn().setRight(capsule.up);
       shape->setLocalPose(Physx.matrix(local_matrix));
