@@ -1271,14 +1271,26 @@ VecI4 OSVerNumber()
 }
 OS_VER OSVer()
 {
-#if WINDOWS_OLD
+#if WINDOWS
    OSVERSIONINFOEX v; Zero(v);
    v.dwOSVersionInfoSize=SIZE(v);
    if(GetVersionEx((OSVERSIONINFO*)&v))
    {
       if(v.dwMajorVersion==10)
       {
-         if(v.dwMinorVersion==0)return (v.wProductType==VER_NT_WORKSTATION) ? WINDOWS_10 : WINDOWS_SERVER_2016;
+         if(v.dwMinorVersion==0)
+         {
+            if(v.wProductType==VER_NT_WORKSTATION)
+            {
+               if(v.dwBuildNumber>=22000)return WINDOWS_11;
+                                         return WINDOWS_10;
+            }else
+            {
+               if(v.dwBuildNumber>=20348)return WINDOWS_SERVER_2022;
+               if(v.dwBuildNumber>=17763)return WINDOWS_SERVER_2019;
+                                         return WINDOWS_SERVER_2016;
+            }
+         }
       }else
       if(v.dwMajorVersion==6)
       {
@@ -1292,7 +1304,9 @@ OS_VER OSVer()
          if(v.dwMinorVersion==2)
          {
             if(v.wProductType==VER_NT_WORKSTATION)return WINDOWS_XP_64;
+         #if WINDOWS_OLD
             if(GetSystemMetrics(SM_SERVERR2)     )return WINDOWS_SERVER_2003_R2;
+         #endif
                                                   return WINDOWS_SERVER_2003;
          }else
          if(v.dwMinorVersion==1)return WINDOWS_XP  ;else
@@ -1300,8 +1314,6 @@ OS_VER OSVer()
       }
    }
    return WINDOWS_UNKNOWN;
-#elif WINDOWS_NEW
-   return WINDOWS_10;
 #elif MAC
    return OS_MAC;
 #elif LINUX
@@ -1370,6 +1382,7 @@ CChar8* OSName(OS_VER ver)
       case WINDOWS_8                 : return "Windows 8";
     //case WINDOWS_8_1               : return "Windows 8.1";
       case WINDOWS_10                : return "Windows 10";
+      case WINDOWS_11                : return "Windows 11";
       case WINDOWS_SERVER_2003       : return "Windows Server 2003";
       case WINDOWS_SERVER_2003_R2    : return "Windows Server 2003 R2";
       case WINDOWS_SERVER_2008       : return "Windows Server 2008";
@@ -1377,6 +1390,8 @@ CChar8* OSName(OS_VER ver)
       case WINDOWS_SERVER_2012       : return "Windows Server 2012";
       case WINDOWS_SERVER_2012_R2    : return "Windows Server 2012 R2";
       case WINDOWS_SERVER_2016       : return "Windows Server 2016";
+      case WINDOWS_SERVER_2019       : return "Windows Server 2019";
+      case WINDOWS_SERVER_2022       : return "Windows Server 2022";
 
       case OS_MAC                    : return "Mac";
 

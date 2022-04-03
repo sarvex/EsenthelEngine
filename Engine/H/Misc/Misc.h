@@ -217,6 +217,7 @@ enum OS_VER : Byte // Operating System Version
    WINDOWS_7,
    WINDOWS_8,
    WINDOWS_10,
+   WINDOWS_11,
    WINDOWS_SERVER_2003,
    WINDOWS_SERVER_2003_R2,
    WINDOWS_SERVER_2008,
@@ -224,6 +225,8 @@ enum OS_VER : Byte // Operating System Version
    WINDOWS_SERVER_2012,
    WINDOWS_SERVER_2012_R2,
    WINDOWS_SERVER_2016,
+   WINDOWS_SERVER_2019,
+   WINDOWS_SERVER_2022,
 
    OS_MAC,
 
@@ -239,7 +242,7 @@ enum OS_VER : Byte // Operating System Version
        OS_VER  OSVer           (                  ); // get Operating System version
        OS_VER  OSGroup         (OS_VER ver=OSVer()); // get Operating System group, this ignores specific versions and returns just the main groups, such as WINDOWS_UNKNOWN, OS_MAC, OS_LINUX, OS_ANDROID, OS_IOS, OS_NINTENDO_SWITCH
        CChar8* OSName          (OS_VER ver=OSVer()); // get Operating System name
-inline Bool    OSWindows       (OS_VER ver=OSVer()) {return ver>=WINDOWS_UNKNOWN && ver<=WINDOWS_SERVER_2016;} // if  Operating System is Windows
+inline Bool    OSWindows       (OS_VER ver=OSVer()) {return ver>=WINDOWS_UNKNOWN && ver<=WINDOWS_SERVER_2022;} // if  Operating System is Windows
 inline Bool    OSMac           (OS_VER ver=OSVer()) {return ver==OS_MAC                                     ;} // if  Operating System is Mac
 inline Bool    OSLinux         (OS_VER ver=OSVer()) {return ver==OS_LINUX                                   ;} // if  Operating System is Linux
 inline Bool    OSAndroid       (OS_VER ver=OSVer()) {return ver==OS_ANDROID                                 ;} // if  Operating System is Android
