@@ -171,8 +171,11 @@ Flt Dist(C Ball &ball, C Capsule &capsule)
 }
 Flt Dist(C Capsule &a, C Capsule &b)
 {
-   //FIXME;;
-   return Max(0, Dist(a.ballEdge(), b.ballEdge())-a.r-b.r);
+   return Max(0, (a.isBall() ? b.isBall() ? Dist(a.pos       , b.pos       )
+                                          : Dist(a.pos       , b.ballEdge())
+                             : b.isBall() ? Dist(b.pos       , a.ballEdge())
+                                          : Dist(a.ballEdge(), b.ballEdge())
+                 )-a.r-b.r); // !! WARNING: for simplicity this assumes that ballR==r !!
 }
 Flt DistCapsulePlane(C Capsule &capsule, C Vec &plane, C Vec &normal)
 {
@@ -256,8 +259,11 @@ Bool Cuts(C BallM &ball, C CapsuleM &capsule)
 }
 Bool Cuts(C Capsule &a, C Capsule &b)
 {
-   //FIXME;;
-   return Dist2(a.ballEdge(), b.ballEdge())<=Sqr(a.r+b.r);
+   return (a.isBall() ? b.isBall() ? Dist2(a.pos       , b.pos       )
+                                   : Dist2(a.pos       , b.ballEdge())
+                      : b.isBall() ? Dist2(b.pos       , a.ballEdge())
+                                   : Dist2(a.ballEdge(), b.ballEdge())
+          )<=Sqr(a.r+b.r); // !! WARNING: for simplicity this assumes that ballR==r !!
 }
 /******************************************************************************/
 Bool SweepPointCapsule(C Vec &point, C Vec &move, C Capsule &capsule, Flt *hit_frac, Vec *hit_normal)
