@@ -383,9 +383,20 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
 {
    if(resolution <0)resolution =12;else MAX(resolution , 3);
    if(resolution2<0)resolution2= 5;else MAX(resolution2, 2);
-   // FIXME: TODO: handle capsule.isBall
-   Flt ihh=capsule.innerHeightHalf();
-   create((resolution+1)*(resolution2-1)*2+2, 0, resolution*2, resolution+(resolution2-2)*resolution*2, flag&VTX_TEX0);
+   Bool ball;
+   Flt  ihh, top, r;
+   if(ball=capsule.isBall())
+   {
+      ihh=0;
+      top=r=capsule.ballR();
+   }else
+   {
+      ihh=capsule.innerHeightHalf();
+      top=capsule.h*0.5f;
+      r  =capsule.r;
+   }
+   Int ball_quads=(resolution2-2)*resolution*2;
+   create((resolution+1)*(resolution2-1)*2+2, 0, resolution*2, ball_quads + (ball ? 0 : resolution), flag&VTX_TEX0);
    REPD(y, resolution2-1)
    {
       Flt cy, sy; CosSin(cy, sy, y/Flt(resolution2-1)*PI_2);
@@ -394,17 +405,17 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
          Flt cx, sx; CosSin(cx, sx, x/Flt(resolution)*PI2);
          Int i0=x+ y               *(resolution+1),
              i1=x+(y+resolution2-1)*(resolution+1);
-              vtx.pos(i0).set(cy*cx*capsule.r, ihh+sy*capsule.r, cy*sx*capsule.r);
+              vtx.pos(i0).set(cy*cx*r, ihh+sy*r, cy*sx*r);
          CHS((vtx.pos(i1)=vtx.pos(i0)).y);
          if(vtx.tex0())
          {
-            vtx.tex0(i0).set(x/Flt(resolution), (y/Flt(resolution2-1)*capsule.r + ihh)/(capsule.h*0.5f)*0.5f+0.5f);
+            vtx.tex0(i0).set(x/Flt(resolution), (y/Flt(resolution2-1)*r + ihh)/top*0.5f+0.5f);
             vtx.tex0(i1).set(vtx.tex0(i0).x, 1-vtx.tex0(i0).y);
          }
       }
    }
-   vtx.pos(vtxs()-2).set(0,  capsule.h*0.5f, 0);
-   vtx.pos(vtxs()-1).set(0, -capsule.h*0.5f, 0);
+   vtx.pos(vtxs()-2).set(0,  top, 0);
+   vtx.pos(vtxs()-1).set(0, -top, 0);
    if(vtx.tex0())
    {
       vtx.tex0(vtxs()-2).set(0.5f, 1);
@@ -414,14 +425,14 @@ MeshBase& MeshBase::create(C Capsule &capsule, MESH_FLAG flag, Int resolution, I
    {
       Int lo=(resolution2-1)*(resolution+1),
           o =lo-(resolution+1);
-      tri .ind(i           ).set(o+ i+1, o+     i, vtxs()-2);
-      tri .ind(i+resolution).set(o+lo+i, o+lo+i+1, vtxs()-1);
-      quad.ind(i           ).set(lo+i+1, lo+i, i, i+1);
+               tri .ind(i           ).set(o+ i+1, o+     i, vtxs()-2);
+               tri .ind(i+resolution).set(o+lo+i, o+lo+i+1, vtxs()-1);
+      if(!ball)quad.ind(i+ball_quads).set(lo+i+1, lo+i, i, i+1);
       REPD(y, resolution2-2)
       {
          o=y*(resolution+1);
-         quad.ind(resolution+resolution* y               +i).set(o+i+1, o+i, o+(resolution+1)+i, o+(resolution+1)+i+1); o+=lo;
-         quad.ind(resolution+resolution*(y+resolution2-2)+i).set(o+(resolution+1)+i+1, o+(resolution+1)+i, o+i, o+i+1);
+         quad.ind(resolution* y               +i).set(o+i+1, o+i, o+(resolution+1)+i, o+(resolution+1)+i+1); o+=lo;
+         quad.ind(resolution*(y+resolution2-2)+i).set(o+(resolution+1)+i+1, o+(resolution+1)+i, o+i, o+i+1);
       }
    }
 

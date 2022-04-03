@@ -110,12 +110,12 @@ Capsule& Capsule::setEdge(Flt r, C Vec &from, C Vec &to)
 /******************************************************************************/
 Vec Capsule::nearest(C Vec &normal)C
 {
-   return isBall() ? pos - normal*ballRFast()
+   return isBall() ? pos - normal*ballR()
                    : pos - normal*r - up*( Sign(Dot(up, normal))*innerHeightHalf() );
 }
 VecD CapsuleM::nearest(C Vec &normal)C
 {
-   return isBall() ? pos - normal*ballRFast()
+   return isBall() ? pos - normal*ballR()
                    : pos - normal*r - up*( Sign(Dot(up, normal))*innerHeightHalf() );
 }
 /******************************************************************************/
@@ -132,22 +132,22 @@ void Capsule::draw(C Color &color, Bool fill, Int resolution)C
 /******************************************************************************/
 Flt Dist(C Vec &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-                            if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballRFast());
-   Vec up=capsule.up*capsule.innerHeightHalf(); return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r          ); // 'DistPointEdge' is safe in case edge is zero length
+                            if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballR());
+   Vec up=capsule.up*capsule.innerHeightHalf(); return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r      ); // 'DistPointEdge' is safe in case edge is zero length
 }
 Flt Dist(C Edge &edge, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballRFast()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballR()
                                   : Dist(capsule.ballEdge(), edge)-capsule.r);
 }
 Flt Dist(C TriN &tri, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , tri)-capsule.ballRFast()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , tri)-capsule.ballR()
                                   : Dist(capsule.ballEdge(), tri)-capsule.r);
 }
 Flt Dist(C Box &box, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(capsule.pos       , box)-capsule.ballRFast()
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , box)-capsule.ballR()
                                   : Dist(capsule.ballEdge(), box)-capsule.r);
 }
 Flt Dist(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
@@ -155,7 +155,7 @@ Flt Dist(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
    if(capsule.isBall())
    {
       Ball ball;
-      ball.r=capsule.ballRFast();
+      ball.r=capsule.ballR();
       ball.pos.fromDivNormalized(capsule.pos, obox.matrix);
       return Dist(obox.box, ball);
    }
@@ -166,8 +166,8 @@ Flt Dist(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
 }
 Flt Dist(C Ball &ball, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   return Max(0, capsule.isBall() ? Dist(ball.pos, capsule.pos       )-capsule.ballRFast()-ball.r
-                                  : Dist(ball.pos, capsule.ballEdge())-capsule.r          -ball.r);
+   return Max(0, capsule.isBall() ? Dist(ball.pos, capsule.pos       )-capsule.ballR()-ball.r
+                                  : Dist(ball.pos, capsule.ballEdge())-capsule.r      -ball.r);
 }
 Flt Dist(C Capsule &a, C Capsule &b) // safe in case "capsule.isBall()"
 {
@@ -188,40 +188,40 @@ Dbl DistCapsulePlane(C CapsuleM &capsule, C VecD &plane, C Vec &normal)
 /******************************************************************************/
 Bool Cuts(C Vec &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballR());
    Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C VecD &point, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballR());
    Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C VecD &point, C CapsuleM &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(point, capsule.pos)<=Sqr(capsule.ballR());
    Vec up=capsule.up*capsule.innerHeightHalf();
    return Dist2PointEdge(point, capsule.pos-up, capsule.pos+up)<=Sqr(capsule.r);
 }
 Bool Cuts(C Edge &edge, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(capsule.pos, edge)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(capsule.pos, edge)<=Sqr(capsule.ballR());
    return Dist2(capsule.ballEdge(), edge)<=Sqr(capsule.r);
 }
 Bool Cuts(C Tri &tri, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(capsule.pos, tri)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(capsule.pos, tri)<=Sqr(capsule.ballR());
    return Dist2(capsule.ballEdge(), tri)<=Sqr(capsule.r);
 }
 Bool Cuts(C TriN &tri, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(capsule.pos, tri)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(capsule.pos, tri)<=Sqr(capsule.ballR());
    return Dist2(capsule.ballEdge(), tri)<=Sqr(capsule.r);
 }
 Bool Cuts(C Box &box, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(capsule.pos, box)<=Sqr(capsule.ballRFast());
+   if(capsule.isBall())return Dist2(capsule.pos, box)<=Sqr(capsule.ballR());
    return Dist2(capsule.ballEdge(), box)<=Sqr(capsule.r);
 }
 Bool Cuts(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
@@ -229,7 +229,7 @@ Bool Cuts(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
    if(capsule.isBall())
    {
       Ball ball;
-      ball.r=capsule.ballRFast();
+      ball.r=capsule.ballR();
       ball.pos.fromDivNormalized(capsule.pos, obox.matrix);
       return Dist2(ball.pos, obox.box)<=Sqr(ball.r);
    }
@@ -240,17 +240,17 @@ Bool Cuts(C OBox &obox, C Capsule &capsule) // safe in case "capsule.isBall()"
 }
 Bool Cuts(C Ball &ball, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballRFast());
+   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballR());
    return Dist2(ball.pos, capsule.ballEdge())<=Sqr(capsule.r+ball.r);
 }
 Bool Cuts(C BallM &ball, C Capsule &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballRFast());
+   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballR());
    return Dist2(ball.pos, capsule.ballEdge())<=Sqr(capsule.r+ball.r);
 }
 Bool Cuts(C BallM &ball, C CapsuleM &capsule) // safe in case "capsule.isBall()"
 {
-   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballRFast());
+   if(capsule.isBall())return Dist2(ball.pos, capsule.pos)<=Sqr(ball.r+capsule.ballR());
    return Dist2(ball.pos, capsule.ballEdge())<=Sqr(capsule.r+ball.r);
 }
 Bool Cuts(C Capsule &a, C Capsule &b) // safe in case "capsule.isBall()"
@@ -260,11 +260,13 @@ Bool Cuts(C Capsule &a, C Capsule &b) // safe in case "capsule.isBall()"
 /******************************************************************************/
 Bool SweepPointCapsule(C Vec &point, C Vec &move, C Capsule &capsule, Flt *hit_frac, Vec *hit_normal) // safe in case "capsule.isBall()"
 {
-   return SweepBallEdge(Ball(capsule.r, point), move, capsule.ballEdge(), hit_frac, hit_normal);
+   return capsule.isBall() ? SweepBallPoint(Ball(capsule.ballR(), point), move, capsule.pos       , hit_frac, hit_normal)
+                           : SweepBallEdge (Ball(capsule.r      , point), move, capsule.ballEdge(), hit_frac, hit_normal);
 }
 Bool SweepBallCapsule(C Ball &ball, C Vec &move, C Capsule &capsule, Flt *hit_frac, Vec *hit_normal) // safe in case "capsule.isBall()"
 {
-   return SweepBallEdge(Ball(ball.r+capsule.r, ball.pos), move, capsule.ballEdge(), hit_frac, hit_normal);
+   return capsule.isBall() ? SweepBallPoint(Ball(ball.r+capsule.ballR(), ball.pos), move, capsule.pos       , hit_frac, hit_normal)
+                           : SweepBallEdge (Ball(ball.r+capsule.r      , ball.pos), move, capsule.ballEdge(), hit_frac, hit_normal);
 }
 /******************************************************************************/
 Bool SweepCapsuleEdge(C Capsule &capsule, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *hit_normal)
