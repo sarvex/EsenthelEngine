@@ -396,7 +396,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
             {
                SetVariation(visibleVariation());
                if(group.groups_l.lit>=0)SetDrawMask(IndexToFlag(group.groups_l.lit));
-               bool     allow_lit=!(Kb.win() || Kb.b(KB_SPACE) || Ms.b(2) || Ms.b(MS_MAXIMIZE) || Ms.b(MS_BACK));
+               bool     allow_lit=!(Kb.winCtrl() || Kb.b(KB_SPACE) || Ms.b(2) || Ms.b(MS_MAXIMIZE) || Ms.b(MS_BACK));
                MeshLod &lod=getDrawLod();
                bool     custom_matrix=customDrawMatrix();
                Matrix   matrix; if(custom_matrix)setMatrixAtDist(matrix, NewLod.draw_distance);
@@ -2658,8 +2658,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          Ms.freeze();
          view->setViewportCamera();
          trans_mesh.activate();
-         if(!Kb.alt ()) // don't transform when alt pressed, so we can hold alt at the start, to just show the GUI
-         if( Kb.ctrl())
+         if(!Kb.alt    ()) // don't transform when alt pressed, so we can hold alt at the start, to just show the GUI
+         if( Kb.ctrlCmd())
          {
             if(trans_mesh.move_p[0])multiplier=trans_mesh.move_p[0]->mouse_edit_speed;
             trans_mesh.move_along_normal+=Ms.d().sum()*multiplier*posScale()*0.5f;
@@ -3695,17 +3695,53 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    void ObjView::PhysUndo(ObjView &editor) {editor.phys_undos.undo();}
    void ObjView::PhysRedo(ObjView &editor) {editor.phys_undos.redo();}
    void ObjView::PhysChanged(ObjView &editor) {if(editor.phys_tabs()==PHYS_DEL)editor.setPhys(-1);}
-   void ObjView::NewBox(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("box"    ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      OBox    obox   (Box(Max(box.w(), 0.01f), Max(box.h(), 0.01f), Max(box.d(), 0.01f), box.center())); {CacheLock cl(PhysBodies); editor.phys->parts.New().create(obox   ); editor.phys->setBox();} editor.setChangedPhys();}}
-   void ObjView::NewBall(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("ball"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Ball ball=m; MAX(ball.r , 0.005f);                                                                                                 {CacheLock cl(PhysBodies); editor.phys->parts.New().create(ball   ); editor.phys->setBox();} editor.setChangedPhys();}}
-   void ObjView::NewTube(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("tube"   ); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;                      Tube    tube   (Max(box.xz().size().max()/2, 0.005f), Max(box.h(), 0.01f), box.center());         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(tube   ); editor.phys->setBox();} editor.setChangedPhys();}}
-   void ObjView::NewCapsule(ObjView &editor) {if(editor.getPhysElm() && editor.phys){editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box  box =m;
-      if(Kb.ctrl() || Kb.shift())MAX(box.min.y, 0);
-      if(Kb.ctrl()              )box-=box.center().x0z();
-      Capsule capsule;
-      if(Kb.shift())capsule.set(Max(box.size().xy  .max()/2, 0.005f), Max(box.d(), 0.01f), box.center(), Vec(0, 0, 1));
-      else          capsule.set(Max(box.size().xz().max()/2, 0.005f), Max(box.h(), 0.01f), box.center());
-      {CacheLock cl(PhysBodies); editor.phys->parts.New().create(capsule); editor.phys->setBox();}
-      editor.setChangedPhys();
+   void ObjView::NewBox(ObjView &editor)
+   {
+      if(editor.getPhysElm() && editor.phys)
+      {
+         editor.phys_undos.set("box"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box box=m;
+         if(Kb.ctrlCmd() || Kb.shift())MAX(box.min.y, 0);
+         if(Kb.ctrlCmd()              )box-=box.center().x0z();
+         OBox obox(Box(Max(box.w(), 0.01f), Max(box.h(), 0.01f), Max(box.d(), 0.01f), box.center())); 
+         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(obox); editor.phys->setBox();}
+         editor.setChangedPhys();
+      }
+   }
+   void ObjView::NewBall(ObjView &editor)
+   {
+      if(editor.getPhysElm() && editor.phys)
+      {
+         editor.phys_undos.set("ball"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Ball ball=m; MAX(ball.r, 0.005f); 
+         if(Kb.ctrlCmd() || Kb.shift()){flt min=ball.pos.y-ball.r; if(min<0)ball.pos.y-=min;}
+         if(Kb.ctrlCmd()              )ball.pos.x=ball.pos.z=0;
+         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(ball); editor.phys->setBox();}
+         editor.setChangedPhys();
+      }
+   }
+   void ObjView::NewTube(ObjView &editor)
+   {
+      if(editor.getPhysElm() && editor.phys)
+      {
+         editor.phys_undos.set("tube"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box box=m;
+         if(Kb.ctrlCmd() || Kb.shift())MAX(box.min.y, 0);
+         if(Kb.ctrlCmd()              )box-=box.center().x0z();
+         Tube tube(Max(box.xz().size().max()/2, 0.005f), Max(box.h(), 0.01f), box.center());
+         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(tube); editor.phys->setBox();}
+         editor.setChangedPhys();
+      }
+   }
+   void ObjView::NewCapsule(ObjView &editor)
+   {
+      if(editor.getPhysElm() && editor.phys)
+      {
+         editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box box=m;
+         if(Kb.ctrlCmd() || Kb.shift())MAX(box.min.y, 0);
+         if(Kb.ctrlCmd()              )box-=box.center().x0z();
+         Capsule capsule;
+         if(Kb.shift())capsule.set(Max(box.size().xy  .max()/2, 0.005f), Max(box.d(), 0.01f), box.center(), Vec(0, 0, 1));
+         else          capsule.set(Max(box.size().xz().max()/2, 0.005f), Max(box.h(), 0.01f), box.center());
+         {CacheLock cl(PhysBodies); editor.phys->parts.New().create(capsule); editor.phys->setBox();}
+         editor.setChangedPhys();
       }
    }
    void ObjView::Convex8(ObjView &editor) {editor.physSetConvex( 8);}
@@ -3893,8 +3929,8 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                               case  0: move=AlignDirToCam(phys_part_matrix.x, MT.ad(i)  *mul); break;
                               case  1: move=AlignDirToCam(phys_part_matrix.y, MT.ad(i)  *mul); break;
                               case  2: move=AlignDirToCam(phys_part_matrix.z, MT.ad(i)  *mul); break;
-                              default: move=              ActiveCam.matrix.x*MT.ad(i).x*mul.x
-                                                         +ActiveCam.matrix.y*MT.ad(i).y*mul.y; break;
+                              default: move=              ActiveCam.matrix.x* MT.ad(i).x*mul.x
+                                                         +ActiveCam.matrix.y* MT.ad(i).y*mul.y; break;
                            }
                            phys_part_matrix+=move;
                            shape           +=move;
@@ -3923,49 +3959,120 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
                         case PHYS_SCALE:
                         {
                            phys_undos.set("scale");
+                           bool one=Kb.ctrlCmd();
                            switch(phys_axis)
                            {
                               case 0:
                               {
-                                 flt scale=ScaleFactor(AlignDirToCamEx(phys_part_matrix.x, MT.ad(i)*mul));
+                                 flt delta=AlignDirToCamEx(phys_part_matrix.x, MT.ad(i)*mul), scale=ScaleFactor(delta);
                                  switch(shape.type)
                                  {
-                                    case SHAPE_BALL   : shape.ball   .r*=scale; phys_part_matrix.scaleOrn(scale); break;
-                                    case SHAPE_CAPSULE: shape.capsule.r*=scale; phys_part_matrix.x*=scale; phys_part_matrix.z*=scale; break;
-                                    case SHAPE_TUBE   : shape.tube   .r*=scale; phys_part_matrix.x*=scale; phys_part_matrix.z*=scale; break;
-                                    case SHAPE_OBOX   : {flt c=shape.obox.box.centerX(); shape.obox.box.setX((shape.obox.box.min.x-c)*scale+c, (shape.obox.box.max.x-c)*scale+c); phys_part_matrix.x*=scale;} break;
+                                    case SHAPE_BALL:
+                                    {
+                                       Ball &ball=shape.ball; if(one){flt old=ball.r; MAX(ball.r+=delta/2, 0.005f); ball.pos+=((ball.r-old)*2/2)*!phys_part_matrix.x;}else ball.r*=scale;
+                                    }break;
+                                    case SHAPE_CAPSULE:
+                                    {
+                                       Capsule &capsule=shape.capsule; if(one){flt old=capsule.r; MAX(capsule.r+=delta/2, 0.005f); capsule.pos+=((capsule.r-old)*2/2)*!phys_part_matrix.x;}else capsule.r*=scale;
+                                    }break;
+                                    case SHAPE_TUBE:
+                                    {
+                                       Tube &tube=shape.tube; if(one){flt old=tube.r; MAX(tube.r+=delta/2, 0.005f); tube.pos+=((tube.r-old)*2/2)*!phys_part_matrix.x;}else tube.r*=scale;
+                                    }break;
+                                    case SHAPE_OBOX:
+                                    {
+                                       Box &box=shape.obox.box;
+                                       if(one)
+                                       {
+                                          box.max.x=Max(box.min.x+0.01f, box.max.x+delta);
+                                       }else
+                                       {
+                                          flt c=box.centerX(); box.setX((box.min.x-c)*scale+c, (box.max.x-c)*scale+c);
+                                       }
+                                    }break;
                                  }
                               }break;
 
                               case 1:
                               {
-                                 flt scale=ScaleFactor(AlignDirToCamEx(phys_part_matrix.y, MT.ad(i)*mul));
+                                 flt delta=AlignDirToCamEx(phys_part_matrix.y, MT.ad(i)*mul), scale=ScaleFactor(delta);
                                  switch(shape.type)
                                  {
-                                    case SHAPE_BALL   : shape.ball   .r*=scale; phys_part_matrix.scaleOrn(scale); break;
-                                    case SHAPE_CAPSULE: shape.capsule.h*=scale; phys_part_matrix.y*=scale; break;
-                                    case SHAPE_TUBE   : shape.tube   .h*=scale; phys_part_matrix.y*=scale; break;
-                                    case SHAPE_OBOX   : {flt c=shape.obox.box.centerY(); shape.obox.box.setY((shape.obox.box.min.y-c)*scale+c, (shape.obox.box.max.y-c)*scale+c); phys_part_matrix.y*=scale;} break;
+                                    case SHAPE_BALL:
+                                    {
+                                       Ball &ball=shape.ball; if(one){flt old=ball.r; MAX(ball.r+=delta/2, 0.005f); ball.pos+=((ball.r-old)*2/2)*!phys_part_matrix.y;}else ball.r*=scale;
+                                    }break;
+                                    case SHAPE_CAPSULE: 
+                                    {
+                                       Capsule &capsule=shape.capsule;
+                                       if(one)
+                                       {
+                                          flt old=capsule.h; MAX(capsule.h+=delta, 0.01f); capsule.pos+=((capsule.h-old)/2)*capsule.up;
+                                       }else
+                                       {
+                                          capsule.h*=scale;
+                                       }
+                                    }break;
+                                    case SHAPE_TUBE:
+                                    {
+                                       Tube &tube=shape.tube;
+                                       if(one)
+                                       {
+                                          flt old=tube.h; MAX(tube.h+=delta, 0.01f); tube.pos+=((tube.h-old)/2)*tube.up;
+                                       }else
+                                       {
+                                          tube.h*=scale;
+                                       }
+                                    }break;
+                                    case SHAPE_OBOX:
+                                    {
+                                       Box &box=shape.obox.box;
+                                       if(one)
+                                       {
+                                          box.max.y=Max(box.min.y+0.01f, box.max.y+delta);
+                                       }else
+                                       {
+                                          flt c=box.centerY(); box.setY((box.min.y-c)*scale+c, (box.max.y-c)*scale+c);
+                                       }
+                                    }break;
                                  }
                               }break;
 
                               case 2:
                               {
-                                 flt scale=ScaleFactor(AlignDirToCamEx(phys_part_matrix.z, MT.ad(i)*mul));
+                                 flt delta=AlignDirToCamEx(phys_part_matrix.z, MT.ad(i)*mul), scale=ScaleFactor(delta);
                                  switch(shape.type)
                                  {
-                                    case SHAPE_BALL   : shape.ball   .r*=scale; phys_part_matrix.scaleOrn(scale); break;
-                                    case SHAPE_CAPSULE: shape.capsule.r*=scale; phys_part_matrix.x*=scale; phys_part_matrix.z*=scale; break;
-                                    case SHAPE_TUBE   : shape.tube   .r*=scale; phys_part_matrix.x*=scale; phys_part_matrix.z*=scale; break;
-                                    case SHAPE_OBOX   : {flt c=shape.obox.box.centerZ(); shape.obox.box.setZ((shape.obox.box.min.z-c)*scale+c, (shape.obox.box.max.z-c)*scale+c); phys_part_matrix.z*=scale;} break;
+                                    case SHAPE_BALL:
+                                    {
+                                       Ball &ball=shape.ball; if(one){flt old=ball.r; MAX(ball.r+=delta/2, 0.005f); ball.pos+=((ball.r-old)*2/2)*!phys_part_matrix.z;}else ball.r*=scale;
+                                    }break;
+                                    case SHAPE_CAPSULE:
+                                    {
+                                       Capsule &capsule=shape.capsule; if(one){flt old=capsule.r; MAX(capsule.r+=delta/2, 0.005f); capsule.pos+=((capsule.r-old)*2/2)*!phys_part_matrix.z;}else capsule.r*=scale;
+                                    }break;
+                                    case SHAPE_TUBE:
+                                    {
+                                       Tube &tube=shape.tube; if(one){flt old=tube.r; MAX(tube.r+=delta/2, 0.005f); tube.pos+=((tube.r-old)*2/2)*!phys_part_matrix.z;}else tube.r*=scale;
+                                    }break;
+                                    case SHAPE_OBOX:
+                                    {
+                                       Box &box=shape.obox.box;
+                                       if(one)
+                                       {
+                                          box.max.z=Max(box.min.z+0.01f, box.max.z+delta);
+                                       }else
+                                       {
+                                          flt c=box.centerZ(); box.setZ((box.min.z-c)*scale+c, (box.max.z-c)*scale+c);
+                                       }
+                                    }break;
                                  }
                               }break;
 
                               default:
                               {
                                  Matrix m; m.setTransformAtPos(phys_part_matrix.pos, Matrix3(ScaleFactor((MT.ad(i)*mul).sum())));
-                                 phys_part_matrix*=m;
-                                 shape           *=m;
+                                 shape*=m;
                               }break;
                            }
                            phys->setBox();

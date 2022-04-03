@@ -423,12 +423,12 @@ p_scale=&add("Item 3D Scale"          , MemberDesc(MEMBER(Options, item_3d_scale
 {
       // process mouse wheel before super.update so it's not handled by the region slidebars
       if(gpc.visible && visible() && Gui.ms()==&list && Ms.wheel())
-         if(Kb.ctrl() || Kb.shift() || Kb.alt())
+         if(Kb.ctrlCmd() || Kb.shift() || Kb.alt())
       {
-            if(Kb.ctrl ())options. rowsDelta (-Ms.wheel()    );else
+            if(Kb.ctrlCmd())options. rowsDelta (-Ms.wheel()    );else
          {
-            if(Kb.shift())options.scaleFactor( Ms.wheel()*0.1f); // allow processing both alt+shift at the same time
-            if(Kb.alt  ())options. sizeFactor( Ms.wheel()*0.1f); // allow processing both alt+shift at the same time
+            if(Kb.shift  ())options.scaleFactor( Ms.wheel()*0.1f); // allow processing both alt+shift at the same time
+            if(Kb.alt    ())options. sizeFactor( Ms.wheel()*0.1f); // allow processing both alt+shift at the same time
          }
          Ms.eatWheel();
       }
@@ -494,11 +494,11 @@ p_scale=&add("Item 3D Scale"          , MemberDesc(MEMBER(Options, item_3d_scale
             }
             if(Ms.wheel())
             {
-               if(Kb.ctrl ()){options. rowsDelta (-Ms.wheel()    ); Ms.eatWheel();}else
-               if(Kb.shift()){options.scaleFactor( Ms.wheel()*0.1f); Ms.eatWheel();}else
-               if(Kb.alt  ()){options. sizeFactor( Ms.wheel()*0.1f); Ms.eatWheel();}
+               if(Kb.ctrlCmd()){options. rowsDelta (-Ms.wheel()    ); Ms.eatWheel();}else
+               if(Kb.shift  ()){options.scaleFactor( Ms.wheel()*0.1f); Ms.eatWheel();}else
+               if(Kb.alt    ()){options. sizeFactor( Ms.wheel()*0.1f); Ms.eatWheel();}
             }
-            if(Ms.b(2) || Ms.b(MS_BACK) || Kb.win())
+            if(Ms.b(2) || Ms.b(MS_BACK) || Kb.winCtrl())
             {
                Ms.freeze();
                if(!(!Kb.ctrlCmd() &&  Kb.alt()))options.angle.x+=Ms.d().x; // disable X rotation when only alt  pressed

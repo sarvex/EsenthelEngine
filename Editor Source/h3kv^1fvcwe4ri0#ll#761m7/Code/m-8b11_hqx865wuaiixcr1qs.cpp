@@ -1355,7 +1355,7 @@ Property &mts=props.New().create("Tex Size Mobile", MemberDesc(DATA_INT).setFunc
          REPA(texs)if(texs[i].contains(focus_obj)){tex=&texs[i]; break;}
 
          Memc<ImageSource> images; FREPA(names)if(ExtType(GetExt(names[i]))==EXT_IMAGE)images.New().set(CodeEdit.importPaths(names[i]), i);
-         bool append=(Kb.ctrl() && tex && tex.file.is()),
+         bool append=(Kb.ctrlCmd() && tex && tex.file.is()),
               multi_images=((images.elms()>1 || append) && tex); // multiple images
 
          if(multi_images

@@ -600,9 +600,9 @@ public:
 
    static void PhysChanged(ObjView &editor);
 
-   static void NewBox    (ObjView &editor);
-   static void NewBall   (ObjView &editor);
-   static void NewTube   (ObjView &editor);
+   static void NewBox(ObjView &editor);
+   static void NewBall(ObjView &editor);
+   static void NewTube(ObjView &editor);
    static void NewCapsule(ObjView &editor);
    static void Convex8   (ObjView &editor);
    static void Convex16  (ObjView &editor);

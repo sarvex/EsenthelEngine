@@ -93,10 +93,10 @@ Elm* GuiObjToElm(GuiObj *go)
 bool UpdateProject()
 {
 #if 0
-   SPSet("CT", Kb.ctrl());
+   SPSet("CT", Kb.ctrlCmd());
    SPSet("SH", Kb.shift());
    SPSet("AL", Kb.alt());
-   SPSet("WI", Kb.win());
+   SPSet("WI", Kb.winCtrl());
    SPSet("SP", Kb.b(KB_SPACE));
    SPSet("TB", Kb.b(KB_TAB));
    SPSet("MX", Ms.pos().x);
@@ -130,7 +130,7 @@ bool UpdateProject()
       if(!ObjEdit.contains(Gui.ms()) && !AnimEdit.contains(Gui.ms()) && !WorldEdit.contains(Gui.ms()) && !TexDownsize.contains(Gui.ms()))App.window().toggle();
 
    // open element
-   if(Kb.ctrl() && Ms.bp(0) && Gui.ms() && Gui.ms()->type()==GO_TEXTLINE)
+   if(Kb.ctrlCmd() && Ms.bp(0) && Gui.ms() && Gui.ms()->type()==GO_TEXTLINE)
    {
       Memc<Str > splits; Split(splits, Gui.ms()->asTextLine()(), '\n');
       Memc<Elm*> elms  ; FREPA(splits)if(Elm *elm=Proj.findElm(splits[i]))elms.add(elm);

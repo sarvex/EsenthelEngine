@@ -1430,7 +1430,7 @@ ObjClassEditor ObjClassEdit;
          {
             if(ParamWindow::Param *src=findParam(obj))
             {
-               bool include=Kb.ctrl(), exclude=Kb.alt(); // if Ctrl pressed then include ID's, if Alt pressed then exclude ID's
+               bool include=Kb.ctrlCmd(), exclude=Kb.alt(); // if Ctrl pressed then include ID's, if Alt pressed then exclude ID's
                Memt<UID> publishable; FREPA(elms)if(Elm *elm=Proj.findElm(elms[i]))if(ElmPublish(elm->type))publishable.add(elm->id);
                if(publishable.elms())
                   if(!src->base || ParamTypeID(src->src.type)) // only if there's no base, or it's of PARAM_ID* type

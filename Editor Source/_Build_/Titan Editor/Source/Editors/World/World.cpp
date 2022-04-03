@@ -929,12 +929,12 @@ WorldView WorldEdit;
             {
                case ELM_OBJ:
                {
-                  if(Kb.ctrl() || Kb.shift())
+                  if(Kb.ctrlCmd() || Kb.shift())
                      if(o++)
                   {
                      x++;
-                     if(Kb.ctrl () && x>=xs
-                     || Kb.shift() && !(SameNameExcludeIndex(last_name, elm->name) && last_parent==elm->parent_id))
+                     if(Kb.ctrlCmd() && x>=xs
+                     || Kb.shift  () && !(SameNameExcludeIndex(last_name, elm->name) && last_parent==elm->parent_id))
                         {pos.x=start_pos.x; pos.z++; x=0;}else pos.x++;
                   }
                   if(Obj *obj=NewObj(pos, *elm))Selection.select(*obj);
