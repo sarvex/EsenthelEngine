@@ -4069,7 +4069,7 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
       {
          phys_undos.set("ground");
          {CacheLock cl(PhysBodies); Shape &shape=phys->parts[sel_phys].shape; shape-=Vec(0, Box(shape).min.y, 0); phys->setBox();}
-         setChangedPhys();
+         setChangedPhys(); setPhysPartMatrix();
       }
    }
    void physDel() {if(phys){phys_undos.set("del"); CacheLock cl(PhysBodies); phys->del(); setChangedPhys(); setPhys(-1);}}
