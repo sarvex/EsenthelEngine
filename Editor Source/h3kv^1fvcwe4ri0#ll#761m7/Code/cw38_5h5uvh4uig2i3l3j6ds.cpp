@@ -3984,18 +3984,9 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
       {
          editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel();
          Capsule capsule;
-         if(Kb.alt())
+       C Skeleton *skel=editor.mesh_skel;
+         if(Kb.alt() && skel && DefaultController(capsule, *skel))
          {
-            Box box; box.zero();
-            if(C Skeleton *skel=editor.mesh_skel)
-            {
-               if(C SkelBone *bone=skel.findBone(BONE_HEAD         ))box|=Box(bone.shape);
-               if(C SkelBone *bone=skel.findBone(BONE_UPPER_ARM,  0))box|=Box(bone.shape.ballD());else if(C SkelBone *bone=skel.findBone(BONE_SHOULDER,  0))box|=Box(bone.shape);
-               if(C SkelBone *bone=skel.findBone(BONE_UPPER_ARM, -1))box|=Box(bone.shape.ballD());else if(C SkelBone *bone=skel.findBone(BONE_SHOULDER, -1))box|=Box(bone.shape);
-            }
-            if(box.size().min()<=0)return;
-            if(Kb.ctrlCmd())box-=box.center().x0z();
-            capsule.set(Max(box.size().xz().max()/2*1.5, 0.005), Max(box.h(), 0.01), box.center());
          }else
          {
             MeshBase m; editor.physMesh(m); Box box=m;

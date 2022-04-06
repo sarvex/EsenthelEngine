@@ -1464,7 +1464,9 @@ ObjClassEditor ObjClassEdit;
                undos.set("setBase");
                FREPA(elms)if(Elm *elm=Proj.findElm(elms[i]))if(elm->type==ELM_OBJ || (elm->type==ELM_OBJ_CLASS && !world)) // for world objects we can't set obj.base as ELM_OBJ_CLASS
                {
-                  EditObjectPtr base=Proj.editPath(elm->id); setBase(base);
+                  EditObjectPtr base=Proj.editPath(elm->id);
+                  if(!world && ObjEdit.obj_elm==elm)continue; // don't allow setting self as base
+                  setBase(base);
                   break;
                }
                ObjList.setChanged();

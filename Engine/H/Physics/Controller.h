@@ -52,3 +52,5 @@ private:
 #endif
 };
 /******************************************************************************/
+Bool DefaultController(Capsule &capsule, C Skeleton &skel); // create a default capsule controller from character skeleton, false on fail
+/******************************************************************************/

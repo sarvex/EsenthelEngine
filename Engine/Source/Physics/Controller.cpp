@@ -447,5 +447,27 @@ Bool Controller::load(File &f)
    del(); return false;
 }
 /******************************************************************************/
+Bool DefaultController(Capsule &capsule, C Skeleton &skel)
+{
+   Box box; box.zero();
+   REPA(skel.bones)
+   {
+    C SkelBone &bone=skel.bones[i]; switch(bone.type)
+      {
+         case BONE_HEAD:
+         case BONE_NECK:
+            box|=Box(bone.shape);
+         break;
+
+         case BONE_UPPER_ARM: if(!bone.type_sub)box|=Box(bone.shape.ballD()); break;
+      }
+   }
+   Flt size_min=0.01f;
+   Vec size=box.size();
+   if(size.min()<=size_min || box.max.y<=size_min)return false;
+   capsule.set(size.xz().max()*(1.5f/2), size.y, Vec(0, box.centerY(), 0));
+   return true;
+}
+/******************************************************************************/
 }
 /******************************************************************************/
