@@ -753,12 +753,19 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       }
       
       // phys
-      if(mode()==PHYS && phys)
+      if(mode()==PHYS)
       {
          D.depthLock(false);
          SetMatrix(trans.matrix);
-         FREPAO(phys->parts).draw((sel_phys==i) ? LitSelColor : (lit_phys==i) ? SelColor : LitColor);
-         if(InRange(sel_phys, phys->parts))DrawMatrix(phys_part_matrix, phys_axis);
+         if(Gui.ms()==&phys_capsule && Kb.alt() && mesh_skel)
+         {
+            Capsule capsule; if(DefaultController(capsule, *mesh_skel))capsule.draw(ORANGE);
+         }
+         if(phys)
+         {
+            FREPAO(phys->parts).draw((sel_phys==i) ? LitSelColor : (lit_phys==i) ? SelColor : LitColor);
+            if(InRange(sel_phys, phys->parts))DrawMatrix(phys_part_matrix, phys_axis);
+         }
          D.depthUnlock();
       }
 

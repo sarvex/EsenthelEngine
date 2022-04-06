@@ -447,25 +447,51 @@ Bool Controller::load(File &f)
    del(); return false;
 }
 /******************************************************************************/
+struct ControllerCalculator
+{
+   Flt r=0, h=0;
+
+   void process(C Ball &ball)
+   {
+      MAX(r, ball.pos.xz().length()+ball.r);
+      MAX(h, ball.pos.y            +ball.r);
+   }
+   void process(C Capsule &capsule)
+   {
+      if(capsule.isBall())
+      {
+         Flt br=capsule.ballR();
+         MAX(r, capsule.pos.xz().length()+br);
+         MAX(h, capsule.pos.y            +br);
+      }else
+      {
+         Vec up=capsule.up*capsule.innerHeightHalf(),
+              a=capsule.pos+up,
+              b=capsule.pos-up;
+         MAX(r, SqrtFast(Max(a.xz().length2(), b.xz().length2()))+capsule.r);
+         MAX(h,          Max(a.y             , b.y             ) +capsule.r);
+      }
+   }
+};
 Bool DefaultController(Capsule &capsule, C Skeleton &skel)
 {
-   Box box; box.zero();
+   ControllerCalculator cc;
    REPA(skel.bones)
    {
     C SkelBone &bone=skel.bones[i]; switch(bone.type)
       {
-         case BONE_HEAD:
-         case BONE_NECK:
-            box|=Box(bone.shape);
+         case BONE_HEAD :
+         case BONE_NECK :
+         case BONE_SPINE:
+            cc.process(bone.shape);
          break;
 
-         case BONE_UPPER_ARM: if(!bone.type_sub)box|=Box(bone.shape.ballD()); break;
+         case BONE_UPPER_ARM: if(!bone.type_sub)cc.process(bone.shape.ballD()); break;
       }
    }
-   Flt size_min=0.01f;
-   Vec size=box.size();
-   if(size.min()<=size_min || box.max.y<=size_min)return false;
-   capsule.set(size.xz().max()*(1.5f/2), size.y, Vec(0, box.centerY(), 0));
+   const Flt min_size=0.01f;
+   if(cc.r<=min_size/2 || cc.h<=min_size)return false;
+   capsule.set(cc.r*1.5f, cc.h, Vec(0, cc.h/2, 0));
    return true;
 }
 /******************************************************************************/
