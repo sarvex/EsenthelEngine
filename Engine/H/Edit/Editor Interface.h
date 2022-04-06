@@ -382,6 +382,10 @@ struct EditorInterface
       Bool setAnimation    (C UID &anim_elm_id, C Animation &anim); // set  animation        of 'anim_elm_id' ELM_ANIM element in the project, false on fail
       UID     animationSkel(C UID &anim_elm_id                   ); // get  skeleton ELM_SKEL element ID associated with animation 'anim_elm_id' ELM_ANIM element in the project
 
+      // physical body
+      Bool getPhys(C UID &elm_id,   PhysBody &phys); // get phys of 'elm_id' ELM_OBJ ELM_PHYS elements in the project, false on fail
+      Bool setPhys(C UID &elm_id, C PhysBody &phys); // set phys of 'elm_id' ELM_OBJ ELM_PHYS elements in the project, false on fail
+
       // object
       UID     curObject(                                                              ); // get ID of currently opened ELM_OBJ element, 'UIDZero' is returned if no object is opened
       Bool    curObject(C UID &elm_id                                                 ); // open   object editor of 'elm_id' ELM_OBJ               element  in the project, if 'UIDZero' is passed then editor will close the object editor, false on fail
@@ -505,6 +509,8 @@ enum EDITOR_INTERFACE_COMMANDS
    EI_GET_ANIM,
    EI_SET_ANIM,
    EI_GET_ANIM_SKEL,
+   EI_GET_PHYS,
+   EI_SET_PHYS,
    EI_GET_OBJ_CUR,
    EI_SET_OBJ_CUR,
    EI_GET_OBJ,

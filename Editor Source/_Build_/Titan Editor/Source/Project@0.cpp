@@ -4895,9 +4895,35 @@ void DrawProject()
             makeGameVer(*elm);
             mesh_data->file_time      .getUTC();
             mesh_data->draw_group_time.getUTC();
+          //mesh_data.from(mesh); already called through 'makeGameVer'
             mesh_data->newVer();
             if(ObjEdit.mesh_elm==elm)ObjEdit.reloadMeshSkel();
             meshChanged(*elm);
+            Server.setElmLong(elm->id);
+            return true;
+         }
+      }
+      return false;
+   }
+   bool ProjectEx::physSet(C UID &elm_id, File &data)
+   {
+      Elm *elm=findElm(elm_id);
+      if(elm)if(ElmObj  * obj_data=elm-> objData())elm=getObjPhysElm(elm->id); // if this is an object then get its phys
+      if(elm)if(ElmPhys *phys_data=elm->physData()) // phys
+      {
+         PhysBody phys; if(phys.load(data, game_path))
+         {
+            phys_data->mtrl_id=findElmID(PhysMtrls.id(phys.material), ELM_PHYS_MTRL);
+            phys.material=PhysMtrls(gamePath(phys_data->mtrl_id)); // fix phys material
+            Save(phys, gamePath(elm->id), game_path);
+            makeGameVer(*elm);
+            phys_data->   file_time.getUTC();
+            phys_data->   mtrl_time.getUTC();
+            phys_data->density_time.getUTC(); phys_data->density=phys.density;
+            phys_data->from(phys);
+            phys_data->newVer();
+            if(ObjEdit.phys_elm==elm)ObjEdit.reloadPhys();
+            physChanged(*elm);
             Server.setElmLong(elm->id);
             return true;
          }

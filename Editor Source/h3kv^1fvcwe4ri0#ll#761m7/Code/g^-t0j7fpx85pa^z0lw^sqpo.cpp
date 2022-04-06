@@ -198,6 +198,7 @@ class Project
    UID animToSkel(C Elm *anim) {if(anim)if(C ElmAnim *anim_data=anim.animData())return anim_data.skel_id; return UIDZero;}
    UID skelToMesh(C Elm *skel) {if(skel)if(C ElmSkel *skel_data=skel.skelData())return skel_data.mesh_id; return UIDZero;}
    UID meshToSkel(C Elm *mesh) {if(mesh)if(C ElmMesh *mesh_data=mesh.meshData())return mesh_data.skel_id; return UIDZero;}
+   UID meshToPhys(C Elm *mesh) {if(mesh)if(C ElmMesh *mesh_data=mesh.meshData())return mesh_data.phys_id; return UIDZero;}
    UID meshToObj (C Elm *mesh) {if(mesh)if(C ElmMesh *mesh_data=mesh.meshData())return mesh_data. obj_id; return UIDZero;}
    UID  objToMesh(C Elm *obj ) {if(obj )if(C ElmObj  * obj_data= obj. objData())return  obj_data.mesh_id; return UIDZero;}
    UID animToMesh(C Elm *anim) {return skelToMesh(animToSkel(anim));}
@@ -205,16 +206,19 @@ class Project
    UID skelToObj (C Elm *skel) {return meshToObj (skelToMesh(skel));}
    UID physToObj (C Elm *phys) {return meshToObj (physToMesh(phys));}
    UID  objToSkel(C Elm *obj ) {return meshToSkel( objToMesh(obj ));}
+   UID  objToPhys(C Elm *obj ) {return meshToPhys( objToMesh(obj ));}
    UID animToSkel(C UID &anim_id) {return animToSkel(findElm(anim_id));}
    UID animToMesh(C UID &anim_id) {return animToMesh(findElm(anim_id));}
    UID animToObj (C UID &anim_id) {return animToObj (findElm(anim_id));}
    UID skelToMesh(C UID &skel_id) {return skelToMesh(findElm(skel_id));}
    UID skelToObj (C UID &skel_id) {return skelToObj (findElm(skel_id));}
    UID meshToSkel(C UID &mesh_id) {return meshToSkel(findElm(mesh_id));}
+   UID meshToPhys(C UID &mesh_id) {return meshToPhys(findElm(mesh_id));}
    UID meshToObj (C UID &mesh_id) {return meshToObj (findElm(mesh_id));}
    UID physToObj (C UID &phys_id) {return physToObj (findElm(phys_id));}
    UID  objToMesh(C UID & obj_id) {return  objToMesh(findElm( obj_id));}
    UID  objToSkel(C UID & obj_id) {return  objToSkel(findElm( obj_id));}
+   UID  objToPhys(C UID & obj_id) {return  objToPhys(findElm( obj_id));}
 
    Elm*  objToMeshElm(C Elm * obj   ) {return findElm( objToMesh( obj   ), ELM_MESH);}
    Elm*  objToMeshElm(C UID & obj_id) {return findElm( objToMesh( obj_id), ELM_MESH);}
@@ -230,6 +234,8 @@ class Project
    Elm*  objToSkelElm(C UID & obj_id) {return findElm( objToSkel( obj_id), ELM_SKEL);}
    Elm* meshToSkelElm(C Elm *mesh   ) {return findElm(meshToSkel(mesh   ), ELM_SKEL);}
    Elm* meshToSkelElm(C UID &mesh_id) {return findElm(meshToSkel(mesh_id), ELM_SKEL);}
+   Elm*  objToPhysElm(C Elm * obj   ) {return findElm( objToPhys( obj   ), ELM_PHYS);}
+   Elm*  objToPhysElm(C UID & obj_id) {return findElm( objToPhys( obj_id), ELM_PHYS);}
 
    Elm* mtrlToMeshElm(C UID &mtrl_id)
    {

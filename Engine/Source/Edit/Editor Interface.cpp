@@ -4,7 +4,7 @@ namespace EE{
 static Int Compare(C Edit::Elm &elm, C UID &id) {return Compare(elm.id, id);}
 namespace Edit{
 /******************************************************************************/
-#define EI_VER 52 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
+#define EI_VER 53 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
 #define EI_STR (ENGINE_NAME " Editor Network Interface")
 
 #define CLIENT_WAIT_TIME         (   60*1000) //    60 seconds
@@ -1370,6 +1370,49 @@ UID EditorInterface::animationSkel(C UID &anim_elm_id)
       disconnect();
    }
    return UIDZero;
+}
+/******************************************************************************/
+// PHYS
+/******************************************************************************/
+Bool EditorInterface::getPhys(C UID &elm_id, PhysBody &phys)
+{
+   if(elm_id.valid() && connected())
+   {
+      File &f=_conn.data.reset(); f.putByte(EI_GET_PHYS).putUID(elm_id).pos(0);
+      if(_conn.send(f))
+      if(_conn.receive(CLIENT_WAIT_TIME))
+      if(f.getByte()==EI_GET_PHYS)
+      {
+         if(f.getBool())
+         {
+            if(!f.left()) // object may exist, but its phys may not be set yet, in that case OK will be true, but no data available
+            {
+               phys.del();
+               return true;
+            }
+            if(phys.load(f))
+            {
+               return true;
+            }
+         }
+         goto fail;
+      }
+      disconnect();
+   }
+fail:
+   phys.del(); return !elm_id.valid();
+}
+Bool EditorInterface::setPhys(C UID &elm_id, C PhysBody &phys)
+{
+   if(elm_id.valid() && connected())
+   {
+      File &f=_conn.data.reset(); f.putByte(EI_SET_PHYS).putUID(elm_id); phys.save(f); f.pos(0);
+      if(_conn.send(f))
+      if(_conn.receive(CLIENT_WAIT_TIME))
+      if(f.getByte()==EI_SET_PHYS)return f.getBool();
+      disconnect();
+   }
+   return false;
 }
 /******************************************************************************/
 // OBJECT

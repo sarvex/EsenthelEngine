@@ -1040,6 +1040,26 @@ EditorServer EditServer;
                   f.reset().putByte(Edit::EI_GET_ANIM_SKEL).putUID(Proj.animToSkel(elm_id)).pos(0); connection.send(f);
                }break;
 
+               // PHYS
+               case Edit::EI_GET_PHYS:
+               {
+                  File &f=connection.data; UID elm_id=f.getUID();
+                  bool ok=false; File data;
+                  if(Elm *elm=Proj.findElm(elm_id))
+                  {
+                     if(elm->type==ELM_OBJ){ok=true; elm=Proj.objToPhysElm(elm);} // if this is an object, then set ok to true, in case it has no phys, we will just send empty data
+                     if(elm && elm->type==ELM_PHYS)ok=data.readTry(Proj.gamePath(*elm));
+                  }
+                  f.reset().putByte(Edit::EI_GET_PHYS).putBool(ok); if(ok)data.copy(f); f.pos(0); connection.send(f);
+               }break;
+
+               case Edit::EI_SET_PHYS:
+               {
+                  File &f=connection.data; UID elm_id=f.getUID();
+                  bool ok=Proj.physSet(elm_id, f);
+                  f.reset().putByte(Edit::EI_SET_PHYS).putBool(ok).pos(0); connection.send(f);
+               }break;
+
                // OBJ
                case Edit::EI_GET_OBJ_CUR:
                {

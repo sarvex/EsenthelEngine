@@ -3982,12 +3982,28 @@ cur_skel_to_saved_skel.renameBone(old_name, new_name);
    {
       if(editor.getPhysElm() && editor.phys)
       {
-         editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel(); MeshBase m; editor.physMesh(m); Box box=m;
-         if(Kb.ctrlCmd() || Kb.shift())MAX(box.min.y, 0);
-         if(Kb.ctrlCmd()              )box-=box.center().x0z();
+         editor.phys_undos.set("capsule"); if(editor.hasPhysMeshOrConvex())editor.physDel();
          Capsule capsule;
-         if(Kb.shift())capsule.set(Max(box.size().xy  .max()/2, 0.005), Max(box.d(), 0.01), box.center(), Vec(0, 0, 1));
-         else          capsule.set(Max(box.size().xz().max()/2, 0.005), Max(box.h(), 0.01), box.center());
+         if(Kb.alt())
+         {
+            Box box; box.zero();
+            if(C Skeleton *skel=editor.mesh_skel)
+            {
+               if(C SkelBone *bone=skel.findBone(BONE_HEAD         ))box|=Box(bone.shape);
+               if(C SkelBone *bone=skel.findBone(BONE_UPPER_ARM,  0))box|=Box(bone.shape.ballD());else if(C SkelBone *bone=skel.findBone(BONE_SHOULDER,  0))box|=Box(bone.shape);
+               if(C SkelBone *bone=skel.findBone(BONE_UPPER_ARM, -1))box|=Box(bone.shape.ballD());else if(C SkelBone *bone=skel.findBone(BONE_SHOULDER, -1))box|=Box(bone.shape);
+            }
+            if(box.size().min()<=0)return;
+            if(Kb.ctrlCmd())box-=box.center().x0z();
+            capsule.set(Max(box.size().xz().max()/2*1.5, 0.005), Max(box.h(), 0.01), box.center());
+         }else
+         {
+            MeshBase m; editor.physMesh(m); Box box=m;
+            if(Kb.ctrlCmd() || Kb.shift())MAX(box.min.y, 0);
+            if(Kb.ctrlCmd()              )box-=box.center().x0z();
+            if(Kb.shift())capsule.set(Max(box.size().xy  .max()/2, 0.005), Max(box.d(), 0.01), box.center(), Vec(0, 0, 1));
+            else          capsule.set(Max(box.size().xz().max()/2, 0.005), Max(box.h(), 0.01), box.center());
+         }
          {CacheLock cl(PhysBodies); editor.phys->parts.New().create(capsule); editor.phys->setBox();}
          editor.setChangedPhys();
       }

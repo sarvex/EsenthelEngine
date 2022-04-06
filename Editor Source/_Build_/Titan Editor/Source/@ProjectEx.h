@@ -628,6 +628,7 @@ public:
    bool imageSet(C UID &elm_id, C Image &image);
    
    bool meshSet(C UID &elm_id, File &data);
+   bool physSet(C UID &elm_id, File &data);
    bool skelSetSlots(C UID &elm_id, C CMemPtr<Edit::SkeletonSlot> &skel_slots);
 
    bool modifyObj(C UID &obj_id, C MemPtr<Edit::ObjChange> &changes);
