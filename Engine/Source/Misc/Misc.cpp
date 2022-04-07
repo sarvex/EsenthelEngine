@@ -1753,6 +1753,9 @@ static Bool SpecialLink(C Str &name)
 }
 Bool Explore(C Str &name, Bool select)
 {
+#if SWITCH
+   return false;
+#endif
    FileInfoSystem fi(name);
    Bool file=(fi.type==FSTD_FILE);
 #if MAC
@@ -1781,6 +1784,9 @@ Bool Explore(C Str &name, Bool select)
 }
 Bool Run(C Str &name, C Str &params, Bool hidden, Bool as_admin)
 {
+#if SWITCH
+   return false;
+#endif
    if(name.is())
    {
    #if WINDOWS_OLD
