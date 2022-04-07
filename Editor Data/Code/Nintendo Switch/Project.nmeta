@@ -37,8 +37,6 @@
     <CrashScreenshotForDev>Deny</CrashScreenshotForDev>
     <PlayLogQueryCapability>None</PlayLogQueryCapability>
     <PlayLogPolicy>Open</PlayLogPolicy>
-    <CacheStorageSize>0x0000000004000000</CacheStorageSize>
-    <CacheStorageJournalSize>0x0000000004000000</CacheStorageJournalSize>
     <RuntimeParameterDelivery>Always</RuntimeParameterDelivery>
   </Application>
 </NintendoSdkMeta>
