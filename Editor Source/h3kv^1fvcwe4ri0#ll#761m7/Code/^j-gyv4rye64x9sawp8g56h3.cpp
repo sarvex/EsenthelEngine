@@ -664,7 +664,7 @@ class AppPropsEditor : PropWin
    static void GetChartboostApp     (  ptr           ) {Explore("https://dashboard.chartboost.com/tools/sdk");}
    static void GetMicrosoftPublisher(  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/account/v3/organization/legalinfo");}
    static void GetXboxLive          (  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/windows/overview");}
-   static void GetNintendo          (  ptr           ) {Explore("https://developer.nintendo.com");}
+   static void GetNintendo          (  ptr           ) {Explore("https://developer.nintendo.com/group/development/products");}
 
    static void DirsWin                     (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.dirs_windows=text; app_data.dirs_windows_time.getUTC(); ap.changed_headers=true;}}
    static Str  DirsWin                     (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.dirs_windows; return S;}

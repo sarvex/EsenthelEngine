@@ -816,7 +816,8 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
                  linux_headers=GetFiles(cei().appHeadersLinux   ()),
                android_headers=GetFiles(cei().appHeadersAndroid ()),
                    ios_headers=GetFiles(cei().appHeadersiOS     ()),
-              nintendo_headers=GetFiles(cei().appHeadersNintendo());
+              nintendo_headers=GetFiles(cei().appHeadersNintendo()),
+                   web_headers=GetFiles(cei().appHeadersWeb     ());
        /*REPA(headers)
          {
             Str &header=headers[i]; if(Ends(header, "?optional"))
@@ -842,6 +843,7 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
             ListHeaders(ft,    linux_headers, "defined __linux__ && !defined ANDROID // Android also has '__linux__' defined");
             ListHeaders(ft,  android_headers, "defined ANDROID");
             ListHeaders(ft, nintendo_headers, "defined __NINTENDO__");
+            ListHeaders(ft,      web_headers, "defined EMSCRIPTEN");
             ft.putLine(S+"#include \""+UnixPath(bin_path+"Engine\\_\\System\\end.h")+'"');
          }
 
@@ -1337,10 +1339,10 @@ Bool CodeEditor::generateVSProj(Int version)
    }
    Memc<Str> libs_win=GetFiles(cei().appLibsWindows()),
              dirs_win=GetFiles(cei().appDirsWindows()),
-             libs_web,
-             dirs_web=dirs_win,
+             libs_web=GetFiles(cei().appLibsWeb    ()),
+             dirs_web=GetFiles(cei().appDirsWeb    ()),
              libs_ns =GetFiles(cei().appLibsNintendo()),
-             dirs_ns =dirs_win;
+             dirs_ns =GetFiles(cei().appDirsNintendo());
 
    // Web html
    if(build_exe_type==EXE_WEB)
@@ -1773,7 +1775,8 @@ Bool CodeEditor::generateXcodeProj()
 
    Memc<Str> libs_mac=GetFiles(cei().appLibsMac()),
              libs_ios=GetFiles(cei().appLibsiOS()),
-             dirs    =GetFiles(cei().appDirsNonWindows());
+             dirs_mac=GetFiles(cei().appDirsMac()),
+             dirs_ios=GetFiles(cei().appDirsiOS());
 
    // embed engine data
    if(cei().appEmbedEngineData())
@@ -1993,15 +1996,25 @@ Bool CodeEditor::generateXcodeProj()
    }
 
    {
-      Str lib_dirs;
+      Str dirs;
 
-      FREPA(libs_mac){Str path=GetPath(libs_mac[i]); if(path.is())lib_dirs.line()+=S+'"'+CString(S+'"'+path+'"')+"\",";}
-      str=Replace(str, "/* ESENTHEL MAC LIBRARY DIRS */", lib_dirs);
+      FREPA(libs_mac){Str path=GetPath(libs_mac[i]); if(path.is())dirs.line()+=S+'"'+CString(S+'"'+path+'"')+"\",";}
+      str=Replace(str, "/* ESENTHEL MAC LIBRARY DIRS */", dirs);
 
-      lib_dirs.clear();
+      dirs.clear();
 
-      FREPA(libs_ios){Str path=GetPath(libs_ios[i]); if(path.is())lib_dirs.line()+=S+'"'+CString(S+'"'+path+'"')+"\",";}
-      str=Replace(str, "/* ESENTHEL IOS LIBRARY DIRS */", lib_dirs);
+      FREPA(libs_ios){Str path=GetPath(libs_ios[i]); if(path.is())dirs.line()+=S+'"'+CString(S+'"'+path+'"')+"\",";}
+      str=Replace(str, "/* ESENTHEL IOS LIBRARY DIRS */", dirs);
+
+      dirs.clear();
+
+      FREPA(dirs_mac)dirs.line()+=S+'"'+CString(S+'"'+dirs_mac[i]+'"')+"\",";
+      str=Replace(str, "/* ESENTHEL MAC INCLUDE DIRS */", dirs);
+
+      dirs.clear();
+
+      FREPA(dirs_ios)dirs.line()+=S+'"'+CString(S+'"'+dirs_ios[i]+'"')+"\",";
+      str=Replace(str, "/* ESENTHEL IOS INCLUDE DIRS */", dirs);
    }
 
 
@@ -2245,10 +2258,6 @@ Bool CodeEditor::generateXcodeProj()
    }
    str.insert(pos, add);
 
-   // dirs
-   Str include_dirs; FREPA(dirs)include_dirs.line()+=S+'"'+CString(S+'"'+dirs[i]+'"')+"\",";
-   str=Replace(str, "/* ESENTHEL INCLUDE DIRS */", include_dirs);
-
    // save 'pbxproj' file
    FileText f; SetFile(f, str, UTF_8_NAKED); if(!OverwriteOnChangeLoud(f, build_project_file+"/project.pbxproj"))return false; // UTF_8_NAKED must be used as Xcode will fail with Byte Order Mark
 
@@ -2344,7 +2353,7 @@ Bool CodeEditor::generateAndroidProj()
       lib_path.tailSlash(false);
       lib_path=UnixPath(lib_path);
       Memc<Str> libs=GetFiles(cei().appLibsAndroid()),
-                dirs=GetFiles(cei().PLATFORM(appDirsWindows, appDirsNonWindows)());
+                dirs=GetFiles(cei().appDirsAndroid());
 
       Str ext_libs, ext_static_lib_names, ext_shared_lib_names, include_dirs;
       FREPA(libs)
@@ -2659,7 +2668,7 @@ Bool CodeEditor::generateLinuxMakeProj()
    if(cei().appPublishOpenVRDll())libs.add("Bin/libopenvr_api.so"); // this must be relative to the EXE because this path will be embedded in the executable ("Bin/" is needed because without it building will fail)
    FREPA(libs)EXTERNAL_LIBS.space()+=UnixEncode(libs[i]);
 
-   Memc<Str> dirs=GetFiles(cei().appDirsNonWindows());
+   Memc<Str> dirs=GetFiles(cei().appDirsLinux());
    FREPA(dirs)EE_HEADER_PATH.space()+=S+"-I"+UnixEncode(dirs[i]);
 
    FREPA(build_files)
@@ -2824,7 +2833,7 @@ Bool CodeEditor::generateLinuxNBProj()
       if(cei().appPublishOpenVRDll())libs.add(bin_path+"libopenvr_api.so");
       FREPA(libs)EXTERNAL_LIBS+=S+"<linkerLibFileItem>"+XmlString(libs[i])+"</linkerLibFileItem>\n";
 
-      Memc<Str> dirs=GetFiles(cei().appDirsNonWindows());
+      Memc<Str> dirs=GetFiles(cei().appDirsLinux());
       FREPA(dirs)EE_HEADER_PATH+=S+"<pElem>"+XmlString(dirs[i])+"</pElem>\n";
 
       if(!f.read("Code/Linux/nbproject/configurations.xml"))return ErrorRead("Code/Linux/nbproject/configurations.xml"); f.getAll(s);

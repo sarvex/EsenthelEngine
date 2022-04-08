@@ -286,6 +286,10 @@
 					"-liodbc",
 					"-liconv",
 				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+/* ESENTHEL MAC INCLUDE DIRS */
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 /* ESENTHEL MAC LIBRARY DIRS */
@@ -321,6 +325,10 @@
 					"-lz",
 					"-liodbc",
 					"-liconv",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+/* ESENTHEL MAC INCLUDE DIRS */
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -363,6 +371,10 @@
 					"-framework OpenAL",
 					"-lz",
 					"-ObjC", // needed by Facebook
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+/* ESENTHEL IOS INCLUDE DIRS */
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -407,6 +419,10 @@
 					"-framework OpenAL",
 					"-lz",
 					"-ObjC", // needed by Facebook
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+/* ESENTHEL IOS INCLUDE DIRS */
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",

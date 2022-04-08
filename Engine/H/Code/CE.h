@@ -154,19 +154,26 @@ struct CodeEditorInterface
    virtual UID           appID                              () {return            UIDZero;} // get ID                                  of current app
    virtual Str           appName                            () {return                  S;} // get name                                of current app
    virtual Str           appDirsWindows                     () {return                  S;} // get all directories                     of current app
-   virtual Str           appDirsNonWindows                  () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsMac                         () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsLinux                       () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsAndroid                     () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsiOS                         () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsNintendo                    () {return                  S;} // get all directories                     of current app
+   virtual Str           appDirsWeb                         () {return                  S;} // get all directories                     of current app
    virtual Str           appHeadersWindows                  () {return                  S;} // get all headers                         of current app
    virtual Str           appHeadersMac                      () {return                  S;} // get all headers                         of current app
    virtual Str           appHeadersLinux                    () {return                  S;} // get all headers                         of current app
    virtual Str           appHeadersAndroid                  () {return                  S;} // get all headers                         of current app
    virtual Str           appHeadersiOS                      () {return                  S;} // get all headers                         of current app
    virtual Str           appHeadersNintendo                 () {return                  S;} // get all headers                         of current app
+   virtual Str           appHeadersWeb                      () {return                  S;} // get all headers                         of current app
    virtual Str           appLibsWindows                     () {return                  S;} // get all libraries                       of current app
    virtual Str           appLibsMac                         () {return                  S;} // get all libraries                       of current app
    virtual Str           appLibsLinux                       () {return                  S;} // get all libraries                       of current app
    virtual Str           appLibsAndroid                     () {return                  S;} // get all libraries                       of current app
    virtual Str           appLibsiOS                         () {return                  S;} // get all libraries                       of current app
    virtual Str           appLibsNintendo                    () {return                  S;} // get all libraries                       of current app
+   virtual Str           appLibsWeb                         () {return                  S;} // get all libraries                       of current app
    virtual Str           appPackage                         () {return                  S;} // get package name                        of current app
    virtual UID           appMicrosoftPublisherID            () {return            UIDZero;} // get Microsoft Publisher ID              of current app
    virtual Str           appMicrosoftPublisherName          () {return                  S;} // get Microsoft Publisher Name            of current app
