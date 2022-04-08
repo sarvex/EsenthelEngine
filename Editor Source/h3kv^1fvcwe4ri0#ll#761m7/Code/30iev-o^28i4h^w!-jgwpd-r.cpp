@@ -98,10 +98,19 @@ class PropEx : Property
    PropEx() {props.include(T);}
   ~PropEx() {props.exclude(T);}
 }
-class PropWin : ClosableWindow
+class PropExs
 {
    Memx<PropEx> props;
-   TextBlack    ts;
+
+   PropEx &     add (C Str &name=S, C MemberDesc &md=MemberDesc()) {return props.New().create(name, md);}
+   PropExs&   toGui (         ) {REPAO(props).  toGui (    ); return T;}
+   PropExs&   toGui (cptr data) {REPAO(props).  toGui (data); return T;}
+   PropExs& autoData( ptr data) {REPAO(props).autoData(data); return T;}   ptr autoData()C {FREPA(props)if(ptr data=props[i].autoData())return data; return null;}
+   PropExs& changed (void (*changed)(C Property &prop), void (*pre_changed)(C Property &prop)=null) {REPAO(props).changed(changed, pre_changed); return T;}
+}
+class PropWin : ClosableWindow, PropExs
+{
+   TextBlack ts;
 
    Rect create(C Str &name, C Vec2 &lu=Vec2(0.02, -0.02), C Vec2 &text_scale=0.036, flt property_height=0.043, flt value_width=0.3)
    {
@@ -112,11 +121,7 @@ class PropWin : ClosableWindow
       Vec2 padd =defaultInnerPaddingSize()+0.02; T.rect(Rect_RD(D.w(), -D.h(), right+padd.x, -rect.min.y+padd.y));
       return rect;
    }
-   PropEx &     add (C Str &name=S, C MemberDesc &md=MemberDesc()) {return props.New().create(name, md);}
-   PropWin&   toGui (         ) {REPAO(props).  toGui (    ); return T;}
-   PropWin&   toGui (cptr data) {REPAO(props).  toGui (data); return T;}
-   PropWin& autoData( ptr data) {REPAO(props).autoData(data); return T;}   ptr autoData()C {FREPA(props)if(ptr data=props[i].autoData())return data; return null;}
-   PropWin& changed (void (*changed)(C Property &prop), void (*pre_changed)(C Property &prop)=null) {REPAO(props).changed(changed, pre_changed); return T;}
+   PropWin& autoData(ptr data) {super.autoData(data); return T;}   ptr autoData()C {return super.autoData();}
 
    virtual PropWin& hide()override {super.hide(); REPAO(props).close(); return T;}
 }

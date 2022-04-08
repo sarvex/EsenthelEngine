@@ -2870,7 +2870,7 @@ class ElmApp : ElmData
       EMBED_ENGINE_DATA_FULL=1<<7,
     //WINDOWS_CODE_SIGN     =1<< ,
    }
-   Str               dirs_windows, dirs_nonwindows,
+   Str               dirs_windows, dirs_mac, dirs_linux, dirs_android, dirs_ios, dirs_nintendo,
                      headers_windows, headers_mac, headers_linux, headers_android, headers_ios, headers_nintendo,
                      libs_windows, libs_mac, libs_linux, libs_android, libs_ios, libs_nintendo,
                      package, android_license_key, location_usage_reason,
@@ -2878,7 +2878,7 @@ class ElmApp : ElmData
                      cb_app_id_ios, cb_app_signature_ios, cb_app_id_google, cb_app_signature_google, 
                      ms_publisher_name,
                      nintendo_publisher_name;
-   int               build=1;
+   int               build=1, save_size=-1;
    ulong             fb_app_id=0, 
                      xbl_title_id=0,
                      nintendo_app_id=0;
@@ -2891,11 +2891,11 @@ class ElmApp : ElmData
                      gui_skin=UIDZero, 
                      ms_publisher_id=UIDZero,
                      xbl_scid=UIDZero;
-   TimeStamp         dirs_windows_time, dirs_nonwindows_time,
+   TimeStamp         dirs_windows_time, dirs_mac_time, dirs_linux_time, dirs_android_time, dirs_ios_time, dirs_nintendo_time,
                      headers_windows_time, headers_mac_time, headers_linux_time, headers_android_time, headers_ios_time, headers_nintendo_time,
                      fb_app_id_time, am_app_id_ios_time, am_app_id_google_time, cb_app_id_ios_time, cb_app_signature_ios_time, cb_app_id_google_time, cb_app_signature_google_time,
                      libs_windows_time, libs_mac_time, libs_linux_time, libs_android_time, libs_ios_time, libs_nintendo_time,
-                     package_time, android_license_key_time, location_usage_reason_time, build_time, storage_time, supported_orientations_time,
+                     package_time, android_license_key_time, location_usage_reason_time, build_time, save_size_time, storage_time, supported_orientations_time,
                      embed_engine_data_time, publish_proj_data_time, publish_physx_dll_time, publish_steam_dll_time, publish_open_vr_dll_time, publish_data_as_pak_time, android_expansion_time,
                      icon_time, notification_icon_time, image_portrait_time, image_landscape_time, gui_skin_time,
                      ms_publisher_id_time, ms_publisher_name_time,
@@ -2906,10 +2906,10 @@ class ElmApp : ElmData
    bool equal(C ElmApp &src)C
    {
       return super.equal(src)
-          && dirs_windows_time==src.dirs_windows_time && dirs_nonwindows_time==src.dirs_nonwindows_time
+          && dirs_windows_time==src.dirs_windows_time && dirs_mac_time==src.dirs_mac_time && dirs_linux_time==src.dirs_linux_time && dirs_android_time==src.dirs_android_time && dirs_ios_time==src.dirs_ios_time && dirs_nintendo_time==src.dirs_nintendo_time
           && headers_windows_time==src.headers_windows_time && headers_mac_time==src.headers_mac_time && headers_linux_time==src.headers_linux_time && headers_android_time==src.headers_android_time && headers_ios_time==src.headers_ios_time && headers_nintendo_time==src.headers_nintendo_time
           && libs_windows_time==src.libs_windows_time && libs_mac_time==src.libs_mac_time && libs_linux_time==src.libs_linux_time && libs_android_time==src.libs_android_time && libs_ios_time==src.libs_ios_time && libs_nintendo_time==src.libs_nintendo_time
-          && package_time==src.package_time && android_license_key_time==src.android_license_key_time && location_usage_reason_time==src.location_usage_reason_time && build_time==src.build_time
+          && package_time==src.package_time && android_license_key_time==src.android_license_key_time && location_usage_reason_time==src.location_usage_reason_time && build_time==src.build_time && save_size_time==src.save_size_time
           && ms_publisher_id_time==src.ms_publisher_id_time && ms_publisher_name_time==src.ms_publisher_name_time
           && xbl_program_time==src.xbl_program_time && xbl_title_id_time==src.xbl_title_id_time && xbl_scid_time==src.xbl_scid_time
           && nintendo_app_id_time==src.nintendo_app_id_time && nintendo_publisher_name_time==src.nintendo_publisher_name_time
@@ -2923,10 +2923,10 @@ class ElmApp : ElmData
    bool newer(C ElmApp &src)C
    {
       return super.newer(src)
-          || dirs_windows_time>src.dirs_windows_time || dirs_nonwindows_time>src.dirs_nonwindows_time
+          || dirs_windows_time>src.dirs_windows_time || dirs_mac_time>src.dirs_mac_time || dirs_linux_time>src.dirs_linux_time || dirs_android_time>src.dirs_android_time || dirs_ios_time>src.dirs_ios_time || dirs_nintendo_time>src.dirs_nintendo_time
           || headers_windows_time>src.headers_windows_time || headers_mac_time>src.headers_mac_time || headers_linux_time>src.headers_linux_time || headers_android_time>src.headers_android_time || headers_ios_time>src.headers_ios_time || headers_nintendo_time>src.headers_nintendo_time
           || libs_windows_time>src.libs_windows_time || libs_mac_time>src.libs_mac_time || libs_linux_time>src.libs_linux_time || libs_android_time>src.libs_android_time || libs_ios_time>src.libs_ios_time || libs_nintendo_time>src.libs_nintendo_time
-          || package_time>src.package_time || android_license_key_time>src.android_license_key_time || location_usage_reason_time>src.location_usage_reason_time || build_time>src.build_time
+          || package_time>src.package_time || android_license_key_time>src.android_license_key_time || location_usage_reason_time>src.location_usage_reason_time || build_time>src.build_time || save_size_time>src.save_size_time
           || ms_publisher_id_time>src.ms_publisher_id_time || ms_publisher_name_time>src.ms_publisher_name_time
           || xbl_program_time>src.xbl_program_time || xbl_title_id_time>src.xbl_title_id_time || xbl_scid_time>src.xbl_scid_time
           || nintendo_app_id_time>src.nintendo_app_id_time || nintendo_publisher_name_time>src.nintendo_publisher_name_time
@@ -2955,7 +2955,7 @@ class ElmApp : ElmData
    virtual void newData()override
    {
       super.newData();
-      dirs_windows_time++; dirs_nonwindows_time++;
+      dirs_windows_time++; dirs_mac_time++; dirs_linux_time++; dirs_android_time++; dirs_ios_time++; dirs_nintendo_time++;
       headers_windows_time++; headers_mac_time++; headers_linux_time++; headers_android_time++; headers_ios_time++; headers_nintendo_time++;
       libs_windows_time++; libs_mac_time++; libs_linux_time++; libs_android_time++; libs_ios_time++; libs_nintendo_time++;
       ms_publisher_id_time++; ms_publisher_name_time++;
@@ -2964,7 +2964,7 @@ class ElmApp : ElmData
       fb_app_id_time++;
       am_app_id_ios_time++; am_app_id_google_time++;
       cb_app_id_ios_time++; cb_app_signature_ios_time++; cb_app_id_google_time++; cb_app_signature_google_time++;
-      package_time++; android_license_key_time++; location_usage_reason_time++; build_time++; storage_time++; supported_orientations_time++;
+      package_time++; android_license_key_time++; location_usage_reason_time++; build_time++; save_size_time++; storage_time++; supported_orientations_time++;
       embed_engine_data_time++; publish_proj_data_time++; publish_physx_dll_time++; publish_steam_dll_time++; publish_open_vr_dll_time++; publish_data_as_pak_time++; android_expansion_time++;
       icon_time++; notification_icon_time++; image_portrait_time++; image_landscape_time++; gui_skin_time++;
    }
@@ -2975,7 +2975,11 @@ class ElmApp : ElmData
 
       {
          ch|=Undo(           dirs_windows_time, src.           dirs_windows_time, dirs_windows           , src.dirs_windows           );
-         ch|=Undo(        dirs_nonwindows_time, src.        dirs_nonwindows_time, dirs_nonwindows        , src.dirs_nonwindows        );
+         ch|=Undo(               dirs_mac_time, src.               dirs_mac_time, dirs_mac               , src.dirs_mac               );
+         ch|=Undo(             dirs_linux_time, src.             dirs_linux_time, dirs_linux             , src.dirs_linux             );
+         ch|=Undo(           dirs_android_time, src.           dirs_android_time, dirs_android           , src.dirs_android           );
+         ch|=Undo(               dirs_ios_time, src.               dirs_ios_time, dirs_ios               , src.dirs_ios               );
+         ch|=Undo(          dirs_nintendo_time, src.          dirs_nintendo_time, dirs_nintendo          , src.dirs_nintendo          );
          ch|=Undo(        headers_windows_time, src.        headers_windows_time, headers_windows        , src.headers_windows        );
          ch|=Undo(            headers_mac_time, src.            headers_mac_time, headers_mac            , src.headers_mac            );
          ch|=Undo(          headers_linux_time, src.          headers_linux_time, headers_linux          , src.headers_linux          );
@@ -2992,6 +2996,7 @@ class ElmApp : ElmData
          ch|=Undo(    android_license_key_time, src.    android_license_key_time, android_license_key    , src.android_license_key    );
          ch|=Undo(  location_usage_reason_time, src.  location_usage_reason_time, location_usage_reason  , src.location_usage_reason  );
          ch|=Undo(                  build_time, src.                  build_time, build                  , src.build                  );
+         ch|=Undo(              save_size_time, src.              save_size_time, save_size              , src.save_size              );
          ch|=Undo(                storage_time, src.                storage_time, storage                , src.storage                );
          ch|=Undo(        ms_publisher_id_time, src.        ms_publisher_id_time, ms_publisher_id        , src.ms_publisher_id        );
          ch|=Undo(      ms_publisher_name_time, src.      ms_publisher_name_time, ms_publisher_name      , src.ms_publisher_name      );
@@ -3036,7 +3041,11 @@ class ElmApp : ElmData
       if(manual) // these are advanced settings and can be synced only manually
       {
          ch|=Sync(           dirs_windows_time, src.           dirs_windows_time, dirs_windows           , src.dirs_windows           );
-         ch|=Sync(        dirs_nonwindows_time, src.        dirs_nonwindows_time, dirs_nonwindows        , src.dirs_nonwindows        );
+         ch|=Sync(               dirs_mac_time, src.               dirs_mac_time, dirs_mac               , src.dirs_mac               );
+         ch|=Sync(             dirs_linux_time, src.             dirs_linux_time, dirs_linux             , src.dirs_linux             );
+         ch|=Sync(           dirs_android_time, src.           dirs_android_time, dirs_android           , src.dirs_android           );
+         ch|=Sync(               dirs_ios_time, src.               dirs_ios_time, dirs_ios               , src.dirs_ios               );
+         ch|=Sync(          dirs_nintendo_time, src.          dirs_nintendo_time, dirs_nintendo          , src.dirs_nintendo          );
          ch|=Sync(        headers_windows_time, src.        headers_windows_time, headers_windows        , src.headers_windows        );
          ch|=Sync(            headers_mac_time, src.            headers_mac_time, headers_mac            , src.headers_mac            );
          ch|=Sync(          headers_linux_time, src.          headers_linux_time, headers_linux          , src.headers_linux          );
@@ -3053,6 +3062,7 @@ class ElmApp : ElmData
          ch|=Sync(    android_license_key_time, src.    android_license_key_time, android_license_key    , src.android_license_key    );
          ch|=Sync(  location_usage_reason_time, src.  location_usage_reason_time, location_usage_reason  , src.location_usage_reason  );
          ch|=Sync(                  build_time, src.                  build_time, build                  , src.build                  );
+         ch|=Sync(              save_size_time, src.              save_size_time, save_size              , src.save_size              );
          ch|=Sync(                storage_time, src.                storage_time, storage                , src.storage                );
          ch|=Sync(        ms_publisher_id_time, src.        ms_publisher_id_time, ms_publisher_id        , src.ms_publisher_id        );
          ch|=Sync(      ms_publisher_name_time, src.      ms_publisher_name_time, ms_publisher_name      , src.ms_publisher_name      );
@@ -3080,7 +3090,7 @@ class ElmApp : ElmData
       }
       ch|=Sync(supported_orientations_time, src.supported_orientations_time, supported_orientations, src.supported_orientations);
       ch|=Sync(                  icon_time, src.                  icon_time, icon                  , src.icon                  );
-      ch|=Undo(     notification_icon_time, src.     notification_icon_time, notification_icon     , src.notification_icon     );
+      ch|=Sync(     notification_icon_time, src.     notification_icon_time, notification_icon     , src.notification_icon     );
       ch|=Sync(        image_portrait_time, src.        image_portrait_time, image_portrait        , src.image_portrait        );
       ch|=Sync(       image_landscape_time, src.       image_landscape_time, image_landscape       , src.image_landscape       );
       ch|=Sync(              gui_skin_time, src.              gui_skin_time, gui_skin              , src.gui_skin              );
@@ -3094,11 +3104,11 @@ class ElmApp : ElmData
    virtual bool save(File &f)C override
    {
       super.save(f);
-      f.cmpUIntV(19);
-      f<<dirs_windows<<dirs_nonwindows;
+      f.cmpUIntV(20);
+      f<<dirs_windows<<dirs_mac<<dirs_linux<<dirs_android<<dirs_ios<<dirs_nintendo;
       f<<headers_windows<<headers_mac<<headers_linux<<headers_android<<headers_ios<<headers_nintendo;
       f<<libs_windows<<libs_mac<<libs_linux<<libs_android<<libs_ios<<libs_nintendo;
-      f<<package<<android_license_key<<location_usage_reason<<build<<storage<<supported_orientations<<flag;
+      f<<package<<android_license_key<<location_usage_reason<<build<<save_size<<storage<<supported_orientations<<flag;
       f<<ms_publisher_id<<ms_publisher_id_time<<ms_publisher_name<<ms_publisher_name_time;
       f<<xbl_program<<xbl_program_time<<xbl_title_id<<xbl_title_id_time<<xbl_scid<<xbl_scid_time;
       f<<nintendo_app_id<<nintendo_app_id_time<<nintendo_publisher_name<<nintendo_publisher_name_time;
@@ -3106,21 +3116,43 @@ class ElmApp : ElmData
       f<<am_app_id_ios<<am_app_id_google<<am_app_id_ios_time<<am_app_id_google_time;
       f<<cb_app_id_ios<<cb_app_signature_ios<<cb_app_id_google<<cb_app_signature_google<<cb_app_id_ios_time<<cb_app_signature_ios_time<<cb_app_id_google_time<<cb_app_signature_google_time;
       f<<icon<<notification_icon<<image_portrait<<image_landscape<<gui_skin;
-      f<<dirs_windows_time<<dirs_nonwindows_time;
+      f<<dirs_windows_time<<dirs_mac_time<<dirs_linux_time<<dirs_android_time<<dirs_ios_time<<dirs_nintendo_time;
       f<<headers_windows_time<<headers_mac_time<<headers_linux_time<<headers_android_time<<headers_ios_time<<headers_nintendo_time;
       f<<libs_windows_time<<libs_mac_time<<libs_linux_time<<libs_android_time<<libs_ios_time<<libs_nintendo_time;
-      f<<package_time<<android_license_key_time<<location_usage_reason_time<<build_time<<storage_time<<supported_orientations_time;
+      f<<package_time<<android_license_key_time<<location_usage_reason_time<<build_time<<save_size_time<<storage_time<<supported_orientations_time;
       f<<embed_engine_data_time<<publish_proj_data_time<<publish_physx_dll_time<<publish_steam_dll_time<<publish_open_vr_dll_time<<publish_data_as_pak_time<<android_expansion_time;
       f<<icon_time<<notification_icon_time<<image_portrait_time<<image_landscape_time<<gui_skin_time;
       return f.ok();
    }
    virtual bool load(File &f)override
    {
-      Str       headers_nonwindows;
-      TimeStamp headers_nonwindows_time;
+      Str       dirs_nonwindows, headers_nonwindows;
+      TimeStamp dirs_nonwindows_time, headers_nonwindows_time;
       T=ElmApp(); // reset to default, in case this is needed (for example when loading data from reused objects for code synchronization)
       if(super.load(f))switch(f.decUIntV())
       {
+         case 20:
+         {
+            f>>dirs_windows>>dirs_mac>>dirs_linux>>dirs_android>>dirs_ios>>dirs_nintendo;
+            f>>headers_windows>>headers_mac>>headers_linux>>headers_android>>headers_ios>>headers_nintendo;
+            f>>libs_windows>>libs_mac>>libs_linux>>libs_android>>libs_ios>>libs_nintendo;
+            f>>package>>android_license_key>>location_usage_reason>>build>>save_size>>storage>>supported_orientations>>flag;
+            f>>ms_publisher_id>>ms_publisher_id_time>>ms_publisher_name>>ms_publisher_name_time;
+            f>>xbl_program>>xbl_program_time>>xbl_title_id>>xbl_title_id_time>>xbl_scid>>xbl_scid_time;
+            f>>nintendo_app_id>>nintendo_app_id_time>>nintendo_publisher_name>>nintendo_publisher_name_time;
+            f>>fb_app_id>>fb_app_id_time;
+            f>>am_app_id_ios>>am_app_id_google>>am_app_id_ios_time>>am_app_id_google_time;
+            f>>cb_app_id_ios>>cb_app_signature_ios>>cb_app_id_google>>cb_app_signature_google>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
+            f>>icon>>notification_icon>>image_portrait>>image_landscape>>gui_skin;
+            f>>dirs_windows_time>>dirs_mac_time>>dirs_linux_time>>dirs_android_time>>dirs_ios_time>>dirs_nintendo_time;
+            f>>headers_windows_time>>headers_mac_time>>headers_linux_time>>headers_android_time>>headers_ios_time>>headers_nintendo_time;
+            f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time>>libs_nintendo_time;
+            f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>save_size_time>>storage_time>>supported_orientations_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
+            if(f.ok())return true;
+         }break;
+
          case 19:
          {
             f>>dirs_windows>>dirs_nonwindows;
@@ -3436,8 +3468,9 @@ class ElmApp : ElmData
    virtual void save(MemPtr<TextNode> nodes)C override
    {
       super.save(nodes);
-                      nodes.New().set("Build"  , build);
-      if(package.is())nodes.New().set("Package", package);
+                      nodes.New().set("Build"   , build);
+      if(package.is())nodes.New().set("Package" , package);
+      if(save_size>=0)nodes.New().set("SaveSize", save_size);
 
       if(icon             .valid())nodes.New().setFN("Icon"            , icon);
       if(notification_icon.valid())nodes.New().setFN("NotificationIcon", notification_icon);
@@ -3453,7 +3486,11 @@ class ElmApp : ElmData
       if( publishOpenVRDll())nodes.New().set("PublishOpenVRDLL");
 
       if(   dirs_windows   .is())nodes.New().set("IncludePathsWindows"     ,    dirs_windows);
-      if(   dirs_nonwindows.is())nodes.New().set("IncludePathsNonWindows"  ,    dirs_nonwindows);
+      if(   dirs_mac       .is())nodes.New().set("IncludePathsMac"         ,    dirs_mac);
+      if(   dirs_linux     .is())nodes.New().set("IncludePathsLinux"       ,    dirs_linux);
+      if(   dirs_android   .is())nodes.New().set("IncludePathsAndroid"     ,    dirs_android);
+      if(   dirs_ios       .is())nodes.New().set("IncludePathsiOS"         ,    dirs_ios);
+      if(   dirs_nintendo  .is())nodes.New().set("IncludePathsNintendo"    ,    dirs_nintendo);
       if(headers_windows   .is())nodes.New().set("IncludeHeadersWindows"   , headers_windows);
       if(headers_mac       .is())nodes.New().set("IncludeHeadersMac"       , headers_mac);
       if(headers_linux     .is())nodes.New().set("IncludeHeadersLinux"     , headers_linux);
@@ -3521,8 +3558,9 @@ class ElmApp : ElmData
                                          cb.nodes.New().set("AppSignatureGoogleTime", cb_app_signature_google_time.text());
       }
 
-      nodes.New().set("BuildTime"  ,   build_time.text());
-      nodes.New().set("PackageTime", package_time.text());
+      nodes.New().set("BuildTime"   ,     build_time.text());
+      nodes.New().set("PackageTime" ,   package_time.text());
+      nodes.New().set("SaveSizeTime", save_size_time.text());
 
       nodes.New().set("IconTime"            , icon_time.text());
       nodes.New().set("NotificationIconTime", notification_icon_time.text());
@@ -3538,7 +3576,11 @@ class ElmApp : ElmData
       nodes.New().set("PublishOpenVRDLLTime"  , publish_open_vr_dll_time.text());
 
       nodes.New().set("IncludePathsWindowsTime"     , dirs_windows_time.text());
-      nodes.New().set("IncludePathsNonWindowsTime"  , dirs_nonwindows_time.text());
+      nodes.New().set("IncludePathsMacTime"         , dirs_mac_time.text());
+      nodes.New().set("IncludePathsLinuxTime"       , dirs_linux_time.text());
+      nodes.New().set("IncludePathsAndroidTime"     , dirs_android_time.text());
+      nodes.New().set("IncludePathsiOSTime"         , dirs_ios_time.text());
+      nodes.New().set("IncludePathsNintendoTime"    , dirs_nintendo_time.text());
       nodes.New().set("IncludeHeadersWindowsTime"   , headers_windows_time.text());
       nodes.New().set("IncludeHeadersMacTime"       , headers_mac_time.text());
       nodes.New().set("IncludeHeadersLinuxTime"     , headers_linux_time.text());
@@ -3568,6 +3610,7 @@ class ElmApp : ElmData
        C TextNode &n=nodes[i];
          if(n.name=="Build"                       )n.getValue(build  );else
          if(n.name=="Package"                     )n.getValue(package);else
+         if(n.name=="SaveSize"                    )n.getValue(save_size);else
 
          if(n.name=="Icon"                        )n.getValue(icon             );else
          if(n.name=="NotificationIcon"            )n.getValue(notification_icon);else
@@ -3583,7 +3626,11 @@ class ElmApp : ElmData
          if(n.name=="PublishOpenVRDLL"            )publishOpenVRDll(n.asBool1());else
 
          if(n.name=="IncludePathsWindows"         )n.getValue(   dirs_windows   );else
-         if(n.name=="IncludePathsNonWindows"      )n.getValue(   dirs_nonwindows);else
+         if(n.name=="IncludePathsMac"             )n.getValue(   dirs_mac       );else
+         if(n.name=="IncludePathsLinux"           )n.getValue(   dirs_linux     );else
+         if(n.name=="IncludePathsAndroid"         )n.getValue(   dirs_android   );else
+         if(n.name=="IncludePathsiOS"             )n.getValue(   dirs_ios       );else
+         if(n.name=="IncludePathsNintendo"        )n.getValue(   dirs_nintendo  );else
          if(n.name=="IncludeHeadersWindows"       )n.getValue(headers_windows   );else
          if(n.name=="IncludeHeadersMac"           )n.getValue(headers_mac       );else
          if(n.name=="IncludeHeadersLinux"         )n.getValue(headers_linux     );else
@@ -3665,8 +3712,9 @@ class ElmApp : ElmData
                if(cb.name=="AppSignatureGoogleTime")cb_app_signature_google_time=cb.asText();
             }
          }else
-         if(n.name=="BuildTime"  )build_time=n.asText();else
-         if(n.name=="PackageTime")package_time=n.asText();else
+         if(n.name=="BuildTime"   )build_time=n.asText();else
+         if(n.name=="PackageTime" )package_time=n.asText();else
+         if(n.name=="SaveSizeTime")save_size_time=n.asText();else
 
          if(n.name=="IconTime"            )icon_time=n.asText();else
          if(n.name=="NotificationIconTime")notification_icon_time=n.asText();else
@@ -3682,7 +3730,11 @@ class ElmApp : ElmData
          if(n.name=="PublishOpenVRDLLTime"  )publish_open_vr_dll_time=n.asText();else
 
          if(n.name=="IncludePathsWindowsTime"     )dirs_windows_time=n.asText();else
-         if(n.name=="IncludePathsNonWindowsTime"  )dirs_nonwindows_time=n.asText();else
+         if(n.name=="IncludePathsMacTime"         )dirs_mac_time=n.asText();else
+         if(n.name=="IncludePathsLinuxTime"       )dirs_linux_time=n.asText();else
+         if(n.name=="IncludePathsAndroidTime"     )dirs_android_time=n.asText();else
+         if(n.name=="IncludePathsiOSTime"         )dirs_ios_time=n.asText();else
+         if(n.name=="IncludePathsNintendoTime"    )dirs_nintendo_time=n.asText();else
          if(n.name=="IncludeHeadersWindowsTime"   )headers_windows_time=n.asText();else
          if(n.name=="IncludeHeadersMacTime"       )headers_mac_time=n.asText();else
          if(n.name=="IncludeHeadersLinuxTime"     )headers_linux_time=n.asText();else

@@ -368,6 +368,12 @@ ConvertToDeAtlas.drag(elms, obj, screen_pos);
    void PropEx::dragEnd(                           ) {textline.enabled(true               );}
    PropEx::PropEx() : elm_type(ELM_NONE) {props.include(T);}
   PropEx::~PropEx() {props.exclude(T);}
+   PropEx &     PropExs::add(C Str &name, C MemberDesc &md) {return props.New().create(name, md);}
+   PropExs&   PropExs::toGui(         ) {REPAO(props).  toGui (    ); return T;}
+   PropExs&   PropExs::toGui(cptr data) {REPAO(props).  toGui (data); return T;}
+   PropExs& PropExs::autoData( ptr data) {REPAO(props).autoData(data); return T;}
+   ptr PropExs::autoData()C {FREPA(props)if(ptr data=props[i].autoData())return data; return null;}
+   PropExs& PropExs::changed(void (*changed)(C Property &prop), void (*pre_changed)(C Property &prop)) {REPAO(props).changed(changed, pre_changed); return T;}
    Rect PropWin::create(C Str &name, C Vec2 &lu, C Vec2 &text_scale, flt property_height, flt value_width)
    {
       ts.reset().size=text_scale; ts.align.set(1, 0);
@@ -377,12 +383,8 @@ ConvertToDeAtlas.drag(elms, obj, screen_pos);
       Vec2 padd =defaultInnerPaddingSize()+0.02f; T.rect(Rect_RD(D.w(), -D.h(), right+padd.x, -rect.min.y+padd.y));
       return rect;
    }
-   PropEx &     PropWin::add(C Str &name, C MemberDesc &md) {return props.New().create(name, md);}
-   PropWin&   PropWin::toGui(         ) {REPAO(props).  toGui (    ); return T;}
-   PropWin&   PropWin::toGui(cptr data) {REPAO(props).  toGui (data); return T;}
-   PropWin& PropWin::autoData( ptr data) {REPAO(props).autoData(data); return T;}
-   ptr PropWin::autoData()C {FREPA(props)if(ptr data=props[i].autoData())return data; return null;}
-   PropWin& PropWin::changed(void (*changed)(C Property &prop), void (*pre_changed)(C Property &prop)) {REPAO(props).changed(changed, pre_changed); return T;}
+   PropWin& PropWin::autoData(ptr data) {super::autoData(data); return T;}
+   ptr PropWin::autoData()C {return super::autoData();}
    PropWin& PropWin::hide(){super::hide(); REPAO(props).close(); return T;}
    void RenameElmClass::create()
    {

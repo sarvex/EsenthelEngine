@@ -249,7 +249,7 @@ class GuiView : Region
             props.NewAt(1).create("Pos Y" , MemberDesc(DATA_REAL).setFunc( PosY,  PosY)).mouseEditSpeed(0.1);
             props.NewAt(2).create("Width" , MemberDesc(DATA_REAL).setFunc(SizeX, SizeX)).min(MinSize).mouseEditSpeed(0.1);
             props.NewAt(3).create("Height", MemberDesc(DATA_REAL).setFunc(SizeY, SizeY)).min(MinSize).mouseEditSpeed(0.1);
-            Rect rect=super.create(S+GuiObjTypeName(type)+" Properties", Vec2(0.02, -0.02), 0.036, 0.043, PropElmNameWidth); changed(Changed, PreChanged).level(level);
+            Rect rect=super.create(S+GuiObjTypeName(type)+" Properties", Vec2(0.02, -0.02), 0.036, 0.043, PropElmNameWidth); changed(Changed, PreChanged); T.level(level);
             Mode.tab(MODE_GUI)+=T; // move to gui tab so it will be hidden in other modes
             button[2].func(null); // disable auto-closing
             return rect;

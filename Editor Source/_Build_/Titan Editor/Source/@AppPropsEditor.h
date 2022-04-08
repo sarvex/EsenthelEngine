@@ -39,7 +39,8 @@ class AppPropsEditor : PropWin
    bool      changed, changed_headers;
    Property *p_icon, *p_image_portrait, *p_image_landscape, *p_notification_icon;
    AppImage    icon     ,    image_portrait     ,    image_landscape     ,    notification_icon;
-   Tabs      platforms, platforms2;
+   Tabs      platforms;
+   PropExs   win_props, mac_props, linux_props, android_props, ios_props, nintendo_props;
 
    static void Changed              (C Property &prop);
    static void GetAndroidLicenseKey (  ptr           );
@@ -52,8 +53,16 @@ class AppPropsEditor : PropWin
 
    static void DirsWin                     (  AppPropsEditor &ap, C Str &text);
    static Str  DirsWin                     (C AppPropsEditor &ap             );
-   static void DirsNonWin                  (  AppPropsEditor &ap, C Str &text);
-   static Str  DirsNonWin                  (C AppPropsEditor &ap             );
+   static void DirsMac                     (  AppPropsEditor &ap, C Str &text);
+   static Str  DirsMac                     (C AppPropsEditor &ap             );
+   static void DirsLinux                   (  AppPropsEditor &ap, C Str &text);
+   static Str  DirsLinux                   (C AppPropsEditor &ap             );
+   static void DirsAndroid                 (  AppPropsEditor &ap, C Str &text);
+   static Str  DirsAndroid                 (C AppPropsEditor &ap             );
+   static void DirsiOS                     (  AppPropsEditor &ap, C Str &text);
+   static Str  DirsiOS                     (C AppPropsEditor &ap             );
+   static void DirsNintendo                (  AppPropsEditor &ap, C Str &text);
+   static Str  DirsNintendo                (C AppPropsEditor &ap             );
    static void HeadersWin                  (  AppPropsEditor &ap, C Str &text);
    static Str  HeadersWin                  (C AppPropsEditor &ap             );
    static void HeadersMac                  (  AppPropsEditor &ap, C Str &text);
@@ -66,8 +75,8 @@ class AppPropsEditor : PropWin
    static Str  HeadersiOS                  (C AppPropsEditor &ap             );
    static void HeadersNintendo             (  AppPropsEditor &ap, C Str &text);
    static Str  HeadersNintendo             (C AppPropsEditor &ap             );
-   static void LibsWindows                 (  AppPropsEditor &ap, C Str &text);
-   static Str  LibsWindows                 (C AppPropsEditor &ap             );
+   static void LibsWin                     (  AppPropsEditor &ap, C Str &text);
+   static Str  LibsWin                     (C AppPropsEditor &ap             );
    static void LibsMac                     (  AppPropsEditor &ap, C Str &text);
    static Str  LibsMac                     (C AppPropsEditor &ap             );
    static void LibsLinux                   (  AppPropsEditor &ap, C Str &text);
@@ -98,6 +107,8 @@ class AppPropsEditor : PropWin
    static Str  AndroidLicenseKey           (C AppPropsEditor &ap             );
    static void Build                       (  AppPropsEditor &ap, C Str &text);
    static Str  Build                       (C AppPropsEditor &ap             );
+   static void SaveSize                    (  AppPropsEditor &ap, C Str &text);
+   static Str  SaveSize                    (C AppPropsEditor &ap             );
    static void LocationUsageReason         (  AppPropsEditor &ap, C Str &text);
    static Str  LocationUsageReason         (C AppPropsEditor &ap             );
    static void FacebookAppID               (  AppPropsEditor &ap, C Str &text);
@@ -147,8 +158,6 @@ class AppPropsEditor : PropWin
       PNIN,
    };
    static cchar8 *platforms_t[]
-;
-   static cchar8 *platforms2_t[]
 ;
    static cchar8 *xbox_live_program_t[]
 ;

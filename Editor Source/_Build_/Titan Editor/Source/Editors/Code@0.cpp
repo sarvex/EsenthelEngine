@@ -37,11 +37,6 @@ AppPropsEditor AppPropsEdit;
       "iOS",
       "Nintendo",
    };
-   cchar8 *AppPropsEditor::platforms2_t[]=
-   {
-      "On Windows",
-      "Non Windows",
-   };
    cchar8 *AppPropsEditor::xbox_live_program_t[]=
    {
       "Creators"                 , // 0
@@ -83,7 +78,11 @@ AppPropsEditor AppPropsEdit;
    UID               CodeView::appID(){if(Elm *app=Proj.findElm(Proj.curApp()))                                  return app->id                          ; return super::appID();}
    Str               CodeView::appName(){if(Elm *app=Proj.findElm(Proj.curApp()))                                  return app->name                        ; return super::appName();}
    Str               CodeView::appDirsWindows(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_windows           ; return super::appDirsWindows();}
-   Str               CodeView::appDirsNonWindows(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_nonwindows        ; return super::appDirsNonWindows();}
+   Str               CodeView::appDirsMac(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_mac               ; return super::appDirsMac();}
+   Str               CodeView::appDirsLinux(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_linux             ; return super::appDirsLinux();}
+   Str               CodeView::appDirsAndroid(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_android           ; return super::appDirsAndroid();}
+   Str               CodeView::appDirsiOS(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_ios               ; return super::appDirsiOS();}
+   Str               CodeView::appDirsNintendo(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->dirs_nintendo          ; return super::appDirsNintendo();}
    Str               CodeView::appHeadersWindows(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->headers_windows        ; return super::appHeadersWindows();}
    Str               CodeView::appHeadersMac(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->headers_mac            ; return super::appHeadersMac();}
    Str               CodeView::appHeadersLinux(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->headers_linux          ; return super::appHeadersLinux();}
@@ -107,6 +106,7 @@ AppPropsEditor AppPropsEdit;
    ULong             CodeView::appNintendoAppID(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->nintendo_app_id        ; return super::appNintendoAppID();}
    Str               CodeView::appNintendoPublisherName(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->nintendo_publisher_name; return super::appNintendoPublisherName();}
    Int               CodeView::appBuild(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->build                  ; return super::appBuild();}
+   Long              CodeView::appSaveSize(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->save_size              ; return super::appSaveSize();}
    ulong             CodeView::appFacebookAppID(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->fb_app_id              ; return super::appFacebookAppID();}
    Str               CodeView::appAdMobAppIDiOS(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->am_app_id_ios          ; return super::appAdMobAppIDiOS();}
    Str               CodeView::appAdMobAppIDGooglePlay(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->am_app_id_google       ; return super::appAdMobAppIDGooglePlay();}
@@ -625,11 +625,19 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    void AppPropsEditor::GetChartboostApp(  ptr           ) {Explore("https://dashboard.chartboost.com/tools/sdk");}
    void AppPropsEditor::GetMicrosoftPublisher(  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/account/v3/organization/legalinfo");}
    void AppPropsEditor::GetXboxLive(  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/windows/overview");}
-   void AppPropsEditor::GetNintendo(  ptr           ) {Explore("https://developer.nintendo.com");}
+   void AppPropsEditor::GetNintendo(  ptr           ) {Explore("https://developer.nintendo.com/group/development/products");}
    void AppPropsEditor::DirsWin(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_windows=text; app_data->dirs_windows_time.getUTC(); ap.changed_headers=true;}}
    Str  AppPropsEditor::DirsWin(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_windows; return S;}
-   void AppPropsEditor::DirsNonWin(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_nonwindows=text; app_data->dirs_nonwindows_time.getUTC(); ap.changed_headers=true;}}
-   Str  AppPropsEditor::DirsNonWin(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_nonwindows; return S;}
+   void AppPropsEditor::DirsMac(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_mac=text; app_data->dirs_mac_time.getUTC(); ap.changed_headers=true;}}
+   Str  AppPropsEditor::DirsMac(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_mac; return S;}
+   void AppPropsEditor::DirsLinux(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_linux=text; app_data->dirs_linux_time.getUTC(); ap.changed_headers=true;}}
+   Str  AppPropsEditor::DirsLinux(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_linux; return S;}
+   void AppPropsEditor::DirsAndroid(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_android=text; app_data->dirs_android_time.getUTC(); ap.changed_headers=true;}}
+   Str  AppPropsEditor::DirsAndroid(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_android; return S;}
+   void AppPropsEditor::DirsiOS(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_ios=text; app_data->dirs_ios_time.getUTC(); ap.changed_headers=true;}}
+   Str  AppPropsEditor::DirsiOS(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_ios; return S;}
+   void AppPropsEditor::DirsNintendo(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->dirs_nintendo=text; app_data->dirs_nintendo_time.getUTC(); ap.changed_headers=true;}}
+   Str  AppPropsEditor::DirsNintendo(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->dirs_nintendo; return S;}
    void AppPropsEditor::HeadersWin(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->headers_windows=text; app_data->headers_windows_time.getUTC(); ap.changed_headers=true;}}
    Str  AppPropsEditor::HeadersWin(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->headers_windows; return S;}
    void AppPropsEditor::HeadersMac(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->headers_mac=text; app_data->headers_mac_time.getUTC(); ap.changed_headers=true;}}
@@ -642,8 +650,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    Str  AppPropsEditor::HeadersiOS(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->headers_ios; return S;}
    void AppPropsEditor::HeadersNintendo(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->headers_nintendo=text; app_data->headers_nintendo_time.getUTC(); ap.changed_headers=true;}}
    Str  AppPropsEditor::HeadersNintendo(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->headers_nintendo; return S;}
-   void AppPropsEditor::LibsWindows(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->libs_windows=text; app_data->libs_windows_time.getUTC();}}
-   Str  AppPropsEditor::LibsWindows(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->libs_windows; return S;}
+   void AppPropsEditor::LibsWin(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->libs_windows=text; app_data->libs_windows_time.getUTC();}}
+   Str  AppPropsEditor::LibsWin(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->libs_windows; return S;}
    void AppPropsEditor::LibsMac(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->libs_mac=text; app_data->libs_mac_time.getUTC();}}
    Str  AppPropsEditor::LibsMac(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->libs_mac; return S;}
    void AppPropsEditor::LibsLinux(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->libs_linux=text; app_data->libs_linux_time.getUTC();}}
@@ -674,6 +682,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    Str  AppPropsEditor::AndroidLicenseKey(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->android_license_key; return S;}
    void AppPropsEditor::Build(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->build=TextInt(text); app_data->build_time.getUTC(); if(ap.elm_id==Proj.curApp())CodeEdit.makeAuto();}}
    Str  AppPropsEditor::Build(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->build; return S;}
+   void AppPropsEditor::SaveSize(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){CalcValue cv; TextValue(text, cv, false); int v=(cv.type ? cv.asInt() : -1); app_data->save_size=((v>=0) ? v*1024*1024 : -1); app_data->save_size_time.getUTC();}}
+   Str  AppPropsEditor::SaveSize(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())if(app_data->save_size>=0)return DivRound(app_data->save_size, 1024*1024); return S;}
    void AppPropsEditor::LocationUsageReason(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->location_usage_reason=text; app_data->location_usage_reason_time.getUTC();}}
    Str  AppPropsEditor::LocationUsageReason(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->location_usage_reason; return S;}
    void AppPropsEditor::FacebookAppID(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->fb_app_id=TextULong(text); app_data->fb_app_id_time.getUTC();}}
@@ -713,38 +723,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    void AppPropsEditor::create()
    {
       flt h=0.05f;
-      PropEx &ihw      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersWin                  , HeadersWin                  )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &ihm      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersMac                  , HeadersMac                  )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &ihl      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersLinux                , HeadersLinux                )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &iha      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersAndroid              , HeadersAndroid              )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &ihi      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersiOS                  , HeadersiOS                  )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &ihn      =add("Include Headers"            , MemberDesc(DATA_STR                               ).setFunc(HeadersNintendo             , HeadersNintendo             )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-      PropEx &ilw      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsWindows                 , LibsWindows                 )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.lib | C:\\Lib2\\Main.lib");
-      PropEx &ilm      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsMac                     , LibsMac                     )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
-      PropEx &ill      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsLinux                   , LibsLinux                   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
-      PropEx &ila      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsAndroid                 , LibsAndroid                 )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\XXX.a | C:\\Lib2\\libXXX.so\n\n$(TARGET_ARCH_ABI) can be used in the path, which will be replaced with target architecture (such as armeabi-v7a, arm64-v8a, x86, x86_64), for example:\nC:\\Path\\XXX-$(TARGET_ARCH_ABI).a\nC:\\Path\\$(TARGET_ARCH_ABI)\\libXXX.so");
-      PropEx &ili      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsiOS                     , LibsiOS                     )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
-      PropEx &iln      =add("Include Libraries"          , MemberDesc(DATA_STR                               ).setFunc(LibsNintendo                , LibsNintendo                )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
-      PropEx &ms_pub_id=add("Microsoft Publisher ID"     , MemberDesc(DATA_STR                               ).setFunc(MicrosoftPublisherID        , MicrosoftPublisherID        ));
-      PropEx &ms_pub_nm=add("Microsoft Publisher Name"   , MemberDesc(DATA_STR                               ).setFunc(MicrosoftPublisherName      , MicrosoftPublisherName      ));
-      PropEx &xb_prog  =add("XboxLive Program"           , MemberDesc(DATA_INT                               ).setFunc(XboxLiveProgram             , XboxLiveProgram             )).setEnum(xbox_live_program_t, Elms(xbox_live_program_t));
-      PropEx &xb_tit_id=add("XboxLive Title ID (decimal)", MemberDesc(DATA_STR                               ).setFunc(XboxLiveTitleID             , XboxLiveTitleID             ));
-      PropEx &xb_scid  =add("XboxLive SCID"              , MemberDesc(DATA_STR                               ).setFunc(XboxLiveSCID                , XboxLiveSCID                ));
-      PropEx &nn_app_id=add("Nintendo App ID"            , MemberDesc(DATA_STR                               ).setFunc(NintendoAppID               , NintendoAppID               ));
-      PropEx &nn_pub_nm=add("Nintendo Publisher Name"    , MemberDesc(DATA_STR                               ).setFunc(NintendoPublisherName       , NintendoPublisherName       ));
-      PropEx &am_ai_g  =add("AdMob App ID"               , MemberDesc(MEMBER(ElmApp, am_app_id_google       )).setFunc(AdMobAppIDGoogle            , AdMobAppIDGoogle            )).desc("AdMob Application ID");
-      PropEx &cb_ai_g  =add("Chartboost App ID"          , MemberDesc(MEMBER(ElmApp, cb_app_id_google       )).setFunc(ChartboostAppIDGoogle       , ChartboostAppIDGoogle       )).desc("Chartboost Application ID");
-      PropEx &cb_as_g  =add("Chartboost App Signature"   , MemberDesc(MEMBER(ElmApp, cb_app_signature_google)).setFunc(ChartboostAppSignatureGoogle, ChartboostAppSignatureGoogle)).desc("Chartboost Application Signature");
-      PropEx &google_lk=add("License Key"                , MemberDesc(DATA_STR                               ).setFunc(AndroidLicenseKey           , AndroidLicenseKey           )).desc("Google Play app license key.\nThis key is used for verification of purchases in Google Play Store, and for downloading Expansion Files hosted in Google Play.\nYou can obtain this key from \"Google Play Developer Console website \\ Your App \\ Services & APIs \\ YOUR LICENSE KEY FOR THIS APPLICATION\".\nUpon providing your license key, all purchases will be automatically verified and only those that pass the verification test will be returned.\nIf you don't specify your key then all purchases will be listed without any verification and you will not be able to download Expansion Files.");
-      PropEx &storage  =add("Preferred Storage"          , MemberDesc(DATA_INT                               ).setFunc(Storage                     , Storage                     )).setEnum().desc("Preferred installation location for the application\n\nInternal - The application must be installed on the internal device storage only. If this is set, the application will never be installed on the external storage. If the internal storage is full, then the system will not install the application.\n\nExternal - The application prefers to be installed on the external storage (SD card). There is no guarantee that the system will honor this request. The application might be installed on internal storage if the external media is unavailable or full, or if the application uses the forward-locking mechanism (not supported on external storage). Once installed, the user can move the application to either internal or external storage through the system settings.\n\nAuto - The application may be installed on the external storage, but the system will install the application on the internal storage by default. If the internal storage is full, then the system will install it on the external storage. Once installed, the user can move the application to either internal or external storage through the system settings."); storage.combobox.setColumns(NameDescListColumn, Elms(NameDescListColumn)).setData(StorageName, Elms(StorageName)).menu.list.setElmDesc(MEMBER(NameDesc, desc));
-      PropEx &expansion=add("Expansion Files"            , MemberDesc(DATA_BOOL                              ).setFunc(AndroidExpansion            , AndroidExpansion            )).desc("If automatically download Android Expansion Files from Google Play for this APK before starting the App.\nWhen this option is enabled then the engine will automatically download any Expansion Files hosted on Google Play that are needed for this Android APK.\nThe application will be started only after the Expansion Files have been downloaded, which means that once your game codes are executed, the Expansion Files will already be in place.\nYou can access the Expansion Files from code using 'AndroidExpansionFileName' function.\nMain Expansion File will be automatically loaded in 'INIT' function.\nTypically when enabling this option you should disable \"Publish Project Data\" so the Project Data is not included in the APK, and manually export the Data using \"Build\\Export\\Project data optimized for Android\".\nDefault value for this option is false.");
-      PropEx &am_ai_i  =add("AdMob App ID"               , MemberDesc(MEMBER(ElmApp, am_app_id_ios          )).setFunc(AdMobAppIDiOS               , AdMobAppIDiOS               )).desc("AdMob Application ID");
-      PropEx &cb_ai_i  =add("Chartboost App ID"          , MemberDesc(MEMBER(ElmApp, cb_app_id_ios          )).setFunc(ChartboostAppIDiOS          , ChartboostAppIDiOS          )).desc("Chartboost Application ID");
-      PropEx &cb_as_i  =add("Chartboost App Signature"   , MemberDesc(MEMBER(ElmApp, cb_app_signature_ios   )).setFunc(ChartboostAppSignatureiOS   , ChartboostAppSignatureiOS   )).desc("Chartboost Application Signature");
-      PropEx &loc_usage=add("Location Usage Reason"      , MemberDesc(DATA_STR                               ).setFunc(LocationUsageReason         , LocationUsageReason         )).desc("Reason for accessing the user's location information.\nThis is needed for iOS (on other platforms this is ignored).\nThis will be displayed on the user screen when trying to access the Location.");
-      PropEx &idw      =add("Include Directories"        , MemberDesc(DATA_STR                               ).setFunc(DirsWin                     , DirsWin                     )).desc("Type full paths to additional include directories.\nThis is used when compiling from the Windows platform.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
-      PropEx &idn      =add("Include Directories"        , MemberDesc(DATA_STR                               ).setFunc(DirsNonWin                  , DirsNonWin                  )).desc("Type full paths to additional include directories.\nThis is used when compiling from platform other than Windows.\nSeparate each with | for example:\n/Lib2 | /Lib2");
-      PropEx &first    =add("Package Name"               , MemberDesc(DATA_STR                               ).setFunc(Package                     , Package                     )).desc("Application package name.\nMust be in following format: \"com.company_name.app_name\"\nWhere 'company_name' is the name of developer/company,\nand 'app_name' is the name of the application.\n\nThe package name should be unique.\nThe name parts may contain uppercase or lowercase letters 'A' through 'Z', numbers, hyphens '-' and underscores '_'.\n\nOnce you publish your application, you cannot change the package name.\nThe package name defines your application's identity,\nso if you change it, then it is considered to be a different application\nand users of the previous version cannot update to the new version.");
+
+                        add("Package Name"               , MemberDesc(DATA_STR                               ).setFunc(Package                     , Package                     )).desc("Application package name.\nMust be in following format: \"com.company_name.app_name\"\nWhere 'company_name' is the name of developer/company,\nand 'app_name' is the name of the application.\n\nThe package name should be unique.\nThe name parts may contain uppercase or lowercase letters 'A' through 'Z', numbers, hyphens '-' and underscores '_'.\n\nOnce you publish your application, you cannot change the package name.\nThe package name defines your application's identity,\nso if you change it, then it is considered to be a different application\nand users of the previous version cannot update to the new version.");
                         add("Build Number"               , MemberDesc(DATA_INT                               ).setFunc(Build                       , Build                       )).desc("Application build number.\nUsed to identify the version of the application.\nThis must be specified in order for the application to update correctly through online stores.\nTypically you should increase this value by 1 when making each new release.").min(1).mouseEditSpeed(2);
     Property &fb_app_id=add("Facebook App ID"            , MemberDesc(MEMBER(ElmApp, fb_app_id              )).setFunc(FacebookAppID               , FacebookAppID               )).desc("Facebook Application ID").mouseEditDel();
                         add("Supported Orientations"     , MemberDesc(DATA_INT                               ).setFunc(Orientation                 , Orientation                 )).setEnum(OrientName, Elms(OrientName)).desc("Supported orientations for mobile platforms");
@@ -760,57 +740,82 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       p_image_portrait=&add("Portrait Image"   );
      p_image_landscape=&add("Landscape Image"  );
    p_notification_icon=&add("Notification Icon");
-      autoData(this);
 
-      Rect rect=super::create(S, Vec2(0.02f, -0.02f), 0.04f, h, 0.85f); super::changed(Changed); button[2].func(HideProjAct, SCAST(GuiObj, T)).show();
-      Vec2 pos(0.02f, -0.02f);
-      flt  th=google_lk.textline.rect().h();
-      T+=platforms.create(platforms_t, Elms(platforms_t)).valid(true).set(PWIN).rect(Rect_LU(pos, clientWidth()-0.04f, 0.05f)); pos.y-=0.05f;
-      pos.y-=0.005f+h/2;
-      ihw.pos(pos).parent(platforms.tab(PWIN));
-      ihm.pos(pos).parent(platforms.tab(PMAC));
-      ihl.pos(pos).parent(platforms.tab(PLIN));
-      iha.pos(pos).parent(platforms.tab(PAND));
-      ihi.pos(pos).parent(platforms.tab(PIOS));
-      ihn.pos(pos).parent(platforms.tab(PNIN));
-      pos.y-=h;
-      ilw.pos(pos).parent(platforms.tab(PWIN));
-      ilm.pos(pos).parent(platforms.tab(PMAC));
-      ill.pos(pos).parent(platforms.tab(PLIN));
-      ila.pos(pos).parent(platforms.tab(PAND));
-      ili.pos(pos).parent(platforms.tab(PIOS));
-      iln.pos(pos).parent(platforms.tab(PNIN));
-      pos.y-=h;
-      ms_pub_id.pos(pos).parent(platforms.tab(PWIN)); platforms.tab(PWIN)+=ms_pub_id.button.create(Rect_RU(ms_pub_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetMicrosoftPublisher); ms_pub_id.textline.rect(Rect(ms_pub_id.textline.rect().ld(), ms_pub_id.button.rect().lu()));
-      nn_app_id.pos(pos).parent(platforms.tab(PNIN)); platforms.tab(PNIN)+=nn_app_id.button.create(Rect_RU(nn_app_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_app_id.textline.rect(Rect(nn_app_id.textline.rect().ld(), nn_app_id.button.rect().lu()));
-      am_ai_g.pos(pos).parent(platforms.tab(PAND)); platforms.tab(PAND)+=am_ai_g.button.create(Rect_RU(am_ai_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAdMobApp); am_ai_g.textline.rect(Rect(am_ai_g.textline.rect().ld(), am_ai_g.button.rect().lu()));
-      am_ai_i.pos(pos).parent(platforms.tab(PIOS)); platforms.tab(PIOS)+=am_ai_i.button.create(Rect_RU(am_ai_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAdMobApp); am_ai_i.textline.rect(Rect(am_ai_i.textline.rect().ld(), am_ai_i.button.rect().lu()));
-      pos.y-=h;
-      ms_pub_nm.pos(pos).parent(platforms.tab(PWIN)); platforms.tab(PWIN)+=ms_pub_nm.button.create(Rect_RU(ms_pub_nm.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetMicrosoftPublisher); ms_pub_nm.textline.rect(Rect(ms_pub_nm.textline.rect().ld(), ms_pub_nm.button.rect().lu()));
-      nn_pub_nm.pos(pos).parent(platforms.tab(PNIN)); platforms.tab(PNIN)+=nn_pub_nm.button.create(Rect_RU(nn_pub_nm.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_pub_nm.textline.rect(Rect(nn_pub_nm.textline.rect().ld(), nn_pub_nm.button.rect().lu()));
-      cb_ai_g.pos(pos).parent(platforms.tab(PAND)); platforms.tab(PAND)+=cb_ai_g.button.create(Rect_RU(cb_ai_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_ai_g.textline.rect(Rect(cb_ai_g.textline.rect().ld(), cb_ai_g.button.rect().lu()));
-      cb_ai_i.pos(pos).parent(platforms.tab(PIOS)); platforms.tab(PIOS)+=cb_ai_i.button.create(Rect_RU(cb_ai_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_ai_i.textline.rect(Rect(cb_ai_i.textline.rect().ld(), cb_ai_i.button.rect().lu()));
-      pos.y-=h;
-      xb_prog.pos(pos).parent(platforms.tab(PWIN)); platforms.tab(PWIN)+=xb_prog.button.create(Rect_RU(xb_prog.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetXboxLive); xb_prog.textline.rect(Rect(xb_prog.textline.rect().ld(), xb_prog.button.rect().lu()));
-      cb_as_g.pos(pos).parent(platforms.tab(PAND)); platforms.tab(PAND)+=cb_as_g.button.create(Rect_RU(cb_as_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_as_g.textline.rect(Rect(cb_as_g.textline.rect().ld(), cb_as_g.button.rect().lu()));
-      cb_as_i.pos(pos).parent(platforms.tab(PIOS)); platforms.tab(PIOS)+=cb_as_i.button.create(Rect_RU(cb_as_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_as_i.textline.rect(Rect(cb_as_i.textline.rect().ld(), cb_as_i.button.rect().lu()));
-      pos.y-=h;
-      xb_tit_id.pos(pos).parent(platforms.tab(PWIN)); platforms.tab(PWIN)+=xb_tit_id.button.create(Rect_RU(xb_tit_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetXboxLive); xb_tit_id.textline.rect(Rect(xb_tit_id.textline.rect().ld(), xb_tit_id.button.rect().lu()));
-      google_lk.pos(pos).parent(platforms.tab(PAND)); platforms.tab(PAND)+=google_lk.button.create(Rect_RU(google_lk.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAndroidLicenseKey); google_lk.textline.rect(Rect(google_lk.textline.rect().ld(), google_lk.button.rect().lu()));
-      loc_usage.pos(pos).parent(platforms.tab(PIOS));
-      pos.y-=h;
-      xb_scid.pos(pos).parent(platforms.tab(PWIN)); platforms.tab(PWIN)+=xb_scid.button.create(Rect_RU(xb_scid.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetXboxLive); xb_scid.textline.rect(Rect(xb_scid.textline.rect().ld(), xb_scid.button.rect().lu()));
-      storage.pos(pos).parent(platforms.tab(PAND));
-      pos.y-=h;
-      expansion.pos(pos).parent(platforms.tab(PAND));
-      pos.y-=h*1.5f;
-      T+=platforms2.create(platforms2_t, Elms(platforms2_t)).valid(true).set(0).rect(Rect_LU(pos, clientWidth()-0.04f, 0.05f)); pos.y-=0.05f;
-      pos.y-=0.005f+h/2;
-      idw.pos(pos).parent(platforms2.tab(0)); idn.pos(pos).parent(platforms2.tab(1)); pos.y-=h;
-      pos.y-=h;
+      win_props.add("Include Headers"    , MemberDesc(DATA_STR).setFunc(HeadersWin, HeadersWin)).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
+      win_props.add("Include Libraries"  , MemberDesc(DATA_STR).setFunc(LibsWin   , LibsWin   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.lib | C:\\Lib2\\Main.lib");
+      win_props.add("Include Directories", MemberDesc(DATA_STR).setFunc(DirsWin   , DirsWin   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
+      PropEx &ms_pub_id=win_props.add("Microsoft Publisher ID"     , MemberDesc(DATA_STR                               ).setFunc(MicrosoftPublisherID        , MicrosoftPublisherID        ));
+      PropEx &ms_pub_nm=win_props.add("Microsoft Publisher Name"   , MemberDesc(DATA_STR                               ).setFunc(MicrosoftPublisherName      , MicrosoftPublisherName      ));
+      PropEx &xb_prog  =win_props.add("XboxLive Program"           , MemberDesc(DATA_INT                               ).setFunc(XboxLiveProgram             , XboxLiveProgram             )).setEnum(xbox_live_program_t, Elms(xbox_live_program_t));
+      PropEx &xb_tit_id=win_props.add("XboxLive Title ID (decimal)", MemberDesc(DATA_STR                               ).setFunc(XboxLiveTitleID             , XboxLiveTitleID             ));
+      PropEx &xb_scid  =win_props.add("XboxLive SCID"              , MemberDesc(DATA_STR                               ).setFunc(XboxLiveSCID                , XboxLiveSCID                ));
 
-      for(int i=props.validIndex(&first); i<props.elms(); i++, pos.y-=h)props[i].pos(pos);
+      mac_props.add("Include Headers"    , MemberDesc(DATA_STR).setFunc(HeadersMac, HeadersMac)).desc("Type full paths to header file names.\nSeparate each with | for example:\n/Lib1/Main.h | /Lib2/Main.h");
+      mac_props.add("Include Libraries"  , MemberDesc(DATA_STR).setFunc(LibsMac   , LibsMac   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
+      mac_props.add("Include Directories", MemberDesc(DATA_STR).setFunc(DirsMac   , DirsMac   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\n/Lib2 | /Lib2");
+
+      linux_props.add("Include Headers"    , MemberDesc(DATA_STR).setFunc(HeadersLinux, HeadersLinux)).desc("Type full paths to header file names.\nSeparate each with | for example:\n/Lib1/Main.h | /Lib2/Main.h");
+      linux_props.add("Include Libraries"  , MemberDesc(DATA_STR).setFunc(LibsLinux   , LibsLinux   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
+      linux_props.add("Include Directories", MemberDesc(DATA_STR).setFunc(DirsLinux   , DirsLinux   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\n/Lib2 | /Lib2");
+
+      android_props.add("Include Headers"    , MemberDesc(DATA_STR).setFunc(HeadersAndroid, HeadersAndroid)).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
+      android_props.add("Include Libraries"  , MemberDesc(DATA_STR).setFunc(LibsAndroid   , LibsAndroid   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\XXX.a | C:\\Lib2\\libXXX.so\n\n$(TARGET_ARCH_ABI) can be used in the path, which will be replaced with target architecture (such as armeabi-v7a, arm64-v8a, x86, x86_64), for example:\nC:\\Path\\XXX-$(TARGET_ARCH_ABI).a\nC:\\Path\\$(TARGET_ARCH_ABI)\\libXXX.so");
+      android_props.add("Include Directories", MemberDesc(DATA_STR).setFunc(DirsAndroid   , DirsAndroid   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
+      PropEx &am_ai_g  =android_props.add("AdMob App ID"               , MemberDesc(MEMBER(ElmApp, am_app_id_google       )).setFunc(AdMobAppIDGoogle            , AdMobAppIDGoogle            )).desc("AdMob Application ID");
+      PropEx &cb_ai_g  =android_props.add("Chartboost App ID"          , MemberDesc(MEMBER(ElmApp, cb_app_id_google       )).setFunc(ChartboostAppIDGoogle       , ChartboostAppIDGoogle       )).desc("Chartboost Application ID");
+      PropEx &cb_as_g  =android_props.add("Chartboost App Signature"   , MemberDesc(MEMBER(ElmApp, cb_app_signature_google)).setFunc(ChartboostAppSignatureGoogle, ChartboostAppSignatureGoogle)).desc("Chartboost Application Signature");
+      PropEx &google_lk=android_props.add("License Key"                , MemberDesc(DATA_STR                               ).setFunc(AndroidLicenseKey           , AndroidLicenseKey           )).desc("Google Play app license key.\nThis key is used for verification of purchases in Google Play Store, and for downloading Expansion Files hosted in Google Play.\nYou can obtain this key from \"Google Play Developer Console website \\ Your App \\ Services & APIs \\ YOUR LICENSE KEY FOR THIS APPLICATION\".\nUpon providing your license key, all purchases will be automatically verified and only those that pass the verification test will be returned.\nIf you don't specify your key then all purchases will be listed without any verification and you will not be able to download Expansion Files.");
+      PropEx &storage  =android_props.add("Preferred Storage"          , MemberDesc(DATA_INT                               ).setFunc(Storage                     , Storage                     )).setEnum().desc("Preferred installation location for the application\n\nInternal - The application must be installed on the internal device storage only. If this is set, the application will never be installed on the external storage. If the internal storage is full, then the system will not install the application.\n\nExternal - The application prefers to be installed on the external storage (SD card). There is no guarantee that the system will honor this request. The application might be installed on internal storage if the external media is unavailable or full, or if the application uses the forward-locking mechanism (not supported on external storage). Once installed, the user can move the application to either internal or external storage through the system settings.\n\nAuto - The application may be installed on the external storage, but the system will install the application on the internal storage by default. If the internal storage is full, then the system will install it on the external storage. Once installed, the user can move the application to either internal or external storage through the system settings."); storage.combobox.setColumns(NameDescListColumn, Elms(NameDescListColumn)).setData(StorageName, Elms(StorageName)).menu.list.setElmDesc(MEMBER(NameDesc, desc));
+      PropEx &expansion=android_props.add("Expansion Files"            , MemberDesc(DATA_BOOL                              ).setFunc(AndroidExpansion            , AndroidExpansion            )).desc("If automatically download Android Expansion Files from Google Play for this APK before starting the App.\nWhen this option is enabled then the engine will automatically download any Expansion Files hosted on Google Play that are needed for this Android APK.\nThe application will be started only after the Expansion Files have been downloaded, which means that once your game codes are executed, the Expansion Files will already be in place.\nYou can access the Expansion Files from code using 'AndroidExpansionFileName' function.\nMain Expansion File will be automatically loaded in 'INIT' function.\nTypically when enabling this option you should disable \"Publish Project Data\" so the Project Data is not included in the APK, and manually export the Data using \"Build\\Export\\Project data optimized for Android\".\nDefault value for this option is false.");
+
+      ios_props.add("Include Headers"    , MemberDesc(DATA_STR).setFunc(HeadersiOS, HeadersiOS)).desc("Type full paths to header file names.\nSeparate each with | for example:\n/Lib1/Main.h | /Lib2/Main.h");
+      ios_props.add("Include Libraries"  , MemberDesc(DATA_STR).setFunc(LibsiOS   , LibsiOS   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\n/Lib1/Main.a | /Lib2/Main.a");
+      ios_props.add("Include Directories", MemberDesc(DATA_STR).setFunc(DirsiOS   , DirsiOS   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\n/Lib2 | /Lib2");
+      PropEx &am_ai_i  =ios_props.add("AdMob App ID"               , MemberDesc(MEMBER(ElmApp, am_app_id_ios          )).setFunc(AdMobAppIDiOS               , AdMobAppIDiOS               )).desc("AdMob Application ID");
+      PropEx &cb_ai_i  =ios_props.add("Chartboost App ID"          , MemberDesc(MEMBER(ElmApp, cb_app_id_ios          )).setFunc(ChartboostAppIDiOS          , ChartboostAppIDiOS          )).desc("Chartboost Application ID");
+      PropEx &cb_as_i  =ios_props.add("Chartboost App Signature"   , MemberDesc(MEMBER(ElmApp, cb_app_signature_ios   )).setFunc(ChartboostAppSignatureiOS   , ChartboostAppSignatureiOS   )).desc("Chartboost Application Signature");
+      PropEx &loc_usage=ios_props.add("Location Usage Reason"      , MemberDesc(DATA_STR                               ).setFunc(LocationUsageReason         , LocationUsageReason         )).desc("Reason for accessing the user's location information.\nThis is needed for iOS (on other platforms this is ignored).\nThis will be displayed on the user screen when trying to access the Location.");
+
+                        nintendo_props.add("Include Headers"         , MemberDesc(DATA_STR).setFunc(HeadersNintendo, HeadersNintendo)).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
+                        nintendo_props.add("Include Libraries"       , MemberDesc(DATA_STR).setFunc(LibsNintendo   , LibsNintendo   )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.a | C:\\Lib2\\Main.a");
+                        nintendo_props.add("Include Directories"     , MemberDesc(DATA_STR).setFunc(DirsNintendo   , DirsNintendo   )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
+      PropEx &nn_app_id=nintendo_props.add("Nintendo App ID"         , MemberDesc(DATA_STR).setFunc(NintendoAppID               , NintendoAppID               ));
+      PropEx &nn_pub_nm=nintendo_props.add("Nintendo Publisher Name" , MemberDesc(DATA_STR).setFunc(NintendoPublisherName       , NintendoPublisherName       ));
+                        nintendo_props.add("Max Save Disk Usage (MB)", MemberDesc(DATA_STR).setFunc(SaveSize, SaveSize)).desc("Maximum disk usage for all save files in MegaBytes");
+
+      autoData(this); win_props.autoData(this); mac_props.autoData(this); linux_props.autoData(this); android_props.autoData(this); ios_props.autoData(this); nintendo_props.autoData(this);
+      flt  vw=0.85f;
+      Rect rect=super::create(S, Vec2(0.02f, -0.01f), 0.04f, h, vw); button[2].func(HideProjAct, SCAST(GuiObj, T)).show();
+      Vec2 pos=rect.min; pos.y-=h*3.5f;
+      flt  th=fb_app_id.textline.rect().h(), cw=clientWidth(), pw=cw-0.02f; vw=cw;
+      T+=platforms.create(platforms_t, Elms(platforms_t)).valid(true).set(PWIN).rect(Rect_LU(pos, cw-0.04f, 0.05f)); pos.y-=h;
+      AddProperties(     win_props.props, platforms.tab(PWIN), pos, h, vw, &ts, &pw);
+      AddProperties(     mac_props.props, platforms.tab(PMAC), pos, h, vw, &ts, &pw);
+      AddProperties(   linux_props.props, platforms.tab(PLIN), pos, h, vw, &ts, &pw);
+      AddProperties( android_props.props, platforms.tab(PAND), pos, h, vw, &ts, &pw);
+      AddProperties(     ios_props.props, platforms.tab(PIOS), pos, h, vw, &ts, &pw);
+      AddProperties(nintendo_props.props, platforms.tab(PNIN), pos, h, vw, &ts, &pw);
+      super::changed(Changed); win_props.changed(Changed); mac_props.changed(Changed); linux_props.changed(Changed); android_props.changed(Changed); ios_props.changed(Changed); nintendo_props.changed(Changed);
+
       T+=fb_app_id.button.create(Rect_RU(fb_app_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetFacebookAppID); fb_app_id.textline.rect(Rect(fb_app_id.textline.rect().ld(), fb_app_id.button.rect().lu()));
+
+      platforms.tab(PWIN)+=ms_pub_id.button.create(Rect_RU(ms_pub_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetMicrosoftPublisher); ms_pub_id.textline.rect(Rect(ms_pub_id.textline.rect().ld(), ms_pub_id.button.rect().lu()));
+      platforms.tab(PWIN)+=ms_pub_nm.button.create(Rect_RU(ms_pub_nm.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetMicrosoftPublisher); ms_pub_nm.textline.rect(Rect(ms_pub_nm.textline.rect().ld(), ms_pub_nm.button.rect().lu()));
+      platforms.tab(PWIN)+=xb_prog.button.create(Rect_RU(xb_prog.combobox.rect().ru()+Vec2(0, 0), th*2, th), "Get").func(GetXboxLive); xb_prog.combobox.rect(Rect(xb_prog.combobox.rect().ld(), xb_prog.button.rect().lu()));
+      platforms.tab(PWIN)+=xb_tit_id.button.create(Rect_RU(xb_tit_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetXboxLive); xb_tit_id.textline.rect(Rect(xb_tit_id.textline.rect().ld(), xb_tit_id.button.rect().lu()));
+      platforms.tab(PWIN)+=xb_scid.button.create(Rect_RU(xb_scid.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetXboxLive); xb_scid.textline.rect(Rect(xb_scid.textline.rect().ld(), xb_scid.button.rect().lu()));
+
+      platforms.tab(PAND)+=am_ai_g.button.create(Rect_RU(am_ai_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAdMobApp); am_ai_g.textline.rect(Rect(am_ai_g.textline.rect().ld(), am_ai_g.button.rect().lu()));
+      platforms.tab(PAND)+=cb_ai_g.button.create(Rect_RU(cb_ai_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_ai_g.textline.rect(Rect(cb_ai_g.textline.rect().ld(), cb_ai_g.button.rect().lu()));
+      platforms.tab(PAND)+=cb_as_g.button.create(Rect_RU(cb_as_g.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_as_g.textline.rect(Rect(cb_as_g.textline.rect().ld(), cb_as_g.button.rect().lu()));
+      platforms.tab(PAND)+=google_lk.button.create(Rect_RU(google_lk.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAndroidLicenseKey); google_lk.textline.rect(Rect(google_lk.textline.rect().ld(), google_lk.button.rect().lu()));
+
+      platforms.tab(PIOS)+=am_ai_i.button.create(Rect_RU(am_ai_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetAdMobApp); am_ai_i.textline.rect(Rect(am_ai_i.textline.rect().ld(), am_ai_i.button.rect().lu()));
+      platforms.tab(PIOS)+=cb_ai_i.button.create(Rect_RU(cb_ai_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_ai_i.textline.rect(Rect(cb_ai_i.textline.rect().ld(), cb_ai_i.button.rect().lu()));
+      platforms.tab(PIOS)+=cb_as_i.button.create(Rect_RU(cb_as_i.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetChartboostApp); cb_as_i.textline.rect(Rect(cb_as_i.textline.rect().ld(), cb_as_i.button.rect().lu()));
+
+      platforms.tab(PNIN)+=nn_app_id.button.create(Rect_RU(nn_app_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_app_id.textline.rect(Rect(nn_app_id.textline.rect().ld(), nn_app_id.button.rect().lu()));
+      platforms.tab(PNIN)+=nn_pub_nm.button.create(Rect_RU(nn_pub_nm.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_pub_nm.textline.rect(Rect(nn_pub_nm.textline.rect().ld(), nn_pub_nm.button.rect().lu()));
 
       p_image_portrait   ->move(Vec2(rect.w()  /3, h  ));
       p_image_landscape  ->move(Vec2(rect.w()*2/3, h*2));
@@ -819,11 +824,12 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       image_portrait   .create(MEMBER(ElmApp, image_portrait   ), MEMBER(ElmApp,    image_portrait_time), T, Rect_LU(p_image_portrait   ->text.rect().left()-Vec2(0, h/2), 0.3f));
       image_landscape  .create(MEMBER(ElmApp, image_landscape  ), MEMBER(ElmApp,   image_landscape_time), T, Rect_LU(p_image_landscape  ->text.rect().left()-Vec2(0, h/2), 0.3f));
       notification_icon.create(MEMBER(ElmApp, notification_icon), MEMBER(ElmApp, notification_icon_time), T, Rect_LU(p_notification_icon->text.rect().left()-Vec2(0, h/2), 0.13f));
-      clientRect(Rect_C(0, 0, 1.3f, -icon.rect().min.y+0.02f));
+
+      clientRect(Rect_C(0, 0, clientWidth(), -pos.y+h*9+0.02f));
    }
    void AppPropsEditor::toGui()
    {
-      super::toGui();
+      super::toGui(); win_props.toGui(); mac_props.toGui(); linux_props.toGui(); android_props.toGui(); ios_props.toGui(); nintendo_props.toGui();
       icon             .setImage();
       image_portrait   .setImage();
       image_landscape  .setImage();

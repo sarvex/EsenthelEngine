@@ -18,7 +18,11 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual UID               appID                              ()override; 
    virtual Str               appName                            ()override; 
    virtual Str               appDirsWindows                     ()override; 
-   virtual Str               appDirsNonWindows                  ()override; 
+   virtual Str               appDirsMac                         ()override; 
+   virtual Str               appDirsLinux                       ()override; 
+   virtual Str               appDirsAndroid                     ()override; 
+   virtual Str               appDirsiOS                         ()override; 
+   virtual Str               appDirsNintendo                    ()override; 
    virtual Str               appHeadersWindows                  ()override; 
    virtual Str               appHeadersMac                      ()override; 
    virtual Str               appHeadersLinux                    ()override; 
@@ -42,6 +46,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual ULong             appNintendoAppID                   ()override; 
    virtual Str               appNintendoPublisherName           ()override; 
    virtual Int               appBuild                           ()override; 
+   virtual Long              appSaveSize                        ()override; 
    virtual ulong             appFacebookAppID                   ()override; 
    virtual Str               appAdMobAppIDiOS                   ()override; 
    virtual Str               appAdMobAppIDGooglePlay            ()override; 

@@ -21,11 +21,8 @@
 		<DisplayVersion>71</DisplayVersion>
 		<StartupUserAccount>Required</StartupUserAccount>
 		<UserAccountSwitchLock>Disable</UserAccountSwitchLock>
-		<SupportedLanguage>AmericanEnglish</SupportedLanguage>
 		<Screenshot>Allow</Screenshot>
 		<DataLossConfirmation>None</DataLossConfirmation>
-		<UserAccountSaveDataSize>0x0000000002000000</UserAccountSaveDataSize>
-		<UserAccountSaveDataJournalSize>0x0000000002000000</UserAccountSaveDataJournalSize>
 		<ApplicationErrorCodeCategory>00000</ApplicationErrorCodeCategory>
 		<LogoType>LicensedByNintendo</LogoType>
 		<LogoHandling>Auto</LogoHandling>
@@ -36,8 +33,6 @@
 		<CrashScreenshotForDev>Deny</CrashScreenshotForDev>
 		<PlayLogQueryCapability>None</PlayLogQueryCapability>
 		<PlayLogPolicy>Open</PlayLogPolicy>
-		<CacheStorageSize>0x0000000004000000</CacheStorageSize>
-		<CacheStorageJournalSize>0x0000000004000000</CacheStorageJournalSize>
 		<RuntimeParameterDelivery>Always</RuntimeParameterDelivery>
 	</Application>
 </NintendoSdkMeta>

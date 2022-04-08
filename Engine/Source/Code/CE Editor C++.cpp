@@ -1383,20 +1383,24 @@ Bool CodeEditor::generateVSProj(Int version)
             if(XmlNode *ReleaseVersion=Application->findNode("ReleaseVersion"))ReleaseVersion->data.setNum(1)[0]=cei().appBuild();
             if(XmlNode *DisplayVersion=Application->findNode("DisplayVersion"))DisplayVersion->data.setNum(1)[0]=cei().appBuild();
 
-            Mems<LANG_TYPE> langs; cei().appLanguages(langs);
-            if(langs.has(EN)){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");}
-            if(langs.has(DE)) AddNintendoLang(*Application, "German");
-            if(langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
-            if(langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
-            if(langs.has(IT)) AddNintendoLang(*Application, "Italian");
-            if(langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
-            if(langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
-            if(langs.has(PL)) AddNintendoLang(*Application, "Polish");
-            if(langs.has(RU)) AddNintendoLang(*Application, "Russian");
-            if(langs.has(JP)) AddNintendoLang(*Application, "Japanese");
-            if(langs.has(KO)) AddNintendoLang(*Application, "Korean");
-            if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
-            if(langs.has(TH)) AddNintendoLang(*Application, "Thai");
+            {
+               Mems<LANG_TYPE> langs; cei().appLanguages(langs);
+               const Bool all=true;
+               if(all || langs.has(EN)){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");}
+               if(all || langs.has(DE)) AddNintendoLang(*Application, "German");
+               if(all || langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
+               if(all || langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
+               if(all || langs.has(IT)) AddNintendoLang(*Application, "Italian");
+               if(all || langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
+               if(all || langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
+               if(all || langs.has(PL)) AddNintendoLang(*Application, "Polish");
+               if(all || langs.has(RU)) AddNintendoLang(*Application, "Russian");
+               if(all || langs.has(JP)) AddNintendoLang(*Application, "Japanese");
+               if(all || langs.has(KO)) AddNintendoLang(*Application, "Korean");
+               if(all || langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
+               if(all || langs.has(TH)) AddNintendoLang(*Application, "Thai");
+            }
+
             Long save_size=cei().appSaveSize(); if(save_size>=0)
             {
                Str s=TextHex(Unsigned(save_size), -1, 0, true);
