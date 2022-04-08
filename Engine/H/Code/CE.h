@@ -213,6 +213,8 @@ struct CodeEditorInterface
    virtual Bool          appAndroidExpansion                () {return              false;} // get if download android expansion files of current app
    virtual void          appSpecificFiles                   (MemPtr<PakFileData> files) { } // get specific files                      of current app
    virtual void          appInvalidProperty                 (C Str &msg               ) { } // called when application property was detected as invalid
+   virtual void          appLanguages                       (MemPtr<LANG_TYPE> langs  ) {langs.clear();} // get supported languages    of current app
+   virtual Long          appSaveSize                        () {return                 -1;} // get max save disk usage                 of current app
 
    virtual Rect         menuRect    (                      ) {return D.rect();}
    virtual Rect       sourceRect    (                      ) {return D.rect();}

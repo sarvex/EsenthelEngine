@@ -22,11 +22,8 @@
     <DisplayVersion>0</DisplayVersion>
     <StartupUserAccount>Required</StartupUserAccount>
     <UserAccountSwitchLock>Disable</UserAccountSwitchLock>
-    <SupportedLanguage>AmericanEnglish</SupportedLanguage>
     <Screenshot>Allow</Screenshot>
     <DataLossConfirmation>None</DataLossConfirmation>
-    <UserAccountSaveDataSize>0x0000000002000000</UserAccountSaveDataSize>
-    <UserAccountSaveDataJournalSize>0x0000000002000000</UserAccountSaveDataJournalSize>
     <ApplicationErrorCodeCategory>00000</ApplicationErrorCodeCategory>
     <LogoType>LicensedByNintendo</LogoType>
     <LogoHandling>Auto</LogoHandling>

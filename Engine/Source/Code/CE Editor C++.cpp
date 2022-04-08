@@ -1198,6 +1198,7 @@ struct ImageConvert
       if(ok){f.pos(0); FCreateDir(GetPath(dest)); ok=SafeOverwrite(f, dest, &dt);}
    }
 };
+static void AddNintendoLang(XmlNode &app, CChar8 *lang) {app.nodes.New().setName("SupportedLanguage").data.add(lang);}
 Bool CodeEditor::generateVSProj(Int version)
 {
    // !! For UWP don't store assets deeper than "Assets" (for example "Assets/UWP") because that would affect the final asset locations in the UWP executable !!
@@ -1381,6 +1382,27 @@ Bool CodeEditor::generateVSProj(Int version)
             }
             if(XmlNode *ReleaseVersion=Application->findNode("ReleaseVersion"))ReleaseVersion->data.setNum(1)[0]=cei().appBuild();
             if(XmlNode *DisplayVersion=Application->findNode("DisplayVersion"))DisplayVersion->data.setNum(1)[0]=cei().appBuild();
+
+            Mems<LANG_TYPE> langs; cei().appLanguages(langs);
+            if(langs.has(EN)){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");}
+            if(langs.has(DE)) AddNintendoLang(*Application, "German");
+            if(langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
+            if(langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
+            if(langs.has(IT)) AddNintendoLang(*Application, "Italian");
+            if(langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
+            if(langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
+            if(langs.has(PL)) AddNintendoLang(*Application, "Polish");
+            if(langs.has(RU)) AddNintendoLang(*Application, "Russian");
+            if(langs.has(JP)) AddNintendoLang(*Application, "Japanese");
+            if(langs.has(KO)) AddNintendoLang(*Application, "Korean");
+            if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
+            if(langs.has(TH)) AddNintendoLang(*Application, "Thai");
+            Long save_size=cei().appSaveSize(); if(save_size>=0)
+            {
+               Str s=TextHex(Unsigned(save_size), -1, 0, true);
+               Application->nodes.New().setName("UserAccountSaveDataSize"       ).data.add(s);
+               Application->nodes.New().setName("UserAccountSaveDataJournalSize").data.add(s);
+            }
          }
       }
       if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Nintendo Switch/Project.nmeta"))return false;
