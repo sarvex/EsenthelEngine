@@ -1393,12 +1393,12 @@ Bool CodeEditor::generateVSProj(Int version)
                if(all || langs.has(IT)) AddNintendoLang(*Application, "Italian");
                if(all || langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
                if(all || langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
-               if(all || langs.has(PL)) AddNintendoLang(*Application, "Polish");
+             //if(all || langs.has(PL)) AddNintendoLang(*Application, "Polish"); unsupported by Nintendo
                if(all || langs.has(RU)) AddNintendoLang(*Application, "Russian");
                if(all || langs.has(JP)) AddNintendoLang(*Application, "Japanese");
                if(all || langs.has(KO)) AddNintendoLang(*Application, "Korean");
                if(all || langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
-               if(all || langs.has(TH)) AddNintendoLang(*Application, "Thai");
+             //if(all || langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
             }
 
             Long save_size=cei().appSaveSize(); if(save_size>=0)
