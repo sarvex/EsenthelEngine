@@ -1401,7 +1401,8 @@ Bool CodeEditor::generateVSProj(Int version)
              //if(all || langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
             }
 
-            Long save_size=cei().appSaveSize(); if(save_size>=0)
+            Long save_size=cei().appSaveSize(); if(save_size<0)save_size=32*1024*1024; // if save size is unspecified, then for simplicity use max possible without having to contact Nintendo for approval (32MB*2=64MB total)
+            if(  save_size>=0)
             {
                Str s=TextHex(Unsigned(save_size), -1, 0, true);
                Application->nodes.New().setName("UserAccountSaveDataSize"       ).data.add(s);
