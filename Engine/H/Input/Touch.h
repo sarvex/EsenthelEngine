@@ -116,6 +116,8 @@ struct MouseTouch // Mouse and Touch input combined into one class
 
    static void freeze(Int i) {if(!InRange(i, Touches))Ms.freeze();}
 
+   static void disableScroll(Int i) {if(InRange(i, Touches))Touches[i].disableScroll();}
+
    static void eat(Int i       ) {return InRange(i, Touches) ? Touches[i].eat() : Ms.eat( );} // eat any button  input of i-th touch or mouse from this frame so it will not be processed by the remaining codes in frame, this disables all BS_FLAG states (BS_PUSHED, BS_RELEASED, etc.) except BS_ON
    static void eat(Int i, Int b) {return InRange(i, Touches) ? Touches[i].eat() : Ms.eat(b);} // eat    'button' input of i-th touch or mouse from this frame so it will not be processed by the remaining codes in frame, this disables all BS_FLAG states (BS_PUSHED, BS_RELEASED, etc.) except BS_ON
 
