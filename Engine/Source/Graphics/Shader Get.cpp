@@ -272,7 +272,7 @@ BLST* DefaultShaders::Blst()C
    )
    {
       BLSTKey key;
-      key.per_pixel =(((Renderer.type()==RT_FORWARD) ? Renderer.forwardPrecision() : true) && bump>SBUMP_ZERO);
+      key.per_pixel   =(((Renderer.type()==RT_FORWARD) ? Renderer.forwardPrecision() : true) && bump>SBUMP_ZERO);
 
       key.bump_mode   =Min(bump, key.per_pixel ? SBUMP_NORMAL : SBUMP_FLAT); // blend light currently supports only up to normal mapping
       key.color       =color;
