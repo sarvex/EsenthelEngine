@@ -115,7 +115,7 @@ void CreateRenderSampler()
       glSamplerParameteri(SamplerRender.sampler, GL_TEXTURE_MAX_ANISOTROPY, Max(D.texFilter   (), 1));
       glSamplerParameteri(SamplerRender.sampler, GL_TEXTURE_MIN_FILTER    ,     D.texMipFilter() ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST);
       glSamplerParameteri(SamplerRender.sampler, GL_TEXTURE_MAG_FILTER    ,     D.texFilter   () ? GL_LINEAR : GL_NEAREST);
-      glSamplerParameteri(SamplerRender.sampler, GL_TEXTURE_BASE_LEVEL    ,     D.texMipMin   ());
+      glSamplerParameterf(SamplerRender.sampler, GL_TEXTURE_MIN_LOD       ,     D.texMipMin   ());
       glSamplerParameterf(SamplerRender.sampler, GL_TEXTURE_LOD_BIAS      ,     D.texMipBias  ());
    }
 #if GL_ES
@@ -124,7 +124,7 @@ void CreateRenderSampler()
       glSamplerParameteri(SamplerRender.sampler_no_filter, GL_TEXTURE_MAX_ANISOTROPY,        Max(D.texFilter   (), 1));
       glSamplerParameteri(SamplerRender.sampler_no_filter, GL_TEXTURE_MIN_FILTER    , GLNoFilter(D.texMipFilter() ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST));
       glSamplerParameteri(SamplerRender.sampler_no_filter, GL_TEXTURE_MAG_FILTER    , GLNoFilter(D.texFilter   () ? GL_LINEAR : GL_NEAREST));
-      glSamplerParameteri(SamplerRender.sampler_no_filter, GL_TEXTURE_BASE_LEVEL    ,            D.texMipMin   ());
+      glSamplerParameterf(SamplerRender.sampler_no_filter, GL_TEXTURE_MIN_LOD       ,            D.texMipMin   ());
       glSamplerParameterf(SamplerRender.sampler_no_filter, GL_TEXTURE_LOD_BIAS      ,            D.texMipBias  ());
    }
 #endif
