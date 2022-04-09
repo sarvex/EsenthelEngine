@@ -1104,7 +1104,7 @@ void Image::setGLParams()
    #endif
       glGetError(); // clear error in case GL_TEXTURE_MAX_LEVEL, anisotropy, .. are not supported
 
-      // now call thost that must succeed
+      // now call those that must succeed
 
    #if GL_SWIZZLE
       switch(hwType())
