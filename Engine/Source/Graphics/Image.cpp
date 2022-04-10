@@ -1188,7 +1188,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
        C Byte *data=(Byte*)src_data; Int faces=ImageFaces(mode);
          initial_data=res_data.setNum(mip_maps*faces).data();
          FREPD(m, mip_maps)
-         { // have to specify HW sizes, because all images (HW and SOFT) are stored like that. Need to use 'hw_size' and not T.hwSize (because 1-it's not yet available, 2-it may be bigger, but we need the 'src' hw size which is always smallest)
+         { // have to specify HW sizes, because all images (HW and SOFT) are stored like that. Need to use 'hw_size' and not 'T.hwSize' (because 1-it's not yet available, 2-it may be bigger, but we need the 'src' hw size which is always smallest)
             Int mip_pitch =ImagePitch  (hw_size.x, hw_size.y, m, type)           , // X
                 mip_pitch2=ImageBlocksY(hw_size.x, hw_size.y, m, type)*mip_pitch , // X*Y
                 mip_size  =                 Max(1, hw_size.z>>m      )*mip_pitch2; // X*Y*Z
