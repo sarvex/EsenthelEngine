@@ -80,6 +80,7 @@ struct File
    void      cipherOffset     (Int     offset);                             // adjust file cipher offset
    void      cipherOffset     (Long    offset) {cipherOffset((Int)offset);} // adjust file cipher offset, can be Int (instead Long) because Cipher operates on Int offset only
    void      cipherOffsetClear(              ) {cipherOffset(-pos()     );} // adjust file cipher offset so that "posCipher()==0 -> pos+cipher_offset==0 -> cipher_offset=-pos", this will result in encryption being always the same, regardless of current location
+   Long      fullLeft         (              )C{return _full_size-_pos   ;} // get size left (number of bytes from current position to the end of the file)
 #endif
    Bool  is     (        )C {return _type!=0    ;} // if  file is opened
    Bool  pos    (Long pos);                        // set position, false on fail
@@ -274,7 +275,7 @@ private:
    Bool       _writable, _ok;
    FILE_PATH  _path;
    Int        _buf_pos, _buf_len, _buf_size, _cipher_offset;
-   ULong      _offset, _pos, _size;
+   ULong      _offset, _pos, _size, _full_size;
  C Pak       *_pak;
    Cipher    *_cipher;
    Ptr        _buf;
