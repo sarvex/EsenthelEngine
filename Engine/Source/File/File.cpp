@@ -151,7 +151,7 @@ static INLINE Int Read (Int handle,  Ptr data, Int size) {return PLATFORM(_read 
 // !! if adding any members here then adjust 'copyToAndDiscard', 'writeMemFixed' !!
 void File::zeroNoBuf()
 {
-  _type=FILE_NONE; _writable=false; _ok=true; _path=FILE_PATH(0);
+  _type=FILE_NONE; _writable=_allocated=false; _ok=true; _path=FILE_PATH(0);
   _buf_pos=_buf_len=_cipher_offset=_handle=0;
   _offset=_pos=_size=_full_size=0;
   _pak=null;
@@ -198,7 +198,7 @@ void File::close()
          if(_writable)FlushIO(); // check for '_writable' instead of 'FILE_STD_WRITE' because File could have been created as writable but later switched to FILE_STD_READ
       }break;
 
-      case FILE_MEM: if(_writable)Free(_mem); break; // write memory was dynamically allocated
+      case FILE_MEM: if(_allocated)Free(_mem); break;
 
       case FILE_MEMB: if(FILE_MEMB_UNION)DTOR(_memb);else _memb.clear(); break;
    }
@@ -234,7 +234,7 @@ File& File::mustRead   (C UID     &id                  , Cipher  *cipher) {if(! 
 
 Bool File::copyToAndDiscard(Mems<Byte> &dest)
 {
-   if(T._type==FILE_MEM && T._writable && !_cipher && posAbs()==0) // check if we can just swap memories
+   if(T._type==FILE_MEM && T._allocated && !_cipher && posAbs()==0) // check if we can just swap memories
    {  // swap memories, perhaps 'File' may reuse 'Mems' data for future operations
       Ptr data=dest.data(); Int elms=dest.elms(); dest.setTemp((Byte*)T._mem, T._size);
       T._ok           =true;
@@ -251,9 +251,23 @@ Bool File::copyToAndDiscard(Mems<Byte> &dest)
       return getFast(dest.data(), dest.elms());
    }
 }
+File& File::writeMemDest(Ptr data, Int size, Cipher *cipher)
+{
+   close();
+   if(size>=0)
+   {
+      T._type     =FILE_MEM;
+      T._writable =true;
+    //T._allocated=false; already cleared in 'close'
+      T._mem      =data;
+      T._size     =_full_size=size;
+      T._cipher   =cipher;
+   }
+   return T;
+}
 File& File::writeMemFixed(Int size, Cipher *cipher)
 {
-   if(T._size==size && T._type==FILE_MEM && T._writable) // check if we can reuse existing memory
+   if(T._size==size && T._type==FILE_MEM && T._writable && T._allocated) // check if we can reuse existing memory
    {
       T._ok           =true;
       T._cipher_offset=0;
@@ -265,10 +279,11 @@ File& File::writeMemFixed(Int size, Cipher *cipher)
       close();
       if(!size || (_mem=Alloc(size)))
       {
-         T._type    =FILE_MEM;
-         T._writable=true;
-         T._size    =_full_size=size;
-         T._cipher  =cipher;
+         T._type     =FILE_MEM;
+         T._writable =true;
+         T._allocated=true;
+         T._size     =_full_size=size;
+         T._cipher   =cipher;
       }
    }
    return T;
@@ -302,11 +317,12 @@ File& File::readMem(CPtr data, Int size, Cipher *cipher)
    close();
    if(size>=0)
    {
-      T._type    =FILE_MEM;
-      T._writable=false;
-      T._mem     =(Ptr)data;
-      T._size    =_full_size=size;
-      T._cipher  =cipher;
+      T._type     =FILE_MEM;
+    //T._writable =false; already cleared in 'close'
+    //T._allocated=false; already cleared in 'close'
+      T._mem      =(Ptr)data;
+      T._size     =_full_size=size;
+      T._cipher   =cipher;
    }
    return T;
 }
@@ -416,10 +432,11 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
          if( size<0)ok=false;else
          if(!size  ) // no need for opening the file using Android API when it has no size
          {
-            T._type    =FILE_MEM;
-            T._writable=false;
-            T._size    =_full_size=0;
-            T._cipher  =cipher;
+            T._type     =FILE_MEM;
+          //T._writable =false; already cleared in 'close'
+          //T._allocated=false; already cleared in 'close'
+          //T._size     =_full_size=0; already cleared in 'close'
+            T._cipher   =cipher;
             ok=true;
          }else // size>0
          {
@@ -431,7 +448,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
                {
                   T._handle   =fd;
                   T._type     =FILE_STD_READ;
-                  T._writable =false;
+                //T._writable =false; already cleared in 'close'
                   T._path     =FILE_ANDROID_ASSET;
                   T._cipher   =cipher;
                   T._full_size=_size;
@@ -446,12 +463,13 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
             if(_mem=(Ptr)AAsset_getBuffer(asset))
             {
                if(processed)*processed=true; // file had to be decompressed
-               T._type    =FILE_MEM;
-               T._writable=false;
-               T._path    =FILE_ANDROID_ASSET;
-               T._size    =_full_size=size;
-               T._cipher  =cipher;
-               T._aasset  =asset;
+               T._type     =FILE_MEM;
+             //T._writable =false; already cleared in 'close'
+             //T._allocated=false; already cleared in 'close'
+               T._path     =FILE_ANDROID_ASSET;
+               T._size     =_full_size=size;
+               T._cipher   =cipher;
+               T._aasset   =asset;
                return true; // return here and don't close 'asset' because that would make the '_mem' buffer invalid
             }
          }
@@ -1070,9 +1088,9 @@ UInt File::memUsage()C
    UInt mem=_buf_size;
    switch(_type)
    {
-      case FILE_MEM : if(_writable)mem+=_full_size      ; break;
+      case FILE_MEM : if(_allocated)mem+=_full_size      ; break;
    #if FILE_MEMB_UNION
-      case FILE_MEMB:              mem+=_memb.memUsage(); break;
+      case FILE_MEMB:               mem+=_memb.memUsage(); break;
    #endif
    }
 #if !FILE_MEMB_UNION
@@ -1194,7 +1212,7 @@ Bool File::size(Long size)
 
       case FILE_MEM:
       {
-         if(_writable)_Realloc(_mem, Unsigned(size), _size); // write mode allocated memory manually, so we need to reallocate it
+         if(_allocated)_Realloc(_mem, Unsigned(size), _size); // memory allocated manually must be reallocated
         _size=_full_size=size;
       }break;
 

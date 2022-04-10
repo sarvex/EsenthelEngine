@@ -9,7 +9,7 @@ enum FILE_TYPE : Byte // File Type
    FILE_NONE     , // none
    FILE_STD_READ , // stdio in read  mode, '_handle' is a system handle, can be switched to FILE_STD_WRITE if '_writable'
    FILE_STD_WRITE, // stdio in write mode, '_handle' is a system handle, can be switched to FILE_STD_READ
-   FILE_MEM      , // memory, always readable, writable if '_writable'
+   FILE_MEM      , // memory, always readable, writable if '_writable', allocated if '_allocated'
    FILE_MEMB     , // Memb  , always readable+writable
 };
 #endif
@@ -50,7 +50,8 @@ struct File
    Bool   readTryRaw  (C PakFile &file, C Pak    &pak                                                            ); // try to read Pak          file, writing is not allowed in this mode, false on fail, this reads file in raw mode (does not decompress files)
 #endif
 
-   File& writeMemFixed( Int size              , const_mem_addr Cipher *cipher=null); // start writing to   fixed     memory file   , reading is     allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
+   File& writeMemFixed(           Int size    , const_mem_addr Cipher *cipher=null); // start writing to   fixed     memory file   , reading is     allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
+   File& writeMemDest ( Ptr data, Int size    , const_mem_addr Cipher *cipher=null); // start writing to   fixed     memory address, reading is     allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
    File& writeMem     (UInt block_elms=64*1024, const_mem_addr Cipher *cipher=null); // start writing to   resizable memory file   , reading is     allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
    File&  readMem     (CPtr data, Int size    , const_mem_addr Cipher *cipher=null); // start reading from fixed     memory address, writing is not allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
 
@@ -281,9 +282,13 @@ private:
    Ptr        _buf;
 union
 {
-   Int        _handle;
-   Ptr        _mem;
-   Memb<Byte> _memb;
+      Int        _handle;
+   struct
+   {
+      Ptr        _mem;
+      Bool       _allocated;
+   };
+      Memb<Byte> _memb;
 };
 #if ANDROID
    Ptr        _aasset;

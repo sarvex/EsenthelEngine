@@ -92,9 +92,9 @@ namespace EE{
 /******************************************************************************/
 static Bool MemDecompress(File &f, Long decompressed_size)
 {
-   return f._type==FILE_MEM           // continuous memory
-       && f.left()>=decompressed_size // file has enough room for decompressed data
-       && decompressed_size>=0;       // decompressed size is known
+   return f._type==FILE_MEM && f._writable // continuous writable memory
+       && f.left()>=decompressed_size      // file has enough room for decompressed data
+       && decompressed_size>=0;            // decompressed size is known
 }
 static Bool MemWrote(File &f, UIntPtr size)
 {
