@@ -5544,7 +5544,7 @@ struct CopyContext
                }else
                if((filter==FILTER_BEST || filter==FILTER_WAIFU) && ResizeWaifu && (dest.lw()>src.lw() || dest.lh()>src.lh()) && src.ld()==1 && dest.ld()==1 && ResizeWaifu(src, dest, flags)){}else
                // !! Codes below operate on Source Image Native Gamma !! because upscaling sRGB images looks better if they're not sRGB, and linear images (such as normal maps) need linear anyway
-               if((filter==FILTER_BEST || filter==FILTER_CUBIC_PLUS || filter==FILTER_CUBIC_PLUS_SHARP) // optimized Cubic+ upscale, check FILTER_BEST again in case Waifu was not available
+               if((filter==FILTER_BEST || filter==FILTER_WAIFU || filter==FILTER_CUBIC_PLUS || filter==FILTER_CUBIC_PLUS_SHARP) // optimized Cubic+ upscale, check FILTER_BEST/FILTER_WAIFU again in case Waifu was not available
                && src.ld()==1)
                {
                   alpha_limit=(no_alpha_limit ? ALPHA_LIMIT_NONE : (filter==FILTER_CUBIC_PLUS_SHARP) ? ALPHA_LIMIT_CUBIC_PLUS_SHARP : ALPHA_LIMIT_CUBIC_PLUS);
