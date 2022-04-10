@@ -689,7 +689,11 @@ Bool SteamWorks::cloudSave(C Str &file_name, File &f, Cipher *cipher)
 #if SUPPORT_STEAM
    if(file_name.is())if(ISteamRemoteStorage *i=SteamRemoteStorage())
    {
-      if(f._type==FILE_MEM && !f._cipher && !cipher)return i->FileWrite(UTF8(file_name), f.memFast(), f.left());
+      if(f._type==FILE_MEM && !f._cipher && !cipher)
+      {
+         Bool   ok=i->FileWrite(UTF8(file_name), f.memFast(), f.left()); f.pos(f.size());
+         return ok;
+      }
 
       Memt<Byte> data; data.setNum(f.left()); if(f.getFast(data.data(), data.elms()))
       {
@@ -707,21 +711,31 @@ Bool SteamWorks::cloudLoad(C Str &file_name, File &f, Bool memory, Cipher *ciphe
    {
       Str8 name=UTF8(file_name);
       Long size=i->GetFileSize(name);
-      if(size>0 || size==0 && i->FileExists(name))
+      if(  size>0 || size==0 && i->FileExists(name))
       {
+         if(memory)f.writeMemFixed(size);
          if(size>0)
          {
-            Memt<Byte> data; data.setNum(size);
+            Memt<Byte> temp;
+            Ptr        data;
+            Bool       direct=(f._type==FILE_MEM && f._writable && f.left()>=size);
+            data=(direct ? f.memFast() : temp.setNum(size).data());
          #if CLOUD_WORKAROUND
             REPD(attempt, 1000)
          #endif
             {
-               Int read=i->FileRead(name, data.data(), data.elms());
-               if( read==data.elms())
+               auto read=i->FileRead(name, data, size);
+               if(  read==size)
                {
-                  if(cipher)cipher->decrypt(data.data(), data.data(), data.elms(), 0);
-                  if(memory)f.writeMemFixed(size);
-                  if(f.put(data.data(), data.elms()))return true;
+                  if(cipher)cipher->decrypt(data, data, size, 0);
+                  if(direct)
+                  {
+                     if(f._cipher)f._cipher->encrypt(data, data, size, f.posCipher());
+                     return f.skip(size);
+                  }else
+                  {
+                     return f.put(data, size);
+                  }
                #if CLOUD_WORKAROUND
                   break;
                #endif
@@ -731,15 +745,11 @@ Bool SteamWorks::cloudLoad(C Str &file_name, File &f, Bool memory, Cipher *ciphe
                Time.wait(1);
             #endif
             }
-         }else // "size==0"
-         {
-            if(memory)f.writeMemFixed(0);
-            return true;
-         }
+         }else return true; // "size==0"
       }
    }
 #endif
-   if(memory)f.close(); return false;
+   return false;
 }
 
 Bool SteamWorks::cloudSave(C Str &file_name, CPtr data, Int size)
