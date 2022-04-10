@@ -337,7 +337,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
    {
       if(!_wsopen_s(&_handle, name, _O_BINARY|_O_RDONLY, _SH_DENYNO, _S_IREAD|_S_IWRITE))
       {
-        _type=FILE_STD_READ; _size=Max(0, _filelengthi64(_handle)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_CUR; _cipher=cipher; _full_size=_size; return true;}
+        _type=FILE_STD_READ; _size=Max(0, _filelengthi64(_handle)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_CUR; _cipher=cipher; _full_size=_size; return true;}
         _type=FILE_NONE    ; _close(_handle); _handle=0; _size=0; return false;
       }
       if(DataPath().is() && !FullPath(name))
@@ -345,7 +345,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
          Char path_name[MAX_LONG_PATH]; MergePath(path_name, DataPath(), name);
          if(!_wsopen_s(&_handle, WChar(path_name), _O_BINARY|_O_RDONLY, _SH_DENYNO, _S_IREAD|_S_IWRITE))
          {
-           _type=FILE_STD_READ; _size=Max(0, _filelengthi64(_handle)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_DATA; _cipher=cipher; _full_size=_size; return true;}
+           _type=FILE_STD_READ; _size=Max(0, _filelengthi64(_handle)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_DATA; _cipher=cipher; _full_size=_size; return true;}
            _type=FILE_NONE    ; _close(_handle); _handle=0; _size=0; return false;
          }
       }
@@ -371,7 +371,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
       Str8 unix_name=UnixPathUTF8(name);
      _handle=open(unix_name, O_RDONLY|O_NONBLOCK|O_SYMLINK); if(_handle>=0)
       {
-        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; DetectSymLink(T, unix_name); return true;}
+        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; DetectSymLink(T, unix_name); return true;}
         _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
       }
       if(DataPath().is() && !FullPath(name))
@@ -380,7 +380,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
          unix_name=UnixPathUTF8(path_name);
         _handle=open(unix_name, O_RDONLY|O_NONBLOCK|O_SYMLINK); if(_handle>=0)
          {
-           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; DetectSymLink(T, unix_name); return true;}
+           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; DetectSymLink(T, unix_name); return true;}
            _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
          }
       }
@@ -398,7 +398,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
       Str8 unix_name=UnixPathUTF8(name);
      _handle=open64(unix_name, O_RDONLY|O_NONBLOCK); if(_handle>=0)
       {
-        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
+        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
         _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
       }
       if(DataPath().is() && !FullPath(name))
@@ -407,7 +407,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
          unix_name=UnixPathUTF8(path_name);
         _handle=open64(unix_name, O_RDONLY|O_NONBLOCK); if(_handle>=0)
          {
-           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
+           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
            _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
          }
       }
@@ -480,7 +480,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
       // original path
      _handle=open(UnixPathUTF8(name), O_RDONLY|O_NONBLOCK|O_LARGEFILE); if(_handle>=0)
       {
-        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
+        _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
         _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
       }
 
@@ -490,7 +490,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
          Char path_name[MAX_LONG_PATH]; MergePath(path_name, DataPath(), name);
         _handle=open(UnixPathUTF8(path_name), O_RDONLY|O_NONBLOCK|O_LARGEFILE); if(_handle>=0)
          {
-           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){_writable=false; _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
+           _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(max_buf_size, Min(BUF_SIZE, _size)))){/*_writable=false; already cleared in 'close'*/ _path=FILE_DATA; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
            _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0; return false;
          }
       }
