@@ -689,6 +689,8 @@ Bool SteamWorks::cloudSave(C Str &file_name, File &f, Cipher *cipher)
 #if SUPPORT_STEAM
    if(file_name.is())if(ISteamRemoteStorage *i=SteamRemoteStorage())
    {
+      if(f._type==FILE_MEM && !f._cipher && !cipher)return i->FileWrite(UTF8(file_name), f.memFast(), f.left());
+
       Memt<Byte> data; data.setNum(f.left()); if(f.getFast(data.data(), data.elms()))
       {
          if(cipher)cipher->encrypt(data.data(), data.data(), data.elms(), 0);
@@ -731,7 +733,7 @@ Bool SteamWorks::cloudLoad(C Str &file_name, File &f, Bool memory, Cipher *ciphe
             }
          }else // "size==0"
          {
-            f.writeMemFixed(0);
+            if(memory)f.writeMemFixed(0);
             return true;
          }
       }
