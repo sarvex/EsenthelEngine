@@ -2285,7 +2285,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         if(temp.lockRead())
                         {
                            Alloc(_data, pitch2);
-                           REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch);
+                           if(pitch==temp.pitch())CopyFast(data()        , temp.data()               , pitch2);
+                           else  REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch );
                         }
                      }
                   }
@@ -2335,7 +2336,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                            {
                               Byte *src =(Byte*)map.pData  +z*map.DepthPitch ,
                                    *dest=            data()+z*         pitch2;
-                              REPD(y, blocks_y)CopyFast(dest+y*pitch, src+y*map.RowPitch, pitch);
+                              if(pitch==map.RowPitch)CopyFast(dest        , src               , pitch2);
+                              else  REPD(y, blocks_y)CopyFast(dest+y*pitch, src+y*map.RowPitch, pitch );
                            }
                            D3DC->Unmap(temp, D3D11CalcSubresource(0,0,1));
                         }
@@ -2371,7 +2373,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         if(temp.lockRead())
                         {
                            Alloc(_data, pitch2);
-                           REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch);
+                           if(pitch==temp.pitch())CopyFast(data()        , temp.data()               , pitch2);
+                           else  REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch );
                         }
                      }
                   }
