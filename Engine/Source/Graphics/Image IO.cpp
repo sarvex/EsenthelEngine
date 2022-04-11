@@ -170,6 +170,86 @@ static void LoadImgData(File &f, Byte *dest_data, Int src_pitch, Int dest_pitch,
    }
    if(src_d>copy_d)f.skip((src_d-copy_d)*src_pitch*src_blocks_y);
 }
+/******************************************************************************
+Bool Image::_saveData(File &f)C
+{
+   IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
+   if(!CanCompress(file_type))file_type=T.hwType(); // if compressing to format which isn't supported then store as current 'hwType'
+   if(file_type>=IMAGE_TYPES               // don't allow saving private formats
+   || mode()   >=IMAGE_RT   )return false; // don't allow saving private modes
+   ASSERT(IMAGE_2D==0 && IMAGE_3D==1 && IMAGE_CUBE==2 && IMAGE_SOFT==3 && IMAGE_SOFT_CUBE==4 && IMAGE_RT==5);
+
+   f.putMulti(Byte(2), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps()), COMPRESS_NONE); // version
+
+   VecI file_hw_size(PaddedWidth (w(), h(), 0, file_type),
+                     PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
+   Int  faces=T.faces();
+   if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
+   {
+      if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
+      {
+       C Byte *data=softData();
+         REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
+         { // no need to use any "Min" or "f.put(null, ..)" because soft HW sizes are guaranteed to be >= file HW size
+            Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
+                file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, mip, file_type),
+               image_pitch   =softPitch   (mip),
+               image_blocks_y=softBlocksY (mip),
+                file_d       =         Max(file_hw_size.z>>mip, 1),
+               image_d       =         Max(         hwD()>>mip, 1),
+                copy         =  file_blocks_y*file_pitch,
+                skip         =(image_blocks_y-file_blocks_y)*image_pitch,
+                skip2        =(image_d       -file_d       )*image_pitch*image_blocks_y;
+            DEBUG_ASSERT(image_pitch   >=file_pitch   ,    "image_pitch>=file_pitch"   );
+            DEBUG_ASSERT(image_blocks_y>=file_blocks_y, "image_blocks_y>=file_blocks_y");
+            DEBUG_ASSERT(image_d       >=file_d       ,        "image_d>=file_d"       );
+            REPD(face, faces) // iterate all faces
+            {
+               REPD(z, file_d)
+               {
+                  if(file_pitch==image_pitch){f.put(data, copy      ); data+=copy       ;} // if file pitch is the same as image pitch, then we can write both XY in one go
+                  else REPD(y, file_blocks_y){f.put(data, file_pitch); data+=image_pitch;}
+                  data+=skip;
+               }
+               data+=skip2;
+            }
+         }
+      }
+   }else
+   {
+      Image soft;
+      REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
+      {
+         Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
+             file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, mip, file_type),
+             file_d       =         Max(file_hw_size.z>>mip, 1);
+         FREPD(face, faces) // iterate all faces
+         {
+          C Image *src=this;
+            Int    src_mip=mip, src_face=face;
+            if(!CanDoRawCopy(hwType(), file_type)){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face)))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
+            if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
+            Int   src_blocks_y=src->softBlocksY(src_mip);
+            Int  copy_pitch   =Min(file_pitch, src->pitch());
+            Int  zero_pitch   =file_pitch-copy_pitch;
+            Int  copy_blocks_y=Min(src_blocks_y, file_blocks_y);
+            Int  zero_blocks_y=(file_blocks_y-copy_blocks_y)*file_pitch;
+            Int  copy_pitch2  =copy_pitch*copy_blocks_y;
+            Int  copy_d       =Min(file_d, src->ld());
+            FREPD(z, copy_d)
+            {
+             C Byte *data=src->data() + z*src->pitch2();
+               if(file_pitch==src->pitch()){f.put(data, copy_pitch2);                             data+=copy_pitch2 ;}
+               else  REPD(y, copy_blocks_y){f.put(data, copy_pitch ); f.put(null, zero_pitch   ); data+=src->pitch();}
+                                                                      f.put(null, zero_blocks_y);
+            }
+            f.put(null, (file_d-copy_d)*file_pitch*file_blocks_y);
+            src->unlock();
+         }
+      }
+   }
+   return f.ok();
+}
 /******************************************************************************/
 Bool Image::saveData(File &f)C
 {
