@@ -1066,7 +1066,7 @@ void Image::adjustInfo(Int w, Int h, Int d, IMAGE_TYPE type)
   _size.x=Min(Max(1, w), hwW());
   _size.y=Min(Max(1, h), hwH());
   _size.z=Min(Max(1, d), hwD());
-   if(soft())_lock_size=_size;
+   if(soft())lockSoft();
    setPartial();
 }
 /******************************************************************************/
