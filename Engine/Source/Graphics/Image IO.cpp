@@ -332,6 +332,111 @@ Bool Image::saveData(File &f)C
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
 static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x, dest.x) || SizeFits1(src.y, dest.y) || SizeFits1(src.z, dest.z) || (src.x==1 && src.y==1 && src.z==1);}
+struct ImageHeaderEx : ImageHeader
+{
+   COMPRESS_TYPE cmpr;
+};
+static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bool can_del_f)
+{
+   if(!f.ok())return false;
+
+   ImageHeader want=header;
+   Int         shrink=0;
+   if(Int (*image_load_shrink)(ImageHeader &image_header, C Str &name)=D.image_load_shrink) // copy to temp variable to avoid multi-threading issues
+   {
+      shrink=image_load_shrink(want, name);
+
+      // adjust mip-maps, we will need this for load from file memory
+      Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z, want.type); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
+      if(want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
+      else            MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
+   }
+   // shrink
+   for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
+   {
+      want.size.x  =Max(1, want.size.x >>1);
+      want.size.y  =Max(1, want.size.y >>1);
+      want.size.z  =Max(1, want.size.z >>1);
+      want.mip_maps=Max(1, want.mip_maps-1);
+   }
+
+   const Bool file_cube =IsCube    (header.mode);
+   const Int  file_faces=ImageFaces(header.mode);
+
+   Int   file_mip=0;
+   VecI  file_mip_size=header.size;
+   for(; file_mip<header.mip_maps-1 && !SizeFits(file_mip_size, want.size); ) // find smallest file mip that's >= biggest image mip
+   {
+      file_mip++;
+      file_mip_size.set(Max(1, file_mip_size.x>>1), Max(1, file_mip_size.y>>1), Max(1, file_mip_size.z>>1));
+   }
+
+   VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0, header.type),
+                     PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
+
+   // try to create directly from file memory
+   if( f._type==FILE_MEM // file data is already available and in continuous memory
+   && !f._cipher         // no cipher
+   && !header.cmpr       // no compression
+   && file_mip_size==want.size // found exact mip match
+   && header.mip_maps-file_mip>=want.mip_maps // have all mip maps that we want
+   && CanDoRawCopy(want.type, header.type) // type is the same
+   && IsCube      (want.mode)==file_cube   // cube is the same
+   )
+   {
+      Int image_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
+      if(f.left()>=image_size)
+      {
+         VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_mip), Max(1, file_hw_size.y>>file_mip), Max(1, file_hw_size.z>>file_mip));
+         VecI     want_hw_size(PaddedWidth (want.size.x, want.size.y, 0, want.type),
+                               PaddedHeight(want.size.x, want.size.y, 0, want.type), want.size.z);
+         if(file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+         {
+            Ptr  data=(Byte*)f.memFast()+ImageMipOffset(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps, file_mip+want.mip_maps-1); // #MipOrder
+            Bool hw=IsHW(want.mode); // want HW mode
+            if(image.createEx(want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, 1, hw ? data : null))
+            {
+               if(!hw)CopyFast(image.softData(), data, image.memUsage()); // FIXME: could this be moved to src_data in createEx?
+               return f.skip(image_size); // skip image data
+            }
+         }
+      }
+   }
+   /*FIXME if(file_mip_size==want.size) // if have exact match
+   {
+      /*
+      load all mip maps that are already in f.buffer without requiring to do any more reads
+      but at least 1 (to make sure we have something, even if a read is needed)
+      if (FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
+      when creating image, use src_data for fast create (can ignore smallest/biggest mip-maps)
+      if there are missing smaller mip-maps than read, then make them here 'updateMipMaps'
+      schedule loading of remaining mip-maps
+   }else*/ // load the best mip, and re-create the whole image out of it
+   {
+      Image soft; if(soft.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))
+      {
+         Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip, header.type),
+             file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip, header.type);
+         if(header.cmpr)
+         {
+            // FIXME
+         }else
+         {
+            Long f_end=f.pos()+ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
+            if(f.skip(ImageMipOffset(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps, file_mip)))
+            {
+               FREPD(face, file_faces) // iterate all faces
+                  LoadImgData(f, soft.softData(0, DIR_ENUM(face)), file_pitch, soft.pitch(), file_blocks_y, soft.softBlocksY(0), file_mip_size.z, soft.ld(), soft.pitch2());
+               if(f.ok() && f.pos(f_end))
+                  return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps);
+            }
+         }
+      }
+   }
+   // FIXME MOVE AT END OF F DATA POS
+   // FIXME CHECK f.ok()
+   return false;
+}
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
 {
    if(!f.ok())return false;
