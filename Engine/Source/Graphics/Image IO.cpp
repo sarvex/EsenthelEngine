@@ -429,8 +429,8 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
             {
                FREPD(face, file_faces) // iterate all faces
                   LoadImgData(f, soft.softData(0, DIR_ENUM(face)), file_pitch, soft.pitch(), file_blocks_y, soft.softBlocksY(0), file_mip_size.z, soft.ld(), soft.pitch2());
-               if(f.ok() && f.pos(f_end))
-                  return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps);
+               if(f.pos(f_end) && f.ok())
+                  return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, IC_CONVERT_GAMMA);
             }
          }
       }
