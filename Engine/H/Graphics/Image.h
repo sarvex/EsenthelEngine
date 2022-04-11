@@ -337,7 +337,8 @@ struct Image // Image (Texture)
    Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT);                                                     // get software image data for 'mip_map' and 'cube_face' without locking the image
  C Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT)C {return ConstCast(T).softData(mip_map, cube_face);} // get software image data for 'mip_map' and 'cube_face' without locking the image
    Int   softFaceSize(Int mip_map)C; // get size in bytes for a single cube face for specified 'mip_map'
-   UInt  softPitch   (Int mip_map)C; // get pitch of specified 'mip_map'
+   UInt  softPitch   (Int mip_map)C; // get pitch   of specified 'mip_map'
+   UInt  softBlocksY (Int mip_map)C; // get blocksY of specified 'mip_map'
 
    void lockSoft();
    Bool setFrom(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
@@ -837,6 +838,8 @@ Bool CompatibleLock(LOCK_MODE cur, LOCK_MODE lock); // if 'lock' is okay to be a
 Vec4 ImageColorF(CPtr data, IMAGE_TYPE hw_type);
 Vec4 ImageColorL(CPtr data, IMAGE_TYPE hw_type);
 void CopyNoStretch(C Image &src, Image &dest, Bool clamp, Bool ignore_gamma=false); // assumes 'src,dest' are locked and non-compressed
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y);
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int src_pitch2, Int dest_pitch2);
 #if WINDOWS
    HICON CreateIcon(C Image &image, C VecI2 *cursor_hot_spot=null); // 'cursor_hot_spot'=if this is specified then the icon is treated as a mouse cursor with given hot spot, otherwise it's a normal icon
 #endif

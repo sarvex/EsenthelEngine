@@ -1949,30 +1949,9 @@ static Int CopyMipMaps(C Image &src, Image &dest, Bool ignore_gamma, Int max_mip
          {
             if(!src .lockRead(          i+mip, (DIR_ENUM)Min(face, src_faces1)))return 0;
             if(!dest.lock    (LOCK_WRITE, mip, (DIR_ENUM)    face             )){src.unlock(); return 0;}
-            Int blocks_y=Min(ImageBlocksY(src .hwW(), src .hwH(), i+mip, src .hwType()),
-                             ImageBlocksY(dest.hwW(), dest.hwH(),   mip, dest.hwType()));
-            FREPD(z, dest.ld())
-            {
-             C Byte * src_data= src.data() + z* src.pitch2();
-               Byte *dest_data=dest.data() + z*dest.pitch2();
-               if(dest.pitch()==src.pitch())
-               {
-                  Int copy_size=Min(dest.pitch2(), src.pitch2());
-                  CopyFast(dest_data, src_data, copy_size);
-                  ZeroFast(dest_data+copy_size, dest.pitch2()-copy_size); // zero unwritten data
-               }else
-               {
-                  Int copy_size=Min(dest.pitch(), src.pitch()), zero=dest.pitch()-copy_size;
-                  FREPD(y, blocks_y)
-                  {
-                     Byte *dest_data_y=dest_data + y*dest.pitch();
-                             CopyFast(dest_data_y, src_data + y*src.pitch(), copy_size);
-                     if(zero)ZeroFast(dest_data_y+copy_size, zero); // zero unwritten data
-                  }
-                  copy_size=dest.pitch()*blocks_y;
-                  ZeroFast(dest_data+copy_size, dest.pitch2()-copy_size); // zero unwritten data
-               }
-            }
+
+            CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(i+mip), dest.softBlocksY(mip), src.ld(), dest.ld(), src.pitch2(), dest.pitch2());
+
             dest.unlock();
             src .unlock();
          }
@@ -2220,14 +2199,15 @@ Bool Image::fromCube(C Image &src, Int uncompressed_type)
 /******************************************************************************/
 Int   Image::softFaceSize(Int mip_map                    )C {return ImageMipSize(hwW(), hwH(), hwD(), mip_map, hwType());}
 UInt  Image::softPitch   (Int mip_map                    )C {return ImagePitch  (hwW(), hwH(),        mip_map, hwType());}
+UInt  Image::softBlocksY (Int mip_map                    )C {return ImageBlocksY(hwW(), hwH(),        mip_map, hwType());}
 Byte* Image::softData    (Int mip_map, DIR_ENUM cube_face)
 {
    return _data_all+ImageSize(hwW(), hwH(), hwD(), hwType(), mode(), mip_map)+(cube_face ? softFaceSize(mip_map)*cube_face : 0); // call 'softFaceSize' only when needed because most likely 'cube_face' is zero
 }
 void Image::lockSoft()
 {
-  _pitch      =softPitch   (              lMipMap());
-  _pitch2     =ImageBlocksY(hwW(), hwH(), lMipMap(), hwType())*_pitch;
+  _pitch      =softPitch  (lMipMap());
+  _pitch2     =softBlocksY(lMipMap())*_pitch;
   _lock_size.x=Max(1, w()>>lMipMap());
   _lock_size.y=Max(1, h()>>lMipMap());
   _lock_size.z=Max(1, d()>>lMipMap());
@@ -2272,8 +2252,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                case IMAGE_DS:
                case IMAGE_2D: if(_txtr)
                {
-                  Int blocks_y=ImageBlocksY(hwW(), hwH(), mip_map, hwType()),
-                      pitch   =softPitch   (              mip_map          ),
+                  Int blocks_y=softBlocksY(mip_map),
+                      pitch   =softPitch  (mip_map),
                       pitch2  =pitch*blocks_y;
 
                   if(lock==LOCK_WRITE)Alloc(_data, pitch2);else
@@ -2285,8 +2265,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         if(temp.lockRead())
                         {
                            Alloc(_data, pitch2);
-                           if(pitch==temp.pitch())CopyFast(data()        , temp.data()               , pitch2);
-                           else  REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch );
+                           CopyImgData(temp.data(), data(), temp.pitch(), pitch, temp.softBlocksY(0), blocks_y);
                         }
                      }
                   }
@@ -2308,8 +2287,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                case IMAGE_3D: if(_txtr)
                {
                   Int ld      =Max(1, d()>>mip_map),
-                      blocks_y=ImageBlocksY(hwW(), hwH(), mip_map, hwType()),
-                      pitch   =softPitch   (              mip_map          ),
+                      blocks_y=softBlocksY(mip_map),
+                      pitch   =softPitch  (mip_map),
                       pitch2  =pitch *blocks_y,
                       pitch3  =pitch2*ld;
                   if(lock==LOCK_WRITE)Alloc(_data, pitch3);else
@@ -2332,13 +2311,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         D3D11_MAPPED_SUBRESOURCE map; if(OK(D3DC->Map(temp, D3D11CalcSubresource(0,0,1), D3D11_MAP_READ, 0, &map)))
                         {
                            Alloc(_data, pitch3);
-                           REPD(z, ld)
-                           {
-                              Byte *src =(Byte*)map.pData  +z*map.DepthPitch ,
-                                   *dest=            data()+z*         pitch2;
-                              if(pitch==map.RowPitch)CopyFast(dest        , src               , pitch2);
-                              else  REPD(y, blocks_y)CopyFast(dest+y*pitch, src+y*map.RowPitch, pitch );
-                           }
+                           CopyImgData((Byte*)map.pData, data(), map.RowPitch, pitch, blocks_y/*TODO: temp.softBlocksY(0)*/, blocks_y, ld, ld, map.DepthPitch, pitch2);
                            D3DC->Unmap(temp, D3D11CalcSubresource(0,0,1));
                         }
                         RELEASE(temp);
@@ -2361,8 +2334,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
 
                case IMAGE_CUBE: if(_txtr)
                {
-                  Int blocks_y=ImageBlocksY(hwW(), hwH(), mip_map, hwType()),
-                      pitch   =softPitch   (              mip_map          ),
+                  Int blocks_y=softBlocksY(mip_map),
+                      pitch   =softPitch  (mip_map),
                       pitch2  =pitch*blocks_y;
                   if(lock==LOCK_WRITE)Alloc(_data, pitch2);else
                   {
@@ -2373,8 +2346,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         if(temp.lockRead())
                         {
                            Alloc(_data, pitch2);
-                           if(pitch==temp.pitch())CopyFast(data()        , temp.data()               , pitch2);
-                           else  REPD(y, blocks_y)CopyFast(data()+y*pitch, temp.data()+y*temp.pitch(), pitch );
+                           CopyImgData(temp.data(), data(), temp.pitch(), pitch, temp.softBlocksY(0), blocks_y);
                         }
                      }
                   }
@@ -2416,8 +2388,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                case IMAGE_DS:
                case IMAGE_GL_RB:
                {
-                  Int pitch =softPitch   (              mip_map          ),
-                      pitch2=ImageBlocksY(hwW(), hwH(), mip_map, hwType())*pitch;
+                  Int pitch =softPitch  (mip_map),
+                      pitch2=softBlocksY(mip_map)*pitch;
                #if !GL_ES // 'glGetTexImage' not available on GL ES
                   if(_txtr)
                   {
@@ -2491,8 +2463,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                case IMAGE_3D: if(_txtr)
                {
                   Int ld    =Max(1, d()>>mip_map),
-                      pitch =softPitch   (              mip_map          ),
-                      pitch2=ImageBlocksY(hwW(), hwH(), mip_map, hwType())*pitch;
+                      pitch =softPitch  (mip_map),
+                      pitch2=softBlocksY(mip_map)*pitch;
 
                #if GL_ES // 'glGetTexImage' not available on GL ES
                   if(!_data_all && lock==LOCK_WRITE && mipMaps()==1)Alloc(_data_all, CeilGL(memUsage())); // if GL ES data is not available, but we want to write to it and we have only 1 mip map then re-create it
@@ -2525,8 +2497,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
 
                case IMAGE_CUBE: if(_txtr)
                {
-                  Int pitch =softPitch   (              mip_map          ),
-                      pitch2=ImageBlocksY(hwW(), hwH(), mip_map, hwType())*pitch;
+                  Int pitch =softPitch  (mip_map),
+                      pitch2=softBlocksY(mip_map)*pitch;
 
                #if GL_ES
                 //if(!_data_all && lock==LOCK_WRITE && mipMaps()==1)Alloc(_data_all, CeilGL(memUsage())); // if GL ES data is not available, but we want to write to it and we have only 1 mip map then re-create it, can't do it here, because we have 6 faces, but we can lock only 1

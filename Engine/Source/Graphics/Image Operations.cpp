@@ -45,18 +45,7 @@ static Bool ExtractMipMap(C Image &src, Image &dest, Int mip_map, DIR_ENUM cube_
       if(! src.lockRead(mip_map, cube_face))return false;
     //if(!dest.lock    (LOCK_WRITE        ))return false; not needed for SOFT
 
-      Int blocks_y=Min(ImageBlocksY(src.hwW(), src.hwH(), mip_map, src.hwType()), ImageBlocksY(dest.hwW(), dest.hwH(), 0, dest.hwType()));
-      REPD(z, Min(src.ld(), dest.ld()))
-      {
-       C Byte * src_data= src.data() + z* src.pitch2();
-         Byte *dest_data=dest.data() + z*dest.pitch2();
-         if(src.pitch()==dest.pitch())CopyFast(dest_data, src_data, Min(src.pitch2(), dest.pitch2()));else
-         {
-            Int pitch=Min(src.pitch(), dest.pitch());
-            REPD(y, blocks_y)CopyFast(dest_data + y*dest.pitch(), src_data + y*src.pitch(), pitch);
-            // TODO: we could zero remaining data to avoid garbage
-         }
-      }
+      CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(mip_map), dest.softBlocksY(0), src.ld(), dest.ld(), src.pitch2(), dest.pitch2());
 
     //dest.unlock(); not needed for SOFT
        src.unlock();
@@ -94,17 +83,7 @@ Bool Image::injectMipMap(C Image &src, Int mip_map, DIR_ENUM cube_face, FILTER_T
          if(s->lockRead())
          {
             ok=true;
-            Int blocks_y=Min(ImageBlocksY(hwW(), hwH(), mip_map, hwType()), ImageBlocksY(s->hwW(), s->hwH(), 0, s->hwType()));
-            REPD(z, Min(ld(), s->ld()))
-            {
-             C Byte *src =s->data() + z*s->pitch2();
-               Byte *dest=   data() + z*   pitch2();
-               if(T.pitch()==s->pitch())CopyFast(dest, src, Min(pitch2(), s->pitch2()));else
-               {
-                  Int pitch=Min(T.pitch(), s->pitch());
-                  REPD(y, blocks_y)CopyFast(dest + y*T.pitch(), src + y*s->pitch(), pitch);
-               }
-            }
+            CopyImgData(s->data(), data(), s->pitch(), pitch(), s->softBlocksY(0), softBlocksY(mip_map), s->ld(), ld(), s->pitch2(), pitch2());
             s->unlock();
          }
          unlock();
