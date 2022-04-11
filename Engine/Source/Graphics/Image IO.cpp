@@ -62,7 +62,114 @@ static IMAGE_TYPE OldImageType0(Byte type)
    return InRange(type, types) ? types[type] : IMAGE_NONE;
 }
 /******************************************************************************/
+static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+{
+   Int copy_blocks_y=Min(src_blocks_y, dest_blocks_y);
+   if(src_pitch==dest_pitch)
+   {
+      Int copy=copy_blocks_y*dest_pitch;
+      CopyFast(dest_data, src_data, copy);
+      dest_data+=copy;
+       src_data+=copy;
+   }else
+   {
+      Int copy_pitch=Min(src_pitch, dest_pitch);
+      Int zero_pitch=dest_pitch-copy_pitch;
+      REPD(y, copy_blocks_y)
+      {
+         CopyFast(dest_data           , src_data, copy_pitch);
+         ZeroFast(dest_data+copy_pitch,           zero_pitch);
+         dest_data+=dest_pitch;
+          src_data+= src_pitch;
+      }
+   }
+   if(dest_blocks_y>copy_blocks_y)
+   {
+      Int zero=(dest_blocks_y-copy_blocks_y)*dest_pitch;
+      ZeroFast(dest_data, zero); dest_data+=zero;
+   }
+   src_data+=(src_blocks_y-copy_blocks_y)*src_pitch;
+}
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+{
+   return _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
+}
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int src_pitch2, Int dest_pitch2)
+{
+   Int copy_d=Min(src_d, dest_d);
+   REPD(z, copy_d)
+   {
+    C Byte * src_next= src_data+ src_pitch2;
+      Byte *dest_next=dest_data+dest_pitch2;
+     _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
+      DEBUG_ASSERT(dest_next>=dest_data, "dest_next>=dest_data");
+      DEBUG_ASSERT( src_next>= src_data,  "src_next>=src_data" );
+      if(dest_next>dest_data)
+      {
+         ZeroFast(dest_data, dest_next-dest_data);
+         dest_data=dest_next;
+      }
+      src_data=src_next;
+   }
+   if(dest_d>copy_d)
+   {
+      Int zero=(dest_d-copy_d)*dest_pitch2;
+      ZeroFast(dest_data, zero); dest_data+=zero;
+   }
+   src_data+=(src_d-copy_d)*src_pitch2;
+}
+/******************************************************************************/
 // SAVE / LOAD
+/******************************************************************************/
+static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+{
+   Int copy_blocks_y=Min(src_blocks_y, dest_blocks_y);
+   if(src_pitch==dest_pitch)
+   {
+      Int copy=copy_blocks_y*dest_pitch;
+      f.getFast(dest_data, copy);
+      dest_data+=copy;
+   }else
+   {
+      Int copy_pitch=Min(src_pitch, dest_pitch);
+      Int zero_pitch=dest_pitch-copy_pitch;
+      Int skip_pitch= src_pitch-copy_pitch;
+      REPD(y, copy_blocks_y)
+      {
+         f.getFast(dest_data, copy_pitch);
+          ZeroFast(dest_data+ copy_pitch, zero_pitch);
+         dest_data+=dest_pitch;
+         f.skip(skip_pitch);
+      }
+   }
+   if(dest_blocks_y>copy_blocks_y)
+   {
+      Int zero=(dest_blocks_y-copy_blocks_y)*dest_pitch;
+      ZeroFast(dest_data, zero); dest_data+=zero;
+   }
+   f.skip((src_blocks_y-copy_blocks_y)*src_pitch);
+}
+static void LoadImgData(File &f, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int dest_pitch2) // 'src_pitch2' not needed because for files it will always be "src_pitch*src_blocks_y"
+{
+   Int copy_d=Min(src_d, dest_d);
+   REPD(z, copy_d)
+   {
+      Byte *dest_next=dest_data+dest_pitch2;
+      LoadImgData(f,  dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
+      DEBUG_ASSERT(dest_next>=dest_data, "dest_next>=dest_data");
+      if(dest_next>dest_data)
+      {
+         ZeroFast(dest_data, dest_next-dest_data);
+         dest_data=dest_next;
+      }
+   }
+   if(dest_d>copy_d)
+   {
+      Int zero=(dest_d-copy_d)*dest_pitch2;
+      ZeroFast(dest_data, zero); dest_data+=zero;
+   }
+   if(src_d>copy_d)f.skip((src_d-copy_d)*src_pitch*src_blocks_y);
+}
 /******************************************************************************/
 Bool Image::saveData(File &f)C
 {
