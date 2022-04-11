@@ -2701,14 +2701,14 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
 {
    if(data)
    {
-      Int valid_pitch   =ImagePitch  (w(), h(), mip_map, hwType()),
-          valid_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType());
+      Int valid_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType());
    #if DEBUG && 0 // force HW size
       #pragma message("!! Warning: Use this only for debugging !!")
       Memt<Byte> temp;
       {
-         Int hw_pitch   =softPitch   (              mip_map          ),
-             hw_blocks_y=ImageBlocksY(hwW(), hwH(), mip_map, hwType()),
+      Int valid_pitch   =ImagePitch (w(), h(), mip_map, hwType()),
+             hw_pitch   =softPitch  (          mip_map          ),
+             hw_blocks_y=softBlocksY(          mip_map          ),
              hw_pitch2  =hw_pitch*hw_blocks_y;
          temp.setNum(hw_pitch2);
          Int copy_pitch=Min(hw_pitch, data_pitch, valid_pitch);
@@ -2731,8 +2731,8 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
          }
       }
    #elif GL // GL can accept only HW sizes
-      Int hw_pitch   =softPitch   (              mip_map          ),
-          hw_blocks_y=ImageBlocksY(hwW(), hwH(), mip_map, hwType()),
+      Int hw_pitch   =softPitch  (mip_map),
+          hw_blocks_y=softBlocksY(mip_map),
           hw_pitch2  =hw_pitch*hw_blocks_y;
       if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, 6) && D.created())switch(mode())
       {
@@ -2767,29 +2767,7 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
    #endif
       if(lock(LOCK_WRITE, mip_map, cube_face))
       {
-         Byte *dest_data =T.data();
-   const Int   copy_pitch=Min(T.pitch(), data_pitch, valid_pitch),
-               zero_pitch=T.pitch ()-copy_pitch,
-               pitch2    =T.pitch ()*valid_blocks_y,
-               zero      =T.pitch2()-pitch2; // how much to zero = total - what was set
-         FREPD(z, ld())
-         {
-            if(copy_pitch==data_pitch && !zero_pitch) // if all pitches are the same (copy_pitch, data_pitch, T.pitch)
-            {  // we can copy both XY in one go !! use 'pitch2' and not 'T.pitch2', because 'T.pitch2' may be bigger !!
-               CopyFast(dest_data, data, pitch2);
-               dest_data+=            pitch2;
-                    data =(Byte*)data+pitch2;
-            }else
-            FREPD(y, valid_blocks_y) // copy each line separately
-            {
-                               CopyFast(dest_data, data, copy_pitch);
-               if(zero_pitch>0)ZeroFast(dest_data+copy_pitch, zero_pitch); // zero remaining data to avoid garbage
-               dest_data+=               T.pitch();
-                    data =(Byte*)data+data_pitch;
-            }
-            if(zero>0)ZeroFast(dest_data, zero); // zero remaining data to avoid garbage
-            dest_data+=zero;
-         }
+         CopyImgData((Byte*)data, T.data(), data_pitch, T.pitch(), valid_blocks_y, T.softBlocksY(mip_map), ld(), ld(), data_pitch*valid_blocks_y, T.pitch2());
          unlock();
          return true;
       }
