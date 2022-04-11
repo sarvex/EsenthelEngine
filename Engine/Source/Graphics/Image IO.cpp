@@ -229,13 +229,13 @@ Bool Image::_saveData(File &f)C
             Int    src_mip=mip, src_face=face;
             if(!CanDoRawCopy(hwType(), file_type)){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face)))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
             if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
-            Int   src_blocks_y=src->softBlocksY(src_mip);
-            Int  copy_pitch   =Min(file_pitch, src->pitch());
-            Int  zero_pitch   =file_pitch-copy_pitch;
-            Int  copy_blocks_y=Min(src_blocks_y, file_blocks_y);
-            Int  zero_blocks_y=(file_blocks_y-copy_blocks_y)*file_pitch;
-            Int  copy_pitch2  =copy_pitch*copy_blocks_y;
-            Int  copy_d       =Min(file_d, src->ld());
+            Int  src_blocks_y=src->softBlocksY(src_mip);
+            Int copy_pitch   =Min(file_pitch, src->pitch());
+            Int zero_pitch   =file_pitch-copy_pitch;
+            Int copy_blocks_y=Min(src_blocks_y, file_blocks_y);
+            Int zero_blocks_y=(file_blocks_y-copy_blocks_y)*file_pitch;
+            Int copy_pitch2  =copy_pitch*copy_blocks_y;
+            Int copy_d       =Min(file_d, src->ld());
             FREPD(z, copy_d)
             {
              C Byte *data=src->data() + z*src->pitch2();
