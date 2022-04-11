@@ -258,7 +258,7 @@ struct ETCContext
          {
             s=&src;
             Bool read_from_src=true;
-            Int  dest_mip_hwW=PaddedWidth (dest.hwW(), dest.hwH(), mip, dest.hwType()),
+            Int  dest_mip_hwW=PaddedWidth (dest.hwW(), dest.hwH(), mip, dest.hwType()), // operate on mip HW size to process partial and Pow2Padded blocks too
                  dest_mip_hwH=PaddedHeight(dest.hwW(), dest.hwH(), mip, dest.hwType());
          #if ETC1_ENC==ETC_LIB_ISPC // ISPC
             if(etc1)
