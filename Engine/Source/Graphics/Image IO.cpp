@@ -423,7 +423,8 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
             // FIXME
          }else
          {
-            Long f_end=f.pos()+ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
+            Int image_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
+            Long f_end=f.pos()+image_size
             if(f.skip(ImageMipOffset(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps, file_mip)))
             {
                FREPD(face, file_faces) // iterate all faces
