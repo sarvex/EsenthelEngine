@@ -666,6 +666,11 @@ Int ImageMipSize(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
 {
    return ImageMipSize(w, h, mip, type)*Max(1, d>>mip);
 }
+UInt ImageMipOffset(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Int mip_map)
+{
+   UInt   size=0; mip_map++; REP(mip_maps-mip_map)size+=ImageMipSize(w, h, d, mip_map+i, type); if(IsCube(mode))size*=6; // #MipOrder
+   return size;
+}
 UInt ImageSize(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps)
 {
    UInt   size=0; REP(mip_maps)size+=ImageMipSize(w, h, d, i, type); if(IsCube(mode))size*=6;

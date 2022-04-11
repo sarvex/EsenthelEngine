@@ -823,6 +823,7 @@ Int                        ImagePitch       (Int w, Int h,        Int mip, IMAGE
 Int                        ImageBlocksY     (Int w, Int h,        Int mip, IMAGE_TYPE type);
 Int                        ImageMipSize     (Int w, Int h,        Int mip, IMAGE_TYPE type);
 Int                        ImageMipSize     (Int w, Int h, Int d, Int mip, IMAGE_TYPE type);
+UInt                       ImageMipOffset   (Int w, Int h, Int d,          IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Int mip_map);
 UInt                       ImageSize        (Int w, Int h, Int d,          IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps);
 GPU_API(DXGI_FORMAT, UInt) ImageTypeToFormat(Int type); // convert from IMAGE_TYPE to API_FORMAT
 IMAGE_TYPE                 ImageFormatToType(GPU_API(DXGI_FORMAT, UInt) format); // convert from API_FORMAT to IMAGE_TYPE
