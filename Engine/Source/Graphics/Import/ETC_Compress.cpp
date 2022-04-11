@@ -265,8 +265,8 @@ struct ETCContext
             {
                // to directly read from 'src', we need to match requirements for compressor, which needs:
                read_from_src=((src.hwType()==IMAGE_R8G8B8A8 || src.hwType()==IMAGE_R8G8B8A8_SRGB) // IMAGE_R8G8B8A8 hw type
-                           && PaddedWidth (src.hwW(), src.hwH(), mip, src.hwType())==dest_mip_hwW   // src mip width  must be exactly the same as dest mip width
-                           && PaddedHeight(src.hwW(), src.hwH(), mip, src.hwType())==dest_mip_hwH); // src mip height must be exactly the same as dest mip height
+                           && Max(1, src.w()>>mip)>=dest_mip_hwW   // src mip width  must be at least as dest mip width
+                           && Max(1, src.h()>>mip)>=dest_mip_hwH); // src mip height must be at least as dest mip height
                if(!read_from_src)s=&temp;
             }
          #endif
@@ -286,8 +286,8 @@ struct ETCContext
                if(etc1)
                {
                   fast=(dest.pitch()==x_blocks*8);
-                  surf.width =s->lw   ();
-                  surf.height=s->lh   ();
+                  surf.width =dest_mip_hwW;
+                  surf.height=dest_mip_hwH;
                   surf.stride=s->pitch();
                }
             #endif

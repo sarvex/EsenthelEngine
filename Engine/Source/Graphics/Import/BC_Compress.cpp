@@ -154,8 +154,8 @@ Bool _CompressBC67(C Image &src, Image &dest)
                        PaddedHeight(dest.hwW(), dest.hwH(), mip, dest.hwType()));
          // to directly read from 'src', we need to match requirements for compressor, which needs:
          Bool read_from_src=((data.bc6 ? src.hwType()==IMAGE_F16_4 : (src.hwType()==IMAGE_R8G8B8A8 || src.hwType()==IMAGE_R8G8B8A8_SRGB)) // IMAGE_F16_4 for BC6 / IMAGE_R8G8B8A8 for BC7
-                         && PaddedWidth (src.w(), src.h(), mip, src.hwType())>=data.size.x   // src mip valid width  must be at least as dest mip width
-                         && PaddedHeight(src.w(), src.h(), mip, src.hwType())>=data.size.y); // src mip valid height must be at least as dest mip height
+                         && Max(1, src.w()>>mip)>=data.size.x   // src mip valid width  must be at least as dest mip width
+                         && Max(1, src.h()>>mip)>=data.size.y); // src mip valid height must be at least as dest mip height
        C Image &s=(read_from_src ? src : temp);
          REPD(face, dest.faces())
          {
