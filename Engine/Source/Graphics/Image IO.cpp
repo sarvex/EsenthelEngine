@@ -193,8 +193,8 @@ Bool Image::_saveData(File &f)C
          { // no need to use any "Min" or "f.put(null, ..)" because soft HW sizes are guaranteed to be >= file HW size
             Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
                 file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, mip, file_type),
-               image_pitch   =softPitch   (mip),
-               image_blocks_y=softBlocksY (mip),
+               image_pitch   = softPitch  (mip),
+               image_blocks_y= softBlocksY(mip),
                 file_d       =         Max(file_hw_size.z>>mip, 1),
                image_d       =         Max(         hwD()>>mip, 1),
                 copy         =  file_blocks_y*file_pitch,
