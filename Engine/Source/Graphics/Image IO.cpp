@@ -364,6 +364,8 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
 
    const Bool file_cube =IsCube    (header.mode);
    const Int  file_faces=ImageFaces(header.mode);
+   const VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0, header.type),
+                           PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
 
    Int   file_mip=0;
    VecI  file_mip_size=header.size;
@@ -372,9 +374,6 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       file_mip++;
       file_mip_size.set(Max(1, file_mip_size.x>>1), Max(1, file_mip_size.y>>1), Max(1, file_mip_size.z>>1));
    }
-
-   VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0, header.type),
-                     PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
 
    // try to create directly from file memory
    if( f._type==FILE_MEM // file data is already available and in continuous memory
