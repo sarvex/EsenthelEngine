@@ -484,7 +484,7 @@ struct Loader
          offset    +=mip.  compressed_size;
          image_size+=mip.decompressed_size;
       }
-      if(!f.ok())return false;
+      if(!f.ok())return false; // if any 'compressed_size' failed to load
       if(!want.is()){image.del(); return f.skip(image_size);} // check before shrinking, because of "Max(1" it might validate it
 
       // shrink
