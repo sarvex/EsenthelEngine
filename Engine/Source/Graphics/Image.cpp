@@ -1143,11 +1143,7 @@ void Image::setGLParams()
 #endif
 }
 /******************************************************************************/
-Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr src_data, C Image *src
-   #if GL_ES
-      , Bool can_del_src
-   #endif
-)
+Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr src_data, C Image *src)
 {
    // verify parameters
    if(w<=0 || h<=0 || d<=0 || type==IMAGE_NONE){del(); return !w && !h && !d;}
