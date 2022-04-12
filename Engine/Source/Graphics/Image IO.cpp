@@ -626,7 +626,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
             }
             img_data+=wantMipSize(img_mip);
          }
-         if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
+         if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, can_read_mips-read_mips))
          {
             if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
                if(IMAGE_TYPE alt_type=ImageTypeOnFail(want_hw_type)) // there's replacement
@@ -637,7 +637,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
                if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
                {
                   REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), 1, mip_data))goto ok;
+                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), 1, mip_data, can_read_mips-read_mips))goto ok;
                   if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
                }
             }
@@ -649,6 +649,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
          if(stream)
          {
             // FIXME
+            return true;
          }else
          {
             if(f.pos(f_end))return true;

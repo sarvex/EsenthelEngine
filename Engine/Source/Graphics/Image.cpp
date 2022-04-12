@@ -983,9 +983,9 @@ Bool Image::setInfo()
                case IMAGE_D32     : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
                case IMAGE_D32S8X24: srvd.Format=DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS; break;
             }
-            if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MipLevels=mipMaps();}else
-            if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MipLevels=mipMaps();}else
-            if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MipLevels=mipMaps();}else
+            if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MostDetailedMip=_base_mip; srvd.TextureCube.MipLevels=mipMaps()-_base_mip;}else
+            if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MostDetailedMip=_base_mip; srvd.Texture3D  .MipLevels=mipMaps()-_base_mip;}else
+            if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MostDetailedMip=_base_mip; srvd.Texture2D  .MipLevels=mipMaps()-_base_mip;}else
                                 {srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2DMS;}
          #if GPU_LOCK // lock not needed for 'D3D'
             SyncLocker locker(D._lock);
@@ -1099,17 +1099,17 @@ void Image::setGLParams()
       D.texBind(target, _txtr);
 
       // first call those that can generate GL ERROR and we're OK with that, so we will call 'glGetError' to clear them
-      Bool mip_maps=(mipMaps()>1);
-      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL     , mip_maps ? mipMaps()-1 : 0);
    #if 0 // this is now handled in the sampler
       Bool filterable=T.filterable();
       glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY, Max(D.texFilter(), 1));
-      glTexParameteri(target, GL_TEXTURE_MIN_FILTER    , mip_maps ? (filterable ? D.texMipFilter() ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST) : filterable ? GL_LINEAR : GL_NEAREST);
+      glTexParameteri(target, GL_TEXTURE_MIN_FILTER    , (mipMaps()>1) ? (filterable ? D.texMipFilter() ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST) : filterable ? GL_LINEAR : GL_NEAREST);
       glTexParameteri(target, GL_TEXTURE_MAG_FILTER    , (filterable && (D.texFilter() || mode()!=IMAGE_2D)) ? GL_LINEAR : GL_NEAREST);
-   #endif
       glGetError(); // clear error in case GL_TEXTURE_MAX_LEVEL, anisotropy, .. are not supported
+   #endif
 
       // now call those that must succeed
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
+    //glTexParameteri(target, GL_TEXTURE_MAX_LEVEL , mipMaps()-1); not needed since it's always full
 
    #if GL_SWIZZLE
       switch(hwType())
@@ -1150,7 +1150,19 @@ static void SetSoftData(Image &img, CPtr *data)
       if(CPtr mip_data=data[m])
          CopyFast(img.softData(m), mip_data, ImageMipSize(img.hwW(), img.hwH(), img.hwD(), m, img.hwType())*faces);
 }
-Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data)
+void Image::baseMip(Int base_mip)
+{
+   if(_base_mip!=base_mip)
+   {
+     _base_mip=base_mip;
+      if(hw())
+      {
+         SyncLocker locker(D._lock);
+         // FIXME
+      }
+   }
+}
+Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {
    // verify parameters
    if(w<=0 || h<=0 || d<=0 || type==IMAGE_NONE){del(); return !w && !h && !d;}
@@ -1169,6 +1181,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       // check if already matches what we want
       if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples)
       {
+         baseMip(base_mip);
          if(data)
          {
             if(soft())
@@ -1204,6 +1217,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
      _size.set(w, h, d); _hw_size.set(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
      _type=type        ; _hw_type=type;
      _mode=mode        ;
+     _base_mip=base_mip;
 
    #if DX11
       D3D11_SUBRESOURCE_DATA *initial_data; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
