@@ -181,10 +181,12 @@ Bool Image::_saveData(File &f)C
 
    f.putMulti(Byte(2), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps()), COMPRESS_NONE); // version
 
+   const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
+   const Bool same_type   =CanDoRawCopy(hwType(), file_type, ignore_gamma);
    VecI file_hw_size(PaddedWidth (w(), h(), 0, file_type),
                      PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
    Int  faces=T.faces();
-   if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
+   if(soft() && same_type) // software with matching type, we can save without locking
    {
       if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
       {
@@ -217,7 +219,8 @@ Bool Image::_saveData(File &f)C
       }
    }else
    {
-      Image soft;
+      Image soft; // keep outside loop to reduce overhead
+      const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
       REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
@@ -227,7 +230,7 @@ Bool Image::_saveData(File &f)C
          {
           C Image *src=this;
             Int    src_mip=mip, src_face=face;
-            if(!CanDoRawCopy(hwType(), file_type)){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face)))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
+            if(!same_type){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face), FILTER_BEST, copy_flags))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
             if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
             Int  src_blocks_y=src->softBlocksY(src_mip);
             Int copy_pitch   =Min(file_pitch, src->pitch());
@@ -362,8 +365,11 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       want.mip_maps=Max(1, want.mip_maps-1);
    }
 
-   const Bool file_cube =IsCube    (header.mode);
-   const Int  file_faces=ImageFaces(header.mode);
+   const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
+   const Bool same_type   =CanDoRawCopy(want.type, header.type, ignore_gamma);
+   const Bool file_cube   =IsCube      (header.mode);
+   const Int  file_faces  =ImageFaces  (header.mode);
+   const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
    const VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0, header.type),
                            PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
 
@@ -381,8 +387,8 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
    && !header.cmpr       // no compression
    && file_mip_size==want.size // found exact mip match
    && header.mip_maps-file_mip>=want.mip_maps // have all mip maps that we want
-   && CanDoRawCopy(want.type, header.type) // type is the same
-   && IsCube      (want.mode)==file_cube   // cube is the same
+   && same_type                    // type is the same
+   && IsCube(want.mode)==file_cube // cube is the same
    )
    {
       Int image_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
@@ -430,7 +436,7 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
                FREPD(face, file_faces) // iterate all faces
                   LoadImgData(f, soft.softData(0, DIR_ENUM(face)), file_pitch, soft.pitch(), file_blocks_y, soft.softBlocksY(0), file_mip_size.z, soft.ld(), soft.pitch2());
                if(f.pos(f_end) && f.ok())
-                  return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, IC_CONVERT_GAMMA);
+                  return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
             }
          }
       }

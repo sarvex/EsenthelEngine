@@ -53,7 +53,7 @@ static Bool ExtractMipMap(C Image &src, Image &dest, Int mip_map, DIR_ENUM cube_
    }
    return false;
 }
-Bool Image::extractMipMap(Image &dest, Int type, Int mip_map, DIR_ENUM cube_face)C
+Bool Image::extractMipMap(Image &dest, Int type, Int mip_map, DIR_ENUM cube_face, FILTER_TYPE filter, UInt flags)C
 {
    if(InRange(mip_map, mipMaps()))
    {
@@ -61,7 +61,7 @@ Bool Image::extractMipMap(Image &dest, Int type, Int mip_map, DIR_ENUM cube_face
       if(ExtractMipMap(T, img, mip_map, cube_face)) // extract
       {
          if(&img!=&dest)Swap(dest, img); // swap if needed
-         if(type>IMAGE_NONE && !dest.copyTry(dest, -1, -1, -1, type))return false; // apply conversion if needed
+         if(type>IMAGE_NONE && !dest.copyTry(dest, -1, -1, -1, type, -1, -1, filter, flags))return false; // apply conversion if needed
          return true;
       }
    }
