@@ -1396,7 +1396,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                    //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
                      VecI2 size(Max(1, hwW()>>m), Max(1, hwH()>>m));
                      Int   mip_size=ImageMipSize(size.x, size.y, 0, hwType());
-                   C Byte *mip_data=(Byte*)data[m];
+                     CPtr  mip_data=data[m];
                      if(!compressed())glTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0, gl_format, gl_type, mip_data);
                      else   glCompressedTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0,           mip_size, mip_data);
                   #if GL_ES
@@ -1473,7 +1473,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                    //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
                      VecI  size(Max(1, hwW()>>m), Max(1, hwH()>>m), Max(1, hwD()>>m));
                      Int   mip_size=ImageMipSize(size.x, size.y, size.z, 0, hwType());
-                   C Byte *mip_data=(Byte*)data[m];
+                     CPtr  mip_data=data[m];
                      if(!compressed())glTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0, gl_format, gl_type, mip_data);
                      else   glCompressedTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0,           mip_size, mip_data);
                   #if GL_ES
