@@ -1108,8 +1108,8 @@ void Image::setGLParams()
    #endif
 
       // now call those that must succeed
-      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
-    //glTexParameteri(target, GL_TEXTURE_MAX_LEVEL , mipMaps()-1); not needed since it's always full
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip  );
+      glTexParameteri(target, GL_TEXTURE_MAX_LEVEL , mipMaps()-1); // this is needed, without it images with mips=1 will fail to draw
 
    #if GL_SWIZZLE
       switch(hwType())
