@@ -307,11 +307,7 @@ struct Image // Image (Texture)
 
    // manage
 #if EE_PRIVATE
-   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr src_data=null, C Image *src=null
-      #if GL_ES
-               , Bool can_del_src=false // 'can_del_src'=if allow deleting 'src' (always enable if possible, to allow faster creation of images on GL_ES)
-      #endif
-                );
+   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr src_data=null, C Image *src=null);
 #endif
    Image& del(); // delete
 
@@ -790,6 +786,7 @@ DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &tex); // convert vector direct
 Vec      CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert image coordinates, 'x,y'=image coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image cube face, returned vector is not normalized, however its on a cube with radius=1 ("Abs(dir).max()=1")
 
 #if EE_PRIVATE
+#define MAX_MIP_MAPS 32
 struct ImageThreadsClass : Threads
 {
    ImageThreadsClass& init()

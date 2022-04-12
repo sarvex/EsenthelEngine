@@ -1187,7 +1187,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          src_data=src->softData();
       }
    #if DX11
-      D3D11_SUBRESOURCE_DATA *initial_data=null; MemtN<D3D11_SUBRESOURCE_DATA, 32*6> res_data; // 32 mip maps * 6 faces
+      D3D11_SUBRESOURCE_DATA *initial_data=null; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
       if(src_data) // always assumed to exactly match
       {
        C Byte *data=(Byte*)src_data; Int faces=ImageFaces(mode);
@@ -1375,7 +1375,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                if(src_data)
                {
                #if GL_ES
-                  if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && !can_del_src)Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it and we're not going to take it from 'src'
+                  if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
                #endif
                 C Byte *data=(Byte*)src_data; FREPD(m, mipMaps()) // order important
                   {
@@ -1408,14 +1408,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
-                  if(src_data)
-                  {
-                     if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && can_del_src) // take software copy from 'src', but only if we want it, and only on success (so if failed, then we can still use 'src', this is needed for 'Load' loading)
-                     {
-                        DYNAMIC_ASSERT(src, "'can_del_src' without 'src' is not implemented");
-                        Image &s=ConstCast(*src); _data_all=s._data_all; s._data_all=null; s.del();
-                     }
-                  }else Alloc(_data_all, CeilGL(memUsage()));
+                  if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
                #endif
                   return true;
                }
@@ -1463,7 +1456,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                if(src_data)
                {
                #if GL_ES
-                  if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && !can_del_src)Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it and we're not going to take it from 'src'
+                  if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
                #endif
                 C Byte *data=(Byte*)src_data; FREPD(m, mipMaps()) // order important
                   {
@@ -1486,14 +1479,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
-                  if(src_data)
-                  {
-                     if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && can_del_src) // take software copy from 'src', but only if we want it, and only on success (so if failed, then we can still use 'src', this is needed for 'Load' loading)
-                     {
-                        DYNAMIC_ASSERT(src, "'can_del_src' without 'src' is not implemented");
-                        Image &s=ConstCast(*src); _data_all=s._data_all; s._data_all=null; s.del();
-                     }
-                  }else Alloc(_data_all, CeilGL(memUsage()));
+                  if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
                #endif
             	   return true;
                }
@@ -1516,7 +1502,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
             #if GL_ES
-               if(src_data && mode!=IMAGE_RT_CUBE && !(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && !can_del_src)Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it and we're not going to take it from 'src'
+               if(src_data && mode!=IMAGE_RT_CUBE && !(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
             #endif
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
@@ -1551,14 +1537,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                #if GL_ES
                   if(mode!=IMAGE_RT_CUBE)
                   {
-                     if(src_data)
-                     {
-                        if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA) && can_del_src) // take software copy from 'src', but only if we want it, and only on success (so if failed, then we can still use 'src', this is needed for 'Load' loading)
-                        {
-                           DYNAMIC_ASSERT(src, "'can_del_src' without 'src' is not implemented");
-                           Image &s=ConstCast(*src); _data_all=s._data_all; s._data_all=null; s.del();
-                        }
-                     }else Alloc(_data_all, CeilGL(memUsage()));
+                     if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
                   }
                #endif
             	   return true;

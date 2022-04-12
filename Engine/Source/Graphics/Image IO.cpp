@@ -413,7 +413,7 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
 
    // set mips info
    UInt image_size=0, offset=0;
-   Mip  mips[32]; if(header.mip_maps<0 || header.mip_maps>Elms(mips)){DEBUG_ASSERT(false, "Image has too many mip-maps"); return false;}
+   Mip  mips[MAX_MIP_MAPS]; if(header.mip_maps<0 || header.mip_maps>Elms(mips)){DEBUG_ASSERT(false, "Image has too many mip-maps"); return false;}
    REP(header.mip_maps) // #MipOrder
    {
       Mip &mip=mips[i];
@@ -495,6 +495,16 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       }
       read_mips=can_read_mips; // if not streaming then read all here
    has_read_mips:;
+
+      // calculate data needed for loaded mip maps
+      UInt data_size=0;
+      FREP(read_mips)
+      {
+         Int img_mip=can_read_mips-1-i;
+         data_size+=ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, img_mip, want_hw_type);
+      }
+      MAX(data_size, ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, 0, want_hw_type)); // need enough room for the biggest mip map, because DX requires that all src data pointers are valid
+      Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
       if(header.cmpr)
       {
@@ -730,11 +740,7 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
       if(image.mode()!=want.mode) // if created as SOFT, then convert to HW
       {
          Swap(soft, image); // can't create from self
-         if(!image.createEx(soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), null, &soft
-            #if GL_ES
-               , true // allow deleting 'soft' src
-            #endif
-         ))
+         if(!image.createEx(soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), null, &soft))
          {
             VecI size=soft.size3(); IMAGE_TYPE type=soft.type(); // remember params for adjust later
             soft.adjustInfo(soft.hwW(), soft.hwH(), soft.d(), soft.type()); // adjust internal size to 'hwW', 'hwH' because we must allocate entire HW size for 'type' to have enough room for its data, for example 48x48 PVRTC requires 64x64 size 7 mip maps, while RGBA would give us 48x48 size 6 mip maps, this is to achieve consistent results (have the same sizes, and mip maps) and it's also a requirement for saving, doing this instead of using 'copyTry' with FILTER_NO_STRETCH allows for faster 'Decompress' (directly into 'target'), no need to explicitly specify mip maps instead of using -1 because they could change due to different sizes)
@@ -743,11 +749,7 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
                alt_type=ImageTypeOnFail(alt_type); if(!alt_type)return false;
                if(ImageSupported (alt_type, want.mode, soft.samples()) // do a quick check before 'copyTry' to avoid it if we know creation will fail
                && soft .  copyTry(soft, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
-               && image.createEx (soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), null, &soft
-                  #if GL_ES
-                     , true // allow deleting 'soft' src
-                  #endif
-               ))break; // success
+               && image.createEx (soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), null, &soft))break; // success
             }
             image.adjustInfo(size.x, size.y, size.z, type);
          }
