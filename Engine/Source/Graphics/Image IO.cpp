@@ -220,7 +220,7 @@ Bool Image::_saveData(File &f)C
    }else
    {
       Image soft; // keep outside loop to reduce overhead
-      const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
+      const UInt copy_flags=(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
       REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
