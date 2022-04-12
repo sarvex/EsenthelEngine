@@ -677,9 +677,9 @@ UInt ImageSize(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_ma
    return size;
 }
 /******************************************************************************/
-Int TotalMipMaps(Int w, Int h, Int d, IMAGE_TYPE type)
+Int TotalMipMaps(Int w, Int h, Int d)
 {
-   if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
+ //if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2, for simplicity ignore this. In worst case we won't have the last 1x1 mip for non-square PVRTC
    Int    total=0; for(Int i=Max(w, h, d); i>=1; i>>=1)total++;
    return total;
 }
@@ -1178,7 +1178,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
    {
       // mip maps
-      Int      total_mip_maps=TotalMipMaps(w, h, d, type); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
+      Int      total_mip_maps=TotalMipMaps(w, h, d); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
       if(mip_maps<=0)mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
       else       MIN(mip_maps,total_mip_maps); // don't use more than maximum allowed
 
@@ -1641,17 +1641,15 @@ error:
 Bool Image::createTry(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Bool alt_type_on_fail)
 {
    if(createEx(w, h, d, type, mode, mip_maps, 1))return true;
+
    if(alt_type_on_fail && w>0 && h>0 && d>0)
-   {
-      Int pw=PaddedWidth (w, h, 0, type), // must allocate entire HW size for 'type' to have enough room for its data, for example 48x48 PVRTC requires 64x64 size 7 mip maps, while RGBA would give us 48x48 size 6 mip maps, this is to achieve consistent results (have the same sizes, and mip maps) and it's also a requirement for saving
-          ph=PaddedHeight(w, h, 0, type);
       for(IMAGE_TYPE alt_type=type; alt_type=ImageTypeOnFail(alt_type); )
-         if(createEx(pw, ph, d, alt_type, mode, mip_maps, 1))
-      {
-         adjustInfo(w, h, d, type);
-         return true;
-      }
+         if(createEx(w, h, d, alt_type, mode, mip_maps, 1))
+   {
+      adjustInfo(w, h, d, type);
+      return true;
    }
+
    return false;
 }
 Image& Image::mustCreate(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Bool alt_type_on_fail)
@@ -2002,12 +2000,12 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
    // mip maps
    if(mip_maps<0)
    {
-      if(w==src->w() && h==src->h() && d==src->d()                             )mip_maps=src->mipMaps();else // same size
-      if(src->mipMaps()<TotalMipMaps(src->w(), src->h(), src->d(), src->type()))mip_maps=src->mipMaps();else // less than total
-      if(src->mipMaps()==1                                                     )mip_maps=             1;else // use  only one
-                                                                                mip_maps=             0;     // auto-detect mip maps
+      if(w==src->w() && h==src->h() && d==src->d()                )mip_maps=src->mipMaps();else // same size
+      if(src->mipMaps()<TotalMipMaps(src->w(), src->h(), src->d()))mip_maps=src->mipMaps();else // less than total
+      if(src->mipMaps()==1                                        )mip_maps=             1;else // use  only one
+                                                                   mip_maps=             0;     // auto-detect mip maps
    }
-   Int dest_total_mip_maps=TotalMipMaps(w, h, d, IMAGE_TYPE(type));
+   Int dest_total_mip_maps=TotalMipMaps(w, h, d);
    if(mip_maps<=0)mip_maps=dest_total_mip_maps ; // if mip maps not specified then use full chain
    else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
@@ -2118,7 +2116,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
       if(!IsCube(IMAGE_MODE(mode)))mode    =(IsSoft(src.mode()) ? IMAGE_SOFT_CUBE : IMAGE_CUBE);
       if(mip_maps<0               )mip_maps=((src.mipMaps()==1) ? 1 : 0); // if source has 1 mip map, then create only 1, else create full
 
-      Int dest_total_mip_maps=TotalMipMaps(size, size, 1, IMAGE_TYPE(type));
+      Int dest_total_mip_maps=TotalMipMaps(size, size, 1);
       if(mip_maps<=0)mip_maps=dest_total_mip_maps ; // if mip maps not specified then use full chain
       else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 

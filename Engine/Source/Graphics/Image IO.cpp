@@ -463,7 +463,7 @@ struct Loader
          shrink=image_load_shrink(want, name);
 
          // adjust mip-maps, we will need this for load from file memory
-         Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z, want.type); // don't use hardware size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
+         Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z); // don't use hardware size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
          if(want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
          else            MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
       }
@@ -637,7 +637,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
                if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
                {
                   REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), 1, mip_data, can_read_mips-read_mips))goto ok;
+                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, can_read_mips-read_mips))goto ok;
                   if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
                }
             }
@@ -674,7 +674,7 @@ static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
       shrink=image_load_shrink(want, name);
 
       // adjust mip-maps, we will need this for load from file memory
-      Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z, want.type); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
+      Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
       if(want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
       else            MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
    }
