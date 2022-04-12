@@ -561,7 +561,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
       {
       /* Load all mip maps that are already in f.buffer without requiring to do any more reads
          but at least 1 (to make sure we have something, even if a read is needed)
-         if(FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
+         if(FILE_MEM || can't stream) then read all. Can stream if 'can_del_f' and 'image' belongs to 'Images' cache
          when creating image, use src data for fast create (can ignore smallest/biggest mip-maps)
          if there are missing smaller mip-maps than read, then make them with 'updateMipMaps'
          schedule loading of remaining mip-maps */
@@ -592,7 +592,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
             }
          }
          read_mips=can_read_mips; // if not streaming then read all here
-      has_read_mips:;
+      has_read_mips:
 
          // calculate data needed for loaded mip maps
          UInt data_size=0;
@@ -628,9 +628,22 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
          }
          if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
-            // FIXME on fail, try to use alt_types
+            if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
+               if(IMAGE_TYPE alt_type=ImageTypeOnFail(want_hw_type)) // there's replacement
+                  if(soft.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want_mode_soft, want.mip_maps, 1, mip_data)) // first create as soft
+            {
+               want_hw_type=alt_type;
+            again:
+               if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
+               {
+                  REP(soft.mipMaps())mip_data[i]=soft.softData(i);
+                  if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, soft.mipMaps(), 1, mip_data))goto ok;
+                  if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
+               }
+            }
             return false;
          }
+      ok:
          image.adjustInfo(image.w(), image.h(), image.d(), want.type);
          image.updateMipMaps(FILTER_BEST, copy_flags, can_read_mips-1);
          if(stream)
@@ -1392,7 +1405,7 @@ Bool Image::ImportTry(File &f, Int type, Int mode, Int mip_maps)
    f.resetOK().pos(pos); if(ImportICO (f))goto ok;
  //f.resetOK().pos(pos); if(ImportTGA (f, type, mode, mip_maps))goto ok; TGA format doesn't contain any special signatures, so we can't check it
    del(); return false;
-ok:;
+ok:
    return copyTry(T, -1, -1, -1, type, mode, mip_maps);
 }
 Bool Image::ImportTry(C Str &name, Int type, Int mode, Int mip_maps)
