@@ -768,9 +768,9 @@ struct ImageFileHeader
    Byte       mips;
 };
 #pragma pack(pop)
-Bool Image::loadData(File &f, ImageHeader *header, C Str &name)
+Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
 {
-   ImageHeader ih;
+   ImageHeaderEx ih;
    switch(f.decUIntV())
    {
       case 1:
@@ -993,7 +993,7 @@ Bool Image::load(C Str &name)
 {
    File f; if(f.readTry(name))switch(f.getUInt())
    {
-      case CC4_IMG: return  loadData(f, null, name);
+      case CC4_IMG: return  loadData(f, null, name, true); // can delete 'f' because it's a temporary
       case CC4_GFX: return _loadData(f, null, name);
    }
    del(); return false;
