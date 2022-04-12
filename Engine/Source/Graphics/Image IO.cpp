@@ -597,7 +597,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
             return false;
          }
          image.adjustInfo(image.w(), image.h(), image.d(), want.type);
-         // FIXME updateMipMaps
+         image.updateMipMaps(FILTER_BEST, copy_flags, can_read_mips-1);
          if(stream)
          {
             // FIXME
