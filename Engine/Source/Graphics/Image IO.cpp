@@ -385,20 +385,23 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
    }
 
    // detect HW type that we will use
-   IMAGE_TYPE hw_type=want.type;
-   for(; !ImageSupported(hw_type, want.mode); )
+   IMAGE_TYPE want_hw_type=want.type;
+   for(; !ImageSupported(want_hw_type, want.mode); )
    {
-          hw_type=ImageTypeOnFail(hw_type); // use replacement
-      if(!hw_type)return false; // there isn't any then fail
+          want_hw_type=ImageTypeOnFail(want_hw_type); // use replacement
+      if(!want_hw_type)return false; // there isn't any then fail
    }
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
-   const Bool same_type   =CanDoRawCopy(header.type, hw_type, ignore_gamma);
+   const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
    const Bool file_cube   =IsCube      (header.mode);
    const Int  file_faces  =ImageFaces  (header.mode);
+   const Int  want_faces  =ImageFaces  (  want.mode);
    const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
-   const VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0, header.type),
-                           PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
+   const VecI file_hw_size(PaddedWidth (header.size.x, header.size.y, 0,  header.type),
+                           PaddedHeight(header.size.x, header.size.y, 0,  header.type), header.size.z);
+   const VecI want_hw_size(PaddedWidth (  want.size.x,   want.size.y, 0, want_hw_type),
+                           PaddedHeight(  want.size.x,   want.size.y, 0, want_hw_type),   want.size.z);
 
    Int   file_mip=0;
    VecI  file_mip_size=header.size;
@@ -441,13 +444,11 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
    )
    {
       VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_mip), Max(1, file_hw_size.y>>file_mip), Max(1, file_hw_size.z>>file_mip));
-      VecI     want_hw_size(PaddedWidth (want.size.x, want.size.y, 0, hw_type),
-                            PaddedHeight(want.size.x, want.size.y, 0, hw_type), want.size.z);
-      if(file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+      if(  file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
       {
          Ptr  data=(Byte*)f.memFast()+mips[file_mip+want.mip_maps-1].offset; // #MipOrder
          Bool hw=IsHW(want.mode); // want HW mode
-         if(image.createEx(want.size.x, want.size.y, want.size.z, hw_type, want.mode, want.mip_maps, 1, hw ? data : null))
+         if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, hw ? data : null))
          {
             if(!hw)CopyFast(image.softData(), data, image.memUsage()); // FIXME: could this be moved to src_data in createEx?
             image.adjustInfo(image.w(), image.h(), image.d(), want.type);
@@ -456,13 +457,14 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       }
    }
 
-#if 0
+   Image soft;
+
    if(file_mip_size==want.size) // if have exact match
    {/*Load all mip maps that are already in f.buffer without requiring to do any more reads
       but at least 1 (to make sure we have something, even if a read is needed)
       if (FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
       when creating image, use src_data for fast create (can ignore smallest/biggest mip-maps)
-      if there are missing smaller mip-maps than read, then make them here 'updateMipMaps'
+      if there are missing smaller mip-maps than read, then make them with 'updateMipMaps'
       schedule loading of remaining mip-maps*/
       Int can_read_mips=Min(header.mip_maps-file_mip, want.mip_maps); // mips that we can read
     //Int skip_mips=header.mip_maps-file_mip-can_read_mips;
@@ -484,7 +486,7 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
                read_mips++;
             }
             MAX(read_mips, 1); // always read at least one
-            if(read_mips<can_read_mips && Images.has(&image))
+            if( read_mips<can_read_mips && Images.has(&image)) // check 'Images.has' at the end because it's slow
             {
                stream=true;
                goto has_read_mips;
@@ -505,9 +507,8 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       // FIXME updateMipMaps
       // FIXME adjustInfo
    }else // load the best mip, and re-create the whole image out of it
-#endif
    {
-      Image soft; if(soft.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))
+      if(soft.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip, header.type),
              file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip, header.type);

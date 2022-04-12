@@ -2738,36 +2738,42 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
    #elif GL // GL can accept only HW sizes
       Int hw_pitch   =softPitch  (mip_map),
           hw_blocks_y=softBlocksY(mip_map),
-          hw_pitch2  =hw_pitch*hw_blocks_y;
-      if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, 6) && D.created())switch(mode())
+          hw_pitch2  =hw_pitch*hw_blocks_y,
+          d          =Max(1, hwD()>>mip_map);
+      if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, 6) && D.created())
       {
-         case IMAGE_2D:
-         case IMAGE_RT:
-         case IMAGE_DS:
-         { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                                D.texBind(GL_TEXTURE_2D, _txtr);
-            if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-            else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
-                                  glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-           _discard=false;
-         }return true;
+      #if GL_ES
+         if(hw() && softData())CopyImgData((Byte*)data, softData(mip_map, cube_face), data_pitch, hw_pitch, valid_blocks_y, hw_blocks_y, data_pitch*valid_blocks_y, hw_pitch2, d, d);
+      #endif
+         switch(mode())
+         {
+            case IMAGE_2D:
+            case IMAGE_RT:
+            case IMAGE_DS:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                   D.texBind(GL_TEXTURE_2D, _txtr);
+               if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
+               else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
+                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+              _discard=false;
+            }return true;
 
-         case IMAGE_3D:
-         { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-            Int d=Max(1, hwD()>>mip_map);
-                                D.texBind(GL_TEXTURE_3D, _txtr);
-            if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-            else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, hw_pitch2*d, data);
-                                  glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-         }return true;
+            case IMAGE_3D:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                   D.texBind(GL_TEXTURE_3D, _txtr);
+               if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
+               else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, hw_pitch2*d, data);
+                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+            }return true;
 
-         case IMAGE_CUBE:
-         { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                                D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
-            if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-            else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
-                                  glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-         }return true;
+            case IMAGE_CUBE:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                   D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
+               if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
+               else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
+                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+            }return true;
+         }
       }
    #endif
       if(lock(LOCK_WRITE, mip_map, cube_face))
