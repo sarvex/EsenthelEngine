@@ -307,7 +307,7 @@ struct Image // Image (Texture)
 
    // manage
 #if EE_PRIVATE
-   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr *data=null);
+   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr *data=null, Int base_mip=0);
 #endif
    Image& del(); // delete
 
@@ -345,6 +345,7 @@ struct Image // Image (Texture)
  C Image& unlock    (                                                                           )C; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
 
 #if EE_PRIVATE
+   void baseMip(Int base_mip);
    Bool updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0);
 #endif
    Image& updateMipMaps(FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0); // update mip maps of the image, 'flags'=IMAGE_COPY_FLAG, 'mip_start'=index of the mip map to start with (this mip map will be taken, and downsampled to following mip maps)
@@ -710,7 +711,7 @@ private:
    IMAGE_MODE _mode;
     LOCK_MODE _lock_mode;
      DIR_ENUM _lcf;
-   Byte       _mms, _samples, _lmm, _byte_pp;
+   Byte       _mms, _samples, _lmm, _byte_pp, _base_mip;
    Bool       _partial, _discard;
    Int        _lock_count;
    UInt       _pitch, _pitch2;
