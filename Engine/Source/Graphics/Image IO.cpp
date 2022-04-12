@@ -395,9 +395,11 @@ struct Loader
 {
    ImageHeader   header;
    COMPRESS_TYPE header_cmpr;
+   IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
    Int           file_faces;
    VecI          file_hw_size;
+   VecI          want_hw_size;
    Mip           mips[MAX_MIP_MAPS];
    File         &f;
 
@@ -422,6 +424,24 @@ struct Loader
       }
       return false;
    }
+   Bool loadDirect(Int file_mip, Int img_mip, Byte *img_data)C
+   {
+      Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip,  header.type),
+          file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip,  header.type),
+          file_d       =                      Max(1, file_hw_size.z>>file_mip);
+      Int  img_pitch   =ImagePitch  (want_hw_size.x, want_hw_size.y,  img_mip, want_hw_type),
+           img_blocks_y=ImageBlocksY(want_hw_size.x, want_hw_size.y,  img_mip, want_hw_type),
+           img_d       =                      Max(1, want_hw_size.z>> img_mip);
+    C Mip &mip=mips[file_mip];
+      if(mip.cmpr)
+      {
+         // FIXME
+      }else
+      {
+         LoadImgData(f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
+      }
+      return f.ok();
+   }
    Bool load(Image &image, C Str &name, Bool can_del_f)
    {
       ImageHeader want=header;
@@ -445,7 +465,7 @@ struct Loader
       }
 
       // detect HW type that we will use
-      IMAGE_TYPE want_hw_type=want.type;
+      want_hw_type=want.type;
       for(; !ImageSupported(want_hw_type, want.mode); )
       {
              want_hw_type=ImageTypeOnFail(want_hw_type); // use replacement
@@ -459,7 +479,7 @@ struct Loader
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
                  file_hw_size.set(PaddedWidth (header.size.x, header.size.y, 0,  header.type),
                                   PaddedHeight(header.size.x, header.size.y, 0,  header.type), header.size.z);
-      const VecI want_hw_size    (PaddedWidth (  want.size.x,   want.size.y, 0, want_hw_type),
+                 want_hw_size.set(PaddedWidth (  want.size.x,   want.size.y, 0, want_hw_type),
                                   PaddedHeight(  want.size.x,   want.size.y, 0, want_hw_type),   want.size.z);
                  file_mode_soft=(IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
 const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
@@ -576,11 +596,10 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
             Int  img_mip=can_read_mips-1-i;
             Int file_mip=base_file_mip+img_mip;
             mip_data[img_mip]=img_data;
-            /*if(direct) // load from file directly to 'img_data'
+            if(direct) // load from file directly to 'img_data'
             {
-               // FIXME
-               // FIXME CHECK f.ok()
-            }else*/
+               if(!loadDirect(file_mip, img_mip, img_data))return false;
+            }else
             {
                if(!load(soft, file_mip))return false;
                if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
