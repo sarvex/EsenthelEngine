@@ -402,6 +402,7 @@ struct Loader
    IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
    Int           file_faces;
+   Int           want_faces;
    VecI          file_hw_size;
    VecI          want_hw_size;
    Mip           mips[MAX_MIP_MAPS];
@@ -409,13 +410,19 @@ struct Loader
 
    Loader(File &f) : f(f) {}
 
+   Int filePitch  (Int mip)C {return ImagePitch  (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
+   Int fileBlocksY(Int mip)C {return ImageBlocksY(file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
+   Int wantPitch  (Int mip)C {return ImagePitch  (want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
+   Int wantBlocksY(Int mip)C {return ImageBlocksY(want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
+   Int wantMipSize(Int mip)C {return ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, mip, want_hw_type)*want_faces;}
+
    Bool load(Image &image, Int file_mip)C
    {
       VecI file_mip_size(Max(1, header.size.x>>file_mip), Max(1, header.size.y>>file_mip), Max(1, header.size.z>>file_mip));
       if(image.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, file_mode_soft, 1))
       {
-         Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip, header.type),
-             file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip, header.type);
+         Int file_pitch   =filePitch  (file_mip),
+             file_blocks_y=fileBlocksY(file_mip);
        C Mip &mip=mips[file_mip];
          if(mip.cmpr)
          {
@@ -430,12 +437,12 @@ struct Loader
    }
    Bool loadDirect(Int file_mip, Int img_mip, Byte *img_data)C
    {
-      Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip,  header.type),
-          file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip,  header.type),
-          file_d       =                      Max(1, file_hw_size.z>>file_mip);
-      Int  img_pitch   =ImagePitch  (want_hw_size.x, want_hw_size.y,  img_mip, want_hw_type),
-           img_blocks_y=ImageBlocksY(want_hw_size.x, want_hw_size.y,  img_mip, want_hw_type),
-           img_d       =                      Max(1, want_hw_size.z>> img_mip);
+      Int file_pitch   =filePitch  (file_mip),
+          file_blocks_y=fileBlocksY(file_mip),
+          file_d       =Max(1, file_hw_size.z>>file_mip);
+      Int  img_pitch   =wantPitch  (img_mip),
+           img_blocks_y=wantBlocksY(img_mip),
+           img_d       =Max(1, want_hw_size.z>> img_mip);
     C Mip &mip=mips[file_mip];
       if(mip.cmpr)
       {
@@ -506,7 +513,7 @@ struct Loader
 
       const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
       const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-      const Int  want_faces  =ImageFaces  (  want.mode);
+                 want_faces  =ImageFaces  (  want.mode);
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
                  want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                                   PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
@@ -593,10 +600,10 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
          FREP(read_mips)
          {
             Int img_mip=can_read_mips-1-i;
-            data_size+=ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, img_mip, want_hw_type)*want_faces;
+            data_size+=wantMipSize(img_mip);
          }
          const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
-         if(need_valid_ptr)MAX(data_size, ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, 0, want_hw_type)*want_faces); // need enough room for biggest mip map
+         if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
          Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
          Bool direct=(same_type && want_faces==file_faces); // type and cube are the same
@@ -613,12 +620,12 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
             {
                if(!load(soft, file_mip))return false;
                if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
-               Int img_pitch   =ImagePitch  (want_hw_size.x, want_hw_size.y, img_mip, want_hw_type);
-               Int img_blocks_y=ImageBlocksY(want_hw_size.x, want_hw_size.y, img_mip, want_hw_type);
-               Int img_d       =                      Max(1, want_hw_size.z>>img_mip);
+               Int img_pitch   =wantPitch  (img_mip);
+               Int img_blocks_y=wantBlocksY(img_mip);
+               Int img_d       =Max(1, want_hw_size.z>>img_mip);
                CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
             }
-            img_data+=ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, img_mip, want_hw_type)*want_faces;
+            img_data+=wantMipSize(img_mip);
          }
          if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
