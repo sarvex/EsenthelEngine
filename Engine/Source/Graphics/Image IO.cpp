@@ -531,7 +531,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
-      // try to create directly from file memory
+      // try to create directly from file memory (this can be used if image is not compressed per mip maps separately, but instead was compressed as a whole)
       if( f._type==FILE_MEM // file data is already available and in continuous memory
       && !f._cipher         // no cipher
       && !file_cmpr         // no compression
