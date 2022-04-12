@@ -1143,7 +1143,14 @@ void Image::setGLParams()
 #endif
 }
 /******************************************************************************/
-Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr src_data, C Image *src)
+static void SetSoftData(Image &img, CPtr *data)
+{
+   Int faces=img.faces();
+   REPD(m, img.mipMaps()) // #MipOrder
+      if(CPtr mip_data=data[m])
+         CopyFast(img.softData(m), mip_data, ImageMipSize(img.hwW(), img.hwH(), img.hwD(), m, img.hwType())*faces);
+}
+Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data)
 {
    // verify parameters
    if(w<=0 || h<=0 || d<=0 || type==IMAGE_NONE){del(); return !w && !h && !d;}
@@ -1160,62 +1167,72 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       else       MIN(mip_maps,total_mip_maps); // don't use more than maximum allowed
 
       // check if already matches what we want
-      if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples && !src_data && !src)
+      if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples)
       {
-         unlock(); // unlock if was locked
-         return true;
+         if(data)
+         {
+            if(soft())
+            {
+               unlock(); // unlock if was locked, because we expect create to fully reset the state
+               SetSoftData(T, data);
+               return true;
+            }
+         }else
+         {
+            unlock(); // unlock if was locked, because we expect create to fully reset the state
+            return true;
+         }
       }
-
-      // do a quick check
-      if(!ImageSupported(type, mode, samples))goto error;
 
       // create as new
    #if WEB && GL
       Memt<Byte> temp;
    #endif
-      // hardware size (do after calculating mip-maps)
-      VecI hw_size(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
-      if(src) // if 'src' specified
-      {
-         if(src==this // can't be created from self
-         || src->hwType()!=type || src->hwSize3()!=hw_size || src->mipMaps()!=mip_maps || !src->soft() || src->cube()!=IsCube(mode)) // 'src' must match exactly what was requested
-            goto error;
-         src_data=src->softData();
-      }
+
+      const Bool hw=IsHW(mode);
+   #if GPU_LOCK // lock not needed for 'D3D'
+      SyncLockerEx locker(D._lock, hw);
+   #endif
+      if(hw && !D.created())goto error; // device not yet created, check this after lock
+
+      // do a quick check, check this after 'D.created()'
+      if(!ImageSupported(type, mode, samples))goto error;
+
+      del();
+
+      // create
+     _size.set(w, h, d); _hw_size.set(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
+     _type=type        ; _hw_type=type;
+     _mode=mode        ;
+
    #if DX11
-      D3D11_SUBRESOURCE_DATA *initial_data=null; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
-      if(src_data) // always assumed to exactly match
+      D3D11_SUBRESOURCE_DATA *initial_data; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
+      if(hw)
       {
-       C Byte *data=(Byte*)src_data; Int faces=ImageFaces(mode);
-         initial_data=res_data.setNum(mip_maps*faces).data();
-         FREPD(m, mip_maps)
-         { // have to specify HW sizes, because all images (HW and SOFT) are stored like that. Need to use 'hw_size' and not 'T.hwSize' (because 1-it's not yet available, 2-it may be bigger, but we need the 'src' hw size which is always smallest)
-            Int mip_pitch =ImagePitch  (hw_size.x, hw_size.y, m, type)           , // X
-                mip_pitch2=ImageBlocksY(hw_size.x, hw_size.y, m, type)*mip_pitch , // X*Y
-                mip_size  =                 Max(1, hw_size.z>>m      )*mip_pitch2; // X*Y*Z
-            FREPD(f, faces)
+         initial_data=null;
+         if(data) // always assumed to exactly match
+         {
+            Int faces=ImageFaces(mode);
+            initial_data=res_data.setNum(mip_maps*faces).data();
+            REPD(m, mip_maps)
             {
-               D3D11_SUBRESOURCE_DATA &srd=initial_data[D3D11CalcSubresource(m, f, mip_maps)];
-               srd.pSysMem         =data;
-               srd.SysMemPitch     =mip_pitch;
-               srd.SysMemSlicePitch=mip_pitch2;
-               data+=mip_size;
+               Int   mip_pitch =  softPitch  (m)           , // X
+                     mip_pitch2=  softBlocksY(m)*mip_pitch , // X*Y
+                     mip_size  =Max(1, hwD()>>m)*mip_pitch2; // X*Y*Z
+             C Byte *mip_data  =(Byte*)data[m];
+               FREPD(f, faces)
+               {
+                  D3D11_SUBRESOURCE_DATA &srd=initial_data[D3D11CalcSubresource(m, f, mip_maps)];
+                  srd.pSysMem         =mip_data;
+                  srd.SysMemPitch     =mip_pitch;
+                  srd.SysMemSlicePitch=mip_pitch2;
+                  if(mip_data)mip_data+=mip_size;
+               }
             }
          }
       }
    #endif
 
-   #if GPU_LOCK // lock not needed for 'D3D'
-      SyncLockerEx locker(D._lock, IsHW(mode));
-   #endif
-      if(IsHW(mode) && !D.created())goto error; // device not yet created
-
-      del();
-
-      // create
-     _size.set(w, h, d); _hw_size=hw_size;
-     _type=type        ; _hw_type=type;
-     _mode=mode        ;
       switch(mode)
       {
          case IMAGE_SOFT:
@@ -1225,6 +1242,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             setInfo();
             Alloc(_data_all, memUsage());
             lockSoft(); // set default lock members to main mip map
+            if(data)SetSoftData(T, data);
          }return true;
 
       #if DX11
@@ -1368,32 +1386,28 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                // !! WARNING: IF THIS IS REPLACED TO USE 'glTexStorage2D' THEN CAN'T USE 'glTexImage2D/glCompressedTexImage2D' TO UPDATE MIP MAPS IN UNLOCK AND 'setFrom' and .., check 'glTexSubImage' and compressed? !!
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
-               if(src_data)
+               if(data)
                {
                #if GL_ES
                   if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
                #endif
-                C Byte *data=(Byte*)src_data; FREPD(m, mipMaps()) // order important
+                  REPD(m, mipMaps()) // order important #MipOrder
                   {
-                     if(m==1) // check at the start of mip-map #1, to skip this when there's only one mip-map
-                        if(glGetError()!=GL_NO_ERROR)goto error; // if first mip failed, then fail
+                   //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
                      VecI2 size(Max(1, hwW()>>m), Max(1, hwH()>>m));
                      Int   mip_size=ImageMipSize(size.x, size.y, 0, hwType());
-                     if(!compressed())glTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0, gl_format, gl_type, data);
-                     else   glCompressedTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0, mip_size, data);
+                   C Byte *mip_data=(Byte*)data[m];
+                     if(!compressed())glTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0,           mip_size, mip_data);
                   #if GL_ES
-                     if(dest){CopyFast(dest, data, mip_size); dest+=mip_size;}
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
                   #endif
-                     data+=mip_size;
                   }
                }else
-               if(!compressed())
-               {
-                  glTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, gl_format, gl_type, null);
-               }else
+               if(!compressed())glTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, gl_format, gl_type, null);else
                {
                   Int mip_size=ImageMipSize(hwW(), hwH(), 0, hwType());
-               #if WEB // for WEB, null can't be specified in 'glCompressedTexImage'
+               #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
                   glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, mip_size, temp.setNumZero(CeilGL(mip_size)).dataNull());
                #else
                   glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, mip_size, null);
@@ -1404,7 +1418,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
-                  if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
+                  if(!data)Alloc(_data_all, CeilGL(memUsage()));
                #endif
                   return true;
                }
@@ -1449,23 +1463,22 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                setGLParams(); // call this first to bind the texture
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
-               if(src_data)
+               if(data)
                {
                #if GL_ES
                   if(!(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
                #endif
-                C Byte *data=(Byte*)src_data; FREPD(m, mipMaps()) // order important
+                  REPD(m, mipMaps()) // order important #MipOrder
                   {
-                     if(m==1) // check at the start of mip-map #1, to skip this when there's only one mip-map
-                        if(glGetError()!=GL_NO_ERROR)goto error; // if first mip failed, then fail
-                     VecI size(Max(1, hwW()>>m), Max(1, hwH()>>m), Max(1, hwD()>>m));
-                     Int  mip_size=ImageMipSize(size.x, size.y, size.z, 0, hwType());
-                     if(!compressed())glTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0, gl_format, gl_type, data);
-                     else   glCompressedTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0, mip_size, data);
+                   //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
+                     VecI  size(Max(1, hwW()>>m), Max(1, hwH()>>m), Max(1, hwD()>>m));
+                     Int   mip_size=ImageMipSize(size.x, size.y, size.z, 0, hwType());
+                   C Byte *mip_data=(Byte*)data[m];
+                     if(!compressed())glTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0,           mip_size, mip_data);
                   #if GL_ES
-                     if(dest){CopyFast(dest, data, mip_size); dest+=mip_size;}
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
                   #endif
-                     data+=mip_size;
                   }
                }else
                if(!compressed())glTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, gl_format, gl_type, null);
@@ -1475,7 +1488,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
-                  if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
+                  if(!data)Alloc(_data_all, CeilGL(memUsage()));
                #endif
             	   return true;
                }
@@ -1498,32 +1511,30 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
             #if GL_ES
-               if(src_data && mode!=IMAGE_RT_CUBE && !(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
+               if(data && mode!=IMAGE_RT_CUBE && !(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA))Alloc(_data_all, CeilGL(memUsage())); Byte *dest=_data_all; // create a software copy only if we want it
             #endif
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
-             C Byte *data=(Byte*)src_data; Int mip_maps=(src_data ? mipMaps() : 1); // when have src we need to initialize all mip-maps, without src we can just try 1 mip-map to see if it succeeds
-               FREPD(m, mip_maps) // order important
+               Int  mip_maps=(data ? mipMaps() : 1); // when have src we need to initialize all mip-maps, without src we can just try 1 mip-map to see if it succeeds
+               REPD(m, mip_maps) // order important #MipOrder
                {
                   VecI2 size(Max(1, hwW()>>m), Max(1, hwH()>>m));
                   Int   mip_size=ImageMipSize(size.x, size.y, 0, hwType());
-               #if WEB // for WEB, null can't be specified in 'glCompressedTexImage'
-                  if(!m && !src_data && compressed())data=temp.setNumZero(CeilGL(mip_size)).dataNull();
+                C Byte *mip_data=(data ? (Byte*)data[m] : null);
+               #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
+                  if(!mip_data && compressed())mip_data=temp.setNumZero(CeilGL(mip_size*6)).dataNull();
                #endif
                   FREPD(f, 6) // faces, order important
                   {
-                     if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0, gl_format, gl_type, data);
-                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0, mip_size, data);
+                     if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0,           mip_size, mip_data);
 
-                     if(!m && !f && glGetError()!=GL_NO_ERROR)goto error; // check for error only on the first mip and face
+                   //if(m==mip_maps-1 && !f && glGetError()!=GL_NO_ERROR)goto error; // check for error only on the first mip and face #MipOrder
                      
-                     if(src_data)
-                     {
-                     #if GL_ES
-                        if(dest){CopyFast(dest, data, mip_size); dest+=mip_size;}
-                     #endif
-                        data+=mip_size;
-                     }
+                  #if GL_ES
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
+                  #endif
+                     if(mip_data)mip_data+=mip_size;
                   }
                }
 
@@ -1533,7 +1544,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                #if GL_ES
                   if(mode!=IMAGE_RT_CUBE)
                   {
-                     if(!src_data)Alloc(_data_all, CeilGL(memUsage()));
+                     if(!data)Alloc(_data_all, CeilGL(memUsage()));
                   }
                #endif
             	   return true;
@@ -2182,7 +2193,7 @@ UInt  Image::softPitch   (Int mip_map                    )C {return ImagePitch  
 UInt  Image::softBlocksY (Int mip_map                    )C {return ImageBlocksY(hwW(), hwH(),        mip_map, hwType());}
 Byte* Image::softData    (Int mip_map, DIR_ENUM cube_face)
 {
-   return _data_all+ImageSize(hwW(), hwH(), hwD(), hwType(), mode(), mip_map)+(cube_face ? softFaceSize(mip_map)*cube_face : 0); // call 'softFaceSize' only when needed because most likely 'cube_face' is zero
+   return _data_all+ImageMipOffset(hwW(), hwH(), hwD(), hwType(), mode(), mipMaps(), mip_map)+(cube_face ? softFaceSize(mip_map)*cube_face : 0); // call 'softFaceSize' only when needed because most likely 'cube_face' is zero
 }
 void Image::lockSoft()
 {

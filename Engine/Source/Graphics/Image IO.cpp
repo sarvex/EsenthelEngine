@@ -347,6 +347,7 @@ Bool Image::saveData(File &f)C
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
 static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x, dest.x) || SizeFits1(src.y, dest.y) || SizeFits1(src.z, dest.z) || (src.x==1 && src.y==1 && src.z==1);}
+static INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);} // +1 because this checks number of elements
 /******************************************************************************/
 struct ImageHeaderEx : ImageHeader
 {
@@ -394,7 +395,6 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
    const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-   const Bool file_cube   =IsCube      (header.mode);
    const Int  file_faces  =ImageFaces  (header.mode);
    const Int  want_faces  =ImageFaces  (  want.mode);
    const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
@@ -413,7 +413,9 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
 
    // set mips info
    UInt image_size=0, offset=0;
-   Mip  mips[MAX_MIP_MAPS]; if(header.mip_maps<0 || header.mip_maps>Elms(mips)){DEBUG_ASSERT(false, "Image has too many mip-maps"); return false;}
+   Mip  mips    [MAX_MIP_MAPS];
+  CPtr  mip_data[MAX_MIP_MAPS];
+   if(!CheckMipNum(header.mip_maps))return false;
    REP(header.mip_maps) // #MipOrder
    {
       Mip &mip=mips[i];
@@ -438,19 +440,17 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
    && !header.cmpr       // no compression
    && file_mip_size==want.size // found exact mip match
    && header.mip_maps-file_mip>=want.mip_maps // have all mip maps that we want
-   && same_type                    // type is the same
-   && IsCube(want.mode)==file_cube // cube is the same
+   && same_type              // type is the same
+   && want_faces==file_faces // cube is the same
    && f.left()>=image_size // have all data
    )
    {
       VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_mip), Max(1, file_hw_size.y>>file_mip), Max(1, file_hw_size.z>>file_mip));
       if(  file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
       {
-         Ptr  data=(Byte*)f.memFast()+mips[file_mip+want.mip_maps-1].offset; // #MipOrder
-         Bool hw=IsHW(want.mode); // want HW mode
-         if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, hw ? data : null))
+         if(!CheckMipNum(want.mip_maps))return false; REP(want.mip_maps)mip_data[i]=(Byte*)f.memFast()+mips[file_mip+i].offset; // #MipOrder
+         if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
-            if(!hw)CopyFast(image.softData(), data, image.memUsage()); // FIXME: could this be moved to src_data in createEx?
             image.adjustInfo(image.w(), image.h(), image.d(), want.type);
             return f.skip(image_size); // skip image data
          }
@@ -501,9 +501,9 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       FREP(read_mips)
       {
          Int img_mip=can_read_mips-1-i;
-         data_size+=ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, img_mip, want_hw_type);
+         data_size+=ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, img_mip, want_hw_type)*want_faces;
       }
-      MAX(data_size, ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, 0, want_hw_type)); // need enough room for the biggest mip map, because DX requires that all src data pointers are valid
+      MAX(data_size, ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, 0, want_hw_type)*want_faces); // need enough room for the biggest mip map, because DX requires that all src data pointers are valid
       Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
       if(header.cmpr)

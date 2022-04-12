@@ -307,7 +307,7 @@ struct Image // Image (Texture)
 
    // manage
 #if EE_PRIVATE
-   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr src_data=null, C Image *src=null);
+   Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr *data=null);
 #endif
    Image& del(); // delete
 
