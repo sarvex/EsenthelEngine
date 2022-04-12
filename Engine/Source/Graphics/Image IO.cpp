@@ -462,8 +462,8 @@ struct Loader
       }
 
       file_faces  =    ImageFaces  (header.mode);
-      file_hw_size.set(PaddedWidth (header.size.x, header.size.y, 0,  header.type),
-                       PaddedHeight(header.size.x, header.size.y, 0,  header.type), header.size.z);
+      file_hw_size.set(PaddedWidth (header.size.x, header.size.y, 0, header.type),
+                       PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
 
       // set mips info
       UInt image_size=0, offset=0;
@@ -485,7 +485,7 @@ struct Loader
          image_size+=mip.decompressed_size;
       }
       if(!f.ok())return false; // if any 'compressed_size' failed to load
-      if(!want.is()){image.del(); return f.skip(image_size);} // check before shrinking, because of "Max(1" it might validate it
+      if(!want.is()){image.del(); return f.skip(image_size);} // check before shrinking, because "Max(1" it might validate it
 
       // shrink
       for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
