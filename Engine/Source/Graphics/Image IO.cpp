@@ -561,16 +561,15 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
       {
       /* Load all mip maps that are already in f.buffer without requiring to do any more reads
          but at least 1 (to make sure we have something, even if a read is needed)
-         if (FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
-         when creating image, use src_data for fast create (can ignore smallest/biggest mip-maps)
+         if(FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
+         when creating image, use src data for fast create (can ignore smallest/biggest mip-maps)
          if there are missing smaller mip-maps than read, then make them with 'updateMipMaps'
          schedule loading of remaining mip-maps */
          Int can_read_mips=Min(header.mip_maps-base_file_mip, want.mip_maps); // mips that we can read
-       //Int skip_mips=header.mip_maps-base_file_mip-can_read_mips;
          if(!f.skip(mips[base_file_mip+can_read_mips-1].offset))return false; // #MipOrder
 
          Bool stream=false;
-         Int read_mips=0;
+         Int  read_mips=0;
          if(f._type!=FILE_MEM // if file not in memory
          && can_del_f)        // and can delete 'f' file
          {
