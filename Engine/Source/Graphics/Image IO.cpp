@@ -538,7 +538,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
          VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
          if(  file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
          {
-            REP(want.mip_maps)mip_data[i]=(Byte*)f.memFast()+mips[base_file_mip+i].offset; // #MipOrder
+            REP(want.mip_maps)mip_data[i]=(Byte*)f.memFast()+mips[base_file_mip+i].offset;
             if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
             {
                image.adjustInfo(image.w(), image.h(), image.d(), want.type);
