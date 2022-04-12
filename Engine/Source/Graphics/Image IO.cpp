@@ -398,7 +398,7 @@ Bool ImageHeader::is()C
 struct Loader
 {
    ImageHeader   header;
-   COMPRESS_TYPE header_cmpr;
+   COMPRESS_TYPE file_cmpr;
    IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
    Int           file_faces;
@@ -479,7 +479,7 @@ struct Loader
       {
          Mip &mip=mips[i];
               mip.decompressed_size=ImageMipSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
-         if(  mip.cmpr=header_cmpr)
+         if(  mip.cmpr=file_cmpr)
          {
             f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
             {
@@ -534,7 +534,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
       // try to create directly from file memory
       if( f._type==FILE_MEM // file data is already available and in continuous memory
       && !f._cipher         // no cipher
-      && !header_cmpr       // no compression
+      && !file_cmpr         // no compression
       && base_file_mip_size==want.size // found exact mip match
       && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
       && same_type              // type is the same
@@ -1118,7 +1118,7 @@ Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
             Unaligned(loader.header.type    , fh.type);
             Unaligned(loader.header.mode    , fh.mode);
            _Unaligned(loader.header.mip_maps, fh.mips);
-            Unaligned(loader.header_cmpr    , fh.cmpr);
+            Unaligned(loader.file_cmpr      , fh.cmpr);
             if(header){*header=loader.header; return true;}
             if(loader.load(T, name, can_del_f))goto ok;
          }
