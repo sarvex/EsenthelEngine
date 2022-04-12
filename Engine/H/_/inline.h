@@ -1775,6 +1775,9 @@ T1(TYPE)  C Str&  Cache<TYPE>::name    (C TYPE *data             )C {return supe
 T1(TYPE)  CChar*  Cache<TYPE>::name    (C TYPE *data, CChar *path)C {return super::name    (data,  path);}
 T1(TYPE)  UID     Cache<TYPE>::id      (C TYPE *data             )C {return super::id      (data       );}
 T1(TYPE)  Int     Cache<TYPE>::ptrCount(C TYPE *data             )C {return super::ptrCount(data       );}
+#if EE_PRIVATE
+T1(TYPE)  Bool    Cache<TYPE>::has     (C TYPE *data             )C {return super::has     (data       );}
+#endif
 T1(TYPE)  Bool    Cache<TYPE>::contains(C TYPE *data             )C {return super::contains(data       );}
 T1(TYPE)  Bool    Cache<TYPE>::dummy   (C TYPE *data             )C {return super::dummy   (data       );}
 T1(TYPE)  void    Cache<TYPE>::dummy   (C TYPE *data, Bool  dummy)  {       super::dummy   (data, dummy);}

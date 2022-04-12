@@ -319,6 +319,16 @@ INLINE Int _Cache::absIndex(CPtr data)C // this function assumes that 'data' is 
 #endif
 }
 /******************************************************************************/
+Bool _Cache::has(CPtr data)C
+{
+   if(C Elm *elm=dataElm(data))
+   {
+      SyncUnlocker unlocker(D._lock); // must be used even though we're not using GPU
+      SyncLocker     locker(  _lock);
+      if(lockedContains(elm))return true;
+   }
+   return false;
+}
 Bool _Cache::contains(CPtr data)C
 {
    if(C Elm *elm=dataElm(data))

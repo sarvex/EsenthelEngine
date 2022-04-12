@@ -81,6 +81,9 @@ T1(TYPE) struct Cache : _Cache // Cache - container for dynamically loaded data,
    // get
    Int elms()C; // get number of elements in container
 
+#if EE_PRIVATE
+                                 Bool has     (C             TYPE        *data            )C;                                  // check if cache contains this object, returns true even if element is still loading
+#endif
                                  Bool contains(C             TYPE        *data            )C;                                  // check if cache contains this object
    template<Cache<TYPE> &CACHE>  Bool contains(C CacheElmPtr<TYPE,CACHE> &data            )C {return contains(data()       );} // check if cache contains this object
                                  Int  ptrCount(C             TYPE        *data            )C;                                  // check if cache contains this object and return current number of active pointer references to it, -1 is returned if object is not stored in this cache
