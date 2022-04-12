@@ -831,6 +831,7 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
    return false;
 }
 #if 0
+// FIXME del
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
 {
    if(!f.ok())return false;
