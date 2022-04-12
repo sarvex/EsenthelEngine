@@ -62,6 +62,8 @@ static IMAGE_TYPE OldImageType0(Byte type)
    return InRange(type, types) ? types[type] : IMAGE_NONE;
 }
 /******************************************************************************/
+// MEMORY
+/******************************************************************************/
 static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
 {
    Int copy_blocks_y=Min(src_blocks_y, dest_blocks_y);
@@ -90,6 +92,7 @@ static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int
    }
    src_data+=(src_blocks_y-copy_blocks_y)*src_pitch;
 }
+/******************************************************************************/
 static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d)
 {
    Int copy_d=Min(src_d, dest_d);
@@ -118,6 +121,7 @@ static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int
    }
    src_data+=(src_d-copy_d)*src_pitch2;
 }
+/******************************************************************************/
 void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
 {
   _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
@@ -145,7 +149,7 @@ void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitc
    }
 }
 /******************************************************************************/
-// SAVE / LOAD
+// FILE
 /******************************************************************************/
 static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
 {
@@ -174,6 +178,7 @@ static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch
    }
    f.skip((src_blocks_y-copy_blocks_y)*src_pitch);
 }
+/******************************************************************************/
 static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
 {
    DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
@@ -209,6 +214,8 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
       if(src_d>copy_d)file.skip((src_d-copy_d)*src_pitch2);
    }
 }
+/******************************************************************************/
+// SAVE / LOAD
 /******************************************************************************
 Bool Image::_saveData(File &f)C
 {
