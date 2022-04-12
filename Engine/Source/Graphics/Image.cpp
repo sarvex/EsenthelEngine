@@ -1162,6 +1162,10 @@ void Image::baseMip(Int base_mip)
       }
    }
 }
+void Image::waitForStream()
+{
+   // FIXME
+}
 Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {
    // verify parameters
@@ -2250,6 +2254,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
          SyncLocker locker(D._lock);
          if(D.created())
          {
+            if(mip_map<_base_mip)waitForStream(); // if want to access mip-map that's still streaming, then wait for it
             if(!_lock_mode)switch(mode()) // first lock
             {
             #if DX11
