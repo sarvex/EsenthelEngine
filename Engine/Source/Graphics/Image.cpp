@@ -1955,7 +1955,7 @@ static Int CopyMipMaps(C Image &src, Image &dest, Bool ignore_gamma, Int max_mip
             if(!src .lockRead(          i+mip, (DIR_ENUM)Min(face, src_faces1)))return 0;
             if(!dest.lock    (LOCK_WRITE, mip, (DIR_ENUM)    face             )){src.unlock(); return 0;}
 
-            CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(i+mip), dest.softBlocksY(mip), src.ld(), dest.ld(), src.pitch2(), dest.pitch2());
+            CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(i+mip), dest.softBlocksY(mip), src.pitch2(), dest.pitch2(), src.ld(), dest.ld());
 
             dest.unlock();
             src .unlock();
@@ -2316,7 +2316,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         D3D11_MAPPED_SUBRESOURCE map; if(OK(D3DC->Map(temp, D3D11CalcSubresource(0,0,1), D3D11_MAP_READ, 0, &map)))
                         {
                            Alloc(_data, pitch3);
-                           CopyImgData((Byte*)map.pData, data(), map.RowPitch, pitch, blocks_y/*TODO: temp.softBlocksY(0)*/, blocks_y, ld, ld, map.DepthPitch, pitch2);
+                           CopyImgData((Byte*)map.pData, data(), map.RowPitch, pitch, blocks_y/*TODO: temp.softBlocksY(0)*/, blocks_y, map.DepthPitch, pitch2, ld, ld);
                            D3DC->Unmap(temp, D3D11CalcSubresource(0,0,1));
                         }
                         RELEASE(temp);
@@ -2772,7 +2772,7 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
    #endif
       if(lock(LOCK_WRITE, mip_map, cube_face))
       {
-         CopyImgData((Byte*)data, T.data(), data_pitch, T.pitch(), valid_blocks_y, T.softBlocksY(mip_map), ld(), ld(), data_pitch*valid_blocks_y, T.pitch2());
+         CopyImgData((Byte*)data, T.data(), data_pitch, T.pitch(), valid_blocks_y, T.softBlocksY(mip_map), data_pitch*valid_blocks_y, T.pitch2(), ld(), ld());
          unlock();
          return true;
       }

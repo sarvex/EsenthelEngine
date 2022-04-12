@@ -840,7 +840,7 @@ Vec4 ImageColorF(CPtr data, IMAGE_TYPE hw_type);
 Vec4 ImageColorL(CPtr data, IMAGE_TYPE hw_type);
 void CopyNoStretch(C Image &src, Image &dest, Bool clamp, Bool ignore_gamma=false); // assumes 'src,dest' are locked and non-compressed
 void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y);
-void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int src_pitch2, Int dest_pitch2);
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d);
 #if WINDOWS
    HICON CreateIcon(C Image &image, C VecI2 *cursor_hot_spot=null); // 'cursor_hot_spot'=if this is specified then the icon is treated as a mouse cursor with given hot spot, otherwise it's a normal icon
 #endif

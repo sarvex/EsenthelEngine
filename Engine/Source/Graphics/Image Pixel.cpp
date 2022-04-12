@@ -5324,7 +5324,7 @@ struct CopyContext
          {
             if(CanDoRawCopy(src, dest, ignore_gamma)) // no retype
             {
-               CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(mip), dest.softBlocksY(mip), src.ld(), dest.ld(), src.pitch2(), dest.pitch2());
+               CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(mip), dest.softBlocksY(mip), src.pitch2(), dest.pitch2(), src.ld(), dest.ld());
             }else // retype
             {
                IMAGE_TYPE src_hwType= src.hwType(),//src_type= src.type(),

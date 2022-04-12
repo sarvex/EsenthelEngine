@@ -94,7 +94,7 @@ void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitc
 {
    return _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
 }
-void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int src_pitch2, Int dest_pitch2)
+void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d)
 {
    Int copy_d=Min(src_d, dest_d);
    REPD(z, copy_d)
@@ -127,8 +127,7 @@ static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch
    if(src_pitch==dest_pitch)
    {
       Int copy=copy_blocks_y*dest_pitch;
-      f.getFast(dest_data, copy);
-      dest_data+=copy;
+      f.getFast(dest_data, copy); dest_data+=copy;
    }else
    {
       Int copy_pitch=Min(src_pitch, dest_pitch);
@@ -149,26 +148,39 @@ static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch
    }
    f.skip((src_blocks_y-copy_blocks_y)*src_pitch);
 }
-static void LoadImgData(File &f, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_d, Int dest_d, Int dest_pitch2) // 'src_pitch2' not needed because for files it will always be "src_pitch*src_blocks_y"
+static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
 {
-   Int copy_d=Min(src_d, dest_d);
-   REPD(z, copy_d)
+   if(src_pitch2==dest_pitch2 && src_d==dest_d && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
    {
-      Byte *dest_next=dest_data+dest_pitch2;
-      LoadImgData(f,  dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
-      DEBUG_ASSERT(dest_next>=dest_data, "dest_next>=dest_data");
-      if(dest_next>dest_data)
+      Int copy=dest_d*dest_pitch2*faces;
+      file.getFast(dest_data, copy); dest_data+=copy;
+   }else
+   REPD(face, faces)
+   {
+      Int copy_d=Min(src_d, dest_d);
+      if(src_pitch2==dest_pitch2 && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
       {
-         ZeroFast(dest_data, dest_next-dest_data);
-         dest_data=dest_next;
+         Int copy=copy_d*dest_pitch2;
+         file.getFast(dest_data, copy); dest_data+=copy;
+      }else
+      REPD(z, copy_d)
+      {
+         Byte *dest_next=dest_data+dest_pitch2;
+         LoadImgData(file, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
+         DEBUG_ASSERT(dest_next>=dest_data, "dest_next>=dest_data");
+         if(dest_next>dest_data)
+         {
+            ZeroFast(dest_data, dest_next-dest_data);
+            dest_data=dest_next;
+         }
       }
+      if(dest_d>copy_d)
+      {
+         Int zero=(dest_d-copy_d)*dest_pitch2;
+         ZeroFast(dest_data, zero); dest_data+=zero;
+      }
+      if(src_d>copy_d)file.skip((src_d-copy_d)*src_pitch2);
    }
-   if(dest_d>copy_d)
-   {
-      Int zero=(dest_d-copy_d)*dest_pitch2;
-      ZeroFast(dest_data, zero); dest_data+=zero;
-   }
-   if(src_d>copy_d)f.skip((src_d-copy_d)*src_pitch*src_blocks_y);
 }
 /******************************************************************************
 Bool Image::_saveData(File &f)C
@@ -340,6 +352,13 @@ struct ImageHeaderEx : ImageHeader
 {
    COMPRESS_TYPE cmpr;
 };
+struct Mip
+{
+   COMPRESS_TYPE cmpr;
+   UInt          compressed_size,
+               decompressed_size,
+                 offset;
+};
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bool can_del_f)
 {
@@ -365,8 +384,16 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       want.mip_maps=Max(1, want.mip_maps-1);
    }
 
+   // detect HW type that we will use
+   IMAGE_TYPE hw_type=want.type;
+   for(; !ImageSupported(hw_type, want.mode); )
+   {
+          hw_type=ImageTypeOnFail(hw_type); // use replacement
+      if(!hw_type)return false; // there isn't any then fail
+   }
+
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
-   const Bool same_type   =CanDoRawCopy(want.type, header.type, ignore_gamma);
+   const Bool same_type   =CanDoRawCopy(header.type, hw_type, ignore_gamma);
    const Bool file_cube   =IsCube      (header.mode);
    const Int  file_faces  =ImageFaces  (header.mode);
    const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
@@ -381,6 +408,27 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
       file_mip_size.set(Max(1, file_mip_size.x>>1), Max(1, file_mip_size.y>>1), Max(1, file_mip_size.z>>1));
    }
 
+   // set mips info
+   UInt image_size=0, offset=0;
+   Mip  mips[32]; if(header.mip_maps<0 || header.mip_maps>Elms(mips)){DEBUG_ASSERT(false, "Image has too many mip-maps"); return false;}
+   REP(header.mip_maps) // #MipOrder
+   {
+      Mip &mip=mips[i];
+           mip.decompressed_size=ImageMipSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
+      if(  mip.cmpr=header.cmpr)
+      {
+         f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
+         {
+            mip.cmpr           =COMPRESS_NONE;
+            mip.compressed_size=mip.decompressed_size;
+         }
+      }else mip.compressed_size=mip.decompressed_size;
+            mip.offset         =offset;
+      offset    +=mip.  compressed_size;
+      image_size+=mip.decompressed_size;
+   }
+   if(!f.ok())return false;
+
    // try to create directly from file memory
    if( f._type==FILE_MEM // file data is already available and in continuous memory
    && !f._cipher         // no cipher
@@ -389,52 +437,89 @@ static Bool Load(Image &image, File &f, C ImageHeaderEx &header, C Str &name, Bo
    && header.mip_maps-file_mip>=want.mip_maps // have all mip maps that we want
    && same_type                    // type is the same
    && IsCube(want.mode)==file_cube // cube is the same
+   && f.left()>=image_size // have all data
    )
    {
-      Int image_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
-      if(f.left()>=image_size)
+      VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_mip), Max(1, file_hw_size.y>>file_mip), Max(1, file_hw_size.z>>file_mip));
+      VecI     want_hw_size(PaddedWidth (want.size.x, want.size.y, 0, hw_type),
+                            PaddedHeight(want.size.x, want.size.y, 0, hw_type), want.size.z);
+      if(file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
       {
-         VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_mip), Max(1, file_hw_size.y>>file_mip), Max(1, file_hw_size.z>>file_mip));
-         VecI     want_hw_size(PaddedWidth (want.size.x, want.size.y, 0, want.type),
-                               PaddedHeight(want.size.x, want.size.y, 0, want.type), want.size.z);
-         if(file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+         Ptr  data=(Byte*)f.memFast()+mips[file_mip+want.mip_maps-1].offset; // #MipOrder
+         Bool hw=IsHW(want.mode); // want HW mode
+         if(image.createEx(want.size.x, want.size.y, want.size.z, hw_type, want.mode, want.mip_maps, 1, hw ? data : null))
          {
-            Ptr  data=(Byte*)f.memFast()+ImageMipOffset(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps, file_mip+want.mip_maps-1); // #MipOrder
-            Bool hw=IsHW(want.mode); // want HW mode
-            if(image.createEx(want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, 1, hw ? data : null))
-            {
-               if(!hw)CopyFast(image.softData(), data, image.memUsage()); // FIXME: could this be moved to src_data in createEx?
-               return f.skip(image_size); // skip image data
-            }
+            if(!hw)CopyFast(image.softData(), data, image.memUsage()); // FIXME: could this be moved to src_data in createEx?
+            image.adjustInfo(image.w(), image.h(), image.d(), want.type);
+            return f.skip(image_size); // skip image data
          }
       }
    }
-   /*FIXME if(file_mip_size==want.size) // if have exact match
-   {
-      /*
-      load all mip maps that are already in f.buffer without requiring to do any more reads
+
+#if 0
+   if(file_mip_size==want.size) // if have exact match
+   {/*Load all mip maps that are already in f.buffer without requiring to do any more reads
       but at least 1 (to make sure we have something, even if a read is needed)
       if (FILE_MEM || can't schedule) then read all. can schedule if 'can_del_f' and 'image' belongs to 'Images' cache
       when creating image, use src_data for fast create (can ignore smallest/biggest mip-maps)
       if there are missing smaller mip-maps than read, then make them here 'updateMipMaps'
-      schedule loading of remaining mip-maps
-   }else*/ // load the best mip, and re-create the whole image out of it
+      schedule loading of remaining mip-maps*/
+      Int can_read_mips=Min(header.mip_maps-file_mip, want.mip_maps); // mips that we can read
+    //Int skip_mips=header.mip_maps-file_mip-can_read_mips;
+      f.skip(mips[file_mip+can_read_mips-1].offset); // #MipOrder
+
+      Bool stream=false;
+      Int read_mips=0;
+      if(f._type!=FILE_MEM // if file not in memory
+      && can_del_f)        // and can delete 'f' file
+      {
+         Int buffer=f._buf_len; // how much data in the buffer
+         if(f.left()>buffer)
+         {
+            REP(can_read_mips) // #MipOrder, start from the smallest
+            {
+               Int mip_size=mips[file_mip+i].compressed_size;
+               if(buffer<mip_size)break; // not in buffer
+               buffer-=mip_size;
+               read_mips++;
+            }
+            MAX(read_mips, 1); // always read at least one
+            if(read_mips<can_read_mips && Images.has(&image))
+            {
+               stream=true;
+               goto has_read_mips;
+            }
+         }
+      }
+      read_mips=can_read_mips; // if not streaming then read all here
+   has_read_mips:;
+
+      if(header.cmpr)
+      {
+         // FIXME
+      }else
+      {
+      }
+
+      // FIXME if can do CanDoRawCopy/cube match then create as want.type
+      // FIXME updateMipMaps
+      // FIXME adjustInfo
+   }else // load the best mip, and re-create the whole image out of it
+#endif
    {
       Image soft; if(soft.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, file_mip, header.type),
              file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, file_mip, header.type);
-         if(header.cmpr)
+         Long f_end=f.pos()+image_size;
+         if(f.skip(mips[file_mip].offset))
          {
-            // FIXME
-         }else
-         {
-            Int image_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps);
-            Long f_end=f.pos()+image_size;
-            if(f.skip(ImageMipOffset(file_hw_size.x, file_hw_size.y, file_hw_size.z, header.type, header.mode, header.mip_maps, file_mip)))
+            if(header.cmpr)
             {
-               FREPD(face, file_faces) // iterate all faces
-                  LoadImgData(f, soft.softData(0, DIR_ENUM(face)), file_pitch, soft.pitch(), file_blocks_y, soft.softBlocksY(0), file_mip_size.z, soft.ld(), soft.pitch2());
+               // FIXME
+            }else
+            {
+               LoadImgData(f, soft.softData(), file_pitch, soft.pitch(), file_blocks_y, soft.softBlocksY(0), file_pitch*file_blocks_y, soft.pitch2(), file_mip_size.z, soft.ld(), file_faces);
                if(f.pos(f_end) && f.ok())
                   return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
             }

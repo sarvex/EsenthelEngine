@@ -45,7 +45,7 @@ static Bool ExtractMipMap(C Image &src, Image &dest, Int mip_map, DIR_ENUM cube_
       if(! src.lockRead(mip_map, cube_face))return false;
     //if(!dest.lock    (LOCK_WRITE        ))return false; not needed for SOFT
 
-      CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(mip_map), dest.softBlocksY(0), src.ld(), dest.ld(), src.pitch2(), dest.pitch2());
+      CopyImgData(src.data(), dest.data(), src.pitch(), dest.pitch(), src.softBlocksY(mip_map), dest.softBlocksY(0), src.pitch2(), dest.pitch2(), src.ld(), dest.ld());
 
     //dest.unlock(); not needed for SOFT
        src.unlock();
@@ -83,7 +83,7 @@ Bool Image::injectMipMap(C Image &src, Int mip_map, DIR_ENUM cube_face, FILTER_T
          if(s->lockRead())
          {
             ok=true;
-            CopyImgData(s->data(), data(), s->pitch(), pitch(), s->softBlocksY(0), softBlocksY(mip_map), s->ld(), ld(), s->pitch2(), pitch2());
+            CopyImgData(s->data(), data(), s->pitch(), pitch(), s->softBlocksY(0), softBlocksY(mip_map), s->pitch2(), pitch2(), s->ld(), ld());
             s->unlock();
          }
          unlock();
