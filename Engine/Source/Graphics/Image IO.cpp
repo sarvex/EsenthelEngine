@@ -303,7 +303,8 @@ Bool Image::saveData(File &f)C
 
    f.putMulti(Byte(1), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps())); // version
 
-   if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
+// FIXME for old format this can't use anymore because now mip order is reversed
+   /*if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
    {
       if(hwSize3()==size3())f.put(softData(), memUsage());else // exact size, then we can save entire memory
       {
@@ -336,7 +337,7 @@ Bool Image::saveData(File &f)C
             }
          }
       }
-   }else
+   }else*/
    {
       Image soft;
       Int   faces=T.faces();
