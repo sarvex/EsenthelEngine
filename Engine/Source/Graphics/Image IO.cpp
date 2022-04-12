@@ -513,8 +513,8 @@ struct Loader
 
       const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
       const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-                 want_faces  =ImageFaces  (  want.mode);
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
+                 want_faces  =ImageFaces  (  want.mode);
                  want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                                   PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
                  file_mode_soft=(IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
