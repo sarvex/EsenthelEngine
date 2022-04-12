@@ -637,7 +637,7 @@ const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_S
                if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
                {
                   REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-                  if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, soft.mipMaps(), 1, mip_data))goto ok;
+                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), 1, mip_data))goto ok;
                   if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
                }
             }
