@@ -611,10 +611,10 @@ struct Image // Image (Texture)
    void operator=(C Str  &name) ; // load, Exit  on fail
    void operator=(C UID  &id  ) ; // load, Exit  on fail
 #if EE_PRIVATE
-   Bool saveData (  File &f                                         )C; // save, false on fail
-   Bool loadData (  File &f, ImageHeader *header=null, C Str &name=S) ; // load, false on fail
 
-   Bool _loadData(  File &f, ImageHeader *header=null, C Str &name=S) ; // load, false on fail - Deprecated do not use !!
+   Bool  saveData(  File &f                                                               )C; // save, false on fail
+   Bool  loadData(  File &f, ImageHeader *header=null, C Str &name=S, Bool can_del_f=false) ; // load, false on fail, 'can_del_f'=if allow deleting 'f' (always enable if possible, to allow image streaming)
+   Bool _loadData(  File &f, ImageHeader *header=null, C Str &name=S                      ) ; // load, false on fail - Deprecated do not use !!
 #endif
    Bool save     (C Str  &name)C; // save, false on fail
    Bool load     (C Str  &name) ; // load, false on fail
