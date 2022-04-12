@@ -303,8 +303,8 @@ Bool Image::saveData(File &f)C
 
    f.putMulti(Byte(1), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps())); // version
 
-// FIXME for old format this can't use anymore because now mip order is reversed
-   /*if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
+   /* #MipOrder
+   if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
    {
       if(hwSize3()==size3())f.put(softData(), memUsage());else // exact size, then we can save entire memory
       {
@@ -635,8 +635,9 @@ static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
    const Bool file_cube =IsCube    (header.mode);
    const Int  file_faces=ImageFaces(header.mode);
 
+   /* #MipOrder
    // try to create directly from file memory
-   /*if(create_from_soft // can create from soft
+   if(create_from_soft // can create from soft
    &&  f._type==FILE_MEM // file data is already available and in continuous memory
    && !f._cipher         // no cipher
    && IsHW        (want.mode) // want HW mode
@@ -684,17 +685,10 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
          {
             Int  mip_count;
             VecI image_mip_size(Max(1, image.w()>>image_mip), Max(1, image.h()>>image_mip), Max(1, image.d()>>image_mip));
-            /*
-            Watch out for following cases:
-               image.width=257, image.type=BC1
-               file.mip0.padded_width=Ceil4(257   )=260
-               file.mip1.padded_width=Ceil4(257>>1)=128
-              image.mip0.padded_width=Ceil4(257   )=260
-              image.mip1.padded_width=Ceil4(260>>1)=132, image mip pitch is calculated based on HW size, so it may be bigger than file mip
-            */
             if(fast_load && image_mip_size==file_mip_size) // if this is a software image with same type/cube and mip size matches
             {
-             /*if(image_mip_size.x==Max(1, image.hwW()>>image_mip)
+            /* #MipOrder
+               if(image_mip_size.x==Max(1, image.hwW()>>image_mip)
                && image_mip_size.y==Max(1, image.hwH()>>image_mip)
                && image_mip_size.z==Max(1, image.hwD()>>image_mip)) // if image mip size is the same as image HW mip size, then we can read all remaining data in one go
                {
