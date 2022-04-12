@@ -229,9 +229,9 @@ Bool Image::_saveData(File &f)C
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
    const Bool same_type   =CanDoRawCopy(hwType(), file_type, ignore_gamma);
-   VecI file_hw_size(PaddedWidth (w(), h(), 0, file_type),
-                     PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
-   Int  faces=T.faces();
+   const Int  faces       =T.faces();
+   const VecI file_hw_size(PaddedWidth (w(), h(), 0, file_type),
+                           PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
    if(soft() && same_type) // software with matching type, we can save without locking
    {
       if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
