@@ -391,6 +391,10 @@ struct Mip
                decompressed_size,
                  offset;
 };
+Bool ImageHeader::is()C
+{
+   return size.x>0 && size.y>0 && size.z>0 && mip_maps>0 && type;
+}
 struct Loader
 {
    ImageHeader   header;
@@ -444,6 +448,7 @@ struct Loader
    }
    Bool load(Image &image, C Str &name, Bool can_del_f)
    {
+      if(!header.is()){image.del(); return true;}
       ImageHeader want=header;
       Int         shrink=0;
       if(Int (*image_load_shrink)(ImageHeader &image_header, C Str &name)=D.image_load_shrink) // copy to temp variable to avoid multi-threading issues
@@ -455,6 +460,33 @@ struct Loader
          if(want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
          else            MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
       }
+
+      file_faces  =    ImageFaces  (header.mode);
+      file_hw_size.set(PaddedWidth (header.size.x, header.size.y, 0,  header.type),
+                       PaddedHeight(header.size.x, header.size.y, 0,  header.type), header.size.z);
+
+      // set mips info
+      UInt image_size=0, offset=0;
+      if(!CheckMipNum(header.mip_maps))return false;
+      REP(header.mip_maps) // #MipOrder
+      {
+         Mip &mip=mips[i];
+              mip.decompressed_size=ImageMipSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
+         if(  mip.cmpr=header_cmpr)
+         {
+            f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
+            {
+               mip.cmpr           =COMPRESS_NONE;
+               mip.compressed_size=mip.decompressed_size;
+            }
+         }else mip.compressed_size=mip.decompressed_size;
+               mip.offset         =offset;
+         offset    +=mip.  compressed_size;
+         image_size+=mip.decompressed_size;
+      }
+      if(!f.ok())return false;
+      if(!want.is()){image.del(); return f.skip(image_size);} // check before shrinking, because of "Max(1" it might validate it
+
       // shrink
       for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
       {
@@ -474,45 +506,23 @@ struct Loader
 
       const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
       const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-                 file_faces  =ImageFaces  (header.mode);
       const Int  want_faces  =ImageFaces  (  want.mode);
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
-                 file_hw_size.set(PaddedWidth (header.size.x, header.size.y, 0,  header.type),
-                                  PaddedHeight(header.size.x, header.size.y, 0,  header.type), header.size.z);
                  want_hw_size.set(PaddedWidth (  want.size.x,   want.size.y, 0, want_hw_type),
                                   PaddedHeight(  want.size.x,   want.size.y, 0, want_hw_type),   want.size.z);
                  file_mode_soft=(IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
 const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
 
+      // base mip = find smallest file mip that's >= biggest image mip
       Int   base_file_mip=0;
       VecI  base_file_mip_size=header.size;
-      for(; base_file_mip<header.mip_maps-1 && !SizeFits(base_file_mip_size, want.size); ) // find smallest file mip that's >= biggest image mip
+      for(; base_file_mip<header.mip_maps-1 && !SizeFits(base_file_mip_size, want.size); )
       {
          base_file_mip++;
          base_file_mip_size.set(Max(1, base_file_mip_size.x>>1), Max(1, base_file_mip_size.y>>1), Max(1, base_file_mip_size.z>>1));
       }
 
-      // set mips info
-      UInt image_size=0, offset=0;
-                                   if(!CheckMipNum(header.mip_maps))return false;
-      CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(  want.mip_maps))return false;
-      REP(header.mip_maps) // #MipOrder
-      {
-         Mip &mip=mips[i];
-              mip.decompressed_size=ImageMipSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
-         if(  mip.cmpr=header_cmpr)
-         {
-            f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
-            {
-               mip.cmpr           =COMPRESS_NONE;
-               mip.compressed_size=mip.decompressed_size;
-            }
-         }else mip.compressed_size=mip.decompressed_size;
-               mip.offset         =offset;
-         offset    +=mip.  compressed_size;
-         image_size+=mip.decompressed_size;
-      }
-      if(!f.ok())return false;
+      CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
       // try to create directly from file memory
       if( f._type==FILE_MEM // file data is already available and in continuous memory

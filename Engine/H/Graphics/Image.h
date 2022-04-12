@@ -748,6 +748,7 @@ struct ImageHeader
    IMAGE_TYPE type;
    IMAGE_MODE mode;
 
+   Bool             is()C;
    void           zero() {size.zero(); mip_maps=0; type=IMAGE_NONE; mode=IMAGE_2D;}
    ImageHeader() {zero();}
 };
