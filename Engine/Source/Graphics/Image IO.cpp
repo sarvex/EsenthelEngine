@@ -508,8 +508,8 @@ struct Loader
       const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
       const Int  want_faces  =ImageFaces  (  want.mode);
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
-                 want_hw_size.set(PaddedWidth (  want.size.x,   want.size.y, 0, want_hw_type),
-                                  PaddedHeight(  want.size.x,   want.size.y, 0, want_hw_type),   want.size.z);
+                 want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
+                                  PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
                  file_mode_soft=(IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
 const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
 
