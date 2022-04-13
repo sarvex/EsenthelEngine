@@ -916,9 +916,10 @@ error:
    return false;
 }
 /******************************************************************************/
+#define LZ4_RING_BUF_SIZE (LZ4_BUF_SIZE*2) // if changing, then have to use LZ4_DECODER_RING_BUFFER_SIZE for decompression to keep compatibility with any past compressed data
 NOINLINE static Bool LZ4CompressStream(File &src, File &dest, Int compression_level, DataCallback *callback)
 {
-   Byte s[LZ4_BUF_SIZE*2], d[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)]; Int s_pos=0;
+   Byte s[LZ4_RING_BUF_SIZE], d[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)]; Int s_pos=0;
    union
    {
       LZ4_streamHC_t lz4_hc;
@@ -930,10 +931,11 @@ NOINLINE static Bool LZ4CompressStream(File &src, File &dest, Int compression_le
    {
       Int read=Min(Min(LZ4_BUF_SIZE, SIZEI(s)), src.left());
       if(s_pos>SIZE(s)-read)s_pos=0; // if reading will exceed buffer size
-      read=src.getReturnSize(&s[s_pos], read); if(read<=0)goto error;
-      if(callback)callback->data(&s[s_pos], read);
-      auto size=((compression_level>0) ? LZ4_compress_HC_continue  (&lz4_hc, (char*)&s[s_pos], (char*)d, read, SIZE(d)   )
-                                       : LZ4_compress_fast_continue(&lz4   , (char*)&s[s_pos], (char*)d, read, SIZE(d), 1));
+      Byte *data=s+s_pos;
+      read=src.getReturnSize(data, read); if(read<=0)goto error;
+      if(callback)callback->data(data, read);
+      auto size=((compression_level>0) ? LZ4_compress_HC_continue  (&lz4_hc, (char*)data, (char*)d, read, SIZE(d)   )
+                                       : LZ4_compress_fast_continue(&lz4   , (char*)data, (char*)d, read, SIZE(d), 1));
       if(size>0)
       {
          dest.cmpUIntV(size-1);
@@ -954,7 +956,7 @@ NOINLINE static Bool LZ4DecompressStream(File &src, File &dest, Long compressed_
       Int  cipher_offset=dest.posCipher();
       Long start=dest.pos();
       Ptr  mem=dest.memFast();
-      Byte s[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)], d[LZ4_BUF_SIZE*2]; Int d_pos=0;
+      Byte s[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)], d[LZ4_RING_BUF_SIZE]; Int d_pos=0; // according to LZ4 headers, decompress buffer size for ring buffers must be either LZ4_DECODER_RING_BUFFER_SIZE(LZ4_BUF_SIZE) or the same size as used for compression, since LZ4_RING_BUF_SIZE is smaller than LZ4_DECODER_RING_BUFFER_SIZE(LZ4_BUF_SIZE) then use 1st one
       Bool direct=MemDecompress(dest, decompressed_size);
       for(; !src.end(); )
       {
@@ -968,9 +970,10 @@ NOINLINE static Bool LZ4DecompressStream(File &src, File &dest, Long compressed_
          }else
          {
             if(d_pos>SIZE(d)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
-            auto size=LZ4_decompress_safe_continue(&lz4, (char*)s, (char*)d+d_pos, chunk, SIZE(d)-d_pos); if(size<0)goto error;
-            if(callback)callback->data(d+d_pos, size);
-            if(!dest.put(d+d_pos, size))goto error; d_pos+=size;
+            Byte *data=d+d_pos;
+            auto  size=LZ4_decompress_safe_continue(&lz4, (char*)s, (char*)data, chunk, SIZE(d)-d_pos); if(size<0)goto error;
+            if(callback)callback->data(data, size);
+            if(!dest.put(data, size))goto error; d_pos+=size;
          }
       }
       {
@@ -1297,12 +1300,13 @@ NOINLINE static Bool ZSTDCompress(File &src, File &dest, Int compression_level, 
          {
             Int read=Min(ZSTD_BLOCKSIZE_MAX, Min(s.elms(), src.left()));
             if(s_pos>s.elms()-read)s_pos=0; // if reading will exceed buffer size
-            read=src.getReturnSize(&s[s_pos], read); if(read<=0)goto error;
-            if(callback)callback->data(&s[s_pos], read);
-            auto size=ZSTD_compressBlock(ctx, d.data(), d.elms(), &s[s_pos], read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
+            Byte *data=&s[s_pos];
+            read=src.getReturnSize(data, read); if(read<=0)goto error;
+            if(callback)callback->data(data, read);
+            auto size=ZSTD_compressBlock(ctx, d.data(), d.elms(), data, read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
             dest.cmpUIntV(single ? (size>0) : size); // for single we store (compressed ? 1 : 0), for multi we store (compressed ? size : 0)
-            if(size>0){if(!dest.put( d.data(), size))goto error;} // compressed
-            else      {if(!dest.put(&s[s_pos], read))goto error;} // failed to compress
+            if(size>0){if(!dest.put(d.data(), size))goto error;} // compressed
+            else      {if(!dest.put(  data  , read))goto error;} // failed to compress
             s_pos+=read;
          }
          if(dest.ok())ok=true;
@@ -1350,9 +1354,10 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
             }else
             {
                if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)d_pos=0; // if decompressing will exceed buffer size
-               auto size=ZSTD_decompressBlock(ctx, &d[d_pos], d.elms()-d_pos, s.data(), chunk); if(ZSTD_isError(size))goto error;
-               if(callback)callback->data(&d[d_pos], size);
-               if(!dest.put(&d[d_pos], size))goto error; d_pos+=size;
+               Byte *data=&d[d_pos];
+               auto size=ZSTD_decompressBlock(ctx, data, d.elms()-d_pos, s.data(), chunk); if(ZSTD_isError(size))goto error;
+               if(callback)callback->data(data, size);
+               if(!dest.put(data, size))goto error; d_pos+=size;
             }
          }else // un-compressed
          {
@@ -1371,10 +1376,11 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                   if(size>d.elms())goto error; // if reading doesn't fit in buffer size
                   d_pos=0;
                }
-               if(!src.getFast(&d[d_pos], size)
-               || ZSTD_isError(ZSTD_insertBlock(ctx, &d[d_pos], size))
-               || !dest.put(&d[d_pos], size))goto error;
-               if(callback)callback->data(&d[d_pos], size);
+               Byte *data=&d[d_pos];
+               if(!src.getFast(data, size)
+               || ZSTD_isError(ZSTD_insertBlock(ctx, data, size))
+               || !dest.put(data, size))goto error;
+               if(callback)callback->data(data, size);
                d_pos+=size;
             }
          }
