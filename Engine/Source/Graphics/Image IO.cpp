@@ -295,13 +295,14 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
          if(CompressRaw(f_src, f_dest, compress, compression_level, multi_threaded)) // if compressed and reduced size (because 'f_dest' size was limited)
          {
             compressed_size=f_dest.pos(); // remember compressed size
+            save_cur+=compressed_size;
          }else
          {
             compressed_size=0; // set zero = uncompressed
             CopyFast(save_cur, src, mip_size); // copy uncompressed
+            save_cur+=mip_size;
          }
          f.cmpUIntV(compressed_size);
-         save_cur+=compressed_size;
       }
       UInt compressed_size=save_cur-save;
       DEBUG_ASSERT(compressed_size<=data_size, "compressed_size<=data_size");
