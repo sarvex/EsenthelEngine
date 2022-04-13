@@ -979,7 +979,7 @@ Bool FileStreamLZ4::init()
 {
    return ok=LZ4_setStreamDecode(&lz4, null, 0);
 }
-void FileStreamLZ4::get(File &main) // !! LZ4 requires to keep previous decompressed data, so always keep it !!
+void FileStreamLZ4::get(File &main) // !! LZ4 requires to keep previous decompressed data !! So there are 2 choices: 1) always decompress into local buffer without applying cipher, and then copy from buffer to destination. 2) decompress to constant continuous memory that's big enough to hold entire data (also without cipher during decoding)
 {
    DEBUG_ASSERT(main._buf_len==0, "main._buf_len==0"); // this can be called only if buffer was fully consumed
    if(ok)
