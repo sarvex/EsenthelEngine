@@ -966,8 +966,7 @@ NOINLINE static Bool LZ4DecompressStream(File &src, File &dest, Long compressed_
          {
             auto size=LZ4_decompress_safe_continue(&lz4, (char*)s, (char*)dest.memFast(), chunk, dest.left()); if(size<0)goto error;
             if(callback)callback->data(dest.memFast(), size);
-            if(!dest.skip(size))goto error;
-            // can't use 'MemWrote' and 'Cipher' here because LZ4 may still access previously decompressed data, instead do it just one time at the end
+            if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because LZ4 may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
          }else
          {
             if(d_pos>SIZE(d)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
@@ -1106,7 +1105,7 @@ NOINLINE static Bool LIZARDDecompressStream(File &src, File &dest, Long compress
          {
             auto size=Lizard_decompress_safe_continue(&lizard, (char*)s, (char*)dest.memFast(), chunk, dest.left()); if(size<0)goto error;
             if(callback)callback->data(dest.memFast(), size);
-            if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because LIZARD may still access previously decompressed data
+            if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because LIZARD may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
          }else
          {
             if(d_pos>SIZE(d)-LIZARD_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LIZARD_BUF_SIZE can be written at one time)
@@ -1258,7 +1257,7 @@ NOINLINE static Bool ZSTDDecompressFrame(File &src, File &dest, Long compressed_
             if(direct)
             {
                size=ZSTD_decompressContinue(ctx, dest.memFast(), dest.left(), s.data(), size); if(ZSTD_isError(size))break;
-               if(!dest.skip(size))break; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data
+               if(!dest.skip(size))break; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
             }else
             {
                if(d_pos>d.elms()-block_size)d_pos=0; // if decompressing will exceed buffer size
@@ -1351,7 +1350,7 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
             {
                auto size=ZSTD_decompressBlock(ctx, dest.memFast(), dest.left(), s.data(), chunk); if(ZSTD_isError(size))goto error;
                if(callback)callback->data(dest.memFast(), size);
-               if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data
+               if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
             }else
             {
                if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)d_pos=0; // if decompressing will exceed buffer size
@@ -1368,7 +1367,7 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                Ptr mem=dest.memFast();
                if(!src.getFast(mem, size)
                || ZSTD_isError(ZSTD_insertBlock(ctx, mem, size))
-               || !dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data
+               || !dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
                if(callback)callback->data(mem, size);
             }else
             {
