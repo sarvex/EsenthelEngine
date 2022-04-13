@@ -11,6 +11,7 @@ enum FILE_TYPE : Byte // File Type
    FILE_STD_WRITE, // stdio in write mode, '_handle' is a system handle, can be switched to FILE_STD_READ
    FILE_MEM      , // memory, always readable, writable if '_writable', allocated if '_allocated'
    FILE_MEMB     , // Memb  , always readable+writable
+   FILE_STREAM   , // Stream, readable, only forward, no seeking
 };
 #endif
 struct File
@@ -233,6 +234,8 @@ struct File
    void   limit(ULong &total_size, ULong &applied_offset, Long new_size); // temporarily limit current file to '0..new_size' size, current position will be mapped to 0
    void unlimit(ULong &total_size, ULong &applied_offset               ); // unlimit previously limited file
 
+   Bool stream(COMPRESS_TYPE compress, ULong decompressed_size);
+
    T1 (TA                                        )  File& putMulti(C TA &a) {return T<<a;}
    T1 (TA                                        )  File& getMulti(  TA &a) {return T>>a;}
    T2 (TA, TB                                    )  File& putMulti(C TA &a, C TB &b);
@@ -289,6 +292,7 @@ union
       Bool       _allocated;
    };
       Memb<Byte> _memb;
+      FileStreamLZ4 *_stream;
 };
 #if ANDROID
    Ptr        _aasset;
@@ -320,4 +324,21 @@ union
    template<Int elms>  File& _getStr(Char (&t)[elms]     ) {return _getStr(t, elms);} // read string into 't' array,                                         , deprecated - do not use
 #endif
 };
+/******************************************************************************/
+#if EE_PRIVATE
+struct FileStream
+{
+   File src;
+};
+struct FileStreamLZ4 : FileStream
+{
+   LZ4_streamDecode_t lz4;
+   Byte buf[LZ4_RING_BUF_SIZE];
+   Bool ok;
+
+   Bool init();
+   void get(File &main);
+   UInt memUsage()C;
+};
+#endif
 /******************************************************************************/

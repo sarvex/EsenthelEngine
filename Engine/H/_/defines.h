@@ -188,7 +188,6 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
 // Compression
 #define SUPPORT_RLE    (!SWITCH && !WEB)
 #define SUPPORT_SNAPPY (!SWITCH && !WEB)
-#define SUPPORT_LZ4    1
 #define SUPPORT_ZLIB   (!WEB)
 #define SUPPORT_ZSTD   1
 #define SUPPORT_LZHAM  (!SWITCH)

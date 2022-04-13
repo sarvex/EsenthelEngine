@@ -28,14 +28,6 @@
    #include "../../../ThirdPartyLibs/Snappy/snappy-c.h"
 #endif
 
-#if SUPPORT_LZ4
-   #if __clang__
-      #define LZ4_DISABLE_DEPRECATE_WARNINGS // fails to compile without it
-   #endif
-   #include "../../../ThirdPartyLibs/LZ4/lz4.h"
-   #include "../../../ThirdPartyLibs/LZ4/lz4hc.h"
-#endif
-
 #if SUPPORT_LIZARD
    #include "../../../ThirdPartyLibs/Lizard/lib/lizard_compress.h"
    #include "../../../ThirdPartyLibs/Lizard/lib/lizard_decompress.h"
@@ -859,8 +851,6 @@ error:
 // LZ4
 /******************************************************************************/
 #if SUPPORT_LZ4
-#define LZ4_BUF_SIZE 65536 // headers say that up to 64Kb need to be kept in memory !! don't change in the future !!
-
 static UIntPtr LZ4Size(UIntPtr size) {return LZ4_compressBound(size);}
 
 static Bool LZ4Compress(CPtr src, UIntPtr src_size, Ptr dest, UIntPtr &dest_size, Int compression_level) // compress data, 'src'=source buffer, 'src_size'=source size, 'dest'=destination buffer, 'dest_size'=destination size, before calling it should be set to maximum 'dest' buffer capacity, after calling it'll be set to compressed size, false on fail
@@ -916,7 +906,6 @@ error:
    return false;
 }
 /******************************************************************************/
-#define LZ4_RING_BUF_SIZE (LZ4_BUF_SIZE*2) // if changing, then have to use LZ4_DECODER_RING_BUFFER_SIZE for decompression to keep compatibility with any past compressed data
 NOINLINE static Bool LZ4CompressStream(File &src, File &dest, Int compression_level, DataCallback *callback)
 {
    Byte s[LZ4_RING_BUF_SIZE], d[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)]; Int s_pos=0;
@@ -986,16 +975,42 @@ NOINLINE static Bool LZ4DecompressStream(File &src, File &dest, Long compressed_
    }
    return ok;
 }
+Bool FileStreamLZ4::init()
+{
+   return ok=LZ4_setStreamDecode(&lz4, null, 0);
+}
+void FileStreamLZ4::get(File &main) // !! LZ4 requires to keep previous decompressed data, so always keep it !!
+{
+   DEBUG_ASSERT(main._buf_len==0, "main._buf_len==0"); // this can be called only if buffer was fully consumed
+   if(ok)
+   {
+      Byte s[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)];
+      UInt chunk=src.decUIntV()+1;
+      if(  chunk<=SIZE(s) && src.getFast(s, chunk))
+      {
+         Int &d_pos=main._buf_pos;
+         if(  d_pos>SIZE(buf)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
+         Byte *data=buf+d_pos;
+         auto  size=LZ4_decompress_safe_continue(&lz4, (char*)s, (char*)data, chunk, SIZE(buf)-d_pos);
+         if(   size>0)
+         {
+            main._buf_len+=size;
+            return;
+         }
+      }
+      ok=false;
+   }
+}
 /******************************************************************************/
 // keep as separate functions, because both of them use a lot of stack memory which could crash if combined together
 static Bool LZ4Compress(File &src, File &dest, Int compression_level, DataCallback *callback)
 {
-   return (src.left()<=LZ4_BUF_SIZE) ? LZ4CompressMem   (src, dest, compression_level, callback) // for small files prefer in-memory compression to avoid writing chunk sizes !! once placed here, don't change in the future because will break compatibility !!
+   return (src.left()<=LZ4_BUF_SIZE) ? LZ4CompressMem   (src, dest, compression_level, callback) // for small files prefer in-memory compression to avoid writing chunk sizes !! once placed here, don't change in the future because will break compatibility !! #LZ4Mem
                                      : LZ4CompressStream(src, dest, compression_level, callback);
 }
 static Bool LZ4Decompress(File &src, File &dest, Long compressed_size, Long decompressed_size, DataCallback *callback)
 {
-   return (decompressed_size<=LZ4_BUF_SIZE) ? LZ4DecompressMem   (src, dest, compressed_size, decompressed_size, callback) // for small files prefer in-memory compression to avoid writing chunk sizes !! once placed here, don't change in the future because will break compatibility !!
+   return (decompressed_size<=LZ4_BUF_SIZE) ? LZ4DecompressMem   (src, dest, compressed_size, decompressed_size, callback) // for small files prefer in-memory compression to avoid writing chunk sizes !! once placed here, don't change in the future because will break compatibility !! #LZ4Mem
                                             : LZ4DecompressStream(src, dest, compressed_size, decompressed_size, callback);
 }
 #endif

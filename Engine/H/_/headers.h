@@ -547,6 +547,19 @@
    /******************************************************************************/
    // INCLUDE THIRD PARTY LIBRARIES
    /******************************************************************************/
+   // Compression
+   #define SUPPORT_LZ4 1
+   #if     SUPPORT_LZ4
+      #if __clang__
+         #define LZ4_DISABLE_DEPRECATE_WARNINGS // fails to compile without it
+      #endif
+      #include "../../../ThirdPartyLibs/LZ4/lz4.h"
+      #include "../../../ThirdPartyLibs/LZ4/lz4hc.h"
+
+      #define LZ4_BUF_SIZE      65536 // headers say that up to 64Kb need to be kept in memory !! don't change in the future because it would break any past compressed data !!
+      #define LZ4_RING_BUF_SIZE (LZ4_BUF_SIZE*2) // if changing, then have to use LZ4_DECODER_RING_BUFFER_SIZE for decompression to keep compatibility with any past compressed data
+   #endif
+
    // Physics
    #if PHYSX // use PhysX
       #ifndef NDEBUG

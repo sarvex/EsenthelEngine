@@ -157,6 +157,7 @@ void File::zeroNoBuf()
   _pak=null;
   _cipher=null;
   _mem=null;
+  _stream=null;
 #if ANDROID
   _aasset=null;
 #endif
@@ -201,6 +202,8 @@ void File::close()
       case FILE_MEM: if(_allocated)Free(_mem); break;
 
       case FILE_MEMB: if(FILE_MEMB_UNION)DTOR(_memb);else _memb.clear(); break;
+
+      case FILE_STREAM: Delete(_stream); break;
    }
 #if ANDROID
    if(_aasset)AAsset_close((AAsset*)_aasset);
@@ -325,6 +328,39 @@ File& File::readMem(CPtr data, Int size, Cipher *cipher)
       T._cipher   =cipher;
    }
    return T;
+}
+/******************************************************************************/
+Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
+{
+   if(is())
+   {
+      FileStreamLZ4 *stream=null;
+      switch(compress)
+      {
+         case COMPRESS_LZ4: if(decompressed_size<=LZ4_BUF_SIZE)goto mem; stream=new FileStreamLZ4; break; // #LZ4Mem
+      }
+      if(stream)
+      {
+         if(stream->init())
+         {
+            Swap(T, stream->src);
+           _type=FILE_STREAM;
+           _size=_full_size=decompressed_size;
+           _stream=stream;
+            return true;
+         }
+         Delete(stream);
+         goto error;
+      }
+   }
+   return false;
+
+mem:
+   {
+      File temp; if(DecompressRaw(T, temp, compress, left(), decompressed_size, true) && temp.pos(0)){Swap(T, temp); return true;}
+   }
+error:
+   close(); return false;
 }
 /******************************************************************************/
 #if WINDOWS
@@ -1088,10 +1124,11 @@ UInt File::memUsage()C
    UInt mem=_buf_size;
    switch(_type)
    {
-      case FILE_MEM : if(_allocated)mem+=_full_size      ; break;
+      case FILE_MEM   : if(_allocated)mem+=_full_size         ; break;
    #if FILE_MEMB_UNION
-      case FILE_MEMB:               mem+=_memb.memUsage(); break;
+      case FILE_MEMB  :               mem+=_memb  . memUsage(); break;
    #endif
+      case FILE_STREAM:               mem+=_stream->memUsage(); break;
    }
 #if !FILE_MEMB_UNION
    mem+=_memb.memUsage();
@@ -1108,6 +1145,8 @@ FSTD_TYPE File::stdType()C
       case FILE_STD_READ :
       case FILE_STD_WRITE:
          return FSTD_FILE;
+
+      case FILE_STREAM: return _stream->src.stdType();
    }
 }
 /******************************************************************************/
@@ -1234,7 +1273,7 @@ Int File::getReturnSize(Ptr data, Int size)
             if(!discardBuf(true))break; // if this fails then we can't read, because we're expecting to read at the current position
            _type=FILE_STD_READ; // set new mode and fall down for reading
          } // !! no break on purpose !!
-         case FILE_STD_READ :
+         case FILE_STD_READ:
          {
             if(_buf_len) // have data in the buffer
             {
@@ -1291,6 +1330,25 @@ Int File::getReturnSize(Ptr data, Int size)
                size-=l; if(size<=0)break;
                data =(Byte*)data+l; // can be placed after break
             }
+         }break;
+
+         case FILE_STREAM:
+         {
+            if(_buf_len) // have data in the buffer
+            {
+            get_from_stream_buffer:
+               Int l=Min(_buf_len, size);
+               Ptr src=_stream->buf+_buf_pos;
+               if(_cipher)_cipher->decrypt(data, src, l, posCipher());
+               else               CopyFast(data, src, l             );
+              _buf_pos+=l;
+              _buf_len-=l;
+              _pos +=l;
+               size-=l; if(size<=0)break;
+               data =(Byte*)data+l; // can be placed after break
+            }
+           _stream->get(T);
+            if(_buf_len)goto get_from_stream_buffer;
          }break;
       }
    }
@@ -1846,6 +1904,13 @@ SHA2::Hash File::sha2(Long max_size)
       hash.update(buf, left); max_size-=left;
    }
    return hash();
+}
+/******************************************************************************/
+// FILE STREAM
+/******************************************************************************/
+UInt FileStreamLZ4::memUsage()C
+{
+   return SIZE(T)+src.memUsage();
 }
 /******************************************************************************/
 // DEPRECATED, DO NOT USE
