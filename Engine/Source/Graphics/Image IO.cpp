@@ -643,6 +643,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          Bool stream=false;
          Int  read_mips=0;
          if(f._type!=FILE_MEM // if file not in memory
+         && f._type!=FILE_MEMB
          && can_del_f)        // and can delete 'f' file
          {
             Int buffer=f._buf_len; // how much data in the buffer
