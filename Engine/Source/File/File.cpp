@@ -353,7 +353,7 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
          goto error;
       }
    }
-   return false;
+   return false; // unsupported, but don't close, so can be processed otherwise
 
 mem:
    {
