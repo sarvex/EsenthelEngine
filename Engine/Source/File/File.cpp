@@ -1309,7 +1309,7 @@ Int File::getReturnSize(Ptr data, Int size)
 
          case FILE_MEM:
          {
-            Ptr src=memFast();
+            CPtr src=memFast();
             if(_cipher)_cipher->decrypt(data, src, size, posCipher());
             else               CopyFast(data, src, size             );
            _pos+=size;
@@ -1338,7 +1338,7 @@ Int File::getReturnSize(Ptr data, Int size)
             {
             get_from_stream_buffer:
                Int l=Min(_buf_len, size);
-               Ptr src=_stream->buf+_buf_pos;
+               CPtr src=_stream->buf+_buf_pos;
                if(_cipher)_cipher->decrypt(data, src, l, posCipher());
                else               CopyFast(data, src, l             );
               _buf_pos+=l;
