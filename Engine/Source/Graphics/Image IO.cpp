@@ -62,6 +62,8 @@ static IMAGE_TYPE OldImageType0(Byte type)
    return InRange(type, types) ? types[type] : IMAGE_NONE;
 }
 /******************************************************************************/
+static INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);} // +1 because this checks number of elements
+/******************************************************************************/
 // MEMORY
 /******************************************************************************/
 static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
