@@ -668,23 +668,23 @@ Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
    Int mip_h=PaddedHeight(w, h, mip, type);
    return ImageTI[type].compressed ? mip_h/4 : mip_h; // all compressed formats use 4 rows per block
 }
-Int ImageMipSize(Int w, Int h, Int mip, IMAGE_TYPE type)
+Int ImagePitch2(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
    return ImagePitch  (w, h, mip, type)
          *ImageBlocksY(w, h, mip, type);
 }
-Int ImageMipSize(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
+Int ImageFaceSize(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
 {
-   return ImageMipSize(w, h, mip, type)*Max(1, d>>mip);
+   return ImagePitch2(w, h, mip, type)*Max(1, d>>mip);
 }
 UInt ImageMipOffset(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Int mip_map)
 {
-   UInt   size=0; mip_map++; REP(mip_maps-mip_map)size+=ImageMipSize(w, h, d, mip_map+i, type); if(IsCube(mode))size*=6; // #MipOrder
+   UInt   size=0; mip_map++; REP(mip_maps-mip_map)size+=ImageFaceSize(w, h, d, mip_map+i, type); if(IsCube(mode))size*=6; // #MipOrder
    return size;
 }
 UInt ImageSize(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps)
 {
-   UInt   size=0; REP(mip_maps)size+=ImageMipSize(w, h, d, i, type); if(IsCube(mode))size*=6;
+   UInt   size=0; REP(mip_maps)size+=ImageFaceSize(w, h, d, i, type); if(IsCube(mode))size*=6;
    return size;
 }
 /******************************************************************************/
@@ -1159,7 +1159,7 @@ static void SetSoftData(Image &img, CPtr *data)
    Int faces=img.faces();
    REPD(m, img.mipMaps()) // #MipOrder
       if(CPtr mip_data=data[m])
-         CopyFast(img.softData(m), mip_data, ImageMipSize(img.hwW(), img.hwH(), img.hwD(), m, img.hwType())*faces);
+         CopyFast(img.softData(m), mip_data, ImageFaceSize(img.hwW(), img.hwH(), img.hwD(), m, img.hwType())*faces);
 }
 void Image::baseMip(Int base_mip)
 {
@@ -1245,17 +1245,17 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             initial_data=res_data.setNum(mip_maps*faces).data();
             REPD(m, mip_maps)
             {
-               Int   mip_pitch =  softPitch  (m)           , // X
-                     mip_pitch2=  softBlocksY(m)*mip_pitch , // X*Y
-                     mip_size  =Max(1, hwD()>>m)*mip_pitch2; // X*Y*Z
-             C Byte *mip_data  =(Byte*)data[m];
+               Int   mip_pitch    =  softPitch  (m)           , // X
+                     mip_pitch2   =  softBlocksY(m)*mip_pitch , // X*Y
+                     mip_face_size=Max(1, hwD()>>m)*mip_pitch2; // X*Y*Z
+             C Byte *mip_data     =(Byte*)data[m];
                FREPD(f, faces)
                {
                   D3D11_SUBRESOURCE_DATA &srd=initial_data[D3D11CalcSubresource(m, f, mip_maps)];
                   srd.pSysMem         =mip_data;
                   srd.SysMemPitch     =mip_pitch;
                   srd.SysMemSlicePitch=mip_pitch2;
-                  if(mip_data)mip_data+=mip_size;
+                 if(mip_data)mip_data+=mip_face_size;
                }
             }
          }
@@ -1423,23 +1423,23 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                   REPD(m, mipMaps()) // order important #MipOrder
                   {
                    //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
-                     VecI2 size(Max(1, hwW()>>m), Max(1, hwH()>>m));
-                     Int   mip_size=ImageMipSize(size.x, size.y, 0, hwType());
+                     VecI2 mip_size(Max(1, hwW()>>m), Max(1, hwH()>>m));
+                     Int       size=ImagePitch2(mip_size.x, mip_size.y, 0, hwType());
                      CPtr  mip_data=data[m];
-                     if(!compressed())glTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0, gl_format, gl_type, mip_data);
-                     else   glCompressedTexImage2D(GL_TEXTURE_2D, m, format, size.x, size.y, 0,           mip_size, mip_data);
+                     if(!compressed())glTexImage2D(GL_TEXTURE_2D, m, format, mip_size.x, mip_size.y, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage2D(GL_TEXTURE_2D, m, format, mip_size.x, mip_size.y, 0,               size, mip_data);
                   #if GL_ES
-                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, size); dest+=size;}
                   #endif
                   }
                }else
                if(!compressed())glTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, gl_format, gl_type, null);else
                {
-                  Int mip_size=ImageMipSize(hwW(), hwH(), 0, hwType());
+                  Int size=ImagePitch2(hwW(), hwH(), 0, hwType());
                #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
-                  glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, mip_size, temp.setNumZero(CeilGL(mip_size)).dataNull());
+                  glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, size, temp.setNumZero(CeilGL(size)).dataNull());
                #else
-                  glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, mip_size, null);
+                  glCompressedTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, size, null);
                #endif
                }
 
@@ -1500,18 +1500,18 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                   REPD(m, mipMaps()) // order important #MipOrder
                   {
                    //if(m==mipMaps()-2 && glGetError()!=GL_NO_ERROR)goto error; // check at the start 2nd mip-map to skip this when there's only one mip-map, if first mip failed, then fail #MipOrder
-                     VecI  size(Max(1, hwW()>>m), Max(1, hwH()>>m), Max(1, hwD()>>m));
-                     Int   mip_size=ImageMipSize(size.x, size.y, size.z, 0, hwType());
+                     VecI  mip_size(Max(1, hwW()>>m), Max(1, hwH()>>m), Max(1, hwD()>>m));
+                     Int       size=ImageFaceSize(mip_size.x, mip_size.y, mip_size.z, 0, hwType());
                      CPtr  mip_data=data[m];
-                     if(!compressed())glTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0, gl_format, gl_type, mip_data);
-                     else   glCompressedTexImage3D(GL_TEXTURE_3D, m, format, size.x, size.y, size.z, 0,           mip_size, mip_data);
+                     if(!compressed())glTexImage3D(GL_TEXTURE_3D, m, format, mip_size.x, mip_size.y, mip_size.z, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage3D(GL_TEXTURE_3D, m, format, mip_size.x, mip_size.y, mip_size.z, 0,               size, mip_data);
                   #if GL_ES
-                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, size); dest+=size;}
                   #endif
                   }
                }else
                if(!compressed())glTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, gl_format, gl_type, null);
-               else   glCompressedTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, ImageMipSize(hwW(), hwH(), hwD(), 0, hwType()), null);
+               else   glCompressedTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, ImageFaceSize(hwW(), hwH(), hwD(), 0, hwType()), null);
 
                if(glGetError()==GL_NO_ERROR && setInfo()) // ok
                {
@@ -1547,23 +1547,23 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                Int  mip_maps=(data ? mipMaps() : 1); // when have src we need to initialize all mip-maps, without src we can just try 1 mip-map to see if it succeeds
                REPD(m, mip_maps) // order important #MipOrder
                {
-                  VecI2 size(Max(1, hwW()>>m), Max(1, hwH()>>m));
-                  Int   mip_size=ImageMipSize(size.x, size.y, 0, hwType());
+                  VecI2 mip_size(Max(1, hwW()>>m), Max(1, hwH()>>m));
+                  Int       size=ImagePitch2(mip_size.x, mip_size.y, 0, hwType());
                 C Byte *mip_data=(data ? (Byte*)data[m] : null);
                #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
-                  if(!mip_data && compressed())mip_data=temp.setNumZero(CeilGL(mip_size*6)).dataNull();
+                  if(!mip_data && compressed())mip_data=temp.setNumZero(CeilGL(size*6)).dataNull();
                #endif
                   FREPD(f, 6) // faces, order important
                   {
-                     if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0, gl_format, gl_type, mip_data);
-                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, size.x, size.y, 0,           mip_size, mip_data);
+                     if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, mip_size.x, mip_size.y, 0, gl_format, gl_type, mip_data);
+                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, mip_size.x, mip_size.y, 0,               size, mip_data);
 
                    //if(m==mip_maps-1 && !f && glGetError()!=GL_NO_ERROR)goto error; // check for error only on the first mip and face #MipOrder
                      
                   #if GL_ES
-                     if(dest){if(mip_data)CopyFast(dest, mip_data, mip_size); dest+=mip_size;}
+                     if(dest){if(mip_data)CopyFast(dest, mip_data, size); dest+=size;}
                   #endif
-                     if(mip_data)mip_data+=mip_size;
+                     if(mip_data)mip_data+=size;
                   }
                }
 
@@ -2215,9 +2215,10 @@ Bool Image::fromCube(C Image &src, Int uncompressed_type)
 /******************************************************************************/
 // LOCK
 /******************************************************************************/
-Int   Image::softFaceSize(Int mip_map                    )C {return ImageMipSize(hwW(), hwH(), hwD(), mip_map, hwType());}
-UInt  Image::softPitch   (Int mip_map                    )C {return ImagePitch  (hwW(), hwH(),        mip_map, hwType());}
-UInt  Image::softBlocksY (Int mip_map                    )C {return ImageBlocksY(hwW(), hwH(),        mip_map, hwType());}
+UInt  Image::softPitch   (Int mip_map                    )C {return ImagePitch   (hwW(), hwH(),        mip_map, hwType());}
+UInt  Image::softBlocksY (Int mip_map                    )C {return ImageBlocksY (hwW(), hwH(),        mip_map, hwType());}
+UInt  Image::softPitch2  (Int mip_map                    )C {return ImagePitch2  (hwW(), hwH(),        mip_map, hwType());}
+Int   Image::softFaceSize(Int mip_map                    )C {return ImageFaceSize(hwW(), hwH(), hwD(), mip_map, hwType());}
 Byte* Image::softData    (Int mip_map, DIR_ENUM cube_face)
 {
    return _data_all+ImageMipOffset(hwW(), hwH(), hwD(), hwType(), mode(), mipMaps(), mip_map)+(cube_face ? softFaceSize(mip_map)*cube_face : 0); // call 'softFaceSize' only when needed because most likely 'cube_face' is zero

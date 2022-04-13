@@ -217,7 +217,7 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
 /******************************************************************************/
 // SAVE / LOAD
 /******************************************************************************
-Bool Image::_saveData(File &f)C
+Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
 {
    IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
    if(!CanCompress(file_type))file_type=T.hwType(); // if compressing to format which isn't supported then store as current 'hwType'
@@ -225,7 +225,7 @@ Bool Image::_saveData(File &f)C
    || mode()   >=IMAGE_RT   )return false; // don't allow saving private modes
    ASSERT(IMAGE_2D==0 && IMAGE_3D==1 && IMAGE_CUBE==2 && IMAGE_SOFT==3 && IMAGE_SOFT_CUBE==4 && IMAGE_RT==5);
 
-   f.putMulti(Byte(2), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps()), COMPRESS_NONE); // version
+   f.putMulti(Byte(2), size3(), file_type, mode(), Byte(mipMaps()), compress); // version
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
    const Bool same_type   =CanDoRawCopy(hwType(), file_type, ignore_gamma);
@@ -241,9 +241,9 @@ Bool Image::_saveData(File &f)C
          { // no need to use any "Min" or "f.put(null, ..)" because soft HW sizes are guaranteed to be >= file HW size
             Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
                 file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, mip, file_type),
+                file_d       =         Max(file_hw_size.z>>mip, 1),
                image_pitch   = softPitch  (mip),
                image_blocks_y= softBlocksY(mip),
-                file_d       =         Max(file_hw_size.z>>mip, 1),
                image_d       =         Max(         hwD()>>mip, 1),
                 copy         =  file_blocks_y*file_pitch,
                 skip         =(image_blocks_y-file_blocks_y)*image_pitch,
@@ -322,9 +322,9 @@ Bool Image::saveData(File &f)C
             // here no need to use any "Min" because soft HW sizes are guaranteed to be >= file sizes
             Int file_pitch   =ImagePitch  (  w(),   h(), mip, file_type), // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
                 file_blocks_y=ImageBlocksY(  w(),   h(), mip, file_type), // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
+                file_d       =             Max(1,   d()>>mip)           , // use "d()"      instead of "hwD()"        because we want to write only valid pixels
                image_pitch   =ImagePitch  (hwW(), hwH(), mip, file_type),
                image_blocks_y=ImageBlocksY(hwW(), hwH(), mip, file_type),
-                file_d       =             Max(1,   d()>>mip)           , // use "d()"      instead of "hwD()"        because we want to write only valid pixels
                image_d       =             Max(1, hwD()>>mip)           ,
                 write        =  file_blocks_y*file_pitch,
                skip          =(image_blocks_y-file_blocks_y)*image_pitch,
@@ -382,7 +382,6 @@ Bool Image::saveData(File &f)C
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
 static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x, dest.x) || SizeFits1(src.y, dest.y) || SizeFits1(src.z, dest.z) || (src.x==1 && src.y==1 && src.z==1);}
-static INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);} // +1 because this checks number of elements
 /******************************************************************************/
 struct Mip
 {
@@ -410,11 +409,11 @@ struct Loader
 
    Loader(File &f) : f(f) {}
 
-   Int filePitch  (Int mip)C {return ImagePitch  (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
-   Int fileBlocksY(Int mip)C {return ImageBlocksY(file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
-   Int wantPitch  (Int mip)C {return ImagePitch  (want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
-   Int wantBlocksY(Int mip)C {return ImageBlocksY(want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
-   Int wantMipSize(Int mip)C {return ImageMipSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, mip, want_hw_type)*want_faces;}
+   Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
+   Int fileBlocksY(Int mip)C {return ImageBlocksY (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
+   Int wantPitch  (Int mip)C {return ImagePitch   (want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
+   Int wantBlocksY(Int mip)C {return ImageBlocksY (want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
+   Int wantMipSize(Int mip)C {return ImageFaceSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, mip, want_hw_type)*want_faces;}
 
    Bool load(Image &image, Int file_mip)C
    {
@@ -435,7 +434,7 @@ struct Loader
       }
       return false;
    }
-   Bool loadDirect(Int file_mip, Int img_mip, Byte *img_data)C
+   Bool load(Int file_mip, Int img_mip, Byte *img_data)C
    {
       Int file_pitch   =filePitch  (file_mip),
           file_blocks_y=fileBlocksY(file_mip),
@@ -478,7 +477,7 @@ struct Loader
       REP(header.mip_maps) // #MipOrder
       {
          Mip &mip=mips[i];
-              mip.decompressed_size=ImageMipSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
+              mip.decompressed_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
          if(  mip.cmpr=file_cmpr)
          {
             f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
@@ -614,7 +613,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             mip_data[img_mip]=img_data;
             if(direct) // load from file directly to 'img_data'
             {
-               if(!loadDirect(file_mip, img_mip, img_data))return false;
+               if(!load(file_mip, img_mip, img_data))return false;
             }else
             {
                if(!load(soft, file_mip))return false;
@@ -710,10 +709,10 @@ static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
          if(header.mip_maps-file_mip>=want.mip_maps) // if have all mip maps that we want
          {
             Byte *f_data=(Byte*)f.memFast();
-            FREPD(i, file_mip)f_data+=ImageMipSize(header.size.x, header.size.y, header.size.z, i, header.type)*file_faces; // skip data that we don't want
+            FREPD(i, file_mip)f_data+=ImageFaceSize(header.size.x, header.size.y, header.size.z, i, header.type)*file_faces; // skip data that we don't want
             if(image.createEx(want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, 1, f_data this needs to be fixed))
             {
-               for(; file_mip<header.mip_maps; file_mip++)f_data+=ImageMipSize(header.size.x, header.size.y, header.size.z, file_mip, header.type)*file_faces; // skip remaining mip maps
+               for(; file_mip<header.mip_maps; file_mip++)f_data+=ImageFaceSize(header.size.x, header.size.y, header.size.z, file_mip, header.type)*file_faces; // skip remaining mip maps
                f.skip(f_data-(Byte*)f.memFast()); // skip to the end of the image
                return true;
             }
@@ -847,7 +846,7 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
             image_mip+=mip_count;
          }else // skip this mip-map
          {
-            f.skip(ImageMipSize(header.size.x, header.size.y, header.size.z, file_mip, header.type)*file_faces);
+            f.skip(ImageFaceSize(header.size.x, header.size.y, header.size.z, file_mip, header.type)*file_faces);
          }
       }
       if(image_mip)image.updateMipMaps(filter, IC_CLAMP, image_mip-1); // set any missing mip maps, this is needed for example if file had 1 mip map, but we've requested to create more

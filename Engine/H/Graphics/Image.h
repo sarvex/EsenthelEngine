@@ -332,9 +332,10 @@ struct Image // Image (Texture)
  C Byte* softData()C {return _data_all;} // get software image data without locking the image
    Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT);                                                     // get software image data for 'mip_map' and 'cube_face' without locking the image
  C Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT)C {return ConstCast(T).softData(mip_map, cube_face);} // get software image data for 'mip_map' and 'cube_face' without locking the image
-   Int   softFaceSize(Int mip_map)C; // get size in bytes for a single cube face for specified 'mip_map'
    UInt  softPitch   (Int mip_map)C; // get pitch   of specified 'mip_map'
    UInt  softBlocksY (Int mip_map)C; // get blocksY of specified 'mip_map'
+   UInt  softPitch2  (Int mip_map)C; // get pitch2  of specified 'mip_map' = pitch  * blocksY
+   Int   softFaceSize(Int mip_map)C; // get face    of specified 'mip_map' = pitch2 * depth
 
    void lockSoft();
    Bool setFrom(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
@@ -613,7 +614,6 @@ struct Image // Image (Texture)
    void operator=(C Str  &name) ; // load, Exit  on fail
    void operator=(C UID  &id  ) ; // load, Exit  on fail
 #if EE_PRIVATE
-
    Bool  saveData(  File &f                                                               )C; // save, false on fail
    Bool  loadData(  File &f, ImageHeader *header=null, C Str &name=S, Bool can_del_f=false) ; // load, false on fail, 'can_del_f'=if allow deleting 'f' (always enable if possible, to allow image streaming)
    Bool _loadData(  File &f, ImageHeader *header=null, C Str &name=S                      ) ; // load, false on fail - Deprecated do not use !!
@@ -822,8 +822,8 @@ Int                        PaddedWidth      (Int w, Int h,        Int mip, IMAGE
 Int                        PaddedHeight     (Int w, Int h,        Int mip, IMAGE_TYPE type);
 Int                        ImagePitch       (Int w, Int h,        Int mip, IMAGE_TYPE type);
 Int                        ImageBlocksY     (Int w, Int h,        Int mip, IMAGE_TYPE type);
-Int                        ImageMipSize     (Int w, Int h,        Int mip, IMAGE_TYPE type);
-Int                        ImageMipSize     (Int w, Int h, Int d, Int mip, IMAGE_TYPE type);
+Int                        ImagePitch2      (Int w, Int h,        Int mip, IMAGE_TYPE type);
+Int                        ImageFaceSize    (Int w, Int h, Int d, Int mip, IMAGE_TYPE type);
 UInt                       ImageMipOffset   (Int w, Int h, Int d,          IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Int mip_map);
 UInt                       ImageSize        (Int w, Int h, Int d,          IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps);
 GPU_API(DXGI_FORMAT, UInt) ImageTypeToFormat(Int type); // convert from IMAGE_TYPE to API_FORMAT
