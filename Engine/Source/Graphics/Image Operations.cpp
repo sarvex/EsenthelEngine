@@ -13,7 +13,7 @@ static Bool Decompress(Image &image, IMAGE_TYPE &type, IMAGE_MODE &mode, Int &mi
    mip_maps=image.mipMaps();
    if(image.is())
    {
-      if(image.compressed())return image.copyTry(image, -1, -1, -1, ImageTypeUncompressed(type), image.cube() ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1);
+      if(image.compressed())return image.copyTry(image, -1, -1, -1, ImageTypeUncompressed(type), AsSoft(image.mode()), 1);
       return true;
    }
    return false;

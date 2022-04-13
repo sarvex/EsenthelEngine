@@ -517,8 +517,8 @@ struct Loader
                  want_faces  =ImageFaces  (  want.mode);
                  want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                                   PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
-                 file_mode_soft=(IsCube(header.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
-const IMAGE_MODE want_mode_soft=(IsCube(  want.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT);
+                 file_mode_soft=AsSoft(header.mode);
+const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
 
       // base mip = find smallest file mip that's >= biggest image mip
       Int   base_file_mip=0;
@@ -726,7 +726,7 @@ static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
    }*/
 
    // create
-   if(image.createTry(want.size.x, want.size.y, want.size.z, want.type, create_from_soft ? (IsCube(want.mode) ? IMAGE_SOFT_CUBE : IMAGE_SOFT) : want.mode, want.mip_maps)) // don't use 'want' after this call, instead operate on 'image' members
+   if(image.createTry(want.size.x, want.size.y, want.size.z, want.type, create_from_soft ? AsSoft(want.mode) : want.mode, want.mip_maps)) // don't use 'want' after this call, instead operate on 'image' members
    {
 const FILTER_TYPE filter=FILTER_BEST;
       Image       soft; // store outside the loop to avoid overhead

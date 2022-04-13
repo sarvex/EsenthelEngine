@@ -597,7 +597,7 @@ Bool IsSoft(IMAGE_MODE mode)
    switch(mode)
    {
       default: return false;
-      
+
       case IMAGE_SOFT:
       case IMAGE_SOFT_CUBE: return true;
    }
@@ -607,7 +607,7 @@ Bool IsHW(IMAGE_MODE mode)
    switch(mode)
    {
       default: return true;
-      
+
       case IMAGE_SOFT:
       case IMAGE_SOFT_CUBE: return false;
    }
@@ -621,6 +621,17 @@ Bool IsCube(IMAGE_MODE mode)
       case IMAGE_CUBE     :
       case IMAGE_SOFT_CUBE:
       case IMAGE_RT_CUBE  : return true;
+   }
+}
+IMAGE_MODE AsSoft(IMAGE_MODE mode)
+{
+   switch(mode)
+   {
+      default: return IMAGE_SOFT;
+
+      case IMAGE_CUBE     :
+      case IMAGE_SOFT_CUBE:
+      case IMAGE_RT_CUBE  : return IMAGE_SOFT_CUBE;
    }
 }
 /******************************************************************************/
@@ -1695,7 +1706,7 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
                                                            : decompress_block_SByte  ?               IMAGE_R8_SIGN                         // use 'IMAGE_R8_SIGN'   because Decompress Block functions operate on 'SByte'
                                                            : decompress_block_VecSB2 ?               IMAGE_R8G8_SIGN                       // use 'IMAGE_R8G8_SIGN' because Decompress Block functions operate on 'VecSB2'
                                                            : decompress_block_VecH   ?               IMAGE_F16_3                           // use 'IMAGE_F16_3'     because Decompress Block functions operate on 'VecH'
-                                                           :                                         IMAGE_NONE, src.cube() ? IMAGE_SOFT_CUBE : IMAGE_SOFT, src.mipMaps()))
+                                                           :                                         IMAGE_NONE, AsSoft(src.mode()), src.mipMaps()))
       if(dest.size3()==src.size3())
    {
       Int src_faces1=src.faces()-1,

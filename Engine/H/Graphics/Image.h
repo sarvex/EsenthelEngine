@@ -816,6 +816,7 @@ PtrImageColor     GetImageColorF   (FILTER_TYPE filter);
 PtrImageColor3D   GetImageColor3DF (FILTER_TYPE filter);
 PtrImageAreaColor GetImageAreaColor(FILTER_TYPE filter, Bool &linear_gamma);
 
+IMAGE_MODE                 AsSoft           (IMAGE_MODE mode);
 Int                        ImageFaces       (IMAGE_MODE mode);
 Int                        PaddedWidth      (Int w, Int h,        Int mip, IMAGE_TYPE type);
 Int                        PaddedHeight     (Int w, Int h,        Int mip, IMAGE_TYPE type);
