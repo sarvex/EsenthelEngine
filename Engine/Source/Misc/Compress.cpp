@@ -966,7 +966,8 @@ NOINLINE static Bool LZ4DecompressStream(File &src, File &dest, Long compressed_
          {
             auto size=LZ4_decompress_safe_continue(&lz4, (char*)s, (char*)dest.memFast(), chunk, dest.left()); if(size<0)goto error;
             if(callback)callback->data(dest.memFast(), size);
-            if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because LZ4 may still access previously decompressed data
+            if(!dest.skip(size))goto error;
+            // can't use 'MemWrote' and 'Cipher' here because LZ4 may still access previously decompressed data, instead do it just one time at the end
          }else
          {
             if(d_pos>SIZE(d)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
