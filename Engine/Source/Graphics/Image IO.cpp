@@ -221,6 +221,7 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
 /******************************************************************************
 Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
 {
+   Int compression_level=255; Bool multi_threaded=false;
    IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
    if(!CanCompress(file_type))file_type=T.hwType(); // if compressing to format which isn't supported then store as current 'hwType'
    if(file_type>=IMAGE_TYPES               // don't allow saving private formats
@@ -231,10 +232,82 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
    const Bool same_type   =CanDoRawCopy(hwType(), file_type, ignore_gamma);
+   const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
    const Int  faces       =T.faces();
    const VecI file_hw_size(PaddedWidth (w(), h(), 0, file_type),
                            PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
-   if(soft() && same_type) // software with matching type, we can save without locking
+   const Bool soft_same_type=(soft() && same_type); // software with matching type
+
+   Image soft; // keep outside to reduce overhead
+
+   if(compress)
+   {
+      Bool direct=(soft_same_type && file_hw_size==hwSize3()); // if software, same type and HW size, we can read from directly
+      UInt data_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, file_type, mode(), mipMaps()), // this is size to store compressed image data that we're going to write to the file, make as big as total uncompressed data, if would need more than that, then disable compression and save uncompressed
+           biggest_mip_size=0;
+      if(!direct) // if we can't read directly from image, then we will need to write to temp buffer first before compression
+      {
+         biggest_mip_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, 0, file_type)*faces; // need room to write the biggest mip map
+         data_size+=biggest_mip_size;
+      }
+      Memt<Byte> buffer; Byte *temp=buffer.setNum(data_size).data(), *save=temp; if(!direct)save+=biggest_mip_size; Byte *save_cur=save;
+      File f_src, f_dest;
+      REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
+      {
+         Int face_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, mip, file_type),
+              mip_size=face_size*faces;
+       C Byte *src;
+         if(direct)
+         {
+            src=softData(mip);
+            // FIXME test
+         }else
+         {
+            src=temp;
+            Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
+                file_blocks_y=ImageBlocksY(file_hw_size.x, file_hw_size.y, mip, file_type),
+                file_d       =         Max(file_hw_size.z>>mip, 1);
+            if(soft_same_type)
+            {
+            // FIXME test
+               Int image_pitch   =softPitch  (mip),
+                   image_blocks_y=softBlocksY(mip),
+                   image_d       =Max(hwD()>>mip, 1);
+               CopyImgData(softData(mip), temp, image_pitch, file_pitch, image_blocks_y, file_blocks_y, image_pitch*image_blocks_y, file_pitch*file_blocks_y, image_d, file_d, faces);
+            }else
+            {
+               Byte *dest=temp;
+               FREPD(face, faces) // iterate all faces
+               {
+                C Image *src=this;
+                  Int    src_mip=mip, src_face=face;
+                  if(!same_type){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face), FILTER_BEST, copy_flags))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
+                  if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
+                  CopyImgData(src->data(), dest, src->pitch(), file_pitch, src->softBlocksY(src_mip), file_blocks_y);
+                  src->unlock();
+                  dest+=face_size;
+               }
+            }
+         }
+         f_src . readMem    (src     , mip_size  );
+         f_dest.writeMemDest(save_cur, mip_size-1); // set -1 because if output would be >=mip_size then there's no reduction, and we want to fallback to faster uncompressed mode
+         UInt compressed_size;
+         if(CompressRaw(f_src, f_dest, compress, compression_level, multi_threaded)) // if compressed and reduced size (because 'f_dest' size was limited)
+         {
+            compressed_size=f_dest.pos(); // remember compressed size
+         }else
+         {
+            compressed_size=0; // set zero = uncompressed
+            CopyFast(save_cur, src, mip_size); // copy uncompressed
+         }
+         f.cmpUIntV(compressed_size);
+         save_cur+=compressed_size;
+      }
+      UInt compressed_size=save_cur-save;
+      DEBUG_ASSERT(compressed_size<=data_size, "compressed_size<=data_size");
+      f.put(save, compressed_size);
+   }else
+   if(soft_same_type) // software with matching type, we can save without locking
    {
       if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
       {
@@ -267,8 +340,6 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
       }
    }else
    {
-      Image soft; // keep outside loop to reduce overhead
-      const UInt copy_flags=(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA);
       REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
