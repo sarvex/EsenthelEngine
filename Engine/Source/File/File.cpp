@@ -761,7 +761,7 @@ Bool File::pos(Long pos)
             }
          }else // go forward
          {
-            if(!_buf_len)pos_stream: _stream->get(T); // read from stream
+            if(!_buf_len)stream_get: _stream->get(T); // read from stream
             if( _buf_len)
             {
                Int skip=Min(pos-T._pos, _buf_len);
@@ -769,7 +769,7 @@ Bool File::pos(Long pos)
               _buf_len-=skip;
               _buf_pos+=skip;
                if(!_buf_len)return true; // if reached target
-               goto pos_stream; // read again
+               goto stream_get; // read again
             }
          }
       }break;
