@@ -611,6 +611,7 @@ T1(TYPE)  TYPE  MemcThreadSafe<TYPE>::lockedPop     (                      ) {TY
 T1(TYPE)  void  MemcThreadSafe<TYPE>::lockedSwapPopFirst(TYPE &dest,        Bool keep_order) {Swap(dest, lockedFirst( )); lockedRemove    (0, keep_order);}
 T1(TYPE)  void  MemcThreadSafe<TYPE>::lockedSwapPop     (TYPE &dest, Int i, Bool keep_order) {Swap(dest, lockedElm  (i)); lockedRemove    (i, keep_order);}
 T1(TYPE)  void  MemcThreadSafe<TYPE>::lockedSwapPop     (TYPE &dest                        ) {Swap(dest, lockedLast ( )); lockedRemoveLast(             );}
+T1(TYPE)  void  MemcThreadSafe<TYPE>::      swapPop     (TYPE &dest                        ) {SyncLocker locker(_lock);   lockedSwapPop   (dest         );}
 
 T1(TYPE)  C TYPE*  MemcThreadSafe<TYPE>::lockedData (     )C {return ConstCast(T).lockedData ( );}
 T1(TYPE)  C TYPE*  MemcThreadSafe<TYPE>::lockedAddr (Int i)C {return ConstCast(T).lockedAddr (i);}
@@ -1817,6 +1818,9 @@ template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmP
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(C CacheElmPtr & eptr) {if(T!=eptr){CACHE.decRef(T._data); CACHE.incRef(T._data=eptr._data);} return T;}
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  CacheElmPtr &&eptr) {Swap(_data, eptr._data);                                              return T;}
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  null_t            ) {clear();                                                              return T;}
+#if EE_PRIVATE
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::setContained(TYPE       * data) {if(T!=data){CACHE.decRef(T._data); CACHE.incRefContained(T._data=data);} return T;}
+#endif
 
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::find     (CChar  *file, CChar *path) {TYPE *old=T._data; T._data=(TYPE*)CACHE._Cache::find   (    file , path, true); CACHE.decRef(old); return T;}
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::find     (CChar8 *file, CChar *path) {TYPE *old=T._data; T._data=(TYPE*)CACHE._Cache::find   (Str(file), path, true); CACHE.decRef(old); return T;}

@@ -475,8 +475,9 @@ void _Cache::incRef(CPtr data)
       if(lockedContains(elm))IncPtrNum(elmDesc(*elm).ptr_num);
    }
 }
-void _Cache::decRef    (CPtr data) {removeData(data, true );}
-void _Cache::removeData(CPtr data) {removeData(data, false);}
+void _Cache::incRefContained(CPtr data) {if(Elm *elm=dataElm(data))IncPtrNum(elmDesc(*elm).ptr_num);}
+void _Cache::decRef         (CPtr data) {removeData(data, true );}
+void _Cache::removeData     (CPtr data) {removeData(data, false);}
 /******************************************************************************/
 void _Cache::processDelayRemove(Bool always)
 {

@@ -1232,6 +1232,7 @@ void Application::del()
 
      _initialized=false; setActive(false); // set '_initialized' to false to prevent from calling custom 'paused' callback in 'setActive', call 'setActive' because app will no longer be active, this is needed in case 'InputDevices.acquire' is called at a later stage, this is also needed because currently we need to disable disable magnetometer callback for WINDOWS_NEW (otherwise it will crash on Windows Phone when closing app)
       FlushIO          ();
+      ShutStreamLoads  (); // have to stop stream loads before 'D.del' because this operates on 'Images' cache and 'Display', so we have to shut this down while they're still available
       ShutObj          ();
       Physics.del      ();
       D      .del      ();

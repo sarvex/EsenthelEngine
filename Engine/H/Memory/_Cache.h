@@ -74,6 +74,7 @@ mutable Byte         _d_lock;
    Int       validIndex( CPtr  data)C {return       validIndex(dataElm(data));} // this is NOT thread-safe, assumes that '_data_offset' is zero
    void      removeData( CPtr  data, Bool counted);
    Bool   has          ( CPtr  data)C;
+   void incRefContained( CPtr  data);
 #endif
    Ptr    find      (CChar *file, CChar *path, Bool counted);
    Ptr    find      (C UID &id  , CChar *path, Bool counted);

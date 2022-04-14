@@ -152,6 +152,9 @@ template<typename TYPE, Cache<TYPE> &CACHE>   struct CacheElmPtr // Cache Elemen
    CacheElmPtr& operator=(  TYPE        * data); // set       pointer to 'data', this automatically decreases the reference count of current data and increases the reference count of the new data
    CacheElmPtr& operator=(C CacheElmPtr & eptr); // set       pointer to 'eptr', this automatically decreases the reference count of current data and increases the reference count of the new data
    CacheElmPtr& operator=(  CacheElmPtr &&eptr); // set       pointer to 'eptr', this automatically decreases the reference count of current data and increases the reference count of the new data
+#if EE_PRIVATE
+   CacheElmPtr& setContained(TYPE       * data); // set       pointer to 'data', this automatically decreases the reference count of current data and increases the reference count of the new data !! THIS ASSUMES THAT 'data' IS IN CACHE !!
+#endif
 
    // get object and store it temporarily (as long as it is referenced by at least one 'CacheElmPtr')
    CacheElmPtr& find     (CChar  *file, CChar *path=null); // find    object by its file name   , don't load if not found, null on fail
