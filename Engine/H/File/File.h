@@ -340,6 +340,7 @@ struct FileStream
 
    virtual ~FileStream() {}
 };
+
 struct FileStreamLZ4 : FileStream
 {
    LZ4_streamDecode_t ctx;
@@ -350,13 +351,16 @@ struct FileStreamLZ4 : FileStream
    virtual void get(File &main)override;
    virtual UInt memUsage()C override;
 };
+
 struct FileStreamZSTD : FileStream
 {
    ZSTD_DCtx_s ctx;
    Bool ok;
+
+   // !! DECLARE AS LAST SO THIS CAN BE CUSTOM SIZED BASED ON MEMORY ALLOCATION FOR CLASS OBJECT !!
 #pragma warning(push)
 #pragma warning(disable:4200) // zero-sized array in struct/union
-   Byte buf[]; // declare as last so this can be custom sized based on memory allocation for class object
+   Byte buf[];
 #pragma warning(pop)
 
    virtual CPtr init()override;
