@@ -449,14 +449,15 @@ struct Loader
          {
             LoadImgData(*f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
          }
+         return f->ok();
       }else
       {
          Image soft;
          if(!load(file_mip, soft))return false;
          if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
          CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
+         return true;
       }
-      return f->ok();
    }
    Bool load  (Image &image, C Str &name, Bool can_del_f);
    void update(Image &image);
