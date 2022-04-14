@@ -980,18 +980,16 @@ Bool Image::setSRV()
       #if GPU_LOCK // lock not needed for 'D3D'
          SyncLocker locker(D._lock);
       #endif
-         ID3D11ShaderResourceView *new_srv=null; D3D->CreateShaderResourceView(_txtr, &srvd, &new_srv); // create new
-         ID3D11ShaderResourceView *old_srv;
+
       #if 0 // atomic
-         old_srv=AtomicGetSet(_srv, new_srv); // swap
-      #else
-         old_srv=_srv; _srv=new_srv;
-      #endif
-         if(old_srv)
-         {
-            D.texClear(old_srv); old_srv->Release(); // delete old
-         }
+            ID3D11ShaderResourceView *new_srv=null; D3D->CreateShaderResourceView(_txtr, &srvd, &new_srv); // create new
+         if(ID3D11ShaderResourceView *old_srv=AtomicGetSet(_srv, new_srv)){D.texClear(old_srv); old_srv->Release();}  // swap and delete old
          if(!new_srv && mode()!=IMAGE_DS)return false; // allow SRV optional in IMAGE_DS (for example it can fail for multi-sampled DS on FeatureLevel 10.0)
+      #else
+         if(_srv){D.texClear(_srv); _srv->Release(); _srv=null;} // delete old
+         D3D->CreateShaderResourceView(_txtr, &srvd, &_srv); // create new
+         if(!_srv && mode()!=IMAGE_DS)return false; // allow SRV optional in IMAGE_DS (for example it can fail for multi-sampled DS on FeatureLevel 10.0)
+      #endif
       }break;
    }
    return true;
