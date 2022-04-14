@@ -391,6 +391,8 @@ struct Loader
  //COMPRESS_TYPE  mip_compression=COMPRESS_NONE;
    IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
+   Byte         image_base_mip; // used only in update, index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
+   Byte          file_base_mip; // used only in update, index of file mip map that matches the size if main mip in the image
    Int           file_faces;
    Int           want_faces;
    VecI          file_hw_size;
@@ -433,7 +435,8 @@ struct Loader
       }
       return f->ok();
    }
-   Bool load(Image &image, C Str &name, Bool can_del_f);
+   Bool load  (Image &image, C Str &name, Bool can_del_f);
+   void update(Image &image);
 };
 /******************************************************************************/
 struct StreamLoad
@@ -452,7 +455,8 @@ static Bool StreamLoadFunc(Thread &thread)
    for(; StreamLoads.elms(); )
    {
       StreamLoad sl; StreamLoads.swapPop(sl);
-      sl.loader.f=&sl.f;
+      sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
+      sl.loader.update(*sl.image);
    }
    return true;
 }
@@ -677,6 +681,9 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       if(stream)
       {
          {
+            T.image_base_mip=image._base_mip;
+            T. file_base_mip=  base_file_mip;
+            T. want_hw_size =image.hwSize3(); // it could've changed if converted to another type
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
                  sl.image.setContained(&image); // !! can use unsafe 'setContained' only because we've already checked 'Images.has' above
@@ -699,6 +706,10 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
    }
    return false;
+}
+void Loader::update(Image &image)
+{
+   
 }
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
