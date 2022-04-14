@@ -981,7 +981,7 @@ void FileStreamLZ4::get(File &main) // !! LZ4 requires to keep previous decompre
    {
       Byte s[LZ4_COMPRESSBOUND(LZ4_BUF_SIZE)];
       UInt chunk=src.decUIntV()+1;
-      if(  chunk<=SIZE(s) && src.getFast(s, chunk))
+      if(src.ok() && chunk<=SIZE(s) && src.getFast(s, chunk))
       {
          Int &d_pos=main._buf_pos;
          if(  d_pos>SIZE(buf)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
@@ -1307,9 +1307,8 @@ NOINLINE static Bool ZSTDCompress(File &src, File &dest, Int compression_level, 
       {
          Bool single=(src.left()<=ZSTD_BLOCKSIZE_MAX); // #ZSTDMem
        C Int  window_size=1<<params.cParams.windowLog;
-         Memt<Byte> sm, dm; Int s_pos=0;
-         sm.setNum(         Min(window_size+ZSTD_BLOCKSIZE_MAX, src.left()) ); Byte *s=sm.data();
-         dm.setNum(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, src.left()))); Byte *d=dm.data();
+         Memt<Byte> sm; sm.setNum(Min(window_size+ZSTD_BLOCKSIZE_MAX, src.left())); Byte *s=sm.data(); Int s_pos=0;
+         Byte d[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, src.left()))
          for(; !src.end(); )
          {
             Int read=Min(ZSTD_BLOCKSIZE_MAX, Min(sm.elms(), src.left()));
@@ -1317,7 +1316,7 @@ NOINLINE static Bool ZSTDCompress(File &src, File &dest, Int compression_level, 
             Byte *data=s+s_pos;
             read=src.getReturnSize(data, read); if(read<=0)goto error;
             if(callback)callback->data(data, read);
-            auto size=ZSTD_compressBlock(ctx, d, dm.elms(), data, read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
+            auto size=ZSTD_compressBlock(ctx, d, SIZE(d), data, read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
             dest.cmpUIntV(single ? (size>0) : size); // for single we store (compressed ? 1 : 0), for multi we store (compressed ? size : 0)
             if(size>0){if(!dest.put(d   , size))goto error;} // compressed
             else      {if(!dest.put(data, read))goto error;} // failed to compress
@@ -1341,9 +1340,9 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
       Long start=dest.pos();
       Ptr  mem=dest.memFast();
       Bool single=(decompressed_size<=ZSTD_BLOCKSIZE_MAX); // #ZSTDMem
-      Memt<Byte> sm, dm; sm.setNum(Min((Int)ZSTDSize(ZSTD_BLOCKSIZE_MAX), compressed_size)); Int d_pos=0;
-      Bool direct=MemDecompress(dest, decompressed_size); if(!direct)dm.setNum(ZSTDDecompressBufSize(decompressed_size)); // here don't apply "Min(decompressed_size,", so "if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)" doesn't wrap the 'd_pos' to 0
-      Byte *s=sm.data(), *d=dm.data();
+      Bool direct=MemDecompress(dest, decompressed_size);
+      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, compressed_size))
+      Memt<Byte> dm; if(!direct)dm.setNum(ZSTDDecompressBufSize(decompressed_size)); Byte *d=dm.data(); Int d_pos=0; 
       for(; !src.end(); )
       {
          UInt chunk; src.decUIntV(chunk);
@@ -1354,7 +1353,7 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                if(chunk>1)goto error; // for single 'chunk' can be either 0 or 1
                chunk=src.left();
             }
-            if(chunk>sm.elms())goto error;
+            if(chunk>SIZE(s))goto error;
             if(!src.getFast(s, chunk))goto error; // need exactly 'chunk' amount
             if(direct)
             {
@@ -1401,6 +1400,25 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
       ZSTD_freeDCtx(ctx);
    }
    return ok;
+}
+/******************************************************************************/
+CPtr FileStreamZSTD::init()
+{
+   ALIGN_ASSERT_X(FileStreamZSTD, ctx, 8); // required by ZSTD
+   if(ok=ZSTD_initStaticDCtx(&ctx, SIZE(ctx)))
+   {
+      ZSTD_decompressBegin(&ctx);
+      return buf;
+   }
+   return null;
+}
+void FileStreamZSTD::get(File &main) // !! ZSTD requires to keep previous decompressed data !! So there are 2 choices: 1) always decompress into local buffer without applying cipher, and then copy from buffer to destination. 2) decompress to constant continuous memory that's big enough to hold entire data (also without cipher during decoding)
+{
+   DEBUG_ASSERT(main._buf_len==0, "main._buf_len==0"); // this can be called only if buffer was fully consumed
+   if(ok)
+   {
+      ok=false;
+   }
 }
 #endif
 /******************************************************************************/
@@ -1935,7 +1953,7 @@ UInt CompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncompr
       {
          const UInt dict_size=LZMADictSize(compression_level, uncompressed_size),
                    state_size=16*1024; // 16 KB default
-         return RoundU(dict_size*11.5f) + 6*1024*1024 + state_size; // (dict_size * 11.5 + 6 MB) + state_size, taken from "ThirdPartyLibs\LZMA\lzma\lzma.txt"
+         return dict_size*23/2 + 6*1024*1024 + state_size; // (dict_size * 11.5 + 6 MB) + state_size, taken from "ThirdPartyLibs\LZMA\lzma\lzma.txt"
       }
    #endif
 
@@ -1959,7 +1977,7 @@ UInt CompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncompr
          params.windowLog=ZSTDDictSizeLog2(uncompressed_size);
        C Int window_size=1<<params.windowLog;
          return MemtMemUsage(         Min(window_size+ZSTD_BLOCKSIZE_MAX, uncompressed_size) ) // Memt s;
-               +MemtMemUsage(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt d;
+             //+MemtMemUsage(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt d; allocated on stack
                +ZSTD_estimateCCtxSize_usingCParams(params);                                    // ZSTD_CCtx
       }
    #endif
@@ -2027,9 +2045,9 @@ UInt DecompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncom
       case COMPRESS_ZSTD:
       {
          if(uncompressed_size<0)uncompressed_size=LONG_MAX; // if size is unknown then use max possible
-         return MemtMemUsage(ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt s;
-               +MemtMemUsage(ZSTDDecompressBufSize(           uncompressed_size))  // Memt d;
-               +ZSTD_estimateDCtxSize();                                           // ZSTD_DCtx
+         return //MemtMemUsage(ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt s; allocated on stack
+                 +MemtMemUsage(ZSTDDecompressBufSize(           uncompressed_size))  // Memt d;
+                 +ZSTD_estimateDCtxSize();                                           // ZSTD_DCtx
       }
    #endif
 

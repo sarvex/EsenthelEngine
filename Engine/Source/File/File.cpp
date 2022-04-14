@@ -204,7 +204,7 @@ void File::close()
 
       case FILE_MEMB: if(FILE_MEMB_UNION)DTOR(_memb);else _memb.clear(); break;
 
-      case FILE_STREAM: Delete(_stream); break;
+      case FILE_STREAM: DTOR(*_stream); Free(_stream); break;
    }
 #if ANDROID
    if(_aasset)AAsset_close((AAsset*)_aasset);
@@ -338,8 +338,12 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
       FileStream *stream=null;
       switch(compress)
       {
-         case COMPRESS_LZ4 : if(decompressed_size<=LZ4_BUF_SIZE      )goto mem; stream=new FileStreamLZ4 ; break; // #LZ4Mem
-         case COMPRESS_ZSTD: if(decompressed_size<=ZSTD_BLOCKSIZE_MAX)goto mem; stream=new FileStreamZSTD; break; // #ZSTDMem
+      #if SUPPORT_LZ4
+         case COMPRESS_LZ4 : if(decompressed_size<=LZ4_BUF_SIZE      )goto mem; stream=Alloc<FileStreamLZ4>(); CTOR(*(FileStreamLZ4*)stream); break; // #LZ4Mem
+      #endif
+      #if SUPPORT_ZSTD
+         case COMPRESS_ZSTD: if(decompressed_size<=ZSTD_BLOCKSIZE_MAX)goto mem; UInt buf_size=ZSTDDecompressBufSize(decompressed_size); stream=(FileStreamZSTD*)Alloc(SIZE(FileStreamZSTD)+buf_size); CTOR(*(FileStreamZSTD*)stream); break; // #ZSTDMem
+      #endif
       }
       if(stream)
       {

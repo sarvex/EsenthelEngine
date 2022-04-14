@@ -560,7 +560,7 @@
       #define LZ4_RING_BUF_SIZE (LZ4_BUF_SIZE*2) // if changing, then have to use LZ4_DECODER_RING_BUFFER_SIZE for decompression to keep compatibility with any past compressed data
    #endif
 
-   #define SUPPORT_ZSTD   1
+   #define SUPPORT_ZSTD 1
    #if     SUPPORT_ZSTD
       #define ZSTD_STATIC_LINKING_ONLY
       #include "../../../ThirdPartyLibs/Zstd/lib/zstd.h"
