@@ -716,9 +716,7 @@ void Loader::update(Image &image)
       switch(load_mode)
       {
          case DIRECT_FAST: if(!f->getFast(img_mip_data.data(), img_mip_size))goto error; break;
-         case DIRECT     : if(!load(file_mip, img_mip, img_mip_data.data()))goto error; break;
-         default         :
-         break;
+         default         : if(!load(file_mip, img_mip, img_mip_data.data()) )goto error; break;
       }
    }
    return;
@@ -867,8 +865,8 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
                   dest=&image; dest_mip=image_mip;
                }
 
-         const Int file_pitch   =ImagePitch  (header.size.x, header.size.y, file_mip,  header.type  ),
-                   file_blocks_y=ImageBlocksY(header.size.x, header.size.y, file_mip,  header.type  ),
+         const Int file_pitch   =ImagePitch  (header.size.x, header.size.y, file_mip, header.type),
+                   file_blocks_y=ImageBlocksY(header.size.x, header.size.y, file_mip, header.type),
                    dest_blocks_y=dest->softBlocksY(dest_mip),
                    read_blocks_y=Min(dest_blocks_y, file_blocks_y),
                    read         = read_blocks_y*file_pitch, // !! use "read_blocks_y*file_pitch" and not 'pitch2', because 'pitch2' may be bigger !!
