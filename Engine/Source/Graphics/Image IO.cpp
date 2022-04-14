@@ -712,7 +712,7 @@ void Loader::update(Image &image)
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
       Int file_mip=file_base_mip+img_mip;
-      Int img_mip_size=wantMipSize(img_mip);
+      Int  img_mip_size=wantMipSize(img_mip);
       Mems<Byte> img_mip_data(img_mip_size);
       switch(load_mode)
       {

@@ -2722,20 +2722,6 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
    if(data)
    {
       Int valid_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType());
-   #if DEBUG && 0 // force HW size
-      #pragma message("!! Warning: Use this only for debugging !!")
-      Memt<Byte> temp;
-      {
-      Int valid_pitch   =ImagePitch (w(), h(), mip_map, hwType()),
-             hw_pitch   =softPitch  (          mip_map          ),
-             hw_blocks_y=softBlocksY(          mip_map          ),
-             hw_pitch2  =hw_pitch*hw_blocks_y;
-         temp.setNum(hw_pitch2);
-         Int copy_pitch=Min(hw_pitch, data_pitch, valid_pitch);
-         FREP(valid_blocks_y)Copy(temp.data()+hw_pitch*i, (Byte*)data+data_pitch*i, copy_pitch);
-         data=temp.data(); data_pitch=hw_pitch;
-      }
-   #endif
    #if DX11
       if(hw() && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()))
       {
@@ -2745,6 +2731,8 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
             case IMAGE_RT:
             case IMAGE_2D:
             case IMAGE_DS:
+            case IMAGE_3D:
+            case IMAGE_CUBE:
             {
                D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(mip_map, cube_face, mipMaps()), null, data, data_pitch, data_pitch2);
             }return true;
@@ -2755,7 +2743,7 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
           hw_blocks_y=softBlocksY(mip_map),
           hw_pitch2  =hw_pitch*hw_blocks_y,
           d          =Max(1, hwD()>>mip_map);
-      if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, 6) && D.created())
+      if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()) && D.created())
       {
       #if GL_ES
          if(hw() && softData())CopyImgData((Byte*)data, softData(mip_map, cube_face), data_pitch, hw_pitch, valid_blocks_y, hw_blocks_y, data_pitch*valid_blocks_y, hw_pitch2, d, d);
