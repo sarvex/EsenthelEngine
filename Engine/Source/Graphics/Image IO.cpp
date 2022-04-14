@@ -384,7 +384,7 @@ static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x,
 /******************************************************************************/
 struct Mip
 {
-   COMPRESS_TYPE compression;
+ //COMPRESS_TYPE compression;
    UInt          compressed_size,
                decompressed_size,
                  offset;
@@ -392,7 +392,7 @@ struct Mip
 struct Loader
 {
    ImageHeader   header;
-   COMPRESS_TYPE  mip_compression;
+ //COMPRESS_TYPE  mip_compression=COMPRESS_NONE;
    IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
    Int           file_faces;
@@ -417,11 +417,7 @@ struct Loader
       {
          Int file_pitch   =filePitch  (file_mip),
              file_blocks_y=fileBlocksY(file_mip);
-       C Mip &mip=mips[file_mip];
-         if(mip.compression)
-         {
-            // FIXME
-         }else
+     //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
          {
             LoadImgData(f, image.softData(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
          }
@@ -437,11 +433,7 @@ struct Loader
       Int  img_pitch   =wantPitch  (img_mip),
            img_blocks_y=wantBlocksY(img_mip),
            img_d       =Max(1, want_hw_size.z>> img_mip);
-    C Mip &mip=mips[file_mip];
-      if(mip.compression)
-      {
-         // FIXME
-      }else
+  //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
       {
          LoadImgData(f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
       }
@@ -473,15 +465,15 @@ struct Loader
       {
          Mip &mip=mips[i];
               mip.decompressed_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
-         if(  mip.compression=mip_compression)
+       /*if(  mip.compression=mip_compression)
          {
             f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
             {
                mip.compression    =COMPRESS_NONE;
                mip.compressed_size=mip.decompressed_size;
             }
-         }else mip.compressed_size=mip.decompressed_size;
-               mip.offset         =offset;
+         }else */mip.compressed_size=mip.decompressed_size;
+                 mip.offset         =offset;
          offset    +=mip.  compressed_size;
          image_size+=mip.decompressed_size;
       }
@@ -540,7 +532,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
          && direct
          && same_alignment
-         && !mip_compression   // no mip compression
+       //&& !mip_compression   // no mip compression
          && f.left()>=image_size // have all data
          )
          {
@@ -600,7 +592,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
          REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
-         if(direct && same_alignment && !mip_compression)
+         if(direct && same_alignment /*&& !mip_compression*/)
          {
             Byte *img_data_start=img_data;
             FREP(read_mips)
@@ -909,7 +901,6 @@ Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
             Unaligned(loader.header.type    , fh.type);
             Unaligned(loader.header.mode    , fh.mode);
            _Unaligned(loader.header.mip_maps, fh.mips);
-                      loader.mip_compression=COMPRESS_NONE;
             if(header){*header=loader.header; return true;}
             if(loader.load(T, name, can_del_f))goto ok;
          }
