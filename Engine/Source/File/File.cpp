@@ -331,12 +331,13 @@ File& File::readMem(CPtr data, Int size, Cipher *cipher)
    return T;
 }
 /******************************************************************************/
-Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
+Bool File::decompress(COMPRESS_TYPE compression, ULong decompressed_size, Bool stream)
 {
-   if(is())
+   if(!compression || end())return true; // no compression or nothing left to decompress
+   if(stream)
    {
       FileStream *stream=null;
-      switch(compress)
+      switch(compression)
       {
       #if SUPPORT_LZ4
          case COMPRESS_LZ4 : if(decompressed_size<=LZ4_BUF_SIZE      )goto mem; stream=Alloc<FileStreamLZ4>(); CTOR(*(FileStreamLZ4*)stream); break; // #LZ4Mem
@@ -360,11 +361,9 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
          goto error;
       }
    }
-   return false; // unsupported, but don't close, so can be processed otherwise
-
 mem:
    {
-      File temp; if(DecompressRaw(T, temp, compress, left(), decompressed_size, true) && temp.pos(0)){Swap(T, temp); return true;}
+      File temp; if(DecompressRaw(T, temp, compression, left(), decompressed_size, true) && temp.pos(0)){Swap(T, temp); return true;}
    }
 error:
    close(); return false;
@@ -589,16 +588,15 @@ Bool File::readTryRaw(C PakFile &file, C Pak &pak)
    }
    close(); return false;
 }
-Bool File::readTryEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processed)
+Bool File::readTryEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processed, Bool stream)
 {
    if(readTryRaw(file, pak))
    {
       Bool p=false;
       if(file.compression) // first decompress with original cipher
       {
+         if(!decompress(file.compression, file.data_size, stream))goto error;
          p=true; // we had to perform processing
-         File temp; if(!DecompressRaw(T, temp, file.compression, file.data_size_compressed, file.data_size, true))goto error;
-         Swap(T, temp); pos(0);
       }
       if(cipher) // if we want to use custom cipher on top of what's already available (don't check for 'cipher!=T._cipher' because we want to add new cipher on top of existing)
       {
@@ -621,7 +619,7 @@ Bool File::readTryEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processe
    if(processed)*processed=false; return false;
 }
 
-Bool File::readTryEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processed)
+Bool File::readTryEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
 {
  //if(name.is())) in most cases the 'name' is going to be specified
    {
@@ -632,12 +630,12 @@ Bool File::readTryEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processe
        C PakFile &pf =*file->file;
          locker.off(); // now when references have been copied, we can unlock
 
-         return readTryEx(pf, pak, cipher, processed);
+         return readTryEx(pf, pak, cipher, processed, stream);
       }
    }
    close(); if(processed)*processed=false; return false;
 }
-Bool File::readTryEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed)
+Bool File::readTryEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
 {
  //if(id.valid())) in most cases the 'id' is going to be specified
    {
@@ -648,24 +646,24 @@ Bool File::readTryEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed)
        C PakFile &pf =*file->file;
          locker.off(); // now when references have been copied, we can unlock
 
-         return readTryEx(pf, pak, cipher, processed);
+         return readTryEx(pf, pak, cipher, processed, stream);
       }
    }
    close(); if(processed)*processed=false; return false;
 }
 
-Bool File::readTryEx(C Str &name, Cipher *cipher, Bool *processed)
+Bool File::readTryEx(C Str &name, Cipher *cipher, Bool *processed, Bool stream)
 {
-                                      if(readTryEx   (name, Paks, cipher, processed))return true;
+                                      if(readTryEx   (name, Paks, cipher, processed, stream))return true;
 #if !ANDROID
    if(processed)*processed=false; return readStdTryEx(name, cipher);
 #else
                                   return readStdTryEx(name, cipher, UINT_MAX, processed);
 #endif
 }
-Bool File::readTryEx(C UID &id, Cipher *cipher, Bool *processed)
+Bool File::readTryEx(C UID &id, Cipher *cipher, Bool *processed, Bool stream)
 {
-                                      if(readTryEx   (                id , Paks, cipher, processed))return true;
+                                      if(readTryEx   (                id , Paks, cipher, processed, stream))return true;
 #if !ANDROID
    if(processed)*processed=false; return readStdTryEx(_EncodeFileName(id), cipher);
 #else

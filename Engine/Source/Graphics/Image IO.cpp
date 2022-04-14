@@ -1211,7 +1211,7 @@ Bool Image::save(C Str &name)C
 }
 Bool Image::load(C Str &name)
 {
-   File f; if(f.readTry(name))switch(f.getUInt())
+   File f; if(f.readTryEx(name, null, null, true))switch(f.getUInt()) // allow streaming
    {
       case CC4_IMG: return  loadData(f, null, name, true); // can delete 'f' because it's a temporary
       case CC4_GFX: return _loadData(f, null, name);
@@ -1337,7 +1337,7 @@ Bool ImageLoadHeader(File &f, ImageHeader &header)
 }
 Bool ImageLoadHeader(C Str &name, ImageHeader &header)
 {
-   File f; if(f.readTry(name))return ImageLoadHeader(f, header);
+   File f; if(f.readTryEx(name, null, null, true))return ImageLoadHeader(f, header); // allow streaming
    header.zero(); return false;
 }
 /******************************************************************************/
