@@ -1386,11 +1386,7 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                if(callback)callback->data(mem, size);
             }else
             {
-               if(d_pos>d.elms()-size) // if reading will exceed buffer size
-               {
-                  if(size>d.elms())goto error; // if reading doesn't fit in buffer size
-                  d_pos=0;
-               }
+               if(d_pos>d.elms()-size)d_pos=0; // if reading will exceed buffer size
                Byte *data=&d[d_pos];
                if(!src.getFast(data, size)
                || ZSTD_isError(ZSTD_insertBlock(ctx, data, size))
