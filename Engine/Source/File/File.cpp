@@ -724,7 +724,7 @@ Bool File::pos(Long pos)
             {
               _buf_len-=delta;
               _buf_pos+=delta;
-               T._pos=pos; return true; // don't seek (because file position is already in order with the buffer)
+                T._pos =pos  ; return true; // don't seek (because file position is already in order with the buffer)
             }
          }
          clearBuf(); // if we're going to seek then we need to clear the buffer if any
@@ -747,6 +747,32 @@ Bool File::pos(Long pos)
 
       case FILE_MEM :
       case FILE_MEMB: T._pos=pos; return true;
+
+      case FILE_STREAM:
+      {
+         if(pos<T._pos) // go back
+         {
+            Long delta=pos-T._pos;
+            if( -delta<=_buf_pos) // we skip backward and we have previous data in the buffer
+            {
+              _buf_len-=delta;
+              _buf_pos+=delta;
+                T._pos =pos  ; return true; // don't seek (because file position is already in order with the buffer)
+            }
+         }else // go forward
+         {
+            if(!_buf_len)pos_stream: _stream->get(T); // read from stream
+            if( _buf_len)
+            {
+               Int skip=Min(pos-T._pos, _buf_len);
+                T._pos+=skip;
+              _buf_len-=skip;
+              _buf_pos+=skip;
+               if(!_buf_len)return true; // if reached target
+               goto pos_stream; // read again
+            }
+         }
+      }break;
    }
    return false;
 }
