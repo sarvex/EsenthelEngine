@@ -542,7 +542,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             }
          }
 
-      /* Load all mip maps that are already in f.buffer without requiring to do any more reads
+      /* Load all mip maps that are already in file buffer without requiring to do any more reads
          but at least 1 (to make sure we have something, even if a read is needed)
          if(FILE_MEM || can't stream) then read all. Can stream if 'can_del_f' and 'image' belongs to 'Images' cache
          when creating image, use src data for fast create (can ignore smallest/biggest mip-maps)
