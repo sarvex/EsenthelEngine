@@ -400,9 +400,7 @@ struct Loader
    VecI          file_hw_size;
    VecI          want_hw_size;
    Mip           mips[MAX_MIP_MAPS];
-   File         &f;
-
-   Loader(File &f) : f(f) {}
+   File         *f;
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
    Int fileBlocksY(Int mip)C {return ImageBlocksY (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -419,9 +417,9 @@ struct Loader
              file_blocks_y=fileBlocksY(file_mip);
      //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
          {
-            LoadImgData(f, image.softData(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
+            LoadImgData(*f, image.softData(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
          }
-         return f.ok();
+         return f->ok();
       }
       return false;
    }
@@ -435,9 +433,9 @@ struct Loader
            img_d       =Max(1, want_hw_size.z>> img_mip);
   //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
       {
-         LoadImgData(f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
+         LoadImgData(*f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
       }
-      return f.ok();
+      return f->ok();
    }
    Bool load(Image &image, C Str &name, Bool can_del_f)
    {
@@ -467,7 +465,7 @@ struct Loader
               mip.decompressed_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
        /*if(  mip.compression=mip_compression)
          {
-            f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
+            f->decUIntV(mip.compressed_size); if(!mip.compressed_size)
             {
                mip.compression    =COMPRESS_NONE;
                mip.compressed_size=mip.decompressed_size;
@@ -477,8 +475,8 @@ struct Loader
          offset    +=mip.  compressed_size;
          image_size+=mip.decompressed_size;
       }
-      if(!f.ok())return false; // if any 'compressed_size' failed to load
-      if(!want.is()){image.del(); return can_del_f || f.skip(image_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
+      if(!f->ok())return false; // if any 'compressed_size' failed to load
+      if(!want.is()){image.del(); return can_del_f || f->skip(image_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
 
       // shrink
       for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
@@ -514,7 +512,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          base_file_mip_size.set(Max(1, base_file_mip_size.x>>1), Max(1, base_file_mip_size.y>>1), Max(1, base_file_mip_size.z>>1));
       }
 
-      Long f_end=f.pos()+image_size;
+      Long f_end=f->pos()+image_size;
       if(base_file_mip_size==want.size) // if found exact mip match
       {
          const VecI base_file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
@@ -525,20 +523,20 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
          // try to create directly from file memory
-         if( f._type==FILE_MEM // file data is already available and in continuous memory
-         && !f._cipher         // no cipher
+         if( f->_type==FILE_MEM // file data is already available and in continuous memory
+         && !f->_cipher         // no cipher
          && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
          && direct
          && same_alignment
        //&& !mip_compression   // no mip compression
-         && f.left()>=image_size // have all data
+         && f->left()>=image_size // have all data
          )
          {
-            REP(want.mip_maps)mip_data[i]=(Byte*)f.memFast()+mips[base_file_mip+i].offset;
+            REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[base_file_mip+i].offset;
             if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
             {
                image.adjustInfo(image.w(), image.h(), image.d(), want.type);
-               return can_del_f || f.skip(image_size); // skip image data, no need to seek if 'f' isn't needed later
+               return can_del_f || f->skip(image_size); // skip image data, no need to seek if 'f' isn't needed later
             }
          }
 
@@ -549,16 +547,16 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          if there are missing smaller mip-maps than read, then make them with 'updateMipMaps'
          schedule loading of remaining mip-maps */
          Int can_read_mips=Min(header.mip_maps-base_file_mip, want.mip_maps); // mips that we can read
-         if(!f.skip(mips[base_file_mip+can_read_mips-1].offset))return false; // #MipOrder
+         if(!f->skip(mips[base_file_mip+can_read_mips-1].offset))return false; // #MipOrder
 
          Bool stream=false;
          Int  read_mips=0;
-         if(f._type!=FILE_MEM // if file not in memory
-         && f._type!=FILE_MEMB
+         if(f->_type!=FILE_MEM // if file not in memory
+         && f->_type!=FILE_MEMB
          && can_del_f)        // and can delete 'f' file
          {
-            Int buffer=f._buf_len; // how much data in the buffer
-            if(f.left()>buffer) // only if there's still more data left to read (we haven't already read the entire file)
+            Int buffer=f->_buf_len; // how much data in the buffer
+            if(f->left()>buffer) // only if there's still more data left to read (we haven't already read the entire file)
             {
                REP(can_read_mips) // #MipOrder, start from the smallest
                {
@@ -600,7 +598,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                mip_data[img_mip]=img_data;
                img_data+=mips[file_mip].decompressed_size; // can use file mip here only because it's exactly the same as image mip
             }
-            if(!f.getFast(img_data_start, img_data-img_data_start))return false;
+            if(!f->getFast(img_data_start, img_data-img_data_start))return false;
          }else
          {
             Image soft; // declare outside to reduce overhead
@@ -651,14 +649,14 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             return true;
          }else
          {
-            if(can_del_f || f.pos(f_end))return true; // no need to seek if 'f' isn't needed later
+            if(can_del_f || f->pos(f_end))return true; // no need to seek if 'f' isn't needed later
          }
       }else // load the base mip, and re-create the whole image out of it
       {
          Image soft;
-         if(f.skip(mips[base_file_mip].offset))
+         if(f->skip(mips[base_file_mip].offset))
             if(load(base_file_mip, soft))
-               if(can_del_f || f.pos(f_end)) // no need to seek if 'f' isn't needed later
+               if(can_del_f || f->pos(f_end)) // no need to seek if 'f' isn't needed later
                   return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
       }
       return false;
@@ -899,12 +897,13 @@ Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
       {
          f>>fh; if(f.ok())
          {
-            Loader loader(f);
+            Loader loader;
             Unaligned(loader.header.size    , fh.size);
             Unaligned(loader.header.type    , fh.type);
             Unaligned(loader.header.mode    , fh.mode);
            _Unaligned(loader.header.mip_maps, fh.mips);
             if(header){*header=loader.header; return true;}
+            loader.f=&f;
             if(loader.load(T, name, can_del_f))goto ok;
          }
       }break;
