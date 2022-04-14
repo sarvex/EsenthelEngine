@@ -410,7 +410,7 @@ struct Loader
    Int wantBlocksY(Int mip)C {return ImageBlocksY (want_hw_size.x, want_hw_size.y,                 mip, want_hw_type);}
    Int wantMipSize(Int mip)C {return ImageFaceSize(want_hw_size.x, want_hw_size.y, want_hw_size.z, mip, want_hw_type)*want_faces;}
 
-   Bool load(Image &image, Int file_mip)C
+   Bool load(Int file_mip, Image &image)C
    {
       VecI file_mip_size(Max(1, header.size.x>>file_mip), Max(1, header.size.y>>file_mip), Max(1, header.size.z>>file_mip));
       if(image.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, file_mode_soft, 1))
@@ -614,7 +614,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                   if(!load(file_mip, img_mip, img_data))return false;
                }else
                {
-                  if(!load(soft, file_mip))return false;
+                  if(!load(file_mip, soft))return false;
                   if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
                   Int img_pitch   =wantPitch  (img_mip);
                   Int img_blocks_y=wantBlocksY(img_mip);
@@ -657,7 +657,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       {
          Image soft;
          if(f.skip(mips[base_file_mip].offset))
-            if(load(soft, base_file_mip))
+            if(load(base_file_mip, soft))
                if(can_del_f || f.pos(f_end)) // no need to seek if 'f' isn't needed later
                   return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
       }
