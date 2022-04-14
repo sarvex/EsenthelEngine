@@ -356,6 +356,7 @@ struct FileStreamZSTD : FileStream
 {
    ZSTD_DCtx_s ctx;
    Bool ok;
+   UInt buf_size;
 
    // !! DECLARE AS LAST SO THIS CAN BE CUSTOM SIZED BASED ON MEMORY ALLOCATION FOR CLASS OBJECT !!
 #pragma warning(push)

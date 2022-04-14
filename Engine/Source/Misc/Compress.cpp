@@ -987,11 +987,7 @@ void FileStreamLZ4::get(File &main) // !! LZ4 requires to keep previous decompre
          if(  d_pos>SIZE(buf)-LZ4_BUF_SIZE)d_pos=0; // if writing will exceed buffer size (this assumes that up to LZ4_BUF_SIZE can be written at one time)
          Byte *data=buf+d_pos;
          auto  size=LZ4_decompress_safe_continue(&ctx, (char*)s, (char*)data, chunk, SIZE(buf)-d_pos);
-         if(   size>0)
-         {
-            main._buf_len+=size;
-            return;
-         }
+         if(   size>0){main._buf_len+=size; return;}
       }
       ok=false;
    }
@@ -1417,6 +1413,30 @@ void FileStreamZSTD::get(File &main) // !! ZSTD requires to keep previous decomp
    DEBUG_ASSERT(main._buf_len==0, "main._buf_len==0"); // this can be called only if buffer was fully consumed
    if(ok)
    {
+      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, compressed_size))
+      UInt chunk; src.decUIntV(chunk); if(src.ok())
+      {
+         Int &d_pos=main._buf_pos;
+         if(chunk) // compressed
+         {
+            if(chunk<=SIZE(s) && src.getFast(s, chunk)) // need exactly 'chunk' amount
+            {
+               if(d_pos>buf_size-ZSTD_BLOCKSIZE_MAX)d_pos=0; // if decompressing will exceed buffer size
+               Byte *data=buf+d_pos;
+               auto  size=ZSTD_decompressBlock(&ctx, data, buf_size-d_pos, s, chunk);
+               if(!ZSTD_isError(size))
+                  {main._buf_len+=size; return;}
+            }
+         }else // un-compressed
+         {
+            Int size=Min(ZSTD_BLOCKSIZE_MAX, src.left());
+            if(d_pos>buf_size-size)d_pos=0; // if reading will exceed buffer size
+            Byte *data=buf+d_pos;
+            if(src.getFast(data, size)
+            && !ZSTD_isError(ZSTD_insertBlock(&ctx, data, size)))
+               {main._buf_len+=size; return;}
+         }
+      }
       ok=false;
    }
 }

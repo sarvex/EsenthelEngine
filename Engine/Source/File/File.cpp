@@ -342,7 +342,7 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
          case COMPRESS_LZ4 : if(decompressed_size<=LZ4_BUF_SIZE      )goto mem; stream=Alloc<FileStreamLZ4>(); CTOR(*(FileStreamLZ4*)stream); break; // #LZ4Mem
       #endif
       #if SUPPORT_ZSTD
-         case COMPRESS_ZSTD: if(decompressed_size<=ZSTD_BLOCKSIZE_MAX)goto mem; UInt buf_size=ZSTDDecompressBufSize(decompressed_size); stream=(FileStreamZSTD*)Alloc(SIZE(FileStreamZSTD)+buf_size); CTOR(*(FileStreamZSTD*)stream); break; // #ZSTDMem
+         case COMPRESS_ZSTD: if(decompressed_size<=ZSTD_BLOCKSIZE_MAX)goto mem; UInt buf_size=ZSTDDecompressBufSize(decompressed_size); FileStreamZSTD *zstd=(FileStreamZSTD*)Alloc(SIZE(FileStreamZSTD)+buf_size); CTOR(*zstd); zstd->buf_size=buf_size; stream=zstd; break; // #ZSTDMem
       #endif
       }
       if(stream)
@@ -352,7 +352,7 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
             Swap(T, stream->src);
            _type=FILE_STREAM;
            _size=_full_size=decompressed_size;
-           _stream=stream;
+           _stream    =stream;
            _stream_buf=buf;
             return true;
          }
@@ -1942,7 +1942,7 @@ SHA2::Hash File::sha2(Long max_size)
 // FILE STREAM
 /******************************************************************************/
 UInt FileStreamLZ4 ::memUsage()C {return SIZE(T)+super::memUsage();}
-UInt FileStreamZSTD::memUsage()C {return SIZE(T)+super::memUsage();}
+UInt FileStreamZSTD::memUsage()C {return SIZE(T)+super::memUsage()+buf_size;}
 /******************************************************************************/
 // DEPRECATED, DO NOT USE
 /******************************************************************************/
