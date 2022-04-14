@@ -1156,10 +1156,18 @@ static ZSTD_customMem ZSTDMem={CompressAlloc, CompressFree, null};
 
 static UIntPtr ZSTDSize(UIntPtr size) {return ZSTD_compressBound(size);}
 
-static UInt ZSTDDictSizeLog2(Long size)
+static UInt ZSTDDictSizeLog2(Long size) // returns log2(window size)
 {
    return (size<0) ? ZSTD_WINDOWLOG_MAX_32 // if the size is unknown, then use max possible dict size
                    : Mid(Log2Ceil(Unsigned(size)), ZSTD_WINDOWLOG_MIN, ZSTD_WINDOWLOG_MAX_32); // always limit to ZSTD_WINDOWLOG_MAX_32 ignoring ZSTD_WINDOWLOG_MAX_64 to keep consistency for both platforms
+}
+static UInt ZSTDDictSize(Long size) // window size
+{
+   return 1<<ZSTDDictSizeLog2(size);
+}
+UInt ZSTDDecompressBufSize(Long decompressed_size)
+{
+   return ZSTDDictSize(decompressed_size)+ZSTD_BLOCKSIZE_MAX;
 }
 /******************************************************************************
 static Bool ZSTDCompressFrame(CPtr src, UIntPtr src_size, Ptr dest, UIntPtr &dest_size, Int compression_level) // compress data, 'src'=source buffer, 'src_size'=source size, 'dest'=destination buffer, 'dest_size'=destination size, before calling it should be set to maximum 'dest' buffer capacity, after calling it'll be set to compressed size, false on fail
@@ -1294,29 +1302,25 @@ NOINLINE static Bool ZSTDCompress(File &src, File &dest, Int compression_level, 
       params.fParams.   noDictIDFlag=true;
       params.fParams.   checksumFlag=true;
    #endif
-   #if ZSTD_WINDOWLOG_SAVE
-      dest.putByte(params.cParams.windowLog);
-   #else
       params.cParams.windowLog=ZSTDDictSizeLog2(src.left());
-   #endif
       if(!ZSTD_isError(ZSTD_compressBegin_advanced(ctx, null, 0, params, src.left())))
       {
-         Bool single=(src.left()<=ZSTD_BLOCKSIZE_MAX);
+         Bool single=(src.left()<=ZSTD_BLOCKSIZE_MAX); // #ZSTDMem
        C Int  window_size=1<<params.cParams.windowLog;
-         Memt<Byte> s, d; Int s_pos=0;
-         s.setNum(         Min(window_size+ZSTD_BLOCKSIZE_MAX, src.left()) );
-         d.setNum(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, src.left())));
+         Memt<Byte> sm, dm; Int s_pos=0;
+         sm.setNum(         Min(window_size+ZSTD_BLOCKSIZE_MAX, src.left()) ); Byte *s=sm.data();
+         dm.setNum(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, src.left()))); Byte *d=dm.data();
          for(; !src.end(); )
          {
-            Int read=Min(ZSTD_BLOCKSIZE_MAX, Min(s.elms(), src.left()));
-            if(s_pos>s.elms()-read)s_pos=0; // if reading will exceed buffer size
-            Byte *data=&s[s_pos];
+            Int read=Min(ZSTD_BLOCKSIZE_MAX, Min(sm.elms(), src.left()));
+            if(s_pos>sm.elms()-read)s_pos=0; // if reading will exceed buffer size
+            Byte *data=s+s_pos;
             read=src.getReturnSize(data, read); if(read<=0)goto error;
             if(callback)callback->data(data, read);
-            auto size=ZSTD_compressBlock(ctx, d.data(), d.elms(), data, read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
+            auto size=ZSTD_compressBlock(ctx, d, dm.elms(), data, read); if(ZSTD_isError(size))goto error; // 'ZSTD_compressBlock' returns 0 if failed to compress
             dest.cmpUIntV(single ? (size>0) : size); // for single we store (compressed ? 1 : 0), for multi we store (compressed ? size : 0)
-            if(size>0){if(!dest.put(d.data(), size))goto error;} // compressed
-            else      {if(!dest.put(  data  , read))goto error;} // failed to compress
+            if(size>0){if(!dest.put(d   , size))goto error;} // compressed
+            else      {if(!dest.put(data, read))goto error;} // failed to compress
             s_pos+=read;
          }
          if(dest.ok())ok=true;
@@ -1336,14 +1340,10 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
       Int  cipher_offset=dest.posCipher();
       Long start=dest.pos();
       Ptr  mem=dest.memFast();
-      Bool single=(decompressed_size<=ZSTD_BLOCKSIZE_MAX);
-   #if ZSTD_WINDOWLOG_SAVE
-    C Int  window_size=1<<src.getByte();
-   #else
-    C Int  window_size=1<<ZSTDDictSizeLog2(decompressed_size);
-   #endif
-      Memt<Byte> s, d; s.setNum(Min((Int)ZSTDSize(ZSTD_BLOCKSIZE_MAX), compressed_size)); Int d_pos=0;
-      Bool direct=MemDecompress(dest, decompressed_size); if(!direct)d.setNum(window_size+ZSTD_BLOCKSIZE_MAX); // here don't apply "Min(decompressed_size,", so "if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)" doesn't wrap the 'd_pos' to 0
+      Bool single=(decompressed_size<=ZSTD_BLOCKSIZE_MAX); // #ZSTDMem
+      Memt<Byte> sm, dm; sm.setNum(Min((Int)ZSTDSize(ZSTD_BLOCKSIZE_MAX), compressed_size)); Int d_pos=0;
+      Bool direct=MemDecompress(dest, decompressed_size); if(!direct)dm.setNum(ZSTDDecompressBufSize(decompressed_size)); // here don't apply "Min(decompressed_size,", so "if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)" doesn't wrap the 'd_pos' to 0
+      Byte *s=sm.data(), *d=dm.data();
       for(; !src.end(); )
       {
          UInt chunk; src.decUIntV(chunk);
@@ -1354,18 +1354,18 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                if(chunk>1)goto error; // for single 'chunk' can be either 0 or 1
                chunk=src.left();
             }
-            if(chunk>s.elms())goto error;
-            if(!src.getFast(s.data(), chunk))goto error; // need exactly 'chunk' amount
+            if(chunk>sm.elms())goto error;
+            if(!src.getFast(s, chunk))goto error; // need exactly 'chunk' amount
             if(direct)
             {
-               auto size=ZSTD_decompressBlock(ctx, dest.memFast(), dest.left(), s.data(), chunk); if(ZSTD_isError(size))goto error;
+               auto size=ZSTD_decompressBlock(ctx, dest.memFast(), dest.left(), s, chunk); if(ZSTD_isError(size))goto error;
                if(callback)callback->data(dest.memFast(), size);
                if(!dest.skip(size))goto error; // can't use 'MemWrote' and 'Cipher' here because ZSTD may still access previously decompressed data, instead just skip, and do Cipher just one time at the end
             }else
             {
-               if(d_pos>d.elms()-ZSTD_BLOCKSIZE_MAX)d_pos=0; // if decompressing will exceed buffer size
-               Byte *data=&d[d_pos];
-               auto size=ZSTD_decompressBlock(ctx, data, d.elms()-d_pos, s.data(), chunk); if(ZSTD_isError(size))goto error;
+               if(d_pos>dm.elms()-ZSTD_BLOCKSIZE_MAX)d_pos=0; // if decompressing will exceed buffer size
+               Byte *data=d+d_pos;
+               auto size=ZSTD_decompressBlock(ctx, data, dm.elms()-d_pos, s, chunk); if(ZSTD_isError(size))goto error;
                if(callback)callback->data(data, size);
                if(!dest.put(data, size))goto error; d_pos+=size;
             }
@@ -1381,8 +1381,8 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
                if(callback)callback->data(mem, size);
             }else
             {
-               if(d_pos>d.elms()-size)d_pos=0; // if reading will exceed buffer size
-               Byte *data=&d[d_pos];
+               if(d_pos>dm.elms()-size)d_pos=0; // if reading will exceed buffer size
+               Byte *data=d+d_pos;
                if(!src.getFast(data, size)
                || ZSTD_isError(ZSTD_insertBlock(ctx, data, size))
                || !dest.put(data, size))goto error;
@@ -1461,12 +1461,12 @@ NOINLINE static Bool BrotliDecompressMem(File &src, File &dest, Long compressed_
 NOINLINE static Bool BrotliCompress(File &src, File &dest, Int compression_level)
 {
    Bool ok=false;
-   if(BrotliEncoderState *brotli=BrotliEncoderCreateInstance(CompressAlloc, CompressFree, null))
+   if(BrotliEncoderState *ctx=BrotliEncoderCreateInstance(CompressAlloc, CompressFree, null))
    {
-      BrotliEncoderSetParameter(brotli, BROTLI_PARAM_MODE   , BROTLI_MODE_GENERIC);
-      BrotliEncoderSetParameter(brotli, BROTLI_PARAM_QUALITY, Mid(compression_level, 0, 11));
-      BrotliEncoderSetParameter(brotli, BROTLI_PARAM_LGWIN  , BrotliDictSizeLog2(src.left()));
-    //BrotliEncoderSetParameter(brotli, BROTLI_PARAM_LGBLOCK, lgblock);
+      BrotliEncoderSetParameter(ctx, BROTLI_PARAM_MODE   , BROTLI_MODE_GENERIC);
+      BrotliEncoderSetParameter(ctx, BROTLI_PARAM_QUALITY, Mid(compression_level, 0, 11));
+      BrotliEncoderSetParameter(ctx, BROTLI_PARAM_LGWIN  , BrotliDictSizeLog2(src.left()));
+    //BrotliEncoderSetParameter(ctx, BROTLI_PARAM_LGBLOCK, lgblock);
 
       Byte in[BUF_SIZE], out[BUF_SIZE];
       for(;;)
@@ -1478,7 +1478,7 @@ NOINLINE static Bool BrotliCompress(File &src, File &dest, Int compression_level
          {
                     avail_out=SIZE(out);
             uint8_t *next_out=     out ;
-            if(!BrotliEncoderCompressStream(brotli, src.end() ? BROTLI_OPERATION_FINISH : BROTLI_OPERATION_PROCESS, &avail_in, &next_in, &avail_out, &next_out, null))goto error;
+            if(!BrotliEncoderCompressStream(ctx, src.end() ? BROTLI_OPERATION_FINISH : BROTLI_OPERATION_PROCESS, &avail_in, &next_in, &avail_out, &next_out, null))goto error;
             if(!dest.put(out, SIZE(out)-avail_out))goto error;
          }while(avail_out==0);
          if(avail_in )goto error; // if there's still some input left, then it failed
@@ -1486,14 +1486,14 @@ NOINLINE static Bool BrotliCompress(File &src, File &dest, Int compression_level
          if(read<=0  )goto error; // if not end of 'src' but failed to read anything, then it failed
       }
    error:
-      BrotliEncoderDestroyInstance(brotli);
+      BrotliEncoderDestroyInstance(ctx);
    }
    return ok;
 }
 NOINLINE static Bool BrotliDecompress(File &src, File &dest, Long compressed_size, Long decompressed_size)
 {
    Bool ok=false;
-   if(BrotliState *brotli=BrotliCreateState(CompressAlloc, CompressFree, null))
+   if(BrotliState *ctx=BrotliCreateState(CompressAlloc, CompressFree, null))
    {
       Long  start=dest.pos();
       Byte  in[BUF_SIZE], out[BUF_SIZE];
@@ -1516,7 +1516,7 @@ NOINLINE static Bool BrotliDecompress(File &src, File &dest, Long compressed_siz
                avail_out=SIZE(out);
                 next_out=     out ;
             }
-            result=BrotliDecompressStream(&avail_in, &next_in, &avail_out, &next_out, null, brotli);
+            result=BrotliDecompressStream(&avail_in, &next_in, &avail_out, &next_out, null, ctx);
             if(result==BROTLI_RESULT_ERROR)goto error;
             if(direct ? !MemWrote(dest, dest.left()-avail_out)
                       : !dest.put(out , SIZE(out)  -avail_out))goto error;
@@ -1525,7 +1525,7 @@ NOINLINE static Bool BrotliDecompress(File &src, File &dest, Long compressed_siz
       }
    error:
       src.unlimit(temp_size, temp_offset);
-      BrotliDestroyState(brotli);
+      BrotliDestroyState(ctx);
    }
    return ok;
 }
@@ -1554,7 +1554,7 @@ NOINLINE static Bool LZHAMCompress(File &src, File &dest, Int compression_level,
    comp_params.m_compress_flags|=LZHAM_COMP_FLAG_DETERMINISTIC_PARSING; // make sure that compressed data is always the same
    comp_params.m_max_helper_threads=(multi_threaded ? -1 : 0);
 
-   if(lzham_compress_state_ptr cs=lzham_lib_compress_init(&comp_params))
+   if(lzham_compress_state_ptr ctx=lzham_lib_compress_init(&comp_params))
    {
       Byte in[BUF_SIZE], out[BUF_SIZE], *next_in; Int avail_in=0;
       for(;;)
@@ -1568,7 +1568,7 @@ NOINLINE static Bool LZHAMCompress(File &src, File &dest, Int compression_level,
          lzham_compress_status_t status;
          do{
             size_t in_size=avail_in, out_size=SIZE(out);
-            status=lzham_lib_compress2(cs, next_in, &in_size, out, &out_size, src.end() ? LZHAM_FINISH : LZHAM_NO_FLUSH);
+            status=lzham_lib_compress2(ctx, next_in, &in_size, out, &out_size, src.end() ? LZHAM_FINISH : LZHAM_NO_FLUSH);
             if(status>=LZHAM_COMP_STATUS_FIRST_FAILURE_CODE)goto error;
             if(!dest.put(out, out_size))goto error;
              next_in+=in_size;
@@ -1577,7 +1577,7 @@ NOINLINE static Bool LZHAMCompress(File &src, File &dest, Int compression_level,
          if(!avail_in && status!=LZHAM_COMP_STATUS_NOT_FINISHED && src.end()){if(status==LZHAM_COMP_STATUS_SUCCESS)ok=true; break;}
       }
    error:
-      lzham_lib_compress_deinit(cs);
+      lzham_lib_compress_deinit(ctx);
    }
    return ok;
 }
@@ -1592,7 +1592,7 @@ NOINLINE static Bool LZHAMDecompress(File &src, File &dest, Long compressed_size
    comp_params.m_dict_size_log2=LZHAMDictSizeLog2(decompressed_size);
    if(direct)comp_params.m_decompress_flags=LZHAM_DECOMP_FLAG_OUTPUT_UNBUFFERED;
 
-   if(lzham_decompress_state_ptr cs=lzham_lib_decompress_init(&comp_params))
+   if(lzham_decompress_state_ptr ctx=lzham_lib_decompress_init(&comp_params))
    {
       Long start=dest.pos();
      ULong temp_size, temp_offset; src.limit(temp_size, temp_offset, compressed_size);
@@ -1617,7 +1617,7 @@ NOINLINE static Bool LZHAMDecompress(File &src, File &dest, Long compressed_size
                out_buf =     out ;
                out_size=SIZE(out);
             }
-            status=lzham_lib_decompress(cs, next_in, &in_size, (Byte*)out_buf, &out_size, src.end());
+            status=lzham_lib_decompress(ctx, next_in, &in_size, (Byte*)out_buf, &out_size, src.end());
             if(status>=LZHAM_DECOMP_STATUS_FIRST_FAILURE_CODE)goto error;
             if(callback)callback->data(out_buf, out_size);
             if(direct ? !MemWrote(dest, out_size) : !dest.put(out, out_size))goto error;
@@ -1628,7 +1628,7 @@ NOINLINE static Bool LZHAMDecompress(File &src, File &dest, Long compressed_size
       }
    error:
       src.unlimit(temp_size, temp_offset);
-      lzham_lib_decompress_deinit(cs);
+      lzham_lib_decompress_deinit(ctx);
    }
    return ok;
 }
@@ -1956,9 +1956,7 @@ UInt CompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncompr
          if(uncompressed_size<0)uncompressed_size=LONG_MAX; // if size is unknown then use max possible
          U64 srcSize=(uncompressed_size ? uncompressed_size : 1); // don't use zero, because ZSTD treats it as unknown
          ZSTD_compressionParameters params=ZSTD_getCParams(Mid(compression_level, ZSTD_minCLevel(), ZSTD_maxCLevel()), srcSize, 0);
-      #if !ZSTD_WINDOWLOG_SAVE
          params.windowLog=ZSTDDictSizeLog2(uncompressed_size);
-      #endif
        C Int window_size=1<<params.windowLog;
          return MemtMemUsage(         Min(window_size+ZSTD_BLOCKSIZE_MAX, uncompressed_size) ) // Memt s;
                +MemtMemUsage(ZSTDSize(Min(            ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt d;
@@ -2029,15 +2027,8 @@ UInt DecompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncom
       case COMPRESS_ZSTD:
       {
          if(uncompressed_size<0)uncompressed_size=LONG_MAX; // if size is unknown then use max possible
-      #if ZSTD_WINDOWLOG_SAVE
-         U64 srcSize=(uncompressed_size ? uncompressed_size : 1); // don't use zero, because ZSTD treats it as unknown
-         ZSTD_compressionParameters params=ZSTD_getCParams(Mid(compression_level, ZSTD_minCLevel(), ZSTD_maxCLevel()), srcSize, 0);
-       C Int window_size=1<<params.windowLog;
-      #else
-       C Int window_size=1<<ZSTDDictSizeLog2(uncompressed_size);
-      #endif
          return MemtMemUsage(ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, uncompressed_size))) // Memt s;
-               +MemtMemUsage( window_size+ZSTD_BLOCKSIZE_MAX                     ) // Memt d;
+               +MemtMemUsage(ZSTDDecompressBufSize(           uncompressed_size))  // Memt d;
                +ZSTD_estimateDCtxSize();                                           // ZSTD_DCtx
       }
    #endif
