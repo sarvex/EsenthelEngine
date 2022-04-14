@@ -463,9 +463,9 @@ static Bool StreamLoadFunc(Thread &thread)
 void ShutStreamLoads()
 {
    StreamLoadThread.stop(); // request stop
-   StreamLoadEvent.on(); // wake up to exit
-   StreamLoadThread.del(); // delete
-   StreamLoads.del(); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
+   StreamLoadEvent .on  (); // wake up to exit
+   StreamLoadThread.del (); // delete
+   StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
 }
 /******************************************************************************/
 Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
