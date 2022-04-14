@@ -447,11 +447,12 @@ struct StreamLoad
    File     f;
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
-static SyncEvent                  StreamLoadsEvent;
-static Thread                     StreamLoadsThread;
-static Bool StreamLoadsFunc(Thread &thread)
+static SyncEvent                  StreamLoadEvent;
+static Thread                     StreamLoadThread;
+/******************************************************************************/
+static Bool StreamLoadFunc(Thread &thread)
 {
-   StreamLoadsEvent.wait();
+   StreamLoadEvent.wait();
    for(; StreamLoads.elms(); )
    {
       StreamLoad sl; StreamLoads.swapPop(sl);
@@ -461,9 +462,9 @@ static Bool StreamLoadsFunc(Thread &thread)
 }
 void ShutStreamLoads()
 {
-   StreamLoadsThread.stop(); // request stop
-   StreamLoadsEvent.on(); // wake up to exit
-   StreamLoadsThread.del(); // delete
+   StreamLoadThread.stop(); // request stop
+   StreamLoadEvent.on(); // wake up to exit
+   StreamLoadThread.del(); // delete
    StreamLoads.del(); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
 }
 /******************************************************************************/
@@ -681,9 +682,9 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                  sl.image.setContained(&image); // !! can use unsafe 'setContained' only because we've already checked 'Images.has' above
             Swap(sl.f     , *f);
             Swap(sl.loader,  T); // 'sl.loader.f' will be adjusted in the processing thread
-            if(!StreamLoadsThread.created())StreamLoadsThread.create(StreamLoadsFunc, null, 0, false, "EE.StreamLoader");
+            if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad");
          }
-         StreamLoadsEvent.on();
+         StreamLoadEvent.on();
          return true;
       }else
       {
