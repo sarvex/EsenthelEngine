@@ -218,8 +218,8 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
 }
 /******************************************************************************/
 // SAVE / LOAD
-/******************************************************************************
-Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
+/******************************************************************************/
+Bool Image::saveData(File &f)C
 {
    Int compression_level=255; Bool multi_threaded=false;
    IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
@@ -228,7 +228,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
    || mode()   >=IMAGE_RT   )return false; // don't allow saving private modes
    ASSERT(IMAGE_2D==0 && IMAGE_3D==1 && IMAGE_CUBE==2 && IMAGE_SOFT==3 && IMAGE_SOFT_CUBE==4 && IMAGE_RT==5);
 
-   f.putMulti(Byte(2), size3(), file_type, mode(), Byte(mipMaps()), compress); // version
+   f.putMulti(Byte(2), size3(), file_type, mode(), Byte(mipMaps())); // version
 
    const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
    const Bool same_type   =CanDoRawCopy(hwType(), file_type, ignore_gamma);
@@ -240,7 +240,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
 
    Image soft; // keep outside to reduce overhead
 
-   if(compress)
+   /*if(mip_compression)
    {
       Bool direct=(soft_same_type && file_hw_size==hwSize3()); // if software, same type and HW size, we can read from directly
       UInt data_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, file_type, mode(), mipMaps()), // this is size to store compressed image data that we're going to write to the file, make as big as total uncompressed data, if would need more than that, then disable compression and save uncompressed
@@ -260,7 +260,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
          if(direct)
          {
             src=softData(mip);
-            // FIXME test
+            TEST THIS
          }else
          {
             src=temp;
@@ -269,7 +269,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
                 file_d       =         Max(file_hw_size.z>>mip, 1);
             if(soft_same_type)
             {
-            // FIXME test
+               TEST THIS
                Int image_pitch   =softPitch  (mip),
                    image_blocks_y=softBlocksY(mip),
                    image_d       =Max(hwD()>>mip, 1);
@@ -307,7 +307,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
       UInt compressed_size=save_cur-save;
       DEBUG_ASSERT(compressed_size<=data_size, "compressed_size<=data_size");
       f.put(save, compressed_size);
-   }else
+   }else*/
    if(soft_same_type) // software with matching type, we can save without locking
    {
       if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
@@ -374,6 +374,7 @@ Bool Image::_saveData(File &f, COMPRESS_TYPE compress)C
    return f.ok();
 }
 /******************************************************************************/
+#if 0 // FIXME
 Bool Image::saveData(File &f)C
 {
    IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
@@ -452,6 +453,7 @@ Bool Image::saveData(File &f)C
    }
    return f.ok();
 }
+#endif
 /******************************************************************************/
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
@@ -459,7 +461,7 @@ static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x,
 /******************************************************************************/
 struct Mip
 {
-   COMPRESS_TYPE cmpr;
+   COMPRESS_TYPE compression;
    UInt          compressed_size,
                decompressed_size,
                  offset;
@@ -471,7 +473,7 @@ Bool ImageHeader::is()C
 struct Loader
 {
    ImageHeader   header;
-   COMPRESS_TYPE file_cmpr;
+   COMPRESS_TYPE  mip_compression;
    IMAGE_TYPE    want_hw_type;
    IMAGE_MODE    file_mode_soft;
    Int           file_faces;
@@ -497,7 +499,7 @@ struct Loader
          Int file_pitch   =filePitch  (file_mip),
              file_blocks_y=fileBlocksY(file_mip);
        C Mip &mip=mips[file_mip];
-         if(mip.cmpr)
+         if(mip.compression)
          {
             // FIXME
          }else
@@ -517,7 +519,7 @@ struct Loader
            img_blocks_y=wantBlocksY(img_mip),
            img_d       =Max(1, want_hw_size.z>> img_mip);
     C Mip &mip=mips[file_mip];
-      if(mip.cmpr)
+      if(mip.compression)
       {
          // FIXME
       }else
@@ -552,11 +554,11 @@ struct Loader
       {
          Mip &mip=mips[i];
               mip.decompressed_size=ImageFaceSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, i, header.type)*file_faces;
-         if(  mip.cmpr=file_cmpr)
+         if(  mip.compression=mip_compression)
          {
             f.decUIntV(mip.compressed_size); if(!mip.compressed_size)
             {
-               mip.cmpr           =COMPRESS_NONE;
+               mip.compression    =COMPRESS_NONE;
                mip.compressed_size=mip.decompressed_size;
             }
          }else mip.compressed_size=mip.decompressed_size;
@@ -565,7 +567,7 @@ struct Loader
          image_size+=mip.decompressed_size;
       }
       if(!f.ok())return false; // if any 'compressed_size' failed to load
-      if(!want.is()){image.del(); return f.skip(image_size);} // check before shrinking, because "Max(1" it might validate it
+      if(!want.is()){image.del(); return can_del_f || f.skip(image_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
 
       // shrink
       for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
@@ -607,7 +609,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       // try to create directly from file memory (this can be used if image is not compressed per mip maps separately, but instead was compressed as a whole)
       if( f._type==FILE_MEM // file data is already available and in continuous memory
       && !f._cipher         // no cipher
-      && !file_cmpr         // no compression
+      && !mip_compression   // no mip compression
       && base_file_mip_size==want.size // found exact mip match
       && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
       && same_type              // type is the same
@@ -622,7 +624,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
             {
                image.adjustInfo(image.w(), image.h(), image.d(), want.type);
-               return f.skip(image_size); // skip image data
+               return can_del_f || f.skip(image_size); // skip image data, no need to seek if 'f' isn't needed later
             }
          }
       }
@@ -648,7 +650,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          && can_del_f)        // and can delete 'f' file
          {
             Int buffer=f._buf_len; // how much data in the buffer
-            if(f.left()>buffer)
+            if(f.left()>buffer) // only if there's still more data left to read (we haven't already read the entire file)
             {
                REP(can_read_mips) // #MipOrder, start from the smallest
                {
@@ -726,13 +728,13 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             return true;
          }else
          {
-            if(f.pos(f_end))return true;
+            if(can_del_f || f.pos(f_end))return true; // no need to seek if 'f' isn't needed later
          }
       }else // load the base mip, and re-create the whole image out of it
       {
          if(f.skip(mips[base_file_mip].offset))
             if(load(soft, base_file_mip))
-               if(f.pos(f_end))
+               if(can_del_f || f.pos(f_end)) // no need to seek if 'f' isn't needed later
                   return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
       }
       return false;
@@ -957,14 +959,6 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
 #pragma pack(push, 1)
 struct ImageFileHeader
 {
-   VecI          size;
-   IMAGE_TYPE    type;
-   IMAGE_MODE    mode;
-   Byte          mips;
-   COMPRESS_TYPE cmpr;
-};
-struct ImageFileHeader1
-{
    VecI       size;
    IMAGE_TYPE type;
    IMAGE_MODE mode;
@@ -974,18 +968,19 @@ struct ImageFileHeader1
 /******************************************************************************/
 Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
 {
+   ImageFileHeader fh;
    switch(f.decUIntV())
    {
       case 2:
       {
-         ImageFileHeader fh; f>>fh; if(f.ok())
+         f>>fh; if(f.ok())
          {
             Loader loader(f);
             Unaligned(loader.header.size    , fh.size);
             Unaligned(loader.header.type    , fh.type);
             Unaligned(loader.header.mode    , fh.mode);
            _Unaligned(loader.header.mip_maps, fh.mips);
-            Unaligned(loader.file_cmpr      , fh.cmpr);
+                      loader.mip_compression=COMPRESS_NONE;
             if(header){*header=loader.header; return true;}
             if(loader.load(T, name, can_del_f))goto ok;
          }
@@ -993,7 +988,7 @@ Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
 
       case 1:
       {
-         ImageFileHeader1 fh; f>>fh; if(f.ok())
+         f>>fh; if(f.ok())
          {
             ImageHeader ih;
             Unaligned(ih.size    , fh.size);
@@ -1007,7 +1002,7 @@ Bool Image::loadData(File &f, ImageHeader *header, C Str &name, Bool can_del_f)
 
       case 0:
       {
-         ImageFileHeader1 fh; f>>fh; if(f.ok())
+         f>>fh; if(f.ok())
          {
             ImageHeader ih;
             Unaligned(ih.size    , fh.size);
@@ -1035,7 +1030,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
    {
       case 4:
       {
-         ImageFileHeader1 fh; f>>fh;
+         ImageFileHeader fh; f>>fh;
          Unaligned(ih.size    , fh.size);
          Unaligned(ih.type    , fh.type); ih.type=OldImageType2(ih.type);
          Unaligned(ih.mode    , fh.mode);
@@ -1046,7 +1041,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
 
       case 3:
       {
-         ImageFileHeader1 fh; f>>fh;
+         ImageFileHeader fh; f>>fh;
          Unaligned(ih.size    , fh.size);
          Unaligned(ih.type    , fh.type); ih.type=OldImageType1(ih.type);
          Unaligned(ih.mode    , fh.mode);
