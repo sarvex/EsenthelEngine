@@ -332,12 +332,14 @@ struct Image // Image (Texture)
  C Byte* softData()C {return _data_all;} // get software image data without locking the image
    Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT);                                                     // get software image data for 'mip_map' and 'cube_face' without locking the image
  C Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT)C {return ConstCast(T).softData(mip_map, cube_face);} // get software image data for 'mip_map' and 'cube_face' without locking the image
-   UInt  softPitch   (Int mip_map)C; // get pitch   of specified 'mip_map'
-   UInt  softBlocksY (Int mip_map)C; // get blocksY of specified 'mip_map'
-   UInt  softPitch2  (Int mip_map)C; // get pitch2  of specified 'mip_map' = pitch  * blocksY
-   Int   softFaceSize(Int mip_map)C; // get face    of specified 'mip_map' = pitch2 * depth
+   UInt  softPitch   (Int mip_map)C; // get pitch     of specified 'mip_map'
+   UInt  softBlocksY (Int mip_map)C; // get blocksY   of specified 'mip_map'
+   UInt  softPitch2  (Int mip_map)C; // get pitch2    of specified 'mip_map' = pitch  * blocksY
+   Int   softFaceSize(Int mip_map)C; // get face size of specified 'mip_map' = pitch2 * depth
+   Int   softMipSize (Int mip_map)C; // get mip  size of specified 'mip_map' = face   * faces
 
    void lockSoft();
+   void setMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment
    Bool setFrom(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
 #endif
    Bool     lock    (LOCK_MODE lock=LOCK_READ_WRITE, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT) ; //   lock image for editing specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes)

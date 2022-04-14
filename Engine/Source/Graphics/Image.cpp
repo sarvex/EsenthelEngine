@@ -2222,6 +2222,7 @@ UInt  Image::softPitch   (Int mip_map                    )C {return ImagePitch  
 UInt  Image::softBlocksY (Int mip_map                    )C {return ImageBlocksY (hwW(), hwH(),        mip_map, hwType());}
 UInt  Image::softPitch2  (Int mip_map                    )C {return ImagePitch2  (hwW(), hwH(),        mip_map, hwType());}
 Int   Image::softFaceSize(Int mip_map                    )C {return ImageFaceSize(hwW(), hwH(), hwD(), mip_map, hwType());}
+Int   Image::softMipSize (Int mip_map                    )C {return ImageFaceSize(hwW(), hwH(), hwD(), mip_map, hwType())*faces();}
 Byte* Image::softData    (Int mip_map, DIR_ENUM cube_face)
 {
    return _data_all+ImageMipOffset(hwW(), hwH(), hwD(), hwType(), mode(), mipMaps(), mip_map)+(cube_face ? softFaceSize(mip_map)*cube_face : 0); // call 'softFaceSize' only when needed because most likely 'cube_face' is zero
@@ -2720,6 +2721,66 @@ Image& Image::unlock()
   Bool   Image::  lockRead(Int mip_map, DIR_ENUM cube_face)C {return ConstCast(T).  lock(LOCK_READ, mip_map, cube_face);}
 C Image& Image::unlock    (                               )C {return ConstCast(T).unlock();}
 /******************************************************************************/
+void Image::setMipData(CPtr data, Int mip_map)
+{
+   if(data && InRange(mip_map, mipMaps()))
+   {
+      if(soft())CopyFast(softData(mip_map), data, softMipSize(mip_map));else
+      {
+      #if DX11
+         Int pitch    =softPitch   (mip_map);
+         Int face_size=softFaceSize(mip_map);
+         Int faces    =T.faces();
+         FREPD(face, faces)
+         {
+            D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(mip_map, face, mipMaps()), null, data, pitch, face_size);
+            data=(Byte*)data+face_size;
+         }
+      #elif GL
+         #if GL_ES
+            if(hw() && softData())CopyFast(softData(mip_map), data, softMipSize(mip_map));
+         #endif
+         VecI size(Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), Max(1, hwD()>>mip_map));
+         UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
+         switch(mode())
+         {
+            case IMAGE_2D:
+            case IMAGE_RT:
+            case IMAGE_DS:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                   D.texBind(GL_TEXTURE_2D, _txtr);
+               if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
+               else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, softPitch2(mip_map), data);
+                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+              _discard=false;
+            }break;
+
+            case IMAGE_3D:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                   D.texBind(GL_TEXTURE_3D, _txtr);
+               if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, gl_format, gl_type, data);
+               else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, softFaceSize(mip_map), data);
+                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+            }break;
+
+            case IMAGE_CUBE:
+            case IMAGE_RT_CUBE:
+            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+               Int face_size=softFaceSize(mip_map);
+               D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
+               FREPD(face, 6)
+               {
+                  if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+face, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
+                  else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+face, mip_map, format, size.x, size.y, 0, face_size, data);
+                  data=(Byte*)data+face_size;
+               }
+               glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+            }break;
+         }
+      #endif
+      }
+   }
+}
 Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
 {
    if(data)
@@ -2773,6 +2834,7 @@ Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
             }return true;
 
             case IMAGE_CUBE:
+            case IMAGE_RT_CUBE:
             { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
                                    D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
