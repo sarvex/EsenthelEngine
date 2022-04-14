@@ -720,6 +720,9 @@ void Loader::update(Image &image)
          case DIRECT_FAST: if(!f->getFast(img_mip_data.data(), img_mip_size))goto error; break;
          default         : if(!load(file_mip, img_mip, img_mip_data.data()) )goto error; break;
       }
+      // FIXME should this be on the main thread?
+      image.setMipData(img_mip_data.data(), img_mip);
+      image.baseMip(img_mip);
    }
    return;
 error:
