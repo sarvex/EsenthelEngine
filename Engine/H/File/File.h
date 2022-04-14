@@ -285,14 +285,18 @@ private:
    Ptr        _buf;
 union
 {
-      Int        _handle;
+      Int         _handle;
    struct
    {
-      Ptr        _mem;
-      Bool       _allocated;
+      Ptr         _mem;
+      Bool        _allocated;
    };
-      Memb<Byte> _memb;
-      FileStreamLZ4 *_stream;
+      Memb<Byte>  _memb;
+   struct
+   {
+      FileStream *_stream;
+      CPtr        _stream_buf;
+   };
 };
 #if ANDROID
    Ptr        _aasset;
@@ -329,16 +333,35 @@ union
 struct FileStream
 {
    File src;
+
+   virtual CPtr init()=NULL;
+   virtual void get(File &main)=NULL;
+   virtual UInt memUsage()C {return src.memUsage();}
+
+   virtual ~FileStream() {}
 };
 struct FileStreamLZ4 : FileStream
 {
-   LZ4_streamDecode_t lz4;
+   LZ4_streamDecode_t ctx;
    Byte buf[LZ4_RING_BUF_SIZE];
    Bool ok;
 
-   Bool init();
-   void get(File &main);
-   UInt memUsage()C;
+   virtual CPtr init()override;
+   virtual void get(File &main)override;
+   virtual UInt memUsage()C override;
+};
+struct FileStreamZSTD : FileStream
+{
+   ZSTD_DCtx_s ctx;
+   Bool ok;
+#pragma warning(push)
+#pragma warning(disable:4200) // zero-sized array in struct/union
+   Byte buf[]; // declare as last so this can be custom sized based on memory allocation for class object
+#pragma warning(pop)
+
+   virtual CPtr init()override;
+   virtual void get(File &main)override;
+   virtual UInt memUsage()C override;
 };
 #endif
 /******************************************************************************/

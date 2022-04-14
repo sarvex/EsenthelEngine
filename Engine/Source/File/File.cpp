@@ -158,6 +158,7 @@ void File::zeroNoBuf()
   _cipher=null;
   _mem=null;
   _stream=null;
+  _stream_buf=null;
 #if ANDROID
   _aasset=null;
 #endif
@@ -334,19 +335,21 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
 {
    if(is())
    {
-      FileStreamLZ4 *stream=null;
+      FileStream *stream=null;
       switch(compress)
       {
-         case COMPRESS_LZ4: if(decompressed_size<=LZ4_BUF_SIZE)goto mem; stream=new FileStreamLZ4; break; // #LZ4Mem
+         case COMPRESS_LZ4 : if(decompressed_size<=LZ4_BUF_SIZE      )goto mem; stream=new FileStreamLZ4 ; break; // #LZ4Mem
+         case COMPRESS_ZSTD: if(decompressed_size<=ZSTD_BLOCKSIZE_MAX)goto mem; stream=new FileStreamZSTD; break; // #ZSTDMem
       }
       if(stream)
       {
-         if(stream->init())
+         if(CPtr buf=stream->init())
          {
             Swap(T, stream->src);
            _type=FILE_STREAM;
            _size=_full_size=decompressed_size;
            _stream=stream;
+           _stream_buf=buf;
             return true;
          }
          Delete(stream);
@@ -1338,7 +1341,7 @@ Int File::getReturnSize(Ptr data, Int size)
             {
             get_from_stream_buffer:
                Int l=Min(_buf_len, size);
-               CPtr src=_stream->buf+_buf_pos;
+               CPtr src=(Byte*)_stream_buf+_buf_pos;
                if(_cipher)_cipher->decrypt(data, src, l, posCipher());
                else               CopyFast(data, src, l             );
               _buf_pos+=l;
@@ -1908,10 +1911,8 @@ SHA2::Hash File::sha2(Long max_size)
 /******************************************************************************/
 // FILE STREAM
 /******************************************************************************/
-UInt FileStreamLZ4::memUsage()C
-{
-   return SIZE(T)+src.memUsage();
-}
+UInt FileStreamLZ4 ::memUsage()C {return SIZE(T)+super::memUsage();}
+UInt FileStreamZSTD::memUsage()C {return SIZE(T)+super::memUsage();}
 /******************************************************************************/
 // DEPRECATED, DO NOT USE
 /******************************************************************************/

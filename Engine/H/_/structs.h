@@ -200,7 +200,7 @@ struct VirtualRealityApi;
 /******************************************************************************/
 // MISC
 /******************************************************************************/
-struct FileStreamLZ4;
+struct FileStream;
 struct Str8;
 struct Str;
 struct BStr;

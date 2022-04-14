@@ -141,7 +141,8 @@ T2(ENUM0, ENUM1) constexpr typename std::enable_if< std::is_enum<ENUM0>::value &
 #define DEBUG_RANGE_ASSERT(index, elms       )     DEBUG_ASSERT(InRange(index, elms), "Element out of range")               // out of range assertion, asserts that 'index' is in range "0..elms-1"
 #define       RANGE_ASSERT(index, elms       )   DYNAMIC_ASSERT(InRange(index, elms), "Element out of range")               // out of range assertion, asserts that 'index' is in range "0..elms-1"
 #define RANGE_ASSERT_ERROR(index, elms, error)   DYNAMIC_ASSERT(InRange(index, elms), error                 )               // out of range assertion, asserts that 'index' is in range "0..elms-1"
-#define       ALIGN_ASSERT(Class, member     )   ASSERT(!(OFFSET(Class, member)&(SIZE(Ptr)-1)))                             // assert that class member has alignment native to the target platform
+#define     ALIGN_ASSERT(  Class, member     )   ASSERT(!(OFFSET(Class, member)&(SIZE(Ptr)-1)))                             // assert that class member has alignment native to the target platform
+#define     ALIGN_ASSERT_X(Class, member, x  )   ASSERT(!(OFFSET(Class, member)&(x        -1)))                             // assert that class member has alignment native to the target platform
 
 ASSERT(SIZE(Bool )==1); // size of Bool  must be 1 byte
 ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
@@ -189,7 +190,6 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
 #define SUPPORT_RLE    (!SWITCH && !WEB)
 #define SUPPORT_SNAPPY (!SWITCH && !WEB)
 #define SUPPORT_ZLIB   (!WEB)
-#define SUPPORT_ZSTD   1
 #define SUPPORT_LZHAM  (!SWITCH)
 #define SUPPORT_LZMA   1
 
