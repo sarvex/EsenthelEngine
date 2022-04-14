@@ -387,10 +387,22 @@ struct Mip
 };
 struct Loader
 {
+   static const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
+   static const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
+
+   enum MODE : Byte
+   {
+      DIRECT_FAST, // can read entire mip map directly to memory
+      DIRECT     , // can read entire mip map directly to memory however with alignment checking
+      CONVERT    , // have to convert
+   };
+
    ImageHeader  header;
  //COMPRESS_TYPE mip_compression=COMPRESS_NONE;
+   MODE         load_mode;
    IMAGE_TYPE   want_hw_type;
    IMAGE_MODE   file_mode_soft;
+   IMAGE_MODE   want_mode_soft;
    Byte         file_base_mip; // index of file mip map that matches the size if main mip in the image
    Int          file_faces;
    Int          want_faces;
@@ -425,15 +437,24 @@ struct Loader
    }
    Bool load(Int file_mip, Int img_mip, Byte *img_data)C
    {
-      Int file_pitch   =filePitch  (file_mip),
-          file_blocks_y=fileBlocksY(file_mip),
-          file_d       =Max(1, file_hw_size.z>>file_mip);
-      Int  img_pitch   =wantPitch  (img_mip),
-           img_blocks_y=wantBlocksY(img_mip),
-           img_d       =Max(1, want_hw_size.z>> img_mip);
-  //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
+      Int img_pitch   =wantPitch  (img_mip),
+          img_blocks_y=wantBlocksY(img_mip),
+          img_d       =Max(1, want_hw_size.z>> img_mip);
+      if(load_mode!=CONVERT)
       {
-         LoadImgData(*f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
+         Int file_pitch   =filePitch  (file_mip),
+             file_blocks_y=fileBlocksY(file_mip),
+             file_d       =Max(1, file_hw_size.z>>file_mip);
+     //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
+         {
+            LoadImgData(*f, img_data, file_pitch, img_pitch, file_blocks_y, img_blocks_y, file_pitch*file_blocks_y, img_pitch*img_blocks_y, file_d, img_d, file_faces);
+         }
+      }else
+      {
+         Image soft;
+         if(!load(file_mip, soft))return false;
+         if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
+         CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
       }
       return f->ok();
    }
@@ -450,25 +471,7 @@ struct StreamLoad
 static MemcThreadSafe<StreamLoad> StreamLoads;
 static SyncEvent                  StreamLoadEvent;
 static Thread                     StreamLoadThread;
-/******************************************************************************/
-static Bool StreamLoadFunc(Thread &thread)
-{
-   StreamLoadEvent.wait();
-   for(; StreamLoads.elms(); )
-   {
-      StreamLoad sl; StreamLoads.swapPop(sl);
-      sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
-      sl.loader.update(*sl.image);
-   }
-   return true;
-}
-void ShutStreamLoads()
-{
-   StreamLoadThread.stop(); // request stop
-   StreamLoadEvent .on  (); // wake up to exit
-   StreamLoadThread.del (); // delete
-   StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
-}
+static Bool                       StreamLoadFunc(Thread &thread);
 /******************************************************************************/
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
@@ -532,13 +535,11 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(!want_hw_type)return false; // there isn't any then fail
    }
 
-   const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
-   const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
-              want_faces  =    ImageFaces  (want.mode);
-              want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
-                               PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
-                 file_mode_soft=AsSoft(header.mode);
-const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
+   want_faces  =    ImageFaces  (want.mode);
+   want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
+                    PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
+   file_mode_soft=AsSoft(header.mode);
+   want_mode_soft=AsSoft(  want.mode);
 
    // base mip = find smallest file mip that's >= biggest image mip
          file_base_mip=0;
@@ -625,7 +626,8 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
       REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
-      if(direct && same_alignment /*&& !mip_compression*/)
+      load_mode=(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+      if(load_mode==DIRECT_FAST)
       {
          Byte *img_data_start=img_data;
          FREP(read_mips)
@@ -638,24 +640,12 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          if(!f->getFast(img_data_start, img_data-img_data_start))return false;
       }else
       {
-         Image soft; // declare outside to reduce overhead
          FREP(read_mips)
          {
             Int  img_mip=can_read_mips-1-i;
             Int file_mip=file_base_mip+img_mip;
             mip_data[img_mip]=img_data;
-            if(direct) // load from file directly to 'img_data'
-            {
-               if(!load(file_mip, img_mip, img_data))return false;
-            }else
-            {
-               if(!load(file_mip, soft))return false;
-               if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
-               Int img_pitch   =wantPitch  (img_mip);
-               Int img_blocks_y=wantBlocksY(img_mip);
-               Int img_d       =Max(1, want_hw_size.z>>img_mip);
-               CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
-            }
+            if(!load(file_mip, img_mip, img_data))return false;
             img_data+=wantMipSize(img_mip);
          }
       }
@@ -678,6 +668,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                   same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size);
                   same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
                   direct        =(same_type && want_faces==file_faces);
+                  load_mode     =(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
                   goto ok;
                }
                if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
@@ -717,9 +708,22 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
 }
 void Loader::update(Image &image)
 {
-   REP(image_base_mip) // iterate all mips that need to be loaded
+   REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
+      Int file_mip=file_base_mip+img_mip;
+      Int img_mip_size=wantMipSize(img_mip);
+      Mems<Byte> img_mip_data(img_mip_size);
+      switch(load_mode)
+      {
+         case DIRECT_FAST: if(!f->getFast(img_mip_data.data(), img_mip_size))goto error; break;
+         case DIRECT     : if(!load(file_mip, img_mip, img_mip_data.data()))goto error; break;
+         default         :
+         break;
+      }
    }
+   return;
+error:
+   Exit("Can't stream Image");
 }
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
@@ -1315,6 +1319,27 @@ Bool ImageLoadHeader(C Str &name, ImageHeader &header)
 {
    File f; if(f.readTryEx(name, null, null, true))return ImageLoadHeader(f, header); // allow streaming
    header.zero(); return false;
+}
+/******************************************************************************/
+// STREAM
+/******************************************************************************/
+static Bool StreamLoadFunc(Thread &thread)
+{
+   StreamLoadEvent.wait();
+   for(; StreamLoads.elms(); )
+   {
+      StreamLoad sl; StreamLoads.swapPop(sl);
+      sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
+      sl.loader.update(*sl.image);
+   }
+   return true;
+}
+void ShutStreamLoads()
+{
+   StreamLoadThread.stop(); // request stop
+   StreamLoadEvent .on  (); // wake up to exit
+   StreamLoadThread.del (); // delete
+   StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
 }
 /******************************************************************************/
 }
