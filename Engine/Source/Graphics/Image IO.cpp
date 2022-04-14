@@ -387,18 +387,20 @@ struct Mip
 };
 struct Loader
 {
-   ImageHeader   header;
- //COMPRESS_TYPE  mip_compression=COMPRESS_NONE;
-   IMAGE_TYPE    want_hw_type;
-   IMAGE_MODE    file_mode_soft;
-   Byte         image_base_mip; // used only in update, index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
-   Byte          file_base_mip; // used only in update, index of file mip map that matches the size if main mip in the image
-   Int           file_faces;
-   Int           want_faces;
-   VecI          file_hw_size;
-   VecI          want_hw_size;
-   Mip           mips[MAX_MIP_MAPS];
-   File         *f;
+   ImageHeader  header;
+ //COMPRESS_TYPE mip_compression=COMPRESS_NONE;
+   IMAGE_TYPE   want_hw_type;
+   IMAGE_MODE   file_mode_soft;
+   Byte         file_base_mip; // index of file mip map that matches the size if main mip in the image
+   Int          file_faces;
+   Int          want_faces;
+   VecI         file_hw_size;
+   VecI         want_hw_size;
+   Mip          mips[MAX_MIP_MAPS];
+   File        *f;
+
+   // used only in update:
+   Byte image_base_mip; // index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
    Int fileBlocksY(Int mip)C {return ImageBlocksY (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -539,35 +541,35 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
 
    // base mip = find smallest file mip that's >= biggest image mip
-   Int   base_file_mip=0;
-   VecI  base_file_mip_size=header.size;
-   for(; base_file_mip<header.mip_maps-1 && !SizeFits(base_file_mip_size, want.size); )
+         file_base_mip=0;
+   VecI  file_base_mip_size=header.size;
+   for(; file_base_mip<header.mip_maps-1 && !SizeFits(file_base_mip_size, want.size); )
    {
-      base_file_mip++;
-      base_file_mip_size.set(Max(1, base_file_mip_size.x>>1), Max(1, base_file_mip_size.y>>1), Max(1, base_file_mip_size.z>>1));
+      file_base_mip++;
+      file_base_mip_size.set(Max(1, file_base_mip_size.x>>1), Max(1, file_base_mip_size.y>>1), Max(1, file_base_mip_size.z>>1));
    }
 
    Long f_end=f->pos()+image_size;
-   if(base_file_mip_size==want.size) // if found exact mip match
+   if(file_base_mip_size==want.size) // if found exact mip match
    {
-      const VecI base_file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
-      const Bool same_alignment=(base_file_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "base_file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
-      const Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-      const Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
+      const VecI file_base_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_base_mip), Max(1, file_hw_size.y>>file_base_mip), Max(1, file_hw_size.z>>file_base_mip));
+            Bool same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_base_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+            Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+            Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
       // try to create directly from file memory
       if( f->_type==FILE_MEM // file data is already available and in continuous memory
       && !f->_cipher         // no cipher
-      && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
+      && header.mip_maps-file_base_mip>=want.mip_maps // have all mip maps that we want
       && direct
       && same_alignment
     //&& !mip_compression   // no mip compression
       && f->left()>=image_size // have all data
       )
       {
-         REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[base_file_mip+i].offset;
+         REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[file_base_mip+i].offset;
          if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
             image.adjustInfo(image.w(), image.h(), image.d(), want.type);
@@ -581,8 +583,8 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       when creating image, use src data for fast create (can ignore smallest/biggest mip-maps)
       if there are missing smaller mip-maps than read, then make them with 'updateMipMaps'
       schedule loading of remaining mip-maps */
-      Int can_read_mips=Min(header.mip_maps-base_file_mip, want.mip_maps); // mips that we can read
-      if(!f->skip(mips[base_file_mip+can_read_mips-1].offset))return false; // #MipOrder
+      Int can_read_mips=Min(header.mip_maps-file_base_mip, want.mip_maps); // mips that we can read
+      if(!f->skip(mips[file_base_mip+can_read_mips-1].offset))return false; // #MipOrder
 
       Bool stream=false;
       Int  read_mips=0;
@@ -595,7 +597,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          {
             REP(can_read_mips) // #MipOrder, start from the smallest
             {
-               Int mip_size=mips[base_file_mip+i].compressed_size;
+               Int mip_size=mips[file_base_mip+i].compressed_size;
                if(buffer<mip_size)break; // not in buffer
                buffer-=mip_size;
                read_mips++;
@@ -629,7 +631,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          FREP(read_mips)
          {
             Int  img_mip=can_read_mips-1-i;
-            Int file_mip=base_file_mip+img_mip;
+            Int file_mip=file_base_mip+img_mip;
             mip_data[img_mip]=img_data;
             img_data+=mips[file_mip].decompressed_size; // can use file mip here only because it's exactly the same as image mip
          }
@@ -640,7 +642,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          FREP(read_mips)
          {
             Int  img_mip=can_read_mips-1-i;
-            Int file_mip=base_file_mip+img_mip;
+            Int file_mip=file_base_mip+img_mip;
             mip_data[img_mip]=img_data;
             if(direct) // load from file directly to 'img_data'
             {
@@ -669,7 +671,15 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
             {
                REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-               if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, can_read_mips-read_mips))goto ok;
+               if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, can_read_mips-read_mips))
+               {
+                  // these could've changed if converted to another type
+                  want_hw_size  =image.hwSize3();
+                  same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size);
+                  same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+                  direct        =(same_type && want_faces==file_faces);
+                  goto ok;
+               }
                if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
             }
          }
@@ -681,9 +691,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       if(stream)
       {
          {
-            T.image_base_mip=image._base_mip;
-            T. file_base_mip=  base_file_mip;
-            T. want_hw_size =image.hwSize3(); // it could've changed if converted to another type
+            image_base_mip=image._base_mip;
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
                  sl.image.setContained(&image); // !! can use unsafe 'setContained' only because we've already checked 'Images.has' above
@@ -700,8 +708,8 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
    }else // load the base mip, and re-create the whole image out of it
    {
       Image soft;
-      if(f->skip(mips[base_file_mip].offset))
-         if(load(base_file_mip, soft))
+      if(f->skip(mips[file_base_mip].offset))
+         if(load(file_base_mip, soft))
             if(can_del_f || f->pos(f_end)) // no need to seek if 'f' isn't needed later
                return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
    }
@@ -709,7 +717,9 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
 }
 void Loader::update(Image &image)
 {
-   
+   REP(image_base_mip) // iterate all mips that need to be loaded
+   {
+   }
 }
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
