@@ -1175,7 +1175,10 @@ void Image::baseMip(Int base_mip)
 }
 void Image::waitForStream()
 {
-   // FIXME
+   if(_base_mip)
+   {
+      // FIXME
+   }
 }
 Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {

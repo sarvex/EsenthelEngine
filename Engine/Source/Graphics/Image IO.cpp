@@ -313,6 +313,7 @@ Bool Image::saveData(File &f)C
    }else*/
    if(soft_same_type) // software with matching type, we can save without locking
    {
+      ConstCast(T).waitForStream(); // since we'll access 'softData' without locking, make sure stream is finished
       if(file_hw_size==hwSize3())f.put(softData(), memUsage());else // exact size, then we can save entire memory #MipOrder
       {
        C Byte *data=softData();
