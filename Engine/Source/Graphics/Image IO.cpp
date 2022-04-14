@@ -238,8 +238,6 @@ Bool Image::saveData(File &f)C
                            PaddedHeight(w(), h(), 0, file_type), d()); // can't use 'hwSize' because that could be bigger (if image was created big and then 'size' was manually limited smaller), and also need to calculate based on 'file_type'
    const Bool soft_same_type=(soft() && same_type); // software with matching type
 
-   Image soft; // keep outside to reduce overhead
-
    /*if(mip_compression)
    {
       Bool direct=(soft_same_type && file_hw_size==hwSize3()); // if software, same type and HW size, we can read from directly
@@ -341,6 +339,7 @@ Bool Image::saveData(File &f)C
       }
    }else
    {
+      Image soft; // keep outside to reduce overhead
       REPD(mip, mipMaps()) // iterate all mip maps #MipOrder
       {
          Int file_pitch   =ImagePitch  (file_hw_size.x, file_hw_size.y, mip, file_type),
@@ -373,87 +372,6 @@ Bool Image::saveData(File &f)C
    }
    return f.ok();
 }
-/******************************************************************************/
-#if 0 // FIXME
-Bool Image::saveData(File &f)C
-{
-   IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
-   if(!CanCompress(file_type))file_type=T.hwType(); // if compressing to format which isn't supported then store as current 'hwType'
-   if(file_type>=IMAGE_TYPES               // don't allow saving private formats
-   || mode()   >=IMAGE_RT   )return false; // don't allow saving private modes
-   ASSERT(IMAGE_2D==0 && IMAGE_3D==1 && IMAGE_CUBE==2 && IMAGE_SOFT==3 && IMAGE_SOFT_CUBE==4 && IMAGE_RT==5);
-
-   f.putMulti(Byte(1), size3(), Byte(file_type), Byte(mode()), Byte(mipMaps())); // version
-
-   /* #MipOrder
-   if(soft() && CanDoRawCopy(hwType(), file_type)) // software with matching type, we can save without locking
-   {
-      if(hwSize3()==size3())f.put(softData(), memUsage());else // exact size, then we can save entire memory
-      {
-       C Byte *data =softData();
-         Int   faces=T.faces();
-         FREPD(mip, mipMaps()) // iterate all mip maps
-         {
-            // here no need to use any "Min" because soft HW sizes are guaranteed to be >= file sizes
-            Int file_pitch   =ImagePitch  (  w(),   h(), mip, file_type), // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
-                file_blocks_y=ImageBlocksY(  w(),   h(), mip, file_type), // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
-                file_d       =             Max(1,   d()>>mip)           , // use "d()"      instead of "hwD()"        because we want to write only valid pixels
-               image_pitch   =ImagePitch  (hwW(), hwH(), mip, file_type),
-               image_blocks_y=ImageBlocksY(hwW(), hwH(), mip, file_type),
-               image_d       =             Max(1, hwD()>>mip)           ,
-                write        =  file_blocks_y*file_pitch,
-               skip          =(image_blocks_y-file_blocks_y)*image_pitch,
-               skip2         =(image_d       -file_d       )*image_pitch*image_blocks_y;
-            FREPD(face, faces) // iterate all faces
-            {
-               FREPD(z, file_d)
-               {
-                  if(file_pitch==image_pitch) // if file pitch is the same as image pitch
-                  {
-                     f.put(data, write); data+=write; // we can write both XY in one go
-                  }else
-                  FREPD(y, file_blocks_y){f.put(data, file_pitch); data+=image_pitch;}
-                  data+=skip;
-               }
-               data+=skip2;
-            }
-         }
-      }
-   }else*/
-   {
-      Image soft;
-      Int   faces=T.faces();
-      FREPD(mip, mipMaps()) // iterate all mip maps
-      {
-         Int file_pitch   =ImagePitch  (w(), h(), mip, file_type), // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
-             file_blocks_y=ImageBlocksY(w(), h(), mip, file_type); // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
-         FREPD(face, faces) // iterate all faces
-         {
-          C Image *src=this;
-            Int    src_mip=mip, src_face=face;
-            if(!CanDoRawCopy(hwType(), file_type)){if(!extractMipMap(soft, file_type, mip, DIR_ENUM(face)))return false; src=&soft; src_mip=0; src_face=0;} // if 'hwType' is different than of file, then convert to 'file_type' IMAGE_SOFT, after extracting the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so write zeros to file to match the expected size
-
-            if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
-            Int write_pitch   =Min(src->pitch()                                            , file_pitch   ),
-                write_blocks_y=Min(ImageBlocksY(src->w(), src->h(), src_mip, src->hwType()), file_blocks_y); // use "w(), h()" instead of "hwW(), hwH()" because we want to write only valid pixels
-            FREPD(z, src->ld())
-            {
-             C Byte *src_data_z=src->data() + z*src->pitch2();
-               if(file_pitch==src->pitch()) // if file pitch is the same as image pitch !! compare 'src->pitch' and not 'write_pitch' !!
-                  f.put(src_data_z, write_blocks_y*write_pitch);else // we can write both XY in one go !! use "write_blocks_y*write_pitch" and not 'pitch2', because 'pitch2' may be bigger !!
-               {
-                  Int skip=file_pitch-write_pitch;
-                  FREPD(y, write_blocks_y){f.put(src_data_z + y*src->pitch(), write_pitch); f.put(null, skip);} // write each line separately
-               }
-               f.put(null, (file_blocks_y-write_blocks_y)*file_pitch); // unwritten blocksY * pitch
-            }
-            src->unlock();
-         }
-      }
-   }
-   return f.ok();
-}
-#endif
 /******************************************************************************/
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
