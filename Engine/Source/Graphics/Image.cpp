@@ -954,7 +954,6 @@ void Image::setPartial()
 #if DX11
 Bool Image::setSRV()
 {
-   if(_srv){D.texClear(_srv); _srv->Release(); _srv=null;} // delete current
    switch(mode())
    {
       case IMAGE_2D:
