@@ -5,6 +5,11 @@ namespace EE{
 #define CC4_IMG CC4('I','M','G',0)
 #define CC4_GFX CC4('G','F','X',0)
 /******************************************************************************/
+Bool ImageHeader::is()C
+{
+   return size.x>0 && size.y>0 && size.z>0 && mip_maps>0 && type;
+}
+/******************************************************************************/
 static IMAGE_TYPE OldImageType3(Byte type)
 {
    static const IMAGE_TYPE types[]=
@@ -384,10 +389,6 @@ struct Mip
                decompressed_size,
                  offset;
 };
-Bool ImageHeader::is()C
-{
-   return size.x>0 && size.y>0 && size.z>0 && mip_maps>0 && type;
-}
 struct Loader
 {
    ImageHeader   header;
