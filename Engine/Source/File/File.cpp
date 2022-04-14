@@ -356,7 +356,7 @@ Bool File::stream(COMPRESS_TYPE compress, ULong decompressed_size)
            _stream_buf=buf;
             return true;
          }
-         Delete(stream);
+         DTOR(*stream); Free(stream);
          goto error;
       }
    }
