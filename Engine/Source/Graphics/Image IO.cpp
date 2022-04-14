@@ -612,8 +612,8 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
       {
          const VecI base_file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
          const Bool same_alignment=(base_file_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "base_file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
-         const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-         const Bool direct      =(same_type && want_faces==file_faces); // type and cube are the same
+         const Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+         const Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
 
          // try to create directly from file memory
          if( f._type==FILE_MEM // file data is already available and in continuous memory
