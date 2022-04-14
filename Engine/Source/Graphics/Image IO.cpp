@@ -514,10 +514,6 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          base_file_mip_size.set(Max(1, base_file_mip_size.x>>1), Max(1, base_file_mip_size.y>>1), Max(1, base_file_mip_size.z>>1));
       }
 
-      CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
-
-      Image soft; // declare outside to reduce overhead
-
       Long f_end=f.pos()+image_size;
       if(base_file_mip_size==want.size) // if found exact mip match
       {
@@ -525,6 +521,8 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          const Bool same_alignment=(base_file_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "base_file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
          const Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
          const Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
+
+         CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
          // try to create directly from file memory
          if( f._type==FILE_MEM // file data is already available and in continuous memory
@@ -604,27 +602,31 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
             }
             if(!f.getFast(img_data_start, img_data-img_data_start))return false;
          }else
-         FREP(read_mips)
          {
-            Int  img_mip=can_read_mips-1-i;
-            Int file_mip=base_file_mip+img_mip;
-            mip_data[img_mip]=img_data;
-            if(direct) // load from file directly to 'img_data'
+            Image soft; // declare outside to reduce overhead
+            FREP(read_mips)
             {
-               if(!load(file_mip, img_mip, img_data))return false;
-            }else
-            {
-               if(!load(soft, file_mip))return false;
-               if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
-               Int img_pitch   =wantPitch  (img_mip);
-               Int img_blocks_y=wantBlocksY(img_mip);
-               Int img_d       =Max(1, want_hw_size.z>>img_mip);
-               CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
+               Int  img_mip=can_read_mips-1-i;
+               Int file_mip=base_file_mip+img_mip;
+               mip_data[img_mip]=img_data;
+               if(direct) // load from file directly to 'img_data'
+               {
+                  if(!load(file_mip, img_mip, img_data))return false;
+               }else
+               {
+                  if(!load(soft, file_mip))return false;
+                  if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
+                  Int img_pitch   =wantPitch  (img_mip);
+                  Int img_blocks_y=wantBlocksY(img_mip);
+                  Int img_d       =Max(1, want_hw_size.z>>img_mip);
+                  CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
+               }
+               img_data+=wantMipSize(img_mip);
             }
-            img_data+=wantMipSize(img_mip);
          }
          if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, can_read_mips-read_mips))
          {
+            Image soft;
             if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
                if(IMAGE_TYPE alt_type=ImageTypeOnFail(want_hw_type)) // there's replacement
                   if(soft.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want_mode_soft, want.mip_maps, 1, mip_data)) // first create as soft
@@ -653,6 +655,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          }
       }else // load the base mip, and re-create the whole image out of it
       {
+         Image soft;
          if(f.skip(mips[base_file_mip].offset))
             if(load(soft, base_file_mip))
                if(can_del_f || f.pos(f_end)) // no need to seek if 'f' isn't needed later
