@@ -587,9 +587,8 @@ struct Loader
       }
 
       const Bool ignore_gamma=false; // never ignore and always convert, because Esenthel formats are assumed to be in correct gamma already
-      const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
       const UInt copy_flags  =(ignore_gamma ? IC_IGNORE_GAMMA : IC_CONVERT_GAMMA)|IC_CLAMP;
-                 want_faces  =ImageFaces  (  want.mode);
+                 want_faces  =    ImageFaces  (want.mode);
                  want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                                   PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
                  file_mode_soft=AsSoft(header.mode);
@@ -606,19 +605,25 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
-      // try to create directly from file memory (this can be used if image is not compressed per mip maps separately, but instead was compressed as a whole)
-      if( f._type==FILE_MEM // file data is already available and in continuous memory
-      && !f._cipher         // no cipher
-      && !mip_compression   // no mip compression
-      && base_file_mip_size==want.size // found exact mip match
-      && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
-      && same_type              // type is the same
-      && want_faces==file_faces // cube is the same
-      && f.left()>=image_size // have all data
-      )
+      Image soft; // declare outside to reduce overhead
+
+      Long f_end=f.pos()+image_size;
+      if(base_file_mip_size==want.size) // if found exact mip match
       {
-         VecI file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
-         if(  file_mip_hw_size_no_pad==want_hw_size) // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+         const VecI base_file_mip_hw_size_no_pad(Max(1, file_hw_size.x>>base_file_mip), Max(1, file_hw_size.y>>base_file_mip), Max(1, file_hw_size.z>>base_file_mip));
+         const Bool same_alignment=(base_file_mip_hw_size_no_pad==want_hw_size); // file mip hw size without padd exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "base_file_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+         const Bool same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+         const Bool direct      =(same_type && want_faces==file_faces); // type and cube are the same
+
+         // try to create directly from file memory
+         if( f._type==FILE_MEM // file data is already available and in continuous memory
+         && !f._cipher         // no cipher
+         && header.mip_maps-base_file_mip>=want.mip_maps // have all mip maps that we want
+         && direct
+         && same_alignment
+         && !mip_compression   // no mip compression
+         && f.left()>=image_size // have all data
+         )
          {
             REP(want.mip_maps)mip_data[i]=(Byte*)f.memFast()+mips[base_file_mip+i].offset;
             if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
@@ -627,13 +632,7 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
                return can_del_f || f.skip(image_size); // skip image data, no need to seek if 'f' isn't needed later
             }
          }
-      }
 
-      Image soft; // declare outside to reduce overhead
-
-      Long f_end=f.pos()+image_size;
-      if(base_file_mip_size==want.size) // if have exact match
-      {
       /* Load all mip maps that are already in f.buffer without requiring to do any more reads
          but at least 1 (to make sure we have something, even if a read is needed)
          if(FILE_MEM || can't stream) then read all. Can stream if 'can_del_f' and 'image' belongs to 'Images' cache
@@ -681,8 +680,19 @@ const IMAGE_MODE want_mode_soft=AsSoft(  want.mode);
          if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
          Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
-         Bool direct=(same_type && want_faces==file_faces); // type and cube are the same
-          REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
+         REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
+         if(direct && same_alignment && !mip_compression)
+         {
+            Byte *img_data_start=img_data;
+            FREP(read_mips)
+            {
+               Int  img_mip=can_read_mips-1-i;
+               Int file_mip=base_file_mip+img_mip;
+               mip_data[img_mip]=img_data;
+               img_data+=mips[file_mip].decompressed_size; // can use file mip here only because it's exactly the same as image mip
+            }
+            if(!f.getFast(img_data_start, img_data-img_data_start))return false;
+         }else
          FREP(read_mips)
          {
             Int  img_mip=can_read_mips-1-i;
