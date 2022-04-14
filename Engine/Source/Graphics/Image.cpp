@@ -951,6 +951,42 @@ void Image::setPartial()
    if(_partial=(w()!=hwW() || h()!=hwH() || d()!=hwD()))_part.set(Flt(w())/hwW(), Flt(h())/hwH(), Flt(d())/hwD());
    else                                                 _part=1;
 }
+#if DX11
+Bool Image::setSRV()
+{
+   if(_srv){D.texClear(_srv); _srv->Release(); _srv=null;} // delete current
+   switch(mode())
+   {
+      case IMAGE_2D:
+      case IMAGE_3D:
+      case IMAGE_CUBE:
+      case IMAGE_RT:
+      case IMAGE_RT_CUBE:
+      case IMAGE_DS:
+      case IMAGE_SHADOW_MAP:
+      {
+         D3D11_SHADER_RESOURCE_VIEW_DESC srvd; Zero(srvd);
+         switch(hwType())
+         {
+            default            : srvd.Format=hwTypeInfo().format; break;
+            case IMAGE_D16     : srvd.Format=DXGI_FORMAT_R16_UNORM; break;
+            case IMAGE_D24S8   : srvd.Format=DXGI_FORMAT_R24_UNORM_X8_TYPELESS; break;
+            case IMAGE_D32     : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
+            case IMAGE_D32S8X24: srvd.Format=DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS; break;
+         }
+         if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MostDetailedMip=_base_mip; srvd.TextureCube.MipLevels=mipMaps()-_base_mip;}else
+         if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MostDetailedMip=_base_mip; srvd.Texture3D  .MipLevels=mipMaps()-_base_mip;}else
+         if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MostDetailedMip=_base_mip; srvd.Texture2D  .MipLevels=mipMaps()-_base_mip;}else
+                             {srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2DMS;}
+      #if GPU_LOCK // lock not needed for 'D3D'
+         SyncLocker locker(D._lock);
+      #endif
+         D3D->CreateShaderResourceView(_txtr, &srvd, &_srv); if(!_srv && mode()!=IMAGE_DS)return false; // allow '_srv' optional in IMAGE_DS (for example it can fail for multi-sampled DS on FeatureLevel 10.0)
+      }break;
+   }
+   return true;
+}
+#endif
 Bool Image::setInfo()
 {
 #if DX11
@@ -975,35 +1011,7 @@ Bool Image::setInfo()
         _hw_size.z=1;
          if(IMAGE_TYPE hw_type=ImageFormatToType(desc.Format))T._hw_type=hw_type; // override only if detected, because Image could have been created with TYPELESS format which can't be directly decoded and IMAGE_NONE could be returned
       }
-      switch(mode())
-      {
-         case IMAGE_2D:
-         case IMAGE_3D:
-         case IMAGE_CUBE:
-         case IMAGE_RT:
-         case IMAGE_RT_CUBE:
-         case IMAGE_DS:
-         case IMAGE_SHADOW_MAP:
-         {
-            D3D11_SHADER_RESOURCE_VIEW_DESC srvd; Zero(srvd);
-            switch(hwType())
-            {
-               default            : srvd.Format=hwTypeInfo().format; break;
-               case IMAGE_D16     : srvd.Format=DXGI_FORMAT_R16_UNORM; break;
-               case IMAGE_D24S8   : srvd.Format=DXGI_FORMAT_R24_UNORM_X8_TYPELESS; break;
-               case IMAGE_D32     : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
-               case IMAGE_D32S8X24: srvd.Format=DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS; break;
-            }
-            if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MostDetailedMip=_base_mip; srvd.TextureCube.MipLevels=mipMaps()-_base_mip;}else
-            if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MostDetailedMip=_base_mip; srvd.Texture3D  .MipLevels=mipMaps()-_base_mip;}else
-            if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MostDetailedMip=_base_mip; srvd.Texture2D  .MipLevels=mipMaps()-_base_mip;}else
-                                {srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2DMS;}
-         #if GPU_LOCK // lock not needed for 'D3D'
-            SyncLocker locker(D._lock);
-         #endif
-            D3D->CreateShaderResourceView(_txtr, &srvd, &_srv); if(!_srv && mode()!=IMAGE_DS)return false; // allow '_srv' optional in IMAGE_DS (for example it can fail for multi-sampled DS on FeatureLevel 10.0)
-         }break;
-      }
+      if(!setSRV())return false;
    }
 #elif GL
    if(_txtr)switch(mode())
@@ -1166,11 +1174,30 @@ void Image::baseMip(Int base_mip)
    if(_base_mip!=base_mip)
    {
      _base_mip=base_mip;
-      if(hw())
+      /*if(hw())
       {
          SyncLocker locker(D._lock);
-         // FIXME
+      }*/
+      // FIXME
+   #if DX11
+      DYNAMIC_ASSERT(setSRV(), "baseMip.setSRV");
+   #elif GL
+      UInt target;
+      switch(mode())
+      {
+         case IMAGE_2D:
+         case IMAGE_RT: target=GL_TEXTURE_2D; break;
+
+         case IMAGE_3D: target=GL_TEXTURE_3D; break;
+
+         case IMAGE_CUBE:
+         case IMAGE_RT_CUBE: target=GL_TEXTURE_CUBE_MAP; break;
+
+         default: return;
       }
+      D.texBind(target, _txtr);
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
+   #endif
    }
 }
 void Image::waitForStream()
