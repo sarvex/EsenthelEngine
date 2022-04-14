@@ -755,7 +755,7 @@ Bool File::pos(Long pos)
             {
               _buf_len-=delta;
               _buf_pos+=delta;
-                T._pos =pos  ; return true; // don't seek (because file position is already in order with the buffer)
+                T._pos =pos  ; return true;
             }
          }else // go forward
          {
@@ -763,10 +763,10 @@ Bool File::pos(Long pos)
             if( _buf_len)
             {
                Int skip=Min(pos-T._pos, _buf_len);
-                T._pos+=skip;
               _buf_len-=skip;
               _buf_pos+=skip;
-               if(!_buf_len)return true; // if reached target
+                T._pos+=skip;
+             if(T._pos==pos)return true; // if reached target
                goto stream_get; // read again
             }
          }
