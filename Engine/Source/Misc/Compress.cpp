@@ -1337,7 +1337,7 @@ NOINLINE static Bool ZSTDDecompress(File &src, File &dest, Long compressed_size,
       Ptr  mem=dest.memFast();
       Bool single=(decompressed_size<=ZSTD_BLOCKSIZE_MAX); // #ZSTDMem
       Bool direct=MemDecompress(dest, decompressed_size);
-      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, compressed_size))
+      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, decompressed_size))
       Memt<Byte> dm; if(!direct)dm.setNum(ZSTDDecompressBufSize(decompressed_size)); Byte *d=dm.data(); Int d_pos=0; 
       for(; !src.end(); )
       {
@@ -1413,7 +1413,7 @@ void FileStreamZSTD::get(File &main) // !! ZSTD requires to keep previous decomp
    DEBUG_ASSERT(main._buf_len==0, "main._buf_len==0"); // this can be called only if buffer was fully consumed
    if(ok)
    {
-      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, compressed_size))
+      Byte s[ZSTD_COMPRESSBOUND(ZSTD_BLOCKSIZE_MAX)]; // ZSTDSize(Min(ZSTD_BLOCKSIZE_MAX, decompressed_size))
       UInt chunk; src.decUIntV(chunk); if(src.ok())
       {
          Int &d_pos=main._buf_pos;

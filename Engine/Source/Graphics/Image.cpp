@@ -1454,7 +1454,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
-               // !! WARNING: IF THIS IS REPLACED TO USE 'glTexStorage2D' THEN CAN'T USE 'glTexImage2D/glCompressedTexImage2D' TO UPDATE MIP MAPS IN UNLOCK AND 'setFrom' and .., check 'glTexSubImage' and compressed? !!
+               // !! WARNING: IF THIS IS REPLACED TO USE 'glTexStorage2D' THEN CAN'T USE 'glTexImage2D/glCompressedTexImage2D' TO UPDATE MIP MAPS IN UNLOCK AND 'lockedSetMipData', 'setFrom' and .., check 'glTexSubImage' and compressed? !!
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
                if(data)
@@ -1587,18 +1587,22 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
                Int  mip_maps=(data ? mipMaps() : 1); // when have src we need to initialize all mip-maps, without src we can just try 1 mip-map to see if it succeeds
+            #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
+               Ptr  dummy=null; if(compressed())FREPD(m, mip_maps)if(!data || !data[m]){dummy=temp.setNumZero(CeilGL(ImagePitch2(hwW(), hwH(), m, hwType()))).dataNull(); break;} // order important, start from biggest mip, find first that doesn't have data specified
+            #endif
                REPD(m, mip_maps) // order important #MipOrder
                {
                   VecI2 mip_size(Max(1, hwW()>>m), Max(1, hwH()>>m));
                   Int       size=ImagePitch2(mip_size.x, mip_size.y, 0, hwType());
                 C Byte *mip_data=(data ? (Byte*)data[m] : null);
-               #if WEB // for WEB, null can't be specified in 'glCompressedTexImage*'
-                  if(!mip_data && compressed())mip_data=temp.setNumZero(CeilGL(size*6)).dataNull();
-               #endif
                   FREPD(f, 6) // faces, order important
                   {
                      if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, mip_size.x, mip_size.y, 0, gl_format, gl_type, mip_data);
+                  #if WEB
+                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, mip_size.x, mip_size.y, 0,               size, mip_data ? mip_data : dummy);
+                  #else
                      else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+f, m, format, mip_size.x, mip_size.y, 0,               size, mip_data);
+                  #endif
 
                    //if(m==mip_maps-1 && !f && glGetError()!=GL_NO_ERROR)goto error; // check for error only on the first mip and face #MipOrder
                      
