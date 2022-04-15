@@ -17,6 +17,7 @@
 struct SyncLock // Synchronization Lock (multi-threaded safe)
 {
    Bool created()C; // if           lock is still created and not yet deleted in the constructor
+   Bool locked ()C; // if           lock is locked
    Bool owned  ()C; // if           lock is owned by current thread
    Bool tryOn  ()C; // try entering lock, false on fail (after receiving 'true' you must call the 'off' method, while after receiving 'false' you may not call the 'off' method)
    void on     ()C; //     enter    lock

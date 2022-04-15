@@ -172,9 +172,11 @@ void SetThreadName(C Str8 &name, UIntPtr thread_id)
    Bool SyncLock:: tryOn   ()C {on(); return true;}
    void SyncLock:: on      ()C {if(  _lock_count++==0)_owner=GetThreadId();}
    void SyncLock:: off     ()C {if(--_lock_count  ==0)_owner=0;}
+   Bool SyncLock:: locked  ()C {return _lock_count>0;}
    Bool SyncLock:: owned   ()C {return _lock_count>0;}
    Bool SyncLock:: created ()C {return _is!=0;}
 #elif WINDOWS
+      Bool SyncLock::locked ()C {return _lock.OwningThread!=null;}
       Bool SyncLock::owned  ()C {return _lock.OwningThread==(HANDLE)GetThreadId();}
       Bool SyncLock::created()C {return _lock.DebugInfo!=null;}
 
@@ -239,6 +241,10 @@ SyncLock::~SyncLock()
    pthread_mutex_destroy(&_lock);
   _lock_count=0;
   _owner=0;
+}
+Bool SyncLock::locked()C
+{
+   return _lock_count>0;
 }
 Bool SyncLock::owned()C
 {
