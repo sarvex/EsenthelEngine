@@ -1171,7 +1171,7 @@ void Image::setGLParams()
 #endif
 }
 /******************************************************************************/
-void Image::baseMip(Int base_mip)
+void Image::lockedBaseMip(Int base_mip)
 {
    if(_base_mip!=base_mip)
    {
@@ -1196,6 +1196,14 @@ void Image::baseMip(Int base_mip)
       glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
    skip:
    #endif
+   }
+}
+void Image::baseMip(Int base_mip)
+{
+   if(_base_mip!=base_mip)
+   {
+      SyncLockerEx locker(D._lock, hw());
+      lockedBaseMip(base_mip);
    }
 }
 void Image::cancelStream()
@@ -1236,11 +1244,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          if(!data || soft()) // only soft can keep existing members if we want to set data (HW images have to be created as new)
       {
          cancelStream();
-         if(_base_mip!=base_mip) // FIXME this good?
-         {
-            SyncLockerEx locker(D._lock, hw());
-            baseMip(base_mip);
-         }
+         baseMip(base_mip);
          unlock(); // unlock if was locked, because we expect 'createEx' to fully reset the state
          if(data)
          {
@@ -2773,7 +2777,7 @@ Image& Image::unlock()
   Bool   Image::  lockRead(Int mip_map, DIR_ENUM cube_face)C {return ConstCast(T).  lock(LOCK_READ, mip_map, cube_face);}
 C Image& Image::unlock    (                               )C {return ConstCast(T).unlock();}
 /******************************************************************************/
-void Image::setMipData(CPtr data, Int mip_map)
+void Image::lockedSetMipData(CPtr data, Int mip_map)
 {
    if(data && InRange(mip_map, mipMaps()))
    {

@@ -75,8 +75,8 @@ struct SyncLockerEx // Synchronization Locker Extended
 
    Bool tryOn() {if(!_on && _lock.tryOn())_on=true; return _on;} // try entering locking, false on fail
 
-   explicit SyncLockerEx(C SyncLock &lock, Bool on=true) : _lock(lock) {if(_on=on)lock.on();}
-           ~SyncLockerEx(                              )               {off();}
+   explicit SyncLockerEx(C SyncLock &lock, Bool on=true) : _lock(lock) {if(_on=on)_lock.on ();}
+           ~SyncLockerEx(                              )               {if(_on   )_lock.off();}
 
 private:
    Bool      _on;

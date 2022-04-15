@@ -339,7 +339,7 @@ struct Image // Image (Texture)
    Int   softMipSize (Int mip_map)C; // get mip  size of specified 'mip_map' = face   * faces
 
    void lockSoft();
-   void setMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment
+   void lockedSetMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment !! NEEDS 'D._lock' !!
    Bool setFrom(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
 #endif
    Bool     lock    (LOCK_MODE lock=LOCK_READ_WRITE, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT) ; //   lock image for editing specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes)
@@ -348,7 +348,8 @@ struct Image // Image (Texture)
  C Image& unlock    (                                                                           )C; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
 
 #if EE_PRIVATE
-   void baseMip(Int base_mip);
+   void lockedBaseMip(Int base_mip); // !! NEEDS 'D._lock' !!
+   void       baseMip(Int base_mip);
    void  cancelStream();
    Bool waitForStream(Int mip=0);
    Bool updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0);

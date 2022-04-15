@@ -486,8 +486,8 @@ struct StreamSet : StreamData
       {
          if(mip<0)image->_streaming=false;else // error
          {
-            image->setMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
-            image->baseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'setMipData' !!
+            image->lockedSetMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
+            image->lockedBaseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'lockedSetMipData' !!
             if(!mip)image->_streaming=false; // last mip = stream finished !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
          }
        //StreamSetsEvent.on();
