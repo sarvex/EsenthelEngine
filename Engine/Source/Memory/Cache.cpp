@@ -463,7 +463,7 @@ void _Cache::lockedRemoveData(CPtr data, Bool counted)
    }
 }
 /******************************************************************************/
-void _Cache::incRefContained(CPtr data) {if(Elm *elm=dataElm(data))IncPtrNum(elmDesc(*elm).ptr_num);}
+void _Cache::incRefContained(CPtr data) {Elm *elm=dataElm(data); IncPtrNum(elmDesc(*elm).ptr_num);}
 void _Cache::incRef         (CPtr data)
 {
    if(data)
@@ -497,8 +497,8 @@ void _Cache::incDecRef(CPtr inc, CPtr dec)
    {
       SyncUnlocker unlocker(D._lock); // this must be used also since later 'D._lock' can be locked when deleting the resource
       SyncLocker     locker(  _lock);
-      lockedIncRef    (inc      ); // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
-      lockedRemoveData(dec, true);
+      if(inc)lockedIncRef    (inc      ); // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+      if(dec)lockedRemoveData(dec, true);
    }
 }
 void _Cache::decRef    (CPtr data) {removeData(data, true );}
