@@ -1411,7 +1411,7 @@ void CancelStreamLoad(Image &image) // when image is deleted
    {SyncLocker         lock(StreamLoadCurLock); if(StreamLoadCur==&image)StreamLoadCur=null;}
    {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )StreamSets .lockedElm(i).cancel(image);} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
 }
-void CancelStreamLoads() // this force cancels all when we want to shut down
+void CancelAllStreamLoads() // this force cancels all when we want to shut down
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
    {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)StreamLoads.lockedElm(i).cancel();} // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
@@ -1422,7 +1422,7 @@ void CancelStreamLoads() // this force cancels all when we want to shut down
 void ShutStreamLoads()
 {
    StreamLoadThread.stop(); // request stop
-   CancelStreamLoads    (); // cancel all loads
+   CancelAllStreamLoads (); // cancel all loads
    StreamLoadEvent .on  (); // wake up to exit
    StreamLoadThread.del (); // delete
    StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
