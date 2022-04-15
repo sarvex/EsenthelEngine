@@ -723,6 +723,7 @@ void Loader::update(Image &image)
       }
       // FIXME should this be on the main thread?
       image.setMipData(img_mip_data.data(), img_mip);
+      // !! THIS MUST BE DONE AS THE LAST STEP, BECAUSE IF BASE MIP IS 0 THEN OTHER THREADS ASSUME THERE IS NO STREAMING ANYMORE !!
       image.baseMip(img_mip);
    }
    return;

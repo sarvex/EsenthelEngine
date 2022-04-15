@@ -1741,11 +1741,11 @@ template<typename TYPE, Int Memt_size>  Bool  MemPtr<TYPE, Memt_size>::loadRaw(F
 T1(TYPE)  void  CountedPtr<TYPE>::DecRef(TYPE *data) {ASSERT_BASE_EXTENDED<PtrCounter, TYPE>(); SCAST(PtrCounter, *data).decRef(ClassFunc<TYPE>::Unload   );}
 T1(TYPE)  void  CountedPtr<TYPE>::IncRef(TYPE *data) {ASSERT_BASE_EXTENDED<PtrCounter, TYPE>(); SCAST(PtrCounter, *data).incRef(ClassFunc<TYPE>::LoadEmpty);}
 
-T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::clear    (                   ) {            DecRef(T._data);        T._data=      null ;  return T;}
-T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  TYPE       * data) {if(T!=data){DecRef(T._data); IncRef(T._data=      data);} return T;}
-T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(C CountedPtr & eptr) {if(T!=eptr){DecRef(T._data); IncRef(T._data=eptr._data);} return T;}
-T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  CountedPtr &&eptr) {Swap(_data, eptr._data);                                  return T;}
-T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  null_t           ) {clear();                                                  return T;}
+T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::clear    (                   ) {                                DecRef(T._data); T._data=       null ;  return T;}
+T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  TYPE       * data) {if(T!=data){IncRef(      data); DecRef(T._data); T._data=       data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(C CountedPtr & eptr) {if(T!=eptr){IncRef(eptr._data); DecRef(T._data); T._data= eptr._data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  CountedPtr &&eptr) {                                              Swap(_data, eptr._data);  return T;}
+T1(TYPE)  CountedPtr<TYPE>&  CountedPtr<TYPE>::operator=(  null_t           ) {clear();                                                                return T;}
 
 T1(TYPE)  CountedPtr<TYPE>:: CountedPtr(  null_t           ) {       T._data=      null ;}
 T1(TYPE)  CountedPtr<TYPE>:: CountedPtr(  TYPE       * data) {IncRef(T._data=      data);}
@@ -1813,13 +1813,13 @@ template<typename TYPE, Cache<TYPE> &CACHE>  UID     CacheElmPtr<TYPE,CACHE>::id
 template<typename TYPE, Cache<TYPE> &CACHE>  Bool    CacheElmPtr<TYPE,CACHE>::dummy(            )C {return CACHE.dummy(_data       );}
 template<typename TYPE, Cache<TYPE> &CACHE>  void    CacheElmPtr<TYPE,CACHE>::dummy(Bool   dummy)  {       CACHE.dummy(_data, dummy);}
 
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::clear    (                    ) {            CACHE.decRef(T._data);              T._data=      null ;  return T;}
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  TYPE        * data) {if(T!=data){CACHE.decRef(T._data); CACHE.incRef(T._data=      data);} return T;}
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(C CacheElmPtr & eptr) {if(T!=eptr){CACHE.decRef(T._data); CACHE.incRef(T._data=eptr._data);} return T;}
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  CacheElmPtr &&eptr) {Swap(_data, eptr._data);                                              return T;}
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  null_t            ) {clear();                                                              return T;}
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::clear    (                    ) {                                      CACHE.decRef(T._data); T._data=       null ;  return T;}
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  TYPE        * data) {if(T!=data){CACHE.incRef(      data); CACHE.decRef(T._data); T._data=       data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(C CacheElmPtr & eptr) {if(T!=eptr){CACHE.incRef(eptr._data); CACHE.decRef(T._data); T._data= eptr._data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  CacheElmPtr &&eptr) {                                                          Swap(_data, eptr._data);  return T;}
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::operator=(  null_t            ) {clear();                                                                            return T;}
 #if EE_PRIVATE
-template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::setContained(TYPE       * data) {if(T!=data){CACHE.decRef(T._data); CACHE.incRefContained(T._data=data);} return T;}
+template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::setContained(TYPE       * data) {if(T!=data){CACHE.incRefContained(data); CACHE.decRef(T._data); T._data=data;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
 #endif
 
 template<typename TYPE, Cache<TYPE> &CACHE>  CacheElmPtr<TYPE,CACHE>&  CacheElmPtr<TYPE,CACHE>::find     (CChar  *file, CChar *path) {TYPE *old=T._data; T._data=(TYPE*)CACHE._Cache::find   (    file , path, true); CACHE.decRef(old); return T;}
@@ -1994,11 +1994,11 @@ inline Int Elms(C _MapTS &map) {return map.elms();}
 template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  Bool    MapElmPtr<KEY,DATA,MAP>::dummy(          )C {return MAP.dummy(_data       );}
 template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  void    MapElmPtr<KEY,DATA,MAP>::dummy(Bool dummy)  {       MAP.dummy(_data, dummy);}
 
-template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::clear    (                  ) {            MAP.decRef(T._data);            T._data=      null ;  return T;}
-template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  DATA      * data) {if(T!=data){MAP.decRef(T._data); MAP.incRef(T._data=      data);} return T;}
-template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(C MapElmPtr & eptr) {if(T!=eptr){MAP.decRef(T._data); MAP.incRef(T._data=eptr._data);} return T;}
-template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  MapElmPtr &&eptr) {Swap(_data, eptr._data);                                           return T;}
-template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  null_t          ) {clear();                                                           return T;}
+template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::clear    (                  ) {                                    MAP.decRef(T._data); T._data=       null ;  return T;}
+template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  DATA      * data) {if(T!=data){MAP.incRef(      data); MAP.decRef(T._data); T._data=       data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(C MapElmPtr & eptr) {if(T!=eptr){MAP.incRef(eptr._data); MAP.decRef(T._data); T._data= eptr._data ;} return T;} // have to inc ref first, in case new pointer is a child of current that would get released if dec ref was first
+template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  MapElmPtr &&eptr) {                                                      Swap(_data, eptr._data);  return T;}
+template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::operator=(  null_t          ) {clear();                                                                        return T;}
 
 template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::find     (C KEY &key) {DATA *old=T._data; T._data=(DATA*)MAP.find   (&key, true); MAP.decRef(old); return T;}
 template<typename KEY, typename DATA, MapEx<KEY,DATA> &MAP>  MapElmPtr<KEY,DATA,MAP>&  MapElmPtr<KEY,DATA,MAP>::get      (C KEY &key) {DATA *old=T._data; T._data=(DATA*)MAP.get    (&key, true); MAP.decRef(old); return T;}
