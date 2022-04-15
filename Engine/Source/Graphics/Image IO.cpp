@@ -461,13 +461,13 @@ struct Loader
    void update();
 };
 /******************************************************************************/
-static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}}
+static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when wanting to force cancel something
 struct StreamData
 {
    Image *image;
 
-   inline void cancel(            ) {Cancel(image);}
-   inline void cancel(Image &image) {if(T.image==&image)T.image=null;}
+   inline void cancel(            ) {Cancel(image);} // use when wanting to force cancel something
+   inline void cancel(Image &image) {if(T.image==&image)T.image=null;} // use when something got cancelled and we need to clear it
 };
 struct StreamLoad : StreamData
 {
