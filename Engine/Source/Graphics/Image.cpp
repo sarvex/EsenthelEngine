@@ -1194,7 +1194,7 @@ void Image::lockedBaseMip(Int base_mip)
       }
       D.texBind(target, _txtr);
       glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
-   skip:
+   skip:;
    #endif
    }
 }
