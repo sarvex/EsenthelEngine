@@ -1195,10 +1195,11 @@ void Image::baseMip(Int base_mip)
          case IMAGE_CUBE:
          case IMAGE_RT_CUBE: target=GL_TEXTURE_CUBE_MAP; break;
 
-         default: return;
+         default: goto skip;
       }
       D.texBind(target, _txtr);
       glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, base_mip); // !! HAVE TO PASS 'base_mip' BECAUSE '_base_mip' IS STILL OLD !!
+   skip:
    #endif
       // !! THIS MUST BE DONE AS THE LAST STEP, BECAUSE IF '_base_mip' IS 0 THEN OTHER THREADS ASSUME THERE IS NO STREAMING ANYMORE !!
      _base_mip=base_mip;
