@@ -490,7 +490,6 @@ struct StreamSet : StreamData
             image->lockedBaseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'lockedSetMipData' !!
             if(!mip)image->_streaming=false; // last mip = stream finished !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
          }
-       //StreamSetsEvent.on();
       }
    }
 };
@@ -498,8 +497,9 @@ static MemcThreadSafe<StreamLoad> StreamLoads;
 static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
 static Image                     *StreamLoadCur;
 static SyncLock                   StreamLoadCurLock;
+static SyncLock                   StreamLoadWaiting;
 static SyncEvent                  StreamLoadEvent;
-//static SyncEvent                  StreamSetsEvent;
+static SyncEvent                  StreamLoaded;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
 static void                       StreamSetsFunc();
@@ -1386,7 +1386,7 @@ static Bool StreamLoadFunc(Thread &thread)
    {
       {
          MemcThreadSafeLock lock(StreamLoads);
-     if(!StreamLoads.elms())return true; // if removed before got lock then try again later
+     if(!StreamLoads.elms())break; // if removed before got lock then try again later
          StreamLoads.lockedSwapPop(sl);
          StreamLoadCur=sl.image;
       }
@@ -1397,6 +1397,7 @@ static Bool StreamLoadFunc(Thread &thread)
          StreamLoadCur=null;
       }
    }
+   StreamLoaded.on();
    return true;
 }
 static void StreamSetsFunc()
@@ -1406,20 +1407,42 @@ static void StreamSetsFunc()
    FREPA(StreamSets)StreamSets.lockedElm(i).set(); // !! HAVE TO PROCESS IN ORDER !!
    StreamSets.clear();
 }
-void CancelStreamLoad(Image &image) // when image is deleted
-{
-   // cancellation order is important! First the 'StreamLoads' source, then next steps
-   {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==&image)StreamLoads.lockedRemove(i);} // no need to keep order
-   {SyncLocker         lock(StreamLoadCurLock); if(StreamLoadCur==&image)StreamLoadCur=null;}
-   {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).cancel(image);} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
-}
 void CancelAllStreamLoads() // this force cancels all when we want to shut down
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
    {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(); StreamLoads.lockedDel();} // have to cancel before del
-   {SyncLocker         lock(StreamLoadCurLock); Cancel(StreamLoadCur);}
+   {SyncLocker         lock(StreamLoadCurLock);                                           Cancel(   StreamLoadCur);}
    {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )StreamSets .lockedElm(i).cancel(); StreamSets .lockedDel();} // have to cancel before del
- //StreamSetsEvent.on();
+}
+void Image::cancelStream() // called when image is deleted
+{
+   if(_streaming)
+   {
+      // cancellation order is important! First the 'StreamLoads' source, then next steps
+      {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==this)StreamLoads.lockedRemove(i);} // no need to keep order
+      {SyncLocker         lock(StreamLoadCurLock);                                   if(StreamLoadCur==this)StreamLoadCur=null;}
+      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).cancel(T   );} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
+     _streaming=false;
+   }
+}
+static inline Bool Wait(Image &image, Int mip) {return mip<image._base_mip && image._streaming;}
+Bool Image::waitForStream(Int mip)
+{
+   if(Wait(T, mip))
+   {
+      SyncLocker lock(StreamLoadWaiting); // enter exclusive waiting mode, this is needed for 'StreamLoaded' which when triggered can wake up only 1 thread at a time
+   check:
+      if(Wait(T, mip))
+      {
+         if(StreamSets.elms())StreamSetsFunc(); // process all sets
+         if(Wait(T, mip))
+         {
+            StreamLoaded.wait(); // wait until next got loaded
+            goto check;
+         }
+      }
+   }
+   return mip>=_base_mip;
 }
 void ShutStreamLoads()
 {

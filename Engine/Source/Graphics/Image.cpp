@@ -1206,23 +1206,6 @@ void Image::baseMip(Int base_mip)
       lockedBaseMip(base_mip);
    }
 }
-void Image::cancelStream()
-{
-   if(_streaming)
-   {
-      CancelStreamLoad(T);
-     _streaming=false;
-   }
-}
-Bool Image::waitForStream(Int mip)
-{
-   for(; mip<_base_mip && _streaming; )
-   {
-      // FIXME wait
-      Time.wait(1); // FIXME maybe need to process on this thread too?
-   }
-   return mip>=_base_mip;
-}
 Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {
    // verify parameters

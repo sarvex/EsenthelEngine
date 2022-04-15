@@ -855,7 +855,6 @@ void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitc
    UInt SourceGLFormat(IMAGE_TYPE type);
    UInt SourceGLType  (IMAGE_TYPE type);
 #endif
-void   ShutStreamLoads();
-void CancelStreamLoad (Image &image);
+void ShutStreamLoads();
 #endif
 /******************************************************************************/
