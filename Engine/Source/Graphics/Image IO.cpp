@@ -757,7 +757,7 @@ void Loader::update()
          if(!StreamLoadCur)break; // cancelled
          StreamSets.swapAdd(set);
       }
-      App._callbacks.include(StreamSetsFunc);
+      App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
    }
    return;
 error:
@@ -765,15 +765,12 @@ error:
    set.mip  =-1; // error
    set.image=StreamLoadCur;
    set.mip_data.clear();
-   if(StreamLoadCur)
    {
-      {
-         SyncLocker lock(StreamLoadCurLock);
-         if(!StreamLoadCur)return; // cancelled
-         StreamSets.swapAdd(set);
-      }
-      App._callbacks.include(StreamSetsFunc);
+      SyncLocker lock(StreamLoadCurLock);
+      if(!StreamLoadCur)return; // cancelled
+      StreamSets.swapAdd(set);
    }
+   App._callbacks.include(StreamSetsFunc);
 #else // exit
    Exit("Can't stream Image");
 #endif
