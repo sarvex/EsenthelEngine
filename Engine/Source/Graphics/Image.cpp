@@ -2815,13 +2815,13 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
                case IMAGE_CUBE:
                case IMAGE_RT_CUBE:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                  Int face_size=softFaceSize(mip_map);
+                  Int pitch2=softPitch2(mip_map);
                   D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                   FREPD(face, 6)
                   {
                      if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+face, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
-                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+face, mip_map, format, size.x, size.y, 0, face_size, data);
-                     data=(Byte*)data+face_size;
+                     else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+face, mip_map, format, size.x, size.y, 0, pitch2, data);
+                     data=(Byte*)data+pitch2;
                   }
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                }break;
