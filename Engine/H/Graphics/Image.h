@@ -349,6 +349,7 @@ struct Image // Image (Texture)
 
 #if EE_PRIVATE
    void baseMip(Int base_mip);
+   void  cancelStream();
    void waitForStream();
    Bool updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0);
 #endif

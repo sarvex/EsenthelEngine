@@ -909,6 +909,7 @@ Image& Image::operator=(C Image &src                                            
 /******************************************************************************/
 Image& Image::del()
 {
+   cancelStream();
    unlock();
    if(D.created())
    {
@@ -1170,13 +1171,6 @@ void Image::setGLParams()
 #endif
 }
 /******************************************************************************/
-static void SetSoftData(Image &img, CPtr *data)
-{
-   Int faces=img.faces();
-   REPD(m, img.mipMaps()) // #MipOrder
-      if(CPtr mip_data=data[m])
-         CopyFast(img.softData(m), mip_data, ImageFaceSize(img.hwW(), img.hwH(), img.hwD(), m, img.hwType())*faces);
-}
 void Image::baseMip(Int base_mip)
 {
    if(_base_mip!=base_mip)
@@ -1205,6 +1199,13 @@ void Image::baseMip(Int base_mip)
      _base_mip=base_mip;
    }
 }
+void Image::cancelStream()
+{
+   if(_base_mip)
+   {
+      // FIXME
+   }
+}
 void Image::waitForStream()
 {
    if(_base_mip)
@@ -1230,21 +1231,28 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
       // check if already matches what we want
       if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples)
+         if(!data || soft()) // only soft can keep existing members if we want to set data (HW images have to be created as new)
       {
-         baseMip(base_mip);
+         cancelStream();
+         baseMip(base_mip); // FIXME
+         unlock(); // unlock if was locked, because we expect 'createEx' to fully reset the state
          if(data)
          {
-            if(soft())
+            // here have to calculate manually because image could have HW size different, due to 'adjustInfo'
+            VecI data_hw_size(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
+            Int  faces=T.faces();
+            REPD(m, mipMaps())
+               if(Byte *mip_data=(Byte*)data[m])
             {
-               unlock(); // unlock if was locked, because we expect create to fully reset the state
-               SetSoftData(T, data);
-               return true;
+               Int data_pitch   =ImagePitch  (data_hw_size.x, data_hw_size.y, m, type),
+                   data_blocks_y=ImageBlocksY(data_hw_size.x, data_hw_size.y, m, type),
+                   data_pitch2  =data_pitch*data_blocks_y,
+                   data_d       =Max(1, data_hw_size.z>>m),
+                    img_d       =Max(1,          hwD()>>m);
+               CopyImgData(mip_data, softData(m), data_pitch, softPitch(m), data_blocks_y, softBlocksY(m), data_pitch2, softPitch2(m), data_d, img_d, faces);
             }
-         }else
-         {
-            unlock(); // unlock if was locked, because we expect create to fully reset the state
-            return true;
          }
+         return true;
       }
 
       // create as new
@@ -1276,7 +1284,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          initial_data=null;
          if(data) // always assumed to exactly match
          {
-            Int faces=ImageFaces(mode);
+            Int faces=T.faces();
             initial_data=res_data.setNum(mip_maps*faces).data();
             REPD(m, mip_maps)
             {
@@ -1306,7 +1314,13 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             setInfo();
             Alloc(_data_all, memUsage());
             lockSoft(); // set default lock members to main mip map
-            if(data)SetSoftData(T, data);
+            if(data)
+            {
+               Int faces=T.faces();
+               REPD(m, mipMaps())
+                  if(CPtr mip_data=data[m])
+                     CopyFast(softData(m), mip_data, softFaceSize(m)*faces);
+            }
          }return true;
 
       #if DX11
