@@ -459,7 +459,7 @@ struct Loader
       }
    }
    Bool load  (Image &image, C Str &name, Bool can_del_f);
-   void update(Image &image);
+   void update();
 };
 /******************************************************************************/
 struct StreamLoad
@@ -467,8 +467,12 @@ struct StreamLoad
    Loader loader;
    File   f;
    Image *image;
+
+   inline void cancel(Image &image) {if(T.image==&image)T.image=null;}
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
+static Image                     *StreamLoadCur;
+static SyncLock                   StreamLoadCurLock;
 static SyncEvent                  StreamLoadEvent;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
@@ -605,7 +609,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                read_mips++;
             }
             MAX(read_mips, 1); // always read at least one
-            if( read_mips<can_read_mips && Images.has(&image)) // check 'Images.has' at the end because it's slow. This is also required for 'setContained' below
+            if( read_mips<can_read_mips && Images.has(&image)) // check 'Images.has' at the end because it's slow, this check is performed because we must be sure that the image will remain in constant memory address, if it's not in cache, maybe user can move it
             {
                stream=true;
                goto has_read_mips;
@@ -684,6 +688,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(stream)
       {
          {
+            image._streaming=true; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
                  sl.image=&image;
@@ -707,7 +712,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    }
    return false;
 }
-void Loader::update(Image &image)
+void Loader::update()
 {
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
@@ -720,14 +725,18 @@ void Loader::update(Image &image)
          default         : if(!load(file_mip, img_mip, img_mip_data.data()) )goto error; break;
       }
       // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP, BECAUSE GPU WOULD USE INVALID DATA AND 'baseMip'=0 MEANS FINISHED !!
+      SyncLocker lock(StreamLoadCurLock);
+      if(!StreamLoadCur)break; // cancelled
+
       // FIXME should this be on the main thread?
-      image.setMipData(img_mip_data.data(), img_mip);
-      // !! THIS MUST BE DONE AS THE LAST STEP, BECAUSE IF BASE MIP IS 0 THEN OTHER THREADS ASSUME THERE IS NO STREAMING ANYMORE !!
-      image.baseMip(img_mip);
+      StreamLoadCur->setMipData(img_mip_data.data(), img_mip);
+      StreamLoadCur->baseMip   (                     img_mip); // !! THIS MUST BE SET ONLY AFTER 'setMipData' !!
+      if(!img_mip)StreamLoadCur->_streaming=false; // !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
    }
    return;
 error:
-   Exit("Can't stream Image");
+   // FIXME issue command with empty data to disable streaming
+   Exit("Can't stream Image"); // FIXME ALLOW CONTINUE WITHOUT EXIT? BUT HAVE TO SET STREAMING ONLY AFTER ALL QUEUED MIPS WERE SET
 }
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
@@ -1332,11 +1341,32 @@ static Bool StreamLoadFunc(Thread &thread)
    StreamLoadEvent.wait();
    for(; StreamLoads.elms(); )
    {
-      StreamLoad sl; StreamLoads.swapPop(sl);
-      sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
-      sl.loader.update(*sl.image);
+      StreamLoad sl;
+      {
+         MemcThreadSafeLock lock(StreamLoads);
+         StreamLoads.lockedSwapPop(sl); // !! CAN GRAB ELEMENT UNDER LOCK WITHOUT EXTRA 'elms' CHECK ONLY BECAUSE WE DON'T REMOVE ELEMENTS OUTSIDE OF THIS THREAD !!
+         StreamLoadCur=sl.image;
+      }
+      if(StreamLoadCur) // if wasn't cancelled, we don't need 'StreamLoadCurLock' here, because we don't access it yet, that can wait
+      {
+         sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
+         sl.loader.update();
+         StreamLoadCur=null;
+      }
    }
    return true;
+}
+void CancelStreamLoad(Image &image)
+{
+   // cancellation order is important! First the 'StreamLoads' source, then next steps
+   {
+      MemcThreadSafeLock lock(StreamLoads);
+      REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(image); // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
+   }
+   {
+      SyncLocker lock(StreamLoadCurLock);
+      if(StreamLoadCur==&image)StreamLoadCur=null;
+   }
 }
 void ShutStreamLoads()
 {
@@ -1344,6 +1374,7 @@ void ShutStreamLoads()
    StreamLoadEvent .on  (); // wake up to exit
    StreamLoadThread.del (); // delete
    StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
+   StreamLoadCur   =null;
 }
 /******************************************************************************/
 }

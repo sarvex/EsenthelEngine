@@ -350,7 +350,7 @@ struct Image // Image (Texture)
 #if EE_PRIVATE
    void baseMip(Int base_mip);
    void  cancelStream();
-   void waitForStream();
+   Bool waitForStream(Int mip=0);
    Bool updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0);
 #endif
    Image& updateMipMaps(FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0); // update mip maps of the image, 'flags'=IMAGE_COPY_FLAG, 'mip_start'=index of the mip map to start with (this mip map will be taken, and downsampled to following mip maps)
@@ -693,7 +693,7 @@ struct Image // Image (Texture)
 
 #if EE_PRIVATE
    void    zero     () {Zero(T);}
-   Bool    setSRV   (Int base_mip);
+   Bool    setSRV   ();
    Bool    setInfo  ();
    void  forceInfo  (Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int samples);
    void adjustInfo  (Int w, Int h, Int d, IMAGE_TYPE type);
@@ -717,7 +717,7 @@ private:
     LOCK_MODE _lock_mode;
      DIR_ENUM _lcf;
    Byte       _mms, _samples, _lmm, _byte_pp, _base_mip;
-   Bool       _partial, _discard;
+   Bool       _partial, _discard, _streaming;
    Int        _lock_count;
    UInt       _pitch, _pitch2;
    VecI       _size, _hw_size, _lock_size;
@@ -854,6 +854,7 @@ void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitc
    UInt SourceGLFormat(IMAGE_TYPE type);
    UInt SourceGLType  (IMAGE_TYPE type);
 #endif
-void ShutStreamLoads();
+void   ShutStreamLoads();
+void CancelStreamLoad (Image &image);
 #endif
 /******************************************************************************/

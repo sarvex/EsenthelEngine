@@ -953,7 +953,7 @@ void Image::setPartial()
    else                                                 _part=1;
 }
 #if DX11
-Bool Image::setSRV(Int base_mip)
+Bool Image::setSRV()
 {
    switch(mode())
    {
@@ -974,9 +974,9 @@ Bool Image::setSRV(Int base_mip)
             case IMAGE_D32     : srvd.Format=DXGI_FORMAT_R32_FLOAT; break;
             case IMAGE_D32S8X24: srvd.Format=DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS; break;
          }
-         if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MostDetailedMip=base_mip; srvd.TextureCube.MipLevels=mipMaps()-base_mip;}else
-         if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MostDetailedMip=base_mip; srvd.Texture3D  .MipLevels=mipMaps()-base_mip;}else
-         if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MostDetailedMip=base_mip; srvd.Texture2D  .MipLevels=mipMaps()-base_mip;}else
+         if(cube()          ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURECUBE; srvd.TextureCube.MostDetailedMip=_base_mip; srvd.TextureCube.MipLevels=mipMaps()-_base_mip;}else
+         if(mode()==IMAGE_3D){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE3D  ; srvd.Texture3D  .MostDetailedMip=_base_mip; srvd.Texture3D  .MipLevels=mipMaps()-_base_mip;}else
+         if(!multiSample()  ){srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2D  ; srvd.Texture2D  .MostDetailedMip=_base_mip; srvd.Texture2D  .MipLevels=mipMaps()-_base_mip;}else
                              {srvd.ViewDimension=D3D11_SRV_DIMENSION_TEXTURE2DMS;}
       #if GPU_LOCK // lock not needed for 'D3D'
          SyncLocker locker(D._lock);
@@ -1020,7 +1020,7 @@ Bool Image::setInfo()
         _hw_size.z=1;
          if(IMAGE_TYPE hw_type=ImageFormatToType(desc.Format))T._hw_type=hw_type; // override only if detected, because Image could have been created with TYPELESS format which can't be directly decoded and IMAGE_NONE could be returned
       }
-      if(!setSRV(_base_mip))return false;
+      if(!setSRV())return false;
    }
 #elif GL
    if(_txtr)switch(mode())
@@ -1175,8 +1175,9 @@ void Image::baseMip(Int base_mip)
 {
    if(_base_mip!=base_mip)
    {
+     _base_mip=base_mip;
    #if DX11
-      DYNAMIC_ASSERT(setSRV(base_mip), "baseMip.setSRV"); // !! HAVE TO PASS 'base_mip' BECAUSE '_base_mip' IS STILL OLD !!
+      DYNAMIC_ASSERT(setSRV(), "Image.baseMip.setSRV");
    #elif GL
       UInt target;
       switch(mode())
@@ -1192,26 +1193,27 @@ void Image::baseMip(Int base_mip)
          default: goto skip;
       }
       D.texBind(target, _txtr);
-      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, base_mip); // !! HAVE TO PASS 'base_mip' BECAUSE '_base_mip' IS STILL OLD !!
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
    skip:
    #endif
-      // !! THIS MUST BE DONE AS THE LAST STEP, BECAUSE IF '_base_mip' IS 0 THEN OTHER THREADS ASSUME THERE IS NO STREAMING ANYMORE !!
-     _base_mip=base_mip;
    }
 }
 void Image::cancelStream()
 {
-   if(_base_mip)
+   if(_streaming)
    {
-      // FIXME
+      CancelStreamLoad(T);
+     _streaming=false;
    }
 }
-void Image::waitForStream()
+Bool Image::waitForStream(Int mip)
 {
-   if(_base_mip)
+   for(; mip<_base_mip && _streaming; )
    {
-      // FIXME
+      // FIXME wait
+      Time.wait(1); // FIXME maybe need to process on this thread too?
    }
+   return mip>=_base_mip;
 }
 Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {
@@ -2286,6 +2288,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
 {
    if(InRange(mip_map, mipMaps()) && InRange(cube_face, 6)) // this already handles the case of "is()"
    {
+      if(mip_map<_base_mip && !waitForStream(mip_map))return false; // if want to access mip-map that's still streaming, then wait for it
       if(mode()==IMAGE_SOFT)
       {
          if(mipMaps()==1)return true; // if there's only one mip-map then we don't need to do anything
@@ -2314,7 +2317,6 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
          SyncLocker locker(D._lock);
          if(D.created())
          {
-            if(mip_map<_base_mip)waitForStream(); // if want to access mip-map that's still streaming, then wait for it
             if(!_lock_mode)switch(mode()) // first lock
             {
             #if DX11
