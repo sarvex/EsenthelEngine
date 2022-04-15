@@ -462,20 +462,43 @@ struct Loader
    void update();
 };
 /******************************************************************************/
-struct StreamLoad
+struct StreamData
 {
-   Loader loader;
-   File   f;
    Image *image;
 
    inline void cancel(Image &image) {if(T.image==&image)T.image=null;}
 };
+struct StreamLoad : StreamData
+{
+   Loader loader;
+   File   f;
+};
+struct StreamSet : StreamData
+{
+   Int        mip;
+   Mems<Byte> mip_data;
+
+   void set()
+   {
+      if(image) // not cancelled
+      {
+         if(mip<0)image->_streaming=false;else // error
+         {
+            image->setMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
+            image->baseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'setMipData' !!
+            if(!mip)image->_streaming=false; // last mip = stream finished !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
+         }
+      }
+   }
+};
 static MemcThreadSafe<StreamLoad> StreamLoads;
+static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
 static Image                     *StreamLoadCur;
 static SyncLock                   StreamLoadCurLock;
 static SyncEvent                  StreamLoadEvent;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
+static void                       StreamSetsFunc();
 /******************************************************************************/
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
@@ -714,29 +737,46 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 }
 void Loader::update()
 {
+   StreamSet set;
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
       Int file_mip=file_base_mip+img_mip;
       Int  img_mip_size=wantMipSize(img_mip);
-      Mems<Byte> img_mip_data(img_mip_size);
+      set.mip_data.setNumDiscard(img_mip_size);
       switch(load_mode)
       {
-         case DIRECT_FAST: if(!f->getFast(img_mip_data.data(), img_mip_size))goto error; break;
-         default         : if(!load(file_mip, img_mip, img_mip_data.data()) )goto error; break;
+         case DIRECT_FAST: if(!f->getFast(set.mip_data.data(), img_mip_size))goto error; break;
+         default         : if(!load(file_mip, img_mip, set.mip_data.data()) )goto error; break;
       }
-      // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP, BECAUSE GPU WOULD USE INVALID DATA AND 'baseMip'=0 MEANS FINISHED !!
-      SyncLocker lock(StreamLoadCurLock);
-      if(!StreamLoadCur)break; // cancelled
+      set.mip  =img_mip;
+      set.image=StreamLoadCur;
 
-      // FIXME should this be on the main thread?
-      StreamLoadCur->setMipData(img_mip_data.data(), img_mip);
-      StreamLoadCur->baseMip   (                     img_mip); // !! THIS MUST BE SET ONLY AFTER 'setMipData' !!
-      if(!img_mip)StreamLoadCur->_streaming=false; // !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
+      // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
+      {
+         SyncLocker lock(StreamLoadCurLock);
+         if(!StreamLoadCur)break; // cancelled
+         StreamSets.swapAdd(set);
+      }
+      App._callbacks.include(StreamSetsFunc);
    }
    return;
 error:
-   // FIXME issue command with empty data to disable streaming
-   Exit("Can't stream Image"); // FIXME ALLOW CONTINUE WITHOUT EXIT? BUT HAVE TO SET STREAMING ONLY AFTER ALL QUEUED MIPS WERE SET
+#if 1 // allow to continue
+   set.mip  =-1; // error
+   set.image=StreamLoadCur;
+   set.mip_data.clear();
+   if(StreamLoadCur)
+   {
+      {
+         SyncLocker lock(StreamLoadCurLock);
+         if(!StreamLoadCur)return; // cancelled
+         StreamSets.swapAdd(set);
+      }
+      App._callbacks.include(StreamSetsFunc);
+   }
+#else // exit
+   Exit("Can't stream Image");
+#endif
 }
 /******************************************************************************/
 static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
@@ -1356,6 +1396,13 @@ static Bool StreamLoadFunc(Thread &thread)
    }
    return true;
 }
+static void StreamSetsFunc()
+{
+   SyncLocker         d_lock(D._lock);
+   MemcThreadSafeLock s_lock(StreamSets);
+   FREPA(StreamSets)StreamSets.lockedElm(i).set(); // !! HAVE TO PROCESS IN ORDER !!
+   StreamSets.clear();
+}
 void CancelStreamLoad(Image &image)
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
@@ -1367,6 +1414,10 @@ void CancelStreamLoad(Image &image)
       SyncLocker lock(StreamLoadCurLock);
       if(StreamLoadCur==&image)StreamLoadCur=null;
    }
+   {
+      MemcThreadSafeLock lock(StreamSets);
+      REPA(StreamSets)StreamSets.lockedElm(i).cancel(image); // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
+   }
 }
 void ShutStreamLoads()
 {
@@ -1375,6 +1426,7 @@ void ShutStreamLoads()
    StreamLoadThread.del (); // delete
    StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
    StreamLoadCur   =null;
+   StreamSets      .del (); // this is processed only on the main thread
 }
 /******************************************************************************/
 }

@@ -1236,7 +1236,11 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          if(!data || soft()) // only soft can keep existing members if we want to set data (HW images have to be created as new)
       {
          cancelStream();
-         baseMip(base_mip); // FIXME
+         if(_base_mip!=base_mip) // FIXME this good?
+         {
+            SyncLockerEx locker(D._lock, hw());
+            baseMip(base_mip);
+         }
          unlock(); // unlock if was locked, because we expect 'createEx' to fully reset the state
          if(data)
          {
