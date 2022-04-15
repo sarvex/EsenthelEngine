@@ -2774,11 +2774,12 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
          if(D3DC)
          {
             Int pitch    =softPitch   (mip_map);
+            Int pitch2   =softPitch2  (mip_map);
             Int face_size=softFaceSize(mip_map);
             Int faces    =T.faces();
             FREPD(face, faces)
             {
-               D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(mip_map, face, mipMaps()), null, data, pitch, face_size);
+               D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(mip_map, face, mipMaps()), null, data, pitch, pitch2);
                data=(Byte*)data+face_size;
             }
          }

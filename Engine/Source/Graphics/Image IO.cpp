@@ -410,7 +410,6 @@ struct Loader
    Int          want_faces;
    VecI         file_hw_size;
    VecI         want_hw_size;
-   Mip          mips[MAX_MIP_MAPS];
    File        *f;
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -529,7 +528,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
    // set mips info
    UInt compressed_size=0; //, image_size=0;
-   if(!CheckMipNum(header.mip_maps))return false;
+   Mip  mips[MAX_MIP_MAPS]; if(!CheckMipNum(header.mip_maps))return false;
    REP(header.mip_maps) // #MipOrder
    {
       Mip &mip=mips[i];
