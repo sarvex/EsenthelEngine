@@ -497,9 +497,9 @@ static MemcThreadSafe<StreamLoad> StreamLoads;
 static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
 static Image                     *StreamLoadCur;
 static SyncLock                   StreamLoadCurLock;
-static SyncLock                   StreamLoadWaiting;
 static SyncEvent                  StreamLoadEvent;
-static SyncEvent                  StreamLoaded;
+static SyncCounter                StreamLoaded;
+static Int                        StreamLoadWaiting;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
 static void                       StreamSetsFunc();
@@ -747,6 +747,7 @@ static inline Bool Submit(StreamSet &set)
       StreamSets.swapAdd(set);
    }
    App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
+   if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
    return true;
 }
 void Loader::update()
@@ -1397,7 +1398,6 @@ static Bool StreamLoadFunc(Thread &thread)
          StreamLoadCur=null;
       }
    }
-   StreamLoaded.on();
    return true;
 }
 static void StreamSetsFunc()
@@ -1430,17 +1430,15 @@ Bool Image::waitForStream(Int mip)
 {
    if(Wait(T, mip))
    {
-      SyncLocker lock(StreamLoadWaiting); // enter exclusive waiting mode, this is needed for 'StreamLoaded' which when triggered can wake up only 1 thread at a time
-   check:
+      AtomicInc(StreamLoadWaiting);
+   again:
+      if(StreamSets.elms())StreamSetsFunc(); // process all sets
       if(Wait(T, mip))
       {
-         if(StreamSets.elms())StreamSetsFunc(); // process all sets
-         if(Wait(T, mip))
-         {
-            StreamLoaded.wait(); // wait until next got loaded
-            goto check;
-         }
+         StreamLoaded.wait(); // wait until next got loaded
+         goto again;
       }
+      AtomicDec(StreamLoadWaiting);
    }
    return mip>=_base_mip;
 }
