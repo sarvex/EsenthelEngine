@@ -405,15 +405,13 @@ struct Loader
    IMAGE_MODE   file_mode_soft;
    IMAGE_MODE   want_mode_soft;
    Byte         file_base_mip; // index of file mip map that matches the size if main mip in the image
+   Byte        image_base_mip; // index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
    Int          file_faces;
    Int          want_faces;
    VecI         file_hw_size;
    VecI         want_hw_size;
    Mip          mips[MAX_MIP_MAPS];
    File        *f;
-
-   // used only in update:
-   Byte image_base_mip; // index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
    Int fileBlocksY(Int mip)C {return ImageBlocksY (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -466,9 +464,9 @@ struct Loader
 /******************************************************************************/
 struct StreamLoad
 {
-   Loader   loader;
-   ImagePtr image;
-   File     f;
+   Loader loader;
+   File   f;
+   Image *image;
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
 static SyncEvent                  StreamLoadEvent;
@@ -652,7 +650,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             img_data+=wantMipSize(img_mip);
          }
       }
-      if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, can_read_mips-read_mips))
+      image_base_mip=can_read_mips-read_mips;
+      if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, image_base_mip))
       {
          Image soft;
          if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
@@ -664,7 +663,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
             {
                REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-               if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, can_read_mips-read_mips))
+               if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, image_base_mip))
                {
                   // these could've changed if converted to another type
                   want_hw_size  =image.hwSize3();
@@ -685,10 +684,9 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(stream)
       {
          {
-            image_base_mip=image._base_mip;
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
-                 sl.image.setContained(&image); // !! can use unsafe 'setContained' only because we've already checked 'Images.has' above
+                 sl.image=&image;
             Swap(sl.f     , *f);
             Swap(sl.loader,  T); // 'sl.loader.f' will be adjusted in the processing thread
             if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad");
@@ -721,6 +719,7 @@ void Loader::update(Image &image)
          case DIRECT_FAST: if(!f->getFast(img_mip_data.data(), img_mip_size))goto error; break;
          default         : if(!load(file_mip, img_mip, img_mip_data.data()) )goto error; break;
       }
+      // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP, BECAUSE GPU WOULD USE INVALID DATA AND 'baseMip'=0 MEANS FINISHED !!
       // FIXME should this be on the main thread?
       image.setMipData(img_mip_data.data(), img_mip);
       // !! THIS MUST BE DONE AS THE LAST STEP, BECAUSE IF BASE MIP IS 0 THEN OTHER THREADS ASSUME THERE IS NO STREAMING ANYMORE !!
