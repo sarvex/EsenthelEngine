@@ -1404,37 +1404,19 @@ static void StreamSetsFunc()
    FREPA(StreamSets)StreamSets.lockedElm(i).set(); // !! HAVE TO PROCESS IN ORDER !!
    StreamSets.clear();
 }
-void CancelStreamLoad(Image &image)
+void CancelStreamLoad(Image &image) // when image is deleted
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
-   {
-      MemcThreadSafeLock lock(StreamLoads);
-      REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(image); // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
-   }
-   {
-      SyncLocker lock(StreamLoadCurLock);
-      if(StreamLoadCur==&image)StreamLoadCur=null;
-   }
-   {
-      MemcThreadSafeLock lock(StreamSets);
-      REPA(StreamSets)StreamSets.lockedElm(i).cancel(image); // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
-   }
+   {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(image);} // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
+   {SyncLocker         lock(StreamLoadCurLock); if(StreamLoadCur==&image)StreamLoadCur=null;}
+   {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )StreamSets .lockedElm(i).cancel(image);} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
 }
-void CancelStreamLoads() // this cancels all
+void CancelStreamLoads() // this force cancels all when we want to shut down
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
-   {
-      MemcThreadSafeLock lock(StreamLoads);
-      REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(); // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
-   }
-   {
-      SyncLocker lock(StreamLoadCurLock);
-      Cancel(StreamLoadCur);
-   }
-   {
-      MemcThreadSafeLock lock(StreamSets);
-      REPA(StreamSets)StreamSets.lockedElm(i).cancel(); // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
-   }
+   {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)StreamLoads.lockedElm(i).cancel();} // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
+   {SyncLocker         lock(StreamLoadCurLock); Cancel(StreamLoadCur);}
+   {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )StreamSets .lockedElm(i).cancel();} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
  //StreamSetsEvent.on();
 }
 void ShutStreamLoads()
