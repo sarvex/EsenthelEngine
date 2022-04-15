@@ -462,10 +462,12 @@ struct Loader
    void update();
 };
 /******************************************************************************/
+static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}}
 struct StreamData
 {
    Image *image;
 
+   inline void cancel(            ) {Cancel(image);}
    inline void cancel(Image &image) {if(T.image==&image)T.image=null;}
 };
 struct StreamLoad : StreamData
@@ -488,6 +490,7 @@ struct StreamSet : StreamData
             image->baseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'setMipData' !!
             if(!mip)image->_streaming=false; // last mip = stream finished !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
          }
+       //StreamSetsEvent.on();
       }
    }
 };
@@ -496,6 +499,7 @@ static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, 
 static Image                     *StreamLoadCur;
 static SyncLock                   StreamLoadCurLock;
 static SyncEvent                  StreamLoadEvent;
+//static SyncEvent                  StreamSetsEvent;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
 static void                       StreamSetsFunc();
@@ -1416,9 +1420,27 @@ void CancelStreamLoad(Image &image)
       REPA(StreamSets)StreamSets.lockedElm(i).cancel(image); // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
    }
 }
+void CancelStreamLoads() // this cancels all
+{
+   // cancellation order is important! First the 'StreamLoads' source, then next steps
+   {
+      MemcThreadSafeLock lock(StreamLoads);
+      REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(); // cancel instead of remove, because this allows to process 'StreamLoadFunc' in a faster way, if we never remove elements outside of 'StreamLoadFunc' then we can grab element after 1 lockless check for 'elms'
+   }
+   {
+      SyncLocker lock(StreamLoadCurLock);
+      Cancel(StreamLoadCur);
+   }
+   {
+      MemcThreadSafeLock lock(StreamSets);
+      REPA(StreamSets)StreamSets.lockedElm(i).cancel(); // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
+   }
+ //StreamSetsEvent.on();
+}
 void ShutStreamLoads()
 {
    StreamLoadThread.stop(); // request stop
+   CancelStreamLoads    (); // cancel all loads
    StreamLoadEvent .on  (); // wake up to exit
    StreamLoadThread.del (); // delete
    StreamLoads     .del (); // !! delete only after thread got deleted, because processing thread always takes element without locking if detects any are there !!
