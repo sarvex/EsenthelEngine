@@ -752,6 +752,7 @@ void Loader::update()
          case DIRECT_FAST: if(!f->getFast(set.mip_data.data(), img_mip_size))goto error; break;
          default         : if(!load(file_mip, img_mip, set.mip_data.data()) )goto error; break;
       }
+      // have to set members for every mip, because due to swap they become invalid
       set.mip  =img_mip;
       set.image=StreamLoadCur;
 
@@ -1389,7 +1390,7 @@ static Bool StreamLoadFunc(Thread &thread)
          StreamLoads.lockedSwapPop(sl);
          StreamLoadCur=sl.image;
       }
-      if(StreamLoadCur) // if wasn't cancelled, we don't need 'StreamLoadCurLock' here, because we don't access it yet, that can wait
+    //if(StreamLoadCur) now this isn't needed because we remove canceled 'StreamLoads' instead of canceling them // if wasn't cancelled, we don't need 'StreamLoadCurLock' here, because we don't access it yet, that can wait
       {
          sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
          sl.loader.update();
