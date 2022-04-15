@@ -739,6 +739,16 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    }
    return false;
 }
+static inline Bool Submit(StreamSet &set)
+{
+   {
+      SyncLocker lock(StreamLoadCurLock);
+      if(!StreamLoadCur)return false; // cancelled
+      StreamSets.swapAdd(set);
+   }
+   App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
+   return true;
+}
 void Loader::update()
 {
    StreamSet set;
@@ -757,12 +767,7 @@ void Loader::update()
       set.image=StreamLoadCur;
 
       // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
-      {
-         SyncLocker lock(StreamLoadCurLock);
-         if(!StreamLoadCur)break; // cancelled
-         StreamSets.swapAdd(set);
-      }
-      App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
+      if(!Submit(set))return; // cancelled
    }
    return;
 error:
@@ -770,12 +775,7 @@ error:
    set.mip  =-1; // error
    set.image=StreamLoadCur;
    set.mip_data.clear();
-   {
-      SyncLocker lock(StreamLoadCurLock);
-      if(!StreamLoadCur)return; // cancelled
-      StreamSets.swapAdd(set);
-   }
-   App._callbacks.include(StreamSetsFunc);
+   Submit(set);
 #else // exit
    Exit("Can't stream Image");
 #endif
