@@ -499,7 +499,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                     PaddedHeight(header.size.x, header.size.y, 0, header.type), header.size.z);
 
    // set mips info
-   UInt image_size=0, offset=0;
+   UInt compressed_size=0; //, image_size=0;
    if(!CheckMipNum(header.mip_maps))return false;
    REP(header.mip_maps) // #MipOrder
    {
@@ -513,12 +513,14 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             mip.compressed_size=mip.decompressed_size;
          }
       }else */mip.compressed_size=mip.decompressed_size;
-              mip.offset         =offset;
-      offset    +=mip.  compressed_size;
-      image_size+=mip.decompressed_size;
+              mip.offset         =      compressed_size;
+      compressed_size+=mip.  compressed_size;
+         //image_size+=mip.decompressed_size;
    }
-   if(!f->ok())return false; // if any 'compressed_size' failed to load
-   if(!want.is()){image.del(); return can_del_f || f->skip(image_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
+   if(!f->ok  ()                 // if any 'mip.compressed_size' failed to load
+   ||  f->left()<compressed_size // or don't have enough data (this is needed loading directly from FILE_MEM memory, and also to make sure that any streaming on other thread will succeed)
+   )return false;
+   if(!want.is()){image.del(); return can_del_f || f->skip(compressed_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
 
    // shrink
    for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
@@ -552,7 +554,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       file_base_mip_size.set(Max(1, file_base_mip_size.x>>1), Max(1, file_base_mip_size.y>>1), Max(1, file_base_mip_size.z>>1));
    }
 
-   Long f_end=f->pos()+image_size;
+   Long f_end=f->pos()+compressed_size;
    if(file_base_mip_size==want.size) // if found exact mip match
    {
       const VecI file_base_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_base_mip), Max(1, file_hw_size.y>>file_base_mip), Max(1, file_hw_size.z>>file_base_mip));
@@ -569,14 +571,13 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       && direct
       && same_alignment
     //&& !mip_compression   // no mip compression
-      && f->left()>=image_size // have all data
       )
       {
          REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[file_base_mip+i].offset;
          if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
             image.adjustInfo(image.w(), image.h(), image.d(), want.type);
-            return can_del_f || f->skip(image_size); // skip image data, no need to seek if 'f' isn't needed later
+            return can_del_f || f->skip(compressed_size); // skip image data, no need to seek if 'f' isn't needed later
          }
       }
 
