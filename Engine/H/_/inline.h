@@ -588,8 +588,10 @@ T1(TYPE)  MemcAbstract<TYPE>::MemcAbstract() : _Memc(0, null, null) {}
 /******************************************************************************/
 // MEMC THREAD SAFE
 /******************************************************************************/
-T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::clear() {super::clear(); return T;}
-T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::del  () {super::del  (); return T;}
+T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::lockedClear() {super::lockedClear(); return T;}
+T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::lockedDel  () {super::lockedDel  (); return T;}
+T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::      clear() {super::      clear(); return T;}
+T1(TYPE)  MemcThreadSafe<TYPE>&  MemcThreadSafe<TYPE>::      del  () {super::      del  (); return T;}
 
 T1(TYPE)  Int      MemcThreadSafe<TYPE>::elms    ()C {return super::elms    ();}
 T1(TYPE)  UInt     MemcThreadSafe<TYPE>::elmSize ()C {return super::elmSize ();}

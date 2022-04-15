@@ -2,8 +2,10 @@
 T1(const_mem_addr TYPE) struct MemcThreadSafe : _MemcThreadSafe // Thread-Safe Continuous Memory Based Container
 {
    // manage
-   MemcThreadSafe& clear(); // remove all elements
-   MemcThreadSafe& del  (); // remove all elements and free helper memory
+   MemcThreadSafe& lockedClear(); // remove all elements                       , container must be locked first using the 'lock' method before using this method
+   MemcThreadSafe& lockedDel  (); // remove all elements and free helper memory, container must be locked first using the 'lock' method before using this method
+   MemcThreadSafe&       clear(); // remove all elements
+   MemcThreadSafe&       del  (); // remove all elements and free helper memory
 
    // get / set
    Int     elms    ()C; // number of elements
