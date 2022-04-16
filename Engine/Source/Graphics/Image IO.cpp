@@ -230,7 +230,6 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
 /******************************************************************************/
 Bool Image::saveData(File &f)C
 {
-   Int compression_level=255; Bool multi_threaded=false;
    IMAGE_TYPE file_type=T.type(); // set image type as to be stored in the file
    if(!CanCompress(file_type))file_type=T.hwType(); // if compressing to format which isn't supported then store as current 'hwType'
    if(file_type>=IMAGE_TYPES               // don't allow saving private formats
@@ -249,6 +248,7 @@ Bool Image::saveData(File &f)C
 
    /*if(mip_compression)
    {
+      Int compression_level=255; Bool multi_threaded=false;
       Bool direct=(soft_same_type && file_hw_size==hwSize3()); // if software, same type and HW size, we can read from directly
       UInt data_size=ImageSize(file_hw_size.x, file_hw_size.y, file_hw_size.z, file_type, mode(), mipMaps()), // this is size to store compressed image data that we're going to write to the file, make as big as total uncompressed data, if would need more than that, then disable compression and save uncompressed
            biggest_mip_size=0;
