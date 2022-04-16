@@ -1666,6 +1666,8 @@ Image& Image::mustCreate(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, 
    return T;
 }
 /******************************************************************************/
+// COPY
+/******************************************************************************/
 static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // assumes that 'src' and 'dest' are 2 different objects, 'src' is compressed, and 'dest' not compressed or not yet created, this always ignores gamma
 {
    void (*decompress_block       )(C Byte *b, Color  (&block)[4][4])=null, (*decompress_block_pitch       )(C Byte *b, Color  *dest, Int pitch)=null;
