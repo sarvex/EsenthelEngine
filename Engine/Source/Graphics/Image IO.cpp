@@ -441,7 +441,7 @@ struct Loader
    {
       Int img_pitch   =wantPitch  (img_mip),
           img_blocks_y=wantBlocksY(img_mip),
-          img_d       =Max(1, want_hw_size.z>> img_mip);
+          img_d       =Max(1, want_hw_size.z>>img_mip);
       if(load_mode!=CONVERT)
       {
          Int file_pitch   =filePitch  (file_mip),

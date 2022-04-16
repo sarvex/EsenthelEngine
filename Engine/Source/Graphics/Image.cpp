@@ -2833,13 +2833,20 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
 }
 Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
 {
-   if(data)
+   if(data && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()))
    {
-      Int valid_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType());
-   #if DX11
-      if(hw() && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()))
+      Int data_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType()), // !! USE VALID PIXELS FOR NOW, but this could be changed !!
+          data_pitch2  =data_pitch*data_blocks_y,
+          data_d       =Max(1, d()>>mip_map); // !! USE VALID PIXELS FOR NOW, but this could be changed !!
+      if(soft())
       {
-         Int data_pitch2=data_pitch*valid_blocks_y; // 'data_pitch2' could be moved into a method parameter
+      soft:
+         Int img_d=Max(1, hwD()>>mip_map);
+         CopyImgData((Byte*)data, softData(mip_map, cube_face), data_pitch, softPitch(mip_map), data_blocks_y, softBlocksY(mip_map), data_pitch2, softPitch2(mip_map), data_d, img_d);
+         return true;
+      }else
+      {
+      #if DX11
          SyncLocker locker(D._lock); if(D3DC)switch(mode())
          {
             case IMAGE_RT:
@@ -2851,52 +2858,53 @@ Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_fa
                D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(mip_map, cube_face, mipMaps()), null, data, data_pitch, data_pitch2);
             }return true;
          }
-      }
-   #elif GL // GL can accept only HW sizes
-      Int hw_pitch   =softPitch  (mip_map),
-          hw_blocks_y=softBlocksY(mip_map),
-          hw_pitch2  =hw_pitch*hw_blocks_y,
-          d          =Max(1, hwD()>>mip_map);
-      if( hw_pitch==data_pitch && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()) && D.created())
-      {
-      #if GL_ES
-         if(hw() && softData())CopyImgData((Byte*)data, softData(mip_map, cube_face), data_pitch, hw_pitch, valid_blocks_y, hw_blocks_y, data_pitch*valid_blocks_y, hw_pitch2, d, d);
-      #endif
-         switch(mode())
+      #elif GL // GL can accept only HW sizes
+         Int img_pitch   =softPitch  (mip_map),
+             img_blocks_y=softBlocksY(mip_map),
+             img_pitch2  =img_pitch*img_blocks_y;
+         if( img_pitch==data_pitch /*&& img_blocks_y==data_blocks_y ignore this because it's not specified by user*/ && D.created())
          {
-            case IMAGE_2D:
-            case IMAGE_RT:
-            case IMAGE_DS:
-            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                                   D.texBind(GL_TEXTURE_2D, _txtr);
-               if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-               else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
-                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-              _discard=false;
-            }return true;
+            VecI size(Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), Max(1, hwD()>>mip_map));
+            UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
+            switch(mode())
+            {
+               case IMAGE_2D:
+               case IMAGE_RT:
+               case IMAGE_DS:
+               { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                      D.texBind(GL_TEXTURE_2D, _txtr);
+                  if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
+                  else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, img_pitch2, data);
+                                        glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+                 _discard=false;
+                  if(GL_ES && softData())goto soft;
+               }return true;
 
-            case IMAGE_3D:
-            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                                   D.texBind(GL_TEXTURE_3D, _txtr);
-               if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-               else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), d, 0, hw_pitch2*d, data);
-                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-            }return true;
+               case IMAGE_3D:
+               { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                      D.texBind(GL_TEXTURE_3D, _txtr);
+                  if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, gl_format, gl_type, data);
+                  else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, img_pitch2*size.z, data);
+                                        glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+                  if(GL_ES && softData())goto soft;
+               }return true;
 
-            case IMAGE_CUBE:
-            case IMAGE_RT_CUBE:
-            { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
-                                   D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
-               if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data);
-               else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, hwTypeInfo().format, Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 0, hw_pitch2, data);
-                                     glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
-            }return true;
+               case IMAGE_CUBE:
+               case IMAGE_RT_CUBE:
+               { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                                      D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
+                  if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
+                  else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, format, size.x, size.y, 0, img_pitch2, data);
+                                        glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
+                  if(GL_ES && softData())goto soft;
+               }return true;
+            }
          }
+      #endif
       }
-   #endif
       if(lock(LOCK_WRITE, mip_map, cube_face))
       {
-         CopyImgData((Byte*)data, T.data(), data_pitch, T.pitch(), valid_blocks_y, T.softBlocksY(mip_map), data_pitch*valid_blocks_y, T.pitch2(), ld(), ld());
+         CopyImgData((Byte*)data, T.data(), data_pitch, T.pitch(), data_blocks_y, T.softBlocksY(mip_map), data_pitch2, T.pitch2(), data_d, T.ld());
          unlock();
          return true;
       }
