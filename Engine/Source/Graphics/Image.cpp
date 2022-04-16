@@ -1115,27 +1115,22 @@ void Image::setGLParams()
       switch(mode())
       {
          case IMAGE_2D:
-         case IMAGE_RT: target=GL_TEXTURE_2D; break;
+         case IMAGE_RT:
+         case IMAGE_DS:
+         case IMAGE_SHADOW_MAP:
+            target=GL_TEXTURE_2D; break;
 
-         case IMAGE_3D: target=GL_TEXTURE_3D; break;
+         case IMAGE_3D:
+            target=GL_TEXTURE_3D; break;
 
          case IMAGE_CUBE:
-         case IMAGE_RT_CUBE: target=GL_TEXTURE_CUBE_MAP; break;
+         case IMAGE_RT_CUBE:
+            target=GL_TEXTURE_CUBE_MAP; break;
 
          default: return;
       }
       D.texBind(target, _txtr);
 
-      // first call those that can generate GL ERROR and we're OK with that, so we will call 'glGetError' to clear them
-   #if 0 // this is now handled in the sampler
-      Bool filterable=T.filterable();
-      glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY, Max(D.texFilter(), 1));
-      glTexParameteri(target, GL_TEXTURE_MIN_FILTER    , (mipMaps()>1) ? (filterable ? D.texMipFilter() ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST) : filterable ? GL_LINEAR : GL_NEAREST);
-      glTexParameteri(target, GL_TEXTURE_MAG_FILTER    , (filterable && (D.texFilter() || mode()!=IMAGE_2D)) ? GL_LINEAR : GL_NEAREST);
-      glGetError(); // clear error in case GL_TEXTURE_MAX_LEVEL, anisotropy, .. are not supported
-   #endif
-
-      // now call those that must succeed
       glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip  );
       glTexParameteri(target, GL_TEXTURE_MAX_LEVEL , mipMaps()-1); // this is needed, without it images with mips=1 will fail to draw
 
@@ -1268,6 +1263,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
      _size.set(w, h, d); _hw_size.set(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
      _type=type        ; _hw_type=type;
      _mode=mode        ;
+     _mms =mip_maps    ;
      _base_mip=base_mip;
 
    #if DX11
@@ -1278,8 +1274,8 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          if(data) // always assumed to exactly match
          {
             Int faces=T.faces();
-            initial_data=res_data.setNum(mip_maps*faces).data();
-            REPD(m, mip_maps)
+            initial_data=res_data.setNum(mipMaps()*faces).data();
+            REPD(m, mipMaps())
             {
                Int   mip_pitch    =  softPitch  (m)           , // X
                      mip_pitch2   =  softBlocksY(m)*mip_pitch , // X*Y
@@ -1287,7 +1283,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
              C Byte *mip_data     =(Byte*)data[m];
                FREPD(f, faces)
                {
-                  D3D11_SUBRESOURCE_DATA &srd=initial_data[D3D11CalcSubresource(m, f, mip_maps)];
+                  D3D11_SUBRESOURCE_DATA &srd=initial_data[D3D11CalcSubresource(m, f, mipMaps())];
                   srd.pSysMem         =mip_data;
                   srd.SysMemPitch     =mip_pitch;
                   srd.SysMemSlicePitch=mip_pitch2;
@@ -1303,7 +1299,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          case IMAGE_SOFT:
          case IMAGE_SOFT_CUBE:
          {
-           _mms=mip_maps;
             setInfo();
             Alloc(_data_all, memUsage());
             lockSoft(); // set default lock members to main mip map
@@ -1323,7 +1318,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_DEFAULT;
                desc.BindFlags         =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =0;
@@ -1341,7 +1336,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_DEFAULT;
                desc.BindFlags         =D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE; if(samples<=1 && D.computeAvailable())desc.BindFlags|=D3D11_BIND_UNORDERED_ACCESS;
                desc.MiscFlags         =0;
@@ -1360,7 +1355,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.Width         =hwW();
                desc.Height        =hwH();
                desc.Depth         =hwD();
-               desc.MipLevels     =mip_maps;
+               desc.MipLevels     =mipMaps();
                desc.Usage         =D3D11_USAGE_DEFAULT;
                desc.BindFlags     =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags     =0;
@@ -1375,7 +1370,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_DEFAULT;
                desc.BindFlags         =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =D3D11_RESOURCE_MISC_TEXTURECUBE;
@@ -1393,7 +1388,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_DEFAULT;
                desc.BindFlags         =D3D11_BIND_RENDER_TARGET|D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =D3D11_RESOURCE_MISC_TEXTURECUBE;
@@ -1412,7 +1407,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_DEFAULT;
                desc.BindFlags         =D3D11_BIND_DEPTH_STENCIL|D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =0;
@@ -1432,7 +1427,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
             {
                desc.Width             =hwW();
                desc.Height            =hwH();
-               desc.MipLevels         =mip_maps;
+               desc.MipLevels         =mipMaps();
                desc.Usage             =D3D11_USAGE_STAGING;
                desc.BindFlags         =0;
                desc.MiscFlags         =0;
@@ -1448,7 +1443,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =mip_maps;
                T._samples=1;
 
                glGetError (); // clear any previous errors
@@ -1500,7 +1494,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =mip_maps;
                T._samples=1;
 
                glGetError (); // clear any previous errors
@@ -1527,7 +1520,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =mip_maps;
                T._samples=1;
 
                glGetError (); // clear any previous errors
@@ -1571,7 +1563,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =mip_maps;
                T._samples=1;
 
                glGetError (); // clear any previous errors
@@ -1631,17 +1622,15 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =1;
                T._samples=1;
 
-               glGetError(); // clear any previous errors
+               glGetError (); // clear any previous errors
+               setGLParams(); // call this first to bind the texture
 
-               D.texBind      (GL_TEXTURE_2D, _txtr);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S    , GL_CLAMP_TO_EDGE);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T    , GL_CLAMP_TO_EDGE);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-              {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL , 0); glGetError();} // clear error in case GL_TEXTURE_MAX_LEVEL is not supported (can happen on GLES2)
 
                glTexImage2D(GL_TEXTURE_2D, 0, hwTypeInfo().format, hwW(), hwH(), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), null);
 
@@ -1653,17 +1642,15 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._mms    =1;
                T._samples=1;
 
-               glGetError(); // clear any previous errors
+               glGetError (); // clear any previous errors
+               setGLParams(); // call this first to bind the texture
 
-               D.texBind      (GL_TEXTURE_2D, _txtr);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S      , GL_CLAMP_TO_EDGE);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T      , GL_CLAMP_TO_EDGE);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER  , GL_LINEAR);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER  , GL_LINEAR);
-              {glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL   , 0); glGetError();} // clear error in case GL_TEXTURE_MAX_LEVEL is not supported (can happen on GLES2)
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, REVERSE_DEPTH ? GL_GEQUAL : GL_LEQUAL);
 
