@@ -2840,7 +2840,9 @@ Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_fa
           data_d       =Max(1, d()>>mip_map); // !! USE VALID PIXELS FOR NOW, but this could be changed !!
       if(soft())
       {
+      #if GL
       soft:
+      #endif
          Int img_d=Max(1, hwD()>>mip_map);
          CopyImgData((Byte*)data, softData(mip_map, cube_face), data_pitch, softPitch(mip_map), data_blocks_y, softBlocksY(mip_map), data_pitch2, softPitch2(mip_map), data_d, img_d);
          return true;
