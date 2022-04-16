@@ -363,10 +363,10 @@ Bool Image::saveData(File &f)C
             if(!src->lockRead(src_mip, DIR_ENUM(src_face)))return false;
             Int  src_blocks_y=src->softBlocksY(src_mip);
             Int copy_pitch   =Min(file_pitch, src->pitch());
-            Int zero_pitch   =file_pitch-copy_pitch;
-            Int copy_blocks_y=Min(src_blocks_y, file_blocks_y);
-            Int zero_blocks_y=(file_blocks_y-copy_blocks_y)*file_pitch;
-            Int copy_pitch2  =copy_pitch*copy_blocks_y;
+            Int zero_pitch   =    file_pitch-copy_pitch;
+            Int copy_blocks_y=Min( src_blocks_y, file_blocks_y);
+            Int zero_blocks_y=(   file_blocks_y-copy_blocks_y)*file_pitch;
+            Int copy_pitch2  =    copy_pitch*copy_blocks_y;
             Int copy_d       =Min(file_d, src->ld());
             FREPD(z, copy_d)
             {
@@ -431,7 +431,7 @@ struct Loader
              file_blocks_y=fileBlocksY(file_mip);
      //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
          {
-            LoadImgData(*f, image.softData(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
+            LoadImgData(*f, image.data(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
          }
          return f->ok();
       }
@@ -457,7 +457,7 @@ struct Loader
          Image soft;
          if(!load(file_mip, soft))return false;
          if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
-         CopyImgData(soft.softData(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
+         CopyImgData(soft.data(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
          return true;
       }
    }
@@ -553,7 +553,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    if(!f->ok  ()                 // if any 'mip.compressed_size' failed to load
    ||  f->left()<compressed_size // or don't have enough data (this is needed loading directly from FILE_MEM memory, and also to make sure that any streaming on other thread will succeed)
    )return false;
-   if(!want.is()){image.del(); return can_del_f || f->skip(compressed_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later
+   if(!want.is()){image.del(); return can_del_f || f->skip(compressed_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later (important if 'f' is compressed)
 
    // shrink
    for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
@@ -610,7 +610,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
             image.adjustInfo(image.w(), image.h(), image.d(), want.type);
-            return can_del_f || f->skip(compressed_size); // skip image data, no need to seek if 'f' isn't needed later
+            return can_del_f || f->skip(compressed_size); // skip image data, no need to seek if 'f' isn't needed later (important if 'f' is compressed)
          }
       }
 
@@ -731,14 +731,14 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          return true;
       }else
       {
-         if(can_del_f || f->pos(f_end))return true; // no need to seek if 'f' isn't needed later
+         if(can_del_f || f->pos(f_end))return true; // no need to seek if 'f' isn't needed later (important if 'f' is compressed)
       }
    }else // load the base mip, and re-create the whole image out of it
    {
       Image soft;
       if(f->skip(mips[file_base_mip].offset))
          if(load(file_base_mip, soft))
-            if(can_del_f || f->pos(f_end)) // no need to seek if 'f' isn't needed later
+            if(can_del_f || f->pos(f_end)) // no need to seek if 'f' isn't needed later (important if 'f' is compressed)
                return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
    }
    return false;
