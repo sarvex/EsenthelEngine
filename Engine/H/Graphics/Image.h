@@ -341,7 +341,7 @@ struct Image // Image (Texture)
 
    void lockSoft();
    void lockedSetMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment !! NEEDS 'D._lock' !!
-   Bool setFrom(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
+   Bool      setFaceData(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
 #endif
    Bool     lock    (LOCK_MODE lock=LOCK_READ_WRITE, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT) ; //   lock image for editing specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes)
    Bool     lockRead(                                Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT)C; //   lock image for reading specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes), this method has the same effect as calling "lock(LOCK_READ, mip_map, cube_face)", however unlike 'lock' method it has 'const' modifier and can be called on "const Image" objects

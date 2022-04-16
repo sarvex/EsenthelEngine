@@ -528,7 +528,7 @@ void VolumetricCloud::checkBuild()
       {
         _building=0;
         _build_finished=false;
-        _image.setFrom(_image_data, _image.w()*_image.bytePP());
+        _image.setFaceData(_image_data, _image.w()*_image.bytePP());
         _cur=_build;
       }else
       if(_building==2) // have to wait

@@ -1454,7 +1454,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
-               // !! WARNING: IF THIS IS REPLACED TO USE 'glTexStorage2D' THEN CAN'T USE 'glTexImage2D/glCompressedTexImage2D' TO UPDATE MIP MAPS IN UNLOCK AND 'lockedSetMipData', 'setFrom' and .., check 'glTexSubImage' and compressed? !!
+               // !! WARNING: IF THIS IS REPLACED TO USE 'glTexStorage2D' THEN CAN'T USE 'glTexImage2D/glCompressedTexImage2D' TO UPDATE MIP MAPS IN UNLOCK AND 'lockedSetMipData', 'setFaceData' and .., check 'glTexSubImage' and compressed? !!
 
                UInt format=hwTypeInfo().format, gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
                if(data)
@@ -2831,7 +2831,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
       }
    }
 }
-Bool Image::setFrom(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
+Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
 {
    if(data)
    {
