@@ -1077,11 +1077,12 @@ Bool Image::setInfo()
       glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_INTERNAL_FORMAT, & format   );
      _hw_type  =ImageFormatToType(format, hwType());
      _hw_size.z=1;
+      MAX(_mms    , 1);
+      MAX(_samples, 1);
    }
 #endif
 
   _byte_pp=hwTypeInfo().byte_pp; // keep a copy for faster access
-   if(is()){MAX(_mms, 1); MAX(_samples, 1);}
    setPartial();
    return true;
 }
@@ -1207,15 +1208,22 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
    if(w<=0 || h<=0 || d<=0 || type==IMAGE_NONE){del(); return !w && !h && !d;}
 
    if((d!=1 && mode!=IMAGE_SOFT && mode!=IMAGE_3D) // "d!=1" can be specified only for SOFT or 3D
-   || !InRange(type, IMAGE_ALL_TYPES))goto error; // type out of range
-
-   MAX(samples, 1);
+   || !InRange(type, IMAGE_ALL_TYPES)
+#if DX11
+   || (samples!=1 && (mode==IMAGE_SOFT || mode==IMAGE_SOFT_CUBE || mode==IMAGE_3D)) // SOFT SOFT_CUBE 3D don't support multi-sampling
+#else
+   ||  samples!=1 // not yet implemented
+#endif
+   )goto error; // type out of range
 
    {
       // mip maps
       Int      total_mip_maps=TotalMipMaps(w, h, d); // don't use hardware texture size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
       if(mip_maps<=0)mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
       else       MIN(mip_maps,total_mip_maps); // don't use more than maximum allowed
+   #if GL
+      if(mode==IMAGE_GL_RB)mip_maps=1;
+   #endif
 
       // check if already matches what we want
       if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples)
@@ -1261,10 +1269,10 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
       // create
      _size.set(w, h, d); _hw_size.set(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
-     _type=type        ; _hw_type=type;
-     _mode=mode        ;
-     _mms =mip_maps    ;
-     _base_mip=base_mip;
+     _type   =type     ; _hw_type=type;
+     _mode   =mode     ;
+     _mms    =mip_maps ; _base_mip=base_mip;
+     _samples=samples  ;
 
    #if DX11
       D3D11_SUBRESOURCE_DATA *initial_data; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
@@ -1323,7 +1331,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.BindFlags         =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =0;
                desc.CPUAccessFlags    =0;
-               desc.SampleDesc.Count  =1;
+               desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
                if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
@@ -1344,7 +1352,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, null, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
             }
          }break;
 
@@ -1375,7 +1383,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.BindFlags         =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags         =D3D11_RESOURCE_MISC_TEXTURECUBE;
                desc.CPUAccessFlags    =0;
-               desc.SampleDesc.Count  =1;
+               desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =6;
                if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
@@ -1396,7 +1404,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =6;
-               if(OK(D3D->CreateTexture2D(&desc, null, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
             }
          }break;
 
@@ -1415,9 +1423,9 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, null, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
                FlagDisable(desc.BindFlags, D3D11_BIND_SHADER_RESOURCE); // disable shader reading
-               if(OK(D3D->CreateTexture2D(&desc, null, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
             }
          }break;
 
@@ -1432,7 +1440,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.BindFlags         =0;
                desc.MiscFlags         =0;
                desc.CPUAccessFlags    =D3D11_CPU_ACCESS_READ|D3D11_CPU_ACCESS_WRITE;
-               desc.SampleDesc.Count  =1;
+               desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
                if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
@@ -1443,8 +1451,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1494,8 +1500,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1520,8 +1524,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1563,8 +1565,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1622,8 +1622,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1642,8 +1640,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenTextures(1, &_txtr); if(_txtr)
             {
-               T._samples=1;
-
                glGetError (); // clear any previous errors
                setGLParams(); // call this first to bind the texture
 
@@ -1664,10 +1660,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
          {
             glGenRenderbuffers(1, &_rb); if(_rb)
             {
-               T._mms    =1;
-               T._samples=1;
-             //LogN(S+"x:"+hwW()+", y:"+hwH()+", type:"+hwTypeInfo().name);
-
                glGetError(); // clear any previous errors
 
                glBindRenderbuffer   (GL_RENDERBUFFER, _rb);
