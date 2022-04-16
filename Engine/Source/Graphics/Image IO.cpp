@@ -465,13 +465,12 @@ struct Loader
    void update();
 };
 /******************************************************************************/
-static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when wanting to cancel something
+static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when want to cancel something
 struct StreamData
 {
    Image *image;
 
-   inline void cancel  (            ) {Cancel(image);} // use when wanting to cancel something
-   inline void canceled(Image &image) {if(T.image==&image)T.image=null;} // use when something got canceled and we need to clear it
+   inline void cancel() {Cancel(image);} // use when want to cancel something
 };
 struct StreamLoad : StreamData
 {
@@ -486,7 +485,8 @@ struct StreamSet : StreamData
    void setMipData()
    {
       if(image && mip>=0) // not canceled && not error
-         {image->lockedSetMipData(mip_data.data(), mip); mip_data.del();} // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
+         image->lockedSetMipData(mip_data.data(), mip); // set mip data
+      mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
    }
    void baseMip()
    {
@@ -497,6 +497,10 @@ struct StreamSet : StreamData
    {
       if(image && mip<=0) // not canceled && error or last mip
          image->_streaming=false; // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !!
+   }
+   void canceled(Image &image) // use when something got canceled and we need to clear it
+   {
+       if(T.image==&image){T.image=null; mip_data.del();} // can already release memory
    }
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
