@@ -481,15 +481,16 @@ struct StreamSet : StreamData
 
    void set()
    {
-      if(image) // not cancelled
+      if(image && mip>=0) // not cancelled && not error
       {
-         if(mip<0)image->_streaming=false;else // error
-         {
-            image->lockedSetMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
-            image->lockedBaseMip   (                 mip); // !! THIS MUST BE SET ONLY AFTER 'lockedSetMipData' !!
-            if(!mip)image->_streaming=false; // last mip = stream finished !! THIS CAN BE SET ONLY AFTER ALL QUEUED MIP DATAS WERE SET !!
-         }
+                                 image->lockedSetMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
+         if(mip<image->baseMip())image->lockedBaseMip   (                 mip); // set only if smaller, because this can be called for biggest mips first
       }
+   }
+   void finish()
+   {
+      if(image && mip<=0) // not cancelled && error or last mip
+         image->_streaming=false; // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !!
    }
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
@@ -1403,7 +1404,8 @@ static void StreamSetsFunc()
 {
    SyncLocker         d_lock(D._lock);
    MemcThreadSafeLock s_lock(StreamSets);
-   FREPA(StreamSets)StreamSets.lockedElm(i).set(); // !! HAVE TO PROCESS IN ORDER !!
+    REPA(StreamSets)StreamSets.lockedElm(i).set   (); // set data from back, to process biggest  mips first, because for every 'set' we have to recreate SRV via 'baseMip', so it's best to set first the biggest (with smallest index), so that next smaller will don't have to be recreated !! THIS CAN BE DONE HERE ONLY BECAUSE ALL STORED MIP SETS WILL BE PERFORMED BEFORE RETURNING !!
+   FREPA(StreamSets)StreamSets.lockedElm(i).finish(); // !! HAVE TO PROCESS IN ORDER !!
    StreamSets.clear();
 }
 void CancelAllStreamLoads() // this force cancels all when we want to shut down

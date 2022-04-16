@@ -301,6 +301,7 @@ struct Image // Image (Texture)
    Bool                  isSByte()C {return IsSByte(_hw_type)          ;} // if  this is a signed byte/8-bit precision
 #if EE_PRIVATE
    constexpr Bool     filterable()C {return hwTypeInfo().  filterable();}
+   Byte                  baseMip()C {return _base_mip;}
 #endif
 
    CUBE_LAYOUT cubeLayout()C; // auto-detect cube layout based on image size
