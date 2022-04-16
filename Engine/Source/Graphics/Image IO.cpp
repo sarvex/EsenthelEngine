@@ -1408,7 +1408,7 @@ static void StreamSetsFunc()
 {
    SyncLocker         d_lock(D._lock);
    MemcThreadSafeLock s_lock(StreamSets);
-    REPA(StreamSets)StreamSets.lockedElm(i).set   (); // set data from back, to process biggest  mips first, because for every 'set' we have to recreate SRV via 'baseMip', so it's best to set first the biggest (with smallest index), so that next smaller will don't have to be recreated !! THIS CAN BE DONE HERE ONLY BECAUSE ALL STORED MIP SETS WILL BE PERFORMED BEFORE RETURNING !!
+    REPA(StreamSets)StreamSets.lockedElm(i).set   (); // set data from back, to process biggest mips first, because for every 'set' we have to recreate SRV via 'baseMip', so it's best to set first the biggest (with smallest index), so that next smaller will don't have to be recreated !! THIS CAN BE DONE HERE ONLY BECAUSE ALL STORED MIP SETS WILL BE PERFORMED BEFORE RETURNING !!
    FREPA(StreamSets)StreamSets.lockedElm(i).finish(); // !! HAVE TO PROCESS IN ORDER !!
    StreamSets.clear();
 }
