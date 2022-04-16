@@ -463,7 +463,7 @@ void _Cache::lockedRemoveData(CPtr data, Bool counted)
    }
 }
 /******************************************************************************/
-void _Cache::incRefContained(CPtr data) {Elm *elm=dataElm(data); IncPtrNum(elmDesc(*elm).ptr_num);}
+void _Cache::incRefContained(CPtr data) {Elm *elm=dataElm(data); /*if(elm)*/IncPtrNum(elmDesc(*elm).ptr_num);}
 void _Cache::incRef         (CPtr data)
 {
    if(data)

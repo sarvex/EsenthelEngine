@@ -461,13 +461,13 @@ struct Loader
    void update();
 };
 /******************************************************************************/
-static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when wanting to force cancel something
+static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when wanting to cancel something
 struct StreamData
 {
    Image *image;
 
-   inline void cancel(            ) {Cancel(image);} // use when wanting to force cancel something
-   inline void cancel(Image &image) {if(T.image==&image)T.image=null;} // use when something got cancelled and we need to clear it
+   inline void cancel  (            ) {Cancel(image);} // use when wanting to cancel something
+   inline void canceled(Image &image) {if(T.image==&image)T.image=null;} // use when something got cancelled and we need to clear it
 };
 struct StreamLoad : StreamData
 {
@@ -1422,7 +1422,7 @@ void Image::cancelStream() // called when image is deleted
       // cancellation order is important! First the 'StreamLoads' source, then next steps
       {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==this)StreamLoads.lockedRemove(i);} // no need to keep order
       {SyncLocker         lock(StreamLoadCurLock);                                   if(StreamLoadCur==this)StreamLoadCur=null;}
-      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).cancel(T   );} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
+      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).canceled(T );} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
      _streaming=false;
    }
 }
