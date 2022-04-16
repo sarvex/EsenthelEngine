@@ -483,13 +483,15 @@ struct StreamSet : StreamData
    Int        mip;
    Mems<Byte> mip_data;
 
-   void set()
+   void setMipData()
    {
       if(image && mip>=0) // not canceled && not error
-      {
-                                 image->lockedSetMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
-         if(mip<image->baseMip())image->lockedBaseMip   (                 mip); // set only if smaller, because this can be called for biggest mips first
-      }
+         {image->lockedSetMipData(mip_data.data(), mip); mip_data.del();} // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
+   }
+   void baseMip()
+   {
+      if(image && InRange(mip, image->baseMip())) // mip>=0 && mip<image->baseMip(), not canceled && not error && smaller, because this can be called for biggest mips first
+         image->lockedBaseMip(mip);
    }
    void finish()
    {
@@ -1408,8 +1410,10 @@ static void StreamSetsFunc()
 {
    SyncLocker         d_lock(D._lock);
    MemcThreadSafeLock s_lock(StreamSets);
-    REPA(StreamSets)StreamSets.lockedElm(i).set   (); // set data from back, to process biggest mips first, because for every 'set' we have to recreate SRV via 'baseMip', so it's best to set first the biggest (with smallest index), so that next smaller will don't have to be recreated !! THIS CAN BE DONE HERE ONLY BECAUSE ALL STORED MIP SETS WILL BE PERFORMED BEFORE RETURNING !!
-   FREPA(StreamSets)StreamSets.lockedElm(i).finish(); // !! HAVE TO PROCESS IN ORDER !!
+   // this must be separated into 3 steps for best efficiency. When setting 'baseMip' from end to start, it can't be merged with 'setMipData', because when it adjusts 'baseMip' other threads might check 'baseMip', and access some mip maps, even though they would still need to be processed via 'setMipData' here. So do all 'setMipData' first, and then adjust 'baseMip' for biggest mips that we have first. Separating like this requires that all 'StreamSets' that we have will be processed.
+   FREPA(StreamSets)StreamSets.lockedElm(i).setMipData(); // set all mip data, order is not important much, but probably better go forward, so next step going back will have elements already in RAM cache
+    REPA(StreamSets)StreamSets.lockedElm(i).baseMip   (); // now we have to set 'baseMip', which recreates SRV, it's best if we go from end, and already create for the biggest mip we have, further smaller mips we'll just ignore, remember that when setting 'baseMip' then all mips for that range must have its data already set (because other threads might access it)
+   FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once '_streaming' is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
    StreamSets.clear();
 }
 void CancelAllStreamLoads() // this force cancels all when we want to shut down
