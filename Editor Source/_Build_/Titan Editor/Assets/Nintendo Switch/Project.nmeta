@@ -34,5 +34,23 @@
 		<PlayLogQueryCapability>None</PlayLogQueryCapability>
 		<PlayLogPolicy>Open</PlayLogPolicy>
 		<RuntimeParameterDelivery>Always</RuntimeParameterDelivery>
+		<SupportedLanguage>AmericanEnglish</SupportedLanguage>
+		<SupportedLanguage>BritishEnglish</SupportedLanguage>
+		<SupportedLanguage>German</SupportedLanguage>
+		<SupportedLanguage>Dutch</SupportedLanguage>
+		<SupportedLanguage>French</SupportedLanguage>
+		<SupportedLanguage>CanadianFrench</SupportedLanguage>
+		<SupportedLanguage>Italian</SupportedLanguage>
+		<SupportedLanguage>Spanish</SupportedLanguage>
+		<SupportedLanguage>LatinAmericanSpanish</SupportedLanguage>
+		<SupportedLanguage>Portuguese</SupportedLanguage>
+		<SupportedLanguage>BrazilianPortuguese</SupportedLanguage>
+		<SupportedLanguage>Russian</SupportedLanguage>
+		<SupportedLanguage>Japanese</SupportedLanguage>
+		<SupportedLanguage>Korean</SupportedLanguage>
+		<SupportedLanguage>SimplifiedChinese</SupportedLanguage>
+		<SupportedLanguage>TraditionalChinese</SupportedLanguage>
+		<UserAccountSaveDataSize>0x2000000</UserAccountSaveDataSize>
+		<UserAccountSaveDataJournalSize>0x2000000</UserAccountSaveDataJournalSize>
 	</Application>
 </NintendoSdkMeta>
