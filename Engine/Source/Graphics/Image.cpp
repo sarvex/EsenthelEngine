@@ -1172,41 +1172,6 @@ void Image::setGLParams()
 #endif
 }
 /******************************************************************************/
-void Image::lockedBaseMip(Int base_mip)
-{
-   if(_base_mip!=base_mip)
-   {
-     _base_mip=base_mip;
-   #if DX11
-      DYNAMIC_ASSERT(setSRV(), "Image.baseMip.setSRV");
-   #elif GL
-      UInt target;
-      switch(mode())
-      {
-         case IMAGE_2D:
-         case IMAGE_RT: target=GL_TEXTURE_2D; break;
-
-         case IMAGE_3D: target=GL_TEXTURE_3D; break;
-
-         case IMAGE_CUBE:
-         case IMAGE_RT_CUBE: target=GL_TEXTURE_CUBE_MAP; break;
-
-         default: goto skip;
-      }
-      D.texBind(target, _txtr);
-      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
-   skip:;
-   #endif
-   }
-}
-void Image::baseMip(Int base_mip)
-{
-   if(_base_mip!=base_mip)
-   {
-      SyncLockerEx locker(D._lock, hw());
-      lockedBaseMip(base_mip);
-   }
-}
 Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples, CPtr *data, Int base_mip)
 {
    // verify parameters
@@ -2941,6 +2906,42 @@ Int Image::faces()C {return is() ? ImageFaces(mode()) : 0;}
 /******************************************************************************/
 UInt Image::    memUsage()C {return ImageSize(hwW(), hwH(), hwD(), hwType(), mode(), mipMaps());}
 UInt Image::typeMemUsage()C {return ImageSize(hwW(), hwH(), hwD(),   type(), mode(), mipMaps());}
+/******************************************************************************/
+void Image::lockedBaseMip(Int base_mip)
+{
+   if(_base_mip!=base_mip)
+   {
+     _base_mip=base_mip;
+   #if DX11
+      DYNAMIC_ASSERT(setSRV(), "Image.baseMip.setSRV");
+   #elif GL
+      UInt target;
+      switch(mode())
+      {
+         case IMAGE_2D:
+         case IMAGE_RT: target=GL_TEXTURE_2D; break;
+
+         case IMAGE_3D: target=GL_TEXTURE_3D; break;
+
+         case IMAGE_CUBE:
+         case IMAGE_RT_CUBE: target=GL_TEXTURE_CUBE_MAP; break;
+
+         default: goto skip;
+      }
+      D.texBind(target, _txtr);
+      glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, _base_mip);
+   skip:;
+   #endif
+   }
+}
+void Image::baseMip(Int base_mip)
+{
+   if(_base_mip!=base_mip)
+   {
+      SyncLockerEx locker(D._lock, hw());
+      lockedBaseMip(base_mip);
+   }
+}
 /******************************************************************************/
 // HARDWARE
 /******************************************************************************/
