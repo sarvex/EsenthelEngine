@@ -694,27 +694,28 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       image_base_mip=can_read_mips-read_mips;
       if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, image_base_mip))
       {
-         Image soft;
          if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
             if(IMAGE_TYPE alt_type=ImageTypeOnFail(want_hw_type)) // there's replacement
-               if(soft.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want_mode_soft, want.mip_maps, 1, mip_data)) // first create as soft
          {
-            want_hw_type=alt_type;
-         again:
-            if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
+            Image soft; if(soft.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want_mode_soft, want.mip_maps, 1, mip_data)) // first create as soft
             {
-               REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-               if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, image_base_mip))
+               want_hw_type=alt_type;
+            again:
+               if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
                {
-                  // these could've changed if converted to another type
-                  want_hw_size  =image.hwSize3();
-                  same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size);
-                  same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-                  direct        =(same_type && want_faces==file_faces);
-                  load_mode     =(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
-                  goto ok;
+                  REP(soft.mipMaps())mip_data[i]=soft.softData(i);
+                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, image_base_mip))
+                  {
+                     // these could've changed if converted to another type
+                     want_hw_size  =image.hwSize3();
+                     same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size);
+                     same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+                     direct        =(same_type && want_faces==file_faces);
+                     load_mode     =(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+                     goto ok;
+                  }
+                  if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
                }
-               if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
             }
          }
          return false;
