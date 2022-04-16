@@ -2278,7 +2278,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                   if(lock==LOCK_WRITE)Alloc(_data, pitch2);else
                   {
                      // get from GPU
-                     Image temp; if(temp.createTry(PaddedWidth(hwW(), hwH(), mip_map, hwType()), PaddedHeight(hwW(), hwH(), mip_map, hwType()), 1, hwType(), IMAGE_STAGING, 1, false))
+                     Image temp; if(temp.createEx(Max(1, hwW()>>mip_map), Max(1, hwH()>>mip_map), 1, hwType(), IMAGE_STAGING, 1))
                      {
                         D3DC->CopySubresourceRegion(temp._txtr, D3D11CalcSubresource(0, 0, temp.mipMaps()), 0, 0, 0, _txtr, D3D11CalcSubresource(mip_map, 0, mipMaps()), null);
                         if(temp.lockRead())
