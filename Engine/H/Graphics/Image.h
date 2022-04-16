@@ -696,6 +696,7 @@ struct Image // Image (Texture)
 #if EE_PRIVATE
    void    zero     () {Zero(T);}
    Bool    setSRV   ();
+   Bool    finalize ();
    Bool    setInfo  ();
    void  forceInfo  (Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int samples);
    void adjustInfo  (Int w, Int h, Int d, IMAGE_TYPE type);

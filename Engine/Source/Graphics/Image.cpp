@@ -996,6 +996,15 @@ Bool Image::setSRV()
    return true;
 }
 #endif
+Bool Image::finalize()
+{
+#if DX11
+   if(!setSRV())return false;
+#endif
+  _byte_pp=hwTypeInfo().byte_pp; // keep a copy for faster access
+   setPartial();
+   return true;
+}
 Bool Image::setInfo()
 {
 #if DX11
@@ -1020,7 +1029,6 @@ Bool Image::setInfo()
         _hw_size.z=1;
          if(IMAGE_TYPE hw_type=ImageFormatToType(desc.Format))T._hw_type=hw_type; // override only if detected, because Image could have been created with TYPELESS format which can't be directly decoded and IMAGE_NONE could be returned
       }
-      if(!setSRV())return false;
    }
 #elif GL
    if(_txtr)switch(mode())
@@ -1081,10 +1089,7 @@ Bool Image::setInfo()
       MAX(_samples, 1);
    }
 #endif
-
-  _byte_pp=hwTypeInfo().byte_pp; // keep a copy for faster access
-   setPartial();
-   return true;
+   return finalize();
 }
 void Image::forceInfo(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int samples)
 {
@@ -1306,8 +1311,8 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       {
          case IMAGE_SOFT:
          case IMAGE_SOFT_CUBE:
+            if(finalize())
          {
-            setInfo();
             Alloc(_data_all, memUsage());
             lockSoft(); // set default lock members to main mip map
             if(data)
@@ -1317,7 +1322,8 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                   if(CPtr mip_data=data[m])
                      CopyFast(softData(m), mip_data, softFaceSize(m)*faces);
             }
-         }return true;
+            return true;
+         }break;
 
       #if DX11
          case IMAGE_2D:
@@ -1334,7 +1340,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1352,7 +1358,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1368,7 +1374,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.BindFlags     =D3D11_BIND_SHADER_RESOURCE;
                desc.MiscFlags     =0;
                desc.CPUAccessFlags=0;
-               if(OK(D3D->CreateTexture3D(&desc, initial_data, (ID3D11Texture3D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture3D(&desc, initial_data, (ID3D11Texture3D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1386,7 +1392,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =6;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1404,7 +1410,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =6;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1423,9 +1429,9 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
                FlagDisable(desc.BindFlags, D3D11_BIND_SHADER_RESOURCE); // disable shader reading
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
 
@@ -1443,7 +1449,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                desc.SampleDesc.Count  =samples;
                desc.SampleDesc.Quality=0;
                desc.ArraySize         =1;
-               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && setInfo())return true;
+               if(OK(D3D->CreateTexture2D(&desc, initial_data, (ID3D11Texture2D**)&_txtr)) && finalize())return true;
             }
          }break;
       #elif GL
@@ -1485,7 +1491,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                #endif
                }
 
-               if(glGetError()==GL_NO_ERROR && setInfo()) // ok
+               if(glGetError()==GL_NO_ERROR && finalize()) // ok
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
@@ -1512,7 +1518,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                   UInt gl_format=SourceGLFormat(hwType()), gl_type=SourceGLType(hwType());
                   glTexImage2D(GL_TEXTURE_2D, 0, format, hwW(), hwH(), 0, gl_format, gl_type, null);
                }
-               if(glGetError()==GL_NO_ERROR && setInfo()) // ok
+               if(glGetError()==GL_NO_ERROR && finalize()) // ok
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                   return true;
@@ -1549,7 +1555,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                if(!compressed())glTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, gl_format, gl_type, null);
                else   glCompressedTexImage3D(GL_TEXTURE_3D, 0, format, hwW(), hwH(), hwD(), 0, ImageFaceSize(hwW(), hwH(), hwD(), 0, hwType()), null);
 
-               if(glGetError()==GL_NO_ERROR && setInfo()) // ok
+               if(glGetError()==GL_NO_ERROR && finalize()) // ok
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
@@ -1604,7 +1610,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                   }
                }
 
-               if(glGetError()==GL_NO_ERROR && setInfo()) // ok
+               if(glGetError()==GL_NO_ERROR && finalize()) // ok
                {
                   glFlush(); // to make sure that the data was initialized, in case it'll be accessed on a secondary thread
                #if GL_ES
@@ -1632,7 +1638,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
                glTexImage2D(GL_TEXTURE_2D, 0, hwTypeInfo().format, hwW(), hwH(), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), null);
 
-               if(glGetError()==GL_NO_ERROR && setInfo())return true; // ok
+               if(glGetError()==GL_NO_ERROR && finalize())return true; // ok
             }
          }break;
 
@@ -1652,7 +1658,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 
                glTexImage2D(GL_TEXTURE_2D, 0, hwTypeInfo().format, hwW(), hwH(), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), null);
 
-               if(glGetError()==GL_NO_ERROR && setInfo())return true; // ok
+               if(glGetError()==GL_NO_ERROR && finalize())return true; // ok
             }
          }break;
 
@@ -1665,7 +1671,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
                glBindRenderbuffer   (GL_RENDERBUFFER, _rb);
                glRenderbufferStorage(GL_RENDERBUFFER, hwTypeInfo().format, hwW(), hwH());
 
-               if(glGetError()==GL_NO_ERROR && setInfo())return true; // ok
+               if(glGetError()==GL_NO_ERROR && finalize())return true; // ok
             }
          }break;
       #endif
