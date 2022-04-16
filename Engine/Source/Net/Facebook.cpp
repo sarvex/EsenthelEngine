@@ -102,7 +102,7 @@ Facebook& Facebook::logIn()
          }else
          if(result && result.isCancelled)
          {
-            // cancelled
+            // canceled
          }else
          {
             // logged in

@@ -428,7 +428,7 @@ void VolumetricCloud::cancelBuild()
       if(_threads)
       {
         _threads->cancel(T, Build);
-         // TODO: there may be 'SetImageRow' processing that could be cancelled here, however there's no way currently to cancel 'Threads.process', so instead, functions check for '_building' and break/return
+         // TODO: there may be 'SetImageRow' processing that could be canceled here, however there's no way currently to cancel 'Threads.process', so instead, functions check for '_building' and break/return
         _threads->wait  (T, Build);
       }
      _build_finished=false;

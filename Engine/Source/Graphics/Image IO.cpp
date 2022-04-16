@@ -467,7 +467,7 @@ struct StreamData
    Image *image;
 
    inline void cancel  (            ) {Cancel(image);} // use when wanting to cancel something
-   inline void canceled(Image &image) {if(T.image==&image)T.image=null;} // use when something got cancelled and we need to clear it
+   inline void canceled(Image &image) {if(T.image==&image)T.image=null;} // use when something got canceled and we need to clear it
 };
 struct StreamLoad : StreamData
 {
@@ -481,7 +481,7 @@ struct StreamSet : StreamData
 
    void set()
    {
-      if(image && mip>=0) // not cancelled && not error
+      if(image && mip>=0) // not canceled && not error
       {
                                  image->lockedSetMipData(mip_data.data(), mip); mip_data.del(); // delete now to release memory, because it's possible driver would make its own allocation, and since we delete objects only after all of them are processed, a lot of memory could get allocated
          if(mip<image->baseMip())image->lockedBaseMip   (                 mip); // set only if smaller, because this can be called for biggest mips first
@@ -489,7 +489,7 @@ struct StreamSet : StreamData
    }
    void finish()
    {
-      if(image && mip<=0) // not cancelled && error or last mip
+      if(image && mip<=0) // not canceled && error or last mip
          image->_streaming=false; // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !!
    }
 };
@@ -743,7 +743,7 @@ static inline Bool Submit(StreamSet &set)
 {
    {
       SyncLocker lock(StreamLoadCurLock);
-      if(!StreamLoadCur)return false; // cancelled
+      if(!StreamLoadCur)return false; // canceled
       StreamSets.swapAdd(set);
    }
    App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
@@ -768,7 +768,7 @@ void Loader::update()
       set.image=StreamLoadCur;
 
       // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
-      if(!Submit(set))return; // cancelled
+      if(!Submit(set))return; // canceled
    }
    return;
 error:
@@ -1391,7 +1391,7 @@ static Bool StreamLoadFunc(Thread &thread)
          StreamLoads.lockedSwapPop(sl);
          StreamLoadCur=sl.image;
       }
-    //if(StreamLoadCur) now this isn't needed because we remove canceled 'StreamLoads' instead of canceling them // if wasn't cancelled, we don't need 'StreamLoadCurLock' here, because we don't access it yet, that can wait
+    //if(StreamLoadCur) now this isn't needed because we remove canceled 'StreamLoads' instead of canceling them // if wasn't canceled, we don't need 'StreamLoadCurLock' here, because we don't access it yet, that can wait
       {
          sl.loader.f=&sl.f; // have to adjust because memory address got changed due to swap
          sl.loader.update();
