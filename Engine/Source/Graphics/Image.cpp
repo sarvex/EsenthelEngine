@@ -1030,7 +1030,7 @@ Bool Image::setInfo()
       case IMAGE_DS        :
       case IMAGE_SHADOW_MAP:
       {
-      #if !GL_ES // texture info is unavailable on OpenGL ES, so just trust in what we've set
+      #if !GL_ES // unavailable on OpenGL ES
          Int format;
          D.texBind               (GL_TEXTURE_2D, _txtr);
          glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH          , &_hw_size.x);
@@ -1043,7 +1043,7 @@ Bool Image::setInfo()
 
       case IMAGE_3D:
       {
-      #if !GL_ES // texture info is unavailable on OpenGL ES, so just trust in what we've set
+      #if !GL_ES // unavailable on OpenGL ES
          Int format;
          D.texBind               (GL_TEXTURE_3D, _txtr);
          glGetTexLevelParameteriv(GL_TEXTURE_3D, 0, GL_TEXTURE_WIDTH          , &_hw_size.x);
@@ -1057,7 +1057,7 @@ Bool Image::setInfo()
       case IMAGE_CUBE:
       case IMAGE_RT_CUBE:
       {
-      #if !GL_ES // texture info is unavailable on OpenGL ES, so just trust in what we've set
+      #if !GL_ES // unavailable on OpenGL ES
          Int format;
          D.texBind               (GL_TEXTURE_CUBE_MAP, _txtr);
          glGetTexLevelParameteriv(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_TEXTURE_WIDTH          , &_hw_size.x);
