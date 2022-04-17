@@ -757,8 +757,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                         want_hw_size.set(PaddedWidth (want_size.x, want_size.y, 0, want_hw_type),
                                          PaddedHeight(want_size.x, want_size.y, 0, want_hw_type), want_size.z);
                         data_size=0;
-                        Int full_mips=read_mips+shrink;
-                        REP(full_mips)data_size+=wantMipSize(i); // already allocate enough for entire image
+                        Int read_full_mips=read_mips+shrink;
+                        REP(read_full_mips)data_size+=wantMipSize(i); // already allocate enough for entire image
 
                         Int copy=soft.memUsage();
                         MAX(data_size, copy);
