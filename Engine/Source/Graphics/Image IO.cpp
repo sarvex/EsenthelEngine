@@ -851,7 +851,7 @@ void Loader::update()
             dest_d       =Max(1, want_hw_size.z>>dest_mip);
         _CopyImgData(src, dest, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y, src_pitch*src_blocks_y, dest_pitch*dest_blocks_y, src_d, dest_d, want_faces); // call _ version to adjust pointers
       }
-      CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data'
+      CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data', it was created big enough to keep all loaded mip maps
    }
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 #else
