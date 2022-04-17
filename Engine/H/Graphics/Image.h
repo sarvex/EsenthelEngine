@@ -268,7 +268,7 @@ struct Image // Image (Texture)
    IMAGE_TYPE   type ()C {return _type            ;} // get image  type
    IMAGE_TYPE hwType ()C {return _hw_type         ;} // get image  type in which it is stored on the GPU (this can be different than 'type' if it is not supported directly on the hardware, for example image was created as compressed format which the GPU does not support, 'type' will be set to the compressed format but 'hwType' may be set to R8G8B8A8 format as stored on the GPU)
    IMAGE_MODE mode   ()C {return _mode            ;} // get image  mode
-   Int        mipMaps()C {return _mms             ;} // get number of mipmaps
+   Int        mipMaps()C {return _mips            ;} // get number of mip maps
    Byte       samples()C {return _samples         ;} // get number of samples per pixel
    Bool  multiSample ()C {return _samples>1       ;} // if  this   is a multi sampled image
    Bool       partial()C {return _partial         ;} // if  'hwSize' is different than 'size'
@@ -719,7 +719,7 @@ private:
    IMAGE_MODE _mode;
     LOCK_MODE _lock_mode;
      DIR_ENUM _lface;
-   Byte       _mms, _samples, _lmip, _byte_pp, _base_mip;
+   Byte       _mips, _samples, _lmip, _byte_pp, _base_mip;
    Bool       _partial, _discard, _streaming;
    Int        _lock_count;
    UInt       _pitch, _pitch2;

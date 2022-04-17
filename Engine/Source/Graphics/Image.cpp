@@ -1013,7 +1013,7 @@ Bool Image::setInfo()
       if(mode()==IMAGE_3D)
       {
          D3D11_TEXTURE3D_DESC desc; static_cast<ID3D11Texture3D*>(_txtr)->GetDesc(&desc);
-        _mms      =desc.MipLevels;
+        _mips     =desc.MipLevels;
         _samples  =1;
         _hw_size.x=desc.Width;
         _hw_size.y=desc.Height;
@@ -1022,7 +1022,7 @@ Bool Image::setInfo()
       }else
       {
          D3D11_TEXTURE2D_DESC desc; static_cast<ID3D11Texture2D*>(_txtr)->GetDesc(&desc);
-        _mms      =desc.MipLevels;
+        _mips     =desc.MipLevels;
         _samples  =desc.SampleDesc.Count;
         _hw_size.x=desc.Width;
         _hw_size.y=desc.Height;
@@ -1085,7 +1085,7 @@ Bool Image::setInfo()
       glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_INTERNAL_FORMAT, & format   );
      _hw_type  =ImageFormatToType(format, hwType());
      _hw_size.z=1;
-      MAX(_mms    , 1);
+      MAX(_mips   , 1);
       MAX(_samples, 1);
    }
 #endif
@@ -1241,7 +1241,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
      _size.set(w, h, d); _hw_size.set(PaddedWidth(w, h, 0, type), PaddedHeight(w, h, 0, type), d);
      _type   =type     ; _hw_type=type;
      _mode   =mode     ;
-     _mms    =mip_maps ; _base_mip=base_mip;
+     _mips   =mip_maps ; _base_mip=base_mip;
      _samples=samples  ;
 
    #if DX11
