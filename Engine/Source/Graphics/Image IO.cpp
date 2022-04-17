@@ -411,6 +411,7 @@ struct Loader
    IMAGE_TYPE   want_hw_type;
    IMAGE_MODE   file_mode_soft;
    IMAGE_MODE   want_mode_soft;
+   Bool         direct;
    Byte         file_base_mip; // index of file mip map that matches the size if main mip in the image
    Byte        image_base_mip; // index of first valid/loaded mip map in the image (also the number of mips still need to be loaded)
    Int          file_faces;
@@ -532,6 +533,17 @@ static void Shrink(VecI &size, Int shrink)
             Max(1, size.y>>shrink),
             Max(1, size.z>>shrink));
 }
+static Bool SameAlignment(C VecI &full_size, C VecI &small_size, Int shrink, Int offset, Int small_mips, IMAGE_TYPE type) // 'shrink'=how much to shrink 'full_size' to get 'small_size', 'small_mips'=how many mips in small <- here pass HW sizes
+{ // This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(260>>1)=Ceil4(130)=132, but doing shrink=1, giving size=128
+   if(!shrink)return true;
+   VecI mip_size_no_pad(Max(1, full_size.x>>shrink), Max(1, full_size.y>>shrink), Max(1, full_size.z>>shrink));
+   if(  mip_size_no_pad==small_size)return true; // mip size without pad exactly matches small size, this guarantees all mip maps will have same sizes, since they're exactly the same, then "mip_size_no_pad>>mip==small_size>>mip" for any 'mip'
+   Int  full_offset=shrink+offset;
+   REP(small_mips)if(PaddedWidth (full_size.x, full_size.y,  full_offset+i, type)!=PaddedWidth (small_size.x, small_size.y,  offset+i, type)
+                  || PaddedHeight(full_size.x, full_size.y,  full_offset+i, type)!=PaddedHeight(small_size.x, small_size.y,  offset+i, type)
+                  ||                    Max(1, full_size.z>>(full_offset+i)     )!=                    Max(1, small_size.z>>(offset+i)     ))return false;
+   return true;
+}
 /******************************************************************************/
 Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 {
@@ -615,11 +627,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    Long f_end=f->pos()+compressed_size;
    if(file_base_mip_size==want.size) // if found exact mip match
    {
-      const VecI file_base_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_base_mip), Max(1, file_hw_size.y>>file_base_mip), Max(1, file_hw_size.z>>file_base_mip));
-            Bool same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_base_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
-            Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-            Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
-      load_mode=(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+      Bool same_type=CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+           direct   =(same_type && want_faces==file_faces); // type and cube are the same
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
@@ -627,7 +636,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if( f->_type==FILE_MEM // file data is already available and in continuous memory
       && !f->_cipher         // no cipher
       && header.mip_maps-file_base_mip>=want.mip_maps // have all mip maps that we want
-      && load_mode==DIRECT_FAST
+      && direct && SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, want.mip_maps, want_hw_type)
     //&& !mip_compression   // no mip compression
       )
       {
@@ -710,6 +719,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                                           img_data=img_data_memt.setNum(data_size).data();
 
       REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
+      image_base_mip=can_read_mips-read_mips;
+         load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, image_base_mip, read_mips, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
       if(load_mode==DIRECT_FAST)
       {
          Byte *img_data_start=img_data;
@@ -732,7 +743,6 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             img_data+=wantMipSize(img_mip);
          }
       }
-      image_base_mip=can_read_mips-read_mips;
       if(!image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data, image_base_mip))
       {
          if(!ImageTypeInfo::usageKnown()) // only if usage is unknown, because if known, then we've already selected correct 'want_hw_type'
@@ -749,10 +759,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                   {
                      // these could've changed if converted to another type
                      want_hw_size  =image.hwSize3();
-                     same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size);
                      same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
                      direct        =(same_type && want_faces==file_faces);
-                     load_mode     =(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
                   #if IMAGE_STREAM_FULL
                      if(stream)
                      {
@@ -844,6 +852,7 @@ void Loader::update()
    // FIXME might need to realign 'img_data'
 #else
    StreamSet set;
+   load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
       Int file_mip=file_base_mip+img_mip;
