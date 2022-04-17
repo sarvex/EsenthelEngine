@@ -637,7 +637,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       && !f->_cipher         // no cipher
       && header.mip_maps-file_base_mip>=want.mip_maps // have all mip maps that we want
       && direct && SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, want.mip_maps, want_hw_type)
-    //&& !mip_compression   // no mip compression
+    //&& !mip_compression    // no mip compression
       )
       {
          REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[file_base_mip+i].offset;
