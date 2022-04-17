@@ -77,7 +77,7 @@ static INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);}
 /******************************************************************************/
 // MEMORY
 /******************************************************************************/
-static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
 {
    Int copy_blocks_y=Min(src_blocks_y, dest_blocks_y);
    if(src_pitch==dest_pitch)
@@ -106,8 +106,10 @@ static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int
    src_data+=(src_blocks_y-copy_blocks_y)*src_pitch;
 }
 /******************************************************************************/
-static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d)
+void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d)
 {
+   DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
+   DEBUG_ASSERT(dest_pitch2>=dest_pitch*dest_blocks_y, "dest_pitch2>=dest_pitch*dest_blocks_y");
    Int copy_d=Min(src_d, dest_d);
    if(src_pitch2==dest_pitch2 && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
    {
@@ -135,22 +137,12 @@ static void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int
    src_data+=(src_d-copy_d)*src_pitch2;
 }
 /******************************************************************************/
-void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
 {
-  _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
-}
-void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d)
-{
-   DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
-   DEBUG_ASSERT(dest_pitch2>=dest_pitch*dest_blocks_y, "dest_pitch2>=dest_pitch*dest_blocks_y");
-  _CopyImgData(src_data, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y, src_pitch2, dest_pitch2, src_d, dest_d);
-}
-void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
-{
-   DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
-   DEBUG_ASSERT(dest_pitch2>=dest_pitch*dest_blocks_y, "dest_pitch2>=dest_pitch*dest_blocks_y");
    if(src_pitch2==dest_pitch2 && src_d==dest_d && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
    {
+      DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
+      DEBUG_ASSERT(dest_pitch2>=dest_pitch*dest_blocks_y, "dest_pitch2>=dest_pitch*dest_blocks_y");
       Int copy=dest_d*dest_pitch2*faces;
       CopyFast(dest_data, src_data, copy);
       dest_data+=copy;
@@ -714,9 +706,9 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
       Memt<Byte> img_data_memt; Byte *img_data;
    #if IMAGE_STREAM_FULL
-      Mems<Byte> img_data_mems; if(stream)img_data=img_data_mems.setNum(data_size).data();else
+      if(stream)img_data=T.img_data   .setNum(data_size).data();else
    #endif
-                                          img_data=img_data_memt.setNum(data_size).data();
+                img_data=img_data_memt.setNum(data_size).data();
 
       REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
       image_base_mip=can_read_mips-read_mips;
@@ -773,8 +765,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
                         Int copy=soft.memUsage();
                         MAX(data_size, copy);
-                        img_data_mems.setNumDiscard(data_size);
-                        CopyFast(img_data_mems.data(), soft.softData(), copy);
+                        CopyFast(T.img_data.setNumDiscard(data_size).data(), soft.softData(), copy);
                      }
                   #endif
                      goto ok;
@@ -809,9 +800,6 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                  sl.image=&image;
             Swap(sl.f     , *f);
             Swap(sl.loader,  T); // 'sl.loader.f' will be adjusted in the processing thread
-         #if IMAGE_STREAM_FULL
-            Swap(sl.img_data, img_data_mems);
-         #endif
             if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad");
          }
          StreamLoadEvent.on();
@@ -849,7 +837,21 @@ void Loader::update()
                             PaddedHeight(small_size.x, small_size.y, 0, want_hw_type), small_size.z);
    if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
    {
-      int z=0;
+      UInt data_size=0; REP(small_mips)data_size+=wantMipSize(image_base_mip+i); // calculate size needed for small mips
+      Memt<Byte> temp;  Byte *dest=temp.setNum(data_size).data(); C Byte *src=img_data.data();
+      REP(small_mips) // #MipOrder
+      {
+         Int src_mip=i,
+            dest_mip=image_base_mip+i,
+             src_pitch   =ImagePitch  (small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
+             src_blocks_y=ImageBlocksY(small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
+             src_d       =                       Max(1, small_hw_size.z>>src_mip),
+            dest_pitch   =wantPitch  (dest_mip),
+            dest_blocks_y=wantBlocksY(dest_mip),
+            dest_d       =Max(1, want_hw_size.z>>dest_mip);
+        _CopyImgData(src, dest, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y, src_pitch*src_blocks_y, dest_pitch*dest_blocks_y, src_d, dest_d, want_faces); // call _ version to adjust pointers
+      }
+      CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data'
    }
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 #else
