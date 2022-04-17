@@ -680,7 +680,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             {
                stream=true;
             #if IMAGE_STREAM_FULL
-               REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image
+               REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image (this already contains biggest mip for 'need_valid_ptr')
 
                // remember current for later
                full_size=want.size;
@@ -791,7 +791,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(stream)
       {
       #if IMAGE_STREAM_FULL
-         file_base_mip-=shrink;
+          file_base_mip-=shrink;
+         image_base_mip =shrink;
          // adjust members in case user wants to access them, this is a bit dangerous, care must be taken
          {
             image.   _size=full_size;
@@ -843,13 +844,14 @@ static inline Bool Submit(StreamSet &set)
 void Loader::update()
 {
 #if IMAGE_STREAM_FULL
-   if(load_mode==DIRECT_FAST) // recalculate if we can still use DIRECT_FAST due to full size
+   // check if have to realign small mips 'img_data'
+   const VecI small_hw_size(PaddedWidth (small_size.x, small_size.y, 0, want_hw_type),
+                            PaddedHeight(small_size.x, small_size.y, 0, want_hw_type), small_size.z);
+   if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
    {
-      const VecI file_base_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_base_mip), Max(1, file_hw_size.y>>file_base_mip), Max(1, file_hw_size.z>>file_base_mip));
-            Bool same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_base_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
-      if(!same_alignment)load_mode=DIRECT;
+      int z=0;
    }
-   // FIXME might need to realign 'img_data'
+   load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 #else
    StreamSet set;
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
