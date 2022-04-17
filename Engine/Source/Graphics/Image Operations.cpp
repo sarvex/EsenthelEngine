@@ -94,7 +94,9 @@ Bool Image::injectMipMap(C Image &src, Int mip_map, DIR_ENUM cube_face, FILTER_T
 /******************************************************************************/
 Image& Image::clear()
 {
-   if(soft())ZeroFast(_data_all, memUsage());else
+   cancelStream();
+   baseMip(0);
+   if(soft())ZeroFast(softData(), memUsage());else
    {
       Int faces=T.faces();
       REPD(m, mipMaps())

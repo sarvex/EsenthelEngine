@@ -2720,6 +2720,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
 {
    if(data && InRange(mip_map, mipMaps()))
    {
+    //if(!waitForStream(mip_map))return false; this is called during streaming
       if(soft())CopyFast(softData(mip_map), data, softMipSize(mip_map));else
       {
       #if DX11
@@ -2785,7 +2786,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
 }
 Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_face)
 {
-   if(data && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()))
+   if(data && InRange(mip_map, mipMaps()) && InRange(cube_face, faces()) && waitForStream(mip_map))
    {
       Int data_blocks_y=ImageBlocksY(w(), h(), mip_map, hwType()), // !! USE VALID PIXELS FOR NOW, but this could be changed !!
           data_pitch2  =data_pitch*data_blocks_y,
