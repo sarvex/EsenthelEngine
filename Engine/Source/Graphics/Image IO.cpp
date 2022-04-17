@@ -419,8 +419,8 @@ struct Loader
    VecI         want_hw_size;
    File        *f;
 #if IMAGE_STREAM_FULL
-   VecI         want_size;
-   Int          want_mips;
+   VecI         full_size, small_size;
+   Byte         full_mips, small_mips;
 #endif
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -583,7 +583,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Shrink(want.mip_maps, shrink);
    }
    if(IsHW(want.mode) && D.maxTexSize()>0) // apply 'D.maxTexSize' only for hardware textures (not for software images)
-      for(; want.size.max()>D.maxTexSize(); )
+      for(Int max=want.size.max(); max>D.maxTexSize(); max>>=1)
    {
       Shrink(want.size    , 1);
       Shrink(want.mip_maps, 1);
@@ -603,7 +603,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    file_mode_soft=AsSoft(header.mode);
    want_mode_soft=AsSoft(  want.mode);
 
-   // base mip = find smallest file mip that's >= biggest image mip
+   // file base mip = smallest file mip that's >= biggest image mip
          file_base_mip=0;
    VecI  file_base_mip_size=header.size;
    for(; file_base_mip<header.mip_maps-1 && !SizeFits(file_base_mip_size, want.size); )
@@ -673,16 +673,17 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image
 
                // remember current for later
-               T.want_size=want.size;
-               T.want_mips=want.mip_maps;
+               full_size=want.size;
+               full_mips=want.mip_maps;
 
                // adjust reading for now
                shrink=can_read_mips-read_mips;
                file_base_mip+=shrink;
-                      want.mip_maps=can_read_mips=read_mips; // create only those that we will read, all others will be set on the loader thread
-               Shrink(want.size, shrink);
+                      want.mip_maps=can_read_mips=read_mips; small_mips=want.mip_maps; // create only those that we will read, all others will be set on the loader thread
+               Shrink(want.size, shrink);                    small_size=want.size;
                want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                                 PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
+
                goto has_read_mips_and_data_size;
             #else
                goto has_read_mips;
@@ -696,7 +697,9 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 #endif
       // calculate data needed for loaded mip maps
       FREP(read_mips){Int img_mip=can_read_mips-1-i; data_size+=wantMipSize(img_mip);}
+#if IMAGE_STREAM_FULL
    has_read_mips_and_data_size:
+#endif
 
       const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
       if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
@@ -754,11 +757,11 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                      if(stream)
                      {
                         // need this for calculation of full size
-                        want_hw_size.set(PaddedWidth (want_size.x, want_size.y, 0, want_hw_type),
-                                         PaddedHeight(want_size.x, want_size.y, 0, want_hw_type), want_size.z);
+                        want_hw_size.set(PaddedWidth (full_size.x, full_size.y, 0, want_hw_type),
+                                         PaddedHeight(full_size.x, full_size.y, 0, want_hw_type), full_size.z);
                         data_size=0;
                         Int read_full_mips=read_mips+shrink;
-                        REP(read_full_mips)data_size+=wantMipSize(i); // already allocate enough for entire image
+                        REP(read_full_mips)data_size+=wantMipSize(i); // already allocate enough for full image
 
                         Int copy=soft.memUsage();
                         MAX(data_size, copy);
@@ -783,10 +786,10 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          file_base_mip-=shrink;
          // adjust members in case user wants to access them, this is a bit dangerous, care must be taken
          {
-            image.   _size=want_size;
-            image._hw_size=want_hw_size.set(PaddedWidth (want_size.x, want_size.y, 0, want_hw_type),
-                                            PaddedHeight(want_size.x, want_size.y, 0, want_hw_type), want_size.z);
-            image._mips=want_mips;
+            image.   _size=full_size;
+            image._hw_size=want_hw_size.set(PaddedWidth (full_size.x, full_size.y, 0, want_hw_type),
+                                            PaddedHeight(full_size.x, full_size.y, 0, want_hw_type), full_size.z);
+            image._mips=full_mips;
             image.setPartial();
          }
       #endif
