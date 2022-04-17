@@ -648,6 +648,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Int can_read_mips=Min(header.mip_maps-file_base_mip, want.mip_maps); // mips that we can read
       if(!f->skip(mips[file_base_mip+can_read_mips-1].offset))return false; // #MipOrder
 
+      const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
       Bool stream=false;
       Int  read_mips=0;
       UInt data_size=0;
@@ -697,12 +698,11 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 #endif
       // calculate data needed for loaded mip maps
       FREP(read_mips){Int img_mip=can_read_mips-1-i; data_size+=wantMipSize(img_mip);}
+      if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
 #if IMAGE_STREAM_FULL
    has_read_mips_and_data_size:
 #endif
 
-      const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
-      if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
       Memt<Byte> img_data_memt; Byte *img_data;
    #if IMAGE_STREAM_FULL
       Mems<Byte> img_data_mems; if(stream)img_data=img_data_mems.setNum(data_size).data();else
