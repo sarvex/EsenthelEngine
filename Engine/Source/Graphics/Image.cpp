@@ -2243,7 +2243,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
          if(!_lock_count) // if wasn't locked yet
          {
            _lock_count=1;
-           _lmm       =mip_map; lockSoft(); // set '_lmm' before calling 'lockSoft'
+           _lmip      =mip_map; lockSoft(); // set '_lmip' before calling 'lockSoft'
             return true;
          }
          if(lMipMap()==mip_map){_lock_count++; return true;} // we want the same mip-map that's already locked
@@ -2254,7 +2254,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
          if(!_lock_count) // if wasn't locked yet
          {
            _lock_count=1;
-           _lmm       =mip_map; _lcf=cube_face; lockSoft(); // set '_lmm, _lcf' before calling 'lockSoft'
+           _lmip      =mip_map; _lface=cube_face; lockSoft(); // set '_lmip', '_lface' before calling 'lockSoft'
             return true;
          }
          if(lMipMap()==mip_map && lCubeFace()==cube_face){_lock_count++; return true;} // we want the same mip-map and cube-face that's already locked
@@ -2293,8 +2293,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=1;
-                    _lmm        =mip_map;
-                  //_lcf        =0;
+                    _lmip       =mip_map;
+                  //_lface      =0;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2341,8 +2341,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=ld;
-                    _lmm        =mip_map;
-                  //_lcf        =0;
+                    _lmip       =mip_map;
+                  //_lface      =0;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2374,8 +2374,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=1;
-                    _lmm        =mip_map;
-                    _lcf        =cube_face;
+                    _lmip       =mip_map;
+                    _lface      =cube_face;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2391,8 +2391,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=1;
-                    _lmm        =mip_map;
-                  //_lcf        =0;
+                    _lmip       =mip_map;
+                  //_lface      =0;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _data       =(Byte*)map.pData;
@@ -2469,8 +2469,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=1;
-                    _lmm        =mip_map;
-                  //_lcf        =0;
+                    _lmip       =mip_map;
+                  //_lface      =0;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2504,8 +2504,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=ld;
-                    _lmm        =mip_map;
-                  //_lcf        =0;
+                    _lmip       =mip_map;
+                  //_lface      =0;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2538,8 +2538,8 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                     _lock_size.x=Max(1, w()>>mip_map);
                     _lock_size.y=Max(1, h()>>mip_map);
                     _lock_size.z=1;
-                    _lmm        =mip_map;
-                    _lcf        =cube_face;
+                    _lmip       =mip_map;
+                    _lface      =cube_face;
                     _lock_mode  =lock;
                     _lock_count =1;
                     _pitch      =pitch;
@@ -2568,7 +2568,7 @@ Image& Image::unlock()
             if(!--_lock_count) // if unlocked now
                if(lMipMap()!=0 || lCubeFace()!=0) // if last locked mip-map or cube-face was not main
          {
-           _lmm=0; _lcf=DIR_ENUM(0); lockSoft(); // set default lock members to main mip map and cube face, set '_lmm, _lcf' before calling 'lockSoft'
+           _lmip=0; _lface=DIR_ENUM(0); lockSoft(); // set default lock members to main mip map and cube face, set '_lmip', '_lface' before calling 'lockSoft'
          }
       }else
       {
@@ -2583,8 +2583,8 @@ Image& Image::unlock()
             {
                if(_lock_mode!=LOCK_READ && D3DC)D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(lMipMap(), 0, mipMaps()), null, data(), pitch(), pitch2());
               _lock_size.zero();
-              _lmm      =0;
-            //_lcf      =0;
+              _lmip     =0;
+            //_lface    =0;
               _lock_mode=LOCK_NONE;
               _pitch    =0;
               _pitch2   =0;
@@ -2595,8 +2595,8 @@ Image& Image::unlock()
             {
                if(_lock_mode!=LOCK_READ && D3DC)D3DC->UpdateSubresource(_txtr, D3D11CalcSubresource(lMipMap(), lCubeFace(), mipMaps()), null, data(), pitch(), pitch2());
               _lock_size.zero();
-              _lmm      =0;
-              _lcf      =DIR_ENUM(0);
+              _lmip     =0;
+              _lface    =DIR_ENUM(0);
               _lock_mode=LOCK_NONE;
               _pitch    =0;
               _pitch2   =0;
@@ -2607,8 +2607,8 @@ Image& Image::unlock()
             {
                if(D3DC)D3DC->Unmap(_txtr, D3D11CalcSubresource(lMipMap(), 0, mipMaps()));
               _lock_size.zero();
-              _lmm      =0;
-            //_lcf      =0;
+              _lmip     =0;
+            //_lface    =0;
               _lock_mode=LOCK_NONE;
               _pitch    =0;
               _pitch2   =0;
@@ -2640,8 +2640,8 @@ Image& Image::unlock()
                if(!_lock_count)
                {
                  _lock_size.zero();
-                 _lmm      =0;
-               //_lcf      =0;
+                 _lmip     =0;
+               //_lface    =0;
                  _lock_mode=LOCK_NONE;
                  _pitch    =0;
                  _pitch2   =0;
@@ -2668,8 +2668,8 @@ Image& Image::unlock()
                if(!_lock_count)
                {
                  _lock_size.zero();
-                 _lmm      =0;
-               //_lcf      =0;
+                 _lmip     =0;
+               //_lface    =0;
                  _lock_mode=LOCK_NONE;
                  _pitch    =0;
                  _pitch2   =0;
@@ -2695,8 +2695,8 @@ Image& Image::unlock()
                if(!_lock_count)
                {
                  _lock_size.zero();
-                 _lmm      =0;
-                 _lcf      =DIR_ENUM(0);
+                 _lmip     =0;
+                 _lface    =DIR_ENUM(0);
                  _lock_mode=LOCK_NONE;
                  _pitch    =0;
                  _pitch2   =0;
