@@ -539,9 +539,9 @@ static Bool SameAlignment(C VecI &full_size, C VecI &small_size, Int shrink, Int
    VecI mip_size_no_pad(Max(1, full_size.x>>shrink), Max(1, full_size.y>>shrink), Max(1, full_size.z>>shrink));
    if(  mip_size_no_pad==small_size)return true; // mip size without pad exactly matches small size, this guarantees all mip maps will have same sizes, since they're exactly the same, then "mip_size_no_pad>>mip==small_size>>mip" for any 'mip'
    Int  full_offset=shrink+offset;
-   REP(small_mips)if(PaddedWidth (full_size.x, full_size.y,  full_offset+i, type)!=PaddedWidth (small_size.x, small_size.y,  offset+i, type)
-                  || PaddedHeight(full_size.x, full_size.y,  full_offset+i, type)!=PaddedHeight(small_size.x, small_size.y,  offset+i, type)
-                  ||                    Max(1, full_size.z>>(full_offset+i)     )!=                    Max(1, small_size.z>>(offset+i)     ))return false;
+   FREP(small_mips)if(PaddedWidth (full_size.x, full_size.y,  full_offset+i, type)!=PaddedWidth (small_size.x, small_size.y,  offset+i, type)
+                   || PaddedHeight(full_size.x, full_size.y,  full_offset+i, type)!=PaddedHeight(small_size.x, small_size.y,  offset+i, type)
+                   ||                    Max(1, full_size.z>>(full_offset+i)     )!=                    Max(1, small_size.z>>(offset+i)     ))return false;
    return true;
 }
 /******************************************************************************/
