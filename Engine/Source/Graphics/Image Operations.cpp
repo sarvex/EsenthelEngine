@@ -3261,7 +3261,7 @@ Bool Image::blurCubeMipMaps()
 {
    if(cube() && mipMaps()>1)
    {
-      waitForStream(); // since we'll access 'softData' without locking, make sure stream is finished
+      if(!waitForStream())return false; // since we'll access 'softData' without locking, make sure stream is finished
       Threads *threads=&ImageThreads.init();
       Image *img=this, temp;
       if(img->mode()!=IMAGE_SOFT_CUBE || img->compressed())if(img->copyTry(temp, -1, -1, -1, ImageTypeUncompressed(img->type()), IMAGE_SOFT_CUBE))img=&temp;else return false;
