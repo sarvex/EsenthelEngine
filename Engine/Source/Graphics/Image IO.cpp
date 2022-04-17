@@ -6,6 +6,8 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
+#define IMAGE_STREAM_FULL GPU_API(true, false) // load only small image, but stream the entire full image and replace the small with the full one
+/******************************************************************************/
 #define CC4_IMG CC4('I','M','G',0)
 #define CC4_GFX CC4('G','F','X',0)
 /******************************************************************************/
@@ -416,6 +418,10 @@ struct Loader
    VecI         file_hw_size;
    VecI         want_hw_size;
    File        *f;
+#if IMAGE_STREAM_FULL
+   VecI         want_size;
+   Int          want_mips;
+#endif
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
    Int fileBlocksY(Int mip)C {return ImageBlocksY (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -644,6 +650,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
       Bool stream=false;
       Int  read_mips=0;
+      UInt data_size=0;
       if(f->_type!=FILE_MEM // if file not in memory
       && f->_type!=FILE_MEMB
       && can_del_f)        // and can delete 'f' file
@@ -662,23 +669,42 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             if( read_mips<can_read_mips && Images.has(&image)) // check 'Images.has' at the end because it's slow, this check is performed because we must be sure that the image will remain in constant memory address, if it's not in cache, maybe user can move it
             {
                stream=true;
+            #if IMAGE_STREAM_FULL
+               REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image
+
+               // remember current for later
+               T.want_size=want.size;
+               T.want_mips=want.mip_maps;
+
+               // adjust reading for now
+               shrink=can_read_mips-read_mips;
+               file_base_mip+=shrink;
+                      want.mip_maps=can_read_mips=read_mips; // create only those that we will read, all others will be set on the loader thread
+               Shrink(want.size, shrink);
+               want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
+                                PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
+               goto has_read_mips_and_data_size;
+            #else
                goto has_read_mips;
+            #endif
             }
          }
       }
       read_mips=can_read_mips; // if not streaming then read all here
+#if !IMAGE_STREAM_FULL
    has_read_mips:
-
+#endif
       // calculate data needed for loaded mip maps
-      UInt data_size=0;
-      FREP(read_mips)
-      {
-         Int img_mip=can_read_mips-1-i;
-         data_size+=wantMipSize(img_mip);
-      }
+      FREP(read_mips){Int img_mip=can_read_mips-1-i; data_size+=wantMipSize(img_mip);}
+   has_read_mips_and_data_size:
+
       const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
       if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
-      Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
+      Memt<Byte> img_data_memt; Byte *img_data;
+   #if IMAGE_STREAM_FULL
+      Mems<Byte> img_data_mems; if(stream)img_data=img_data_mems.setNum(data_size).data();else
+   #endif
+                                          img_data=img_data_memt.setNum(data_size).data();
 
       REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
       if(load_mode==DIRECT_FAST)
@@ -724,6 +750,22 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                      same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
                      direct        =(same_type && want_faces==file_faces);
                      load_mode     =(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+                  #if IMAGE_STREAM_FULL
+                     if(stream)
+                     {
+                        // need this for calculation of full size
+                        want_hw_size.set(PaddedWidth (want_size.x, want_size.y, 0, want_hw_type),
+                                         PaddedHeight(want_size.x, want_size.y, 0, want_hw_type), want_size.z);
+                        data_size=0;
+                        Int full_mips=read_mips+shrink;
+                        REP(full_mips)data_size+=wantMipSize(i); // already allocate enough for entire image
+
+                        Int copy=soft.memUsage();
+                        MAX(data_size, copy);
+                        img_data_mems.setNumDiscard(data_size);
+                        CopyFast(img_data_mems.data(), soft.softData(), copy);
+                     }
+                  #endif
                      goto ok;
                   }
                   if(want_hw_type=ImageTypeOnFail(want_hw_type))goto again; // there's another replacement
@@ -737,6 +779,17 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       image.updateMipMaps(FILTER_BEST, copy_flags, can_read_mips-1);
       if(stream)
       {
+      #if IMAGE_STREAM_FULL
+         file_base_mip-=shrink;
+         // adjust members in case user wants to access them, this is a bit dangerous, care must be taken
+         {
+            image.   _size=want_size;
+            image._hw_size=want_hw_size.set(PaddedWidth (want_size.x, want_size.y, 0, want_hw_type),
+                                            PaddedHeight(want_size.x, want_size.y, 0, want_hw_type), want_size.z);
+            image._mips=want_mips;
+            image.setPartial();
+         }
+      #endif
          image._streaming=true; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
          {
             MemcThreadSafeLock lock(StreamLoads);
@@ -744,6 +797,9 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                  sl.image=&image;
             Swap(sl.f     , *f);
             Swap(sl.loader,  T); // 'sl.loader.f' will be adjusted in the processing thread
+         #if IMAGE_STREAM_FULL
+            Swap(sl.img_data, img_data_mems);
+         #endif
             if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad");
          }
          StreamLoadEvent.on();
@@ -775,6 +831,15 @@ static inline Bool Submit(StreamSet &set)
 }
 void Loader::update()
 {
+#if IMAGE_STREAM_FULL
+   if(load_mode==DIRECT_FAST) // recalculate if we can still use DIRECT_FAST due to full size
+   {
+      const VecI file_base_mip_hw_size_no_pad(Max(1, file_hw_size.x>>file_base_mip), Max(1, file_hw_size.y>>file_base_mip), Max(1, file_hw_size.z>>file_base_mip));
+            Bool same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_base_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
+      if(!same_alignment)load_mode=DIRECT;
+   }
+   // FIXME might need to realign 'img_data'
+#else
    StreamSet set;
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
@@ -802,6 +867,7 @@ error:
    Submit(set);
 #else // exit
    Exit("Can't stream Image");
+#endif
 #endif
 }
 /******************************************************************************/
