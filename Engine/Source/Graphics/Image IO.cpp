@@ -518,6 +518,14 @@ static void                       StreamSetsFunc();
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
 static        Bool SizeFits (C VecI &src, C VecI &dest) {return SizeFits1(src.x, dest.x) || SizeFits1(src.y, dest.y) || SizeFits1(src.z, dest.z) || (src.x==1 && src.y==1 && src.z==1);}
+
+static void Shrink(Int  &mips, Int shrink) {mips=Max(1, mips-shrink);}
+static void Shrink(VecI &size, Int shrink)
+{
+   size.set(Max(1, size.x>>shrink),
+            Max(1, size.y>>shrink),
+            Max(1, size.z>>shrink));
+}
 /******************************************************************************/
 Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 {
@@ -563,12 +571,16 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    if(!want.is()){image.del(); return can_del_f || f->skip(compressed_size);} // check before shrinking, because "Max(1" might validate it, no need to seek if 'f' isn't needed later (important if 'f' is compressed)
 
    // shrink
-   for(; --shrink>=0 || (IsHW(want.mode) && want.size.max()>D.maxTexSize() && D.maxTexSize()>0); ) // apply 'D.maxTexSize' only for hardware textures (not for software images)
+   if(shrink>0)
    {
-      want.size.x  =Max(1, want.size.x >>1);
-      want.size.y  =Max(1, want.size.y >>1);
-      want.size.z  =Max(1, want.size.z >>1);
-      want.mip_maps=Max(1, want.mip_maps-1);
+      Shrink(want.size    , shrink);
+      Shrink(want.mip_maps, shrink);
+   }
+   if(IsHW(want.mode) && D.maxTexSize()>0) // apply 'D.maxTexSize' only for hardware textures (not for software images)
+      for(; want.size.max()>D.maxTexSize(); )
+   {
+      Shrink(want.size    , 1);
+      Shrink(want.mip_maps, 1);
    }
 
    // detect HW type that we will use
@@ -601,6 +613,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             Bool same_alignment=(file_base_mip_hw_size_no_pad==want_hw_size); // file mip hw size without pad exactly matches wanted texture, only this will guarantee all mip maps will have same sizes, since they're exactly the same, then "file_base_mip_hw_size_no_pad>>mip==want_hw_size>>mip" for any 'mip'. This is for cases when loading image size=257, which mip1 size=Ceil4(Ceil4(257)>>1)=Ceil4(130)=132, and doing shrink=1, giving size=128
             Bool same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
             Bool direct        =(same_type && want_faces==file_faces); // type and cube are the same
+      load_mode=(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
@@ -608,8 +621,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if( f->_type==FILE_MEM // file data is already available and in continuous memory
       && !f->_cipher         // no cipher
       && header.mip_maps-file_base_mip>=want.mip_maps // have all mip maps that we want
-      && direct
-      && same_alignment
+      && load_mode==DIRECT_FAST
     //&& !mip_compression   // no mip compression
       )
       {
@@ -669,7 +681,6 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Memt<Byte> img_data_mem; Byte *img_data=img_data_mem.setNum(data_size).data();
 
       REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
-      load_mode=(direct ? (same_alignment /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
       if(load_mode==DIRECT_FAST)
       {
          Byte *img_data_start=img_data;
@@ -726,8 +737,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       image.updateMipMaps(FILTER_BEST, copy_flags, can_read_mips-1);
       if(stream)
       {
+         image._streaming=true; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
          {
-            image._streaming=true; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
                  sl.image=&image;
