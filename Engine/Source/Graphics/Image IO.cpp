@@ -2,6 +2,16 @@
 
    TODO: This could use some mem manager / ring buffer for streamed data to avoid frequent allocations
 
+   'UpdateStreamLoads' must be performed under 'D._lock', don't try to include it in 'App._callbacks',
+      because when drawing finishes, it moves display flip into secondary thread with its own 'D._lock',
+      while main thread simultaneously proceeds to the next frame processing 'App._callbacks',
+      so if 'UpdateStreamLoads' wants to 'D._lock' then it has to wait until display flip finishes, that's a waste of time.
+
+   So the most efficient is do it when we want to Draw next frame, at the start when we're already doing 'D._lock'.
+
+   Alternative would be to create 'D._callbacks' that are callled in the start of Draw under 'D._lock',
+      and here: if(App.minimized() || (D.full() && !App.activeOrBackFull()) || !D.created()){if(D._callbacks){SyncLocker lock(D._lock); D._callbacks.call();} return true;} // needed for APP_ALLOW_NO_GPU/APP_ALLOW_NO_XDISPLAY
+
 /******************************************************************************/
 #include "stdafx.h"
 namespace EE{
@@ -489,7 +499,7 @@ struct StreamSet : StreamData
 
    void replace()
    {
-      new_image._streaming=true; // first enable '_streaming' to make sure that during 'Swap', other threads checking this image, will still know it's streaming
+      new_image._streaming=true; // first enable '_streaming' to make sure that during 'Swap', other threads checking this image, will still know it's streaming !! DO THIS HERE INSTEAD OF SOMEWHERE ELSE, BECAUSE WE MUST DISABLE IT SOON AFTER !! because when this image is getting deleted with '_streaming' then it will call 'cancelStream'
       Swap(*image, new_image);
       image   ->_streaming=false; // now after swap finished, remove streaming for both images
       new_image._streaming=false;
@@ -529,7 +539,6 @@ static SyncCounter                StreamLoaded;
 static Int                        StreamLoadWaiting;
 static Thread                     StreamLoadThread;
 static Bool                       StreamLoadFunc(Thread &thread);
-static void                       StreamSetsFunc();
 /******************************************************************************/
 static INLINE Bool SizeFits (  Int   src,   Int   dest) {return src<dest*2;} // this is OK for src=7, dest=4 (7<4*2), but NOT OK for src=8, dest=4 (8<4*2)
 static INLINE Bool SizeFits1(  Int   src,   Int   dest) {return src>1 && SizeFits(src, dest);} // only if 'src>1', if we don't check this, then 1024x1024x1 src will fit into 16x16x1 dest because of Z=1
@@ -802,7 +811,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          image_base_mip =shrink;
           want_type     =want.type;
           want_mode     =want.mode;
-         // adjust members in case user wants to access them, this is a bit dangerous, care must be taken
+         // adjust members in case user wants to access them, WARNING: this is a bit dangerous, care must be taken
          {
             image.   _size=full_size;
             image._hw_size=want_hw_size.set(PaddedWidth (full_size.x, full_size.y, 0, want_hw_type),
@@ -848,7 +857,7 @@ static inline Bool Submit(StreamSet &set)
    #endif
       StreamSets.swapAdd(set);
    }
-   App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
+ //D._callbacks.include(LockedUpdateStreamLoads); // have to schedule after every swap, and not just one time
    if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
    return true;
 }
@@ -930,7 +939,7 @@ error:
       if(!StreamLoadCur)return; // canceled
       StreamLoadCur->_streaming=false;
    }
-   App._callbacks.include(StreamSetsFunc);
+ //D._callbacks.include(LockedUpdateStreamLoads);
    if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
 #else
    StreamSet set;
@@ -1587,23 +1596,34 @@ static Bool StreamLoadFunc(Thread &thread)
 #endif
    return true;
 }
-static void StreamSetsFunc()
+void LockedUpdateStreamLoads() // assumes 'D._lock'
 {
-   SyncLocker         d_lock(D._lock);
-   MemcThreadSafeLock s_lock(StreamSets);
-#if IMAGE_STREAM_FULL
-   REPA(StreamSets)StreamSets.lockedElm(i).replace();
-#else
-   // this must be separated into 3 steps for best efficiency. When setting 'baseMip' from end to start, it can't be merged with 'setMipData', because when it adjusts 'baseMip' other threads might check 'baseMip', and access some mip maps, even though they would still need to be processed via 'setMipData' here. So do all 'setMipData' first, and then adjust 'baseMip' for biggest mips that we have first. Separating like this requires that all 'StreamSets' that we have will be processed.
-#if !GL
-   FREPA(StreamSets)StreamSets.lockedElm(i).setMipData(); // set all mip data, order is not important much, but probably better go forward, so next step going back will have elements already in RAM cache
-#endif
-    REPA(StreamSets)StreamSets.lockedElm(i).baseMip   (); // now we have to set 'baseMip', which recreates SRV, it's best if we go from end, and already create for the biggest mip we have, further smaller mips we'll just ignore, remember that when setting 'baseMip' then all mips for that range must have its data already set (because other threads might access it)
-   FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once '_streaming' is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
-#endif
-   StreamSets.clear();
+   if(StreamSets.elms())
+   {
+      MemcThreadSafeLock lock(StreamSets);
+   #if IMAGE_STREAM_FULL
+      REPA(StreamSets)StreamSets.lockedElm(i).replace();
+   #else
+      // this must be separated into 3 steps for best efficiency. When setting 'baseMip' from end to start, it can't be merged with 'setMipData', because when it adjusts 'baseMip' other threads might check 'baseMip', and access some mip maps, even though they would still need to be processed via 'setMipData' here. So do all 'setMipData' first, and then adjust 'baseMip' for biggest mips that we have first. Separating like this requires that all 'StreamSets' that we have will be processed.
+   #if !GL
+      FREPA(StreamSets)StreamSets.lockedElm(i).setMipData(); // set all mip data, order is not important much, but probably better go forward, so next step going back will have elements already in RAM cache
+   #endif
+       REPA(StreamSets)StreamSets.lockedElm(i).baseMip   (); // now we have to set 'baseMip', which recreates SRV, it's best if we go from end, and already create for the biggest mip we have, further smaller mips we'll just ignore, remember that when setting 'baseMip' then all mips for that range must have its data already set (because other threads might access it)
+      FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once '_streaming' is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
+   #endif
+      StreamSets.lockedClear();
+   }
 }
-void CancelAllStreamLoads() // this force cancels all when we want to shut down
+void UpdateStreamLoads()
+{
+   if(StreamSets.elms())
+   {
+      SyncLocker lock(D._lock);
+      LockedUpdateStreamLoads();
+   }
+}
+/******************************************************************************/
+static void CancelAllStreamLoads() // this force cancels all when we want to shut down
 {
    // cancellation order is important! First the 'StreamLoads' source, then next steps
    {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)StreamLoads.lockedElm(i).cancel(); StreamLoads.lockedDel();} // have to cancel before del
@@ -1632,7 +1652,7 @@ Bool Image::waitForStream(Int mip)
    {
       AtomicInc(StreamLoadWaiting);
    again:
-      if(StreamSets.elms())StreamSetsFunc(); // process all sets
+      UpdateStreamLoads();
       if(Wait(T, mip))
       {
          StreamLoaded.wait(); // wait until next got loaded
@@ -1642,6 +1662,7 @@ Bool Image::waitForStream(Int mip)
    }
    return mip>=_base_mip;
 }
+/******************************************************************************/
 void ShutStreamLoads()
 {
    StreamLoadThread.stop(); // request stop

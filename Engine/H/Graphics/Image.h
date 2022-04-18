@@ -863,6 +863,8 @@ inline void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int de
    UInt SourceGLFormat(IMAGE_TYPE type);
    UInt SourceGLType  (IMAGE_TYPE type);
 #endif
-void ShutStreamLoads();
+void LockedUpdateStreamLoads(); // assumes 'D._lock'
+void       UpdateStreamLoads();
+void         ShutStreamLoads();
 #endif
 /******************************************************************************/
