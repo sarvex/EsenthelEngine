@@ -1198,6 +1198,9 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       // check if already matches what we want
       if(T.w()==w && T.h()==h && T.d()==d && T.type()==type && T.mode()==mode && T.mipMaps()==mip_maps && T.samples()==samples)
          if(!data || soft()) // only soft can keep existing members if we want to set data (HW images have to be created as new)
+         #if IMAGE_STREAM_FULL
+            if(!_stream) // in IMAGE_STREAM_FULL this image can be smaller when streaming, so we can't reuse it in that case
+         #endif
       {
          cancelStream();
          baseMip(base_mip);
