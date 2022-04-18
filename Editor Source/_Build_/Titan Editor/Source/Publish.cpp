@@ -988,7 +988,7 @@ bool UpdatePublish()
          {
             WorldEdit.flush(); // flush any world areas that were built
             SetPublishFiles(PublishFiles, PublishGenerate, PublishConvert, PublishFileData);
-            UpdateThread.create(PublishFunc);
+            UpdateThread.create(PublishFunc, null, 0, false, "Editor.Publish");
          }
       }else
       if(!UpdateThread.active()) // finished
