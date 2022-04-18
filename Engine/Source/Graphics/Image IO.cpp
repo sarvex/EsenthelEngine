@@ -654,7 +654,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Shrink(want.size    , shrink);
       Shrink(want.mip_maps, shrink);
    }
-   if(IsHW(want.mode) && D.maxTexSize()>0) // apply 'D.maxTexSize' only for hardware textures (not for software images)
+   const Bool hw=IsHW(want.mode);
+   if(hw && D.maxTexSize()>0) // apply 'D.maxTexSize' only for hardware textures (not for software images)
       for(Int max=want.size.max(); max>D.maxTexSize(); max>>=1)
    {
       Shrink(want.size    , 1);
@@ -721,7 +722,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Bool stream=false;
       Int  read_mips=0;
       UInt data_size=0;
-      if(IsHW(want.mode) // only for hardware since there isn't much sense streaming soft
+      if(hw // only for hardware since there isn't much sense streaming soft
       && f->_type!=FILE_MEM // if file not in memory
       && f->_type!=FILE_MEMB
       && can_del_f)        // and can delete 'f' file
