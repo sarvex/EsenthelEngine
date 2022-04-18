@@ -484,10 +484,11 @@ struct Loader
       if(image.createEx(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, file_mode_soft, 1))
       {
          Int file_pitch   =filePitch  (file_mip),
-             file_blocks_y=fileBlocksY(file_mip);
+             file_blocks_y=fileBlocksY(file_mip),
+             file_d       =Max(1, file_hw_size.z>>file_mip);
      //C Mip &mip=mips[file_mip]; if(mip.compression)todo;else
          {
-            LoadImgData(*f, image.data(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_mip_size.z, image.d(), file_faces);
+            LoadImgData(*f, image.data(), file_pitch, image.pitch(), file_blocks_y, image.softBlocksY(0), file_pitch*file_blocks_y, image.pitch2(), file_d, image.d(), file_faces);
          }
          return f->ok();
       }
