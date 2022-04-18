@@ -833,7 +833,7 @@ static inline Bool Submit(StreamSet &set)
 void Loader::update()
 {
 #if IMAGE_STREAM_FULL
-   // check if have to realign small mips 'img_data'
+   // check if have to realign small mips in 'img_data'
    const VecI small_hw_size(PaddedWidth (small_size.x, small_size.y, 0, want_hw_type),
                             PaddedHeight(small_size.x, small_size.y, 0, want_hw_type), small_size.z);
    if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
