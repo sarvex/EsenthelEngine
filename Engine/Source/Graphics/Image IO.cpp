@@ -543,7 +543,7 @@ struct StreamSet : StreamData
    {
       new_image._stream=IMAGE_STREAM_LOADING|IMAGE_STREAM_NEED_MORE; // first enable streaming to make sure that during 'Swap', other threads checking this image, will still know it's streaming !! DO THIS HERE INSTEAD OF SOMEWHERE ELSE, BECAUSE WE MUST DISABLE IT SOON AFTER !! because when this image is getting deleted with streaming then it will call 'cancelStream'
       Swap(*image, new_image);
-      image   ->_stream=0; // now after swap finished, remove streaming for both images, first 'image' so other threads can access it already
+      image   ->_stream=0; // now after swap finished, remove streaming for both images, first 'image' so other threads can access it already !! AFTER THIS WE CAN NO LONGER ACCESS 'image' !!
       new_image._stream=0; // then the temporary
    }
 #else
@@ -566,7 +566,7 @@ struct StreamSet : StreamData
       if(image && mip<=0) // not canceled && error or last mip
          image->_stream=(mip ? IMAGE_STREAM_NEED_MORE : 0); // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !! if there was error, then we still need more
    }
-   void canceled(Image &image) // use when something got canceled and we need to clear it
+   void canceled(Image &image) // use when something got canceled and we need to clear it, '_stream' will be cleared outside
    {
        if(T.image==&image){T.image=null; mip_data.del();} // can already release memory
    }
