@@ -872,7 +872,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                  sl.image=&image;
             Swap(sl.f     , *f);
             Swap(sl.loader,  T); // 'sl.loader.f' will be adjusted in the processing thread
-            if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad");
+            if(!StreamLoadThread.created())StreamLoadThread.create(StreamLoadFunc, null, 0, false, "EE.StreamLoad"); // create this under lock, to avoid issues when multiple threads try to call this
          }
          StreamLoadEvent.on();
          return true;
