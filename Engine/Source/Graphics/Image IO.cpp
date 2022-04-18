@@ -12,6 +12,48 @@
    Alternative would be to create 'D._callbacks' that are callled in the start of Draw under 'D._lock',
       and here: if(App.minimized() || (D.full() && !App.activeOrBackFull()) || !D.created()){if(D._callbacks){SyncLocker lock(D._lock); D._callbacks.call();} return true;} // needed for APP_ALLOW_NO_GPU/APP_ALLOW_NO_XDISPLAY
 
+/******************************************************************************
+Image Stream tests for DX11:
+
+Main = time spent on Image.load request on the main thread
+(some data then loaded on 'StreamLoadThread', time not measured)
+Stream = time spent on 'UpdateStreamLoads' : updating 'Image.setMipData' on the main thread
+
+All  = all mip maps
+Small=only mip maps already in File buffer (around 64KB)
+Big  =remaining big mip maps (All except Small)
+
+"data=null" means that data was loaded but 'null' was passed to 'Image.createEx' so driver didn't have to copy it
+
+WHERE  MIPS                   TIME (seconds)
+Main   All                    6.5
+Stream None
+
+Main   Small                  4.5
+Stream Big                    4
+
+Main   All data=null          4.6
+Stream None
+
+Main   All shrink=1           2.0
+Stream None
+
+Main   All shrink=1 data=null 1.5
+Stream None
+
+Main   Small                  3.6
+Stream None
+
+Main   Small                  1.6 (with hack: pitch=1, depthpitch=1 for data==null)
+Stream None
+
+Main   Small data=null        0.48
+Stream None
+
+Main   All shrink=to Small    0.32 (data was shrank to match Small)  <---- BEST
+Stream None
+
+Conclusion: Creating up-front full sized textures is slow no matter what, instead first create small images, then load full on loader thread, and replace on main thread.
 /******************************************************************************/
 #include "stdafx.h"
 namespace EE{
