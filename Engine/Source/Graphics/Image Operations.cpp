@@ -94,8 +94,11 @@ Bool Image::injectMipMap(C Image &src, Int mip_map, DIR_ENUM cube_face, FILTER_T
 /******************************************************************************/
 Image& Image::clear()
 {
-   cancelStream();
-   baseMip(0);
+#if IMAGE_STREAM_FULL
+   if(!waitForStream())return T; // in IMAGE_STREAM_FULL this image can be smaller, so the only thing we can do is wait to get full size
+#else
+   cancelStream(); baseMip(0); // can just cancel entire stream because we will overwrite the whole thing
+#endif
    if(soft())ZeroFast(softData(), memUsage());else
    {
       Int faces=T.faces();

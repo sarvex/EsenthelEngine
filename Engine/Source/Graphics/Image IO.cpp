@@ -1631,19 +1631,22 @@ static void CancelAllStreamLoads() // this force cancels all when we want to shu
    {SyncLocker         lock(StreamLoadCurLock);                                           Cancel(   StreamLoadCur);}
    {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )StreamSets .lockedElm(i).cancel(); StreamSets .lockedDel();} // have to cancel before del
 }
-void Image::cancelStream() // called when image is deleted
+void Image::cancelStream() // called when image is deleted !! WARNING: IN 'IMAGE_STREAM_FULL' THIS IMAGE MIGHT STILL BE SMALL SIZED, DO NOT USE IT AFTERWARDS IN IMAGE_STREAM_FULL !!
 {
-   if(_streaming)
+   if(_stream)
    {
-      // cancellation order is important! First the 'StreamLoads' source, then next steps
-      {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==this)StreamLoads.lockedRemove(i);} // no need to keep order
-      {SyncLocker         lock(StreamLoadCurLock);                                   if(StreamLoadCur==this)StreamLoadCur=null;}
-   #if IMAGE_STREAM_FULL
-      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )if(StreamSets .lockedElm(i).image==this)StreamSets .lockedRemove(i);} // no need to keep order
-   #else
-      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).canceled(T );} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
-   #endif
-     _streaming=false;
+      if(_stream&IMAGE_STREAM_LOADING)
+      {
+         // cancellation order is important! First the 'StreamLoads' source, then next steps
+         {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==this)StreamLoads.lockedRemove(i);} // no need to keep order
+         {SyncLocker         lock(StreamLoadCurLock);                                   if(StreamLoadCur==this)StreamLoadCur=null;}
+      #if IMAGE_STREAM_FULL
+         {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )if(StreamSets .lockedElm(i).image==this)StreamSets .lockedRemove(i);} // no need to keep order
+      #else
+         {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).canceled(T );} // notify of cancelation instead of remove, this will be faster because !! WE NEED TO KEEP ORDER !!
+      #endif
+      }
+     _stream=0;
    }
 }
 
