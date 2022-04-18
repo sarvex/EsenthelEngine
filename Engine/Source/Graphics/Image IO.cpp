@@ -6,7 +6,8 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define IMAGE_STREAM_FULL GPU_API(true, false) // load only small image, but stream the entire full image and replace the small with the full one
+#define IMAGE_STREAM_FULL    GPU_API(true, false) // load only small image, but stream the entire full image and replace the small with the full one
+#define IMAGE_NEED_VALID_PTR GPU_API(true, false) // DX requires that all mip data pointers are valid
 /******************************************************************************/
 #define CC4_IMG CC4('I','M','G',0)
 #define CC4_GFX CC4('G','F','X',0)
@@ -415,6 +416,9 @@ struct Loader
 #if IMAGE_STREAM_FULL
    VecI         full_size, small_size;
    Byte         full_mips, small_mips;
+   IMAGE_TYPE   want_type;
+   IMAGE_MODE   want_mode;
+   Mems<Byte>    img_data; // data of already loaded small mips
 #endif
 
    Int filePitch  (Int mip)C {return ImagePitch   (file_hw_size.x, file_hw_size.y,                 mip,  header.type);}
@@ -480,6 +484,17 @@ struct StreamLoad : StreamData
 };
 struct StreamSet : StreamData
 {
+#if IMAGE_STREAM_FULL
+   Image new_image;
+
+   void replace()
+   {
+      new_image._streaming=true; // first enable '_streaming' to make sure that during 'Swap', other threads checking this image, will still know it's streaming
+      Swap(*image, new_image);
+      image   ->_streaming=false; // now after swap finished, remove streaming for both images
+      new_image._streaming=false;
+   }
+#else
    Int        mip;
    Mems<Byte> mip_data;
 
@@ -503,6 +518,7 @@ struct StreamSet : StreamData
    {
        if(T.image==&image){T.image=null; mip_data.del();} // can already release memory
    }
+#endif
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
 static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
@@ -549,8 +565,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
       // adjust mip-maps, we will need this for load from file memory
       Int total_mip_maps=TotalMipMaps(want.size.x, want.size.y, want.size.z); // don't use hardware size hwW(), hwH(), hwD(), so that number of mip-maps will always be the same (and not dependant on hardware capabilities like TexPow2 sizes), also because 1x1 image has just 1 mip map, but if we use padding then 4x4 block would generate 3 mip maps
-      if(want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
-      else            MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
+      if(  want.mip_maps<=0)want.mip_maps=total_mip_maps ; // if mip maps not specified (or we want multiple mip maps with type that requires full chain) then use full chain
+      else              MIN(want.mip_maps,total_mip_maps); // don't use more than maximum allowed
    }
 
    file_faces  =    ImageFaces  (header.mode);
@@ -650,7 +666,6 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Int can_read_mips=Min(header.mip_maps-file_base_mip, want.mip_maps); // mips that we can read
       if(!f->skip(mips[file_base_mip+can_read_mips-1].offset))return false; // #MipOrder
 
-      const Bool need_valid_ptr=GPU_API(true, false); // DX requires that all mip data pointers are valid
       Bool stream=false;
       Int  read_mips=0;
       UInt data_size=0;
@@ -673,7 +688,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             {
                stream=true;
             #if IMAGE_STREAM_FULL
-               REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image (this already contains biggest mip for 'need_valid_ptr')
+               REP(can_read_mips)data_size+=wantMipSize(i); // already allocate enough for full image (this already contains biggest mip for 'IMAGE_NEED_VALID_PTR')
 
                // remember current for later
                full_size=want.size;
@@ -700,7 +715,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 #endif
       // calculate data needed for loaded mip maps
       FREP(read_mips){Int img_mip=can_read_mips-1-i; data_size+=wantMipSize(img_mip);}
-      if(need_valid_ptr)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
+      if(IMAGE_NEED_VALID_PTR)MAX(data_size, wantMipSize(0)); // need enough room for biggest mip map
 #if IMAGE_STREAM_FULL
    has_read_mips_and_data_size:
 #endif
@@ -711,7 +726,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    #endif
                 img_data=img_data_memt.setNum(data_size).data();
 
-      REP(want.mip_maps)mip_data[i]=(need_valid_ptr ? img_data : null);
+      REP(want.mip_maps)mip_data[i]=(IMAGE_NEED_VALID_PTR ? img_data : null);
       image_base_mip=can_read_mips-read_mips;
          load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, image_base_mip, read_mips, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
       if(load_mode==DIRECT_FAST)
@@ -785,6 +800,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       #if IMAGE_STREAM_FULL
           file_base_mip-=shrink;
          image_base_mip =shrink;
+          want_type     =want.type;
+          want_mode     =want.mode;
          // adjust members in case user wants to access them, this is a bit dangerous, care must be taken
          {
             image.   _size=full_size;
@@ -819,11 +836,16 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
    }
    return false;
 }
+/******************************************************************************/
 static inline Bool Submit(StreamSet &set)
 {
+   set.image=StreamLoadCur;
    {
       SyncLocker lock(StreamLoadCurLock);
       if(!StreamLoadCur)return false; // canceled
+   #if !IMAGE_STREAM_FULL && GL
+      set.setMipData();
+   #endif
       StreamSets.swapAdd(set);
    }
    App._callbacks.include(StreamSetsFunc); // have to schedule after every swap, and not just one time
@@ -854,8 +876,62 @@ void Loader::update()
       }
       CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data', it was created big enough to keep all loaded mip maps
    }
+
+   CPtr  mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(full_mips))goto error;
+   Byte *img_data=T.img_data.data();
+   Int big_small_mips=image_base_mip+small_mips; // big+small
+   REP(full_mips-big_small_mips)mip_data[big_small_mips+i]=(IMAGE_NEED_VALID_PTR ? img_data : null); // set mini mips that were not loaded but need to be generated
+
+   // set small mips
+   REP(small_mips) // #MipOrder
+   {
+      mip_data[image_base_mip+i]=img_data; img_data+=wantMipSize(image_base_mip+i);
+   }
+
    // load bigger mips
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+   if(load_mode==DIRECT_FAST)
+   {
+      Byte *img_data_start=img_data;
+      REP(image_base_mip) // #MipOrder
+      {
+         Int img_mip=i, file_mip=file_base_mip+img_mip;
+         mip_data[img_mip]=img_data;
+         img_data+=wantMipSize(img_mip);
+      }
+      if(!f->getFast(img_data_start, img_data-img_data_start))goto error;
+      if(!StreamLoadCur)return; // canceled
+   }else
+   {
+      REP(image_base_mip) // #MipOrder
+      {
+         Int img_mip=i, file_mip=file_base_mip+img_mip;
+         mip_data[img_mip]=img_data;
+         if(!load(file_mip, img_mip, img_data))goto error;
+         if(!StreamLoadCur)return; // canceled
+         img_data+=wantMipSize(img_mip);
+      }
+   }
+
+   { // create image
+      StreamSet set; Image &image=set.new_image;
+      if(image.createEx(full_size.x, full_size.y, full_size.z, want_hw_type, want_mode, full_mips, 1, mip_data))
+      {
+         if(!StreamLoadCur)return; // canceled
+         image.adjustInfo(image.w(), image.h(), image.d(), want_type);
+         image.updateMipMaps(FILTER_BEST, copy_flags, big_small_mips-1);
+         Submit(set);
+         return; // success
+      }
+   }
+error:
+   {
+      SyncLocker lock(StreamLoadCurLock);
+      if(!StreamLoadCur)return; // canceled
+      StreamLoadCur->_streaming=false;
+   }
+   App._callbacks.include(StreamSetsFunc);
+   if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
 #else
    StreamSet set;
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
@@ -870,17 +946,15 @@ void Loader::update()
          default         : if(!load(file_mip, img_mip, set.mip_data.data()) )goto error; break;
       }
       // have to set members for every mip, because due to swap they become invalid
-      set.mip  =img_mip;
-      set.image=StreamLoadCur;
+      set.mip=img_mip;
 
       // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
       if(!Submit(set))return; // canceled
    }
-   return;
+   return; // success
 error:
 #if 1 // allow to continue
-   set.mip  =-1; // error
-   set.image=StreamLoadCur;
+   set.mip=-1; // error
    set.mip_data.clear();
    Submit(set);
 #else // exit
@@ -1490,6 +1564,9 @@ static Bool StreamLoadFunc(Thread &thread)
 {
    StreamLoadEvent.wait();
    StreamLoad sl; // outside loop to minimize overhead
+#if GL
+   ThreadMayUseGPUData();
+#endif
    for(; StreamLoads.elms(); )
    {
       {
@@ -1505,16 +1582,25 @@ static Bool StreamLoadFunc(Thread &thread)
          StreamLoadCur=null;
       }
    }
+#if GL
+   ThreadFinishedUsingGPUData();
+#endif
    return true;
 }
 static void StreamSetsFunc()
 {
    SyncLocker         d_lock(D._lock);
    MemcThreadSafeLock s_lock(StreamSets);
+#if IMAGE_STREAM_FULL
+   REPA(StreamSets)StreamSets.lockedElm(i).replace();
+#else
    // this must be separated into 3 steps for best efficiency. When setting 'baseMip' from end to start, it can't be merged with 'setMipData', because when it adjusts 'baseMip' other threads might check 'baseMip', and access some mip maps, even though they would still need to be processed via 'setMipData' here. So do all 'setMipData' first, and then adjust 'baseMip' for biggest mips that we have first. Separating like this requires that all 'StreamSets' that we have will be processed.
+#if !GL
    FREPA(StreamSets)StreamSets.lockedElm(i).setMipData(); // set all mip data, order is not important much, but probably better go forward, so next step going back will have elements already in RAM cache
+#endif
     REPA(StreamSets)StreamSets.lockedElm(i).baseMip   (); // now we have to set 'baseMip', which recreates SRV, it's best if we go from end, and already create for the biggest mip we have, further smaller mips we'll just ignore, remember that when setting 'baseMip' then all mips for that range must have its data already set (because other threads might access it)
    FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once '_streaming' is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
+#endif
    StreamSets.clear();
 }
 void CancelAllStreamLoads() // this force cancels all when we want to shut down
@@ -1531,7 +1617,11 @@ void Image::cancelStream() // called when image is deleted
       // cancellation order is important! First the 'StreamLoads' source, then next steps
       {MemcThreadSafeLock lock(StreamLoads      ); REPA(StreamLoads)if(StreamLoads.lockedElm(i).image==this)StreamLoads.lockedRemove(i);} // no need to keep order
       {SyncLocker         lock(StreamLoadCurLock);                                   if(StreamLoadCur==this)StreamLoadCur=null;}
+   #if IMAGE_STREAM_FULL
+      {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )if(StreamSets .lockedElm(i).image==this)StreamSets .lockedRemove(i);} // no need to keep order
+   #else
       {MemcThreadSafeLock lock(StreamSets       ); REPA(StreamSets )   StreamSets .lockedElm(i).canceled(T );} // cancel instead of remove, this will be faster !! ALSO WE NEED TO KEEP ORDER !!
+   #endif
      _streaming=false;
    }
 }
