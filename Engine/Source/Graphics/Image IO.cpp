@@ -725,7 +725,11 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(hw // only for hardware since there isn't much sense streaming soft
       && f->_type!=FILE_MEM // if file not in memory
       && f->_type!=FILE_MEMB
-      && can_del_f)        // and can delete 'f' file
+      && can_del_f // and can delete 'f' file
+   #if SWITCH // Nintendo Switch has a file handle limit around ~200
+      && StreamLoads.elms()<128
+   #endif
+      )
       {
          Int buffer=f->_buf_len; // how much data in the buffer
          if(f->left()>buffer) // only if there's still more data left to read (we haven't already read the entire file)
