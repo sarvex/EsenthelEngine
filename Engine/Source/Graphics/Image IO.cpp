@@ -865,73 +865,75 @@ static inline Bool Submit(StreamSet &set)
 void Loader::update()
 {
 #if IMAGE_STREAM_FULL
-   // check if have to realign small mips in 'img_data'
-   const VecI small_hw_size(PaddedWidth (small_size.x, small_size.y, 0, want_hw_type),
-                            PaddedHeight(small_size.x, small_size.y, 0, want_hw_type), small_size.z);
-   if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
+   CPtr mip_data[MAX_MIP_MAPS]; if(CheckMipNum(full_mips))
    {
-      UInt data_size=0; REP(small_mips)data_size+=wantMipSize(image_base_mip+i); // calculate size needed for small mips
-      Memt<Byte> temp;  Byte *dest=temp.setNum(data_size).data(); C Byte *src=img_data.data();
+      // check if have to realign small mips in 'img_data'
+      const VecI small_hw_size(PaddedWidth (small_size.x, small_size.y, 0, want_hw_type),
+                               PaddedHeight(small_size.x, small_size.y, 0, want_hw_type), small_size.z);
+      if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
+      {
+         UInt data_size=0; REP(small_mips)data_size+=wantMipSize(image_base_mip+i); // calculate size needed for small mips
+         Memt<Byte> temp;  Byte *dest=temp.setNum(data_size).data(); C Byte *src=img_data.data();
+         REP(small_mips) // #MipOrder
+         {
+            Int src_mip=i,
+               dest_mip=image_base_mip+i,
+                src_pitch   =ImagePitch  (small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
+                src_blocks_y=ImageBlocksY(small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
+                src_d       =                       Max(1, small_hw_size.z>>src_mip),
+               dest_pitch   =wantPitch  (dest_mip),
+               dest_blocks_y=wantBlocksY(dest_mip),
+               dest_d       =Max(1, want_hw_size.z>>dest_mip);
+           _CopyImgData(src, dest, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y, src_pitch*src_blocks_y, dest_pitch*dest_blocks_y, src_d, dest_d, want_faces); // call _ version to adjust pointers
+         }
+         CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data', it was created big enough to keep all loaded mip maps
+      }
+
+      Byte *img_data=T.img_data.data();
+      Int big_small_mips=image_base_mip+small_mips; // big+small
+      REP(full_mips-big_small_mips)mip_data[big_small_mips+i]=(IMAGE_NEED_VALID_PTR ? img_data : null); // set mini mips that were not loaded but need to be generated
+
+      // set small mips
       REP(small_mips) // #MipOrder
       {
-         Int src_mip=i,
-            dest_mip=image_base_mip+i,
-             src_pitch   =ImagePitch  (small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
-             src_blocks_y=ImageBlocksY(small_hw_size.x, small_hw_size.y, src_mip, want_hw_type),
-             src_d       =                       Max(1, small_hw_size.z>>src_mip),
-            dest_pitch   =wantPitch  (dest_mip),
-            dest_blocks_y=wantBlocksY(dest_mip),
-            dest_d       =Max(1, want_hw_size.z>>dest_mip);
-        _CopyImgData(src, dest, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y, src_pitch*src_blocks_y, dest_pitch*dest_blocks_y, src_d, dest_d, want_faces); // call _ version to adjust pointers
+         mip_data[image_base_mip+i]=img_data; img_data+=wantMipSize(image_base_mip+i);
       }
-      CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data', it was created big enough to keep all loaded mip maps
-   }
 
-   CPtr  mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(full_mips))goto error;
-   Byte *img_data=T.img_data.data();
-   Int big_small_mips=image_base_mip+small_mips; // big+small
-   REP(full_mips-big_small_mips)mip_data[big_small_mips+i]=(IMAGE_NEED_VALID_PTR ? img_data : null); // set mini mips that were not loaded but need to be generated
-
-   // set small mips
-   REP(small_mips) // #MipOrder
-   {
-      mip_data[image_base_mip+i]=img_data; img_data+=wantMipSize(image_base_mip+i);
-   }
-
-   // load bigger mips
-   load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
-   if(load_mode==DIRECT_FAST)
-   {
-      Byte *img_data_start=img_data;
-      REP(image_base_mip) // #MipOrder
+      // load bigger mips
+      load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+      if(load_mode==DIRECT_FAST)
       {
-         Int img_mip=i, file_mip=file_base_mip+img_mip;
-         mip_data[img_mip]=img_data;
-         img_data+=wantMipSize(img_mip);
-      }
-      if(!f->getFast(img_data_start, img_data-img_data_start))goto error;
-      if(!StreamLoadCur)return; // canceled
-   }else
-   {
-      REP(image_base_mip) // #MipOrder
-      {
-         Int img_mip=i, file_mip=file_base_mip+img_mip;
-         mip_data[img_mip]=img_data;
-         if(!load(file_mip, img_mip, img_data))goto error;
+         Byte *img_data_start=img_data;
+         REP(image_base_mip) // #MipOrder
+         {
+            Int img_mip=i, file_mip=file_base_mip+img_mip;
+            mip_data[img_mip]=img_data;
+            img_data+=wantMipSize(img_mip);
+         }
+         if(!f->getFast(img_data_start, img_data-img_data_start))goto error;
          if(!StreamLoadCur)return; // canceled
-         img_data+=wantMipSize(img_mip);
-      }
-   }
-
-   { // create image
-      StreamSet set; Image &image=set.new_image;
-      if(image.createEx(full_size.x, full_size.y, full_size.z, want_hw_type, want_mode, full_mips, 1, mip_data))
+      }else
       {
-         if(!StreamLoadCur)return; // canceled
-         image.adjustInfo(image.w(), image.h(), image.d(), want_type);
-         image.updateMipMaps(FILTER_BEST, copy_flags, big_small_mips-1);
-         Submit(set);
-         return; // success
+         REP(image_base_mip) // #MipOrder
+         {
+            Int img_mip=i, file_mip=file_base_mip+img_mip;
+            mip_data[img_mip]=img_data;
+            if(!load(file_mip, img_mip, img_data))goto error;
+            if(!StreamLoadCur)return; // canceled
+            img_data+=wantMipSize(img_mip);
+         }
+      }
+
+      { // create image
+         StreamSet set; Image &image=set.new_image;
+         if(image.createEx(full_size.x, full_size.y, full_size.z, want_hw_type, want_mode, full_mips, 1, mip_data))
+         {
+            if(!StreamLoadCur)return; // canceled
+            image.adjustInfo(image.w(), image.h(), image.d(), want_type);
+            image.updateMipMaps(FILTER_BEST, copy_flags, big_small_mips-1);
+            Submit(set);
+            return; // success
+         }
       }
    }
 error:
