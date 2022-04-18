@@ -574,7 +574,7 @@ struct StreamSet : StreamData
 };
 static MemcThreadSafe<StreamLoad> StreamLoads;
 static MemcThreadSafe<StreamSet > StreamSets; // !! MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
-static Image                     *StreamLoadCur;
+static Image                     *StreamLoadCur; // !! CAN OPERATE ON 'StreamLoadCur' DATA, AND SUBMIT DATA RELATED TO 'StreamLoadCur' ONLY UNDER LOCK !!
 static SyncLock                   StreamLoadCurLock;
 static SyncEvent                  StreamLoadEvent;
 static SyncCounter                StreamLoaded;
@@ -908,6 +908,7 @@ static inline Bool Submit(StreamSet &set)
 }
 void Loader::update()
 {
+   load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 #if IMAGE_STREAM_FULL
    CPtr mip_data[MAX_MIP_MAPS]; if(CheckMipNum(full_mips))
    {
@@ -917,7 +918,7 @@ void Loader::update()
       if(!SameAlignment(want_hw_size, small_hw_size, image_base_mip, 0, small_mips, want_hw_type))
       {
          UInt data_size=0; REP(small_mips)data_size+=wantMipSize(image_base_mip+i); // calculate size needed for small mips
-         Memt<Byte> temp;  Byte *dest=temp.setNum(data_size).data(); C Byte *src=img_data.data();
+         Memt<Byte> temp; Byte *dest=temp.setNum(data_size).data(); C Byte *src=img_data.data();
          REP(small_mips) // #MipOrder
          {
             Int src_mip=i,
@@ -944,13 +945,12 @@ void Loader::update()
       }
 
       // load bigger mips
-      load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
       if(load_mode==DIRECT_FAST)
       {
          Byte *img_data_start=img_data;
          REP(image_base_mip) // #MipOrder
          {
-            Int img_mip=i, file_mip=file_base_mip+img_mip;
+            Int img_mip=i;
             mip_data[img_mip]=img_data;
             img_data+=wantMipSize(img_mip);
          }
@@ -984,13 +984,12 @@ error:
    {
       SyncLocker lock(StreamLoadCurLock);
       if(!StreamLoadCur)return; // canceled
-      StreamLoadCur->_stream=IMAGE_STREAM_NEED_MORE; // finished but still need more
+      StreamLoadCur->_stream=IMAGE_STREAM_NEED_MORE; // finished loading, but still need more data
    }
  //D._callbacks.include(LockedUpdateStreamLoads);
    if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
 #else
-   StreamSet set;
-   load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
+   StreamSet set; // have to set 'set' members for every mip, because due to swap they become invalid
    REPD(img_mip, image_base_mip) // iterate all mips that need to be loaded
    {
       Int file_mip=file_base_mip+img_mip;
@@ -1001,7 +1000,6 @@ error:
          case DIRECT_FAST: if(!f->getFast(set.mip_data.data(), img_mip_size))goto error; break;
          default         : if(!load(file_mip, img_mip, set.mip_data.data()) )goto error; break;
       }
-      // have to set members for every mip, because due to swap they become invalid
       set.mip=img_mip;
 
       // !! ANY DATA OUTPUT HERE MUST BE PROCESSED IN ORDER, BECAUSE WE CAN LOWER 'image.baseMip' ONLY 1 BY 1 DOWN TO ZERO, CAN'T SKIP !!
