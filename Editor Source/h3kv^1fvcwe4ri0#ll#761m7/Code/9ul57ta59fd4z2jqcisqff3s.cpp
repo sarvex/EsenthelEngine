@@ -193,20 +193,8 @@ bool Init()
       if(!Physics.created())Physics.create().timestep(PHYS_TIMESTEP_VARIABLE);
 
       const flt delay_remove=10;
-      Meshes      .delayRemove(delay_remove);
-      PhysBodies  .delayRemove(delay_remove);
-      WaterMtrls  .delayRemove(delay_remove);
-      Materials   .delayRemove(delay_remove);
-      Fonts       .delayRemove(delay_remove);
-      ImageAtlases.delayRemove(delay_remove);
-      Images      .delayRemove(delay_remove);
-      PanelImages .delayRemove(delay_remove);
-      Panels      .delayRemove(delay_remove);
-      TextStyles  .delayRemove(delay_remove);
-      GuiSkins    .delayRemove(delay_remove);
-          Objects .delayRemove(delay_remove);
-      EditObjects .delayRemove(delay_remove);
-      Environments.delayRemove(delay_remove);
+            CachesDelayRemove(delay_remove);
+      EditObjects.delayRemove(delay_remove);
 
       Images        .mode(CACHE_DUMMY);
       ImageAtlases  .mode(CACHE_DUMMY);
