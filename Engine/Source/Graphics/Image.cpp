@@ -2941,8 +2941,11 @@ void Image::baseMip(Int base_mip)
 {
    if(_base_mip!=base_mip)
    {
-      SyncLockerEx locker(D._lock, hw());
-      lockedBaseMip(base_mip);
+      if(soft())_base_mip=base_mip;else
+      {
+         SyncLocker locker(D._lock);
+         lockedBaseMip(base_mip);
+      }
    }
 }
 /******************************************************************************/

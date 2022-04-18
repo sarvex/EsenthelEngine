@@ -16,7 +16,7 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define IMAGE_STREAM_FULL    GPU_API(true, false) // load only small image, but stream the entire full image and replace the small with the full one
+#define IMAGE_STREAM_FULL    true // load only small image, but stream the entire full image and replace the small with the full one, much faster on both DX and GL
 #define IMAGE_NEED_VALID_PTR GPU_API(true, false) // DX requires that all mip data pointers are valid
 /******************************************************************************/
 #define CC4_IMG CC4('I','M','G',0)
