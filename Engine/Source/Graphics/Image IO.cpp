@@ -1633,7 +1633,7 @@ static void CancelAllStreamLoads() // this force cancels all when we want to shu
 }
 void Image::cancelStream() // called when image is deleted !! WARNING: IN 'IMAGE_STREAM_FULL' THIS IMAGE MIGHT STILL BE SMALL SIZED, DO NOT USE IT AFTERWARDS IN IMAGE_STREAM_FULL !!
 {
-   if(_stream)
+   if(_stream) // in most cases this will be zero, so do any processing below only if there's something here
    {
       if(_stream&IMAGE_STREAM_LOADING)
       {
