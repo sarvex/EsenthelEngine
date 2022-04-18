@@ -277,8 +277,8 @@ struct Image // Image (Texture)
    Bool            hw()C {return IsHW  (mode())   ;} // if this is a hardware image NOT (IMAGE_SOFT, IMAGE_SOFT_CUBE)
    Bool          cube()C {return IsCube(mode())   ;} // if this is a cube     image     (IMAGE_CUBE, IMAGE_SOFT_CUBE or IMAGE_RT_CUBE)
 
-   Int       lMipMap  ()C {return _lmip      ;} // get index              of locked mip map
-   DIR_ENUM  lCubeFace()C {return _lface     ;} // get                       locked cube face
+   Int       lMipMap  ()C {return _lock_mip  ;} // get index              of locked mip map
+   DIR_ENUM  lCubeFace()C {return _lock_face ;} // get                       locked cube face
    UInt      pitch    ()C {return _pitch     ;} // get width        pitch of locked mip map
    UInt      pitch2   ()C {return _pitch2    ;} // get width*height pitch of locked mip map
    Byte*     data     ()  {return _data      ;} // get address            of locked data, memory accessed using this method should be interpreted according to 'hwType' (and not 'type')
@@ -718,9 +718,9 @@ private:
    IMAGE_TYPE _type, _hw_type;
    IMAGE_MODE _mode;
     LOCK_MODE _lock_mode;
-     DIR_ENUM _lface;
-   Byte       _mips, _samples, _lmip, _byte_pp, _base_mip;
-   Bool       _partial, _discard, _streaming;
+     DIR_ENUM _lock_face;
+   Byte       _mips, _samples, _lock_mip, _byte_pp, _base_mip, _stream;
+   Bool       _partial, _discard;
    Int        _lock_count;
    UInt       _pitch, _pitch2;
    VecI       _size, _hw_size, _lock_size;
@@ -863,6 +863,13 @@ inline void CopyImgData(C Byte *src_data, Byte *dest_data, Int src_pitch, Int de
    UInt SourceGLFormat(IMAGE_TYPE type);
    UInt SourceGLType  (IMAGE_TYPE type);
 #endif
+
+#define IMAGE_STREAM_FULL true // load only small image, but stream the entire full image and replace the small with the full one, much faster on both DX and GL !! WARNING: IN THIS MODE THE IMAGES ARE CREATED SMALLER, BUT THEIR MEMBERS: SIZE/MIPS ARE SET AS IF FULL, WHICH DOES NOT MATCH THE ACTUAL IMAGE DATA !!
+enum
+{
+   IMAGE_STREAM_LOADING  =1<<0, // if still loading - in streaming queue
+   IMAGE_STREAM_NEED_MORE=1<<1, // if still need more data to load (this can be enabled even if Image is not IMAGE_STREAM_LOADING anymore, for example due to an error, but there's still data left unstreamed)
+};
 void LockedUpdateStreamLoads(); // assumes 'D._lock'
 void       UpdateStreamLoads();
 void         ShutStreamLoads();

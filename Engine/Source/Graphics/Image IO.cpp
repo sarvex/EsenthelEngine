@@ -16,7 +16,6 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define IMAGE_STREAM_FULL    true // load only small image, but stream the entire full image and replace the small with the full one, much faster on both DX and GL
 #define IMAGE_NEED_VALID_PTR GPU_API(true, false) // DX requires that all mip data pointers are valid
 /******************************************************************************/
 #define CC4_IMG CC4('I','M','G',0)
@@ -675,10 +674,12 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Int can_read_mips=Min(header.mip_maps-file_base_mip, want.mip_maps); // mips that we can read
       if(!f->skip(mips[file_base_mip+can_read_mips-1].offset))return false; // #MipOrder
 
+      // check if can stream
       Bool stream=false;
       Int  read_mips=0;
       UInt data_size=0;
-      if(f->_type!=FILE_MEM // if file not in memory
+      if(IsHW(want.mode) // only for hardware since there isn't much sense streaming soft
+      && f->_type!=FILE_MEM // if file not in memory
       && f->_type!=FILE_MEMB
       && can_del_f)        // and can delete 'f' file
       {
