@@ -693,7 +693,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
 
       CPtr mip_data[MAX_MIP_MAPS]; if(!CheckMipNum(want.mip_maps))return false;
 
-      // try to create directly from file memory
+      // try to create directly from file memory (this can happen when image is compressed and due to small size it already got decompressed entirely to memory)
       if( f->_type==FILE_MEM // file data is already available and in continuous memory
       && !f->_cipher         // no cipher
       && header.mip_maps-file_base_mip>=want.mip_maps // have all mip maps that we want
@@ -856,7 +856,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          image_base_mip =shrink;
           want_type     =want.type;
           want_mode     =want.mode;
-         // adjust members in case user wants to access them, WARNING: this is a bit dangerous, care must be taken
+         // adjust members in case user wants to access them, WARNING: this is dangerous, care must be taken
          {
             image.   _size=full_size;
             image._hw_size=want_hw_size.set(PaddedWidth (full_size.x, full_size.y, 0, want_hw_type),
