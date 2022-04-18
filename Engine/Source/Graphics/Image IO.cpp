@@ -479,7 +479,7 @@ struct Loader
    void update();
 };
 /******************************************************************************/
-static void Cancel(Image *&image) {if(image){image->_streaming=false; image=null;}} // use when want to cancel something
+static void Cancel(Image *&image) {if(image){image->_stream=IMAGE_STREAM_NEED_MORE; image=null;}} // use when want to cancel something
 struct StreamData
 {
    Image *image;
@@ -498,10 +498,10 @@ struct StreamSet : StreamData
 
    void replace()
    {
-      new_image._streaming=true; // first enable '_streaming' to make sure that during 'Swap', other threads checking this image, will still know it's streaming !! DO THIS HERE INSTEAD OF SOMEWHERE ELSE, BECAUSE WE MUST DISABLE IT SOON AFTER !! because when this image is getting deleted with '_streaming' then it will call 'cancelStream'
+      new_image._stream=IMAGE_STREAM_LOADING|IMAGE_STREAM_NEED_MORE; // first enable streaming to make sure that during 'Swap', other threads checking this image, will still know it's streaming !! DO THIS HERE INSTEAD OF SOMEWHERE ELSE, BECAUSE WE MUST DISABLE IT SOON AFTER !! because when this image is getting deleted with streaming then it will call 'cancelStream'
       Swap(*image, new_image);
-      image   ->_streaming=false; // now after swap finished, remove streaming for both images
-      new_image._streaming=false;
+      image   ->_stream=0; // now after swap finished, remove streaming for both images, first 'image' so other threads can access it already
+      new_image._stream=0; // then the temporary
    }
 #else
    Int        mip;
@@ -521,7 +521,7 @@ struct StreamSet : StreamData
    void finish()
    {
       if(image && mip<=0) // not canceled && error or last mip
-         image->_streaming=false; // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !!
+         image->_stream=(mip ? IMAGE_STREAM_NEED_MORE : 0); // stream finished !! THIS CAN BE SET ONLY FOR THE LAST 'StreamSet' FOR THIS 'image' !! if there was error, then we still need more
    }
    void canceled(Image &image) // use when something got canceled and we need to clear it
    {
@@ -821,7 +821,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             image.setPartial();
          }
       #endif
-         image._streaming=true; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
+         image._stream=IMAGE_STREAM_LOADING|IMAGE_STREAM_NEED_MORE; // !! THIS CAN BE SET ONLY IF WE'RE GOING TO PUT THIS FOR FURTHER PROCESSING !!
          {
             MemcThreadSafeLock lock(StreamLoads);
             StreamLoad &sl=StreamLoads.lockedNew();
@@ -938,7 +938,7 @@ error:
    {
       SyncLocker lock(StreamLoadCurLock);
       if(!StreamLoadCur)return; // canceled
-      StreamLoadCur->_streaming=false;
+      StreamLoadCur->_stream=IMAGE_STREAM_NEED_MORE; // finished but still need more
    }
  //D._callbacks.include(LockedUpdateStreamLoads);
    if(StreamLoadWaiting)StreamLoaded+=StreamLoadWaiting; // wake up all those that are waiting
@@ -1610,7 +1610,7 @@ void LockedUpdateStreamLoads() // assumes 'D._lock'
       FREPA(StreamSets)StreamSets.lockedElm(i).setMipData(); // set all mip data, order is not important much, but probably better go forward, so next step going back will have elements already in RAM cache
    #endif
        REPA(StreamSets)StreamSets.lockedElm(i).baseMip   (); // now we have to set 'baseMip', which recreates SRV, it's best if we go from end, and already create for the biggest mip we have, further smaller mips we'll just ignore, remember that when setting 'baseMip' then all mips for that range must have its data already set (because other threads might access it)
-      FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once '_streaming' is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
+      FREPA(StreamSets)StreamSets.lockedElm(i).finish    (); // this have to process in order, because once streaming is disabled, we can't access that 'image' any more, it could get deleted and removed from memory
    #endif
       StreamSets.lockedClear();
    }
@@ -1646,7 +1646,14 @@ void Image::cancelStream() // called when image is deleted
      _streaming=false;
    }
 }
-static inline Bool Wait(Image &image, Int mip) {return mip<image._base_mip && image._streaming;}
+
+static inline Bool Wait(Image &image, Int mip)
+#if IMAGE_STREAM_FULL
+   {return                        image._stream&IMAGE_STREAM_LOADING;}
+#else
+   {return mip<image._base_mip && image._stream&IMAGE_STREAM_LOADING;}
+#endif
+
 Bool Image::waitForStream(Int mip)
 {
    if(Wait(T, mip))
@@ -1661,7 +1668,11 @@ Bool Image::waitForStream(Int mip)
       }
       AtomicDec(StreamLoadWaiting);
    }
+#if IMAGE_STREAM_FULL
+   return !(_stream&IMAGE_STREAM_NEED_MORE);
+#else
    return mip>=_base_mip;
+#endif
 }
 /******************************************************************************/
 void ShutStreamLoads()

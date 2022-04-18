@@ -2235,7 +2235,13 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
 {
    if(InRange(mip_map, mipMaps()) && InRange(cube_face, 6)) // this already handles the case of "is()"
    {
-      if(mip_map<_base_mip && !waitForStream(mip_map))return false; // if want to access mip-map that's still streaming, then wait for it
+   #if IMAGE_STREAM_FULL
+      if(_stream&IMAGE_STREAM_NEED_MORE)
+   #else
+      if(mip_map<baseMip())
+   #endif
+         if(!waitForStream(mip_map))return false; // if want to access mip-map that's still streaming, then wait for it
+
       if(mode()==IMAGE_SOFT)
       {
          if(mipMaps()==1)return true; // if there's only one mip-map then we don't need to do anything
