@@ -854,6 +854,7 @@ void Loader::update()
       }
       CopyFast(img_data.data(), temp.data(), data_size); // copy back to 'img_data', it was created big enough to keep all loaded mip maps
    }
+   // load bigger mips
    load_mode=(direct ? (SameAlignment(file_hw_size, want_hw_size, file_base_mip, 0, image_base_mip, want_hw_type) /*&& !mip_compression*/) ? DIRECT_FAST : DIRECT : CONVERT);
 #else
    StreamSet set;
