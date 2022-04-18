@@ -156,13 +156,13 @@ void _CopyImgData(C Byte *&src_data, Byte *&dest_data, Int src_pitch, Int dest_p
 /******************************************************************************/
 // FILE
 /******************************************************************************/
-static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
+static void LoadImgData(File &src, Byte *&dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y)
 {
    Int copy_blocks_y=Min(src_blocks_y, dest_blocks_y);
    if(src_pitch==dest_pitch)
    {
       Int copy=copy_blocks_y*dest_pitch;
-      f.getFast(dest_data, copy); dest_data+=copy;
+      src.getFast(dest_data, copy); dest_data+=copy;
    }else
    {
       Int copy_pitch=Min(src_pitch, dest_pitch);
@@ -170,10 +170,10 @@ static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch
       Int skip_pitch= src_pitch-copy_pitch;
       REPD(y, copy_blocks_y)
       {
-         f.getFast(dest_data, copy_pitch);
-          ZeroFast(dest_data+ copy_pitch, zero_pitch);
+         src.getFast(dest_data, copy_pitch);
+            ZeroFast(dest_data+ copy_pitch, zero_pitch);
          dest_data+=dest_pitch;
-         f.skip(skip_pitch);
+         src.skip(skip_pitch);
       }
    }
    if(dest_blocks_y>copy_blocks_y)
@@ -181,17 +181,17 @@ static void LoadImgData(File &f, Byte *&dest_data, Int src_pitch, Int dest_pitch
       Int zero=(dest_blocks_y-copy_blocks_y)*dest_pitch;
       ZeroFast(dest_data, zero); dest_data+=zero;
    }
-   f.skip((src_blocks_y-copy_blocks_y)*src_pitch);
+   src.skip((src_blocks_y-copy_blocks_y)*src_pitch);
 }
 /******************************************************************************/
-static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
+static void LoadImgData(File &src, Byte *dest_data, Int src_pitch, Int dest_pitch, Int src_blocks_y, Int dest_blocks_y, Int src_pitch2, Int dest_pitch2, Int src_d, Int dest_d, Int faces)
 {
    DEBUG_ASSERT( src_pitch2>= src_pitch* src_blocks_y,  "src_pitch2>=src_pitch*src_blocks_y");
    DEBUG_ASSERT(dest_pitch2>=dest_pitch*dest_blocks_y, "dest_pitch2>=dest_pitch*dest_blocks_y");
    if(src_pitch2==dest_pitch2 && src_d==dest_d && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
    {
       Int copy=dest_d*dest_pitch2*faces;
-      file.getFast(dest_data, copy); dest_data+=copy;
+      src.getFast(dest_data, copy); dest_data+=copy;
    }else
    REPD(face, faces)
    {
@@ -199,24 +199,25 @@ static void LoadImgData(File &file, Byte *dest_data, Int src_pitch, Int dest_pit
       if(src_pitch2==dest_pitch2 && src_pitch==dest_pitch && src_blocks_y==dest_blocks_y)
       {
          Int copy=copy_d*dest_pitch2;
-         file.getFast(dest_data, copy); dest_data+=copy;
+         src.getFast(dest_data, copy); dest_data+=copy;
       }else
       REPD(z, copy_d)
       {
+         Long   src_next=src.pos()+ src_pitch2;
          Byte *dest_next=dest_data+dest_pitch2;
-         LoadImgData(file, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
+         LoadImgData(src, dest_data, src_pitch, dest_pitch, src_blocks_y, dest_blocks_y);
          if(dest_next>dest_data)
          {
-            ZeroFast(dest_data, dest_next-dest_data);
-            dest_data=dest_next;
+            ZeroFast(dest_data, dest_next-dest_data); dest_data=dest_next;
          }
+         src.pos(src_next);
       }
       if(dest_d>copy_d)
       {
          Int zero=(dest_d-copy_d)*dest_pitch2;
          ZeroFast(dest_data, zero); dest_data+=zero;
       }
-      if(src_d>copy_d)file.skip((src_d-copy_d)*src_pitch2);
+      if(src_d>copy_d)src.skip((src_d-copy_d)*src_pitch2);
    }
 }
 /******************************************************************************/
