@@ -1761,8 +1761,9 @@ void DrawProject()
    void ProjectEx::mtrlDownsizeTexMobile(C MemPtr<UID> &elm_ids, byte downsize, C UID &base_0, C UID &base_1, C UID &base_2)
    {
       Memt<UID> mtrls;
-      REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())//if(mtrl_data.downsize_tex_mobile!=downsize) skip check here, so we can always process similar materials even if this one already has desired value
-         if(mtrls.binaryInclude(mtrl->id)) // if just added
+      REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())
+         if(mtrl_data->downsize_tex_mobile!=downsize) // skip check here, so we can always process similar materials even if this one already has desired value, actually restore it, because when wanting to set on a lot of materials then all of them would have to be loaded which is slow
+            if(mtrls.binaryInclude(mtrl->id)) // if just added
       {
          // include other materials that have the same textures
          EditMaterial edit; if(mtrlGet(mtrl->id, edit))
