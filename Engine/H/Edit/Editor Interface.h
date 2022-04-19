@@ -96,8 +96,8 @@ struct ObjData
       bool removed  , // if this parameter is currently removed
            inherited; // if this parameter is inherited from a base object or object class (if this is true then the parameter does not directly exist in the object itself, but it exists in the base/class of the object)
 
-      Bool save(File &f)C {if(EE::Param::save(f)){f<<id<<removed<<inherited; return f.ok();} return false;}
-      Bool load(File &f)  {if(EE::Param::load(f)){f>>id>>removed>>inherited; return f.ok();} return false;}
+      Bool save(File &f)C {if(super::save(f)){f<<id<<removed<<inherited; return f.ok();} return false;}
+      Bool load(File &f)  {if(super::load(f)){f>>id>>removed>>inherited; return f.ok();} return false;}
 
       Param() {id.zero(); removed=inherited=false;}
    };
