@@ -180,7 +180,7 @@ ref struct FrameworkView sealed : IFrameworkView
          MagnetometerHandler=ref new TypedEventHandler<Sensors::Magnetometer^, MagnetometerReadingChangedEventArgs^>(this, &FrameworkView::OnMagnetometerChanged);
       }
     //SystemNavigationManager::GetForCurrentView()->AppViewBackButtonVisibility = Windows::UI::Core::AppViewBackButtonVisibility::Visible; // display back button on app title bar
-      SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &FrameworkView::OnBackRequested);
+    //SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &FrameworkView::OnBackRequested); For Windows Phone this was about the onscreen back button in the nav bar, but now when tested this is triggered even when pressing gamepad B button, so disable this to avoid confusion
 
       ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(Max(1, PixelsToDips(1)), Max(1, PixelsToDips(1)))); // using <1 means to use system default min size, so use Max 1 to always set a custom size
 
@@ -483,12 +483,12 @@ ref struct FrameworkView sealed : IFrameworkView
          }break;
       }
    }
-   void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args)
+ /*void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args)
    {
       args->Handled=true; // disable app close on back press
       Kb.push   (KB_NAV_BACK, -1);
       Kb.release(KB_NAV_BACK); // release immediately because there's no callback for a release
-   }
+   }*/
 #if KEY_EVENTS
    void OnAcceleratorKeyActivated(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
    {
