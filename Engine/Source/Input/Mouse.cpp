@@ -619,17 +619,20 @@ void MouseClass::release(Byte b)
 void MouseClass::moveAbs(C Vec2 &screen_d) {move(screen_d/D.scale());}
 void MouseClass::move   (C Vec2 &screen_d)
 {
-   Vec2 pixel_d=D.screenToWindowPixelSize(screen_d); // convert to pixel delta
-  _delta_rel_sm+=pixel_d*_speed; // adjust by speed
-   if(!frozen())
+   if(screen_d.any())
    {
-   #if 1 // pixel align (needed because all Operating Systems internally store mouse position as 'int')
-      pixel_d+=_move_offset; // add what we've accumulated before
-      VecI2 pixel_di=Round(pixel_d); // round to nearest pixel
-     _move_offset=pixel_d-pixel_di; // calculate what we want - what we've got
-      Vec2 screen_d=D.windowPixelToScreenSize(pixel_di); // move by aligned pixel delta
-   #endif
-      pos(pos()+screen_d);
+      Vec2 pixel_d=D.screenToWindowPixelSize(screen_d); // convert to pixel delta
+     _delta_rel_sm+=pixel_d*_speed; // adjust by speed
+      if(!frozen())
+      {
+      #if 1 // pixel align (needed because all Operating Systems internally store mouse position as 'int')
+         pixel_d+=_move_offset; // add what we've accumulated before
+         VecI2 pixel_di=Round(pixel_d); // round to nearest pixel
+        _move_offset=pixel_d-pixel_di; // calculate what we want - what we've got
+         Vec2 screen_d=D.windowPixelToScreenSize(pixel_di); // move by aligned pixel delta
+      #endif
+         pos(pos()+screen_d);
+      }
    }
 }
 void MouseClass::scroll(C Vec2 &d) {_wheel+=d;}
@@ -742,8 +745,6 @@ void MouseClass::update()
    }
 #endif
 
-  _delta_rel*=_speed;
-
    updatePos();
 #if WINDOWS_NEW
    if(App.active() && (_frozen || _clip_rect_on || _clip_window))clipUpdate();
@@ -755,7 +756,7 @@ void MouseClass::update()
 #if WINDOWS_NEW || WEB
    if(_locked) // for WINDOWS_NEW and WEB when '_locked', the '_window_pixeli' never changes so we need to manually adjust the '_pos' based on '_delta_rel'
    {
-      if(!_frozen)_pos+=_delta_rel*(D.size().max()*0.7f); // make movement speed dependent on the screen size
+      if(!_frozen)_pos+=D.windowPixelToScreenSize(_delta_rel);
 
       // clip
       if(_clip_rect_on)_pos&=_clip_rect;else
@@ -770,6 +771,7 @@ void MouseClass::update()
    }
 
                 _delta_clp   =_pos-old; // get delta = new-old
+                _delta_rel  *=_speed;
                 _delta_rel_sm=_sv_delta.update(_delta_rel); // yes, mouse delta smoothing is needed, especially for low fps (for example ~40), without this, player camera rotation was not smooth
    if(Time.ad())_vel         =_sv_vel  .update(_delta_clp/Time.ad(), Time.ad()); // use '_delta_clp' to match exact cursor position
 
