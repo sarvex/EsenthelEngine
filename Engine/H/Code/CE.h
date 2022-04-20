@@ -183,8 +183,9 @@ struct CodeEditorInterface
    virtual Bool          appWindowsCodeSign                 () {return              false;} // get if code sign exe                    of current app
    virtual Str           appGooglePlayLicenseKey            () {return                  S;} // get Google Play license key             of current app
    virtual Str           appLocationUsageReason             () {return                  S;} // get location usage reason               of current app
+   virtual Str           appNintendoInitialCode             () {return                  S;} // get Nintendo Initial Code               of current app
    virtual ULong         appNintendoAppID                   () {return                  0;} // get Nintendo App ID                     of current app
-   virtual Str           appNintendoPublisherName           () {return                  S;} // get Nintendo Publishder Name            of current app
+   virtual Str           appNintendoPublisherName           () {return                  S;} // get Nintendo Publisher Name             of current app
    virtual Int           appBuild                           () {return                  1;} // get build number                        of current app
    virtual ULong         appFacebookAppID                   () {return                  0;} // get Facebook   App ID                   of current app
    virtual Str           appAdMobAppIDiOS                   () {return                  S;} // get AdMob      App ID                   of current app for iOS         platform

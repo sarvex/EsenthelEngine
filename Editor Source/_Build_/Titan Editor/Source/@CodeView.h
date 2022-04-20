@@ -43,6 +43,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual UID               appXboxLiveSCID                    ()override; 
    virtual Str               appGooglePlayLicenseKey            ()override; 
    virtual Str               appLocationUsageReason             ()override; 
+   virtual Str               appNintendoInitialCode             ()override; 
    virtual ULong             appNintendoAppID                   ()override; 
    virtual Str               appNintendoPublisherName           ()override; 
    virtual Int               appBuild                           ()override; 

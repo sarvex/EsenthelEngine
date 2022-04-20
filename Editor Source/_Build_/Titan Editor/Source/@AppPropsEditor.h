@@ -99,6 +99,8 @@ class AppPropsEditor : PropWin
    static Str  XboxLiveTitleID             (C AppPropsEditor &ap             );
    static void XboxLiveSCID                (  AppPropsEditor &ap, C Str &text);
    static Str  XboxLiveSCID                (C AppPropsEditor &ap             );
+   static void NintendoInitialCode         (  AppPropsEditor &ap, C Str &text);
+   static Str  NintendoInitialCode         (C AppPropsEditor &ap             );
    static void NintendoAppID               (  AppPropsEditor &ap, C Str &text);
    static Str  NintendoAppID               (C AppPropsEditor &ap             );
    static void NintendoPublisherName       (  AppPropsEditor &ap, C Str &text);

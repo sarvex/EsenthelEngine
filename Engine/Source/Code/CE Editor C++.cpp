@@ -1408,6 +1408,10 @@ Bool CodeEditor::generateVSProj(Int version)
                Application->nodes.New().setName("UserAccountSaveDataSize"       ).data.add(s);
                Application->nodes.New().setName("UserAccountSaveDataJournalSize").data.add(s);
             }
+
+            Str initial_code=cei().appNintendoInitialCode();
+            if( initial_code.is())Application->getNode("ApplicationErrorCodeCategory").data.setNum(1)[0]=initial_code;
+
          }
       }
       if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Nintendo Switch/Project.nmeta"))return false;
