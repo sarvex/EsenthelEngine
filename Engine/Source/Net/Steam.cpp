@@ -1,7 +1,7 @@
 /******************************************************************************/
 #include "stdafx.h"
 
-#define SUPPORT_STEAM (DESKTOP && !ARM)
+#define SUPPORT_STEAM (DESKTOP && !WINDOWS_NEW && !ARM)
 #define CLOUD_WORKAROUND 1 // perhaps this is needed only when running apps manually and not through Steam
 
 #if SUPPORT_STEAM
