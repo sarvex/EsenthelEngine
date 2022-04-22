@@ -46,6 +46,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual Str               appNintendoInitialCode             ()override; 
    virtual ULong             appNintendoAppID                   ()override; 
    virtual Str               appNintendoPublisherName           ()override; 
+   virtual Str               appNintendoLegalInformation        ()override; 
    virtual Int               appBuild                           ()override; 
    virtual Long              appSaveSize                        ()override; 
    virtual ulong             appFacebookAppID                   ()override; 

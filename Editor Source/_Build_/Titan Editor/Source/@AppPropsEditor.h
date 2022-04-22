@@ -50,6 +50,7 @@ class AppPropsEditor : PropWin
    static void GetMicrosoftPublisher(  ptr           );
    static void GetXboxLive          (  ptr           );
    static void GetNintendo          (  ptr           );
+   static void GetNintendoLegal     (  ptr           );
 
    static void DirsWin                     (  AppPropsEditor &ap, C Str &text);
    static Str  DirsWin                     (C AppPropsEditor &ap             );
@@ -105,6 +106,8 @@ class AppPropsEditor : PropWin
    static Str  NintendoAppID               (C AppPropsEditor &ap             );
    static void NintendoPublisherName       (  AppPropsEditor &ap, C Str &text);
    static Str  NintendoPublisherName       (C AppPropsEditor &ap             );
+   static void NintendoLegalInfo           (  AppPropsEditor &ap, C Str &text);
+   static Str  NintendoLegalInfo           (C AppPropsEditor &ap             );
    static void AndroidLicenseKey           (  AppPropsEditor &ap, C Str &text);
    static Str  AndroidLicenseKey           (C AppPropsEditor &ap             );
    static void Build                       (  AppPropsEditor &ap, C Str &text);

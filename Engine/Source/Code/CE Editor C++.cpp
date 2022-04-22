@@ -1412,6 +1412,8 @@ Bool CodeEditor::generateVSProj(Int version)
             Str initial_code=cei().appNintendoInitialCode();
             if( initial_code.is())Application->getNode("ApplicationErrorCodeCategory").data.setNum(1)[0]=initial_code;
 
+            Str legal=cei().appNintendoLegalInformation();
+            if( legal.is())Application->getNode("LegalInformationFilePath").data.setNum(1)[0]=legal;
          }
       }
       if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Nintendo Switch/Project.nmeta"))return false;

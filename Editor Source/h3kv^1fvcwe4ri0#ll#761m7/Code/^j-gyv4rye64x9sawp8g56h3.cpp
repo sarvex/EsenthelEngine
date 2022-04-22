@@ -79,6 +79,7 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual Str               appNintendoInitialCode             ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.nintendo_initial_code  ; return super.appNintendoInitialCode();}
    virtual ULong             appNintendoAppID                   ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.nintendo_app_id        ; return super.appNintendoAppID();}
    virtual Str               appNintendoPublisherName           ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.nintendo_publisher_name; return super.appNintendoPublisherName();}
+   virtual Str               appNintendoLegalInformation        ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.nintendo_legal_info    ; return super.appNintendoLegalInformation();}
    virtual Int               appBuild                           ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.build                  ; return super.appBuild();}
    virtual Long              appSaveSize                        ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.save_size              ; return super.appSaveSize();}
    virtual ulong             appFacebookAppID                   ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.fb_app_id              ; return super.appFacebookAppID();}
@@ -672,6 +673,7 @@ class AppPropsEditor : PropWin
    static void GetMicrosoftPublisher(  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/account/v3/organization/legalinfo");}
    static void GetXboxLive          (  ptr           ) {Explore("https://partner.microsoft.com/en-us/dashboard/windows/overview");}
    static void GetNintendo          (  ptr           ) {Explore("https://developer.nintendo.com/group/development/products");}
+   static void GetNintendoLegal     (  ptr           ) {Explore("https://slim.mng.nintendo.net/slim/home");}
 
    static void DirsWin                     (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.dirs_windows=text; app_data.dirs_windows_time.getUTC(); ap.changed_headers=true;}}
    static Str  DirsWin                     (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.dirs_windows; return S;}
@@ -727,6 +729,8 @@ class AppPropsEditor : PropWin
    static Str  NintendoAppID               (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())if(app_data.nintendo_app_id)return TextHex(app_data.nintendo_app_id, 16, 0, true); return S;}
    static void NintendoPublisherName       (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.nintendo_publisher_name=text; app_data.nintendo_publisher_name_time.getUTC();}}
    static Str  NintendoPublisherName       (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.nintendo_publisher_name; return S;}
+   static void NintendoLegalInfo           (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.nintendo_legal_info=text; app_data.nintendo_legal_info_time.getUTC();}}
+   static Str  NintendoLegalInfo           (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.nintendo_legal_info; return S;}
    static void AndroidLicenseKey           (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.android_license_key=text; app_data.android_license_key_time.getUTC();}}
    static Str  AndroidLicenseKey           (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.android_license_key; return S;}
    static void Build                       (  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData()){app_data.build=TextInt(text); app_data.build_time.getUTC(); if(ap.elm_id==Proj.curApp())CodeEdit.makeAuto();}}
@@ -852,13 +856,14 @@ class AppPropsEditor : PropWin
       PropEx &cb_as_i  =ios_props.add("Chartboost App Signature"   , MemberDesc(MEMBER(ElmApp, cb_app_signature_ios   )).setFunc(ChartboostAppSignatureiOS   , ChartboostAppSignatureiOS   )).desc("Chartboost Application Signature");
       PropEx &loc_usage=ios_props.add("Location Usage Reason"      , MemberDesc(DATA_STR                               ).setFunc(LocationUsageReason         , LocationUsageReason         )).desc("Reason for accessing the user's location information.\nThis is needed for iOS (on other platforms this is ignored).\nThis will be displayed on the user screen when trying to access the Location.");
 
-                        nintendo_props.add("Include Headers"         , MemberDesc(DATA_STR).setFunc(HeadersNintendo      , HeadersNintendo      )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
-                        nintendo_props.add("Include Libraries"       , MemberDesc(DATA_STR).setFunc(LibsNintendo         , LibsNintendo         )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.a | C:\\Lib2\\Main.a");
-                        nintendo_props.add("Include Directories"     , MemberDesc(DATA_STR).setFunc(DirsNintendo         , DirsNintendo         )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
-      PropEx &nn_ini_cd=nintendo_props.add("Nintendo Initial Code"   , MemberDesc(DATA_STR).setFunc(NintendoInitialCode  , NintendoInitialCode  ));
-      PropEx &nn_app_id=nintendo_props.add("Nintendo App ID"         , MemberDesc(DATA_STR).setFunc(NintendoAppID        , NintendoAppID        ));
-      PropEx &nn_pub_nm=nintendo_props.add("Nintendo Publisher Name" , MemberDesc(DATA_STR).setFunc(NintendoPublisherName, NintendoPublisherName));
-                        nintendo_props.add("Max Save Disk Usage (MB)", MemberDesc(DATA_STR).setFunc(SaveSize, SaveSize)).desc("Maximum disk usage for all save files in MegaBytes");
+                        nintendo_props.add("Include Headers"           , MemberDesc(DATA_STR).setFunc(HeadersNintendo      , HeadersNintendo      )).desc("Type full paths to header file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.h | C:\\Lib2\\Main.h");
+                        nintendo_props.add("Include Libraries"         , MemberDesc(DATA_STR).setFunc(LibsNintendo         , LibsNintendo         )).desc("Type full paths to lib file names.\nSeparate each with | for example:\nC:\\Lib1\\Main.a | C:\\Lib2\\Main.a");
+                        nintendo_props.add("Include Directories"       , MemberDesc(DATA_STR).setFunc(DirsNintendo         , DirsNintendo         )).desc("Type full paths to additional include directories.\nSeparate each with | for example:\nC:\\Lib1 | C:\\Lib2");
+      PropEx &nn_ini_cd=nintendo_props.add("Nintendo Initial Code"     , MemberDesc(DATA_STR).setFunc(NintendoInitialCode  , NintendoInitialCode  ));
+      PropEx &nn_app_id=nintendo_props.add("Nintendo App ID"           , MemberDesc(DATA_STR).setFunc(NintendoAppID        , NintendoAppID        ));
+      PropEx &nn_pub_nm=nintendo_props.add("Nintendo Publisher Name"   , MemberDesc(DATA_STR).setFunc(NintendoPublisherName, NintendoPublisherName));
+      PropEx &nn_legal =nintendo_props.add("Nintendo Legal Information", MemberDesc(DATA_STR).setFunc(NintendoLegalInfo    , NintendoLegalInfo    ));
+                        nintendo_props.add("Max Save Disk Usage (MB)"  , MemberDesc(DATA_STR).setFunc(SaveSize             , SaveSize             )).desc("Maximum disk usage for all save files in MegaBytes");
 
       autoData(this); win_props.autoData(this); mac_props.autoData(this); linux_props.autoData(this); android_props.autoData(this); ios_props.autoData(this); nintendo_props.autoData(this);
       flt  vw=0.85;
@@ -894,6 +899,7 @@ class AppPropsEditor : PropWin
       platforms.tab(PNIN)+=nn_ini_cd.button.create(Rect_RU(nn_ini_cd.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_ini_cd.textline.rect(Rect(nn_ini_cd.textline.rect().ld(), nn_ini_cd.button.rect().lu()));
       platforms.tab(PNIN)+=nn_app_id.button.create(Rect_RU(nn_app_id.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_app_id.textline.rect(Rect(nn_app_id.textline.rect().ld(), nn_app_id.button.rect().lu()));
       platforms.tab(PNIN)+=nn_pub_nm.button.create(Rect_RU(nn_pub_nm.textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendo); nn_pub_nm.textline.rect(Rect(nn_pub_nm.textline.rect().ld(), nn_pub_nm.button.rect().lu()));
+      platforms.tab(PNIN)+=nn_legal .button.create(Rect_RU(nn_legal .textline.rect().ru()+Vec2(th, 0), th*2, th), "Get").func(GetNintendoLegal); nn_legal .textline.rect(Rect(nn_legal .textline.rect().ld(), nn_legal .button.rect().lu()));
 
       p_image_portrait   .move(Vec2(rect.w()  /3, h  ));
       p_image_landscape  .move(Vec2(rect.w()*2/3, h*2));

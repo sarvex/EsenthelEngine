@@ -21,7 +21,8 @@ class ElmApp : ElmData
                      cb_app_id_ios, cb_app_signature_ios, cb_app_id_google, cb_app_signature_google, 
                      ms_publisher_name,
                      nintendo_initial_code,
-                     nintendo_publisher_name;
+                     nintendo_publisher_name,
+                     nintendo_legal_info;
    int               build, save_size;
    ulong             fb_app_id, 
                      xbl_title_id,
@@ -44,7 +45,7 @@ class ElmApp : ElmData
                      icon_time, notification_icon_time, image_portrait_time, image_landscape_time, gui_skin_time,
                      ms_publisher_id_time, ms_publisher_name_time,
                      xbl_program_time, xbl_title_id_time, xbl_scid_time, 
-                     nintendo_initial_code_time, nintendo_app_id_time, nintendo_publisher_name_time;
+                     nintendo_initial_code_time, nintendo_app_id_time, nintendo_publisher_name_time, nintendo_legal_info_time;
 
    // get
    bool equal(C ElmApp &src)C;
