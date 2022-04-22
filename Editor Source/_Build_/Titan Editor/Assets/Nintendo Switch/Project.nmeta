@@ -23,7 +23,6 @@
 		<UserAccountSwitchLock>Disable</UserAccountSwitchLock>
 		<Screenshot>Allow</Screenshot>
 		<DataLossConfirmation>None</DataLossConfirmation>
-		<ApplicationErrorCodeCategory>00000</ApplicationErrorCodeCategory>
 		<LogoType>LicensedByNintendo</LogoType>
 		<LogoHandling>Auto</LogoHandling>
 		<VideoCapture>Enable</VideoCapture>
