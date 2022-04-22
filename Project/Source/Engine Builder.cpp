@@ -781,7 +781,7 @@ void CompileEngineDebugWindows32DX11            () {CompileVS(EnginePath+VSEngin
 void CompileEngineDebugWindowsUniversal64DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "1) 64 bit", CopyEngineDebugWindowsUniversal64DX11);}
 void CompileEngineDebugWindowsUniversal32DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "2) 32 bit", CopyEngineDebugWindowsUniversal32DX11);}
 void CompileEngineDebugWindowsUniversalArm32DX11() {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "3) ARM"   , CopyEngineDebugWindowsUniversalArm32DX11);}
-void CompileEngineDebugNintendoSwitch           () {if(CheckNintendoSwitch())CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "5) Nintendo Switch", CopyEngineNintendoSwitch);}
+void CompileEngineDebugNintendoSwitch           () {if(CheckNintendoSwitch())CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "5) Nintendo Switch", CopyEngineDebugNintendoSwitch);}
 
 void  DelEditorExe          () {FDelFile(EditorSourcePath+ENGINE_NAME " Editor.exe");} // VS has a bug that it won't rebuild the EXE if no changes were made in source (so if EXE was built with DX9 lib, and then we're compiling for DX11, then it may not be relinked)
 void CopyEditorWindows64DX11() {    Copy(EditorSourcePath+ENGINE_NAME " Editor.exe", EditorPath+ENGINE_NAME " Editor.exe");}
@@ -894,7 +894,7 @@ TaskBase CompileEditorWindowsTB[]=
 };
 void CompileEditorWindows() {FREPAO(CompileEditorWindowsTB).queue();}
 /******************************************************************************/
-#define ANDROID_DEFAULT WINDOWS
+#define ANDROID_DEFAULT false//WINDOWS
 #define     WEB_DEFAULT false
 
 TaskBase TaskBases[]=
@@ -923,10 +923,11 @@ TaskBase TaskBases[]=
    {"Compile Android"           , "Compile the Engine in Release mode for Android"                                     , CompileEngineAndroid       , ANDROID_DEFAULT},
    {"Make Android Libs"         , "Make the Engine Android Libs from the compilation result to the Editor Bin folder"  , AndroidLibs                , ANDROID_DEFAULT},
 #if WINDOWS
-   {"Compile Nintendo Switch"   , "Compile the Engine in Release mode for Nintendo Switch"                             , CompileEngineNintendoSwitch, false},
-   {"Clean Web"                 , "Clean temporary files generated during Engine compilation for the Web"              ,   CleanEngineWeb           , false},
-   {"Compile Web"               , "Compile the Engine for Web"                                                         , CompileEngineWeb           , WEB_DEFAULT},
-   {"Make Web Libs"             , "Make the Engine Web Lib from the compilation result to the Editor Bin folder"       , WebLibs                    , WEB_DEFAULT},
+   {"Compile Nintendo Switch"      , "Compile the Engine in Release mode for Nintendo Switch"                          , CompileEngineNintendoSwitch     , false},
+   {"Compile Nintendo Switch Debug", "Compile the Engine in Debug mode for Nintendo Switch"                            , CompileEngineDebugNintendoSwitch, false},
+   {"Clean Web"                 , "Clean temporary files generated during Engine compilation for the Web"              ,   CleanEngineWeb                , false},
+   {"Compile Web"               , "Compile the Engine for Web"                                                         , CompileEngineWeb                , WEB_DEFAULT},
+   {"Make Web Libs"             , "Make the Engine Web Lib from the compilation result to the Editor Bin folder"       , WebLibs                         , WEB_DEFAULT},
 #endif
    {"Copy Headers"              , "Copy cleaned Engine Headers from the Engine folder to the Editor folder.\nCleaning removes all 'EE_PRIVATE' sections from the headers."                                                                    , Headers       , true },
    {"Create \"Code Editor.dat\"", "Create \"Code Editor.dat\" file needed for Code Editor in the Engine's Editor.\nThis data is generated from the Engine headers in the Editor Bin folder, which are generated in the \"Copy Headers\" step.", CodeEditorData, true },
