@@ -1089,6 +1089,9 @@
     <ClInclude Include="Source\Shaders\Motion Blur.h">
       <Filter>Source\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="H\Net\Other.h">
+      <Filter>H\Net</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -2194,6 +2197,9 @@
     </ClCompile>
     <ClCompile Include="Source\Shaders\FidelityFX\Fidelity FX.cpp">
       <Filter>Source\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Net\Kartridge.cpp">
+      <Filter>Source\Net</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

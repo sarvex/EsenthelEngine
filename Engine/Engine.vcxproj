@@ -2117,6 +2117,7 @@
     <ClInclude Include="H\Net\Facebook.h" />
     <ClInclude Include="H\Net\Game Analytics.h" />
     <ClInclude Include="H\Net\Internet Cache.h" />
+    <ClInclude Include="H\Net\Other.h" />
     <ClInclude Include="H\Net\Steam.h" />
     <ClInclude Include="H\Net\Xbox Live.h" />
     <ClInclude Include="H\Physics\Actor.h" />
@@ -3217,6 +3218,7 @@
     <ClCompile Include="Source\Net\Facebook.cpp" />
     <ClCompile Include="Source\Net\Game Analytics.cpp" />
     <ClCompile Include="Source\Net\Internet Cache.cpp" />
+    <ClCompile Include="Source\Net\Kartridge.cpp" />
     <ClCompile Include="Source\Net\Steam.cpp" />
     <ClCompile Include="Source\Net\Xbox Live.cpp" />
     <ClCompile Include="Source\Platforms\Web\Web.cpp" />

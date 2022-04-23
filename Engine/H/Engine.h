@@ -377,6 +377,7 @@ namespace EE // Esenthel Engine namespace
    #include "Net/Store.h"
    #include "Net/Steam.h"
    #include "Net/Xbox Live.h"
+   #include "Net/Other.h"
    #include "Net/Internet Cache.h"
    #include "Net/Game Analytics.h"
    /******************************************************************************/
