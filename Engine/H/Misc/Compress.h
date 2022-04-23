@@ -87,9 +87,9 @@ struct ZipFile
 {
    Str      name             ; // full name (including paths)
    Bool     compressed       ; // if file is compressed
-   UInt     uncompressed_size, // size of  uncompressed data
-              compressed_size, // size of    compressed data (if file is not compressed, it's equal to 'uncompressed_size')
-            crc32            ; // CRC32 hash
+   ULong    uncompressed_size, // size of  uncompressed data
+              compressed_size; // size of    compressed data (if file is not compressed, it's equal to 'uncompressed_size')
+   UInt     crc32            ; // CRC32 hash
    Long     offset           ; // data offset in ZIP file
    DateTime modify_time_local; // modification time (in local time zone of the ZIP creator)
 

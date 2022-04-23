@@ -2112,41 +2112,60 @@ Bool ParseZip(File &f, MemPtr<ZipFile> files)
       UInt   compressed_size;
       UInt uncompressed_size;
    };
+   struct Extra
+   {
+      U16 header_id, data_size;
+   };
    #pragma pack(pop)
    files.clear();
    Memt<Char8> s;
-   for(;;)
+   for(; !f.end(); )
    {
       Raw raw; f>>raw; if(raw.signature!=0X04034B50 || !f.ok())break;
-      s.setNum(raw.name_length+1, 0); // clear previous data
-      if(!f.getFastN(s.data(), raw.name_length))break; s[raw.name_length]='\0';
+      s.setNumDiscard(raw.name_length+1); // discard previous data
+      if(!f.getFastN(s.data(), raw.name_length))return false; s[raw.name_length]='\0';
+      ULong uncompressed_size=raw.uncompressed_size, compressed_size=raw.compressed_size;
       Long offset=f.pos()+raw.extra_length;
-      f.pos(offset+raw.compressed_size);
+      if(raw.min_ver>=45 && uncompressed_size==UINT_MAX && compressed_size==UINT_MAX && raw.extra_length>=20) // 64-bit
+         for(; f.pos()<offset; ) // parse all extra data
+      {
+         Extra extra; f>>extra; if(!f.ok())return false;
+         Long next=f.pos()+extra.data_size;
+         if(extra.header_id==1 && extra.data_size==16) // Zip64 extended info
+         {
+            f>>uncompressed_size>>compressed_size; if(!f.ok())return false;
+         }
+         f.pos(next);
+      }
+      f.pos(offset+compressed_size);
       if(raw.general_purpose_flag&0x08) // data descriptor
       {
-         DataDesc dd; f>>dd; if(dd.signature!=0X08074B50 || !f.ok())break;
+         DataDesc dd; f>>dd; if(dd.signature!=0X08074B50 || !f.ok())return false;
          {
-            raw.crc32            =dd.crc32            ;
-            raw.uncompressed_size=dd.uncompressed_size;
-            raw.  compressed_size=dd.  compressed_size;
+            raw.crc32        =dd.crc32            ;
+            uncompressed_size=dd.uncompressed_size;
+              compressed_size=dd.  compressed_size;
          }
       }
-      ZipFile &file=files.New();
-      file.compressed       =(raw.compression_method!=0);
-      file.uncompressed_size= raw.uncompressed_size;
-      file.  compressed_size= raw.  compressed_size;
-      file.            crc32= raw.            crc32;
-      file.offset=offset;
-      // ZIP operates on local time zone of the computer that created it, so just return as it is without converting to UTC implying that it's UTC supported !!
-      file.modify_time_local.second=((raw.modify_time&31)<<1);
-      file.modify_time_local.minute=((raw.modify_time>>5)&63);
-      file.modify_time_local.hour  =((raw.modify_time>>11)  );
-      file.modify_time_local.day   =((raw.modify_date&31)   );
-      file.modify_time_local.month =((raw.modify_date>>5)&15);
-      file.modify_time_local.year  =((raw.modify_date>>9)+1980);
-      file.name=FromUTF8(s.data());
+      if(files)
+      {
+         ZipFile &file=files.New();
+         file.compressed       =(raw.compression_method!=0);
+         file.uncompressed_size=     uncompressed_size;
+         file.  compressed_size=       compressed_size;
+         file.            crc32= raw.            crc32;
+         file.offset=offset;
+         // ZIP operates on local time zone of the computer that created it, so just return as it is without converting to UTC implying that it's UTC supported !!
+         file.modify_time_local.second=((raw.modify_time&31)<<1);
+         file.modify_time_local.minute=((raw.modify_time>>5)&63);
+         file.modify_time_local.hour  =((raw.modify_time>>11)  );
+         file.modify_time_local.day   =((raw.modify_date&31)   );
+         file.modify_time_local.month =((raw.modify_date>>5)&15);
+         file.modify_time_local.year  =((raw.modify_date>>9)+1980);
+         file.name=FromUTF8(s.data());
+      }
    }
-   return files.elms()>0;
+   return true;
 }
 /******************************************************************************/
 }
