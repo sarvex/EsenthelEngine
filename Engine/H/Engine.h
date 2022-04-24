@@ -78,7 +78,7 @@
 #endif
 
 // Android
-#ifdef ANDROID
+#ifdef __ANDROID__
    #undef  ANDROID
    #define ANDROID 1
 #else

@@ -25,20 +25,20 @@
       However NDK input does not provide COMBINING_ACCENT and COMBINING_ACCENT_MASK for key codes.
       I still need to use 'KeyCharacterMap' instead of converting buttons to characters, because on Swiftkey Android 2.3 pressing '(' results in 'k' character, and 'KeyCharacterMap' fixes that.
 
-   Type Signature Java Type 
-   Z              boolean 
-   B              byte 
-   C              char 
-   S              short 
-   I              int 
-   J              long 
-   F              float 
-   D              double 
+   Type Signature Java Type
+   Z              boolean
+   B              byte
+   C              char
+   S              short
+   I              int
+   J              long
+   F              float
+   D              double
    L*;            "*" class
-   [*             *[] array 
+   [*             *[] array
    (params)ret    method
 
-   For example, the Java method:     long f(int n, String s, int[] arr); 
+   For example, the Java method:     long f(int n, String s, int[] arr);
    has the following type signature: (ILjava/lang/String;[I)J
 /******************************************************************************/
 #include "stdafx.h"

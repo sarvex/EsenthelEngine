@@ -474,10 +474,10 @@ static void SetPixelF(Byte *data, IMAGE_TYPE type, Flt pixel)
       case IMAGE_R8 :
       case IMAGE_A8 :
       case IMAGE_L8 : case IMAGE_L8_SRGB:
-      case IMAGE_I8 : (*(U8 *)data)=FltToByte( pixel)             ; break; // it's okay   to clamp int for small  values
-      case IMAGE_I16: (*(U16*)data)=RoundU(Sat(pixel)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I32: (*(U32*)data)=RoundU(Sat(pixel)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I24: {  U32  c    =RoundU(Sat(pixel)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
+      case IMAGE_I8 : (*(U8 *)data)=FltToByte  (    pixel             ); break; // it's okay   to clamp int for small  values
+      case IMAGE_I16: (*(U16*)data)=RoundU     (Sat(pixel)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I32: (*(U32*)data)=RoundUClamp(Sat(pixel)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I24: {  U32  c    =RoundU     (Sat(pixel)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
  
       case IMAGE_R11G11B10F: SetR11G11B10F(data, pixel); break;
    }
@@ -813,9 +813,9 @@ static void _SetColorF(Byte *data, IMAGE_TYPE type, C Vec4 &color)
       case IMAGE_A8: (*(U8*)data)=FltToByte(color.w); break; // it's okay to clamp int for small values
       case IMAGE_I8: (*(U8*)data)=FltToByte(color.x); break; // it's okay to clamp int for small values
 
-      case IMAGE_I16: (*(U16*)data)=RoundU(Sat(color.x)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I32: (*(U32*)data)=RoundU(Sat(color.x)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I24: {  U32  c    =RoundU(Sat(color.x)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
+      case IMAGE_I16: (*(U16*)data)=RoundU     (Sat(color.x)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I32: (*(U32*)data)=RoundUClamp(Sat(color.x)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I24: {  U32  c    =RoundU     (Sat(color.x)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
 
       case IMAGE_L8  : case IMAGE_L8_SRGB  :   (*(U8*)data)=     FltToByte(color.xyz.max()); break; // it's okay to clamp int for small values
       case IMAGE_L8A8: case IMAGE_L8A8_SRGB: ((VecB2*)data)->set(FltToByte(color.xyz.max()), FltToByte(color.w)); break;
@@ -900,9 +900,9 @@ static void _SetColorL(Byte *data, IMAGE_TYPE type, C Vec4 &color)
       case IMAGE_A8: (*(U8*)data)=FltToByte(color.w); break; // it's okay to clamp int for small values
       case IMAGE_I8: (*(U8*)data)=FltToByte(color.x); break; // it's okay to clamp int for small values
 
-      case IMAGE_I16: (*(U16*)data)=RoundU(Sat(color.x)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I32: (*(U32*)data)=RoundU(Sat(color.x)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I24: {  U32  c    =RoundU(Sat(color.x)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
+      case IMAGE_I16: (*(U16*)data)=RoundU     (Sat(color.x)*0x0000FFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I32: (*(U32*)data)=RoundUClamp(Sat(color.x)*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I24: {  U32  c    =RoundU     (Sat(color.x)*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
 
       case IMAGE_L8     : (*(U8*)data)=   FltToByte    (color.xyz.max()); break; // it's okay to clamp int for small values
       case IMAGE_L8_SRGB: (*(U8*)data)=LinearToByteSRGB(color.xyz.max()); break; // it's okay to clamp int for small values
@@ -995,9 +995,9 @@ static void _SetColorS(Byte *data, IMAGE_TYPE type, C Vec4 &color)
       case IMAGE_A8: (*(U8*)data)= FltToByte      (color.w); break; // it's okay to clamp int for small values
       case IMAGE_I8: (*(U8*)data)=SRGBToLinearByte(color.x); break; // it's okay to clamp int for small values
 
-      case IMAGE_I16: (*(U16*)data)=RoundU(Sat(SRGBToLinear(color.x))*0x0000FFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I32: (*(U32*)data)=RoundU(Sat(SRGBToLinear(color.x))*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
-      case IMAGE_I24: {  U32  c    =RoundU(Sat(SRGBToLinear(color.x))*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
+      case IMAGE_I16: (*(U16*)data)=RoundU     (Sat(SRGBToLinear(color.x))*0x0000FFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I32: (*(U32*)data)=RoundUClamp(Sat(SRGBToLinear(color.x))*0xFFFFFFFFu); break; // it's better to clamp flt for bigger values
+      case IMAGE_I24: {  U32  c    =RoundU     (Sat(SRGBToLinear(color.x))*0x00FFFFFFu); (*(U16*)data)=c; data[2]=(c>>16);} break; // it's better to clamp flt for bigger values
 
       case IMAGE_L8     : (*(U8*)data)=SRGBToLinearByte(color.xyz.max()); break; // it's okay to clamp int for small values
       case IMAGE_L8_SRGB: (*(U8*)data)= FltToByte      (color.xyz.max()); break; // it's okay to clamp int for small values

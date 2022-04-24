@@ -1437,7 +1437,7 @@ LICENSE_KEY_BEGIN
          switch(errorCode)
          {
             case LicenseCheckerCallback.ERROR_CHECK_IN_PROGRESS: result=LTR_WAITING; break;
-            default                                             : result=LTR_ERROR  ; break;
+            default                                            : result=LTR_ERROR  ; break;
          }
          com.esenthel.Native.licenseTest(result);
       }

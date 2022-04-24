@@ -2176,13 +2176,14 @@ inline    VecI  Round  (C VecD  &x) {return VecI (Round(x.x), Round(x.y), Round(
 inline    VecI4 Round  (C Vec4  &x) {return VecI4(Round(x.x), Round(x.y), Round(x.z), Round(x.w));}
 inline    VecI4 Round  (C VecD4 &x) {return VecI4(Round(x.x), Round(x.y), Round(x.z), Round(x.w));}
 #if EE_PRIVATE
-constexpr Int   RoundEps(  Flt   x, Flt eps) {return (x>=0) ? Trunc(x+eps) : Trunc(x-eps);}
-constexpr Int   RoundPos(  Flt   x) {return Trunc(x+0.5f);} // doesn't care if round of negative value will not be precise, but unlike 'RoundU' the result will still be negative
-constexpr Int   RoundPos(  Dbl   x) {return Trunc(x+0.5 );} // doesn't care if round of negative value will not be precise, but unlike 'RoundU' the result will still be negative
-constexpr Int   RoundGPU(  Flt   x) {return Round(x-0.0001f);} // if the coordinate is located exactly between 2 pixels "Frac(x)==0.5" then due to numerical precision issues sometimes this can be rounded up and sometimes down, and flickering can occur for example when window is moved on the screen, to prevent that, apply a small offset, the value "0.0001f" has been tested having a Window and a button at 0.5 coordinates, then moving the window around the screen and noticing when does it stop flickering, keep as "-offset" instead of "+offset" because it works better with clipping (for example if Region draws a pixel border and it is located exactly between 2 pixels, then its children may overlap the border because the clipping has 1 extra pixel)
-inline    VecI2 RoundPos(C Vec2 &x) {return VecI2(RoundPos(x.x), RoundPos(x.y)               );}
-inline    VecI  RoundPos(C Vec  &x) {return VecI (RoundPos(x.x), RoundPos(x.y), RoundPos(x.z));}
-inline    VecI2 RoundGPU(C Vec2 &v) {return VecI2(RoundGPU(v.x), RoundGPU(v.y)               );}
+inline    UInt  RoundUClamp(  Flt   x) {return (x>=UINT_MAX) ? UINT_MAX : RoundU(x);} // this is needed because 1.0f*UINT_MAX=UINT_MAX+1 float, which converted to UInt overflows to 0
+constexpr Int   RoundEps   (  Flt   x, Flt eps) {return (x>=0) ? Trunc(x+eps) : Trunc(x-eps);}
+constexpr Int   RoundPos   (  Flt   x) {return Trunc(x+0.5f);} // doesn't care if round of negative value will not be precise, but unlike 'RoundU' the result will still be negative
+constexpr Int   RoundPos   (  Dbl   x) {return Trunc(x+0.5 );} // doesn't care if round of negative value will not be precise, but unlike 'RoundU' the result will still be negative
+constexpr Int   RoundGPU   (  Flt   x) {return Round(x-0.0001f);} // if the coordinate is located exactly between 2 pixels "Frac(x)==0.5" then due to numerical precision issues sometimes this can be rounded up and sometimes down, and flickering can occur for example when window is moved on the screen, to prevent that, apply a small offset, the value "0.0001f" has been tested having a Window and a button at 0.5 coordinates, then moving the window around the screen and noticing when does it stop flickering, keep as "-offset" instead of "+offset" because it works better with clipping (for example if Region draws a pixel border and it is located exactly between 2 pixels, then its children may overlap the border because the clipping has 1 extra pixel)
+inline    VecI2 RoundPos   (C Vec2 &x) {return VecI2(RoundPos(x.x), RoundPos(x.y)               );}
+inline    VecI  RoundPos   (C Vec  &x) {return VecI (RoundPos(x.x), RoundPos(x.y), RoundPos(x.z));}
+inline    VecI2 RoundGPU   (C Vec2 &v) {return VecI2(RoundGPU(v.x), RoundGPU(v.y)               );}
 #endif
 
 // floor, round to nearest integer which is smaller or equal to value, Sample Usage: Floor(7.3) -> 7, Floor(7.9) -> 7
