@@ -1091,27 +1091,27 @@ static void InitKeyMap()
       REPA(ShiftMap[m])ShiftMap[m][i]=((shift==caps) ? Char8(i) : CaseUp(Char8(i)));
       if(shift)
       {
-         ShiftMap[m][Byte('`')]='~';
-         ShiftMap[m][Byte('1')]='!';
-         ShiftMap[m][Byte('2')]='@';
-         ShiftMap[m][Byte('3')]='#';
-         ShiftMap[m][Byte('4')]='$';
-         ShiftMap[m][Byte('5')]='%';
-         ShiftMap[m][Byte('6')]='^';
-         ShiftMap[m][Byte('7')]='&';
-         ShiftMap[m][Byte('8')]='*';
-         ShiftMap[m][Byte('9')]='(';
-         ShiftMap[m][Byte('0')]=')';
-         ShiftMap[m][Byte('-')]='_';
-         ShiftMap[m][Byte('=')]='+';
-         ShiftMap[m][Byte('[')]='{';
-         ShiftMap[m][Byte(']')]='}';
-         ShiftMap[m][Byte(';')]=':';
-         ShiftMap[m][Byte('\'')]='"';
-         ShiftMap[m][Byte('\\')]='|';
-         ShiftMap[m][Byte(',')]='<';
-         ShiftMap[m][Byte('.')]='>';
-         ShiftMap[m][Byte('/')]='?';
+         ShiftMap[m][Unsigned('`')]='~';
+         ShiftMap[m][Unsigned('1')]='!';
+         ShiftMap[m][Unsigned('2')]='@';
+         ShiftMap[m][Unsigned('3')]='#';
+         ShiftMap[m][Unsigned('4')]='$';
+         ShiftMap[m][Unsigned('5')]='%';
+         ShiftMap[m][Unsigned('6')]='^';
+         ShiftMap[m][Unsigned('7')]='&';
+         ShiftMap[m][Unsigned('8')]='*';
+         ShiftMap[m][Unsigned('9')]='(';
+         ShiftMap[m][Unsigned('0')]=')';
+         ShiftMap[m][Unsigned('-')]='_';
+         ShiftMap[m][Unsigned('=')]='+';
+         ShiftMap[m][Unsigned('[')]='{';
+         ShiftMap[m][Unsigned(']')]='}';
+         ShiftMap[m][Unsigned(';')]=':';
+         ShiftMap[m][Unsigned('\'')]='"';
+         ShiftMap[m][Unsigned('\\')]='|';
+         ShiftMap[m][Unsigned(',')]='<';
+         ShiftMap[m][Unsigned('.')]='>';
+         ShiftMap[m][Unsigned('/')]='?';
       }
    }
 }
