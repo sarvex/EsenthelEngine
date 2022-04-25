@@ -19,9 +19,8 @@ android {
         main {
             jniLibs.srcDirs = [MSBUILD_JNI_LIBS_SRC_DIR]
             assets.srcDirs = ['../../../Editor/Bin/Mobile']
-          //res.srcDirs = ['../../../Editor Data/Code/Android/res']
-            java.srcDirs = ['../../../Editor Data/Code/Android/java']
-            manifest.srcFile '../../../Editor Data/Code/Android/AndroidManifest.xml'
+            java.srcDirs = ['../../../Editor Data/Code/Android/app/src/main/java']
+            manifest.srcFile '../../../Editor Data/Code/Android/app/src/main/AndroidManifest.xml'
         }
     }
     aaptOptions {

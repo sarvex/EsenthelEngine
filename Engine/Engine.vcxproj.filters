@@ -2191,9 +2191,6 @@
     <None Include="Source\Platforms\Mac\MyWindow.mm">
       <Filter>Source\Platforms\Mac</Filter>
     </None>
-    <None Include="..\Editor Data\Code\Android\AndroidManifest.xml">
-      <Filter>Source\Platforms\Android</Filter>
-    </None>
     <None Include="Source\Platforms\iOS\EAGLView.mm">
       <Filter>Source\Platforms\iOS</Filter>
     </None>
@@ -2206,10 +2203,10 @@
     <None Include="Source\Platforms\iOS\MyViewController.mm">
       <Filter>Source\Platforms\iOS</Filter>
     </None>
-    <None Include="..\Editor Data\Code\Android\java\EsenthelActivity.java">
+    <None Include="..\Editor Data\Code\Android\app\src\main\java\EsenthelActivity.java">
       <Filter>Source\Platforms\Android</Filter>
     </None>
-    <None Include="..\Editor Data\Code\Android\java\Native.java">
+    <None Include="..\Editor Data\Code\Android\app\src\main\java\Native.java">
       <Filter>Source\Platforms\Android</Filter>
     </None>
   </ItemGroup>
@@ -8747,5 +8744,10 @@
     <Object Include="..\ThirdPartyLibs\Bullet\Android\obj\local\arm64-v8a\objs\Bullet\src\BulletCollision\CollisionDispatch\SphereTriangleDetector.o">
       <Filter>H\_\Bullet\Android</Filter>
     </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="..\Editor Data\Code\Android\app\src\main\AndroidManifest.xml">
+      <Filter>Source\Platforms\Android</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
