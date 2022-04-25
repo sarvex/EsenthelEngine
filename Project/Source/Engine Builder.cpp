@@ -174,7 +174,7 @@ Str NDKBuildPath()
 Str ARPath()
 {
 #if WINDOWS
-   return EnginePath+AndroidProject+"cygwin/ar.exe";
+   return ThirdPartyLibsPath+"AR/ar.exe";
 #else
    return "ar";
 #endif

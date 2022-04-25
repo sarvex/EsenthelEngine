@@ -15,6 +15,7 @@
 *.pri
 *.recipe
 *.tlog
+.*
 ipch/
 asm/
 
