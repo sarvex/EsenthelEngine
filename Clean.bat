@@ -18,6 +18,8 @@ rmdir /s /q "Engine\x64"
 rmdir /s /q "Engine\NX64"
 
 rmdir /s /q "Project\Android\app\build"
+rmdir /s /q "Project\Android\.agde"
+rmdir /s /q "Project\Android\.gradle"
 rmdir /s /q "Project\Android\Debug"
 rmdir /s /q "Project\Android\Release"
 rmdir /s /q "Project\Arm"
