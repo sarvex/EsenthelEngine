@@ -2320,6 +2320,70 @@ static Str UnixEncode(C Str &s)
 /******************************************************************************/
 Bool CodeEditor::generateAndroidProj()
 {
+   Str bin_path=BinPath(false);
+
+   // assets
+   {
+      Str assets=build_path+"Android/app/src/main/assets/";
+
+      // remove all unwanted
+      CChar8 *allowed[]=
+      {
+         "Engine.pak",
+         "Project.pak",
+      };
+      DelExcept(assets, allowed, Elms(allowed)); // remove all except 'allowed'
+
+      // Engine.pak
+      FCreateDirs(assets);
+      Str src=bin_path+"Mobile/Engine.pak", dest=assets+"Engine.pak";
+      if(cei().appEmbedEngineData()==1) // 2D only
+      {
+         if(!CreateEngineEmbedPak(src, dest, false))return false;
+      }else
+         if(!CopyFile(src, dest))return false;
+   }
+
+   Str res=build_path+"Android/app/src/main/res/";
+
+   // resources
+   {
+      FCreateDirs(res+"values");
+       XmlData  xml;
+       XmlNode &resources=xml      .nodes.New().setName("resources");
+      {XmlNode &n        =resources.nodes.New().setName("string"); n.params.New().set("name", "facebook_app_id"         ); n.data.add(       cei().appFacebookAppID());}
+      {XmlNode &n        =resources.nodes.New().setName("string"); n.params.New().set("name", "fb_login_protocol_scheme"); n.data.add(S+"fb"+cei().appFacebookAppID());}
+      if(!OverwriteOnChangeLoud(xml, res+"values/strings.xml"))return false;
+   }
+
+   // icons
+   Image      icon, notification_icon; DateTime icon_time, notification_icon_time;
+   if(GetIcon(icon, icon_time))
+   {
+      FCreateDirs(res); icon.transparentToNeighbor();
+      Memc<ImageConvert> convert;
+      Str name;
+
+      // list images starting from the smallest
+      name=res+"drawable-ldpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 36,  36);
+      name=res+"drawable-mdpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 48,  48);
+      name=res+"drawable-hdpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 72,  72);
+      name=res+"drawable-xhdpi/icon.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 96,  96);
+      name=res+"drawable-xxhdpi/icon.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(144, 144);
+
+      // https://developer.android.com/guide/practices/ui_guidelines/icon_design_status_bar.html
+      GetNotificationIcon(notification_icon, notification_icon_time, icon, icon_time);
+      name=res+"drawable-ldpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(18, 18);
+      name=res+"drawable-mdpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(24, 24);
+      name=res+"drawable-hdpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(36, 36);
+      name=res+"drawable-xhdpi/notification.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(48, 48);
+      name=res+"drawable-xxhdpi/notification.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(72, 72);
+
+      convert.reverseOrder(); // start working from the biggest ones because they take the most time, yes this is correct
+      MultiThreadedCall(convert, ImageConvert::Func);
+      FREPA(convert)if(!convert[i].ok)return ErrorWrite(convert[i].dest);
+   }
+
 #if 0 // WIP
    FCreateDirs(build_path+"Android/jni");
    FCreateDir (build_path+"Android/libs");
@@ -2329,40 +2393,11 @@ Bool CodeEditor::generateAndroidProj()
    FCreateDirs(build_path+"Android/res/values");
  //FCreateDirs(build_path+"Android/res/xml"); // needed for "android.support.v4.content.FileProvider"
 
-   Str bin_path=BinPath(false),
-   android_path=bin_path+"Android/";
-
-   // assets
-   {
-      // remove all unwanted
-      CChar8 *allowed[]=
-      {
-         "Engine.pak",
-         "Project.pak",
-      };
-      DelExcept(build_path+"Android/assets", allowed, Elms(allowed)); // remove all except 'allowed'
-
-      // Engine.pak
-      FCreateDirs(build_path+"Android/assets");
-      Str src=bin_path+"Mobile/Engine.pak", dest=build_path+"Android/assets/Engine.pak";
-      if(cei().appEmbedEngineData()==1) // 2D only
-      {
-         if(!CreateEngineEmbedPak(src, dest, false))return false;
-      }else
-         if(!CopyFile(src, dest))return false;
-   }
+   Str android_path=bin_path+"Android/";
 
    // layouts
    if(!CopyFile("Code/Android/LoaderLayout.xml", build_path+"Android/res/layout/loader.xml"))return false;
 
-   // resources
-   {
-       XmlData  xml;
-       XmlNode &res=xml.nodes.New().setName("resources");
-      {XmlNode &n  =res.nodes.New().setName("string"); n.params.New().set("name", "facebook_app_id"         ); n.data.add(       cei().appFacebookAppID());}
-      {XmlNode &n  =res.nodes.New().setName("string"); n.params.New().set("name", "fb_login_protocol_scheme"); n.data.add(S+"fb"+cei().appFacebookAppID());}
-      if(!OverwriteOnChangeLoud(xml, build_path+"Android/res/values/strings.xml"))return false;
-   }
  /*// file paths needed for "android.support.v4.content.FileProvider"
    {
       XmlData  xml;
@@ -2458,35 +2493,6 @@ Bool CodeEditor::generateAndroidProj()
          }
       }
       if(!OverwriteOnChangeLoud(main, build_path+"Android/jni/Main.cpp"))return false;
-   }
-
-   // icons
-   Image      icon, notification_icon; DateTime icon_time, notification_icon_time;
-   if(GetIcon(icon, icon_time))
-   {
-      File f; f.writeMem();
-      FCreateDir(build_path+"Android/res"); icon.transparentToNeighbor();
-      Memc<ImageConvert> convert;
-      CChar8 *rel;
-
-      // list images starting from the smallest
-      rel="Android/res/drawable-ldpi/icon.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, icon_time))convert.New().set(build_path+rel, icon, icon_time).resize( 36,  36);
-      rel="Android/res/drawable-mdpi/icon.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, icon_time))convert.New().set(build_path+rel, icon, icon_time).resize( 48,  48);
-      rel="Android/res/drawable-hdpi/icon.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, icon_time))convert.New().set(build_path+rel, icon, icon_time).resize( 72,  72);
-      rel="Android/res/drawable-xhdpi/icon.png" ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, icon_time))convert.New().set(build_path+rel, icon, icon_time).resize( 96,  96);
-      rel="Android/res/drawable-xxhdpi/icon.png"; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, icon_time))convert.New().set(build_path+rel, icon, icon_time).resize(144, 144);
-
-      // https://developer.android.com/guide/practices/ui_guidelines/icon_design_status_bar.html
-      GetNotificationIcon(notification_icon, notification_icon_time, icon, icon_time);
-      rel="Android/res/drawable-ldpi/notification.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, notification_icon_time))convert.New().set(build_path+rel, notification_icon, notification_icon_time).resize(18, 18);
-      rel="Android/res/drawable-mdpi/notification.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, notification_icon_time))convert.New().set(build_path+rel, notification_icon, notification_icon_time).resize(24, 24);
-      rel="Android/res/drawable-hdpi/notification.png"  ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, notification_icon_time))convert.New().set(build_path+rel, notification_icon, notification_icon_time).resize(36, 36);
-      rel="Android/res/drawable-xhdpi/notification.png" ; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, notification_icon_time))convert.New().set(build_path+rel, notification_icon, notification_icon_time).resize(48, 48);
-      rel="Android/res/drawable-xxhdpi/notification.png"; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, notification_icon_time))convert.New().set(build_path+rel, notification_icon, notification_icon_time).resize(72, 72);
-
-      convert.reverseOrder(); // start working from the biggest ones because they take the most time, yes this is correct
-      MultiThreadedCall(convert, ImageConvert::Func);
-      FREPA(convert)if(!convert[i].ok)return ErrorWrite(convert[i].dest);
    }
 
    Str  app_package=AndroidPackage(cei().appPackage());
