@@ -11,8 +11,8 @@ enum EXE_TYPE : Byte // Executable Type
    EXE_MAC  , // Mac     Application
    EXE_IOS  , // iOS     Application
    EXE_LINUX, // Linux
-   EXE_WEB  , // Web     Html/JavaScript
    EXE_NS   , // Nintendo Switch
+   EXE_WEB  , // Web     Html/JavaScript
 };
 enum EXPORT_MODE : Byte // Export Mode
 {

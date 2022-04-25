@@ -1289,15 +1289,11 @@ void CodeEditor::update(Bool active)
             lines=Split(build_output, '\n');
          }
          buildClear();
-         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_MAC || build_exe_type==EXE_IOS || build_exe_type==EXE_LINUX || build_exe_type==EXE_WEB)build_step=0; // we're going to count compilation progress for these platforms
+         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_MAC || build_exe_type==EXE_IOS || build_exe_type==EXE_LINUX || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)build_step=0; // we're going to count compilation progress for these platforms
          FREPA(lines)
          {
           C Str &line=lines[i];
             if(SkipWhiteChars(line).is())
-               if(build_exe_type!=EXE_APK || // hide some Android compiler/linker warnings
-                  !Contains(line, "uses 2-byte wchar_t yet the output is to use 4-byte wchar_t; use of wchar_t values across objects may fail")
-               && !Contains(line, "uses 4-byte wchar_t yet the output is to use 2-byte wchar_t; use of wchar_t values across objects may fail")
-               )
                if(!Contains(line, "manifest authoring warning 81010002:"))
             {
                BuildResult &br=buildNew().set(line);
@@ -1307,7 +1303,7 @@ void CodeEditor::update(Bool active)
                || Contains(line, ": error "  , false, WHOLE_WORD_STRICT))br.setError  ();
 
                // count sources compiled
-               if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB)
+               if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
                {
                   if(build_msbuild)
                   {
@@ -1501,7 +1497,8 @@ void CodeEditor::update(Bool active)
          }else
          if(build_exe_type==EXE_APK)
          {
-            if(build_phase==0) // link with ant
+            BuildError("WIP", true);
+            /*if(build_phase==0) // link with ant
             {
                // can't use 'exit_code' because it's always zero, #AndroidArchitecture
              //if(!FExistSystem(build_path+"Android/libs/armeabi/libProject.so"    ))BuildError("Failed to build armeabi shared library"    , at_end);else
@@ -1600,7 +1597,7 @@ void CodeEditor::update(Bool active)
                      build_process.create(adbPath(), S+"shell am start -n \""+build_package+"/.LoaderActivity\""); // start with -n this time
                   }
                }
-            }
+            }*/
          }
       }
    }

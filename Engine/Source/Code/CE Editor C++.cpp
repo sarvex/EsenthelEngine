@@ -134,7 +134,7 @@ Bool CodeEditor::verifyAndroid()
 
    if(cei().appAndroidExpansion() && !key.is()){cei().appInvalidProperty("Auto-downloading Android Expansion Files requires setting Android License Key."); return false;}
 
-   return true;
+   return verifyVS();
 }
 Bool CodeEditor::verifyLinuxMake    () {return true;}
 Bool CodeEditor::verifyLinuxNetBeans()
@@ -322,8 +322,8 @@ Bool CodeEditor::verifyBuildPath()
       case EXE_IOS  : build_exe=build_path+build_project_name+".app"; break;
       case EXE_APK  : build_exe=build_path+"Android/bin/"+build_project_name; break;
       case EXE_LINUX: build_exe=build_path+CleanNameForMakefile(build_project_name); break;
-      case EXE_WEB  : build_exe=build_path+"Emscripten/"+(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".html"; break; // warning: this must match codes below if(build_exe_type==EXE_WEB)config+=" DX11";
       case EXE_NS   : build_exe=build_path+"NX64/"      +(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".nsp" ; break; // warning: this must match codes below if(build_exe_type==EXE_NS )config+=" DX11";
+      case EXE_WEB  : build_exe=build_path+"Emscripten/"+(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".html"; break; // warning: this must match codes below if(build_exe_type==EXE_WEB)config+=" DX11";
       default       : build_exe.clear(); return false;
    }
    return true;
@@ -1203,7 +1203,7 @@ Bool CodeEditor::generateVSProj(Int version)
 {
    // !! For UWP don't store assets deeper than "Assets" (for example "Assets/UWP") because that would affect the final asset locations in the UWP executable !!
 
-   if(build_exe_type!=EXE_EXE && build_exe_type!=EXE_DLL /*&& build_exe_type!=EXE_LIB*/ && build_exe_type!=EXE_UWP && build_exe_type!=EXE_WEB && build_exe_type!=EXE_NS)return Error("Visual Studio projects support only EXE, DLL, Universal, Web and NintendoSwitch configurations.");
+   if(build_exe_type!=EXE_EXE && build_exe_type!=EXE_DLL /*&& build_exe_type!=EXE_LIB*/ && build_exe_type!=EXE_UWP && build_exe_type!=EXE_APK && build_exe_type!=EXE_NS && build_exe_type!=EXE_WEB)return Error("Visual Studio projects support only EXE, DLL, Universal, Android, NintendoSwitch and Web configurations.");
    if(build_exe_type==EXE_WEB && version<10)return Error("WEB configuration requires Visual Studio 2010 or newer.");
 
    Str bin_path    =BinPath(false),
@@ -1338,12 +1338,14 @@ Bool CodeEditor::generateVSProj(Int version)
       BuildFile &bf=build_files[i];
       BuildTree(tree, bf, bf.filter.is() ? bf.filter : bf.dest_proj_path);
    }
-   Memc<Str> libs_win=GetFiles(cei().appLibsWindows()),
-             dirs_win=GetFiles(cei().appDirsWindows()),
-             libs_web=GetFiles(cei().appLibsWeb    ()),
-             dirs_web=GetFiles(cei().appDirsWeb    ()),
-             libs_ns =GetFiles(cei().appLibsNintendo()),
-             dirs_ns =GetFiles(cei().appDirsNintendo());
+   Memc<Str> libs_win    =GetFiles(cei().appLibsWindows ()),
+             dirs_win    =GetFiles(cei().appDirsWindows ()),
+             libs_android=GetFiles(cei().appLibsAndroid ()),
+             dirs_android=GetFiles(cei().appDirsAndroid ()),
+             libs_ns     =GetFiles(cei().appLibsNintendo()),
+             dirs_ns     =GetFiles(cei().appDirsNintendo()),
+             libs_web    =GetFiles(cei().appLibsWeb     ()),
+             dirs_web    =GetFiles(cei().appDirsWeb     ());
 
    // Web html
    if(build_exe_type==EXE_WEB)
@@ -1638,8 +1640,9 @@ Bool CodeEditor::generateVSProj(Int version)
             Memc<Str> *libs=&libs_win;
             if(XmlParam *condition=item->findParam("Condition"))
             {
-               if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))libs=&libs_web;else
-               if(Contains(condition->value, "NX64"      , false, WHOLE_WORD_STRICT))libs=&libs_ns ;
+               if(Contains(condition->value, "Android"   , false, WHOLE_WORD_STRICT))libs=&libs_android;else
+               if(Contains(condition->value, "NX64"      , false, WHOLE_WORD_STRICT))libs=&libs_ns     ;else
+               if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))libs=&libs_web    ;
             }
             if(libs)FREPA(*libs){if(dest.is() && dest.last()!=';')dest+=';'; dest+=S+'"'+(*libs)[i]+'"';}
             Swap(dependencies->data.setNum(1)[0], dest);
@@ -1654,8 +1657,9 @@ Bool CodeEditor::generateVSProj(Int version)
             Memc<Str> *dirs=&dirs_win;
             if(XmlParam *condition=item->findParam("Condition"))
             {
-               if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))dirs=&dirs_web;else
-               if(Contains(condition->value, "NX64"      , false, WHOLE_WORD_STRICT))dirs=&dirs_ns;
+               if(Contains(condition->value, "Android"   , false, WHOLE_WORD_STRICT))dirs=&dirs_android;else
+               if(Contains(condition->value, "NX64"      , false, WHOLE_WORD_STRICT))dirs=&dirs_ns     ;else
+               if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))dirs=&dirs_web    ;
             }
             if(dirs)FREPA(*dirs){if(dest.is() && dest.last()!=';')dest+=';'; dest+=S+'"'+(*dirs)[i]+'"';}
             Swap(directories->data.setNum(1)[0], dest);
@@ -2316,6 +2320,7 @@ static Str UnixEncode(C Str &s)
 /******************************************************************************/
 Bool CodeEditor::generateAndroidProj()
 {
+#if 0 // WIP
    FCreateDirs(build_path+"Android/jni");
    FCreateDir (build_path+"Android/libs");
    FCreateDir (build_path+"Android/src");
@@ -2579,13 +2584,7 @@ Bool CodeEditor::generateAndroidProj()
    }
  //"play-services-auth-base", // login/authentication
  //"play-services-drive", // google drive
-#if 1
-   android_libs.add("play-apk-expansion"); // allows downloading APK expansions
-   android_libs.add("play-licensing"); // needed for "play-apk-expansion"
-#else
-   android_libs.add("market_apk_expansion"); // allows downloading APK expansions
-   android_libs.add("market_licensing"); // needed for "market_apk_expansion"
-#endif
+   android_libs.add("play-licensing");
    if(facebook)
    {
       android_libs.add("facebook-share"); jars.add("facebook-share");
@@ -2668,20 +2667,12 @@ Bool CodeEditor::generateAndroidProj()
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, build_path+"Android/src/EsenthelActivity.java"))return false;
    }
-   // LoaderActivity.java
-   {
-      FileText ft; if(!ft.read("Code/Android/LoaderActivity.java"))return ErrorRead("Code/Android/LoaderActivity.java");
-      Str data=ft.getAll();
-      data=Replace(data, "com.esenthel.project" , app_package                    , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "APP_LICENSE_KEY"      , cei().appGooglePlayLicenseKey(), true, WHOLE_WORD_STRICT);
-      data=Replace(data, "EE_DOWNLOAD_EXPANSION", TextBool(cei().appAndroidExpansion() && cei().appGooglePlayLicenseKey().is()), true, WHOLE_WORD_STRICT); // require license key provided, because otherwise the Java codes will crash throwing an exception
-      SetFile(ft, data, UTF_8_NAKED);
-      if(!OverwriteOnChangeLoud(ft, build_path+"Android/src/LoaderActivity.java"))return false;
-   }
    if(!CopyFile("Code/Android/Native.java", build_path+"Android/src/Native.java"))return false;
    if(!CopyFile("Code/Android/Base64.java", build_path+"Android/src/Base64.java"))return false;
 
    return true;
+#endif
+   return generateVSProj(devenv_version.x);
 }
 /******************************************************************************/
 Bool CodeEditor::generateLinuxMakeProj()
@@ -3015,7 +3006,7 @@ void CodeEditor::build(BUILD_MODE mode)
       build_phases =build_steps=0;
 
       Int build_threads=Cpu.threads();
-      if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB || build_exe_type==EXE_NS)
+      if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
       {
          build_phases=1+build_windows_code_sign;
          build_steps =3+build_windows_code_sign; FREPA(build_files)if(build_files[i].mode==BuildFile::SOURCE)build_steps++; // stdafx.cpp, linking, wait for end, *.cpp
@@ -3023,12 +3014,13 @@ void CodeEditor::build(BUILD_MODE mode)
          Str config=(build_debug ? "Debug" : "Release");
          if(build_exe_type==EXE_UWP)config+=" Universal";
 
+         if(build_exe_type==EXE_APK)config+=" DX11";else // always use the same config for APK because it uses    GL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_NS )config+=" DX11";else // always use the same config for NS  because it uses    GL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_WEB)config+=" DX11";else // always use the same config for WEB because it uses WebGL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_UWP)config+=" DX11";else
                                     config+=" DX11"; // config_api
 
-         Str platform=((build_exe_type==EXE_NS) ? "4) Nintendo Switch" : (build_exe_type==EXE_WEB) ? "3) Web" : /*config_32_bit ? "2) 32 bit" :*/ "1) 64 bit");
+         Str platform=((build_exe_type==EXE_APK) ? "5) Android" : (build_exe_type==EXE_NS) ? "4) Nintendo Switch" : (build_exe_type==EXE_WEB) ? "3) Web" : /*config_32_bit ? "2) 32 bit" :*/ "1) 64 bit");
 
          if(build_exe_type==EXE_WEB) // currently WEB compilation is available only through VC++ 2010
          {
@@ -3119,6 +3111,7 @@ void CodeEditor::debug()
    {
       case EXE_EXE:
       case EXE_UWP:
+      case EXE_APK:
       case EXE_NS :
          if(Export(EXPORT_VS, BUILD_DEBUG))VSRun(build_project_file, S); break;
 
