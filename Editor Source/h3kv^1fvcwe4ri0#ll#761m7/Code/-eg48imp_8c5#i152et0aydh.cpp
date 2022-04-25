@@ -252,10 +252,10 @@ class MiscRegion : Region
          build_menu.New().create("Windows DLL"      , ConfigDLL  , T).flag(MENU_TOGGLABLE);
        //build_menu.New().create("Windows LIB"      , ConfigLIB  , T).flag(MENU_TOGGLABLE);
          build_menu.New().create("Windows Universal", ConfigUWP  , T).flag(MENU_TOGGLABLE);
-         build_menu.New().create("Android APK"      , ConfigAPK  , T).flag(MENU_TOGGLABLE);
       #if WINDOWS
-         build_menu.New().create("Web"              , ConfigWeb  , T).flag(MENU_TOGGLABLE);
+         build_menu.New().create("Android APK"      , ConfigAPK  , T).flag(MENU_TOGGLABLE);
          build_menu.New().create("Nintendo Switch"  , ConfigNS   , T).flag(MENU_TOGGLABLE);
+         build_menu.New().create("Web"              , ConfigWeb  , T).flag(MENU_TOGGLABLE);
       #elif MAC
          build_menu.New().create("Mac APP"    , ConfigMAC  , T).flag(MENU_TOGGLABLE);
          build_menu.New().create("iOS APP"    , ConfigIOS  , T).flag(MENU_TOGGLABLE);

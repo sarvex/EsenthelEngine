@@ -65,9 +65,9 @@ void CodeEditor::validateDevEnv()
 }
 /******************************************************************************/
 void CodeEditor::setVSPath         (C Str &path) {          vs_path=path; options.          vs_path.set(path, QUIET); validateDevEnv();}
-void CodeEditor::setNBPath         (C Str &path) {    netbeans_path=path; options.    netbeans_path.set(path, QUIET);                  }
-void CodeEditor::setASPath         (C Str &path) {      android_sdk=path; options.      android_sdk.set(path, QUIET);                  }
-void CodeEditor::setANPath         (C Str &path) {      android_ndk=path; options.      android_ndk.set(path, QUIET);                  }
+void CodeEditor::setNetBeansPath   (C Str &path) {    netbeans_path=path; options.    netbeans_path.set(path, QUIET);                  }
+void CodeEditor::setAndroidSDKPath (C Str &path) {      android_sdk=path; options.      android_sdk.set(path, QUIET);                  }
+void CodeEditor::setAndroidNDKPath (C Str &path) {      android_ndk=path; options.      android_ndk.set(path, QUIET);                  }
 void CodeEditor::setJDKPath        (C Str &path) {         jdk_path=path; options.         jdk_path.set(path, QUIET);                  }
 void CodeEditor::setAndroidCertPath(C Str &path) {android_cert_file=path; options.android_cert_file.set(path, QUIET);                  }
 void CodeEditor::setAndroidCertPass(C Str &pass) {android_cert_pass=pass; options.android_cert_pass.set(pass, QUIET);                  }
@@ -118,9 +118,9 @@ Bool CodeEditor::verifyAndroid()
    if(!     adbPath().is())error.line(2)+="Can't find \"adb\" tool in Android SDK.";else
    if(!zipalignPath().is())error.line(2)+="Can't find \"zipalign\" tool in Android SDK.";
 
-   if(! android_ndk  .is()      )error.line(2)+="The path to Android NDK has not been specified.";else
+ /*if(! android_ndk  .is()      )error.line(2)+="The path to Android NDK has not been specified.";else
    if(Contains(android_ndk, ' '))error.line(2)+="Android NDK will not work if it's stored in a path with spaces.\nPlease move the Android NDK folder to a path without spaces and try again.";else
-   if(!ndkBuildPath().is()      )error.line(2)+="Can't find \"ndk-build\" tool in Android NDK.";
+   if(!ndkBuildPath().is()      )error.line(2)+="Can't find \"ndk-build\" tool in Android NDK.";*/
 
    if(error.is())
    {
@@ -3078,7 +3078,8 @@ void CodeEditor::build(BUILD_MODE mode)
       }else
       if(build_exe_type==EXE_APK)
       {
-         Bool sign=!build_debug; // we want to sign with our own certificate (note that this can be done only in RELEASE mode, because in DEBUG, Android SDK will automatically sign the package with its own Debug certificate, and our own signing will fail)
+         Error("WIP");
+         /*Bool sign=!build_debug; // we want to sign with our own certificate (note that this can be done only in RELEASE mode, because in DEBUG, Android SDK will automatically sign the package with its own Debug certificate, and our own signing will fail)
          if(  sign)
          {
             // certificate file, certificate password, JDK
@@ -3099,7 +3100,7 @@ void CodeEditor::build(BUILD_MODE mode)
        //FDelFile(build_path+"Android/libs/armeabi/libProject.so");
          FDelFile(build_path+"Android/libs/armeabi-v7a/libProject.so");
          FDelFile(build_path+"Android/libs/arm64-v8a/libProject.so");
-         FDelFile(build_path+"Android/libs/x86/libProject.so");
+         FDelFile(build_path+"Android/libs/x86/libProject.so");*/
       }
       buildClear ();
       buildUpdate();

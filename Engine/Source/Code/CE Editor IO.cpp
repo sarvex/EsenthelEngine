@@ -147,11 +147,11 @@ void CodeEditor::loadSettings(C TextNode &code)
    }
    if(C TextNode *paths=code.findNode("Paths"))
    {
-      if(C TextNode *p=paths->findNode("VisualStudio"      ))setVSPath (p->value); // load VS path before loading project (and parsing 3rd party headers)
-      if(C TextNode *p=paths->findNode("NetBeans"          ))setNBPath (p->value);
-      if(C TextNode *p=paths->findNode("AndroidSDK"        ))setASPath (p->value);
-      if(C TextNode *p=paths->findNode("AndroidNDK"        ))setANPath (p->value);
-      if(C TextNode *p=paths->findNode("JavaDevelopmentKit"))setJDKPath(p->value);
+      if(C TextNode *p=paths->findNode("VisualStudio"      ))setVSPath        (p->value); // load VS path before loading project (and parsing 3rd party headers)
+      if(C TextNode *p=paths->findNode("NetBeans"          ))setNetBeansPath  (p->value);
+      if(C TextNode *p=paths->findNode("AndroidSDK"        ))setAndroidSDKPath(p->value);
+      if(C TextNode *p=paths->findNode("AndroidNDK"        ))setAndroidNDKPath(p->value);
+      if(C TextNode *p=paths->findNode("JavaDevelopmentKit"))setJDKPath       (p->value);
    }
    if(C TextNode *certificates=code.findNode("Certificates"))
    {

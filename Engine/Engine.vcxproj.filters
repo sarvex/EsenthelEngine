@@ -2191,16 +2191,7 @@
     <None Include="Source\Platforms\Mac\MyWindow.mm">
       <Filter>Source\Platforms\Mac</Filter>
     </None>
-    <None Include="..\Editor Data\Code\Android\EsenthelActivity.java">
-      <Filter>Source\Platforms\Android</Filter>
-    </None>
-    <None Include="..\Editor Data\Code\Android\Native.java">
-      <Filter>Source\Platforms\Android</Filter>
-    </None>
     <None Include="..\Editor Data\Code\Android\AndroidManifest.xml">
-      <Filter>Source\Platforms\Android</Filter>
-    </None>
-    <None Include="..\Editor Data\Code\Android\LoaderActivity.java">
       <Filter>Source\Platforms\Android</Filter>
     </None>
     <None Include="Source\Platforms\iOS\EAGLView.mm">
@@ -2214,6 +2205,12 @@
     </None>
     <None Include="Source\Platforms\iOS\MyViewController.mm">
       <Filter>Source\Platforms\iOS</Filter>
+    </None>
+    <None Include="..\Editor Data\Code\Android\java\EsenthelActivity.java">
+      <Filter>Source\Platforms\Android</Filter>
+    </None>
+    <None Include="..\Editor Data\Code\Android\java\Native.java">
+      <Filter>Source\Platforms\Android</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

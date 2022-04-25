@@ -696,9 +696,9 @@ const_mem_addr struct CodeEditor
 
    void validateDevEnv     ();
    void setVSPath          (C Str &path);
-   void setNBPath          (C Str &path);
-   void setASPath          (C Str &path);
-   void setANPath          (C Str &path);
+   void setNetBeansPath    (C Str &path);
+   void setAndroidSDKPath  (C Str &path);
+   void setAndroidNDKPath  (C Str &path);
    void setJDKPath         (C Str &path);
    void setAndroidCertPath (C Str &path);
    void setAndroidCertPass (C Str &pass);
