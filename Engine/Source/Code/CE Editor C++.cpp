@@ -2648,10 +2648,10 @@ Bool CodeEditor::generateAndroidProj()
    {
       FileText ft; if(!ft.read("Code/Android/EsenthelActivity.java"))return ErrorRead("Code/Android/EsenthelActivity.java");
       Str data=ft.getAll(), s;
-      data=Replace(data, "EE_PACKAGE"              , app_package             , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "EE_APP_NAME"             , CString(cei().appName()), true, WHOLE_WORD_STRICT);
+      data=Replace(data, "com.esenthel.project"    , app_package             , true, WHOLE_WORD_STRICT);
+      data=Replace(data, "APP_NAME"                , CString(cei().appName()), true, WHOLE_WORD_STRICT);
       s=cei().appGooglePlayLicenseKey();
-      data=Replace(data, "EE_LICENSE_KEY"          , s                 , true, WHOLE_WORD_STRICT);
+      data=Replace(data, "APP_LICENSE_KEY"         , s                 , true, WHOLE_WORD_STRICT);
       data=Replace(data, "LICENSE_KEY_BEGIN"       , s.is() ? "" : "/*", true, WHOLE_WORD_STRICT);
       data=Replace(data, "LICENSE_KEY_END"         , s.is() ? "" : "*/", true, WHOLE_WORD_STRICT);
       s=cei().appAdMobAppIDGooglePlay();
@@ -2664,7 +2664,7 @@ Bool CodeEditor::generateAndroidProj()
       data=Replace(data, "CHARTBOOST_APP_SIGNATURE", CString(cei().appChartboostAppSignatureGooglePlay()), true, WHOLE_WORD_STRICT);
       data=Replace(data, "FACEBOOK_BEGIN"          , facebook   ? "" : "/*", true, WHOLE_WORD_STRICT);
       data=Replace(data, "FACEBOOK_END"            , facebook   ? "" : "*/", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "EE_LOAD_LIBRARIES"       , load_libraries        , true, WHOLE_WORD_STRICT);
+      data=Replace(data, "/*LOAD_LIBRARIES*/"      , load_libraries        , true, WHOLE_WORD_STRICT);
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, build_path+"Android/src/EsenthelActivity.java"))return false;
    }
@@ -2672,8 +2672,8 @@ Bool CodeEditor::generateAndroidProj()
    {
       FileText ft; if(!ft.read("Code/Android/LoaderActivity.java"))return ErrorRead("Code/Android/LoaderActivity.java");
       Str data=ft.getAll();
-      data=Replace(data, "EE_PACKAGE"           , app_package                    , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "EE_LICENSE_KEY"       , cei().appGooglePlayLicenseKey(), true, WHOLE_WORD_STRICT);
+      data=Replace(data, "com.esenthel.project" , app_package                    , true, WHOLE_WORD_STRICT);
+      data=Replace(data, "APP_LICENSE_KEY"      , cei().appGooglePlayLicenseKey(), true, WHOLE_WORD_STRICT);
       data=Replace(data, "EE_DOWNLOAD_EXPANSION", TextBool(cei().appAndroidExpansion() && cei().appGooglePlayLicenseKey().is()), true, WHOLE_WORD_STRICT); // require license key provided, because otherwise the Java codes will crash throwing an exception
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, build_path+"Android/src/LoaderActivity.java"))return false;

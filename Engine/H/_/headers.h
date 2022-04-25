@@ -433,7 +433,7 @@
       #include <android/log.h>
       #include <android/sensor.h>
       #include <android/asset_manager.h>
-      #include <android_native_app_glue.h>
+      #include <native_app_glue/android_native_app_glue.h>
       #if GL
          #include <EGL/egl.h>
          #include <EGL/eglext.h>

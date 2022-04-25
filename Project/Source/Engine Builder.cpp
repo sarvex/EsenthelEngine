@@ -538,7 +538,7 @@ void MakeLinuxLibs()
    Build().set(ARPath(), S+"-q \""+UnixPath(engine_lib)+"\" "+obj_files).run();
    if(!FExistSystem(engine_lib))Gui.msgBox("Error", "Can't create Engine Linux Lib");
 }
-Str EngineAndroidLibName(C Str &abi) {return EditorPath+"Bin/Android/Engine-"+abi+".a";}
+/*Str EngineAndroidLibName(C Str &abi) {return EditorPath+"Bin/Android/Engine-"+abi+".a";}
 void MakeAndroidLibs(C Str &abi)
 {
    Str engine_lib=EngineAndroidLibName(abi);
@@ -586,6 +586,20 @@ void MakeAndroidLibs()
    FDelFile(EngineAndroidLibName("x86"));
 #endif
 }
+void CleanEngineAndroid()
+{
+   FDelDirs(EnginePath+AndroidProject+"obj");
+}
+void CompileEngineAndroid()
+{
+   Str ndk_build=NDKBuildPath();
+   if(!ndk_build.is()){Options.show(); Gui.msgBox("Error", "Android NDK Path unknown");}else
+   {
+      Int build_threads_num=Cpu.threads();
+      build_threads.queue(build_requests.New().set(ndk_build, S+"-j"+build_threads_num+" -C \""+EnginePath+AndroidProject+"\""), BuildRun);
+   }
+}
+void AndroidLibs() {build_threads.queue(build_requests.New().set(MakeAndroidLibs), BuildRun);}
 /******************************************************************************/
 void UpdateHeaders()
 {
@@ -751,6 +765,7 @@ void CopyEngineWindowsUniversal64DX11   () {Copy(EnginePath+"EngineUniversal64DX
 void CopyEngineWindowsUniversal32DX11   () {Copy(EnginePath+"EngineUniversal32DX11.lib"   , EditorPath+"Bin/EngineUniversal32DX11.lib");}
 void CopyEngineWindowsUniversalArm32DX11() {Copy(EnginePath+"EngineUniversalArm32DX11.lib", EditorPath+"Bin/EngineUniversalArm32DX11.lib");}
 void CopyEngineWindowsUniversalArm64DX11() {Copy(EnginePath+"EngineUniversalArm64DX11.lib", EditorPath+"Bin/EngineUniversalArm64DX11.lib");}
+void CopyEngineAndroid                  () {Copy(EnginePath+"EngineAndroid.a"             , EditorPath+"Bin/EngineAndroid.a");}
 void CopyEngineNintendoSwitch           () {Copy(EnginePath+"EngineNintendoSwitch.a"      , EditorPath+"Bin/EngineNintendoSwitch.a");}
 
 void CopyEngineDebugWindows64DX9             () {Copy(EnginePath+"EngineDebug64DX9.lib" , EditorPath+"Bin/Engine64DX9.lib");}
@@ -763,14 +778,15 @@ void CopyEngineDebugWindowsUniversalArm32DX11() {Copy(EnginePath+"EngineDebugUni
 void CopyEngineDebugWindowsUniversalArm64DX11() {Copy(EnginePath+"EngineDebugUniversalArm64DX11.lib", EditorPath+"Bin/EngineUniversalArm64DX11.lib");}
 void CopyEngineDebugNintendoSwitch           () {Copy(EnginePath+"EngineDebugNintendoSwitch.a"      , EditorPath+"Bin/EngineNintendoSwitch.a");}
 
-void CompileEngineWindows64GL              () {CompileVS(EnginePath+VSEngineProject, "Release GL"            , "1) 64 bit", CopyEngineWindows64GL);}
-void CompileEngineWindows64DX9             () {CompileVS(EnginePath+VSEngineProject, "Release DX9"           , "1) 64 bit", CopyEngineWindows64DX9);}
-void CompileEngineWindows32DX9             () {CompileVS(EnginePath+VSEngineProject, "Release DX9"           , "2) 32 bit", CopyEngineWindows32DX9);}
-void CompileEngineWindows64DX11            () {CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "1) 64 bit", CopyEngineWindows64DX11);}
-void CompileEngineWindows32DX11            () {CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "2) 32 bit", CopyEngineWindows32DX11);}
-void CompileEngineWindowsUniversal64DX11   () {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "1) 64 bit", CopyEngineWindowsUniversal64DX11);}
-void CompileEngineWindowsUniversal32DX11   () {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "2) 32 bit", CopyEngineWindowsUniversal32DX11);}
-void CompileEngineWindowsUniversalArm32DX11() {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "3) ARM"   , CopyEngineWindowsUniversalArm32DX11);}
+void CompileEngineWindows64GL              () {CompileVS(EnginePath+VSEngineProject, "Release GL"            , "1) 64 bit" , CopyEngineWindows64GL);}
+void CompileEngineWindows64DX9             () {CompileVS(EnginePath+VSEngineProject, "Release DX9"           , "1) 64 bit" , CopyEngineWindows64DX9);}
+void CompileEngineWindows32DX9             () {CompileVS(EnginePath+VSEngineProject, "Release DX9"           , "2) 32 bit" , CopyEngineWindows32DX9);}
+void CompileEngineWindows64DX11            () {CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "1) 64 bit" , CopyEngineWindows64DX11);}
+void CompileEngineWindows32DX11            () {CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "2) 32 bit" , CopyEngineWindows32DX11);}
+void CompileEngineWindowsUniversal64DX11   () {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "1) 64 bit" , CopyEngineWindowsUniversal64DX11);}
+void CompileEngineWindowsUniversal32DX11   () {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "2) 32 bit" , CopyEngineWindowsUniversal32DX11);}
+void CompileEngineWindowsUniversalArm32DX11() {CompileVS(EnginePath+VSEngineProject, "Release Universal DX11", "3) ARM"    , CopyEngineWindowsUniversalArm32DX11);}
+void CompileEngineAndroid                  () {CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "6) Android", CopyEngineAndroid);}
 void CompileEngineNintendoSwitch           () {if(CheckNintendoSwitch())CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "5) Nintendo Switch", CopyEngineNintendoSwitch);}
 void CompileEngineWeb                      () {CompileVS(EnginePath+VSEngineProject, "Release GL"            , "4) Web");}
 
@@ -824,21 +840,6 @@ void         CleanLinux    () {build_threads.queue(build_requests.New().set(Clea
 void CompileEngineLinux    () {CompileLinux(EnginePath      +LinuxEngineProject, "Release");}
 void CompileEditorLinux    () {CompileLinux(EditorSourcePath+LinuxEditorProject, "Release", CopyEditorLinux);}
 void              LinuxLibs() {build_threads.queue(build_requests.New().set(MakeLinuxLibs), BuildRun);}
-
-void CleanEngineAndroid()
-{
-   FDelDirs(EnginePath+AndroidProject+"obj");
-}
-void CompileEngineAndroid()
-{
-   Str ndk_build=NDKBuildPath();
-   if(!ndk_build.is()){Options.show(); Gui.msgBox("Error", "Android NDK Path unknown");}else
-   {
-      Int build_threads_num=Cpu.threads();
-      build_threads.queue(build_requests.New().set(ndk_build, S+"-j"+build_threads_num+" -C \""+EnginePath+AndroidProject+"\""), BuildRun);
-   }
-}
-void AndroidLibs() {build_threads.queue(build_requests.New().set(MakeAndroidLibs), BuildRun);}
 
 void  EnginePak() {build_threads.queue(build_requests.New().set(CreateEnginePak), BuildRun);}
 void  EditorPak() {build_threads.queue(build_requests.New().set(CreateEditorPak), BuildRun);}
@@ -919,10 +920,11 @@ TaskBase TaskBases[]=
    {"Compile Linux"             , "Compile the Engine in Release mode for Linux"                                       , CompileEngineLinux         , true },
    {"Make Linux Libs"           , "Make the Engine Linux Lib from the compilation result to the Editor Bin folder"     , LinuxLibs                  , true },
 #endif
-   {"Clean Android"             , "Clean temporary files generated during Engine compilation for Android"              ,   CleanEngineAndroid       , false},
+ /*{"Clean Android"             , "Clean temporary files generated during Engine compilation for Android"              ,   CleanEngineAndroid       , false},
    {"Compile Android"           , "Compile the Engine in Release mode for Android"                                     , CompileEngineAndroid       , ANDROID_DEFAULT},
-   {"Make Android Libs"         , "Make the Engine Android Libs from the compilation result to the Editor Bin folder"  , AndroidLibs                , ANDROID_DEFAULT},
+   {"Make Android Libs"         , "Make the Engine Android Libs from the compilation result to the Editor Bin folder"  , AndroidLibs                , ANDROID_DEFAULT},*/
 #if WINDOWS
+   {"Compile Android"              , "Compile the Engine in Release mode for Android"                                  , CompileEngineAndroid            , false},
    {"Compile Nintendo Switch"      , "Compile the Engine in Release mode for Nintendo Switch"                          , CompileEngineNintendoSwitch     , false},
    {"Compile Nintendo Switch Debug", "Compile the Engine in Debug mode for Nintendo Switch"                            , CompileEngineDebugNintendoSwitch, false},
    {"Clean Web"                 , "Clean temporary files generated during Engine compilation for the Web"              ,   CleanEngineWeb                , false},

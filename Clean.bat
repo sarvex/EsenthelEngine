@@ -3,7 +3,7 @@ rmdir /s /q Debug
 rmdir /s /q ipch
 rmdir /s /q Emscripten
 
-rmdir /s /q "Engine\Android\obj"
+rmdir /s /q "Engine\Android-arm64-v8a"
 rmdir /s /q "Engine\Arm"
 rmdir /s /q "Engine\Asm"
 rmdir /s /q "Engine\Debug DX11"
