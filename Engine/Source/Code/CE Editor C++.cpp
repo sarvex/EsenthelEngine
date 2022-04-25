@@ -2320,11 +2320,13 @@ static Str UnixEncode(C Str &s)
 /******************************************************************************/
 Bool CodeEditor::generateAndroidProj()
 {
-   Str bin_path=BinPath(false);
+   Str bin_path=BinPath(false),
+       src_path="Code/Android/", // this is inside "Editor.pak"
+      dest_path=build_path+"Android/";
 
    // assets
    {
-      Str assets=build_path+"Android/app/src/main/assets/";
+      Str assets=dest_path+"app/src/main/assets/";
 
       // remove all unwanted
       CChar8 *allowed[]=
@@ -2344,7 +2346,7 @@ Bool CodeEditor::generateAndroidProj()
          if(!CopyFile(src, dest))return false;
    }
 
-   Str res=build_path+"Android/app/src/main/res/";
+   Str res=dest_path+"app/src/main/res/";
 
    // resources
    {
@@ -2383,6 +2385,142 @@ Bool CodeEditor::generateAndroidProj()
       MultiThreadedCall(convert, ImageConvert::Func);
       FREPA(convert)if(!convert[i].ok)return ErrorWrite(convert[i].dest);
    }
+
+   Str  app_package=AndroidPackage(cei().appPackage());
+   Bool chartboost          =(cei().appChartboostAppIDGooglePlay().is() && cei().appChartboostAppSignatureGooglePlay().is()),
+        google_play_services=(cei().appAdMobAppIDGooglePlay     ().is() || chartboost),
+        facebook            =(cei().appFacebookAppID()!=0);
+
+   // AndroidManifest.xml
+   XmlData xml;
+   if(!xml.load(src_path+"app/src/main/AndroidManifest.xml"))return ErrorRead("AndroidManifest.xml");
+   if(XmlNode *manifest=xml.findNode("manifest"))
+   {
+      manifest->getParam("package"                ).value=app_package;
+      manifest->getParam("android:versionCode"    ).value=cei().appBuild();
+      manifest->getParam("android:versionName"    ).value=cei().appBuild();
+      manifest->getParam("android:installLocation").value=((cei().appPreferredStorage()==STORAGE_EXTERNAL) ? "preferExternal" : (cei().appPreferredStorage()==STORAGE_AUTO) ? "auto" : "internalOnly");
+      XmlNode &application=manifest->getNode("application");
+      {
+         if(icon.is())application.getParam("android:icon" ).value="@drawable/icon";
+                      application.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
+
+         // iterate activities
+         REPA(application.nodes)
+         {
+            XmlNode &node=application.nodes[i]; if(node.name=="activity")if(XmlParam *name=node.findParam("android:name"))
+            {
+               if(name->value=="EsenthelActivity" || name->value=="LoaderActivity")
+               {
+                  node.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
+
+                  // orientations
+                  {
+                     UInt flag     =cei().appSupportedOrientations();
+                     Bool landscape=FlagTest(flag, DIRF_X),
+                          portrait =FlagTest(flag, DIRF_Y);
+                     CChar8    *orn=null;
+                     if( flag==(DIRF_X|DIRF_UP)  )orn="sensor"         ;else // up/left/right no down
+                     if((flag&DIRF_X)==DIRF_RIGHT)orn="landscape"      ;else // only one horizontal
+                     if((flag&DIRF_Y)==DIRF_UP   )orn="portrait"       ;else // only one vertical
+                     if( landscape && !portrait  )orn="sensorLandscape";else
+                     if(!landscape &&  portrait  )orn="sensorPortrait" ;else
+                                                  orn="fullSensor"     ;
+                     node.getParam("android:screenOrientation").value=orn;
+                  }
+               }
+            }
+         }
+         // needed for opening files through "content://" instead of deprecated "file://"
+         {
+            XmlNode &n=application.nodes.New().setName("provider" ); n.params.New().set("android:name", "EsenthelActivity$FileProvider"      ); n.params.New().set("android:authorities", app_package+".fileprovider"); n.params.New().set("android:exported", "false"); n.params.New().set("android:grantUriPermissions", "true");
+          //XmlNode &m=          n.nodes.New().setName("meta-data"); m.params.New().set("android:name", "android.support.FILE_PROVIDER_PATHS"); m.params.New().set("android:resource", "@xml/file_paths"); // needed for "android.support.v4.content.FileProvider"
+         }
+         Str s;
+         if(google_play_services){XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.google.android.gms.version"); n.params.New().set("android:value", "@integer/google_play_services_version");}
+         s=cei().appAdMobAppIDGooglePlay(); if(s.is())
+         {
+            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.google.android.gms.ads.AdActivity"    ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize");}
+            {XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.google.android.gms.ads.APPLICATION_ID"); n.params.New().set("android:value", s);}
+         }
+         if(chartboost)
+         {
+            XmlNode &n=application.nodes.New().setName("activity");
+            n.params.New().set("android:name", "com.chartboost.sdk.CBImpressionActivity");
+            n.params.New().set("android:excludeFromRecents", "true");
+            n.params.New().set("android:hardwareAccelerated", "true");
+            n.params.New().set("android:theme", "@android:style/Theme.Translucent.NoTitleBar.Fullscreen");
+            n.params.New().set("android:configChanges", "keyboardHidden|orientation|screenSize");
+         }
+         if(ULong id=cei().appFacebookAppID())
+         {
+            {XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.facebook.sdk.ApplicationId"      ); n.params.New().set("android:value", "@string/facebook_app_id"/*id*/);}
+            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.FacebookActivity"       ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|screenLayout|screenSize|orientation"); n.params.New().set("android:label", CString(cei().appName()));} // android expects this as a C String
+            {XmlNode &n=application.nodes.New().setName("provider" ); n.params.New().set("android:name", "com.facebook.FacebookContentProvider"); n.params.New().set("android:authorities", S+"com.facebook.app.FacebookContentProvider"+id); n.params.New().set("android:exported", "true");}
+            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.CustomTabActivity"      ); n.params.New().set("android:exported", "true");
+             XmlNode &intent_filter=n.nodes.New().setName("intent-filter");
+             intent_filter.nodes.New().setName("action"  ).params.New().set("android:name"  , "android.intent.action.VIEW");
+             intent_filter.nodes.New().setName("category").params.New().set("android:name"  , "android.intent.category.DEFAULT");
+             intent_filter.nodes.New().setName("category").params.New().set("android:name"  , "android.intent.category.BROWSABLE");
+             intent_filter.nodes.New().setName("data"    ).params.New().set("android:scheme", "@string/fb_login_protocol_scheme"/*S+"fb"+id*/);
+            }
+         }
+      }
+   }
+   if(!OverwriteOnChangeLoud(xml, dest_path+"app/src/main/AndroidManifest.xml"))return false;
+
+   // libraries
+   Str load_libraries;
+   Memc<Str> libs=GetFiles(cei().appLibsAndroid()); FREPA(libs)
+   {
+    C Str &lib=libs[i];
+      if(GetExt(lib)=="so") // shared lib
+      {
+         // libs can be specified to include "$(TARGET_ARCH_ABI)", for example "/path/$(TARGET_ARCH_ABI)/libXXX.so" or "/path/libXXX-$(TARGET_ARCH_ABI).so"
+         Str name=GetBaseNoExt(lib);
+       //name=Replace(name, "-$(TARGET_ARCH_ABI)", "");
+       //name=Replace(name,  "$(TARGET_ARCH_ABI)", "");
+         if(!Starts(name, "lib"))return Error(S+"Shared library file names must start with \"lib\".\n\""+libs[i]+'"');
+         load_libraries.line()+=S+"System.loadLibrary(\""+SkipStart(name, "lib")+"\");";
+      }
+   }
+
+   // java
+   FCreateDirs(dest_path+"app/src/main/java");
+   // EsenthelActivity.java
+   {
+      FileText ft; if(!ft.read(src_path+"app/src/main/java/EsenthelActivity.java"))return ErrorRead("EsenthelActivity.java");
+      Str data=ft.getAll(), s;
+      data=Replace(data, "com.esenthel.project", app_package             , true, WHOLE_WORD_STRICT);
+      data=Replace(data, "APP_NAME"            , CString(cei().appName()), true, WHOLE_WORD_STRICT);
+
+      s=cei().appGooglePlayLicenseKey();
+                data=Replace(data, "APP_LICENSE_KEY" , s                , true, WHOLE_WORD_STRICT); // always replace even if empty
+      if(s.is())data=Replace(data, "/*LICENSE_KEY*\\", "/*LICENSE_KEY*/", true, WHOLE_WORD_STRICT);
+
+      s=cei().appAdMobAppIDGooglePlay();
+      if(s.is())
+      {
+         data=Replace(data, "ADMOB_APP_ID", CString(s) , true, WHOLE_WORD_STRICT);
+         data=Replace(data, "/*ADMOB*\\"  , "/*ADMOB*/", true, WHOLE_WORD_STRICT);
+      }
+
+      if(chartboost)
+      {
+         data=Replace(data, "/*CHARTBOOST*\\"         , "/*CHARTBOOST*/"                                    , true, WHOLE_WORD_STRICT);
+         data=Replace(data, "CHARTBOOST_APP_ID"       , CString(cei().appChartboostAppIDGooglePlay       ()), true, WHOLE_WORD_STRICT);
+         data=Replace(data, "CHARTBOOST_APP_SIGNATURE", CString(cei().appChartboostAppSignatureGooglePlay()), true, WHOLE_WORD_STRICT);
+      }
+
+      if(facebook)data=Replace(data, "/*FACEBOOK*\\", "/*FACEBOOK*/", true, WHOLE_WORD_STRICT);
+
+      data=Replace(data, "/*LOAD_LIBRARIES*/", load_libraries, true, WHOLE_WORD_STRICT);
+
+      SetFile(ft, data, UTF_8_NAKED);
+      if(!OverwriteOnChangeLoud(ft, dest_path+"app/src/main/java/EsenthelActivity.java"))return false;
+   }
+   if(!CopyFile(src_path+"app/src/main/java/Native.java", dest_path+"app/src/main/java/Native.java"))return false;
+   if(!CopyFile(src_path+"app/src/main/java/Base64.java", dest_path+"app/src/main/java/Base64.java"))return false;
 
 #if 0 // WIP
    FCreateDirs(build_path+"Android/jni");
@@ -2495,89 +2633,6 @@ Bool CodeEditor::generateAndroidProj()
       if(!OverwriteOnChangeLoud(main, build_path+"Android/jni/Main.cpp"))return false;
    }
 
-   Str  app_package=AndroidPackage(cei().appPackage());
-   Bool chartboost          =(cei().appChartboostAppIDGooglePlay().is() && cei().appChartboostAppSignatureGooglePlay().is()),
-        google_play_services=(cei().appAdMobAppIDGooglePlay     ().is() || chartboost),
-        facebook            =(cei().appFacebookAppID()!=0);
-
-   // AndroidManifest.xml
-   XmlData xml;
-   if(!xml.load("Code/Android/AndroidManifest.xml"))return ErrorRead("Code/Android/AndroidManifest.xml");
-   if(XmlNode *manifest=xml.findNode("manifest"))
-   {
-      manifest->getParam("package"                ).value=app_package;
-      manifest->getParam("android:versionCode"    ).value=cei().appBuild();
-      manifest->getParam("android:versionName"    ).value=cei().appBuild();
-      manifest->getParam("android:installLocation").value=((cei().appPreferredStorage()==STORAGE_EXTERNAL) ? "preferExternal" : (cei().appPreferredStorage()==STORAGE_AUTO) ? "auto" : "internalOnly");
-      XmlNode &application=manifest->getNode("application");
-      {
-         if(icon.is())application.getParam("android:icon" ).value="@drawable/icon";
-                      application.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
-
-         // iterate activities
-         REPA(application.nodes)
-         {
-            XmlNode &node=application.nodes[i]; if(node.name=="activity")if(XmlParam *name=node.findParam("android:name"))
-            {
-               if(name->value=="EsenthelActivity" || name->value=="LoaderActivity")
-               {
-                  node.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
-
-                  // orientations
-                  {
-                     UInt flag     =cei().appSupportedOrientations();
-                     Bool landscape=FlagTest(flag, DIRF_X),
-                          portrait =FlagTest(flag, DIRF_Y);
-                     CChar8    *orn=null;
-                     if( flag==(DIRF_X|DIRF_UP)  )orn="sensor"         ;else // up/left/right no down
-                     if((flag&DIRF_X)==DIRF_RIGHT)orn="landscape"      ;else // only one horizontal
-                     if((flag&DIRF_Y)==DIRF_UP   )orn="portrait"       ;else // only one vertical
-                     if( landscape && !portrait  )orn="sensorLandscape";else
-                     if(!landscape &&  portrait  )orn="sensorPortrait" ;else
-                                                  orn="fullSensor"     ;
-                     node.getParam("android:screenOrientation").value=orn;
-                  }
-               }
-            }
-         }
-         // needed for opening files through "content://" instead of deprecated "file://"
-         {
-            XmlNode &n=application.nodes.New().setName("provider" ); n.params.New().set("android:name", "EsenthelActivity$FileProvider"      ); n.params.New().set("android:authorities", app_package+".fileprovider"); n.params.New().set("android:exported", "false"); n.params.New().set("android:grantUriPermissions", "true");
-          //XmlNode &m=          n.nodes.New().setName("meta-data"); m.params.New().set("android:name", "android.support.FILE_PROVIDER_PATHS"); m.params.New().set("android:resource", "@xml/file_paths"); // needed for "android.support.v4.content.FileProvider"
-         }
-         Str s;
-         if(google_play_services){XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.google.android.gms.version"); n.params.New().set("android:value", "@integer/google_play_services_version");}
-         s=cei().appAdMobAppIDGooglePlay(); if(s.is())
-         {
-            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.google.android.gms.ads.AdActivity"    ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize");}
-            {XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.google.android.gms.ads.APPLICATION_ID"); n.params.New().set("android:value", s);}
-         }
-         if(chartboost)
-         {
-            XmlNode &n=application.nodes.New().setName("activity");
-            n.params.New().set("android:name", "com.chartboost.sdk.CBImpressionActivity");
-            n.params.New().set("android:excludeFromRecents", "true");
-            n.params.New().set("android:hardwareAccelerated", "true");
-            n.params.New().set("android:theme", "@android:style/Theme.Translucent.NoTitleBar.Fullscreen");
-            n.params.New().set("android:configChanges", "keyboardHidden|orientation|screenSize");
-         }
-         if(ULong id=cei().appFacebookAppID())
-         {
-            {XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.facebook.sdk.ApplicationId"      ); n.params.New().set("android:value", "@string/facebook_app_id"/*id*/);}
-            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.FacebookActivity"       ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|screenLayout|screenSize|orientation"); n.params.New().set("android:label", CString(cei().appName()));} // android expects this as a C String
-            {XmlNode &n=application.nodes.New().setName("provider" ); n.params.New().set("android:name", "com.facebook.FacebookContentProvider"); n.params.New().set("android:authorities", S+"com.facebook.app.FacebookContentProvider"+id); n.params.New().set("android:exported", "true");}
-            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.CustomTabActivity"      ); n.params.New().set("android:exported", "true");
-             XmlNode &intent_filter=n.nodes.New().setName("intent-filter");
-             intent_filter.nodes.New().setName("action"  ).params.New().set("android:name"  , "android.intent.action.VIEW");
-             intent_filter.nodes.New().setName("category").params.New().set("android:name"  , "android.intent.category.DEFAULT");
-             intent_filter.nodes.New().setName("category").params.New().set("android:name"  , "android.intent.category.BROWSABLE");
-             intent_filter.nodes.New().setName("data"    ).params.New().set("android:scheme", "@string/fb_login_protocol_scheme"/*S+"fb"+id*/);
-            }
-         }
-      }
-   }
-   if(!OverwriteOnChangeLoud(xml, build_path+"Android/AndroidManifest.xml"))return false;
-
    android_path="Code/Android/"; // this is inside "Editor.pak"
    Str       android_libs_path=Str(projects_build_path).tailSlash(true)+"_Android_\\"; FCreateDir(android_libs_path); // path where to store Android libs "_Build_\_Android_\"
    Memc<Str> android_libs, jars;
@@ -2648,33 +2703,6 @@ Bool CodeEditor::generateAndroidProj()
 
    // IInAppBillingService.aidl
    if(!CopyFile("Code/Android/IInAppBillingService.aidl", build_path+"Android/src/com/android/vending/billing/IInAppBillingService.aidl"))return false;
-
-   // EsenthelActivity.java
-   {
-      FileText ft; if(!ft.read("Code/Android/EsenthelActivity.java"))return ErrorRead("Code/Android/EsenthelActivity.java");
-      Str data=ft.getAll(), s;
-      data=Replace(data, "com.esenthel.project"    , app_package             , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "APP_NAME"                , CString(cei().appName()), true, WHOLE_WORD_STRICT);
-      s=cei().appGooglePlayLicenseKey();
-      data=Replace(data, "APP_LICENSE_KEY"         , s                 , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "LICENSE_KEY_BEGIN"       , s.is() ? "" : "/*", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "LICENSE_KEY_END"         , s.is() ? "" : "*/", true, WHOLE_WORD_STRICT);
-      s=cei().appAdMobAppIDGooglePlay();
-      data=Replace(data, "ADMOB_APP_ID"            , CString(s)            , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "ADMOB_BEGIN"             , s.is()     ? "" : "/*", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "ADMOB_END"               , s.is()     ? "" : "*/", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "CHARTBOOST_BEGIN"        , chartboost ? "" : "/*", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "CHARTBOOST_END"          , chartboost ? "" : "*/", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "CHARTBOOST_APP_ID"       , CString(cei().appChartboostAppIDGooglePlay       ()), true, WHOLE_WORD_STRICT);
-      data=Replace(data, "CHARTBOOST_APP_SIGNATURE", CString(cei().appChartboostAppSignatureGooglePlay()), true, WHOLE_WORD_STRICT);
-      data=Replace(data, "FACEBOOK_BEGIN"          , facebook   ? "" : "/*", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "FACEBOOK_END"            , facebook   ? "" : "*/", true, WHOLE_WORD_STRICT);
-      data=Replace(data, "/*LOAD_LIBRARIES*/"      , load_libraries        , true, WHOLE_WORD_STRICT);
-      SetFile(ft, data, UTF_8_NAKED);
-      if(!OverwriteOnChangeLoud(ft, build_path+"Android/src/EsenthelActivity.java"))return false;
-   }
-   if(!CopyFile("Code/Android/Native.java", build_path+"Android/src/Native.java"))return false;
-   if(!CopyFile("Code/Android/Base64.java", build_path+"Android/src/Base64.java"))return false;
 
    return true;
 #endif

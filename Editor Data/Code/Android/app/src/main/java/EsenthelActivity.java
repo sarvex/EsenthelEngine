@@ -76,11 +76,11 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-/*CHARTBOOST
+/*CHARTBOOST*\
 import com.chartboost.sdk.*;
 import com.chartboost.sdk.Model.CBError.CBImpressionError;
 /*CHARTBOOST*/
-/*FACEBOOK
+/*FACEBOOK*\
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -93,7 +93,7 @@ import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.Sharer;
 import com.facebook.share.widget.ShareDialog;
 /*FACEBOOK*/
-/*ADMOB
+/*ADMOB*\
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -101,7 +101,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdListener;
 /*ADMOB*/
-/*LICENSE_KEY
+/*LICENSE_KEY*\
 import com.google.android.vending.licensing.AESObfuscator;
 import com.google.android.vending.licensing.LicenseChecker;
 import com.google.android.vending.licensing.LicenseCheckerCallback;
@@ -273,7 +273,7 @@ public class EsenthelActivity extends NativeActivity
    @Override public final void onRestoreInstanceState(Bundle savedInstanceState)
    {
       super.onRestoreInstanceState(savedInstanceState);
-   /*ADMOB
+   /*ADMOB*\
       if(Is(inters_id))adCreate(inters_id, AD_INTERSTITIAL);
       if(Is(banner_id))adCreate(banner_id, banner_type    );
    /*ADMOB*/
@@ -285,7 +285,7 @@ public class EsenthelActivity extends NativeActivity
    }
    @Override public final void onBackPressed()
    {
-   /*CHARTBOOST
+   /*CHARTBOOST*\
       if(!Chartboost.onBackPressed()) // this will detect if there's an interstitial and close it, otherwise process below:
    /*CHARTBOOST*/
       {
@@ -295,34 +295,34 @@ public class EsenthelActivity extends NativeActivity
    @Override public final void onResume()
    {
                              super.onResume();
-   /*ADMOB
+   /*ADMOB*\
       if(ad_view  !=null)ad_view  .  resume();
    /*ADMOB*/
-   /*CHARTBOOST
+   /*CHARTBOOST*\
                         Chartboost.onResume(this);
    /*CHARTBOOST*/
    }
    @Override public final void onPause()
    {
-   /*ADMOB
+   /*ADMOB*\
       if(ad_view  !=null)ad_view  .  pause();
    /*ADMOB*/
                              super.onPause();
-   /*CHARTBOOST
+   /*CHARTBOOST*\
                         Chartboost.onPause(this);
    /*CHARTBOOST*/
    }
    @Override public final void onStart()
    {
            super.onStart();
-   /*CHARTBOOST
+   /*CHARTBOOST*\
       Chartboost.onStart(this);
    /*CHARTBOOST*/
    }
    @Override public final void onStop()
    {
            super.onStop();
-   /*CHARTBOOST
+   /*CHARTBOOST*\
       Chartboost.onStop(this);
    /*CHARTBOOST*/
    }
@@ -334,16 +334,16 @@ public class EsenthelActivity extends NativeActivity
          root_view.getViewTreeObserver().removeOnGlobalLayoutListener(global_layout_listener);
          global_layout_listener=null;
       }
-   /*ADMOB
+   /*ADMOB*\
       bannerHide();
       adViewDel();
    /*ADMOB*/
                              super.onDestroy();
-   /*CHARTBOOST
+   /*CHARTBOOST*\
                         Chartboost.onDestroy(this);
    /*CHARTBOOST*/
     //shutIAB();
-   /*LICENSE_KEY
+   /*LICENSE_KEY*\
       shutLicenseTest();
    /*LICENSE_KEY*/
       context=application; activity=null; // when activity becomes unavailable, then use application context because we always need one
@@ -438,16 +438,16 @@ public class EsenthelActivity extends NativeActivity
       }
 
     //initIAB();
-   /*LICENSE_KEY
+   /*LICENSE_KEY*\
       initLicenseTest();
    /*LICENSE_KEY*/
-   /*ADMOB
+   /*ADMOB*\
       initAdMob();
    /*ADMOB*/
-   /*CHARTBOOST
+   /*CHARTBOOST*\
       initChartboost();
    /*CHARTBOOST*/
-   /*FACEBOOK
+   /*FACEBOOK*\
       initFB();
    /*FACEBOOK*/
       initNotification();
@@ -474,7 +474,7 @@ public class EsenthelActivity extends NativeActivity
    @Override protected final void onActivityResult(int requestCode, int resultCode, Intent data)
    {
       super.onActivityResult(requestCode, resultCode, data);
-   /*FACEBOOK
+   /*FACEBOOK*\
       if(callbackManager!=null)callbackManager.onActivityResult(requestCode, resultCode, data);
    /*FACEBOOK*/
       /*switch(requestCode)
@@ -518,7 +518,7 @@ public class EsenthelActivity extends NativeActivity
    @Override public final void onConfigurationChanged(Configuration newConfig)
    {
       super.onConfigurationChanged(newConfig);
-   /*ADMOB
+   /*ADMOB*\
       adPos(banner_x, banner_y); // reset banner position in new screen size/orientation
    /*ADMOB*/
    }
@@ -972,7 +972,7 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
    // ADMOB
    /******************************************************************************/
-/*ADMOB
+/*ADMOB*\
    static AdRequest      ad_request;
           AdView         ad_view;
    static boolean        ad_view_loaded=false, // if ad_view is loaded
@@ -1415,7 +1415,7 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
    // License Test
    /******************************************************************************/
-/*LICENSE_KEY
+/*LICENSE_KEY*\
    private static class MyLicenseCheckerCallback implements LicenseCheckerCallback
    {
       public static final byte[] SALT=new byte[]{2, 53, 106, 6, 35, 69, 118, 115, 64, 101, 117, 1, 13, 83, 127, 7, 6, 85, 25, 8};
@@ -1456,7 +1456,7 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
    // FB - Facebook
    /******************************************************************************/
-/*FACEBOOK
+/*FACEBOOK*\
    private CallbackManager callbackManager;
    private ShareDialog     shareDialog;
    private static boolean  facebook_get_me=false, facebook_get_friends=false;
@@ -1553,7 +1553,7 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
    // CHARTBOOST
    /******************************************************************************/
-/*CHARTBOOST
+/*CHARTBOOST*\
    public static final boolean chartboostVisible() {return Chartboost.isAnyViewVisible();}
 
    public static final void    chartboostInterstitialLoad     () {       Chartboost.cacheInterstitial(CBLocation.LOCATION_DEFAULT);}
