@@ -93,7 +93,7 @@
 #endif
 
 // Linux
-#if defined __linux__ && !ANDROID // Android also has '__linux__' defined
+#if defined __linux__ && !defined __ANDROID__ // Android also has '__linux__' defined
    #define LINUX 1
 #else
    #define LINUX 0

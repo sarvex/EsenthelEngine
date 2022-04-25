@@ -840,8 +840,8 @@ Bool CodeEditor::generateCPPH(Memc<Symbol*> &sorted_classes, EXPORT_MODE export_
                ft.depth--;
                ft.putLine("#endif");
             }
-            ListHeaders(ft,    linux_headers, "defined __linux__ && !defined ANDROID // Android also has '__linux__' defined");
-            ListHeaders(ft,  android_headers, "defined ANDROID");
+            ListHeaders(ft,    linux_headers, "defined __linux__ && !defined __ANDROID__ // Android also has '__linux__' defined");
+            ListHeaders(ft,  android_headers, "defined __ANDROID__");
             ListHeaders(ft, nintendo_headers, "defined __NINTENDO__");
             ListHeaders(ft,      web_headers, "defined EMSCRIPTEN");
             ft.putLine(S+"#include \""+UnixPath(bin_path+"Engine\\_\\System\\end.h")+'"');
