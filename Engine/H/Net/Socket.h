@@ -226,6 +226,7 @@ Bool SendMailSupported(); // check if 'SendMail' function is supported on this m
 Bool SendMail(C Str &from_name, C Str &from_email, C Str &to_name, C Str &to_email, C Str &subject, C Str &message); // send e-mail using local host as SMTP server, 'from_name'=name of the sender (example "John Smith"), 'from_email'=sender e-mail address (example "user@domain.com"), 'to_name'=name of the recipent (example "Jane Smith"), 'to'=recipent e-mail address (example "user@domain.com"), 'subject'=subject, 'message'=e-mail message
 
 Bool HandleNetworkError(); // this is needed for Nintendo Switch, if you encounter a network connection error, call this function to display system error message and try to reconnect to the internet, returns true if message was displayed (on Nintendo Switch), and false if no action was performed (on other platforms)
+Bool NetworkServiceAccountIDToken(CPtr &data, Int &size); // this is needed for Nintendo Switch, this function tries to get "Network Service Account ID Token", on success returns true and sets 'data'=token data (doesn't need to be released), 'size'=token size in bytes, on fail returns false and sets 'data'=null, 'size'=0
 
 #if EE_PRIVATE
 Bool GetDualStackSocket();
