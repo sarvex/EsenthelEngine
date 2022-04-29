@@ -259,14 +259,25 @@ _List& _List::columnVisible(Int i, Bool visible)
 {
    if(InRange(i, _columns))
    {
-      ListColumn &lc=_columns[i]; 
+      ListColumn &lc=_columns[i];
       if(lc.visible()!=visible){lc.visible(visible); setRects();}
    }
    return T;
 }
-Flt  _List::columnWidth  (Int i)C {return InRange(i, _columns) ? _columns[i].rect().w() :     0;}
-Bool _List::columnVisible(Int i)C {return InRange(i, _columns) ? _columns[i].visible () : false;}
-Flt  _List::columnOffset (Int i)C
+_List& _List::columnText(Int i, C Str &text)
+{
+   if(InRange(i, _columns))
+   {
+      ListColumn &lc=_columns[i];
+      if(!Equal(lc.text, text, true)){lc.text=text; setRects();}
+   }
+   return T;
+}
+Flt    _List::columnWidth  (Int i)C {return InRange(i, _columns) ? _columns[i].rect().w() :     0;}
+Bool   _List::columnVisible(Int i)C {return InRange(i, _columns) ? _columns[i].visible () : false;}
+C Str& _List::columnText   (Int i)C {return InRange(i, _columns) ? _columns[i].text       :     S;}
+
+Flt _List::columnOffset(Int i)C
 {
    if(i>=1)
    {

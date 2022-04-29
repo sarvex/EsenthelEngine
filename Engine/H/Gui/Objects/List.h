@@ -173,9 +173,10 @@ const_mem_addr struct _List : GuiObj // Gui List !! must be stored in constant m
    Int         columns(     )C {return _columns.elms();} // number of columns
    ListColumn& column (Int i)  {return _columns[i]    ;} // get i-th  column
 
-                                               Flt  columnOffset (Int i)C; //     get i-th column horizontal offset
-  _List& columnWidth  (Int i, Flt  width  );   Flt  columnWidth  (Int i)C; // set/get i-th column width, ('width' can also be set to LCW_DATA, LCW_PARENT or LCW_MAX_DATA_PARENT)
-  _List& columnVisible(Int i, Bool visible);   Bool columnVisible(Int i)C; // set/get i-th column visibility
+                                                 Flt  columnOffset (Int i)C; //     get i-th column horizontal offset
+  _List& columnWidth  (Int i,   Flt  width  );   Flt  columnWidth  (Int i)C; // set/get i-th column width, ('width' can also be set to LCW_DATA, LCW_PARENT or LCW_MAX_DATA_PARENT)
+  _List& columnVisible(Int i,   Bool visible);   Bool columnVisible(Int i)C; // set/get i-th column visibility
+  _List& columnText   (Int i, C Str &text   ); C Str& columnText   (Int i)C; // set/get i-th column text
 
    Int firstColumn    (DATA_TYPE type); // return index of first 'ListColumn' which is of 'type'   , -1 on fail
    Int firstColumnText(              ); // return index of first 'ListColumn' which is of text type, -1 on fail
