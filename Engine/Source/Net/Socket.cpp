@@ -1588,6 +1588,10 @@ SecureSocket::RESULT SecureSocket::handshake()
    return ERROR;
 }
 /******************************************************************************/
+#if !SWITCH
+Bool HandleNetworkError() {return false;}
+#endif
+/******************************************************************************/
 Bool InitSocket()
 {
    if(InitSocketEx())
