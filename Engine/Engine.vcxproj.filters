@@ -2209,6 +2209,9 @@
     <None Include="..\Editor Data\Code\Android\app\src\main\java\Native.java">
       <Filter>Source\Platforms\Android</Filter>
     </None>
+    <None Include="..\Editor Data\Code\Android\app\src\main\AndroidManifest.xml">
+      <Filter>Source\Platforms\Android</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\ThirdPartyLibs\VP\Windows32\Win32\Release\vpxmt.lib">
@@ -8744,10 +8747,5 @@
     <Object Include="..\ThirdPartyLibs\Bullet\Android\obj\local\arm64-v8a\objs\Bullet\src\BulletCollision\CollisionDispatch\SphereTriangleDetector.o">
       <Filter>H\_\Bullet\Android</Filter>
     </Object>
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="..\Editor Data\Code\Android\app\src\main\AndroidManifest.xml">
-      <Filter>Source\Platforms\Android</Filter>
-    </Xml>
   </ItemGroup>
 </Project>
