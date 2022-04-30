@@ -249,6 +249,7 @@ inline Bool    OSAndroid       (OS_VER ver=OSVer()) {return ver==OS_ANDROID     
 inline Bool    OSiOS           (OS_VER ver=OSVer()) {return ver==OS_IOS                                     ;} // if  Operating System is iOS
 inline Bool    OSNintendoSwitch(OS_VER ver=OSVer()) {return ver==OS_NINTENDO_SWITCH                         ;} // if  Operating System is Nintendo Switch
 
+Bool OSUserNameNeedsPermission(       ); // if calling 'OSUserName' might result in OS asking for permission
 Str  OSUserName (Bool short_name=false); // get the user name  of currently logged in user in the Operating System, on Android this requires PERMISSION_USER_NAME
 Str  OSUserEmail(                     ); // get the user email of currently logged in user in the Operating System, on Android this requires PERMISSION_USER_NAME, supported only on Android
 Bool OSUserIcon (Image &image         ); // get the user icon  of currently logged in user in the Operating System, supported only on Nintendo Switch

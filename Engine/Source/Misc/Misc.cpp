@@ -1478,6 +1478,7 @@ static struct UserNameGetter
    }
 }UserName;
 #endif
+Bool OSUserNameNeedsPermission() {return WINDOWS_NEW || ANDROID;}
 #if !SWITCH
 Str OSUserName(Bool short_name)
 {
