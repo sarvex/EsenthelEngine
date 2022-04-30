@@ -272,19 +272,12 @@ SteamWorks::USER_STATUS SteamWorks::userStatus()C
    return STATUS_UNKNOWN;
 }
 Bool SteamWorks::userAvatar(Image &image)C {return userAvatar(userID(), image);}
-CChar8* SteamWorks::appLanguageText()C
-{
 #if SUPPORT_STEAM
-   if(ISteamApps *i=SteamApps())return i->GetCurrentGameLanguage();
-#endif
-   return null;
-}
-#if SUPPORT_STEAM
-static struct Locale
+struct SteamLanguage
 {
    LANG_TYPE lang;
    CChar8   *code;
-}locale[]=
+}static const SteamLanguages[]=
 { // https://partner.steamgames.com/doc/store/localization#supported_languages
    {(LANG_TYPE)LANG_ARABIC    , "arabic"    },
    {(LANG_TYPE)LANG_BULGARIAN , "bulgarian" },
@@ -321,16 +314,16 @@ static struct Locale
 LANG_TYPE SteamWorks::appLanguage()C
 {
 #if SUPPORT_STEAM
-   if(ISteamApps *i=SteamApps())if(auto text=i->GetCurrentGameLanguage())REPA(locale)if(Equal(locale[i].code, text))return locale[i].lang;
+   if(ISteamApps *i=SteamApps())if(auto text=i->GetCurrentGameLanguage())REPA(SteamLanguages)if(Equal(text, SteamLanguages[i].code))return SteamLanguages[i].lang;
 #endif
    return LANG_UNKNOWN;
 }
-CChar8* SteamWorks::country()C
+COUNTRY SteamWorks::country()C
 {
 #if SUPPORT_STEAM
-   if(ISteamUtils *i=SteamUtils())return i->GetIPCountry();
+   if(ISteamUtils *i=SteamUtils())return CountryCode2(i->GetIPCountry());
 #endif
-   return null;
+   return COUNTRY_NONE;
 }
 DateTime SteamWorks::date()C
 {
