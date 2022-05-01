@@ -3164,9 +3164,11 @@ void CodeEditor::debug()
    {
       case EXE_EXE:
       case EXE_UWP:
-      case EXE_APK:
       case EXE_NS :
          if(Export(EXPORT_VS, BUILD_DEBUG))VSRun(build_project_file, S); break;
+
+      case EXE_APK:
+         if(Export(EXPORT_ANDROID, BUILD_DEBUG))VSRun(build_project_file, S); break;
 
       case EXE_DLL: build(); break;
 
@@ -3177,11 +3179,11 @@ void CodeEditor::debug()
 void CodeEditor::openIDE()
 {
 #if WINDOWS
-                            if(Export(EXPORT_VS            , BUILD_IDE))VSOpen(build_project_file);
+                            if(Export((config_exe==EXE_APK) ? EXPORT_ANDROID : EXPORT_VS, BUILD_IDE))VSOpen(build_project_file);
 #elif MAC
-                            if(Export(EXPORT_XCODE         , BUILD_IDE))Run   (build_project_file);
+                            if(Export(EXPORT_XCODE                                      , BUILD_IDE))Run   (build_project_file);
 #elif LINUX
-   if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS, BUILD_IDE))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
+   if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS                             , BUILD_IDE))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
 #endif
 }
 /******************************************************************************/
