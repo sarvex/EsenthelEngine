@@ -1302,7 +1302,7 @@ void CodeEditor::update(Bool active)
                || Contains(line, ": error "  , false, WHOLE_WORD_STRICT))br.setError  ();
 
                // count sources compiled
-               if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
+               if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
                {
                   if(build_msbuild)
                   {
@@ -1325,6 +1325,11 @@ void CodeEditor::update(Bool active)
                         if(Ends(l, ".cpp") && CleanFileName(l)==l || Equal(l, "linking..."))build_step++;
                      }else break;
                   }
+               }else
+               if(build_exe_type==EXE_APK)
+               {
+                  if(Ends    (line, ".o")
+                  && Contains(line, ".cpp -> ", true, WHOLE_WORD_STRICT))build_step++;
                }else
                if(build_exe_type==EXE_MAC || build_exe_type==EXE_IOS)
                {
