@@ -654,6 +654,7 @@
     <OutDir>$(ProjectDir)Android\Debug\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Debug\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DX11|NX64'">
     <LinkIncremental>false</LinkIncremental>
@@ -676,6 +677,7 @@
     <OutDir>$(ProjectDir)Android\Debug\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Debug\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Universal DX11|NX64'">
     <LinkIncremental>false</LinkIncremental>
@@ -726,6 +728,7 @@
     <OutDir>$(ProjectDir)Android\Release\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Release\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DX11|NX64'">
     <LinkIncremental>false</LinkIncremental>
@@ -748,6 +751,7 @@
     <OutDir>$(ProjectDir)Android\Release\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Release\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Universal DX11|NX64'">
     <LinkIncremental>false</LinkIncremental>
@@ -788,6 +792,7 @@
     <OutDir>$(ProjectDir)Android\Debug\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Debug\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug GL|NX64'">
     <LinkIncremental>false</LinkIncremental>
@@ -824,6 +829,7 @@
     <OutDir>$(ProjectDir)Android\Release\$(PlatformTarget)\</OutDir>
     <IntDir>Android\Release\</IntDir>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL|NX64'">
     <LinkIncremental>false</LinkIncremental>

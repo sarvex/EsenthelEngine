@@ -334,6 +334,7 @@
     <AndroidApplicationModule>app</AndroidApplicationModule>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
     <AndroidApplicationVariant>Debug</AndroidApplicationVariant>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Universal DX11|Android-arm64-v8a'">
     <OutDir>$(ProjectDir)Android\Debug\$(PlatformTarget)\</OutDir>
@@ -343,6 +344,7 @@
     <AndroidApplicationModule>app</AndroidApplicationModule>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
     <AndroidApplicationVariant>Debug</AndroidApplicationVariant>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DX11|Android-arm64-v8a'">
     <OutDir>$(ProjectDir)Android\Release\$(PlatformTarget)\</OutDir>
@@ -352,6 +354,7 @@
     <AndroidApplicationModule>app</AndroidApplicationModule>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
     <AndroidApplicationVariant>Release</AndroidApplicationVariant>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Universal DX11|Android-arm64-v8a'">
     <OutDir>$(ProjectDir)Android\Release\$(PlatformTarget)\</OutDir>
@@ -361,6 +364,7 @@
     <AndroidApplicationModule>app</AndroidApplicationModule>
     <AndroidApkName>$(ProjectName).apk</AndroidApkName>
     <AndroidApplicationVariant>Release</AndroidApplicationVariant>
+    <TargetName>libProject</TargetName>
   </PropertyGroup>
   <PropertyGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug DX11|NX64'">
     <ApplicationDataDir>Assets\Nintendo Switch\Data</ApplicationDataDir>

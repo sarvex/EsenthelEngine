@@ -2529,6 +2529,7 @@ Bool CodeEditor::generateAndroidProj()
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, dest_path+"app/build.gradle"))return false;
    }
+   FCreateDirs(dest_path+"gradle/wrapper");
    if(!CopyFile(src_path+"app/src/main/java/Native.java"           , dest_path+"app/src/main/java/Native.java"           ))return false;
    if(!CopyFile(src_path+"app/src/main/java/Base64.java"           , dest_path+"app/src/main/java/Base64.java"           ))return false;
    if(!CopyFile(src_path+"app/proguard-rules.pro"                  , dest_path+"app/proguard-rules.pro"                  ))return false;
