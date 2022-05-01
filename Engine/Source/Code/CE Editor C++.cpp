@@ -1632,10 +1632,11 @@ Bool CodeEditor::generateVSProj(Int version)
             Int pos=TextPosI(dest, "Engine");
             if( pos>=0)
             {
-               Int len=TextPosI(dest()+pos, ';');
+               Int len=TextPosI(dest()+pos, ';'); if(len<0)len=dest.length()-pos;
                Str lib; FREP(len)lib+=dest[pos+i];
                dest.remove(pos, len+1);
-               dest.insert(0, S+'"'+bin_path_rel+lib+"\";");
+               Char8 quote=(Contains(lib, "Android") ? '\0' : '"'); // compile for Android will fail if "" is present
+               dest.insert(0, S+quote+bin_path_rel+lib+quote+";");
             }
             Memc<Str> *libs=&libs_win;
             if(XmlParam *condition=item->findParam("Condition"))
