@@ -69,7 +69,6 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual Bool              appPublishSteamDll                 ()override; 
    virtual Bool              appPublishOpenVRDll                ()override; 
    virtual Bool              appPublishDataAsPak                ()override; 
-   virtual Bool              appAndroidExpansion                ()override; 
  //virtual Bool              appWindowsCodeSign                 ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.windowsCodeSign ()     ; return super.appWindowsCodeSign();}
    virtual ImagePtr          appIcon                            ()override;
    virtual ImagePtr          appImagePortrait                   ()override;

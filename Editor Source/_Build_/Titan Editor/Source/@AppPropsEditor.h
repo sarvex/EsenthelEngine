@@ -140,8 +140,6 @@ class AppPropsEditor : PropWin
    static Str  PublishProjData             (C AppPropsEditor &ap             );
    static void PublishDataAsPak            (  AppPropsEditor &ap, C Str &text);
    static Str  PublishDataAsPak            (C AppPropsEditor &ap             );
-   static void AndroidExpansion            (  AppPropsEditor &ap, C Str &text);
-   static Str  AndroidExpansion            (C AppPropsEditor &ap             );
    static void PublishPhysxDll             (  AppPropsEditor &ap, C Str &text);
    static Str  PublishPhysxDll             (C AppPropsEditor &ap             );
    static void PublishSteamDll             (  AppPropsEditor &ap, C Str &text);

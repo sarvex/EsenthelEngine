@@ -29,12 +29,6 @@ void INIT(bool load_engine_data, bool load_project_data)
    if(load_project_data) // load project data
    {
       if(WINDOWS_NEW || MOBILE || WEB || PUBLISH)Paks.add(PROJECT_DATA_PATH, PROJECT_CIPHER);else DataPath(PROJECT_DATA_PATH);
-      if(ANDROID && ANDROID_EXPANSION)
-      {
-         REP(APP_BUILD+1)if(Paks.addTry(AndroidExpansionFileName(i), PROJECT_CIPHER))goto added;
-         Exit("Can't load Project Data");
-      added:;
-      }
    }
 }
 void INIT_OBJ_TYPE() // this function will setup 'ObjType' enum used for object types

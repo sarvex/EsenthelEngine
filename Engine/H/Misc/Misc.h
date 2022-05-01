@@ -399,8 +399,6 @@ enum SYSTEM_PATH // System Path Type
 #endif
 };
 Str SystemPath(SYSTEM_PATH type); // get system path, Sample Usage: SystemPath(SP_PROG_FILES) -> "C:/Program Files"
-
-Str AndroidExpansionFileName(Int version, Bool main=true); // get Android Expansion File Name, 'version'=app build version associated with the expansion file, 'main'=if this is the main or patch expansion file
 /******************************************************************************/
 enum PERMISSION // Permissions
 {

@@ -132,8 +132,6 @@ Bool CodeEditor::verifyAndroid()
    Str key=cei().appGooglePlayLicenseKey();
    if(Contains(key, '"') || Contains(key, '\n') || Contains(key, '\\')){cei().appInvalidProperty("App License Key is invalid."); return false;}
 
-   if(cei().appAndroidExpansion() && !key.is()){cei().appInvalidProperty("Auto-downloading Android Expansion Files requires setting Android License Key."); return false;}
-
    return verifyVS();
 }
 Bool CodeEditor::verifyLinuxMake    () {return true;}

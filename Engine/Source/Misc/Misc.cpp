@@ -2589,15 +2589,6 @@ Str SystemPath(SYSTEM_PATH type)
    return S;
 }
 /******************************************************************************/
-Str AndroidExpansionFileName(Int version, Bool main)
-{
-#if ANDROID
-   if(AndroidPublicPath.is() && AndroidPackageName.is())
-      return AndroidPublicPath+"/Android/obb/"+AndroidPackageName+'/'+(main ? "main" : "patch")+'.'+version+'.'+AndroidPackageName+".obb";
-#endif
-   return S;
-}
-/******************************************************************************/
 Str NormalizePath(C Str &path)
 {
    Str s;
