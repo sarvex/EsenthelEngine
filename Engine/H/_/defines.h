@@ -98,6 +98,7 @@ T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Dbl  ) operator- (Dbl   a, TYPE  b) {ret
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Dbl  ) operator* (Dbl   a, TYPE  b) {return                 a * ENUM_TYPE(TYPE)(b);}
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Dbl  ) operator/ (Dbl   a, TYPE  b) {return                 a / ENUM_TYPE(TYPE)(b);}
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Int  ) operator+ (TYPE  a, Bool  b) {return Int            (a)+                 b ;}
+T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Int  ) operator- (TYPE  a, Bool  b) {return Int            (a)-                 b ;}
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Int  ) operator* (TYPE  a, Bool  b) {return Int            (a)*                 b ;}
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Int  ) operator+ (TYPE  a, Int   b) {return Int            (a)+                 b ;}
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Int  ) operator- (TYPE  a, Int   b) {return Int            (a)-                 b ;}
