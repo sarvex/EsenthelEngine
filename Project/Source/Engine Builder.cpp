@@ -73,10 +73,10 @@ struct OptionsClass : ClosableWindow
 
    void create()
    {
-      Gui+=super::create(Rect_C(0, 0, 1.4, 0.35), "Options").hide(); button[2].show();
-      Flt y=-0.05, h=0.06;
+      Flt y=-0.05f, h=0.06f;
+      Gui+=super::create(Rect_C(0, 0, 1.4f, 3*h+0.11f), "Options").hide(); button[2].show();
       T+=t_vs_path .create(Vec2(0.19, y), "Visual Studio Path"); T+= vs_path.create(Rect_L(0.38, y, 1.0, 0.05)); y-=h;
-      T+=t_ndk_path.create(Vec2(0.19, y),   "Android NDK Path"); T+=ndk_path.create(Rect_L(0.38, y, 1.0, 0.05)); y-=h;
+    //T+=t_ndk_path.create(Vec2(0.19, y),   "Android NDK Path"); T+=ndk_path.create(Rect_L(0.38, y, 1.0, 0.05)); y-=h;
       T+=t_aac     .create(Vec2(0.19, y),   "Use Patented AAC"); T+=aac.create(Rect_L(0.38, y, 0.05, 0.05)).func(OptionChanged, T).desc("If support AAC decoding which is currently covered by patents.\nIf disabled then playback of AAC sounds will not be available."); y-=h;
       T+=t_physics .create(Vec2(0.19, y),     "Physics Engine"); T+=physics .create(Rect_L(0.38, y, 1.0, 0.05), Physics_t, Elms(Physics_t)).func(OptionChanged, T).set(PHYS_ENGINE_PHYSX, QUIET); y-=h;
       load();
@@ -1067,7 +1067,7 @@ void SetPaths()
    }
 
    // setup Android NDK path if not specified
-   if(!AndroidNDKPath.is())
+   /*if(!AndroidNDKPath.is())
    {
       Str AndroidSDKPath=GetPath(GetRegStr(RKG_LOCAL_MACHINE, "Software/Android SDK Tools/Path"));
       if( AndroidSDKPath.is())for(FileFind ff(AndroidSDKPath); ff(); )
@@ -1077,7 +1077,7 @@ void SetPaths()
             AndroidNDKPath=ndk_path; break;
          }
       }
-   }
+   }*/
 }
 Bool Init()
 {
