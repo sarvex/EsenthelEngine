@@ -737,7 +737,7 @@ void CodeEditor::visibleAndroidDevLog(Bool on)
          adb_path=adbPath();
          if(!adb_path.is()){options.activatePaths(); Gui.msgBox(S, "The path to Android SDK has not been specified or is invalid.");}else
          {
-            if(adb_server.create(adb_path, "start-server")) // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
+          //if(adb_server.create(adb_path, "start-server")) // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
             {
                if(adb_server.wait(1000/60)) // wait up to 1 frame of 60 fps for it to show up
                {

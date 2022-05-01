@@ -3111,7 +3111,7 @@ void CodeEditor::build(BUILD_MODE mode)
 
             if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY)
             {
-               Run(adbPath(), "start-server", true); // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
+             //Run(adbPath(), "start-server", true); // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
                build_package=AndroidPackage(cei().appPackage());
                build_phases=2; // build + adb(install)
             }
