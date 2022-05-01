@@ -1350,7 +1350,7 @@ void CodeEditor::update(Bool active)
          build_process.del();
          Bool was_log;
          if(was_log=build_log.is()){FDelFile(build_log); build_log.clear();}
-         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB)
+         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB || build_exe_type==EXE_APK)
          {
             Bool ok=false;
             if(build_phase==0)
@@ -1432,15 +1432,30 @@ void CodeEditor::update(Bool active)
                         if(was_log)FREPA(build_data)build_output.line()+=build_data[i].text;
                         build_output.line();
                      }
+                  }else
+                  if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // install APK
+                  {
+                     build_process.create(adbPath(), S+"install -r -d -t --fastdeploy \""+build_exe+"\""); // -r reinstall if already exists, -d Allow version code downgrade, --fastdeploy Quickly update an installed package by only updating the parts of the APK that changed https://developer.android.com/studio/command-line/adb#dpm
                   }
                }
             }else
-            if(build_phase==(build_windows_code_sign ? 1 : -2))
+            if(build_phase==(build_windows_code_sign ? 1 : -2)) // verify code sign
             {
                ok=(exit_code==0);
                if(ok)build_phase++;
+            }else
+            if(build_phase==1 && build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // verify install APK
+            {
+               // can't use 'exit_code' because it's always zero
+               if(build_data.elms()) // detect success
+               {
+                C Str &msg=build_data.last().text;
+                  ok=(msg=="Performing Streamed Install" // happens when updating
+                   || msg=="Success"); // happens when installing 1st time
+                  if(ok)build_phase++;
+               }
             }
-            if(ok && build_phase==(build_windows_code_sign ? 2 : 1))switch(build_mode)
+            if(ok && build_phase==(build_windows_code_sign ? 2 : (build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 2 : 1))switch(build_mode)
             {
                case BUILD_PLAY:
                {
@@ -1448,6 +1463,12 @@ void CodeEditor::update(Bool active)
                   {
                      case EXE_EXE: Run(build_exe); break;
                      case EXE_WEB: goto publish; // when playing for WEB we will create PAKs after compilation, so call publish success to do so
+                     case EXE_APK:
+                     {
+                        build_phase++;
+                        build_process.create(adbPath(), S+"shell am start \""+build_package+"/.EsenthelActivity\""); // https://developer.android.com/studio/command-line/adb#am
+                      //build_process.create(adbPath(), S+"shell monkey -p \""+build_package+"\" 1"); alternative without specifying activity name, however maybe it will break in the future
+                     }break;
                   }
                }break;
              //case BUILD_DEBUG  : if(build_exe_type==EXE_EXE)VSRun(build_project_file); break; // no need to call this because building was done by launching VS and it will automatically run the app
@@ -1493,11 +1514,10 @@ void CodeEditor::update(Bool active)
                case BUILD_DEBUG  : Run(build_exe); break;
                case BUILD_PUBLISH: cei().publishSuccess(build_exe, build_exe_type, build_mode, build_project_id); break;
             }
-         }else
+         }/*else
          if(build_exe_type==EXE_APK)
          {
-            BuildError("WIP", true);
-            /*if(build_phase==0) // link with ant
+            if(build_phase==0) // link with ant
             {
                // can't use 'exit_code' because it's always zero, #AndroidArchitecture
              //if(!FExistSystem(build_path+"Android/libs/armeabi/libProject.so"    ))BuildError("Failed to build armeabi shared library"    , at_end);else
@@ -1596,8 +1616,8 @@ void CodeEditor::update(Bool active)
                      build_process.create(adbPath(), S+"shell am start -n \""+build_package+"/.LoaderActivity\""); // start with -n this time
                   }
                }
-            }*/
-         }
+            }
+         }*/
       }
    }
    if(devlog_process.created())

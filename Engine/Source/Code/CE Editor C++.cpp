@@ -3108,6 +3108,13 @@ void CodeEditor::build(BUILD_MODE mode)
                if(!devenv_com){build_log=build_path+"build_log.txt"; FDelFile(build_log);} // if we have "devenv.com" then we get the output from the console (devenv.exe does not generate any output)
                VSBuild(build_project_file, config, platform, build_log);
             }
+
+            if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY)
+            {
+               Run(adbPath(), "start-server", true); // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
+               build_package=AndroidPackage(cei().appPackage());
+               build_phases=2; // build + adb(install)
+            }
          }
       }else
       if(build_exe_type==EXE_LINUX)
@@ -3124,11 +3131,10 @@ void CodeEditor::build(BUILD_MODE mode)
 
          if(!build_process.create("xcodebuild", XcodeBuildParams(build_project_file, build_debug ? "Debug" : "Release", (build_exe_type==EXE_MAC) ? "Mac" : "iOS"))) // sdk "iphonesimulator"
             Error("Error launching \"xcodebuild\" system command.\nPlease make sure you have Xcode installed.");
-      }else
+      }/*else
       if(build_exe_type==EXE_APK)
       {
-         Error("WIP");
-         /*Bool sign=!build_debug; // we want to sign with our own certificate (note that this can be done only in RELEASE mode, because in DEBUG, Android SDK will automatically sign the package with its own Debug certificate, and our own signing will fail)
+         Bool sign=!build_debug; // we want to sign with our own certificate (note that this can be done only in RELEASE mode, because in DEBUG, Android SDK will automatically sign the package with its own Debug certificate, and our own signing will fail)
          if(  sign)
          {
             // certificate file, certificate password, JDK
@@ -3149,8 +3155,8 @@ void CodeEditor::build(BUILD_MODE mode)
        //FDelFile(build_path+"Android/libs/armeabi/libProject.so");
          FDelFile(build_path+"Android/libs/armeabi-v7a/libProject.so");
          FDelFile(build_path+"Android/libs/arm64-v8a/libProject.so");
-         FDelFile(build_path+"Android/libs/x86/libProject.so");*/
-      }
+         FDelFile(build_path+"Android/libs/x86/libProject.so");
+      }*/
       buildClear ();
       buildUpdate();
    }
