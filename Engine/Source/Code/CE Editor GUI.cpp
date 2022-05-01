@@ -952,13 +952,9 @@ Bool CodeEditor::BuildResult::jumpTo()
             if( line>=0)
             {
                text.clip(pos);
-               if(FullPath(text) || StartsPath(text, "Source") || StartsPath(text, "jni") || StartsPath(text, ".."))
+               if(FullPath(text) || StartsPath(text, "Source") || StartsPath(text, ".."))
                {
-                  if(!FullPath(text))
-                  {
-                     if(CE.build_exe_type==EXE_APK)text=NormalizePath(CE.build_path+"Android/"+text);
-                     else                          text=NormalizePath(CE.build_path+           text);
-                  }
+                  if(!FullPath(text))text=NormalizePath(CE.build_path+text);
                   if(JumpTo(text, line))return true;
                }
             }

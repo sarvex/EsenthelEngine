@@ -320,7 +320,7 @@ Bool CodeEditor::verifyBuildPath()
       case EXE_UWP  : build_exe=build_path+build_project_name+".exe"; break;
       case EXE_MAC  : build_exe=build_path+build_project_name+".app"; break;
       case EXE_IOS  : build_exe=build_path+build_project_name+".app"; break;
-      case EXE_APK  : build_exe=build_path+"Android/bin/"+build_project_name; break;
+      case EXE_APK  : build_exe=build_path+"Android/"+(build_debug ? "Debug/" : "Release/")+build_project_name+".apk"; break;
       case EXE_LINUX: build_exe=build_path+CleanNameForMakefile(build_project_name); break;
       case EXE_NS   : build_exe=build_path+"NX64/"      +(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".nsp" ; break; // warning: this must match codes below if(build_exe_type==EXE_NS )config+=" DX11";
       case EXE_WEB  : build_exe=build_path+"Emscripten/"+(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".html"; break; // warning: this must match codes below if(build_exe_type==EXE_WEB)config+=" DX11";
@@ -3067,7 +3067,7 @@ void CodeEditor::build(BUILD_MODE mode)
          Str config=(build_debug ? "Debug" : "Release");
          if(build_exe_type==EXE_UWP)config+=" Universal";
 
-         if(build_exe_type==EXE_APK)config+=" DX11";else // always use the same config for APK because it uses    GL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
+         if(build_exe_type==EXE_APK)config+=" DX11";else // always use the same config for APK because it uses    GL
          if(build_exe_type==EXE_NS )config+=" DX11";else // always use the same config for NS  because it uses    GL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_WEB)config+=" DX11";else // always use the same config for WEB because it uses WebGL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_UWP)config+=" DX11";else
