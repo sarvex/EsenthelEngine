@@ -1294,7 +1294,6 @@ void CodeEditor::update(Bool active)
          {
           C Str &line=lines[i];
             if(SkipWhiteChars(line).is())
-               if(!Contains(line, "manifest authoring warning 81010002:"))
             {
                BuildResult &br=buildNew().set(line);
                if(Contains(line,   "warning:", false, WHOLE_WORD_STRICT)
