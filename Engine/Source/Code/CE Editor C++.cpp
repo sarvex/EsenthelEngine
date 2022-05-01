@@ -2526,6 +2526,8 @@ Bool CodeEditor::generateAndroidProj()
       FileText ft; if(!ft.read(src_path+"app/build.gradle"))return ErrorRead("build.gradle");
       Str data=ft.getAll();
       data=Replace(data, "com.esenthel.project", app_package);
+      data=Replace(data, "CERTIFICATE_PATH", UnixPath(android_cert_file));
+      data=Replace(data, "CERTIFICATE_PASS",          android_cert_pass );
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, dest_path+"app/build.gradle"))return false;
    }
