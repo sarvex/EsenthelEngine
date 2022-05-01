@@ -418,7 +418,7 @@ const_mem_addr struct CodeEditor
    Memc<DeviceLog>   devlog_data;
    List<DeviceLog>   devlog_list;
    Region            devlog_region;
-   ConsoleProcess    devlog_process, adb_server;
+   ConsoleProcess    devlog_process;
    Button            devlog_close, devlog_export, devlog_filter, devlog_clear;
    WindowIO          devlog_io;
    MemberDesc        devlog_time_sort;

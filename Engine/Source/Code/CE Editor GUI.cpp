@@ -735,22 +735,8 @@ void CodeEditor::visibleAndroidDevLog(Bool on)
       if(on && !devlog_process.active())
       {
          adb_path=adbPath();
-         if(!adb_path.is()){options.activatePaths(); Gui.msgBox(S, "The path to Android SDK has not been specified or is invalid.");}else
-         {
-          //if(adb_server.create(adb_path, "start-server")) // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
-            {
-               if(adb_server.wait(1000/60)) // wait up to 1 frame of 60 fps for it to show up
-               {
-                  devlog_process.create(adb_path, "logcat -v time");
-                  adb_server.del();
-               }else
-               {  // let it run and start devlog once it finished
-                  devlog_data.clear();
-                  devlog_data.New().message="Starting Android Debug Bridge..";
-                  devlog_list.setData(devlog_data);
-               }
-            }
-         }
+         if(!adb_path.is()){options.activatePaths(); Gui.msgBox(S, "The path to Android SDK has not been specified or is invalid.");}
+         else               devlog_process.create(adb_path, "logcat -v time");
       }
       resize();
    }

@@ -3111,7 +3111,6 @@ void CodeEditor::build(BUILD_MODE mode)
 
             if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY)
             {
-             //Run(adbPath(), "start-server", true); // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
                build_package=AndroidPackage(cei().appPackage());
                build_phases=2; // build + adb(install)
             }
@@ -3144,7 +3143,6 @@ void CodeEditor::build(BUILD_MODE mode)
             if(!jdk_path.is() || !FExistSystem(jdk_path.tailSlash(true)+"bin/jarsigner.exe")){options.activatePaths(); Error("Path to Java Development Kit was not specified or is invalid."); return;}
          #endif
          }
-         if(build_mode==BUILD_PLAY || build_mode==BUILD_DEBUG)Run(adbPath(), "start-server", true); // if we're going to launch the app then make sure that the ADB server is running, or else custom launched ADB processess will never exit
          build_steps =0;
          build_phases=1+1+sign+(build_debug ? 0 : 1)+((build_mode==BUILD_PLAY || build_mode==BUILD_DEBUG) ? 2 : 0); // ndk-build (compile) + ant (link) + jarsigner + zipalign (in release) + adb (force_stop) + adb (install)
        //if(1){build_log=build_path+"build_log.txt"; FDelFile(build_log);} this causes some freeze during building?

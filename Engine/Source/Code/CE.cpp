@@ -1701,16 +1701,6 @@ void CodeEditor::update(Bool active)
          }
       }
    }
-   if(adb_server.created() && !adb_server.active()) // ADB server finished starting
-   {
-      adb_server.del();
-      if(!devlog_process.active() && adb_path.is())
-      {
-         devlog_data.New().message="Android Debug Bridge Started, Starting LogCat..";
-         devlog_list.setData(devlog_data);
-         devlog_process.create(adb_path, "logcat -v time");
-      }
-   }
 }
 /******************************************************************************/
 void CodeEditor::draw()
