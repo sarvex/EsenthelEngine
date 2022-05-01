@@ -1591,7 +1591,7 @@ void CodeEditor::update(Bool active)
                {
                   if(Contains(build_data.last().text, "Activity not started, unable to resolve Intent"))
                   {
-                     // start on the device thout -n parameter
+                     // start on the device with -n parameter
                      build_phase++;
                      build_process.create(adbPath(), S+"shell am start -n \""+build_package+"/.LoaderActivity\""); // start with -n this time
                   }

@@ -9,10 +9,19 @@ android {
         minSdkVersion MSBUILD_MIN_SDK_VERSION
         targetSdkVersion 30
     }
+    signingConfigs {
+        release {
+            storeFile file('certificate')
+            storePassword 'password'
+            keyAlias 'key'
+            keyPassword 'password'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     sourceSets {
