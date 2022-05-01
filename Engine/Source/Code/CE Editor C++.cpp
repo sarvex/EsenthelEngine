@@ -2387,7 +2387,8 @@ Bool CodeEditor::generateAndroidProj()
       FREPA(convert)if(!convert[i].ok)return ErrorWrite(convert[i].dest);
    }
 
-   Str  app_package=AndroidPackage(cei().appPackage());
+   Str  app_package=AndroidPackage(cei().appPackage()),
+   cstr_app_name   =       CString(cei().appName   ()); // android expects this as a C String
    Bool chartboost          =(cei().appChartboostAppIDGooglePlay().is() && cei().appChartboostAppSignatureGooglePlay().is()),
         google_play_services=(cei().appAdMobAppIDGooglePlay     ().is() || chartboost),
         facebook            =(cei().appFacebookAppID()!=0);
@@ -2404,7 +2405,7 @@ Bool CodeEditor::generateAndroidProj()
       XmlNode &application=manifest->getNode("application");
       {
          if(icon.is())application.getParam("android:icon" ).value="@drawable/icon";
-                      application.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
+                      application.getParam("android:label").value=cstr_app_name;
 
          // iterate activities
          REPA(application.nodes)
@@ -2413,7 +2414,7 @@ Bool CodeEditor::generateAndroidProj()
             {
                if(name->value=="EsenthelActivity" || name->value=="LoaderActivity")
                {
-                  node.getParam("android:label").value=CString(cei().appName()); // android expects this as a C String
+                  node.getParam("android:label").value=cstr_app_name;
 
                   // orientations
                   {
@@ -2456,7 +2457,7 @@ Bool CodeEditor::generateAndroidProj()
          if(ULong id=cei().appFacebookAppID())
          {
             {XmlNode &n=application.nodes.New().setName("meta-data"); n.params.New().set("android:name", "com.facebook.sdk.ApplicationId"      ); n.params.New().set("android:value", "@string/facebook_app_id"/*id*/);}
-            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.FacebookActivity"       ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|screenLayout|screenSize|orientation"); n.params.New().set("android:label", CString(cei().appName()));} // android expects this as a C String
+            {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.FacebookActivity"       ); n.params.New().set("android:configChanges", "keyboard|keyboardHidden|screenLayout|screenSize|orientation"); n.params.New().set("android:label", cstr_app_name);}
             {XmlNode &n=application.nodes.New().setName("provider" ); n.params.New().set("android:name", "com.facebook.FacebookContentProvider"); n.params.New().set("android:authorities", S+"com.facebook.app.FacebookContentProvider"+id); n.params.New().set("android:exported", "true");}
             {XmlNode &n=application.nodes.New().setName("activity" ); n.params.New().set("android:name", "com.facebook.CustomTabActivity"      ); n.params.New().set("android:exported", "true");
              XmlNode &intent_filter=n.nodes.New().setName("intent-filter");
@@ -2492,8 +2493,8 @@ Bool CodeEditor::generateAndroidProj()
    {
       FileText ft; if(!ft.read(src_path+"app/src/main/java/EsenthelActivity.java"))return ErrorRead("EsenthelActivity.java");
       Str data=ft.getAll(), s;
-      data=Replace(data, "com.esenthel.project", app_package             , true, WHOLE_WORD_STRICT);
-      data=Replace(data, "APP_NAME"            , CString(cei().appName()), true, WHOLE_WORD_STRICT);
+      data=Replace(data, "com.esenthel.project",      app_package, true, WHOLE_WORD_STRICT);
+      data=Replace(data, "APP_NAME"            , cstr_app_name   , true, WHOLE_WORD_STRICT);
 
       s=cei().appGooglePlayLicenseKey();
                 data=Replace(data, "APP_LICENSE_KEY" , s                , true, WHOLE_WORD_STRICT); // always replace even if empty
@@ -2520,8 +2521,24 @@ Bool CodeEditor::generateAndroidProj()
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, dest_path+"app/src/main/java/EsenthelActivity.java"))return false;
    }
-   if(!CopyFile(src_path+"app/src/main/java/Native.java", dest_path+"app/src/main/java/Native.java"))return false;
-   if(!CopyFile(src_path+"app/src/main/java/Base64.java", dest_path+"app/src/main/java/Base64.java"))return false;
+   // build.gradle
+   {
+      FileText ft; if(!ft.read(src_path+"app/build.gradle"))return ErrorRead("build.gradle");
+      Str data=ft.getAll();
+      data=Replace(data, "com.esenthel.project", app_package);
+      SetFile(ft, data, UTF_8_NAKED);
+      if(!OverwriteOnChangeLoud(ft, dest_path+"app/build.gradle"))return false;
+   }
+   if(!CopyFile(src_path+"app/src/main/java/Native.java"           , dest_path+"app/src/main/java/Native.java"           ))return false;
+   if(!CopyFile(src_path+"app/src/main/java/Base64.java"           , dest_path+"app/src/main/java/Base64.java"           ))return false;
+   if(!CopyFile(src_path+"app/proguard-rules.pro"                  , dest_path+"app/proguard-rules.pro"                  ))return false;
+   if(!CopyFile(src_path+"gradle/wrapper/gradle-wrapper.jar"       , dest_path+"gradle/wrapper/gradle-wrapper.jar"       ))return false;
+   if(!CopyFile(src_path+"gradle/wrapper/gradle-wrapper.properties", dest_path+"gradle/wrapper/gradle-wrapper.properties"))return false;
+   if(!CopyFile(src_path+"build.gradle"                            , dest_path+"build.gradle"                            ))return false;
+   if(!CopyFile(src_path+"gradle.properties"                       , dest_path+"gradle.properties"                       ))return false;
+   if(!CopyFile(src_path+"gradlew"                                 , dest_path+"gradlew"                                 ))return false;
+   if(!CopyFile(src_path+"gradlew.bat"                             , dest_path+"gradlew.bat"                             ))return false;
+   if(!CopyFile(src_path+"settings.gradle"                         , dest_path+"settings.gradle"                         ))return false;
 
 #if 0 // WIP
    FCreateDirs(build_path+"Android/jni");
