@@ -1647,7 +1647,7 @@ public class EsenthelActivity extends NativeActivity
    {
       if(id==BACKGROUND_NOTIFICATION_ID && background_intent==null)return; // don't adjust background notification if we're not actually in background (can happen if we call this in InitPre, when application hasn't finished initializing but it's also not in the background)
       NotificationManager manager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE); if(manager!=null)
-      {
+      { // !! NOTIFICATION MAY NOT SHOW IN THE STATUS BAR IF DEVICE IS IN "DO NOT DISTURB" MODE !!
          Notification notification=getNotification(id, title, text, dismissable);
          if(notification!=null)manager.notify(id, notification);
       }
