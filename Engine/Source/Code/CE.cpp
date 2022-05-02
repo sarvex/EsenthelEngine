@@ -1479,7 +1479,7 @@ void CodeEditor::update(Bool active)
              //case BUILD_DEBUG  : if(build_exe_type==EXE_EXE)VSRun(build_project_file); break; // no need to call this because building was done by launching VS and it will automatically run the app
                case BUILD_PUBLISH: publish: cei().publishSuccess(build_exe, build_exe_type, build_mode, build_project_id); break;
             }else
-            if(build_phase==(build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 3 : -2)
+            if(build_phase==((build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 3 : -2))
             {
                visibleAndroidDevLog(true); // show dev log
             }
