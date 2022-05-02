@@ -1597,26 +1597,19 @@ public class EsenthelActivity extends NativeActivity
    {
       @Override public final void onReceive(Context context, Intent intent) {checkNotification(intent, false);}
    }
-   public static final String            NOTIFICATION_CHANNEL_ID="ID";
-   public static final String            NOTIFICATION_ID        ="EsenthelNotificationID";
+   public static final String            NOTIFICATION_CHANNEL_ID="BackgroundService";
+   public static final String            NOTIFICATION_ID        ="NotificationID";
    public static final int    BACKGROUND_NOTIFICATION_ID        =-1; // must not be 0 because 'startForeground' does not accept 0, use -1 because 0..+ are used by custom Notifications !! if this is changed then adjust 'Application.backgroundText' !!
    public static final void initNotification()
    {
       if(Build.VERSION.SDK_INT>=26)
       {
-       /*Use this code and below 'getNotification'
-         NotificationManager manager=(NotificationManager)activity.getSystemService(Context.NOTIFICATION_SERVICE);
-         if(manager!=null)
+         NotificationManager manager=(NotificationManager)activity.getSystemService(Context.NOTIFICATION_SERVICE); if(manager!=null)
          {
-            android.app.NotificationChannel channel=new android.app.NotificationChannel(NOTIFICATION_CHANNEL_ID, "Name", NotificationManager.IMPORTANCE_DEFAULT);
-          //channel.setDescription("Description");
+            android.app.NotificationChannel channel=new android.app.NotificationChannel(NOTIFICATION_CHANNEL_ID, "Background Service", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setSound(null, null);
             manager.createNotificationChannel(channel);
-         }*/
-      }
-      if(Build.VERSION.SDK_INT>=23)
-      {
-         //NotificationManager manager=(NotificationManager)activity.getSystemService(Context.NOTIFICATION_SERVICE);
-         //android.service.notification.StatusBarNotification[] notifications=manager.getActiveNotifications();
+         }
       }
    }
    public static final void checkNotification(Intent intent, boolean selected)
@@ -1630,8 +1623,8 @@ public class EsenthelActivity extends NativeActivity
    public static final Notification getNotification(int id, String title, String text, boolean dismissable)
    {
       Notification.Builder builder;
-    //if(Build.VERSION.SDK_INT>=26)builder=new Notification.Builder(context, NOTIFICATION_CHANNEL_ID);else
-                                   builder=new Notification.Builder(context);
+      if(Build.VERSION.SDK_INT>=26)builder=new Notification.Builder(context, NOTIFICATION_CHANNEL_ID);
+      else                         builder=new Notification.Builder(context);
       if(builder!=null)
       {
          Intent intent=new Intent(context, EsenthelActivity.class);
