@@ -23,6 +23,9 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             signingConfig signingConfigs.release
         }
+        debug {
+            signingConfig signingConfigs.release // set also for debug to avoid certificate mismatch error when installing APK
+        }
     }
     sourceSets {
         main {

@@ -1330,6 +1330,7 @@ void CodeEditor::update(Bool active)
                {
                   if(Ends    (line, ".o")
                   && Contains(line, ".cpp -> ", true, WHOLE_WORD_STRICT))build_step++;
+                  if(Contains(line, ": Failure [", true, WHOLE_WORD_STRICT))br.setError(); // happens with certificate mismatch - when wanting to install Debug/Release when other option already installed, full error: ": Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE: Package *.*.* signatures do not match previously installed version; ignoring!]"
                }else
                if(build_exe_type==EXE_MAC || build_exe_type==EXE_IOS)
                {
@@ -1440,7 +1441,7 @@ void CodeEditor::update(Bool active)
                   }else
                   if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // install APK
                   {
-                     build_process.create(adbPath(), S+"install -r -d -t --fastdeploy \""+build_exe+"\""); // -r reinstall if already exists, -d Allow version code downgrade, --fastdeploy Quickly update an installed package by only updating the parts of the APK that changed https://developer.android.com/studio/command-line/adb#dpm
+                     build_process.create(adbPath(), S+"install -r -d -t --fastdeploy \""+build_exe+"\""); // -r reinstall if already exists, -d Allow version code downgrade, -t allow test packages, --fastdeploy Quickly update an installed package by only updating the parts of the APK that changed https://developer.android.com/studio/command-line/adb#dpm Warning: --fastdeploy currently does not report certificate mismatch errors https://issuetracker.google.com/issues/231040652
                   }
                }
             }else
@@ -1454,9 +1455,11 @@ void CodeEditor::update(Bool active)
                // can't use 'exit_code' because it's always zero
                if(build_data.elms()) // detect success
                {
+                C BuildResult *prev=build_data.addr(build_data.elms()-2);
                 C Str &msg=build_data.last().text;
                   ok=(msg=="Performing Streamed Install" // happens when updating
-                   || msg=="Success"); // happens when installing 1st time
+                   || msg=="Success") // happens when installing 1st time
+                  && (!prev || prev->mode!=2); // happens with install failure (certificate mismatch)
                   if(ok)build_phase++;
                }
             }
