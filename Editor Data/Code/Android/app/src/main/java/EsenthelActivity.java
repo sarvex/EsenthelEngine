@@ -1605,7 +1605,7 @@ public class EsenthelActivity extends NativeActivity
       if(Build.VERSION.SDK_INT>=26)
       {
          NotificationManager manager=(NotificationManager)activity.getSystemService(Context.NOTIFICATION_SERVICE); if(manager!=null)
-         {
+         { // !! ONCE CHANNEL IS CREATED, IT'S NOT POSSIBLE TO CHANGE ITS PROPERTIES, UNLESS APP IS UNINSTALLED !!
             android.app.NotificationChannel channel=new android.app.NotificationChannel(NOTIFICATION_CHANNEL_ID, "Background Service", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setSound(null, null);
             manager.createNotificationChannel(channel);
