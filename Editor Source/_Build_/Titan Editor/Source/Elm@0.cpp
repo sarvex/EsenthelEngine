@@ -63,7 +63,7 @@ class TexInfoGetter
 
    static int ImageLoad(ImageHeader &header, C Str &name)
    {
-      if(GetThreadId()==TIG.thread_id) // process only inside 'TIG'
+      if(GetThreadID()==TIG.thread_id) // process only inside 'TIG'
       {
          header.mode=IMAGE_SOFT;
        //if(ImageTI[header.type].compressed)header.type=ImageTypeUncompressed(header.type); no need to do that, because there are only one decompressions per mip-map (1. extracting 2nd mip map to RGBA, 2. comparing 1st mip map with upscaled), doing this would only increase memory usage
@@ -87,7 +87,7 @@ class TexInfoGetter
 
       // no need for 'ThreadMayUseGPUData' because we use only IMAGE_SOFT
       Images.lock(); // lock because other threads may modify 'image_load_shrink' too
-      TIG.thread_id=GetThreadId();
+      TIG.thread_id=GetThreadID();
       int (*image_load_shrink)(ImageHeader &image_header, C Str &name)=D.image_load_shrink; // remember current
       D.image_load_shrink=ImageLoad        ; bool ok=img.load(TIG.tex_path+EncodeFileName(tex_id));
       D.image_load_shrink=image_load_shrink; // restore
