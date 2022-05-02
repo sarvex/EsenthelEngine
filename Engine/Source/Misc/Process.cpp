@@ -894,9 +894,7 @@ Bool GetProcessesAccessingThisProcess(MemPtr<ProcessAccess> proc, Bool write_onl
                         // some known types: "Key", "Event", "Semaphore", "Timer", "WaitCompletionPacket", "IoCompletion", "ALPC Port", "IRTimer", "TpWorkerFactory", "DxgkSharedSyncObject", "WindowStation", "Process"
                            if(Equal(u.type.Name.Buffer, "Thread", true))
                            {
-                           #undef GetThreadId
                               Handles.add(S+ProcName(pid)+", Thread:"+(UInt)GetThreadId(dup_handle));
-                           #define GetThreadId _GetThreadId
                            }
                         }
                         if(NT_SUCCESS(NtQueryObject(dup_handle, ObjectNameInformation, &u.name, SIZE(u), null)))

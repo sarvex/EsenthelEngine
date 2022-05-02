@@ -1678,6 +1678,7 @@ void DisplayClass::androidOpen()
 {
 #if ANDROID
    SyncLocker locker(_lock);
+   App._thread_id=GetThreadID(); // !! adjust the thread ID here, because it will be a different value !!
    androidClose();
    if(GLDisplay && MainContext.context)
    {
@@ -1692,6 +1693,7 @@ void DisplayClass::androidOpen()
       ANativeWindow_setBuffersGeometry(AndroidApp->window, 0, 0, format);
       MainContext.surface=eglCreateWindowSurface(GLDisplay, GLConfig, AndroidApp->window, win_attribs); if(!MainContext.surface)Exit("Can't create EGLSurface.");
       MainContext.lock();
+      setDeviceSettings(); // reset device state, also needed because of thread ID change
    }else Exit("OpenGL Display and MainContext not available.");
 #endif
 }

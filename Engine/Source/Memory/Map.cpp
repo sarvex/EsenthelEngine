@@ -498,7 +498,7 @@ void _MapEx::decRef(CPtr data)
          if(!--desc.ptr_num && !(desc.flag&CACHE_ELM_STD_PTR)) // if there are no more pointers accessing this element
          {
             Flt delay_remove_time=_delay_remove_time;
-          //if( delay_remove_time   >0 && GetThreadId()==DelayRemoveThreadID)delay_remove_time-=DelayRemoveWaited; // if want to use delayed remove by time and we're unloading because of parent getting delay unloaded, then decrease the time which the parent already waited
+          //if( delay_remove_time   >0 && GetThreadID()==DelayRemoveThreadID)delay_remove_time-=DelayRemoveWaited; // if want to use delayed remove by time and we're unloading because of parent getting delay unloaded, then decrease the time which the parent already waited
             if( delay_remove_time   >0 // if want to use delayed remove by time
           //|| _delay_remove_counter>0 // if want to use delayed remove temporarily
           //|| (_can_be_removed && !_can_be_removed(data)) // or it can't be removed right now
@@ -531,7 +531,7 @@ void _MapEx::processDelayRemove(Bool always)
    if(_delay_remove.elms())
    {
     /*SyncUnlocker   unlocker(D._lock); // this must be used also since later 'D._lock' can be locked when deleting the resource
-      SyncLocker delay_locker(DelayRemoveLock); DelayRemoveThreadID=GetThreadId(); // support only one 'processDelayRemove' at a time, because we use only one global 'DelayRemoveWaited' based on 'DelayRemoveThreadID' for all maps/threads
+      SyncLocker delay_locker(DelayRemoveLock); DelayRemoveThreadID=GetThreadID(); // support only one 'processDelayRemove' at a time, because we use only one global 'DelayRemoveWaited' based on 'DelayRemoveThreadID' for all maps/threads
       SyncLocker       locker(  _lock);*/
      _delay_remove_check=Time.appTime()+_delay_remove_time*DELAY_REMOVE_STEP; // perform next check at this time
       REPA(_delay_remove)

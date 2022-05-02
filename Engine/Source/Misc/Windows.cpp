@@ -250,7 +250,7 @@ void SysWindow::activate()C
 #if WINDOWS_OLD
    if(minimized())reset(false);
    UIntPtr act_thread=WindowActive().threadID(),
-           cur_thread=            GetThreadId();
+           cur_thread=            GetThreadID();
    if(cur_thread!=act_thread)AttachThreadInput(act_thread, cur_thread, true);
    BringWindowToTop   (window);
    SetForegroundWindow(window);

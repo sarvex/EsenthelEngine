@@ -283,7 +283,7 @@ INLINE static void ActivateTexture(Int index)
 }
 void DisplayState::texBind(UInt mode, UInt tex) // this should be called instead of 'glBindTexture'
 {
-   if(GetThreadId()==App.threadID()) // textures are bound per-context, so remember them only on the main thread
+   if(App.mainThread()) // textures are bound per-context, so remember them only on the main thread
    {
       if(Tex[ActiveTexture]==tex)return;
          Tex[ActiveTexture]= tex;

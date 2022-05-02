@@ -80,7 +80,7 @@ Application::Application()
   _style_window=0;
 #endif
 #endif
-  _thread_id=GetThreadId();
+  _thread_id=GetThreadID();
   _back_text="Running in background";
 }
 Application& Application::name(C Str &name)
@@ -248,8 +248,6 @@ Bool Application::maximized()C {return true ;}
 Bool Application::minimized()C {return false;}
 Bool Application::maximized()C {return _maximized;}
 #endif
-
-Bool Application::mainThread()C {return GetThreadId()==_thread_id;}
 
 UInt Application::parentProcessID()C
 {
@@ -749,7 +747,7 @@ void Application::showError(CChar *error)
       #endif
          )
          {
-            if(App.threadID()==GetThreadId()) // we can make call to 'SetFullscreenState' only on the main thread, calling it on others made no difference
+            if(App.mainThread()) // we can make call to 'SetFullscreenState' only on the main thread, calling it on others made no difference
             {
                SyncLocker locker(D._lock); // we should always be able to lock on the main thread
                if(SwapChain)SwapChain->SetFullscreenState(false, null);
@@ -1135,7 +1133,7 @@ Bool Application::create0()
    }
 #endif
 
-   T._thread_id   =GetThreadId(); // !! adjust the thread ID here, because on WINDOWS_NEW it will be a different value !!
+   T._thread_id   =GetThreadID(); // !! adjust the thread ID here, because on WINDOWS_NEW it will be a different value !!
    T._elevated    =GetProcessElevation();
    T._process_id  =PLATFORM(GetCurrentProcessId(), getpid());
    T._desktop_size=D.screen();

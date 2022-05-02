@@ -737,7 +737,7 @@ void Log    (C Str &text)
       if(LogThreadID)
       {
          t="ThreadID: ";
-         UIntPtr thread_id=GetThreadId();
+         UIntPtr thread_id=GetThreadID();
          t+=((thread_id==App.threadID()) ? "Main      (0x"
                                          : "Secondary (0x");
          t+=TextHex(thread_id, SIZE(thread_id)*2);

@@ -201,6 +201,10 @@ inline void SetMem   (Ptr data, Byte value, size_t size) {       SetMem   (data,
 inline void Copy     (Ptr dest, CPtr src  , size_t size) {       Copy     (dest, src  , (UIntPtr)size);}
 #endif
 /******************************************************************************/
+// MISC
+/******************************************************************************/
+inline Bool Application::mainThread()C {return GetThreadID()==_thread_id;}
+/******************************************************************************/
 // REFERENCE
 /******************************************************************************/
 T1(TYPE)           Bool Reference<TYPE>::save(File  &f    )C {          return f.put(_object_id);}
