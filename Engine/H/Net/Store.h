@@ -110,8 +110,8 @@ struct PlatformStore // class allowing to communicate with Platform Store
    PlatformStore& restorePurchases(); // this function is usable only for Apple, it will call "[[SKPaymentQueue defaultQueue] restoreCompletedTransactions]"
 
    // license test
-   void                licenseTest  ();               // test if user has a license for this Application [Supported Platforms: Android]
- C LICENSE_TEST_RESULT licenseResult() {return _ltr;} // get license test result                         [Supported Platforms: Android]
+   void                licenseTest  ();                // test if user has a license for this Application [Supported Platforms: Android]
+   LICENSE_TEST_RESULT licenseResult()C {return _ltr;} // get license test result                         [Supported Platforms: Android]
 
 #if !EE_PRIVATE
 private:
