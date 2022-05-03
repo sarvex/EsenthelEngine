@@ -33,6 +33,7 @@
 # Android
 *.mk         text merge=union diff=cpp
 *.properties text merge=union diff=cpp
+*.gradle     text merge=union diff=cpp
 
 # Linux
 *.sh text eol=lf diff=cpp
