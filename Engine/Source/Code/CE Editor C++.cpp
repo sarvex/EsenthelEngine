@@ -2485,6 +2485,18 @@ Bool CodeEditor::generateAndroidProj()
       }
    }
 
+   // modules
+   Str src_libs=src_path+"libs/",
+      dest_libs=Str(projects_build_path).tailSlash(true)+"_Android_\\"; FCreateDir(dest_libs); // path where to store Android libs "_Build_\_Android_\"
+   Memc<Str> modules;
+   if(cei().appGooglePlayLicenseKey().is())modules.add("play-licensing");
+   FREPA(modules) // process in order
+   {
+    C Str &lib=modules[i];
+      Str src_path=src_libs+lib, dest_path=dest_libs+lib;
+      if(C PaksFile *pf=Paks.find(src_path)){if(!FCopy(*pf->pak, *pf->file, dest_path, FILE_OVERWRITE_DIFFERENT))return ErrorWrite(dest_path);}else return ErrorRead(src_path);
+   }
+
    // java
    FCreateDirs(dest_path+"app/src/main/java");
    // EsenthelActivity.java
@@ -2530,8 +2542,31 @@ Bool CodeEditor::generateAndroidProj()
       data=Replace(data, "CERTIFICATE_PATH", UnixPath(android_cert_file));
       data=Replace(data, "CERTIFICATE_PASS",          android_cert_pass );
 
+      if(modules.elms())
+      {
+         Str src="dependencies {", dest=src;
+         FREPA(modules)dest+=S+"\nimplementation project(':"+modules[i]+"')";
+         data=Replace(data, src, dest);
+      }
+
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, dest_path+"app/build.gradle"))return false;
+   }
+   // settings.gradle
+   {
+      FileText f; f.writeMem(UTF_8_NAKED);
+      f.putLine("include ':app'");
+      if(modules.elms())
+      {
+         Str rel_path=UnixPath(GetRelativePath(dest_path, dest_libs));
+         FREPA(modules)
+         {
+          C Str &module=modules[i];
+            f.putLine(S+"include ':"+module+"'");
+            f.putLine(S+"project(':"+module+"').projectDir = file('"+rel_path+module+"')");
+         }
+      }
+      if(!OverwriteOnChangeLoud(f, dest_path+"settings.gradle"))return false;
    }
    FCreateDirs(dest_path+"gradle/wrapper");
    if(!CopyFile(src_path+"app/src/main/java/Native.java"           , dest_path+"app/src/main/java/Native.java"           ))return false;
@@ -2543,7 +2578,6 @@ Bool CodeEditor::generateAndroidProj()
    if(!CopyFile(src_path+"gradle.properties"                       , dest_path+"gradle.properties"                       ))return false;
    if(!CopyFile(src_path+"gradlew"                                 , dest_path+"gradlew"                                 ))return false;
    if(!CopyFile(src_path+"gradlew.bat"                             , dest_path+"gradlew.bat"                             ))return false;
-   if(!CopyFile(src_path+"settings.gradle"                         , dest_path+"settings.gradle"                         ))return false;
 
 #if 0 // WIP
    FCreateDirs(build_path+"Android/jni");
