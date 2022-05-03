@@ -12,10 +12,11 @@ class Project
 {
    bool              text_data=false, synchronize=true;
    byte              cipher_key[256], compress_level=9;
+   byte              tex_downsize[TSP_NUM];
    CIPHER_TYPE       cipher=CIPHER_NONE;
    COMPRESS_TYPE     compress_type=COMPRESS_NONE;
    MATERIAL_SIMPLIFY material_simplify=MS_NEVER;
-   TimeStamp         cipher_time, cipher_key_time, compress_type_time, compress_level_time, material_simplify_time;
+   TimeStamp         cipher_time, cipher_key_time, compress_type_time, compress_level_time, material_simplify_time, tex_downsize_time;
    UID               id=UIDZero, app_id=UIDZero, hm_mtrl_id=UIDZero, water_mtrl_id=UIDZero, mtrl_brush_id[MtrlBrushSlots];
    Str               name, path, code_path, code_base_path, edit_path, game_path, temp_path, tex_path, temp_tex_path, temp_tex_dynamic_path;
    Memx<Elm>         elms;
@@ -27,6 +28,7 @@ class Project
    Project()
    {
       REPAO(cipher_key)=0;
+      REPAO(tex_downsize)=0;
       REPAO(mtrl_brush_id).zero();
          world_vers.mode(CACHE_DUMMY); // to allow creating new elements
       mini_map_vers.mode(CACHE_DUMMY); // to allow creating new elements
@@ -44,8 +46,9 @@ class Project
       cipher=CIPHER_NONE; REPAO(cipher_key)=0;
       compress_type =COMPRESS_NONE;
       compress_level=9;
+      REPAO(tex_downsize)=0;
       material_simplify=MS_NEVER;
-      cipher_time=cipher_key_time=compress_type_time=compress_level_time=material_simplify_time=0;
+      cipher_time=cipher_key_time=compress_type_time=compress_level_time=material_simplify_time=tex_downsize_time=0;
       text_data=false; synchronize=true; app_id.zero(); hm_mtrl_id.zero(); water_mtrl_id.zero(); REPAO(mtrl_brush_id).zero();
 
       path.del(); code_path.del(); code_base_path.del(); edit_path.del(); game_path.del(); temp_path.del(); tex_path.del(); temp_tex_path.del(); temp_tex_dynamic_path.del();
@@ -2200,20 +2203,21 @@ class Project
    bool newerSettings(C Project &src)C
    {
       return cipher_time>src.cipher_time || cipher_key_time>src.cipher_key_time || compress_type_time>src.compress_type_time
-          || compress_level_time>src.compress_level_time || material_simplify_time>src.material_simplify_time;
+          || compress_level_time>src.compress_level_time || material_simplify_time>src.material_simplify_time || tex_downsize_time>src.tex_downsize_time;
    }
    bool oldSettings(C TimeStamp &now=TimeStamp().getUTC())C
    {
-      return cipher_time<now && cipher_key_time<now && compress_type_time<now && compress_level_time<now && material_simplify_time<now;
+      return cipher_time<now && cipher_key_time<now && compress_type_time<now && compress_level_time<now && material_simplify_time<now && tex_downsize_time<now;
    }
    bool syncSettings(C Project &src)
    {
       bool changed=false;
-      changed|=Sync(cipher_time           , src.cipher_time           , cipher           , src.cipher           );
-      changed|=Sync(compress_type_time    , src.compress_type_time    , compress_type    , src.compress_type    );
-      changed|=Sync(compress_level_time   , src.compress_level_time   , compress_level   , src.compress_level   );
-      changed|=Sync(material_simplify_time, src.material_simplify_time, material_simplify, src.material_simplify);
-      if(Sync(cipher_key_time, src.cipher_key_time)){changed=true; Copy(cipher_key, src.cipher_key);}
+      changed|=Sync   (cipher_time           , src.cipher_time           , cipher           , src.cipher           );
+      changed|=SyncMem(cipher_key_time       , src.cipher_key_time       , cipher_key       , src.cipher_key       );
+      changed|=Sync   (compress_type_time    , src.compress_type_time    , compress_type    , src.compress_type    );
+      changed|=Sync   (compress_level_time   , src.compress_level_time   , compress_level   , src.compress_level   );
+      changed|=Sync   (material_simplify_time, src.material_simplify_time, material_simplify, src.material_simplify);
+      changed|=SyncMem(tex_downsize_time     , src.tex_downsize_time     , tex_downsize     , src.tex_downsize     );
       return changed;
    }
    void initSettings(C Project &src) // this is called when finished copying elements to an empty project (for example after importing *.ProjectPackage file)
@@ -2299,9 +2303,9 @@ class Project
          f.cmpUIntV(ProjectVersion);
 
          // settings
-         f.cmpUIntV(0); // version
-         f<<cipher<<cipher_key<<compress_type<<compress_level<<material_simplify
-          <<cipher_time<<cipher_key_time<<compress_type_time<<compress_level_time<<material_simplify_time;
+         f.cmpUIntV(1); // version
+         f<<cipher<<cipher_key<<compress_type<<compress_level<<material_simplify<<tex_downsize;
+         f<<cipher_time<<cipher_key_time<<compress_type_time<<compress_level_time<<material_simplify_time<<tex_downsize_time;
          if(!network){f<<text_data<<app_id<<hm_mtrl_id<<water_mtrl_id; FREPA(mtrl_brush_id)f<<mtrl_brush_id[i];}
 
          if(mode>=SAVE_ALL)
@@ -2345,6 +2349,13 @@ class Project
                switch(f.decUIntV())
                {
                   default: goto newer;
+
+                  case 1:
+                  {
+                     f>>cipher>>cipher_key>>compress_type>>compress_level>>material_simplify>>tex_downsize; ASSERT(ELMS(tex_downsize)==2);
+                     f>>cipher_time>>cipher_key_time>>compress_type_time>>compress_level_time>>material_simplify_time>>tex_downsize_time;
+                     if(!network){f>>text_data>>app_id>>hm_mtrl_id>>water_mtrl_id; FREPA(mtrl_brush_id)f>>mtrl_brush_id[i];}
+                  }break;
 
                   case 0:
                   {
@@ -2524,11 +2535,14 @@ class Project
                       if(save_all || compress_type) nodes.New().set   ("Compress"             , CompressionName(compress_type));
                                                     nodes.New().set   ("CompressLevel"        , compress_level);
                                                     nodes.New().set   ("SimplifyMaterials"    , material_simplify);
+            if(save_all || tex_downsize[TSP_MOBILE])nodes.New().set   ("TexDownsizeMobile"    , tex_downsize[TSP_MOBILE]);
+            if(save_all || tex_downsize[TSP_SWITCH])nodes.New().set   ("TexDownsizeSwitch"    , tex_downsize[TSP_SWITCH]);
                                                     nodes.New().set   ("EncryptTime"          , cipher_time.text());
                                                     nodes.New().set   ("EncryptionKeyTime"    , cipher_key_time.text());
                                                     nodes.New().set   ("CompressTime"         , compress_type_time.text());
                                                     nodes.New().set   ("CompressLevelTime"    , compress_level_time.text());
                                                     nodes.New().set   ("SimplifyMaterialsTime", material_simplify_time.text());
+                                                    nodes.New().set   ("TexDownsizeTime"      , tex_downsize_time.text());
       if(save_all || elms.elms())
       {
          TextNode &node=nodes.New().setName("Elements");
@@ -2553,13 +2567,16 @@ class Project
          if(node.name=="Encrypt"              )cipher=(CIPHER_TYPE)node.asInt();else
          if(node.name=="EncryptionKey"        )node.getValueRaw(cipher_key);else
          if(node.name=="Compress"             ){REP(COMPRESS_NUM)if(node.value==CompressionName(COMPRESS_TYPE(i))){compress_type=COMPRESS_TYPE(i); break;}}else
-         if(node.name=="CompressLevel"        )compress_level        =node.asInt ();else
-         if(node.name=="SimplifyMaterials"    )material_simplify     =(MATERIAL_SIMPLIFY)node.asInt();else
-         if(node.name=="EncryptTime"          )cipher_time           =node.asText();else
-         if(node.name=="EncryptionKeyTime"    )cipher_key_time       =node.asText();else
-         if(node.name=="CompressTime"         )compress_type_time    =node.asText();else
-         if(node.name=="CompressLevelTime"    )compress_level_time   =node.asText();else
-         if(node.name=="SimplifyMaterialsTime")material_simplify_time=node.asText();else
+         if(node.name=="CompressLevel"        )compress_level          =node.asInt ();else
+         if(node.name=="SimplifyMaterials"    )material_simplify       =(MATERIAL_SIMPLIFY)node.asInt();else
+         if(node.name=="TexDownsizeMobile"    )tex_downsize[TSP_MOBILE]=node.asInt ();else
+         if(node.name=="TexDownsizeSwitch"    )tex_downsize[TSP_SWITCH]=node.asInt ();else
+         if(node.name=="EncryptTime"          )cipher_time             =node.asText();else
+         if(node.name=="EncryptionKeyTime"    )cipher_key_time         =node.asText();else
+         if(node.name=="CompressTime"         )compress_type_time      =node.asText();else
+         if(node.name=="CompressLevelTime"    )compress_level_time     =node.asText();else
+         if(node.name=="SimplifyMaterialsTime")material_simplify_time  =node.asText();else
+         if(node.name=="TexDownsizeTime"      )tex_downsize_time       =node.asText();else
          if(node.name=="Elements"             )
          {
             // remember 'IMPORTING' and 'OPENED' which are not saved in text

@@ -2859,7 +2859,19 @@ class XMaterialEx : XMaterial
    Image    base_0, base_1, base_2, detail, macro, emissive_img;
    UID      base_0_id=UIDZero, base_1_id=UIDZero, base_2_id=UIDZero, detail_id=UIDZero, macro_id=UIDZero, emissive_id=UIDZero;
    bool     adjust_params=true;
+   byte     tex_downsize[TSP_NUM];
    TEX_FLAG has_textures=TEXF_NONE, known_textures=TEXF_NONE;
+
+   XMaterialEx(C Project *proj=null)
+   {
+      if(proj)
+      {
+         Copy(tex_downsize, proj.tex_downsize);
+      }else
+      {
+         REPAO(tex_downsize)=0;
+      }
+   }
 
    void create(C Material &src)
    {

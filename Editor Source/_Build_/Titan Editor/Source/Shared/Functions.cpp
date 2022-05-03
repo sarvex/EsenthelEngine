@@ -3717,6 +3717,16 @@ Mems<FileParams> _DecodeFileParams(C Str &str)
       T.type=type;
       if(image.cube())T.flags|=1;
    }
+   XMaterialEx::XMaterialEx(C Project *proj) : base_0_id(UIDZero), base_1_id(UIDZero), base_2_id(UIDZero), detail_id(UIDZero), macro_id(UIDZero), emissive_id(UIDZero), adjust_params(true), has_textures(TEXF_NONE), known_textures(TEXF_NONE)
+   {
+      if(proj)
+      {
+         Copy(tex_downsize, proj->tex_downsize);
+      }else
+      {
+         REPAO(tex_downsize)=0;
+      }
+   }
    void XMaterialEx::create(C Material &src)
    {
       super::create(src);
@@ -3726,6 +3736,4 @@ Mems<FileParams> _DecodeFileParams(C Str &str)
    SrcDest& SrcDest::set(C Str &src, C Str &dest, C Str &name) {T.src=src+name; T.dest=dest+name; return T;}
    bool Rename::operator==(C Rename &rename)C {return Equal(src, rename.src, true) && Equal(dest, rename.dest, true);}
    bool Rename::operator!=(C Rename &rename)C {return !(T==rename);}
-XMaterialEx::XMaterialEx() : base_0_id(UIDZero), base_1_id(UIDZero), base_2_id(UIDZero), detail_id(UIDZero), macro_id(UIDZero), emissive_id(UIDZero), adjust_params(true), has_textures(TEXF_NONE), known_textures(TEXF_NONE) {}
-
 /******************************************************************************/

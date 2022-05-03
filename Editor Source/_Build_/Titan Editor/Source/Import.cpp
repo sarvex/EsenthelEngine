@@ -5,6 +5,7 @@ ImporterClass Importer;
 /******************************************************************************/
 
 /******************************************************************************/
+         ImporterClass::Import::MaterialEx::MaterialEx() : XMaterialEx(&Proj) {}
          void ImporterClass::Import::MaterialEx::check(C Str &path, Str &tex)
          {
             Mems<FileParams> texs=FileParams::Decode(tex);

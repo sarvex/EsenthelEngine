@@ -5,10 +5,11 @@ class Project
 {
    bool              text_data, synchronize;
    byte              cipher_key[256], compress_level;
+   byte              tex_downsize[TSP_NUM];
    CIPHER_TYPE       cipher;
    COMPRESS_TYPE     compress_type;
    MATERIAL_SIMPLIFY material_simplify;
-   TimeStamp         cipher_time, cipher_key_time, compress_type_time, compress_level_time, material_simplify_time;
+   TimeStamp         cipher_time, cipher_key_time, compress_type_time, compress_level_time, material_simplify_time, tex_downsize_time;
    UID               id, app_id, hm_mtrl_id, water_mtrl_id, mtrl_brush_id[MtrlBrushSlots];
    Str               name, path, code_path, code_base_path, edit_path, game_path, temp_path, tex_path, temp_tex_path, temp_tex_dynamic_path;
    Memx<Elm>         elms;

@@ -366,6 +366,7 @@ ConvertToAtlasClass ConvertToAtlas;
          atlas.glow=0;
          atlas.emissive=0;
          atlas.emissive_glow=0;
+         REPAO(atlas.tex_downsize)=MaxMaterialDownsize-1; // set as biggest downsize (smallest size)
          flt      alpha=0; int alpha_num=0; MATERIAL_TECHNIQUE tech=MTECH_OPAQUE; // parameters for alpha materials
          flt      reflect_min=0, reflect_max=0;
          TEX_FLAG tex_wrote     =TEXF_NONE; // what textures we wrote to atlas
@@ -385,6 +386,8 @@ ConvertToAtlasClass ConvertToAtlas;
             atlas.glow         +=mtrl.edit.glow;
             atlas.emissive     +=mtrl.edit.emissive_s;
             atlas.emissive_glow+=mtrl.edit.emissive_glow;
+
+            REPA(atlas.tex_downsize)MIN(atlas.tex_downsize[i], mtrl.edit.tex_downsize[i]); // minimize downsize (maximize size)
 
             if(mtrl.edit.tech){alpha+=mtrl.edit.color_s.w; alpha_num++; tech=mtrl.edit.tech;}
 

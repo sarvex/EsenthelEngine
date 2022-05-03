@@ -12,6 +12,8 @@ class ImporterClass
    {
       class MaterialEx : XMaterialEx
       {
+         MaterialEx() : XMaterialEx(&Proj) {}
+
          void check(C Str &path, Str &tex)
          {
             Mems<FileParams> texs=FileParams.Decode(tex);

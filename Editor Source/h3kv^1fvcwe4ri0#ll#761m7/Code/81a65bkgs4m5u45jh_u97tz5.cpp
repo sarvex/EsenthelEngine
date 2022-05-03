@@ -867,7 +867,7 @@ class ProjectEx : ProjectHierarchy
 
             case ELM_MTRL:
             {
-               EditMaterial edit; edit.newData(); Save(edit, editPath(elm));
+               EditMaterial edit; edit.newData(Proj); Save(edit, editPath(elm));
                if(ElmMaterial *data=elm.mtrlData()){data.newData(); data.from(edit);}
                makeGameVer(elm);
                Server.setElmFull(elm.id);
@@ -875,7 +875,7 @@ class ProjectEx : ProjectHierarchy
 
             case ELM_WATER_MTRL:
             {
-               EditWaterMtrl edit; edit.newData(); Save(edit, editPath(elm));
+               EditWaterMtrl edit; edit.newData(Proj); Save(edit, editPath(elm));
                if(ElmWaterMtrl *data=elm.waterMtrlData()){data.newData(); data.from(edit);}
                makeGameVer(elm);
                Server.setElmFull(elm.id);
@@ -1056,7 +1056,7 @@ class ProjectEx : ProjectHierarchy
       }
       return null;
    }
-   void setMtrl(Elm &mtrl, XMaterialEx &src, C Str &src_file=S)
+   void setMtrl(Elm &mtrl, C XMaterialEx &src, C Str &src_file=S)
    {
       if(ElmMaterial *data=mtrl.mtrlData())
       {
@@ -1079,7 +1079,7 @@ class ProjectEx : ProjectHierarchy
          elmChanged(mtrl);
       }
    }
-   Elm& newMtrl(XMaterialEx &src, C UID parent_id=UIDZero, C Str &src_file=S) // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
+   Elm& newMtrl(C XMaterialEx &src, C UID parent_id=UIDZero, C Str &src_file=S) // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
    {
       Elm &mtrl=super.newElm(src.name, parent_id, ELM_MTRL); mtrl.mtrlData().newData();
       setMtrl(mtrl, src, src_file);

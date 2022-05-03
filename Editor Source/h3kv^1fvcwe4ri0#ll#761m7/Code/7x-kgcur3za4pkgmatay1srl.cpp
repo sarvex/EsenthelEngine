@@ -193,16 +193,28 @@ class EditMaterial
       expandMap(  glow_map, color, smooth, bump);
    }
 
-   void newData()
+   void setDefault(C Project &proj)
+   {
+      Copy(tex_downsize, proj.tex_downsize);
+   }
+   void newData(C Project &proj)
    {
       flip_normal_y_time++; smooth_is_rough_time++; tex_quality_time++;
       color_map_time++; alpha_map_time++; bump_map_time++; normal_map_time++; smooth_map_time++; metal_map_time++; glow_map_time++;
       detail_map_time++; macro_map_time++; emissive_map_time++;
       cull_time++; detail_all_lod_time++; tech_time++; tex_downsize_time++;
       color_time++; emissive_time++; smooth_time++; reflect_time++; normal_time++; bump_time++; glow_time++; uv_scale_time++; detail_time++;
+      setDefault(proj);
    }
    void create(C XMaterialEx &src, C TimeStamp &time=TimeStamp().getUTC()) // used when importing models from 'XMaterial' and also when creating atlases from 'EditMaterial'
    {
+      // !! Warning: !!
+      detail_all_lod=false; detail_all_lod_time=time;
+      smooth_is_rough=false; smooth_is_rough_time=time;
+      tex_quality=Edit.Material.MEDIUM; tex_quality_time=time;
+      // !! Warning: !!
+
+      Copy(tex_downsize, src.tex_downsize); tex_downsize_time=time;
       flip_normal_y=src.flip_normal_y; flip_normal_y_time=time;
       cull=src.cull; cull_time=time;
       tech=src.technique; tech_time=time;
@@ -213,8 +225,7 @@ class EditMaterial
       normal=src.normal; normal_time=time;
       bump=src.bump; bump_time=time;
        uv_scale=src. uv_scale; uv_scale_time=time;
-      det_uv_scale=src.det_uv_scale; detail_time=time;
-      det_power=src.det_power; detail_time=time;
+      det_uv_scale=src.det_uv_scale; det_power=src.det_power; detail_time=time;
 
       if(src.smooth_map.is())setRoughMulAdd(src.rough_mul, src.rough_add);else setAbsRough(src.rough_add); smooth_time=time;
 

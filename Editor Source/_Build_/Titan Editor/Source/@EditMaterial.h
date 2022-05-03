@@ -71,7 +71,8 @@ class EditMaterial
    void expandMap(Str &map, C MemPtr<FileParams> &color, C MemPtr<FileParams> &smooth, C MemPtr<FileParams> &bump);
    void expandMaps();
 
-   void newData();
+   void setDefault(C Project &proj);
+   void newData(C Project &proj);
    void create(C XMaterialEx &src, C TimeStamp &time=TimeStamp().getUTC()); // used when importing models from 'XMaterial' and also when creating atlases from 'EditMaterial'
    void copyTo(Material &dest, C Project &proj)C;
    void copyTo(Edit::Material &dest)C;

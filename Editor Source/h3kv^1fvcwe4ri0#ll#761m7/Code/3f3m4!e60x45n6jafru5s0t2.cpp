@@ -490,7 +490,7 @@ class ServerClass : Connection
          }
 
          // send project settings
-         if(send_proj_settings && proj && proj.oldSettings()){send_proj_settings=false; ClientSendProjectSettings(T, *proj);}
+         if(send_proj_settings && proj && proj.oldSettings()){send_proj_settings=false; ClientSendProjectSettings(T, *proj);} // only if settings are "old" (it means that their modify time is smaller than now, this is needed to make sure that any potential new changes we will make after sending will have newer modify time)
 
          // update synchronizer
          Synchronizer.update();

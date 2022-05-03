@@ -345,8 +345,8 @@ public:
    void newElm(ELM_TYPE type);
    Elm* newElm(ELM_TYPE type, C UID &parent_id, C Str *name=null, bool refresh_elm_list=true);
    Elm* newWorld(C Str &name, int area_size, int hm_res, C UID &parent_id, bool set_cur);
-   void setMtrl(Elm &mtrl, XMaterialEx &src, C Str &src_file=S);
-   Elm& newMtrl(XMaterialEx &src, C UID parent_id=UIDZero, C Str &src_file=S); // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
+   void setMtrl(Elm &mtrl, C XMaterialEx &src, C Str &src_file=S);
+   Elm& newMtrl(C XMaterialEx &src, C UID parent_id=UIDZero, C Str &src_file=S); // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
 
    void setElmName(Elm &elm, C Str &name, C TimeStamp &time=TimeStamp().getUTC());
    void setElmNames(Memc<Edit::IDParam<Str>> &elms, bool adjust_elms=false); // 'adjust_elms'=if this is performed because of undo, and in that case we need to remember current names, so we can undo this change later

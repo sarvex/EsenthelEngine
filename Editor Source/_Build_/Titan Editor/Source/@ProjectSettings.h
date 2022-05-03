@@ -11,8 +11,8 @@ class ProjectSettings : ClosableWindow
 
    Button    randomize_key;
    TextLine  cipher_key;
-   Text      compress, mtrl_simplify_t, text_data_t;
-   ComboBox  cipher_type, compress_type, compress_level, mtrl_simplify, text_data;
+   Text      compress, mtrl_simplify_t, text_data_t, tex_size_mobile_t, tex_size_switch_t;
+   ComboBox  cipher_type, compress_type, compress_level, mtrl_simplify, text_data, tex_size_mobile, tex_size_switch;
    Button    ok;
    TextBlack ts;
 
@@ -34,6 +34,8 @@ class ProjectSettings : ClosableWindow
    static void CompressLevelChanged   (ProjectSettings &ps);
    static void MaterialSimplifyChanged(ProjectSettings &ps);
    static void TextDataChanged        (ProjectSettings &ps);
+   static void TexSizeMobileChanged   (ProjectSettings &ps);
+   static void TexSizeSwitchChanged   (ProjectSettings &ps);
 
    COMPRESS_TYPE compressType ();
    int           compressLevel();

@@ -903,7 +903,7 @@ void DrawProject()
 
             case ELM_MTRL:
             {
-               EditMaterial edit; edit.newData(); Save(edit, editPath(elm));
+               EditMaterial edit; edit.newData(Proj); Save(edit, editPath(elm));
                if(ElmMaterial *data=elm.mtrlData()){data->newData(); data->from(edit);}
                makeGameVer(elm);
                Server.setElmFull(elm.id);
@@ -911,7 +911,7 @@ void DrawProject()
 
             case ELM_WATER_MTRL:
             {
-               EditWaterMtrl edit; edit.newData(); Save(edit, editPath(elm));
+               EditWaterMtrl edit; edit.newData(Proj); Save(edit, editPath(elm));
                if(ElmWaterMtrl *data=elm.waterMtrlData()){data->newData(); data->from(edit);}
                makeGameVer(elm);
                Server.setElmFull(elm.id);
@@ -1092,7 +1092,7 @@ void DrawProject()
       }
       return null;
    }
-   void ProjectEx::setMtrl(Elm &mtrl, XMaterialEx &src, C Str &src_file)
+   void ProjectEx::setMtrl(Elm &mtrl, C XMaterialEx &src, C Str &src_file)
    {
       if(ElmMaterial *data=mtrl.mtrlData())
       {
@@ -1115,7 +1115,7 @@ void DrawProject()
          elmChanged(mtrl);
       }
    }
-   Elm& ProjectEx::newMtrl(XMaterialEx &src, C UID parent_id, C Str &src_file) // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
+   Elm& ProjectEx::newMtrl(C XMaterialEx &src, C UID parent_id, C Str &src_file) // create new material from 'src' !! this doesn't set elm list and doesn't send to the server !!
    {
       Elm &mtrl=super::newElm(src.name, parent_id, ELM_MTRL); mtrl.mtrlData()->newData();
       setMtrl(mtrl, src, src_file);
