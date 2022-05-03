@@ -605,11 +605,11 @@ class Texture
    }
    UID                            id; // texture id
    Edit.Material.TEX_QUALITY quality=Edit.Material.LOW;
-   byte                     downsize=0, // downsize
+   byte                     downsize=MaxMaterialDownsize-1, // downsize
                             channels=3, // assume RGB by default (no alpha used)
                                flags=0;
 
-   Texture& downSize(int size) {MAX(downsize, size); return T;}
+   Texture& downSize(int size) {MIN(downsize, size); return T;}
    
    Texture& usesAlpha() {channels=4; return T;}
    Texture& normal   () {channels=2; flags|=SIGN; return T;}
@@ -814,9 +814,9 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
          {
             // !! 'GetTexture' needs to be called always because it adds texture to publish list !!
             // #MaterialTextureLayoutWater
-            Texture *t0; if(t0=GetTexture(publish_texs, data.base_0_tex)){t0.sRGB(true); MAX(t0.quality, MinMtrlTexQualityBase0); MAX(t0.quality, data.tex_quality);}
-            Texture *t1; if(t1=GetTexture(publish_texs, data.base_1_tex)){               MAX(t1.quality, MinMtrlTexQualityBase1); t1.normal();}
-            Texture *t2; if(t2=GetTexture(publish_texs, data.base_2_tex)){               MAX(t2.quality, MinMtrlTexQualityBase2); t2.channels=1; t2.sign(true);}
+            Texture *t0; if(t0=GetTexture(publish_texs, data.base_0_tex)){t0.sRGB(true); t0.downSize(0); MAX(t0.quality, MinMtrlTexQualityBase0); MAX(t0.quality, data.tex_quality);}
+            Texture *t1; if(t1=GetTexture(publish_texs, data.base_1_tex)){               t1.downSize(0); MAX(t1.quality, MinMtrlTexQualityBase1); t1.normal();}
+            Texture *t2; if(t2=GetTexture(publish_texs, data.base_2_tex)){               t2.downSize(0); MAX(t2.quality, MinMtrlTexQualityBase2); t2.channels=1; t2.sign(true);}
 
             // check which base textures use Alpha Channel, #MaterialTextureLayoutWater
          }

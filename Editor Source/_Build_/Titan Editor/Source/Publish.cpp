@@ -550,9 +550,9 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
          {
             // !! 'GetTexture' needs to be called always because it adds texture to publish list !!
             // #MaterialTextureLayoutWater
-            Texture *t0; if(t0=GetTexture(publish_texs, data->base_0_tex)){t0->sRGB(true); MAX(t0->quality, MinMtrlTexQualityBase0); MAX(t0->quality, data->tex_quality);}
-            Texture *t1; if(t1=GetTexture(publish_texs, data->base_1_tex)){               MAX(t1->quality, MinMtrlTexQualityBase1); t1->normal();}
-            Texture *t2; if(t2=GetTexture(publish_texs, data->base_2_tex)){               MAX(t2->quality, MinMtrlTexQualityBase2); t2->channels=1; t2->sign(true);}
+            Texture *t0; if(t0=GetTexture(publish_texs, data->base_0_tex)){t0->sRGB(true); t0->downSize(0); MAX(t0->quality, MinMtrlTexQualityBase0); MAX(t0->quality, data->tex_quality);}
+            Texture *t1; if(t1=GetTexture(publish_texs, data->base_1_tex)){               t1->downSize(0); MAX(t1->quality, MinMtrlTexQualityBase1); t1->normal();}
+            Texture *t2; if(t2=GetTexture(publish_texs, data->base_2_tex)){               t2->downSize(0); MAX(t2->quality, MinMtrlTexQualityBase2); t2->channels=1; t2->sign(true);}
 
             // check which base textures use Alpha Channel, #MaterialTextureLayoutWater
          }
@@ -1218,7 +1218,7 @@ void DrawPublish()
       export_data.create("pak", S, S, ExportData, ExportData, T);
    }
    void PublishClass::exportData(Edit::EXE_TYPE exe) {export_data_exe=exe; export_data.save();}
-   Texture& Texture::downSize(int size) {MAX(downsize, size); return T;}
+   Texture& Texture::downSize(int size) {MIN(downsize, size); return T;}
    Texture& Texture::usesAlpha() {channels=4; return T;}
    Texture& Texture::normal() {channels=2; flags|=SIGN; return T;}
    bool Texture::sRGB()C {return FlagTest(flags, SRGB      );}
@@ -1234,6 +1234,6 @@ ImageConvert::ImageConvert() : pow2(false), clamp(true ), alpha_lum(false), has_
 
 PublishClass::PublishClass() : export_data_exe(Edit::EXE_EXE) {}
 
-Texture::Texture() : quality(Edit::Material::LOW), downsize(0), channels(3), flags(0) {}
+Texture::Texture() : quality(Edit::Material::LOW), downsize(MaxMaterialDownsize-1), channels(3), flags(0) {}
 
 /******************************************************************************/

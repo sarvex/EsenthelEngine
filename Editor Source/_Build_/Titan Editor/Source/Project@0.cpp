@@ -1761,41 +1761,48 @@ void DrawProject()
          }
       }
    }
-   void ProjectEx::mtrlTexDownsize(C MemPtr<UID> &elm_ids, TEX_SIZE_PLATFORM tsp, byte downsize, C UID &base_0, C UID &base_1, C UID &base_2)
+   void ProjectEx::mtrlTexDownsize(C MemPtr<UID> &elm_ids, TEX_SIZE_PLATFORM tsp, byte downsize, C UID &base_0, C UID &base_1, C UID &base_2, bool precise) // 'precise'=if do a more precise but slower processing (if true then all materials from 'elm_ids' will have to be loaded from disk for checking, which might be slow)
    {
       Memt<UID> mtrls;
       REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())
-         if(mtrl_data->tex_downsize[tsp]!=downsize) // skip check here, so we can always process similar materials even if this one already has desired value, actually restore it, because when wanting to set on a lot of materials then all of them would have to be loaded which is slow
+         if(precise // if always check (will correctly set other materials)
+         || mtrl_data->tex_downsize[tsp]!=downsize) // only if different
             if(mtrls.binaryInclude(mtrl->id)) // if just added
       {
          // include other materials that have the same textures
-         EditMaterial edit; if(mtrlGet(mtrl->id, edit))
+         // can't check by just 'mtrl_data.base_*_tex' because textures for this material could have been already reloaded with different quality, which could generate a different ID for them, instead we will check materials by Tex ID and Tex Src File
+         // can't just compare materials by Tex Src File because this is not stored in ElmMaterial and would require loading 'EditMaterial' for all materials which would be slow
+         // so only materials which tex ID is included in 'tex_ids' will be loaded
+         Memt<UID> tex_ids;
+         if(mtrl_data->base_0_tex.valid())tex_ids.binaryInclude(mtrl_data->base_0_tex); // include searching for 'mtrl_data.base_0_tex'
+         if(mtrl_data->base_1_tex.valid())tex_ids.binaryInclude(mtrl_data->base_1_tex); // include searching for 'mtrl_data.base_1_tex'
+         if(mtrl_data->base_2_tex.valid())tex_ids.binaryInclude(mtrl_data->base_2_tex); // include searching for 'mtrl_data.base_2_tex'
+         if(          base_0    .valid())tex_ids.binaryInclude(          base_0    ); // include searching for 'base_0' (Tex ID before reload)
+         if(          base_1    .valid())tex_ids.binaryInclude(          base_1    ); // include searching for 'base_1' (Tex ID before reload)
+         if(          base_2    .valid())tex_ids.binaryInclude(          base_2    ); // include searching for 'base_2' (Tex ID before reload)
+         if(tex_ids.elms()) // if has any Tex ID's to compare
          {
-            // can't check by just 'mtrl_data.base_*_tex' because textures for this material could have been already reloaded with different quality, which could generate a different ID for them, instead we will check materials by Tex ID and Tex Src File
-            // can't just compare materials by Tex Src File because this is not stored in ElmMaterial and would require loading 'EditMaterial' for all materials which would be slow
-            // so only materials which tex ID is included in 'tex_ids' will be loaded
-            Memt<UID> tex_ids;
-            if(mtrl_data->base_0_tex.valid())tex_ids.binaryInclude(mtrl_data->base_0_tex); // include searching for 'mtrl_data.base_0_tex'
-            if(mtrl_data->base_1_tex.valid())tex_ids.binaryInclude(mtrl_data->base_1_tex); // include searching for 'mtrl_data.base_1_tex'
-            if(mtrl_data->base_2_tex.valid())tex_ids.binaryInclude(mtrl_data->base_2_tex); // include searching for 'mtrl_data.base_2_tex'
-            if(          base_0    .valid())tex_ids.binaryInclude(          base_0    ); // include searching for 'base_0' (Tex ID before reload)
-            if(          base_1    .valid())tex_ids.binaryInclude(          base_1    ); // include searching for 'base_1' (Tex ID before reload)
-            if(          base_2    .valid())tex_ids.binaryInclude(          base_2    ); // include searching for 'base_2' (Tex ID before reload)
-            if(tex_ids.elms()) // if has any Tex ID's to compare
-               FREPA(elms)if(C ElmMaterial *test_data=elms[i].mtrlData())if(test_data->tex_downsize[tsp]!=downsize) // check all materials
-                  if(tex_ids.binaryHas(test_data->base_0_tex) // if their textures match any in 'tex_ids'
-                  || tex_ids.binaryHas(test_data->base_1_tex)
-                  || tex_ids.binaryHas(test_data->base_2_tex))
+            bool         edit_loaded=false;
+            EditMaterial edit; // don't load 'edit' yet, because maybe we won't need it
+            FREPA(elms) // check all other materials, process in order to make 'binaryInclude' faster
             {
-               EditMaterial test;
-               if(mtrlGet(elms[i].id, test)) // do extra checks if maps are the same
-               if(edit. color_map.is() && EqualPath(edit. color_map, test. color_map)
-               || edit.smooth_map.is() && EqualPath(edit.smooth_map, test.smooth_map)
-               || edit. metal_map.is() && EqualPath(edit. metal_map, test. metal_map)
-               || edit.  bump_map.is() && EqualPath(edit.  bump_map, test.  bump_map)
-               || edit.normal_map.is() && EqualPath(edit.normal_map, test.normal_map)
-               || edit.  glow_map.is() && EqualPath(edit.  glow_map, test.  glow_map))
-                  mtrls.binaryInclude(elms[i].id); // process this material too
+             C Elm &elm=elms[i]; if(C ElmMaterial *test_data=elm.mtrlData())if(test_data->tex_downsize[tsp]!=downsize)if(mtrl!=&elm)
+               if(tex_ids.binaryHas(test_data->base_0_tex) // if their textures match any in 'tex_ids'
+               || tex_ids.binaryHas(test_data->base_1_tex)
+               || tex_ids.binaryHas(test_data->base_2_tex))
+               {
+                  if(!edit_loaded){if(mtrlGet(mtrl->id, edit))edit_loaded=true;else break;} // make sure 'edit' is now loaded
+
+                  EditMaterial test;
+                  if(mtrlGet(elm.id, test)) // do extra checks if maps are the same
+                  if(edit. color_map.is() && EqualPath(edit. color_map, test. color_map)
+                  || edit.smooth_map.is() && EqualPath(edit.smooth_map, test.smooth_map)
+                  || edit. metal_map.is() && EqualPath(edit. metal_map, test. metal_map)
+                  || edit.  bump_map.is() && EqualPath(edit.  bump_map, test.  bump_map)
+                  || edit.normal_map.is() && EqualPath(edit.normal_map, test.normal_map)
+                  || edit.  glow_map.is() && EqualPath(edit.  glow_map, test.  glow_map))
+                     mtrls.binaryInclude(elm.id); // process this material too
+               }
             }
          }
       }
@@ -1814,35 +1821,45 @@ void DrawProject()
          }
       }
    }
-   bool ProjectEx::mtrlTexQuality(C MemPtr<UID> &elm_ids, Edit::Material::TEX_QUALITY quality, C UID &base_0, C UID &base_1, C UID &base_2) // !! this is not perfect !!
+   bool ProjectEx::mtrlTexQuality(C MemPtr<UID> &elm_ids, Edit::Material::TEX_QUALITY quality, C UID &base_0, C UID &base_1, C UID &base_2, bool precise) // 'precise'=if do a more precise but slower processing (if true then all materials from 'elm_ids' will have to be loaded from disk for checking, which might be slow) // !! this is not perfect !!
    {
       bool ok=true;
       Memt<UID> mtrls;
-      REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())//if(mtrl_data.tex_quality!=quality) skip check here, so we can always process similar materials even if this one already has desired value
-         if(mtrls.binaryInclude(mtrl->id)) // if just added
+      REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())
+         if(precise // if always check (will correctly set other materials)
+         || mtrl_data->tex_quality!=quality) // only if different
+            if(mtrls.binaryInclude(mtrl->id)) // if just added
       {
          // include other materials that have the same textures
-         EditMaterial edit; if(mtrlGet(mtrl->id, edit) && edit.color_map.is())
+         // tex quality affects only 'base_0'
+         // can't check by just 'mtrl_data.base_0_tex' because textures for this material could have been already reloaded with different quality, which could generate a different ID for them, instead we will check materials by Tex ID and Tex Src File
+         // can't just compare materials by Tex Src File because this is not stored in ElmMaterial and would require loading 'EditMaterial' for all materials which would be slow
+         // so only materials which tex ID is included in 'tex_ids' will be loaded
+         Memt<UID> tex_ids;
+         if(mtrl_data->base_0_tex.valid())tex_ids.binaryInclude(mtrl_data->base_0_tex); // include searching for 'mtrl_data.base_0_tex'
+         if(mtrl_data->base_1_tex.valid())tex_ids.binaryInclude(mtrl_data->base_1_tex); // include searching for 'mtrl_data.base_1_tex'
+         if(mtrl_data->base_2_tex.valid())tex_ids.binaryInclude(mtrl_data->base_2_tex); // include searching for 'mtrl_data.base_2_tex'
+         if(          base_0    .valid())tex_ids.binaryInclude(          base_0    ); // include searching for 'base_0' (Tex ID before reload)
+         if(          base_1    .valid())tex_ids.binaryInclude(          base_1    ); // include searching for 'base_1' (Tex ID before reload)
+         if(          base_2    .valid())tex_ids.binaryInclude(          base_2    ); // include searching for 'base_2' (Tex ID before reload)
+         if(tex_ids.elms()) // if has any Tex ID's to compare
          {
-            // tex quality affects only 'base_0'
-            // can't check by just 'mtrl_data.base_0_tex' because textures for this material could have been already reloaded with different quality, which could generate a different ID for them, instead we will check materials by Tex ID and Tex Src File
-            // can't just compare materials by Tex Src File because this is not stored in ElmMaterial and would require loading 'EditMaterial' for all materials which would be slow
-            // so only materials which tex ID is included in 'tex_ids' will be loaded
-            Memt<UID> tex_ids;
-            if(mtrl_data->base_0_tex.valid())tex_ids.binaryInclude(mtrl_data->base_0_tex); // include searching for 'mtrl_data.base_0_tex'
-            if(mtrl_data->base_1_tex.valid())tex_ids.binaryInclude(mtrl_data->base_1_tex); // include searching for 'mtrl_data.base_1_tex'
-            if(mtrl_data->base_2_tex.valid())tex_ids.binaryInclude(mtrl_data->base_2_tex); // include searching for 'mtrl_data.base_2_tex'
-            if(          base_0    .valid())tex_ids.binaryInclude(          base_0    ); // include searching for 'base_0' (Tex ID before reload)
-            if(          base_1    .valid())tex_ids.binaryInclude(          base_1    ); // include searching for 'base_1' (Tex ID before reload)
-            if(          base_2    .valid())tex_ids.binaryInclude(          base_2    ); // include searching for 'base_2' (Tex ID before reload)
-            if(tex_ids.elms()) // if has any Tex ID's to compare
-               FREPA(elms)if(C ElmMaterial *test_data=elms[i].mtrlData())if(test_data->tex_quality!=quality) // check all materials
-                  if(tex_ids.binaryHas(test_data->base_0_tex) // if their textures match any in 'tex_ids'
-                  || tex_ids.binaryHas(test_data->base_1_tex)
-                  || tex_ids.binaryHas(test_data->base_2_tex))
+            bool         edit_loaded=false;
+            EditMaterial edit; // don't load 'edit' yet, because maybe we won't need it
+            FREPA(elms) // check all other materials, process in order to make 'binaryInclude' faster
             {
-               EditMaterial test; if(mtrlGet(elms[i].id, test) && EqualPath(edit.color_map, test.color_map)) // do extra check if color map is the same
-                  mtrls.binaryInclude(elms[i].id); // process this material too
+             C Elm &elm=elms[i]; if(C ElmMaterial *test_data=elm.mtrlData())if(test_data->tex_quality!=quality)if(mtrl!=&elm)
+               if(tex_ids.binaryHas(test_data->base_0_tex) // if their textures match any in 'tex_ids'
+               || tex_ids.binaryHas(test_data->base_1_tex)
+               || tex_ids.binaryHas(test_data->base_2_tex))
+               {
+                  if(!edit_loaded){if(mtrlGet(mtrl->id, edit))edit_loaded=true;else break;} // make sure 'edit' is now loaded
+
+                  EditMaterial test;
+                  if(mtrlGet(elm.id, test)) // do extra checks if maps are the same
+                  if(edit.color_map.is() && EqualPath(edit.color_map, test.color_map))
+                     mtrls.binaryInclude(elm.id); // process this material too
+               }
             }
          }
       }

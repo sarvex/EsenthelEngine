@@ -989,8 +989,8 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
          Save(*game, Proj.gamePath(elm_id)); Proj.savedGame(*elm);
          Proj.mtrlSetAutoTanBin(elm->id);
          Server.setElmLong(elm->id);
-         REPA(edit.tex_downsize)if(saved.tex_downsize[i]!=edit.tex_downsize[i])Proj.mtrlTexDownsize(elm_id, (TEX_SIZE_PLATFORM)i, edit.tex_downsize[i], saved.base_0_tex, saved.base_1_tex, saved.base_2_tex); // upon flushing set all materials with same textures to the same 'tex_downsize'
-                                if(saved.tex_quality    !=edit.tex_quality    )Proj.mtrlTexQuality (elm_id,                       edit.tex_quality    , saved.base_0_tex, saved.base_1_tex, saved.base_2_tex); // upon flushing set all materials with same textures to the same 'tex_quality'
+         REPA(edit.tex_downsize)if(saved.tex_downsize[i]!=edit.tex_downsize[i])Proj.mtrlTexDownsize(elm_id, (TEX_SIZE_PLATFORM)i, edit.tex_downsize[i], saved.base_0_tex, saved.base_1_tex, saved.base_2_tex, true); // upon flushing set all materials with same textures to the same 'tex_downsize'
+                                if(saved.tex_quality    !=edit.tex_quality    )Proj.mtrlTexQuality (elm_id,                       edit.tex_quality    , saved.base_0_tex, saved.base_1_tex, saved.base_2_tex, true); // upon flushing set all materials with same textures to the same 'tex_quality'
          saved=edit;
       }
       changed=false;
