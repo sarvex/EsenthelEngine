@@ -314,9 +314,17 @@ bool Undo(TimeStamp &time, C TimeStamp &src_time) {if(src_time!=time){MAX1(time,
 {
    if(Sync(time, src_time)){data=src_data; return true;} return false;
 }
+<TYPE> bool SyncMem(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
+{
+   if(Sync(time, src_time)){Copy(data, src_data); return true;} return false;
+}
 <TYPE> bool UndoByTime(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
 {
    if(Undo(time, src_time)){data=src_data; return true;} return false;
+}
+<TYPE> bool UndoByTimeMem(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
+{
+   if(Undo(time, src_time)){Copy(data, src_data); return true;} return false;
 }
 
 <TYPE> bool SyncByValue(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
@@ -327,26 +335,39 @@ bool Undo(TimeStamp &time, C TimeStamp &src_time) {if(src_time!=time){MAX1(time,
 {
    if(!Equal(data, src_data)){data=src_data; time=src_time; return true;} return false;
 }
+<TYPE> bool SyncByValueMem(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
+{
+   if(!EqualMem(data, src_data)){Copy(data, src_data); time=src_time; return true;} return false;
+}
 
 <TYPE> bool UndoByValue(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
 {
    if(data!=src_data){data=src_data; MAX1(time, src_time); return true;} return false;
 }
-/*<TYPE> bool UndoByValueEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
+<TYPE> bool UndoByValueEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
 {
    if(!Equal(data, src_data)){data=src_data; MAX1(time, src_time); return true;} return false;
-}*/
+}
+<TYPE> bool UndoByValueMem(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
+{
+   if(!EqualMem(data, src_data)){Copy(data, src_data); MAX1(time, src_time); return true;} return false;
+}
 
 <TYPE> bool Undo(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data) // ByTimeAndValue, make this the default function because there can be a lot of changes in the same second on the local computer
 {
    return UndoByTime (time, src_time, data, src_data) // first check by time because it's faster
        || UndoByValue(time, src_time, data, src_data);
 }
-/*<TYPE> bool UndoEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data) // ByTimeAndValue
+<TYPE> bool UndoEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data) // ByTimeAndValue
 {
    return UndoByTime      (time, src_time, data, src_data) // first check by time because it's faster
        || UndoByValueEqual(time, src_time, data, src_data);
-}*/
+}
+<TYPE> bool UndoMem(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data) // ByTimeAndValue
+{
+   return UndoByTimeMem (time, src_time, data, src_data) // first check by time because it's faster
+       || UndoByValueMem(time, src_time, data, src_data);
+}
 
 void SetUndo(C Edit._Undo &undos, Button &undo, Button &redo)
 {

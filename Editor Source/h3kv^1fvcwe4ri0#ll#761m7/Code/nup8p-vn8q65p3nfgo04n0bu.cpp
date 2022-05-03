@@ -607,8 +607,10 @@ class ElmMaterial : ElmData
       USES_TEX_GLOW =1<<2,
    }
    UID                       base_0_tex=UIDZero, base_1_tex=UIDZero, base_2_tex=UIDZero, detail_tex=UIDZero, macro_tex=UIDZero, emissive_tex=UIDZero;
-   byte                      downsize_tex_mobile=0, flag=0;
+   byte                      tex_downsize[TSP_NUM], flag=0;
    Edit.Material.TEX_QUALITY tex_quality=Edit.Material.MEDIUM;
+
+   ElmMaterial() {REPAO(tex_downsize)=0;}
 
    // get
    bool equal(C ElmMaterial &src)C {return super.equal(src);}
@@ -648,19 +650,19 @@ class ElmMaterial : ElmData
          macro_tex=src.   macro_tex;
       emissive_tex=src.emissive_tex;
 
-      downsize_tex_mobile=src.downsize_tex_mobile;
-      tex_quality        =src.tex_quality;
+      Copy(tex_downsize,src.tex_downsize);
+           tex_quality =src.tex_quality;
 
       usesTexAlpha(src.usesTexColAlpha());
       usesTexBump (src.usesTexBump    ());
       usesTexGlow (src.usesTexGlow    ());
    }
-   uint undo(C ElmMaterial &src) // don't undo 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
+   uint undo(C ElmMaterial &src) // don't undo 'tex_downsize', 'flag' because they should be set only in 'from'
    {
       uint   changed=super.undo(src);
       return changed; // don't adjust 'ver' here because it also relies on 'EditMaterial', because of that this is included in 'ElmFileInShort'
    }
-   uint sync(C ElmMaterial &src) // don't sync 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
+   uint sync(C ElmMaterial &src) // don't sync 'tex_downsize', 'flag' because they should be set only in 'from'
    {
       uint   changed=super.sync(src);
       return changed; // don't adjust 'ver' here because it also relies on 'EditMaterial', because of that this is included in 'ElmFileInShort'
@@ -670,54 +672,60 @@ class ElmMaterial : ElmData
    virtual bool save(File &f)C override
    {
       super.save(f);
-      f.cmpUIntV(6);
-      f<<base_0_tex<<base_1_tex<<base_2_tex<<detail_tex<<macro_tex<<emissive_tex<<downsize_tex_mobile<<tex_quality<<flag;
+      f.cmpUIntV(7);
+      f<<base_0_tex<<base_1_tex<<base_2_tex<<detail_tex<<macro_tex<<emissive_tex<<tex_downsize<<tex_quality<<flag;
       return f.ok();
    }
    virtual bool load(File &f)override
    {
-      UID old_reflection_tex;
+      UID old_reflection_tex; byte tex_downsize_mobile;
       if(super.load(f))switch(f.decUIntV())
       {
+         case 7:
+         {
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize>>tex_quality>>flag; ASSERT(ELMS(tex_downsize)==2);
+            if(f.ok())return true;
+         }break;
+
          case 6:
          {
-            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>downsize_tex_mobile>>tex_quality>>flag;
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize_mobile>>tex_quality>>flag; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 5:
          {
-            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>downsize_tex_mobile>>flag; if(flag&(1<<3)){tex_quality=Edit.Material.HIGH; FlagDisable(flag, 1<<3);}
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize_mobile>>flag; if(flag&(1<<3)){tex_quality=Edit.Material.HIGH; FlagDisable(flag, 1<<3);} REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 4:
          {
-            f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>downsize_tex_mobile>>flag; base_2_tex.zero(); if(flag&(1<<3)){tex_quality=Edit.Material.HIGH; FlagDisable(flag, 1<<3);}
+            f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>tex_downsize_mobile>>flag; base_2_tex.zero(); if(flag&(1<<3)){tex_quality=Edit.Material.HIGH; FlagDisable(flag, 1<<3);} REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 3:
          {
-            byte max_tex_size; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex; base_2_tex.zero(); downsize_tex_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0;
+            byte max_tex_size; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex; base_2_tex.zero(); tex_downsize_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 2:
          {
-            byte max_tex_size; UID mesh_id; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0;
+            byte max_tex_size; UID mesh_id; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 1:
          {
-            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=0; flag=0;
+            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=0; flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 0:
          {
-            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=0; flag=0; emissive_tex.zero();
+            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=0; flag=0; emissive_tex.zero(); REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
       }
@@ -732,8 +740,9 @@ class ElmMaterial : ElmData
       if(  detail_tex.valid())nodes.New().setFN("Detail"           ,   detail_tex);
       if(   macro_tex.valid())nodes.New().setFN("Macro"            ,    macro_tex);
       if(emissive_tex.valid())nodes.New().setFN("Emissive"         , emissive_tex);
-      if(downsize_tex_mobile )nodes.New().set  ("MobileTexDownsize", downsize_tex_mobile);
-                              nodes.New().set  ("TexQuality"       ,  tex_quality);
+      if(tex_downsize[TSP_MOBILE])nodes.New().set  ("TexDownsizeMobile", tex_downsize[TSP_MOBILE]);
+      if(tex_downsize[TSP_SWITCH])nodes.New().set  ("TexDownsizeSwitch", tex_downsize[TSP_SWITCH]);
+                                  nodes.New().set  ("TexQuality"       , tex_quality);
       if(usesTexAlpha())nodes.New().set("UsesTexAlpha");
       if(usesTexBump ())nodes.New().set("UsesTexBump" );
       if(usesTexGlow ())nodes.New().set("UsesTexGlow" );
@@ -750,8 +759,9 @@ class ElmMaterial : ElmData
          if(n.name=="Detail"           )n.getValue(  detail_tex);else
          if(n.name=="Macro"            )n.getValue(   macro_tex);else
          if(n.name=="Emissive"         )n.getValue(emissive_tex);else
-         if(n.name=="MobileTexDownsize")downsize_tex_mobile=                           n.asInt();else
-         if(n.name=="TexQuality"       )tex_quality        =(Edit.Material.TEX_QUALITY)n.asInt();else
+         if(n.name=="TexDownsizeMobile")tex_downsize[TSP_MOBILE]=                           n.asInt();else
+         if(n.name=="TexDownsizeSwitch")tex_downsize[TSP_SWITCH]=                           n.asInt();else
+         if(n.name=="TexQuality"       )tex_quality             =(Edit.Material.TEX_QUALITY)n.asInt();else
          if(n.name=="UsesTexAlpha"     )FlagSet(flag, USES_TEX_ALPHA, n.asBool1());else
          if(n.name=="UsesTexBump"      )FlagSet(flag, USES_TEX_BUMP , n.asBool1());else
          if(n.name=="UsesTexGlow"      )FlagSet(flag, USES_TEX_GLOW , n.asBool1());
@@ -814,8 +824,8 @@ class ElmWaterMtrl : ElmData
       usesTexBump (src.usesTexBump    ());
       usesTexGlow (src.usesTexGlow    ());
    }
-   uint undo(C ElmWaterMtrl &src) {return super.undo(src);} // don't adjust 'ver' here because it also relies on 'EditWaterMtrl', because of that this is included in 'ElmFileInShort', don't undo 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
-   uint sync(C ElmWaterMtrl &src) {return super.sync(src);} // don't adjust 'ver' here because it also relies on 'EditWaterMtrl', because of that this is included in 'ElmFileInShort', don't sync 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
+   uint undo(C ElmWaterMtrl &src) {return super.undo(src);} // don't adjust 'ver' here because it also relies on 'EditWaterMtrl', because of that this is included in 'ElmFileInShort', don't undo 'tex_downsize', 'flag' because they should be set only in 'from'
+   uint sync(C ElmWaterMtrl &src) {return super.sync(src);} // don't adjust 'ver' here because it also relies on 'EditWaterMtrl', because of that this is included in 'ElmFileInShort', don't sync 'tex_downsize', 'flag' because they should be set only in 'from'
 
    // io
    virtual bool save(File &f)C override

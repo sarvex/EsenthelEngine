@@ -504,6 +504,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          }
       }
    }
+   ElmMaterial::ElmMaterial() : base_0_tex(UIDZero), base_1_tex(UIDZero), base_2_tex(UIDZero), detail_tex(UIDZero), macro_tex(UIDZero), emissive_tex(UIDZero), flag(0), tex_quality(Edit::Material::MEDIUM) {REPAO(tex_downsize)=0;}
    bool ElmMaterial::equal(C ElmMaterial &src)C {return super::equal(src);}
    bool ElmMaterial::newer(C ElmMaterial &src)C {return super::newer(src);}
    bool ElmMaterial::usesTexAlpha()C {return FlagTest(flag, USES_TEX_ALPHA);}
@@ -540,19 +541,19 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          macro_tex=src.   macro_tex;
       emissive_tex=src.emissive_tex;
 
-      downsize_tex_mobile=src.downsize_tex_mobile;
-      tex_quality        =src.tex_quality;
+      Copy(tex_downsize,src.tex_downsize);
+           tex_quality =src.tex_quality;
 
       usesTexAlpha(src.usesTexColAlpha());
       usesTexBump (src.usesTexBump    ());
       usesTexGlow (src.usesTexGlow    ());
    }
-   uint ElmMaterial::undo(C ElmMaterial &src) // don't undo 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
+   uint ElmMaterial::undo(C ElmMaterial &src) // don't undo 'tex_downsize', 'flag' because they should be set only in 'from'
    {
       uint   changed=super::undo(src);
       return changed; // don't adjust 'ver' here because it also relies on 'EditMaterial', because of that this is included in 'ElmFileInShort'
    }
-   uint ElmMaterial::sync(C ElmMaterial &src) // don't sync 'downsize_tex_mobile', 'flag' because they should be set only in 'from'
+   uint ElmMaterial::sync(C ElmMaterial &src) // don't sync 'tex_downsize', 'flag' because they should be set only in 'from'
    {
       uint   changed=super::sync(src);
       return changed; // don't adjust 'ver' here because it also relies on 'EditMaterial', because of that this is included in 'ElmFileInShort'
@@ -560,54 +561,60 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    bool ElmMaterial::save(File &f)C 
 {
       super::save(f);
-      f.cmpUIntV(6);
-      f<<base_0_tex<<base_1_tex<<base_2_tex<<detail_tex<<macro_tex<<emissive_tex<<downsize_tex_mobile<<tex_quality<<flag;
+      f.cmpUIntV(7);
+      f<<base_0_tex<<base_1_tex<<base_2_tex<<detail_tex<<macro_tex<<emissive_tex<<tex_downsize<<tex_quality<<flag;
       return f.ok();
    }
    bool ElmMaterial::load(File &f)
 {
-      UID old_reflection_tex;
+      UID old_reflection_tex; byte tex_downsize_mobile;
       if(super::load(f))switch(f.decUIntV())
       {
+         case 7:
+         {
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize>>tex_quality>>flag; ASSERT(ELMS(tex_downsize)==2);
+            if(f.ok())return true;
+         }break;
+
          case 6:
          {
-            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>downsize_tex_mobile>>tex_quality>>flag;
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize_mobile>>tex_quality>>flag; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 5:
          {
-            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>downsize_tex_mobile>>flag; if(flag&(1<<3)){tex_quality=Edit::Material::HIGH; FlagDisable(flag, 1<<3);}
+            f>>base_0_tex>>base_1_tex>>base_2_tex>>detail_tex>>macro_tex>>emissive_tex>>tex_downsize_mobile>>flag; if(flag&(1<<3)){tex_quality=Edit::Material::HIGH; FlagDisable(flag, 1<<3);} REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 4:
          {
-            f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>downsize_tex_mobile>>flag; base_2_tex.zero(); if(flag&(1<<3)){tex_quality=Edit::Material::HIGH; FlagDisable(flag, 1<<3);}
+            f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>tex_downsize_mobile>>flag; base_2_tex.zero(); if(flag&(1<<3)){tex_quality=Edit::Material::HIGH; FlagDisable(flag, 1<<3);} REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 3:
          {
-            byte max_tex_size; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex; base_2_tex.zero(); downsize_tex_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0;
+            byte max_tex_size; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex; base_2_tex.zero(); tex_downsize_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 2:
          {
-            byte max_tex_size; UID mesh_id; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0;
+            byte max_tex_size; UID mesh_id; f>>max_tex_size>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=(max_tex_size>=1 && max_tex_size<=10); flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 1:
          {
-            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=0; flag=0;
+            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>emissive_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=0; flag=0; REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
 
          case 0:
          {
-            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>mesh_id; base_2_tex.zero(); downsize_tex_mobile=0; flag=0; emissive_tex.zero();
+            UID mesh_id; f>>base_0_tex>>base_1_tex>>detail_tex>>macro_tex>>old_reflection_tex>>mesh_id; base_2_tex.zero(); tex_downsize_mobile=0; flag=0; emissive_tex.zero(); REPAO(tex_downsize)=tex_downsize_mobile;
             if(f.ok())return true;
          }break;
       }
@@ -622,8 +629,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       if(  detail_tex.valid())nodes.New().setFN("Detail"           ,   detail_tex);
       if(   macro_tex.valid())nodes.New().setFN("Macro"            ,    macro_tex);
       if(emissive_tex.valid())nodes.New().setFN("Emissive"         , emissive_tex);
-      if(downsize_tex_mobile )nodes.New().set  ("MobileTexDownsize", downsize_tex_mobile);
-                              nodes.New().set  ("TexQuality"       ,  tex_quality);
+      if(tex_downsize[TSP_MOBILE])nodes.New().set  ("TexDownsizeMobile", tex_downsize[TSP_MOBILE]);
+      if(tex_downsize[TSP_SWITCH])nodes.New().set  ("TexDownsizeSwitch", tex_downsize[TSP_SWITCH]);
+                                  nodes.New().set  ("TexQuality"       , tex_quality);
       if(usesTexAlpha())nodes.New().set("UsesTexAlpha");
       if(usesTexBump ())nodes.New().set("UsesTexBump" );
       if(usesTexGlow ())nodes.New().set("UsesTexGlow" );
@@ -640,8 +648,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          if(n.name=="Detail"           )n.getValue(  detail_tex);else
          if(n.name=="Macro"            )n.getValue(   macro_tex);else
          if(n.name=="Emissive"         )n.getValue(emissive_tex);else
-         if(n.name=="MobileTexDownsize")downsize_tex_mobile=                           n.asInt();else
-         if(n.name=="TexQuality"       )tex_quality        =(Edit::Material::TEX_QUALITY)n.asInt();else
+         if(n.name=="TexDownsizeMobile")tex_downsize[TSP_MOBILE]=                           n.asInt();else
+         if(n.name=="TexDownsizeSwitch")tex_downsize[TSP_SWITCH]=                           n.asInt();else
+         if(n.name=="TexQuality"       )tex_quality             =(Edit::Material::TEX_QUALITY)n.asInt();else
          if(n.name=="UsesTexAlpha"     )FlagSet(flag, USES_TEX_ALPHA, n.asBool1());else
          if(n.name=="UsesTexBump"      )FlagSet(flag, USES_TEX_BUMP , n.asBool1());else
          if(n.name=="UsesTexGlow"      )FlagSet(flag, USES_TEX_GLOW , n.asBool1());
@@ -3807,8 +3816,6 @@ ElmObjClass::ElmObjClass() : flag(0) {}
 ElmObj::ElmObj() : mesh_id(UIDZero), base_id(UIDZero) {}
 
 ElmMesh::ElmMesh() : obj_id(UIDZero), skel_id(UIDZero), phys_id(UIDZero), body_id(UIDZero), draw_group_id(UIDZero), box(Vec(0), Vec(-1)) {}
-
-ElmMaterial::ElmMaterial() : base_0_tex(UIDZero), base_1_tex(UIDZero), base_2_tex(UIDZero), detail_tex(UIDZero), macro_tex(UIDZero), emissive_tex(UIDZero), downsize_tex_mobile(0), flag(0), tex_quality(Edit::Material::MEDIUM) {}
 
 ElmWaterMtrl::ElmWaterMtrl() : base_0_tex(UIDZero), base_1_tex(UIDZero), base_2_tex(UIDZero), flag(0), tex_quality(Edit::Material::MEDIUM) {}
 

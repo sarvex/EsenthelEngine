@@ -376,8 +376,8 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
             uwp=(PublishExeType==Edit::EXE_UWP),
             web=(PublishExeType==Edit::EXE_WEB),
              ns=(PublishExeType==Edit::EXE_NS ),
-         mobile=(android || iOS || ns),
   mtrl_simplify=Proj.materialSimplify(PublishExeType);
+   TEX_SIZE_PLATFORM tsp=(ns ? TSP_SWITCH : (android || iOS || web) ? TSP_MOBILE : TSP_NUM);
 
    // elements
    FREPA(elms)if(Elm *elm=elms[i])if(ElmPublish(elm->type))
@@ -472,7 +472,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
          {
             bool uses_tex_bump=data->usesTexBump(), 
                  uses_tex_glow=data->usesTexGlow();
-            byte downsize  =(mobile ? data->downsize_tex_mobile : 0);
+            byte downsize  =(InRange(tsp, data->tex_downsize) ? data->tex_downsize[tsp] : 0);
             uint flags     =0; // used to set 'dynamic, regenerate'
             UID  base_0_tex=data->base_0_tex,
                  base_1_tex=data->base_1_tex,

@@ -260,9 +260,12 @@ public:
    static void MtrlMerge               (ProjectEx &proj);
    static void MtrlConvertToAtlas      (ProjectEx &proj);
    static void MtrlConvertToDeAtlas    (ProjectEx &proj);
-   static void MtrlMobileTexSizeFull   (ProjectEx &proj);
-   static void MtrlMobileTexSizeHalf   (ProjectEx &proj);
-   static void MtrlMobileTexSizeQuarter(ProjectEx &proj);
+   static void MtrlTexSizeMobileFull   (ProjectEx &proj);
+   static void MtrlTexSizeMobileHalf   (ProjectEx &proj);
+   static void MtrlTexSizeMobileQuarter(ProjectEx &proj);
+   static void MtrlTexSizeSwitchFull   (ProjectEx &proj);
+   static void MtrlTexSizeSwitchHalf   (ProjectEx &proj);
+   static void MtrlTexSizeSwitchQuarter(ProjectEx &proj);
 
    static void AnimClip   (ProjectEx &proj);
    static void AnimLinear (ProjectEx &proj);
@@ -389,7 +392,7 @@ public:
    void mtrlCull(C MemPtr<UID> &elm_ids, bool on);
    void mtrlFlipNrmY(C MemPtr<UID> &elm_ids, bool on);
    void mtrlSmoothIsRough(C MemPtr<UID> &elm_ids, bool on);
-   void mtrlDownsizeTexMobile(C MemPtr<UID> &elm_ids, byte downsize, C UID &base_0=UIDZero, C UID &base_1=UIDZero, C UID &base_2=UIDZero);
+   void mtrlTexDownsize(C MemPtr<UID> &elm_ids, TEX_SIZE_PLATFORM tsp, byte downsize, C UID &base_0=UIDZero, C UID &base_1=UIDZero, C UID &base_2=UIDZero);
    bool mtrlTexQuality(C MemPtr<UID> &elm_ids, Edit::Material::TEX_QUALITY quality, C UID &base_0=UIDZero, C UID &base_1=UIDZero, C UID &base_2=UIDZero); // !! this is not perfect !!
    bool mtrlMulTexCol(C MemPtr<UID> &elm_ids);
    bool mtrlMulTexNormal(C MemPtr<UID> &elm_ids);

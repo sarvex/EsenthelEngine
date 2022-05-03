@@ -465,9 +465,12 @@ void DrawProject()
    void ProjectEx::MtrlMerge(ProjectEx &proj) {MSM             .display(proj.menu_list_sel);}
    void ProjectEx::MtrlConvertToAtlas(ProjectEx &proj) {ConvertToAtlas  .setElms(proj.menu_list_sel);}
    void ProjectEx::MtrlConvertToDeAtlas(ProjectEx &proj) {ConvertToDeAtlas.setElms(proj.menu_list_sel);}
-   void ProjectEx::MtrlMobileTexSizeFull(ProjectEx &proj) {proj.mtrlDownsizeTexMobile(proj.menu_list_sel, 0);}
-   void ProjectEx::MtrlMobileTexSizeHalf(ProjectEx &proj) {proj.mtrlDownsizeTexMobile(proj.menu_list_sel, 1);}
-   void ProjectEx::MtrlMobileTexSizeQuarter(ProjectEx &proj) {proj.mtrlDownsizeTexMobile(proj.menu_list_sel, 2);}
+   void ProjectEx::MtrlTexSizeMobileFull(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 0);}
+   void ProjectEx::MtrlTexSizeMobileHalf(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 1);}
+   void ProjectEx::MtrlTexSizeMobileQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 2);}
+   void ProjectEx::MtrlTexSizeSwitchFull(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 0);}
+   void ProjectEx::MtrlTexSizeSwitchHalf(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 1);}
+   void ProjectEx::MtrlTexSizeSwitchQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 2);}
    void ProjectEx::AnimClip(ProjectEx &proj) {proj.animClip  (proj.menu_list_sel);}
    void ProjectEx::AnimLinear(ProjectEx &proj) {proj.animLinear(proj.menu_list_sel, true );}
    void ProjectEx::AnimCubic(ProjectEx &proj) {proj.animLinear(proj.menu_list_sel, false);}
@@ -1758,11 +1761,11 @@ void DrawProject()
          }
       }
    }
-   void ProjectEx::mtrlDownsizeTexMobile(C MemPtr<UID> &elm_ids, byte downsize, C UID &base_0, C UID &base_1, C UID &base_2)
+   void ProjectEx::mtrlTexDownsize(C MemPtr<UID> &elm_ids, TEX_SIZE_PLATFORM tsp, byte downsize, C UID &base_0, C UID &base_1, C UID &base_2)
    {
       Memt<UID> mtrls;
       REPA(elm_ids)if(C Elm *mtrl=findElm(elm_ids[i]))if(C ElmMaterial *mtrl_data=mtrl->mtrlData())
-         if(mtrl_data->downsize_tex_mobile!=downsize) // skip check here, so we can always process similar materials even if this one already has desired value, actually restore it, because when wanting to set on a lot of materials then all of them would have to be loaded which is slow
+         if(mtrl_data->tex_downsize[tsp]!=downsize) // skip check here, so we can always process similar materials even if this one already has desired value, actually restore it, because when wanting to set on a lot of materials then all of them would have to be loaded which is slow
             if(mtrls.binaryInclude(mtrl->id)) // if just added
       {
          // include other materials that have the same textures
@@ -1779,7 +1782,7 @@ void DrawProject()
             if(          base_1    .valid())tex_ids.binaryInclude(          base_1    ); // include searching for 'base_1' (Tex ID before reload)
             if(          base_2    .valid())tex_ids.binaryInclude(          base_2    ); // include searching for 'base_2' (Tex ID before reload)
             if(tex_ids.elms()) // if has any Tex ID's to compare
-               FREPA(elms)if(C ElmMaterial *test_data=elms[i].mtrlData())if(test_data->downsize_tex_mobile!=downsize) // check all materials
+               FREPA(elms)if(C ElmMaterial *test_data=elms[i].mtrlData())if(test_data->tex_downsize[tsp]!=downsize) // check all materials
                   if(tex_ids.binaryHas(test_data->base_0_tex) // if their textures match any in 'tex_ids'
                   || tex_ids.binaryHas(test_data->base_1_tex)
                   || tex_ids.binaryHas(test_data->base_2_tex))
@@ -1796,17 +1799,17 @@ void DrawProject()
             }
          }
       }
-      REPA(mtrls)if(Elm *mtrl=findElm(mtrls[i]))if(ElmMaterial *mtrl_data=mtrl->mtrlData())if(mtrl_data->downsize_tex_mobile!=downsize)
+      REPA(mtrls)if(Elm *mtrl=findElm(mtrls[i]))if(ElmMaterial *mtrl_data=mtrl->mtrlData())if(mtrl_data->tex_downsize[tsp]!=downsize)
       {
-         if(MtrlEdit.elm==mtrl)MtrlEdit.downsizeTexMobile(downsize);else
+         if(MtrlEdit.elm==mtrl)MtrlEdit.texDownsize(tsp, downsize);else
          {
             EditMaterial edit; if(edit.load(editPath(mtrl->id)))
             {
                mtrl_data->newVer();
-               mtrl_data->downsize_tex_mobile=edit.downsize_tex_mobile=downsize; edit.downsize_tex_mobile_time.now();
+               mtrl_data->tex_downsize[tsp]=edit.tex_downsize[tsp]=downsize; edit.tex_downsize_time.now();
                Save(edit, editPath(mtrl->id));
-             //makeGameVer(*mtrl); this is not needed because 'downsize_tex_mobile' is not stored in the game version, instead textures are downsized during publishing
-               Server.setElmLong(mtrl->id); // Long is needed because 'downsize_tex_mobile_time' is only in edit
+             //makeGameVer(*mtrl); this is not needed because 'tex_downsize' is not stored in the game version, instead textures are downsized during publishing
+               Server.setElmLong(mtrl->id); // Long is needed because 'tex_downsize_time' is only in edit
             }
          }
       }
@@ -4215,10 +4218,16 @@ void DrawProject()
                   m.New().create("Move to its Object", MtrlMoveToObj, T).desc("This option will move the Material Element to the Object it belongs to");
                   m++;
                   {
-                     Node<MenuElm> &mts=(m+="Mobile Texture Size");
-                     mts.New().create("Full"   , MtrlMobileTexSizeFull   , T);
-                     mts.New().create("Half"   , MtrlMobileTexSizeHalf   , T);
-                     mts.New().create("Quarter", MtrlMobileTexSizeQuarter, T);
+                     Node<MenuElm> &tsm=(m+="Texture Size Mobile");
+                     tsm.New().create("Full"   , MtrlTexSizeMobileFull   , T);
+                     tsm.New().create("Half"   , MtrlTexSizeMobileHalf   , T);
+                     tsm.New().create("Quarter", MtrlTexSizeMobileQuarter, T);
+
+                     Node<MenuElm> &tss=(m+="Texture Size Switch");
+                     tss.New().create("Full"   , MtrlTexSizeSwitchFull   , T);
+                     tss.New().create("Half"   , MtrlTexSizeSwitchHalf   , T);
+                     tss.New().create("Quarter", MtrlTexSizeSwitchQuarter, T);
+
                      ASSERT(MaxMaterialDownsize==3);
                   }
                }

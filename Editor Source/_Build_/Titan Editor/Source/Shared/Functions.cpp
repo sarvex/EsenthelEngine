@@ -232,17 +232,6 @@ void MAX1(TimeStamp &time, C TimeStamp &src_time) {if(src_time>time)time=src_tim
 bool Sync(TimeStamp &time, C TimeStamp &src_time) {if(src_time> time){time=src_time;        return true;} return false;}
 bool Undo(TimeStamp &time, C TimeStamp &src_time) {if(src_time!=time){MAX1(time, src_time); return true;} return false;}
 
-/*<TYPE> bool UndoByValueEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data)
-{
-   if(!Equal(data, src_data)){data=src_data; MAX1(time, src_time); return true;} return false;
-}*/
-
-/*<TYPE> bool UndoEqual(TimeStamp &time, C TimeStamp &src_time, TYPE &data, C TYPE &src_data) // ByTimeAndValue
-{
-   return UndoByTime      (time, src_time, data, src_data) // first check by time because it's faster
-       || UndoByValueEqual(time, src_time, data, src_data);
-}*/
-
 void SetUndo(C Edit::_Undo &undos, Button &undo, Button &redo)
 {
    undo.enabled(undos.undosAvailable());

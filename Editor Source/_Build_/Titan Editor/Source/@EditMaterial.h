@@ -1,11 +1,10 @@
 ﻿/******************************************************************************/
-/******************************************************************************/
 class EditMaterial
 {
    MATERIAL_TECHNIQUE        tech;
    Edit::Material::TEX_QUALITY tex_quality;
    bool                      flip_normal_y, smooth_is_rough, cull, detail_all_lod;
-   byte                      downsize_tex_mobile;
+   byte                      tex_downsize[TSP_NUM];
    Vec4                      color_s;
    Vec                       emissive_s;
    flt                       emissive_glow,
@@ -23,8 +22,10 @@ class EditMaterial
    TimeStamp                 flip_normal_y_time, smooth_is_rough_time, tex_quality_time,
                              color_map_time, alpha_map_time, bump_map_time, normal_map_time, smooth_map_time, metal_map_time, glow_map_time,
                              detail_map_time, macro_map_time, emissive_map_time,
-                             cull_time, detail_all_lod_time, tech_time, downsize_tex_mobile_time,
+                             cull_time, detail_all_lod_time, tech_time, tex_downsize_time,
                              color_time, emissive_time, smooth_time, reflect_time, normal_time, bump_time, glow_time, uv_scale_time, detail_time;
+
+   EditMaterial();
 
    // get
    // smooth_final = smooth_tex*smoothMul+smoothAdd
@@ -99,9 +100,6 @@ class EditMaterial
    bool save(File &f)C;
    bool load(File &f);
    bool load(C Str &name);
-
-public:
-   EditMaterial();
 };
 /******************************************************************************/
 /******************************************************************************/
