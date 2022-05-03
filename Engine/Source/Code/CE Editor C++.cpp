@@ -2545,7 +2545,7 @@ Bool CodeEditor::generateAndroidProj()
       if(modules.elms())
       {
          Str src="dependencies {", dest=src;
-         FREPA(modules)dest+=S+"\nimplementation project(':"+modules[i]+"')";
+         FREPA(modules)dest+=S+"\n\timplementation project(':"+modules[i]+"')";
          data=Replace(data, src, dest);
       }
 
