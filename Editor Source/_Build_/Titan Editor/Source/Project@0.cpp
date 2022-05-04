@@ -468,9 +468,11 @@ void DrawProject()
    void ProjectEx::MtrlTexSizeMobileFull(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 0);}
    void ProjectEx::MtrlTexSizeMobileHalf(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 1);}
    void ProjectEx::MtrlTexSizeMobileQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 2);}
+   void ProjectEx::MtrlTexSizeMobileEighth(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 3);}
    void ProjectEx::MtrlTexSizeSwitchFull(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 0);}
    void ProjectEx::MtrlTexSizeSwitchHalf(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 1);}
    void ProjectEx::MtrlTexSizeSwitchQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 2);}
+   void ProjectEx::MtrlTexSizeSwitchEighth(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 3);}
    void ProjectEx::AnimClip(ProjectEx &proj) {proj.animClip  (proj.menu_list_sel);}
    void ProjectEx::AnimLinear(ProjectEx &proj) {proj.animLinear(proj.menu_list_sel, true );}
    void ProjectEx::AnimCubic(ProjectEx &proj) {proj.animLinear(proj.menu_list_sel, false);}
@@ -4239,13 +4241,15 @@ void DrawProject()
                      tsm.New().create("Full"   , MtrlTexSizeMobileFull   , T);
                      tsm.New().create("Half"   , MtrlTexSizeMobileHalf   , T);
                      tsm.New().create("Quarter", MtrlTexSizeMobileQuarter, T);
+                     tsm.New().create("Eighth" , MtrlTexSizeMobileEighth , T);
 
                      Node<MenuElm> &tss=(m+="Texture Size Switch");
                      tss.New().create("Full"   , MtrlTexSizeSwitchFull   , T);
                      tss.New().create("Half"   , MtrlTexSizeSwitchHalf   , T);
                      tss.New().create("Quarter", MtrlTexSizeSwitchQuarter, T);
+                     tss.New().create("Eighth" , MtrlTexSizeSwitchEighth , T);
 
-                     ASSERT(MaxMaterialDownsize==3);
+                     ASSERT(MaxMaterialDownsize==4);
                   }
                }
             }

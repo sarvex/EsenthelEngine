@@ -414,9 +414,11 @@ class ProjectEx : ProjectHierarchy
    static void MtrlTexSizeMobileFull   (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 0);}
    static void MtrlTexSizeMobileHalf   (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 1);}
    static void MtrlTexSizeMobileQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 2);}
+   static void MtrlTexSizeMobileEighth (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_MOBILE, 3);}
    static void MtrlTexSizeSwitchFull   (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 0);}
    static void MtrlTexSizeSwitchHalf   (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 1);}
    static void MtrlTexSizeSwitchQuarter(ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 2);}
+   static void MtrlTexSizeSwitchEighth (ProjectEx &proj) {proj.mtrlTexDownsize(proj.menu_list_sel, TSP_SWITCH, 3);}
 
    static void AnimClip   (ProjectEx &proj) {proj.animClip  (proj.menu_list_sel);}
    static void AnimLinear (ProjectEx &proj) {proj.animLinear(proj.menu_list_sel, true );}
@@ -4300,13 +4302,15 @@ class ProjectEx : ProjectHierarchy
                      tsm.New().create("Full"   , MtrlTexSizeMobileFull   , T);
                      tsm.New().create("Half"   , MtrlTexSizeMobileHalf   , T);
                      tsm.New().create("Quarter", MtrlTexSizeMobileQuarter, T);
+                     tsm.New().create("Eighth" , MtrlTexSizeMobileEighth , T);
 
                      Node<MenuElm> &tss=(m+="Texture Size Switch");
                      tss.New().create("Full"   , MtrlTexSizeSwitchFull   , T);
                      tss.New().create("Half"   , MtrlTexSizeSwitchHalf   , T);
                      tss.New().create("Quarter", MtrlTexSizeSwitchQuarter, T);
+                     tss.New().create("Eighth" , MtrlTexSizeSwitchEighth , T);
 
-                     ASSERT(MaxMaterialDownsize==3);
+                     ASSERT(MaxMaterialDownsize==4);
                   }
                }
             }

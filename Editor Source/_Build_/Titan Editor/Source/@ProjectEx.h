@@ -263,9 +263,11 @@ public:
    static void MtrlTexSizeMobileFull   (ProjectEx &proj);
    static void MtrlTexSizeMobileHalf   (ProjectEx &proj);
    static void MtrlTexSizeMobileQuarter(ProjectEx &proj);
+   static void MtrlTexSizeMobileEighth (ProjectEx &proj);
    static void MtrlTexSizeSwitchFull   (ProjectEx &proj);
    static void MtrlTexSizeSwitchHalf   (ProjectEx &proj);
    static void MtrlTexSizeSwitchQuarter(ProjectEx &proj);
+   static void MtrlTexSizeSwitchEighth (ProjectEx &proj);
 
    static void AnimClip   (ProjectEx &proj);
    static void AnimLinear (ProjectEx &proj);

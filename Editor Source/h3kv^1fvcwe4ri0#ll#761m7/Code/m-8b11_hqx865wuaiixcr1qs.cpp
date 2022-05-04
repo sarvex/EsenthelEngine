@@ -405,7 +405,8 @@ class MaterialRegion : Region
       "Full",
       "Half",
       "Quarter",
-   }; ASSERT(MaxMaterialDownsize==3);
+      "Eighth",
+   }; ASSERT(MaxMaterialDownsize==4);
    static Str  TexDownsizeMobile(C MaterialRegion &mr          ) {return mr.edit.tex_downsize[TSP_MOBILE];}
    static void TexDownsizeMobile(  MaterialRegion &mr, C Str &t) {       mr.edit.tex_downsize[TSP_MOBILE]=TextInt(t); mr.edit.tex_downsize_time.getUTC();}
    static Str  TexDownsizeSwitch(C MaterialRegion &mr          ) {return mr.edit.tex_downsize[TSP_SWITCH];}

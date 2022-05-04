@@ -31,6 +31,7 @@ MaterialRegion MtrlEdit;
       "Full",
       "Half",
       "Quarter",
+      "Eighth",
    };
    ::MaterialRegion::TexQualityND MaterialRegion::TexQualities[]=
    {

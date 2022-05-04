@@ -41,7 +41,7 @@ const int           ForceInstaller=-2, // -2=disable and don't update, -1=disabl
                     HeightBrushNoiseRes=256,
                     MtrlBrushSlots=14,
                     MaxVisibleRadius=(X64 ? 20 : 15),
-                    MaxMaterialDownsize=3, // 0=full, 1=half, 2=quarter
+                    MaxMaterialDownsize=4, // 0=full, 1=half, 2=quarter, 3=eighth
                     ClientSendBufSize=3*1024*1024, // 3 MB
                     ServerSendBufSize=2*1024*1024, // 2 MB
                     InvalidCoordinate=SIGN_BIT,

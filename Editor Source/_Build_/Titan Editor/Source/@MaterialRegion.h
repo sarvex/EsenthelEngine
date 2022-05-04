@@ -92,7 +92,7 @@ public:
    static void Tech(  MaterialRegion &mr, C Str &t);
 
    static cchar8 *TexDownsizeText[]
-; ASSERT(MaxMaterialDownsize==3);
+; ASSERT(MaxMaterialDownsize==4);
    static Str  TexDownsizeMobile(C MaterialRegion &mr          );
    static void TexDownsizeMobile(  MaterialRegion &mr, C Str &t);
    static Str  TexDownsizeSwitch(C MaterialRegion &mr          );
