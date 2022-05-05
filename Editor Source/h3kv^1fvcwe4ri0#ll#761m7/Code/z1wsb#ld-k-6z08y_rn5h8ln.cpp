@@ -408,12 +408,12 @@ p_scale=&add("Item 3D Scale"          , MemberDesc(MEMBER(Options, item_3d_scale
       bool     ignore_publish=(options.show!=PUBLISHABLE && options.show!=INVALID);
       FREPA(node.children)
       {
-         int      child_i=node.children [i];
-         ElmNode &child  =Proj.hierarchy[child_i];
-         Elm     &elm    =Proj.elms     [child_i];
+         int  child_i=node.children[i];
+         Elm &elm    =Proj.elms[child_i];
          if(elm.finalExists())
          if(ignore_publish || elm.finalPublish()) // we're going recursively down, from parents to their children, so before checking children, we can only check for modes that will affect all children in the same way, and this is only if element is going to be published
          {
+            ElmNode &child=Proj.hierarchy[child_i];
             bool this_contains_name=true, child_contains_name=true; // always show when no filter
             if(Proj.filter().is())
             {

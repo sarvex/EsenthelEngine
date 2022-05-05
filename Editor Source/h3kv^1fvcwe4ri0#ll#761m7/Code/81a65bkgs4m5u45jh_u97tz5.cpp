@@ -1171,9 +1171,8 @@ class ProjectEx : ProjectHierarchy
    {
       FREPA(node.children)
       {
-         int      child_i=node.children[i];
-         ElmNode &child  =hierarchy[child_i];
-         Elm     &elm    =elms     [child_i];
+         int  child_i=node.children[i];
+         Elm &elm    =elms[child_i];
          if(!elm.removed()) // if exists
          {
             if(ids.has(elm.id)) // if want to remove
@@ -1181,7 +1180,7 @@ class ProjectEx : ProjectHierarchy
                if(time>elm.removed_time){elm.setRemoved(true, time); removed.add(elm.id);} // remove self, but skip the children
             }else // continue checking children
             {
-               remove(child, ids, removed, time);
+               remove(hierarchy[child_i], ids, removed, time);
             }
          }
       }
@@ -1238,9 +1237,8 @@ class ProjectEx : ProjectHierarchy
    {
       FREPA(node.children)
       {
-         int      child_i=node.children[i];
-         ElmNode &child  =hierarchy[child_i];
-         Elm     &elm    =elms     [child_i];
+         int  child_i=node.children[i];
+         Elm &elm    =elms[child_i];
          if(elm.publish()) // if has publishing enabled
          {
             if(ids.has(elm.id)) // if want to change
@@ -1248,7 +1246,7 @@ class ProjectEx : ProjectHierarchy
                if(time>elm.publish_time){elm.setNoPublish(true, time); processed.add(elm.id);} // disable self, but skip the children
             }else // continue checking children
             {
-               disablePublish(child, ids, processed, time);
+               disablePublish(hierarchy[child_i], ids, processed, time);
             }
          }
       }
@@ -3302,12 +3300,11 @@ class ProjectEx : ProjectHierarchy
       REPA(node.children)
       {
          int  child_i=node.children[i];
-         Elm &child  =elms[child_i];
-         if( !child.removed() && ElmVisible(child.type))
+         Elm &elm    =elms[child_i];
+         if( !elm.removed() && ElmVisible(elm.type))
          {
-            child.opened(true);
-            ElmNode &child=hierarchy[child_i];
-            expandAll(child);
+            elm.opened(true);
+            expandAll(hierarchy[child_i]);
          }
       }
    }
@@ -3317,21 +3314,20 @@ class ProjectEx : ProjectHierarchy
       REPA(node.children)
       {
          int  child_i=node.children[i];
-         Elm &child  =elms[child_i];
-         if( !child.removed())
+         Elm &elm    =elms[child_i];
+         if( !elm.removed())
          {
-            bool np=(no_publish | child.noPublish());
-                   child.finalExists (true);
-            if(!np)child.finalPublish(true);
-            switch(child.type)
+            bool np=(no_publish | elm.noPublish());
+                   elm.finalExists (true);
+            if(!np)elm.finalPublish(true);
+            switch(elm.type)
             {
-               case ELM_ENUM     : existing_enums      .binaryInclude(child.id); break;
-               case ELM_OBJ_CLASS: existing_obj_classes.binaryInclude(child.id); break;
-               case ELM_FONT     : existing_fonts      .binaryInclude(child.id); if(!np)publish_fonts.binaryInclude(child.id); break;
-               case ELM_APP      : existing_apps       .binaryInclude(child.id); break;
+               case ELM_ENUM     : existing_enums      .binaryInclude(elm.id); break;
+               case ELM_OBJ_CLASS: existing_obj_classes.binaryInclude(elm.id); break;
+               case ELM_FONT     : existing_fonts      .binaryInclude(elm.id); if(!np)publish_fonts.binaryInclude(elm.id); break;
+               case ELM_APP      : existing_apps       .binaryInclude(elm.id); break;
             }
-            ElmNode &child=hierarchy[child_i];
-            floodExisting(child, np);
+            floodExisting(hierarchy[child_i], np);
          }
       }
    }
@@ -3639,12 +3635,12 @@ class ProjectEx : ProjectHierarchy
    }
    bool hasInvalid(ElmNode &node)
    {
-      FREPA(node.children)
+      REPA(node.children)
       {
-         int      child_i=node.children[i];
-         ElmNode &child  =hierarchy[child_i];
-         Elm     &elm    =elms     [child_i];
-         if(elm.exists() && elm.publish() && ElmVisible(elm.type))if(invalidRefs(elm) || hasInvalid(child))return true;
+         int  child_i=node.children[i];
+         Elm &elm    =elms[child_i];
+         if(elm.exists() && elm.publish() && ElmVisible(elm.type))
+            if(invalidRefs(elm) || hasInvalid(hierarchy[child_i]))return true;
       }
       return false;
    }
@@ -3652,13 +3648,12 @@ class ProjectEx : ProjectHierarchy
    {
       REPA(node.children)
       {
-         int      child_i=node.children[i];
-         ElmNode &child  =hierarchy[child_i];
-         Elm     &elm    =elms     [child_i];
+         int  child_i=node.children[i];
+         Elm &elm    =elms[child_i];
          if(elm.exists() && elm.publish())
          {
             if(inside_valid)app_elms.add(&elm);
-            getActiveAppElms(app_elms, app_id, child, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
+            getActiveAppElms(app_elms, app_id, hierarchy[child_i], (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
          }
       }
    }
@@ -3832,11 +3827,11 @@ class ProjectEx : ProjectHierarchy
          int  filter_path_length=filter_path.tailSlash(true).length();
          REPA(node.children)
          {
-            int      child_i=node.children[i];
-            ElmNode &child  =hierarchy[child_i];
-            Elm     &elm    =elms     [child_i];
+            int  child_i=node.children[i];
+            Elm &elm    =elms[child_i];
             if(!elm.removed() || show_removed())
             {
+               ElmNode &child=hierarchy[child_i];
                filter_path.clip(filter_path_length)+=elm.name;
                bool this_contains=(ElmVisible(elm.type) && (filter_is_id ? (elm.id==filter_id) : ContainsAny(elm.name, filter()) && ContainsAll(filter_path, filter()))), // !! check this first because 'setFilter' below will modify the 'filter_path' !!
                    child_contains=setFilter(child); // !! check this second !!

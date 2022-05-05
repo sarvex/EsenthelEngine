@@ -2799,12 +2799,11 @@ class ProjectHierarchy : Project
    {
       FREPA(node.children) // list in order
       {
-         int      child_i    =node.children[i];
-         ElmNode &child      =hierarchy[child_i];
-         Elm     &elm        =elms     [child_i];
-         bool     elm_removed=(elm.removed() || parent_removed);
+         int  child_i    =node.children[i];
+         Elm &elm        =elms[child_i];
+         bool elm_removed=(elm.removed() || parent_removed);
          if(elm_removed)removed.add(elm.id);
-         floodRemoved(removed, child, elm_removed);
+         floodRemoved(removed, hierarchy[child_i], elm_removed);
       }
    }
 
