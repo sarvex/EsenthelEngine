@@ -3317,7 +3317,7 @@ class ProjectEx : ProjectHierarchy
          Elm &elm    =elms[child_i];
          if( !elm.removed())
          {
-            bool np=(no_publish | elm.noPublish());
+            bool np=(no_publish || elm.noPublish());
                    elm.finalExists (true);
             if(!np)elm.finalPublish(true);
             switch(elm.type)
