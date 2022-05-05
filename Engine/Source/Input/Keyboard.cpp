@@ -1105,10 +1105,10 @@ void KeyboardClass::queue(KB_KEY key, Char chr)
 /******************************************************************************/
 void KeyboardClass::setModifiers()
 {
-  _ctrl =FlagTest(_button[KB_LCTRL ]|_button[KB_RCTRL ], BS_ON|BS_PUSHED);
-  _shift=FlagTest(_button[KB_LSHIFT]|_button[KB_RSHIFT], BS_ON|BS_PUSHED);
-  _alt  =FlagTest(_button[KB_LALT  ]|_button[KB_RALT  ], BS_ON|BS_PUSHED);
-  _win  =FlagTest(_button[KB_LWIN  ]|_button[KB_RWIN  ], BS_ON|BS_PUSHED);
+  _ctrl =FlagOn(_button[KB_LCTRL ]|_button[KB_RCTRL ], BS_ON|BS_PUSHED);
+  _shift=FlagOn(_button[KB_LSHIFT]|_button[KB_RSHIFT], BS_ON|BS_PUSHED);
+  _alt  =FlagOn(_button[KB_LALT  ]|_button[KB_RALT  ], BS_ON|BS_PUSHED);
+  _win  =FlagOn(_button[KB_LWIN  ]|_button[KB_RWIN  ], BS_ON|BS_PUSHED);
 }
 void KeyboardClass::update()
 {
@@ -1142,7 +1142,7 @@ void KeyboardClass::update()
          {
           C DIK &key=Keys[i];
             Bool on =(dik[key.dik] || ((key.key==KB_LCTRL) ? _special&1 : GetKeyState(key.key)<0)); // use a combination of both DirectInput and WinApi, because DirectInput loses state when changing exclusive mode (calling 'Unacquire' and 'Acquire'), however we can't use 'GetKeyState' for LeftControl (because it can be triggered by AltGr and may be disabled by Ctrl+Shift system shortcut)
-            if(  on!=FlagTest(_button[key.key], BS_ON))
+            if(  on!=FlagOn(_button[key.key], BS_ON))
             {
                if(on)push(key.key, key.scan_code);else release(key.key);
             }
@@ -1165,7 +1165,7 @@ void KeyboardClass::update()
    if(App.active()) // need to manually check for certain keys
    {
       // not detected through system events
-      Bool print=FlagTest((Int)App.window()->GetKeyState(Windows::System::VirtualKey::Snapshot), (Int)Windows::UI::Core::CoreVirtualKeyStates::Down);
+      Bool print=FlagOn((Int)App.window()->GetKeyState(Windows::System::VirtualKey::Snapshot), (Int)Windows::UI::Core::CoreVirtualKeyStates::Down);
       if(  print!=b(KB_PRINT))
       {
          if(print)push(KB_PRINT, 0);else release(KB_PRINT);
@@ -1406,7 +1406,7 @@ Bool   KeyboardClass::hwAvailable()
 #elif DESKTOP
    return true;
 #elif ANDROID
-   return (AndroidApp && AndroidApp->config) ? FlagTest(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
+   return (AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
    // HW    connected: AConfiguration_getKeyboard->2, AConfiguration_getKeysHidden->1
    // HW disconnected: AConfiguration_getKeyboard->1, AConfiguration_getKeysHidden->3
 #else
@@ -1578,18 +1578,18 @@ void KeyboardClass::resetTextInput()
 
 inline Bool KbSc::testFlag()C
 {
-   return FlagTest(flag, KBSC_CTRL_EX)==Kb.k.ctrl ()
-       && FlagTest(flag, KBSC_SHIFT  )==Kb.k.shift()
-       && FlagTest(flag, KBSC_ALT    )==Kb.k.alt  ()
-       && FlagTest(flag, KBSC_WIN_EX )==Kb.k.win  ()
-       &&         (flag& KBSC_REPEAT || Kb.k.first());
+   return FlagOn(flag, KBSC_CTRL_EX)==Kb.k.ctrl ()
+       && FlagOn(flag, KBSC_SHIFT  )==Kb.k.shift()
+       && FlagOn(flag, KBSC_ALT    )==Kb.k.alt  ()
+       && FlagOn(flag, KBSC_WIN_EX )==Kb.k.win  ()
+       &&       (flag& KBSC_REPEAT || Kb.k.first());
 }
 inline Bool KbSc::testFlagChar()C
 {
-   return FlagTest(flag, KBSC_CTRL_EX)==Kb.k.ctrl ()
-     //&& FlagTest(flag, KBSC_SHIFT  )==Kb.k.shift() shift is not checked, because for KBSC_CHAR we just specify the character being lower/upper case, and KBSC_SHIFT would mess this up
-       && FlagTest(flag, KBSC_ALT    )==Kb.k.lalt () // only left Alt is checked, because right Alt may trigger accented characters
-       && FlagTest(flag, KBSC_WIN_EX )==Kb.k.win  ();
+   return FlagOn(flag, KBSC_CTRL_EX)==Kb.k.ctrl ()
+     //&& FlagOn(flag, KBSC_SHIFT  )==Kb.k.shift() shift is not checked, because for KBSC_CHAR we just specify the character being lower/upper case, and KBSC_SHIFT would mess this up
+       && FlagOn(flag, KBSC_ALT    )==Kb.k.lalt () // only left Alt is checked, because right Alt may trigger accented characters
+       && FlagOn(flag, KBSC_WIN_EX )==Kb.k.win  ();
 }
 
 Bool KbSc::pd()C

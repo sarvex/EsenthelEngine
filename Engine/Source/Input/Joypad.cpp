@@ -252,7 +252,7 @@ void Joypad::update(C Byte *on, Int elms)
    REP(elms){Byte o=on[i]; if((o!=0)!=ButtonOn(_button[i])){if(o)push(i);else release(i);}}
 }
 #if WINDOWS_NEW
-static inline Bool FlagTest(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
+static inline Bool FlagOn(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
 #endif
 static void UpdateDirRep(VecSB2 &diri_r, C VecSB2 &diri, Flt &time)
 {
@@ -295,24 +295,24 @@ void Joypad::update()
       {
          // buttons
          Byte button[JB_NUM];
-         button[JB_A     ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                );
-         button[JB_B     ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                );
-         button[JB_X     ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                );
-         button[JB_Y     ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_Y                );
-         button[JB_L1    ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_SHOULDER    );
-         button[JB_R1    ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_SHOULDER   );
-         button[JB_L2    ]=        (state.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-         button[JB_R2    ]=        (state.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-         button[JB_LTHUMB]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_THUMB       );
-         button[JB_RTHUMB]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_THUMB      );
-         button[JB_BACK  ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_BACK             );
-         button[JB_START ]=FlagTest(state.Gamepad.wButtons     , XINPUT_GAMEPAD_START            );
+         button[JB_A     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                );
+         button[JB_B     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                );
+         button[JB_X     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                );
+         button[JB_Y     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_Y                );
+         button[JB_L1    ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_SHOULDER    );
+         button[JB_R1    ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_SHOULDER   );
+         button[JB_L2    ]=      (state.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+         button[JB_R2    ]=      (state.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+         button[JB_LTHUMB]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_THUMB       );
+         button[JB_RTHUMB]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_THUMB      );
+         button[JB_BACK  ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_BACK             );
+         button[JB_START ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_START            );
          ASSERT(ELMS(button)<=ELMS(T._button));
          update(button, Elms(button));
 
          // digital pad
-         diri.set(FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT),
-                  FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagTest(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN));
+         diri.set(FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT),
+                  FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN));
          dir=diri;
          Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
 
@@ -336,28 +336,28 @@ void Joypad::update()
 
       // buttons
       Byte button[JB_UWP_NUM];
-      button[JB_A      ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::A);
-      button[JB_B      ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::B);
-      button[JB_X      ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::X);
-      button[JB_Y      ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Y);
-      button[JB_L1     ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftShoulder);
-      button[JB_R1     ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder);
-      button[JB_L2     ]=        (state. LeftTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-      button[JB_R2     ]=        (state.RightTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-      button[JB_LTHUMB ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftThumbstick);
-      button[JB_RTHUMB ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick);
-      button[JB_BACK   ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::View);
-      button[JB_START  ]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Menu);
-      button[JB_PADDLE1]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1);
-      button[JB_PADDLE2]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2);
-      button[JB_PADDLE3]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3);
-      button[JB_PADDLE4]=FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4);
+      button[JB_A      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::A);
+      button[JB_B      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::B);
+      button[JB_X      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::X);
+      button[JB_Y      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Y);
+      button[JB_L1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftShoulder);
+      button[JB_R1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder);
+      button[JB_L2     ]=      (state. LeftTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+      button[JB_R2     ]=      (state.RightTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+      button[JB_LTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftThumbstick);
+      button[JB_RTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick);
+      button[JB_BACK   ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::View);
+      button[JB_START  ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Menu);
+      button[JB_PADDLE1]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1);
+      button[JB_PADDLE2]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2);
+      button[JB_PADDLE3]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3);
+      button[JB_PADDLE4]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4);
       ASSERT(ELMS(button)<=ELMS(T._button));
       update(button, Elms(button));
 
       // digital pad
-      diri.set(FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
-               FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagTest(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
+      diri.set(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
+               FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
       dir=diri;
       Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
 

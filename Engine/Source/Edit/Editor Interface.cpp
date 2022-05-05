@@ -29,9 +29,9 @@ parent:
       goto parent;
    }
 
-   FlagSet(elm.flags, Elm::REMOVED_FULL          , FlagTest(flags, Elm::REMOVED   ));
-   FlagSet(elm.flags, Elm::NO_PUBLISH_FULL       , FlagTest(flags, Elm::NO_PUBLISH));
-   FlagSet(elm.flags, Elm::NO_PUBLISH_MOBILE_FULL, FlagTest(flags, Elm::NO_PUBLISH | Elm::NO_PUBLISH_MOBILE)); // this is NoPublish || NoPublishMobile
+   FlagSet(elm.flags, Elm::REMOVED_FULL          , FlagOn(flags, Elm::REMOVED   ));
+   FlagSet(elm.flags, Elm::NO_PUBLISH_FULL       , FlagOn(flags, Elm::NO_PUBLISH));
+   FlagSet(elm.flags, Elm::NO_PUBLISH_MOBILE_FULL, FlagOn(flags, Elm::NO_PUBLISH | Elm::NO_PUBLISH_MOBILE)); // this is NoPublish || NoPublishMobile
 }
 /******************************************************************************/
 // MATERIAL MAP

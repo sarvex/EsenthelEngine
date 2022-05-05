@@ -178,8 +178,8 @@ void ActorInfo::set(PxShape *shape)
    {
       PxRigidDynamic *rigid_dynamic=_actor->is<PxRigidDynamic>();
 
-      collision=                  FlagTest((UInt)        shape->getFlags         (),     PxShapeFlag::eSIMULATION_SHAPE) ;
-      dynamic  =(rigid_dynamic && FlagOff ((UInt)rigid_dynamic->getRigidBodyFlags(), PxRigidBodyFlag::eKINEMATIC       ));
+      collision=                  FlagOn ((UInt)        shape->getFlags         (),     PxShapeFlag::eSIMULATION_SHAPE) ;
+      dynamic  =(rigid_dynamic && FlagOff((UInt)rigid_dynamic->getRigidBodyFlags(), PxRigidBodyFlag::eKINEMATIC       ));
       group    =      shape->getSimulationFilterData().word0;
       user     =     _actor->userData;
       obj      =(Ptr)_actor->getName();

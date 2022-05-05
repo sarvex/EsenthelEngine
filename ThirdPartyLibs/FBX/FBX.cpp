@@ -1348,7 +1348,7 @@ extern "C" __declspec(dllexport) CPtr __cdecl ImportFBXData(CChar *name, Int &si
    Memc<XMaterial >  mtrls; MemPtr<XMaterial > mtrls_ptr; if(flag&FBX_MTRL)mtrls_ptr.point(mtrls);
    Memc<Int       >  pmi  ; MemPtr<Int       >   pmi_ptr; if(flag&FBX_PMI )  pmi_ptr.point(pmi  );
 
-   if(_ImportFBX(name, mesh_ptr, skel_ptr, anims_ptr, mtrls_ptr, pmi_ptr, xskel_ptr, FlagTest(flag, FBX_ALL_NODES_AS_BONES), S8))
+   if(_ImportFBX(name, mesh_ptr, skel_ptr, anims_ptr, mtrls_ptr, pmi_ptr, xskel_ptr, FlagOn(flag, FBX_ALL_NODES_AS_BONES), S8))
    {
       File f; f.writeMem(); SaveFBXData(f, mesh_ptr, skel_ptr, anims_ptr, mtrls_ptr, pmi_ptr, xskel_ptr); // save data to file
       Ptr    data=Alloc(f.size()); f.pos(0); f.get(data, size=f.size()); // copy file to memory

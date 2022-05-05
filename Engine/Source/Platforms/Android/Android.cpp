@@ -282,7 +282,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
               action      =AMotionEvent_getAction(event),
               action_type = (action&AMOTION_EVENT_ACTION_MASK),
               action_index=((action&AMOTION_EVENT_ACTION_POINTER_INDEX_MASK)>>AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
-         Bool stylus      =FlagTest(source, AINPUT_SOURCE_STYLUS);
+         Bool stylus      =FlagOn(source, AINPUT_SOURCE_STYLUS);
          if(source&AINPUT_SOURCE_JOYSTICK)
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
@@ -310,7 +310,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
             if(action_type==AMOTION_EVENT_ACTION_DOWN && !button_state){PossibleTap=true; PossibleTapTime=Time.appTime();}else // 'getButtonState' does not detect tapping on the touchpad, so we need to detect it according to 'AMOTION_EVENT_ACTION_DOWN', also proceed only if no buttons are pressed in case this event is triggered by secondary mouse button
             if(PossibleTap && (button_state || (LastMousePos-Ms.desktopPos()).abs().max()>=6))PossibleTap=false; // if we've pressed a button or moved away too much then it's definitely not a tap
             if(action_type==AMOTION_EVENT_ACTION_UP   &&  PossibleTap ){PossibleTap=false; if(Time.appTime()<=PossibleTapTime+DoubleClickTime+Time.ad())Ms.push(0);} // this is a tap so push the button and it will be released line below because 'button_state' is 0
-            REPA(Ms._button)if(FlagTest(button_state, 1<<i)!=Ms.b(i))if(Ms.b(i))Ms.release(i);else Ms.push(i);
+            REPA(Ms._button)if(FlagOn(button_state, 1<<i)!=Ms.b(i))if(Ms.b(i))Ms.release(i);else Ms.push(i);
 
             // get scrolling and cursor position
             if(action_type!=AMOTION_EVENT_ACTION_UP // this can happen on release of TouchPad scroll, where the position is still at the dragged position
@@ -459,10 +459,10 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
       {
          Int    code =AKeyEvent_getKeyCode  (event),
                 meta =AKeyEvent_getMetaState(event);
-         Bool   ctrl =FlagTest(meta, (Int)AMETA_CTRL_ON     ),
-                shift=FlagTest(meta, (Int)AMETA_SHIFT_ON    ),
-                alt  =FlagTest(meta, (Int)AMETA_ALT_ON      ),
-                caps =FlagTest(meta, (Int)AMETA_CAPS_LOCK_ON);
+         Bool   ctrl =FlagOn(meta, (Int)AMETA_CTRL_ON     ),
+                shift=FlagOn(meta, (Int)AMETA_SHIFT_ON    ),
+                alt  =FlagOn(meta, (Int)AMETA_ALT_ON      ),
+                caps =FlagOn(meta, (Int)AMETA_CAPS_LOCK_ON);
          Byte   bcode=Byte(code);
          KB_KEY key  =KeyMap[bcode];
          Byte   joy  =JoyMap[bcode];
@@ -500,7 +500,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                if(!chr && (meta&AMETA_ALT_LEFT_ON))
                {
                   FlagDisable(meta, (Int)AMETA_ALT_LEFT_ON);
-                  FlagSet(meta, (Int)AMETA_ALT_ON, FlagTest(meta, (Int)AMETA_ALT_RIGHT_ON)); // setup correct ALT mask
+                  FlagSet(meta, (Int)AMETA_ALT_ON, FlagOn(meta, (Int)AMETA_ALT_RIGHT_ON)); // setup correct ALT mask
                   chr=Jni->CallIntMethod(KeyCharacterMap, KeyCharacterMapGet, jint(code), jint(meta));
                }
             }else

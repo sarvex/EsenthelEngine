@@ -571,7 +571,7 @@ REPD(get_default_val, (compiler->api!=API_DX) ? 2 : 1) // non-DX shaders have to
    {
    #if DX_SHADER_COMPILER
       Int params=shader->params.elms()+shader->extra_params.elms();
-      Bool force_func_name_main=((compiler->api==API_GL) && FlagTest(compiler->flag, SC_SPIRV)); // on GL SPIR-V loading shaders requires specifying entry point func name, so for simplicity force all names to be "main"
+      Bool force_func_name_main=((compiler->api==API_GL) && FlagOn(compiler->flag, SC_SPIRV)); // on GL SPIR-V loading shaders requires specifying entry point func name, so for simplicity force all names to be "main"
       MemtN<DxcDefine, 64  > defines; defines.setNum(params  +API_NUM+get_default_val+1+(compiler->api==API_GL)+force_func_name_main); Int defs =0;
       MemtN<Str      , 64*2> temp   ; temp   .setNum(params*2+API_NUM                                          +force_func_name_main); Int temps=0;
       FREPA(shader->params)
@@ -717,7 +717,7 @@ REPD(get_default_val, (compiler->api!=API_DX) ? 2 : 1) // non-DX shaders have to
                                  Buffer &buffer=buffers[buffers_elms++];
                                  buffer.name=desc.Name;
                                  buffer.bind_slot=desc.BindPoint;
-                                 buffer.bind_explicit=FlagTest(desc.uFlags, D3D_SIF_USERPACKED); // FIXME this is not set https://github.com/microsoft/DirectXShaderCompiler/issues/2356
+                                 buffer.bind_explicit=FlagOn(desc.uFlags, D3D_SIF_USERPACKED); // FIXME this is not set https://github.com/microsoft/DirectXShaderCompiler/issues/2356
                                  ID3D12ShaderReflectionConstantBuffer *cb=reflection->GetConstantBufferByName(desc.Name); if(!cb){error.line()+="'GetConstantBufferByIndex' failed."; goto error_new;}
                                  {
                                     D3D12_SHADER_BUFFER_DESC desc; if(!OK(cb->GetDesc(&desc))){error.line()+="'ID3D12ShaderReflectionConstantBuffer.GetDesc' failed."; goto error_new;}
@@ -747,7 +747,7 @@ REPD(get_default_val, (compiler->api!=API_DX) ? 2 : 1) // non-DX shaders have to
                                      //type->Release(); this doesn't have 'Release'
                                      //var ->Release(); this doesn't have 'Release'
                                     }
-                                    DEBUG_ASSERT(buffer.bind_explicit==FlagTest(desc.uFlags, D3D_CBF_USERPACKED), "bind_explicit mismatch"); 
+                                    DEBUG_ASSERT(buffer.bind_explicit==FlagOn(desc.uFlags, D3D_CBF_USERPACKED), "bind_explicit mismatch"); 
                                  }
                               //cb->Release(); this doesn't have 'Release'
                               }break;
@@ -894,7 +894,7 @@ REPD(get_default_val, (compiler->api!=API_DX) ? 2 : 1) // non-DX shaders have to
                         Buffer &buffer=buffers[buffers_elms++];
                         buffer.name=desc.Name;
                         buffer.bind_slot=desc.BindPoint;
-                        buffer.bind_explicit=FlagTest(desc.uFlags, D3D_SIF_USERPACKED);
+                        buffer.bind_explicit=FlagOn(desc.uFlags, D3D_SIF_USERPACKED);
                         ID3D11ShaderReflectionConstantBuffer *cb=reflection->GetConstantBufferByName(desc.Name); if(!cb){error.line()+="'GetConstantBufferByIndex' failed."; goto error;}
                         {
                            D3D11_SHADER_BUFFER_DESC desc; if(!OK(cb->GetDesc(&desc))){error.line()+="'ID3D11ShaderReflectionConstantBuffer.GetDesc' failed."; goto error;}
@@ -923,7 +923,7 @@ REPD(get_default_val, (compiler->api!=API_DX) ? 2 : 1) // non-DX shaders have to
                             //type->Release(); this doesn't have 'Release'
                             //var ->Release(); this doesn't have 'Release'
                            }
-                         //DEBUG_ASSERT(buffer.bind_explicit==FlagTest(desc.uFlags, D3D_CBF_USERPACKED), "bind_explicit mismatch"); ignore because looks like 'desc.uFlags' is not set
+                         //DEBUG_ASSERT(buffer.bind_explicit==FlagOn(desc.uFlags, D3D_CBF_USERPACKED), "bind_explicit mismatch"); ignore because looks like 'desc.uFlags' is not set
                         }
                      //cb->Release(); this doesn't have 'Release'
                      }break;

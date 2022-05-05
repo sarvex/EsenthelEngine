@@ -2417,8 +2417,8 @@ Bool CodeEditor::generateAndroidProj()
                   // orientations
                   {
                      UInt flag     =cei().appSupportedOrientations();
-                     Bool landscape=FlagTest(flag, DIRF_X),
-                          portrait =FlagTest(flag, DIRF_Y);
+                     Bool landscape=FlagOn(flag, DIRF_X),
+                          portrait =FlagOn(flag, DIRF_Y);
                      CChar8    *orn=null;
                      if( flag==(DIRF_X|DIRF_UP)  )orn="sensor"         ;else // up/left/right no down
                      if((flag&DIRF_X)==DIRF_RIGHT)orn="landscape"      ;else // only one horizontal

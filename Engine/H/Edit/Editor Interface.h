@@ -68,12 +68,12 @@ struct Elm // Project Element
        full_name, // full name of the element (including its parents)
         src_file; // source file from which this element was created
 
-   Bool removed          ()C {return FlagTest(flags, REMOVED               );} // if this element                  is marked   as removed               (this does not include parents state               which may affect the final result, see 'removedFull'       for final value)
-   Bool removedFull      ()C {return FlagTest(flags, REMOVED_FULL          );} // if this element or  its parents are marked   as removed
-   Bool publish          ()C {return FlagOff (flags, NO_PUBLISH            );} // if this element                  is included in publishing            (this does not include parents state               which may affect the final result, see 'publishFull'       for final value)
-   Bool publishFull      ()C {return FlagOff (flags, NO_PUBLISH_FULL       );} // if this element and its parents are included in publishing
-   Bool publishMobile    ()C {return FlagOff (flags, NO_PUBLISH_MOBILE     );} // if this element                  is included in publishing for Mobile (this does not include parents state and 'publish' which may affect the final result, see 'publishMobileFull' for final value)
-   Bool publishMobileFull()C {return FlagOff (flags, NO_PUBLISH_MOBILE_FULL);} // if this element and its parents are included in publishing for Mobile
+   Bool removed          ()C {return FlagOn (flags, REMOVED               );} // if this element                  is marked   as removed               (this does not include parents state               which may affect the final result, see 'removedFull'       for final value)
+   Bool removedFull      ()C {return FlagOn (flags, REMOVED_FULL          );} // if this element or  its parents are marked   as removed
+   Bool publish          ()C {return FlagOff(flags, NO_PUBLISH            );} // if this element                  is included in publishing            (this does not include parents state               which may affect the final result, see 'publishFull'       for final value)
+   Bool publishFull      ()C {return FlagOff(flags, NO_PUBLISH_FULL       );} // if this element and its parents are included in publishing
+   Bool publishMobile    ()C {return FlagOff(flags, NO_PUBLISH_MOBILE     );} // if this element                  is included in publishing for Mobile (this does not include parents state and 'publish' which may affect the final result, see 'publishMobileFull' for final value)
+   Bool publishMobileFull()C {return FlagOff(flags, NO_PUBLISH_MOBILE_FULL);} // if this element and its parents are included in publishing for Mobile
 
    Bool save(File &f)C {f<<type<<flags<<id<<parent_id<<name<<src_file; return f.ok();}
    Bool load(File &f)  {f>>type>>flags>>id>>parent_id>>name>>src_file; return f.ok();}

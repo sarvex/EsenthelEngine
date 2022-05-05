@@ -527,7 +527,7 @@ void Image::transform(Image &dest, C Matrix2 &matrix, FILTER_TYPE filter, UInt f
             if(work.lock(LOCK_WRITE))
          {
             Vec2 area_size=1/matrix.scale();
-            Bool clamp=IcClamp(flags), alpha_weight=FlagTest(flags, IC_ALPHA_WEIGHT),
+            Bool clamp=IcClamp(flags), alpha_weight=FlagOn(flags, IC_ALPHA_WEIGHT),
                  downsize=(filter!=FILTER_NONE && (area_size.x>1+EPS || area_size.y>1+EPS) && src->ld()==1); // if we're downsampling (any scale is higher than 1) then we must use more complex 'areaColor*' methods
             union
             {

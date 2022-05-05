@@ -241,8 +241,8 @@ enum IMAGE_COPY_FLAG
 #endif
 };
 #if EE_PRIVATE
-   inline Bool IcWrap (UInt flag) {return FlagTest(flag, IC_WRAP);}
-   inline Bool IcClamp(UInt flag) {return FlagOff (flag, IC_WRAP);}
+   inline Bool IcWrap (UInt flag) {return FlagOn (flag, IC_WRAP);}
+   inline Bool IcClamp(UInt flag) {return FlagOff(flag, IC_WRAP);}
 #endif
 /******************************************************************************/
 struct Image // Image (Texture)

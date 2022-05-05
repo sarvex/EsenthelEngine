@@ -742,7 +742,7 @@ void SoundBuffer::toggle(Bool loop)
 Bool SoundBuffer::playing()C
 {
 #if DIRECT_SOUND
-   DWORD status=0; if(_s){SOUND_API_LOCK_WEAK; _s->GetStatus(&status);} return FlagTest(status, DSBSTATUS_PLAYING);
+   DWORD status=0; if(_s){SOUND_API_LOCK_WEAK; _s->GetStatus(&status);} return FlagOn(status, DSBSTATUS_PLAYING);
 #elif XAUDIO
    // unavailable
    return false;

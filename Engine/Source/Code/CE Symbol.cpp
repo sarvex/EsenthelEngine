@@ -519,7 +519,7 @@ Bool Symbol::fullyStatic()
       REPA(funcs)if(!(funcs[i]->modifiers&MODIF_STATIC))return false; // if at least one is not static
       return true;
    }
-   return FlagTest(modifiers, MODIF_STATIC);
+   return FlagOn(modifiers, MODIF_STATIC);
 }
 Bool Symbol::partiallyStatic()
 {
@@ -528,7 +528,7 @@ Bool Symbol::partiallyStatic()
       REPA(funcs)if(funcs[i]->modifiers&MODIF_STATIC)return true; // if at least one is static
       return false;
    }
-   return FlagTest(modifiers, MODIF_STATIC);
+   return FlagOn(modifiers, MODIF_STATIC);
 }
 /******************************************************************************/
 Bool Symbol::isNativeFunc          () {return type==KEYWORD && (T=="sizeof" || T=="typeid" || T=="dynamic_cast" || T=="static_cast" || T=="const_cast" || T=="reinterpret_cast");}
@@ -875,7 +875,7 @@ Bool Symbol::hasPrivateBase(Symbol *Class, Memc<Modif> *templates, Bool test_pri
    REPA(base)
    {
       Modif base=T.base[i]; base.proceedToFinal(templates);
-      if(test_private ? FlagTest(base.modifiers, MODIF_PRIVATE) : false)
+      if(test_private ? FlagOn(base.modifiers, MODIF_PRIVATE) : false)
       {
          if(base->hasBase(Class, &base.templates, rt))return true;
       }else
@@ -891,7 +891,7 @@ Bool Symbol::hasNonPublicBase(Symbol *Class , Memc<Modif> *templates, Bool test_
    REPA(base)
    {
       Modif base=T.base[i]; base.proceedToFinal(templates);
-      if(test_access ? FlagTest(base.modifiers, MODIF_PRIVATE|MODIF_PROTECTED) : false)
+      if(test_access ? FlagOn(base.modifiers, MODIF_PRIVATE|MODIF_PROTECTED) : false)
       {
          if(base->hasBase(Class, &base.templates, rt))return true;
       }else

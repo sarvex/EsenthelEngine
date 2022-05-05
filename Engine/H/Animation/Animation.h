@@ -67,9 +67,9 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
  C AnimBone* findBone (CChar8 *name, BONE_TYPE type=BONE_UNKNOWN, Int type_index=0, Int type_sub=0)C; // find bone animation      , bones are first compared against the specified 'name', if there's no exact match and the 'type' is specified (not BONE_UNKNOWN) then type parameters are used for searching, null on fail
    AnimBone&  getBone (CChar8 *name, BONE_TYPE type=BONE_UNKNOWN, Int type_index=0, Int type_sub=0) ; // get  bone animation      , bones are first compared against the specified 'name', if there's no exact match and the 'type' is specified (not BONE_UNKNOWN) then type parameters are used for searching, creates new bone animation if not found
 
-   Animation& loop  (Bool loop                          );   Bool loop  ()C {return FlagTest(_flag, ANIM_LOOP  );} // set/get looping
-   Animation& linear(Bool linear                        );   Bool linear()C {return FlagTest(_flag, ANIM_LINEAR);} // set/get linear smoothing (setting linear smoothing makes the animation look more mechanized)
-   Animation& length(Flt  length, Bool rescale_keyframes);   Flt  length()C {return _length                     ;} // set/get animation length, 'rescale_keyframes'=if proportionally rescale keyframes from current length to new length
+   Animation& loop  (Bool loop                          );   Bool loop  ()C {return  FlagOn(_flag, ANIM_LOOP  );} // set/get looping
+   Animation& linear(Bool linear                        );   Bool linear()C {return  FlagOn(_flag, ANIM_LINEAR);} // set/get linear smoothing (setting linear smoothing makes the animation look more mechanized)
+   Animation& length(Flt  length, Bool rescale_keyframes);   Flt  length()C {return _length                    ;} // set/get animation length, 'rescale_keyframes'=if proportionally rescale keyframes from current length to new length
 
    AnimEvent* findEvent(CChar8 *name) ; // find animation event, null if not found
  C AnimEvent* findEvent(CChar8 *name)C; // find animation event, null if not found

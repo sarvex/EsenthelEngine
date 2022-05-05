@@ -94,7 +94,7 @@ static CGDisplayModeRef GetDisplayMode(Int width, Int height)
    {
       CGDisplayModeRef mode=(CGDisplayModeRef)CFArrayGetValueAtIndex(modes, i);
       UInt flags=CGDisplayModeGetIOFlags(mode);
-      Bool ok   =FlagTest(flags, kDisplayModeSafetyFlags);
+      Bool ok   =FlagOn(flags, kDisplayModeSafetyFlags);
       if(  ok)
       {
          Int w=CGDisplayModeGetWidth      (mode),
@@ -751,7 +751,7 @@ Bool DisplayClass::Monitor::set(HMONITOR monitor)
    {
       full.set(monitor_info.rcMonitor.left, monitor_info.rcMonitor.top, monitor_info.rcMonitor.right, monitor_info.rcMonitor.bottom);
       work.set(monitor_info.rcWork   .left, monitor_info.rcWork   .top, monitor_info.rcWork   .right, monitor_info.rcWork   .bottom);
-      primary=FlagTest(monitor_info.dwFlags, MONITORINFOF_PRIMARY);
+      primary=FlagOn(monitor_info.dwFlags, MONITORINFOF_PRIMARY);
       Set(device_name, WChar(monitor_info.szDevice)); ASSERT(ELMS(device_name)==ELMS(monitor_info.szDevice));
 
       DISPLAY_DEVICEW display_device; Zero(display_device); display_device.cb=SIZE(display_device);
@@ -1097,7 +1097,7 @@ void DisplayClass::init() // make this as a method because if we put this to Dis
          {
             CGDisplayModeRef mode=(CGDisplayModeRef)CFArrayGetValueAtIndex(display_modes, i);
             UInt flags=CGDisplayModeGetIOFlags(mode);
-            Bool ok   =FlagTest(flags, kDisplayModeSafetyFlags);
+            Bool ok   =FlagOn(flags, kDisplayModeSafetyFlags);
             if(  ok)modes.binaryInclude(VecI2(CGDisplayModeGetWidth(mode), CGDisplayModeGetHeight(mode)));
          }
          CFRelease(display_modes);
@@ -2175,7 +2175,7 @@ void DisplayClass::getCaps()
 
    D3D11_FEATURE_DATA_SHADER_MIN_PRECISION_SUPPORT min_prec;
    if(OK(D3D->CheckFeatureSupport(D3D11_FEATURE_SHADER_MIN_PRECISION_SUPPORT, &min_prec, SIZE(min_prec)))) // check for hlsl half support
-        _half_supported=FlagTest(min_prec.PixelShaderMinPrecision, D3D11_SHADER_MIN_PRECISION_16_BIT);
+        _half_supported=FlagOn(min_prec.PixelShaderMinPrecision, D3D11_SHADER_MIN_PRECISION_16_BIT);
    else _half_supported=-1; // unknown
 
    /*IDXGISwapChain4 *swap_chain4=null; SwapChain->QueryInterface(__uuidof(IDXGISwapChain4), (Ptr*)&swap_chain4); if(swap_chain4)

@@ -195,8 +195,8 @@ INLINE Bool EqualCIFast(Char8 a, Char  b) {return CharOrderFast(a)==CharOrderFas
 INLINE Bool EqualCIFast(Char  a, Char8 b) {return CharOrderFast(a)==CharOrderFast(b);}
 INLINE Bool EqualCIFast(Char  a, Char  b) {return CharOrderFast(a)==CharOrderFast(b);}
 
-INLINE Bool CharWholeWord(Char  c, WHOLE_WORD mask) {return FlagTest(CharFlagFast(c), mask);}
-INLINE Bool CharWholeWord(Char8 c, WHOLE_WORD mask) {return FlagTest(CharFlagFast(c), mask);}
+INLINE Bool CharWholeWord(Char  c, WHOLE_WORD mask) {return FlagOn(CharFlagFast(c), mask);}
+INLINE Bool CharWholeWord(Char8 c, WHOLE_WORD mask) {return FlagOn(CharFlagFast(c), mask);}
 /******************************************************************************/
 Int CharOrder(Char8 c) {I(); return CharOrderFast(c);}
 Int CharOrder(Char  c) {I(); return CharOrderFast(c);}
@@ -4007,7 +4007,7 @@ Bool StrLibrary::load(File &f)
    {
       case 0:
       {
-         Byte flag; f.getMulti(flag, _elms, _size); _case_sensitive=FlagTest(flag, 1); _paths=FlagTest(flag, 2);
+         Byte flag; f.getMulti(flag, _elms, _size); _case_sensitive=FlagOn(flag, 1); _paths=FlagOn(flag, 2);
          alloc();
          f.getFast(_index, SIZE(*_index)*_elms + SIZE(*_data)*_size);
          if(f.ok())return true;

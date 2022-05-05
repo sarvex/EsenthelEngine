@@ -697,7 +697,7 @@ void _List::setRects()
    {
       if(!_rects)Alloc(_rects, visibleElms());
 
-      Bool type_new_line=(FlagTest(flag, LIST_TYPE_SORT) && FlagTest(flag, LIST_TYPE_LINE) && _type_offset>=0);
+      Bool type_new_line=(FlagOn(flag, LIST_TYPE_SORT) && FlagOn(flag, LIST_TYPE_LINE) && _type_offset>=0);
       UInt type_prev    =0,
            type_cur     =0;
       Dbl  x=0, y=0; // use double precision to improve precision for a lot of elements (this gets increased for every element, so errors get accumulated)
@@ -1205,7 +1205,7 @@ static Int ListCompareMap(C Int &i0, C Int &i1)
 }
 void _List::sort()
 {
-   Bool type_sort=(FlagTest(flag, LIST_TYPE_SORT) && _type_offset>=0);
+   Bool type_sort=(FlagOn(flag, LIST_TYPE_SORT) && _type_offset>=0);
    if(  type_sort || sort_column[0]>=0 || sort_column[1]>=0 || sort_column[2]>=0)
    {
       cur=visToAbs(cur);

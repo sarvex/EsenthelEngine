@@ -1,18 +1,18 @@
 /******************************************************************************/
-inline Bool Any(C Half &x                                 ) {return FlagTest(x.data                           , 0x7FFF);} // faster version of "x!=0"
-inline Bool Any(C Half &x, C Half &y                      ) {return FlagTest(x.data | y.data                  , 0x7FFF);} // faster version of "x!=0 || y!=0"
-inline Bool Any(C Half &x, C Half &y, C Half &z           ) {return FlagTest(x.data | y.data | z.data         , 0x7FFF);} // faster version of "x!=0 || y!=0 || z!=0"
-inline Bool Any(C Half &x, C Half &y, C Half &z, C Half &w) {return FlagTest(x.data | y.data | z.data | w.data, 0x7FFF);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
+inline Bool Any(C Half &x                                 ) {return FlagOn(x.data                           , 0x7FFF);} // faster version of "x!=0"
+inline Bool Any(C Half &x, C Half &y                      ) {return FlagOn(x.data | y.data                  , 0x7FFF);} // faster version of "x!=0 || y!=0"
+inline Bool Any(C Half &x, C Half &y, C Half &z           ) {return FlagOn(x.data | y.data | z.data         , 0x7FFF);} // faster version of "x!=0 || y!=0 || z!=0"
+inline Bool Any(C Half &x, C Half &y, C Half &z, C Half &w) {return FlagOn(x.data | y.data | z.data | w.data, 0x7FFF);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
 
-inline Bool Any(C Flt &x                              ) {return FlagTest((U32&)x                              , ~SIGN_BIT);} // faster version of "x!=0"
-inline Bool Any(C Flt &x, C Flt &y                    ) {return FlagTest((U32&)x | (U32&)y                    , ~SIGN_BIT);} // faster version of "x!=0 || y!=0"
-inline Bool Any(C Flt &x, C Flt &y, C Flt &z          ) {return FlagTest((U32&)x | (U32&)y | (U32&)z          , ~SIGN_BIT);} // faster version of "x!=0 || y!=0 || z!=0"
-inline Bool Any(C Flt &x, C Flt &y, C Flt &z, C Flt &w) {return FlagTest((U32&)x | (U32&)y | (U32&)z | (U32&)w, ~SIGN_BIT);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
+inline Bool Any(C Flt &x                              ) {return FlagOn((U32&)x                              , ~SIGN_BIT);} // faster version of "x!=0"
+inline Bool Any(C Flt &x, C Flt &y                    ) {return FlagOn((U32&)x | (U32&)y                    , ~SIGN_BIT);} // faster version of "x!=0 || y!=0"
+inline Bool Any(C Flt &x, C Flt &y, C Flt &z          ) {return FlagOn((U32&)x | (U32&)y | (U32&)z          , ~SIGN_BIT);} // faster version of "x!=0 || y!=0 || z!=0"
+inline Bool Any(C Flt &x, C Flt &y, C Flt &z, C Flt &w) {return FlagOn((U32&)x | (U32&)y | (U32&)z | (U32&)w, ~SIGN_BIT);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
 
-inline Bool Any(C Dbl &x                              ) {return FlagTest((U64&)x                              , (~0ull)>>1);} // faster version of "x!=0"
-inline Bool Any(C Dbl &x, C Dbl &y                    ) {return FlagTest((U64&)x | (U64&)y                    , (~0ull)>>1);} // faster version of "x!=0 || y!=0"
-inline Bool Any(C Dbl &x, C Dbl &y, C Dbl &z          ) {return FlagTest((U64&)x | (U64&)y | (U64&)z          , (~0ull)>>1);} // faster version of "x!=0 || y!=0 || z!=0"
-inline Bool Any(C Dbl &x, C Dbl &y, C Dbl &z, C Dbl &w) {return FlagTest((U64&)x | (U64&)y | (U64&)z | (U64&)w, (~0ull)>>1);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
+inline Bool Any(C Dbl &x                              ) {return FlagOn((U64&)x                              , (~0ull)>>1);} // faster version of "x!=0"
+inline Bool Any(C Dbl &x, C Dbl &y                    ) {return FlagOn((U64&)x | (U64&)y                    , (~0ull)>>1);} // faster version of "x!=0 || y!=0"
+inline Bool Any(C Dbl &x, C Dbl &y, C Dbl &z          ) {return FlagOn((U64&)x | (U64&)y | (U64&)z          , (~0ull)>>1);} // faster version of "x!=0 || y!=0 || z!=0"
+inline Bool Any(C Dbl &x, C Dbl &y, C Dbl &z, C Dbl &w) {return FlagOn((U64&)x | (U64&)y | (U64&)z | (U64&)w, (~0ull)>>1);} // faster version of "x!=0 || y!=0 || z!=0 || w!=0"
 /******************************************************************************/
 inline Bool AtomicGet(C Bool &x        ) {return x;}
 inline Byte AtomicGet(C Byte &x        ) {return x;}

@@ -88,7 +88,7 @@ struct MeshPart // Mesh Base + Mesh Render
  C MaterialPtr& multiMaterial(Int i)C; // get i-th multi material
 
    MeshPart& heightmap(Bool heightmap, Int lod_index=0); // set as heightmap (use false to disable heightmap mode), 'lod_index'=index of the LOD in the mesh (used to determine quality of the shader)
-   Bool      heightmap()C {return FlagTest(part_flag, MSHP_HEIGHTMAP);} // if this is a heightmap
+   Bool      heightmap()C {return FlagOn(part_flag, MSHP_HEIGHTMAP);} // if this is a heightmap
 
    // transform
    MeshPart& move         (              C Vec &move                               ); //           move

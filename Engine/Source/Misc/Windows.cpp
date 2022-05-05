@@ -1476,7 +1476,7 @@ void Application::setWindowFlags(Bool force_resizable)
 {
    if(XDisplay && window() && _MOTIF_WM_HINTS)
    {
-      force_resizable|=FlagTest(flag, APP_RESIZABLE);
+      force_resizable|=FlagOn(flag, APP_RESIZABLE);
       MotifWmHints2 hints; Zero(hints);
       hints.flags      =MWM_HINTS_FUNCTIONS|MWM_HINTS_DECORATIONS;
       hints.functions  =MWM_FUNC_MOVE |       ((flag&APP_NO_CLOSE)?0:MWM_FUNC_CLOSE) | ((flag&APP_MINIMIZABLE)?MWM_FUNC_MINIMIZE :0) | ((flag&APP_MAXIMIZABLE)?MWM_FUNC_MAXIMIZE :0) | (force_resizable?MWM_FUNC_RESIZE  :0);
@@ -1490,8 +1490,8 @@ void Application::windowCreate()
 {
    if(LogInit)LogN("Application.windowCreate");
 #if WINDOWS_OLD
-   Bool want_minmax =FlagTest(flag, APP_MINIMIZABLE|APP_MAXIMIZABLE),
-        want_close  =FlagOff (flag, APP_NO_CLOSE                   ),
+   Bool want_minmax =FlagOn (flag, APP_MINIMIZABLE|APP_MAXIMIZABLE),
+        want_close  =FlagOff(flag, APP_NO_CLOSE                   ),
         want_buttons=(want_minmax || want_close);
 
  C wchar_t *icon=null;
@@ -1673,7 +1673,7 @@ void Application::windowCreate()
 #endif
 
 #if WINDOWS_OLD
-   Bool hide=FlagTest(flag, APP_HIDDEN);
+   Bool hide=FlagOn(flag, APP_HIDDEN);
    UInt ex_style=(drop ? WS_EX_ACCEPTFILES : 0);
 #if DX11
    #define WS_EX_NOREDIRECTIONBITMAP 0x00200000L

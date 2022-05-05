@@ -876,7 +876,7 @@ Bool GetProcessesAccessingThisProcess(MemPtr<ProcessAccess> proc, Bool write_onl
                      {
                         ProcessAccess &p=proc.New();
                         p.proc_id=pid;
-                        p.write=FlagTest(handle.GrantedAccess, write_access);
+                        p.write=FlagOn(handle.GrantedAccess, write_access);
                      }
 
                   #if 0

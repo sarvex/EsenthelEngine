@@ -482,12 +482,12 @@ Bool Ragdoll::loadState(File &f) // don't delete on fail, as here we're loading 
             user       (Ptr(Unaligned(desc.user        )));
             sleepEnergy(    Unaligned(desc.sleep_energy));
 
-            kinematic(FlagTest(Unaligned(desc.flag), ACTOR_KINEMATIC));
-            gravity  (FlagTest(Unaligned(desc.flag), ACTOR_GRAVITY  ));
-            ray      (FlagTest(Unaligned(desc.flag), ACTOR_RAY      ));
-            collision(FlagTest(Unaligned(desc.flag), ACTOR_COLLISION));
-            sleep    (FlagTest(Unaligned(desc.flag), ACTOR_SLEEP    ));
-            ccd      (FlagTest(Unaligned(desc.flag), ACTOR_CCD      ));
+            kinematic(FlagOn(Unaligned(desc.flag), ACTOR_KINEMATIC));
+            gravity  (FlagOn(Unaligned(desc.flag), ACTOR_GRAVITY  ));
+            ray      (FlagOn(Unaligned(desc.flag), ACTOR_RAY      ));
+            collision(FlagOn(Unaligned(desc.flag), ACTOR_COLLISION));
+            sleep    (FlagOn(Unaligned(desc.flag), ACTOR_SLEEP    ));
+            ccd      (FlagOn(Unaligned(desc.flag), ACTOR_CCD      ));
 
             if(f.getBool())
             {

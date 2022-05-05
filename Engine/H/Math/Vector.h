@@ -249,7 +249,7 @@ inline void CHS(Long &x) {x=-x;}
 inline void CHS(Flt  &x) {((U32&) x)   ^=SIGN_BIT;} // works as "x=-x;" but faster
 inline void CHS(Dbl  &x) {((U32*)&x)[1]^=SIGN_BIT;} // works as "x=-x;" but faster
 #if EE_PRIVATE
-INLINE Bool NegativeSB(Flt  x) {return FlagTest   ((UInt&)x, SIGN_BIT);}
+INLINE Bool NegativeSB(Flt  x) {return FlagOn     ((UInt&)x, SIGN_BIT);}
 INLINE void      CHSSB(Flt &x) {       FlagToggle ((UInt&)x, SIGN_BIT);}
 INLINE void      ABSSB(Flt &x) {       FlagDisable((UInt&)x, SIGN_BIT);}
 

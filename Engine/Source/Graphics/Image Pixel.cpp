@@ -5283,9 +5283,9 @@ struct CopyContext
 
    CopyContext(C Image &src, Image &dest, FILTER_TYPE filter, UInt flags) : src(src), dest(dest),
       clamp(IcClamp(flags)),
-      keep_edges(FlagTest(flags, IC_KEEP_EDGES)),
-      alpha_weight(FlagTest(flags, IC_ALPHA_WEIGHT) && src.typeInfo().a), // only if source has alpha
-      no_alpha_limit(FlagTest(flags, IC_NO_ALPHA_LIMIT)),
+      keep_edges    (FlagOn(flags, IC_KEEP_EDGES)),
+      alpha_weight  (FlagOn(flags, IC_ALPHA_WEIGHT) && src.typeInfo().a), // only if source has alpha
+      no_alpha_limit(FlagOn(flags, IC_NO_ALPHA_LIMIT)),
       src_srgb(src.sRGB()), dest_srgb(dest.sRGB()),
       ignore_gamma(IgnoreGamma(flags, src.hwType(), dest.hwType())),
 

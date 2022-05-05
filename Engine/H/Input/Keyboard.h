@@ -11,13 +11,13 @@ struct KeyboardKey
    KB_KEY k;
    Byte   flags;
 
-   Bool any    ()C {return  c || k                ;} // if any character or key pressed
-   Bool ctrl   ()C {return  FlagTest(flags, CTRL );} // if any  Control pressed
-   Bool shift  ()C {return  FlagTest(flags, SHIFT);} // if any  Shift   pressed
-   Bool alt    ()C {return  FlagTest(flags, ALT  );} // if any  Alt     pressed
-   Bool win    ()C {return  FlagTest(flags, WIN  );} // if any  Win     pressed
-   Bool lalt   ()C {return  FlagTest(flags, LALT );} // if Left Alt     pressed
-   Bool first  ()C {return  FlagTest(flags, FIRST);} // if this is the first press of the key (if false then it's a repeated press)
+   Bool any    ()C {return    c || k              ;} // if any character or key pressed
+   Bool ctrl   ()C {return    FlagOn(flags, CTRL );} // if any  Control pressed
+   Bool shift  ()C {return    FlagOn(flags, SHIFT);} // if any  Shift   pressed
+   Bool alt    ()C {return    FlagOn(flags, ALT  );} // if any  Alt     pressed
+   Bool win    ()C {return    FlagOn(flags, WIN  );} // if any  Win     pressed
+   Bool lalt   ()C {return    FlagOn(flags, LALT );} // if Left Alt     pressed
+   Bool first  ()C {return    FlagOn(flags, FIRST);} // if this is the first press of the key (if false then it's a repeated press)
    Bool ctrlCmd()C {return APPLE ? win () : ctrl();} // if any Ctrl is on (on platforms other than Apple), and if any Command is on (on Apple platforms)
    Bool winCtrl()C {return APPLE ? ctrl() : win ();} // if any Win  is on (on platforms other than Apple), and if any Control is on (on Apple platforms)
 

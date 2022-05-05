@@ -447,7 +447,7 @@ static void DrawDescriptionObj(GuiObj &obj, C Vec2 &pos, Flt start_time, Bool mo
       case GO_LIST:
       {
         _List &list=obj.asList();
-         immediate=FlagTest(list.flag, LIST_IMMEDIATE_DESC);
+         immediate=FlagOn(list.flag, LIST_IMMEDIATE_DESC);
          if(list._desc_offset>=0)
             if(Ptr data=list.screenToData(pos))text=*(Char**)((Byte*)data+list._desc_offset);
       }break;

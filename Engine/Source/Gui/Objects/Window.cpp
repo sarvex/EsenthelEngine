@@ -149,10 +149,10 @@ static Rect ResizedRect(C Rect &src, C Rect &dest, UInt mask)
 {
  C Rect *r[2]={&src, &dest};
    Rect  resized;
-   resized.min.x=r[FlagTest(mask, DIRF_LEFT )]->min.x;
-   resized.min.y=r[FlagTest(mask, DIRF_DOWN )]->min.y;
-   resized.max.x=r[FlagTest(mask, DIRF_RIGHT)]->max.x;
-   resized.max.y=r[FlagTest(mask, DIRF_UP   )]->max.y;
+   resized.min.x=r[FlagOn(mask, DIRF_LEFT )]->min.x;
+   resized.min.y=r[FlagOn(mask, DIRF_DOWN )]->min.y;
+   resized.max.x=r[FlagOn(mask, DIRF_RIGHT)]->max.x;
+   resized.max.y=r[FlagOn(mask, DIRF_UP   )]->max.y;
    return resized;
 }
 static Rect MaximizedRect(C Window &window)

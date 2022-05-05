@@ -171,7 +171,7 @@ Bool LineMode::save(File &f, StrLibrary &sl, C Str &text)C
 }
 Bool LineMode::load(File &f, StrLibrary &sl, C Str &text, Line &line, Str &temp)
 {
-   Byte flag; f>>flag; starts_with_comment=FlagTest(flag, SWC); ends_with_comment=FlagTest(flag, EWC); preproc=FlagTest(flag, PRP); starts_with_preproc=FlagTest(flag, SWP); ends_with_preproc=FlagTest(flag, EWP); starts_with_macro_param=FlagTest(flag, SWM);
+   Byte flag; f>>flag; starts_with_comment=FlagOn(flag, SWC); ends_with_comment=FlagOn(flag, EWC); preproc=FlagOn(flag, PRP); starts_with_preproc=FlagOn(flag, SWP); ends_with_preproc=FlagOn(flag, EWP); starts_with_macro_param=FlagOn(flag, SWM);
    if(type.loadRaw(f))
    {
       tokens.setNum(f.decUIntV()); FREPA(tokens)if(!tokens[i].load(f, sl, text, line, temp))goto error;
@@ -296,8 +296,8 @@ Bool Line::load(File &f, StrLibrary &sl, Int line, Source &source, Str &temp)
    T.source=&source;
    Byte flag;
    f.getStr(T)>>flag;
-   tokens_preproc_use                  =FlagTest(flag, TOKENS_PREPROC_USE);
-   tokens_preproc_condition_unavailable=FlagTest(flag, TOKENS_PREPROC_CONDITION_UNAVAILABLE);
+   tokens_preproc_use                  =FlagOn(flag, TOKENS_PREPROC_USE);
+   tokens_preproc_condition_unavailable=FlagOn(flag, TOKENS_PREPROC_CONDITION_UNAVAILABLE);
    if(LineMode   ::load(f, sl, T, T, temp))
  //if(comment_mode.load(f, sl, T, T, temp))
    {
@@ -529,7 +529,7 @@ Bool Source::getSymbolMacroID(C VecI2 &cur, SymbolPtr &symbol_ptr, Macro* &macro
          {
             Memt<SymbolPtr> funcs; // definition + declaration
             SymbolPtr       func_list; if(func_list.find(GetPath(symbol->full_name)))REPA(func_list->funcs)if(symbol->sameFunc(*func_list->funcs[i]))funcs.add(func_list->funcs[i]); // gather same funcs into container
-            Symbol         *preference=null; REPA(funcs)if(FlagTest(funcs[i]->modifiers, Symbol::MODIF_FUNC_BODY)==prefer_definition){preference=funcs[i](); break;} // find preference
+            Symbol         *preference=null; REPA(funcs)if(FlagOn(funcs[i]->modifiers, Symbol::MODIF_FUNC_BODY)==prefer_definition){preference=funcs[i](); break;} // find preference
             if(preference && preference->source==this && InRange(preference->token_index, tokens) && tokens[preference->token_index]->lineIndex()==cur.y)preference=null; // if we're already at the preference and trying to jump to it again, then cancel jumping to preference
             if(preference)symbol=preference;else REPA(funcs)if(funcs[i]==symbol){symbol=funcs[(i+1)%funcs.elms()](); break;} // if preference is available then jump to it, if not then select next function in the list
          }
@@ -960,10 +960,10 @@ Bool Source::save(File &f, StrLibrary &sl)C
 Bool Source::load(File &f, StrLibrary &sl, Str &temp)
 {
    Byte flag; f>>flag;
-   header       =FlagTest(flag,        HEADER);
-   engine_header=FlagTest(flag, ENGINE_HEADER);
-   cpp          =FlagTest(flag, CPP          );
-   Const        =FlagTest(flag, SRC_CONST    );
+   header       =FlagOn(flag,        HEADER);
+   engine_header=FlagOn(flag, ENGINE_HEADER);
+   cpp          =FlagOn(flag, CPP          );
+   Const        =FlagOn(flag, SRC_CONST    );
    sl.getStr(f, loc.file_name); loc.setFile(loc.file_name);
    if(!modify_time.load(f))goto error;
 #if SOURCE_DEBUG_SPEED_SIZE
@@ -1006,7 +1006,7 @@ ERROR_TYPE Source::load()
    }
    sel=-1; cur=0;
    fromText(data);
-   if(error==EE_ERR_NONE && loc.file){FileInfo fi; if(fi.getSystem(loc.file_name)){modify_time=fi.modify_time_utc; Const=FlagTest(fi.attrib, FATTRIB_READ_ONLY);}} // adjust modification time after 'changed'
+   if(error==EE_ERR_NONE && loc.file){FileInfo fi; if(fi.getSystem(loc.file_name)){modify_time=fi.modify_time_utc; Const=FlagOn(fi.attrib, FATTRIB_READ_ONLY);}} // adjust modification time after 'changed'
    return error;
 }
 void Source::reload()

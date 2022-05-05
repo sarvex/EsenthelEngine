@@ -549,7 +549,7 @@ Bool PhysicsClass::ignored(PHYS_API(PxRigidActor, RigidBody) &a, PHYS_API(PxRigi
 #if PHYSX
    PxShape *as, *bs;
    if(a.getShapes(&as, 1))if(UInt ai=as->getSimulationFilterData().word1)
-   if(b.getShapes(&bs, 1))if(UInt bi=bs->getSimulationFilterData().word1)return FlagTest(Physx.ignoreMap(ai, bi), 1<<(bi&7));
+   if(b.getShapes(&bs, 1))if(UInt bi=bs->getSimulationFilterData().word1)return FlagOn(Physx.ignoreMap(ai, bi), 1<<(bi&7));
    return false;
 #else
    return a.ignore.has(&b);

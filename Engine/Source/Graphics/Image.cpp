@@ -711,7 +711,7 @@ Bool CompatibleLock(LOCK_MODE cur, LOCK_MODE lock)
 Bool IgnoreGamma(UInt flags, IMAGE_TYPE src, IMAGE_TYPE dest)
 {
    if(IsSRGB(src)==IsSRGB(dest))return true; // if gamma is the same, then we can ignore it
-   if(Int ignore=FlagTest(flags, IC_IGNORE_GAMMA)-FlagTest(flags, IC_CONVERT_GAMMA))return ignore>0; // if none or both flag specified then continue below (auto-detect)
+   if(Int ignore=FlagOn(flags, IC_IGNORE_GAMMA)-FlagOn(flags, IC_CONVERT_GAMMA))return ignore>0; // if none or both flag specified then continue below (auto-detect)
    return (ImageTI[src].precision<=IMAGE_PRECISION_8) && (ImageTI[dest].precision<=IMAGE_PRECISION_8); // auto-detect, ignore only if both types are low-precision
 }
 Bool CanDoRawCopy(IMAGE_TYPE src, IMAGE_TYPE dest, Bool ignore_gamma)
@@ -2022,7 +2022,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
    else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
    Bool alt_type_on_fail=FlagOff(flags, IC_NO_ALT_TYPE),
-        env=(FlagTest(flags, IC_ENV_CUBE) && IsCube((IMAGE_MODE)mode) && mip_maps>1);
+        env=(FlagOn(flags, IC_ENV_CUBE) && IsCube((IMAGE_MODE)mode) && mip_maps>1);
 
    // check if doesn't require conversion
    if(this==&dest && w==T.w() && h==T.h() && d==T.d() && mode==T.mode() && mip_maps==T.mipMaps() && !env) // here check 'T' instead of 'src' (which could've already encountered some cube conversion, however here we want to check if we can just return without doing any conversions at all)
@@ -2133,7 +2133,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
       else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
       Bool  alt_type_on_fail=FlagOff(flags, IC_NO_ALT_TYPE),
-            env=(FlagTest(flags, IC_ENV_CUBE) && mip_maps>1);
+            env=(FlagOn(flags, IC_ENV_CUBE) && mip_maps>1);
       Image temp; if(temp.createTry(size, size, 1, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail)) // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
       {
          if(layout==CUBE_LAYOUT_ONE)

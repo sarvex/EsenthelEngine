@@ -2164,8 +2164,8 @@ EXTENSION_TYPE ExtType(C Str &ext)
 }
 /******************************************************************************/
 #if 0
-inline Bool DriveChar(Char8 c) {return FlagTest(CharFlag(c), CHARF_ALPHA);}
-inline Bool DriveChar(Char  c) {return FlagTest(CharFlag(c), CHARF_ALPHA);}
+inline Bool DriveChar(Char8 c) {return FlagOn(CharFlag(c), CHARF_ALPHA);}
+inline Bool DriveChar(Char  c) {return FlagOn(CharFlag(c), CHARF_ALPHA);}
 #else
 inline Bool DriveChar(Char8 c) {return (c>='a' && c<='z') || (c>='A' && c<='Z');}
 inline Bool DriveChar(Char  c) {return (c>='a' && c<='z') || (c>='A' && c<='Z');}

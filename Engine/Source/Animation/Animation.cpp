@@ -2198,9 +2198,9 @@ static void DelRot(Animation &anim, UInt flag)
 {
    if(FlagAll(flag, ROOT_DEL_ROTATION))anim.keys.orns.del();else
    {
-      Bool x=FlagTest(flag, ROOT_DEL_ROTATION_X),
-           y=FlagTest(flag, ROOT_DEL_ROTATION_Y),
-           z=FlagTest(flag, ROOT_DEL_ROTATION_Z);
+      Bool x=FlagOn(flag, ROOT_DEL_ROTATION_X),
+           y=FlagOn(flag, ROOT_DEL_ROTATION_Y),
+           z=FlagOn(flag, ROOT_DEL_ROTATION_Z);
       REPA(anim.keys.orns)
       {
          Orient    &orn=anim.keys.orns[i].orn;

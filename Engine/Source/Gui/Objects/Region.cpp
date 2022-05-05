@@ -120,7 +120,7 @@ Region& Region::removeSlideBars()
    view       .del();
    setButtons(); return T;
 }
-Bool    Region::alwaysHideHorizontalSlideBar(         )C {return FlagTest(_flag, ALWAYS_HIDE_HORIZONTAL_SLIDEBAR);}
+Bool    Region::alwaysHideHorizontalSlideBar(         )C {return FlagOn(_flag, ALWAYS_HIDE_HORIZONTAL_SLIDEBAR);}
 Region& Region::alwaysHideHorizontalSlideBar(Bool hide)
 {
    if(hide!=alwaysHideHorizontalSlideBar())

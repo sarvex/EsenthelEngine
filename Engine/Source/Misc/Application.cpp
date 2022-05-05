@@ -513,7 +513,7 @@ Application& Application::stayAwake(AWAKE_MODE mode)
      _stay_awake=mode;
    #if DESKTOP
       if(mode==AWAKE_SCREEN) // if we want to keep the screen on
-         if(!(active() || FlagTest(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
+         if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
             mode=AWAKE_OFF; // then disable staying awake
    #endif
    #if WINDOWS_OLD
@@ -526,7 +526,7 @@ Application& Application::stayAwake(AWAKE_MODE mode)
       if(mode && IOPMAssertionCreateWithName((mode==AWAKE_SCREEN) ? kIOPMAssertionTypeNoDisplaySleep : kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("Busy"), &AssertionID)==kIOReturnSuccess)AssertionIDValid=true;
    #elif ANDROID
       if(mode==AWAKE_SYSTEM) // if we want to keep the system on
-         if(!(active() || FlagTest(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
+         if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
             mode=AWAKE_OFF; // then disable staying awake
       JNI jni;
       if(jni && ActivityClass)

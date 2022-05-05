@@ -617,7 +617,7 @@ Bool FAttrib(C Str &name, UInt attrib)
          FlagSet(mode, S_IWGRP, write);
          FlagSet(mode, S_IWOTH, write);
       #ifdef UF_HIDDEN
-         UInt flags=stats.st_flags; FlagSet(flags, UF_HIDDEN, FlagTest(attrib, FATTRIB_HIDDEN));
+         UInt flags=stats.st_flags; FlagSet(flags, UF_HIDDEN, FlagOn(attrib, FATTRIB_HIDDEN));
          if(!lchflags(utf, flags) && !lchmod(utf, mode))
       #else
          if(!chmod(utf, mode))
