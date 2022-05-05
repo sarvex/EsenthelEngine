@@ -1,6 +1,6 @@
 /******************************************************************************/
-const uint ProjectVersion     =93, // !! increase this by one if any of engine/editor asset formats have changed !!
-           ClientServerVersion=93; // !! client/server version (client will fail if tries to connect to server compiled with different version), increase this by one if any of engine resource formats have changed or if the network protocol has changed or if editor classes formats have changed !!
+const uint ProjectVersion     =94, // !! increase this by one if any of engine/editor asset formats have changed !!
+           ClientServerVersion=94; // !! client/server version (client will fail if tries to connect to server compiled with different version), increase this by one if any of engine resource formats have changed or if the network protocol has changed or if editor classes formats have changed !!
 const Str  ClientServerString =ENGINE_NAME " Editor";
 /******************************************************************************/
 const cchar8       *WorldVerSuffix     ="\\Data",

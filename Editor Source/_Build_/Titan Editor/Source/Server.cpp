@@ -267,11 +267,11 @@ ServerClass Server;
 
                case CS_NO_PUBLISH_ELMS: if(proj)
                {
-                  Memc<UID> elm_ids; bool no_publish; TimeStamp no_publish_time; UID proj_id; ClientRecvNoPublishElms(data, elm_ids, no_publish, no_publish_time, proj_id);
+                  Memc<UID> elm_ids; bool no_publish; TimeStamp publish_time; UID proj_id; ClientRecvNoPublishElms(data, elm_ids, no_publish, publish_time, proj_id);
                   if(proj_id==proj->id)
                   {
                      proj->setListCurSel();
-                     FREPA(elm_ids)if(Elm *elm=proj->findElm(elm_ids[i]))if(no_publish_time>elm->no_publish_time)elm->setNoPublish(no_publish, no_publish_time);
+                     FREPA(elm_ids)if(Elm *elm=proj->findElm(elm_ids[i]))if(publish_time>elm->publish_time)elm->setNoPublish(no_publish, publish_time);
                      proj->setList(false);
                      proj->activateSources(); // rebuild sources if needed
                      WorldEdit.delayedValidateRefs();
@@ -322,10 +322,10 @@ ServerClass Server;
                      }else
                      if(elm.type==proj_elm.type)
                      {
-                        if(elm.      name_time>proj_elm.      name_time)proj->setElmName(proj_elm, elm.name       , elm.      name_time);
-                        if(elm.    parent_time>proj_elm.    parent_time)proj_elm.setParent   (    elm.parent_id  , elm.    parent_time);
-                        if(elm.   removed_time>proj_elm.   removed_time)proj_elm.setRemoved  (    elm.removed  (), elm.   removed_time);
-                        if(elm.no_publish_time>proj_elm.no_publish_time)proj_elm.setNoPublish(    elm.noPublish(), elm.no_publish_time);
+                        if(elm.   name_time>proj_elm.   name_time)proj->setElmName(proj_elm, elm.name       , elm.   name_time);
+                        if(elm. parent_time>proj_elm. parent_time)proj_elm.setParent   (    elm.parent_id  , elm. parent_time);
+                        if(elm.removed_time>proj_elm.removed_time)proj_elm.setRemoved  (    elm.removed  (), elm.removed_time);
+                        if(elm.publish_time>proj_elm.publish_time)proj_elm.setNoPublish(    elm.noPublish(), elm.publish_time);
                         if(elm.data && (!proj_elm.data || elm.data->ver!=proj_elm.data->ver))
                         {
                            elm_data.pos(0); elm_extra.pos(0); proj->syncElm(proj_elm, elm, elm_data, elm_extra, true);

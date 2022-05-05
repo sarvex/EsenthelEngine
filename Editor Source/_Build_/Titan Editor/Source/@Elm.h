@@ -22,7 +22,7 @@ class Elm
                        name_time, // time when the element was named or renamed
                      parent_time, // time when the element was attached to the parent
                     removed_time, // time when the element was removed or restored
-                 no_publish_time; // time when the element had NO_PUBLISH changed
+                    publish_time; // time when the element had publishing changed
    ElmData            *data;
 
   ~Elm();
@@ -34,6 +34,7 @@ class Elm
    // get
    bool importing     ()C;   Elm& importing     (bool on);
    bool opened        ()C;   Elm& opened        (bool on);
+   bool exists        ()C;   Elm& exists        (bool on); // this checks only if this element       exists , it doesn't check the parents
    bool removed       ()C;   Elm& removed       (bool on); // this checks only if this element is    removed, it doesn't check the parents
    bool publish       ()C;   Elm& publish       (bool on); // this checks only if this element is    publish, it doesn't check the parents
    bool noPublish     ()C;   Elm& noPublish     (bool on); // this checks only if this element is no publish, it doesn't check the parents

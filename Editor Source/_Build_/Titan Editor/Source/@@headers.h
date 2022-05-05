@@ -681,7 +681,7 @@ enum VIEW_MODE
 /******************************************************************************/
 // CONSTANTS
 /******************************************************************************/
-const int  APP_BUILD        =71;
+const int  APP_BUILD        =72;
 const int           ForceInstaller=-2, // -2=disable and don't update, -1=disable, 0=auto, 1=enable (this is used only in Debug)
                     HeightBrushNoiseRes=256,
                     MtrlBrushSlots=14,
@@ -706,8 +706,8 @@ const int           ForceInstaller=-2, // -2=disable and don't update, -1=disabl
                     MeshSplitMinVtxs=12000, // min number of vertexes in a mesh to split it
                     MeshSplitMinSize=4;
 const uint          NewElmTime=1;
-const uint ProjectVersion     =93, // !! increase this by one if any of engine/editor asset formats have changed !!
-           ClientServerVersion=93;
+const uint ProjectVersion     =94, // !! increase this by one if any of engine/editor asset formats have changed !!
+           ClientServerVersion=94;
 const int           ServerNetworkCompressionLevel=9           , ClientNetworkCompressionLevel=9            , ProjectPackageCompressionLevel=9;
 /******************************************************************************/
 // TYPEDEFS

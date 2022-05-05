@@ -256,21 +256,21 @@ void ClientRecvRemoveElms(File &f, Memc<UID> &elm_ids, bool &removed, TimeStamp 
 /******************************************************************************/
 // CS_NO_PUBLISH_ELMS
 /******************************************************************************/
-void ClientSendNoPublishElms(Connection &conn, Memc<UID> &elm_ids, bool no_publish, C TimeStamp &no_publish_time)
+void ClientSendNoPublishElms(Connection &conn, Memc<UID> &elm_ids, bool no_publish, C TimeStamp &publish_time)
 {
-   if(elm_ids.elms()){File f; f.writeMem().putByte(CS_NO_PUBLISH_ELMS).cmpUIntV(elm_ids.elms())<<no_publish<<no_publish_time; FREPA(elm_ids)f<<elm_ids[i]; f.pos(0); conn.send(f, -1, false);}
+   if(elm_ids.elms()){File f; f.writeMem().putByte(CS_NO_PUBLISH_ELMS).cmpUIntV(elm_ids.elms())<<no_publish<<publish_time; FREPA(elm_ids)f<<elm_ids[i]; f.pos(0); conn.send(f, -1, false);}
 }
-void ServerRecvNoPublishElms(File &f, Memc<UID> &elm_ids, bool &no_publish, TimeStamp &no_publish_time)
+void ServerRecvNoPublishElms(File &f, Memc<UID> &elm_ids, bool &no_publish, TimeStamp &publish_time)
 {
-   elm_ids.setNum(f.decUIntV()); f>>no_publish>>no_publish_time; FREPA(elm_ids)f>>elm_ids[i];
+   elm_ids.setNum(f.decUIntV()); f>>no_publish>>publish_time; FREPA(elm_ids)f>>elm_ids[i];
 }
-void ServerWriteNoPublishElms(File &f, Memc<UID> &elm_ids, bool no_publish, C TimeStamp &no_publish_time, C UID &proj_id)
+void ServerWriteNoPublishElms(File &f, Memc<UID> &elm_ids, bool no_publish, C TimeStamp &publish_time, C UID &proj_id)
 {
-   f.putByte(CS_NO_PUBLISH_ELMS).cmpUIntV(elm_ids.elms())<<no_publish<<no_publish_time<<proj_id; FREPA(elm_ids)f<<elm_ids[i];
+   f.putByte(CS_NO_PUBLISH_ELMS).cmpUIntV(elm_ids.elms())<<no_publish<<publish_time<<proj_id; FREPA(elm_ids)f<<elm_ids[i];
 }
-void ClientRecvNoPublishElms(File &f, Memc<UID> &elm_ids, bool &no_publish, TimeStamp &no_publish_time, UID &proj_id)
+void ClientRecvNoPublishElms(File &f, Memc<UID> &elm_ids, bool &no_publish, TimeStamp &publish_time, UID &proj_id)
 {
-   elm_ids.setNum(f.decUIntV()); f>>no_publish>>no_publish_time>>proj_id; FREPA(elm_ids)f>>elm_ids[i];
+   elm_ids.setNum(f.decUIntV()); f>>no_publish>>publish_time>>proj_id; FREPA(elm_ids)f>>elm_ids[i];
 }
 /******************************************************************************/
 // CS_GET_ELM_NAMES

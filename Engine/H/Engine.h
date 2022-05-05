@@ -1,7 +1,7 @@
 /******************************************************************************/
 #pragma once // include the header only once
 /******************************************************************************/
-#define ENGINE_BUILD           71 // this is an integer value specifying build iteration of the Engine, this gets incremented with each new release
+#define ENGINE_BUILD           72 // this is an integer value specifying build iteration of the Engine, this gets incremented with each new release
 #define ENGINE_NAME           "Titan"
 #define ENGINE_DEVELOPER_NAME "Esenthel"
 /******************************************************************************

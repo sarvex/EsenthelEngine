@@ -3396,9 +3396,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          Delete(data);
          flag=src.flag;
          name=src.name;
-         name_time=src.      name_time;
-      removed_time=src.   removed_time;
-   no_publish_time=src.no_publish_time;
+         name_time=src.   name_time;
+      removed_time=src.removed_time;
+      publish_time=src.publish_time;
          if(set_parent)
          {
             parent_id  =src.parent_id;
@@ -3457,6 +3457,8 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    Elm& Elm::importing(bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
    bool Elm::opened()C {return FlagOn (flag, OPENED          );}
    Elm& Elm::opened(bool on) {FlagSet(flag, OPENED          ,  on); return T;}
+   bool Elm::exists()C {return FlagOff(flag, REMOVED         );}
+   Elm& Elm::exists(bool on) {FlagSet(flag, REMOVED         , !on); return T;}
    bool Elm::removed()C {return FlagOn (flag, REMOVED         );}
    Elm& Elm::removed(bool on) {FlagSet(flag, REMOVED         ,  on); return T;}
    bool Elm::publish()C {return FlagOff(flag, NO_PUBLISH      );}
@@ -3474,10 +3476,10 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
  C Str& Elm::srcFile()C {return data ?  data->src_file : S;}
    bool Elm::initialized()C {return data && data->ver;}
    void Elm::resetFinal() {FlagEnable(flag, FINAL_REMOVED|FINAL_NO_PUBLISH);}
-   Elm& Elm::setRemoved(  bool removed   , C TimeStamp &time) {T.removed  (removed   ); T.   removed_time=time; return T;}
-   Elm& Elm::setNoPublish(  bool no_publish, C TimeStamp &time) {T.noPublish(no_publish); T.no_publish_time=time; return T;}
-   Elm& Elm::setName(C Str &name      , C TimeStamp &time) {T.name     =name       ; T.      name_time=time; return T;}
-   Elm& Elm::setParent(C UID &parent_id , C TimeStamp &time) {T.parent_id=parent_id  ; T.    parent_time=time; return T;}
+   Elm& Elm::setRemoved(  bool removed   , C TimeStamp &time) {T.removed  (removed   ); T.removed_time=time; return T;}
+   Elm& Elm::setNoPublish(  bool no_publish, C TimeStamp &time) {T.noPublish(no_publish); T.publish_time=time; return T;}
+   Elm& Elm::setName(C Str &name      , C TimeStamp &time) {T.name     =name       ; T.   name_time=time; return T;}
+   Elm& Elm::setParent(C UID &parent_id , C TimeStamp &time) {T.parent_id=parent_id  ; T. parent_time=time; return T;}
    Elm& Elm::setParent(C Elm *parent    , C TimeStamp &time) {return setParent(parent ? parent->id : UIDZero, time);}
    Elm& Elm::setSrcFile(C Str &src_file  , C TimeStamp &time) {if(ElmData *data=Data()){data->setSrcFile(src_file, time); data->newVer();} return T;}
    ElmObjClass  *   Elm::objClassData() {if(type==ELM_OBJ_CLASS  ){if(!data)data=new ElmObjClass  ; return CAST(ElmObjClass  , data);} return null;}
@@ -3666,7 +3668,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       if(network)FlagDisable(flag, IMPORTING); // don't transmit IMPORTING status over network, to make reload requests local only, so one reload doesn't trigger reload on all connected computers
       f.cmpUIntV(3);
       f<<id<<parent_id<<type<<flag;
-      f<<name_time<<parent_time<<removed_time<<no_publish_time;
+      f<<name_time<<parent_time<<removed_time<<publish_time;
       if(!skip_name_data)f<<name;
 
       // data
@@ -3681,7 +3683,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          case 3:
          {
             f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
-            f>>name_time>>parent_time>>removed_time>>no_publish_time;
+            f>>name_time>>parent_time>>removed_time>>publish_time;
             if(!skip_name_data)f>>name;
 
             // data
@@ -3698,7 +3700,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          case 2:
          {
             f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
-            f>>name_time>>parent_time>>removed_time>>no_publish_time;
+            f>>name_time>>parent_time>>removed_time>>publish_time;
             if(!skip_name_data)GetStr2(f, name);
 
             // data
@@ -3715,7 +3717,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          case 1:
          {
             f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
-            f>>name_time>>parent_time>>removed_time>>no_publish_time;
+            f>>name_time>>parent_time>>removed_time>>publish_time;
             if(!skip_name_data)GetStr(f, name);
 
             // data
@@ -3732,7 +3734,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          case 0:
          {
             f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
-            f>>name_time>>parent_time>>removed_time; no_publish_time.zero();
+            f>>name_time>>parent_time>>removed_time; publish_time.zero();
             if(!skip_name_data)GetStr(f, name);
 
             // data
@@ -3757,10 +3759,10 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       if(removed        ())node.nodes.New().set  ("Removed");
       if(noPublish      ())node.nodes.New().set  ("Publish", publish());
 
-                              node.nodes.New().set("NameTime"   , name_time.text());
-                              node.nodes.New().set("ParentTime" , parent_time.text());
-      if(   removed_time.is())node.nodes.New().set("RemovedTime", removed_time.text());
-      if(no_publish_time.is())node.nodes.New().set("PublishTime", no_publish_time.text());
+                           node.nodes.New().set("NameTime"   ,    name_time.text());
+                           node.nodes.New().set("ParentTime" ,  parent_time.text());
+      if(removed_time.is())node.nodes.New().set("RemovedTime", removed_time.text());
+      if(publish_time.is())node.nodes.New().set("PublishTime", publish_time.text());
       // IMPORTING OPENED flags are not saved, because this text format is used for SVN synchronization, and we don't want to send these flags to other computers
       // FINAL_REMOVED FINAL_NO_PUBLISH flags are not saved because they are calculated based on other flags and parents
       if(data)data->save(node.nodes.New().setName("Data").nodes);
@@ -3774,12 +3776,12 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          if(n.name=="Type"       ){REP(ELM_NUM)if(n.value==ElmTypeNameNoSpaceDummy.names[i]){type=ELM_TYPE(i); break;}}else
          if(n.name=="Name"       )n.getValue(name     );else
          if(n.name=="Parent"     )n.getValue(parent_id);else
-         if(n.name=="Removed"    )removed        (n.asBool1());else
-         if(n.name=="Publish"    )publish        (n.asBool1());else
-         if(n.name=="NameTime"   )name_time      =n.asText () ;else
-         if(n.name=="ParentTime" )parent_time    =n.asText () ;else
-         if(n.name=="RemovedTime")removed_time   =n.asText () ;else
-         if(n.name=="PublishTime")no_publish_time=n.asText () ;else
+         if(n.name=="Removed"    )removed     (n.asBool1());else
+         if(n.name=="Publish"    )publish     (n.asBool1());else
+         if(n.name=="NameTime"   )name_time   =n.asText () ;else
+         if(n.name=="ParentTime" )parent_time =n.asText () ;else
+         if(n.name=="RemovedTime")removed_time=n.asText () ;else
+         if(n.name=="PublishTime")publish_time=n.asText () ;else
          if(n.name=="Data"       )data_node=&n; // remember for later, because to load data, first we must know the type
       }
       if(!type){error=S+"Element \""+node.name+"\" has no type"; return false;}

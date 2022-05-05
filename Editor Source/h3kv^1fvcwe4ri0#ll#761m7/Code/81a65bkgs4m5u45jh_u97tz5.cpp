@@ -1241,11 +1241,11 @@ class ProjectEx : ProjectHierarchy
          int      child_i=node.children[i];
          ElmNode &child  =hierarchy[child_i];
          Elm     &elm    =elms     [child_i];
-         if(!elm.noPublish()) // if has publishing enabled
+         if(elm.publish()) // if has publishing enabled
          {
             if(ids.has(elm.id)) // if want to change
             {
-               if(time>elm.no_publish_time){elm.setNoPublish(true, time); processed.add(elm.id);} // disable self, but skip the children
+               if(time>elm.publish_time){elm.setNoPublish(true, time); processed.add(elm.id);} // disable self, but skip the children
             }else // continue checking children
             {
                disablePublish(child, ids, processed, time);
@@ -1260,7 +1260,7 @@ class ProjectEx : ProjectHierarchy
          TimeStamp time; time.getUTC(); Memc<UID> processed;
 
          if(parents_only)disablePublish(root, ids, processed, time);else
-         REPA(ids)if(Elm *elm=findElm(ids[i]))if(!elm.noPublish() && time>elm.no_publish_time){elm.setNoPublish(true, time); processed.add(elm.id);}
+         REPA(ids)if(Elm *elm=findElm(ids[i]))if(elm.publish() && time>elm.publish_time){elm.setNoPublish(true, time); processed.add(elm.id);}
 
          if(set_undo)if(ElmChange *change=elm_undos.set(null, true))
          {
@@ -1281,7 +1281,7 @@ class ProjectEx : ProjectHierarchy
       {
          TimeStamp time; time.getUTC(); Memc<UID> processed;
 
-         REPA(ids)if(Elm *elm=findElm(ids[i]))if(elm.noPublish() && time>elm.no_publish_time){elm.setNoPublish(false, time); processed.add(elm.id);}
+         REPA(ids)if(Elm *elm=findElm(ids[i]))if(elm.noPublish() && time>elm.publish_time){elm.setNoPublish(false, time); processed.add(elm.id);}
 
          if(set_undo)if(ElmChange *change=elm_undos.set(null, true))
          {
@@ -3644,7 +3644,7 @@ class ProjectEx : ProjectHierarchy
          int      child_i=node.children[i];
          ElmNode &child  =hierarchy[child_i];
          Elm     &elm    =elms     [child_i];
-         if(!elm.removed() && !elm.noPublish() && ElmVisible(elm.type))if(invalidRefs(elm) || hasInvalid(child))return true;
+         if(elm.exists() && elm.publish() && ElmVisible(elm.type))if(invalidRefs(elm) || hasInvalid(child))return true;
       }
       return false;
    }
@@ -3655,7 +3655,7 @@ class ProjectEx : ProjectHierarchy
          int      child_i=node.children[i];
          ElmNode &child  =hierarchy[child_i];
          Elm     &elm    =elms     [child_i];
-         if(!elm.removed() && !elm.noPublish())
+         if(elm.exists() && elm.publish())
          {
             if(inside_valid)app_elms.add(&elm);
             getActiveAppElms(app_elms, app_id, child, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
