@@ -289,17 +289,17 @@ class ElmObjClass : ElmData
    byte flag=0; // FLAG, this should not be synced, it is set only from data
 
    // get
-   bool     ovrAccess()C {return FlagTest( flag, OVR_ACCESS           );}   void ovrAccess(bool     on  ) {FlagSet(flag, OVR_ACCESS, on);}
-   bool     terrain  ()C {return FlagTest( flag, TERRAIN              );}   void terrain  (bool     on  ) {FlagSet(flag, TERRAIN   , on);}
-   bool     ovrPath  ()C {return FlagTest( flag, OVR_PATH             );}   void ovrPath  (bool     on  ) {FlagSet(flag, OVR_PATH  , on);}
+   bool     ovrAccess()C {return   FlagOn( flag, OVR_ACCESS           );}   void ovrAccess(bool     on  ) {FlagSet(flag, OVR_ACCESS, on);}
+   bool     terrain  ()C {return   FlagOn( flag, TERRAIN              );}   void terrain  (bool     on  ) {FlagSet(flag, TERRAIN   , on);}
+   bool     ovrPath  ()C {return   FlagOn( flag, OVR_PATH             );}   void ovrPath  (bool     on  ) {FlagSet(flag, OVR_PATH  , on);}
    OBJ_PATH pathSelf ()C {return OBJ_PATH((flag>>PATH_SHIFT)&PATH_MASK);}   void pathSelf (OBJ_PATH path) {FlagDisable(flag, PATH_MASK<<PATH_SHIFT); flag|=((path&PATH_MASK)<<PATH_SHIFT);}
 
    // operations
    void from(C EditObject &params)
    {
       flag=0;
-      ovrAccess(FlagTest(params.flag, EditObject.OVR_ACCESS)); terrain (params.access==OBJ_ACCESS_TERRAIN);
-      ovrPath  (FlagTest(params.flag, EditObject.OVR_PATH  )); pathSelf(params.path                      );
+      ovrAccess(FlagOn(params.flag, EditObject.OVR_ACCESS)); terrain (params.access==OBJ_ACCESS_TERRAIN);
+      ovrPath  (FlagOn(params.flag, EditObject.OVR_PATH  )); pathSelf(params.path                      );
    }
    uint undo(C ElmObjClass &src) {return super.undo(src);} // don't adjust 'ver' here because it also relies on 'EditObject', because of that this is included in 'ElmFileInShort'
    uint sync(C ElmObjClass &src) {return super.sync(src);} // don't adjust 'ver' here because it also relies on 'EditObject', because of that this is included in 'ElmFileInShort'
@@ -616,9 +616,9 @@ class ElmMaterial : ElmData
    bool equal(C ElmMaterial &src)C {return super.equal(src);}
    bool newer(C ElmMaterial &src)C {return super.newer(src);}
 
-   bool usesTexAlpha()C {return FlagTest(flag, USES_TEX_ALPHA);}   void usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
-   bool usesTexBump ()C {return FlagTest(flag, USES_TEX_BUMP );}   void usesTexBump (bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
-   bool usesTexGlow ()C {return FlagTest(flag, USES_TEX_GLOW );}   void usesTexGlow (bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
+   bool usesTexAlpha()C {return FlagOn(flag, USES_TEX_ALPHA);}   void usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
+   bool usesTexBump ()C {return FlagOn(flag, USES_TEX_BUMP );}   void usesTexBump (bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
+   bool usesTexGlow ()C {return FlagOn(flag, USES_TEX_GLOW );}   void usesTexGlow (bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
 
    virtual bool mayContain (C UID &id)C override {return false;}
    virtual bool containsTex(C UID &id, bool test_merged)C override
@@ -786,9 +786,9 @@ class ElmWaterMtrl : ElmData
    bool equal(C ElmMaterial &src)C {return super.equal(src);}
    bool newer(C ElmMaterial &src)C {return super.newer(src);}
 
-   bool usesTexAlpha()C {return FlagTest(flag, USES_TEX_ALPHA);}   void usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
-   bool usesTexBump ()C {return FlagTest(flag, USES_TEX_BUMP );}   void usesTexBump (bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
-   bool usesTexGlow ()C {return FlagTest(flag, USES_TEX_GLOW );}   void usesTexGlow (bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
+   bool usesTexAlpha()C {return FlagOn(flag, USES_TEX_ALPHA);}   void usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
+   bool usesTexBump ()C {return FlagOn(flag, USES_TEX_BUMP );}   void usesTexBump (bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
+   bool usesTexGlow ()C {return FlagOn(flag, USES_TEX_GLOW );}   void usesTexGlow (bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
 
    // get
    bool equal(C ElmWaterMtrl &src)C {return super.equal(src);}
@@ -1167,8 +1167,8 @@ class ElmAnim : ElmData
    TimeStamp loop_time, linear_time, skel_time, file_time;
 
    // get
-   bool loop  ()C {return FlagTest(flag, LOOP  );}   ElmAnim& loop  (bool on) {FlagSet(flag, LOOP  , on); return T;}
-   bool linear()C {return FlagTest(flag, LINEAR);}   ElmAnim& linear(bool on) {FlagSet(flag, LINEAR, on); return T;}
+   bool loop  ()C {return FlagOn(flag, LOOP  );}   ElmAnim& loop  (bool on) {FlagSet(flag, LOOP  , on); return T;}
+   bool linear()C {return FlagOn(flag, LINEAR);}   ElmAnim& linear(bool on) {FlagSet(flag, LINEAR, on); return T;}
 
    bool equal(C ElmAnim &src)C {return super.equal(src) && loop_time==src.loop_time && linear_time==src.linear_time && skel_time==src.skel_time && file_time==src.file_time;}
    bool newer(C ElmAnim &src)C {return super.newer(src) || loop_time> src.loop_time || linear_time> src.linear_time || skel_time> src.skel_time || file_time> src.file_time;}
@@ -1327,8 +1327,8 @@ class ElmAnim : ElmData
                               nodes.New().set   ("Linear"       , linear());
       if(rootMove()          )nodes.New().setRaw("RootMove"     , root_move);
       if(rootRot ()          )nodes.New().setRaw("RootRot"      , root_rot );
-      if(flag&ROOT_DEL_POS   )nodes.New().set   ("RootDelPos"   , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagTest(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagTest(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagTest(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
-      if(flag&ROOT_DEL_ROT   )nodes.New().set   ("RootDelRot"   , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagTest(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagTest(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagTest(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_POS   )nodes.New().set   ("RootDelPos"   , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_ROT   )nodes.New().set   ("RootDelRot"   , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
       if(flag&ROOT_SMOOTH_ROT)nodes.New().set   ("RootSmoothRot");
       if(flag&ROOT_SMOOTH_POS)nodes.New().set   ("RootSmoothPos");
       if(fps>0               )nodes.New().set   ("FPS"          , fps);
@@ -1710,13 +1710,13 @@ class ElmImage : ElmData
    bool         envActual()C {return mode==IMAGE_CUBE && env();}
    bool     mipMapsActual()C {return envActual() ? true : mipMaps();} // if Cube Env then always create mip maps
    bool       ignoreAlpha()C {return IsCube(mode);}
-   bool       mipMaps    ()C {return FlagTest(flag, MIP_MAPS );}   void mipMaps (bool on) {FlagSet(flag, MIP_MAPS , on);}
-   bool       pow2       ()C {return FlagTest(flag, POW2     );}   void pow2    (bool on) {FlagSet(flag, POW2     , on);}
-   bool       sRGB       ()C {return FlagTest(flag, SRGB     );}   void sRGB    (bool on) {FlagSet(flag, SRGB     , on);}
-   bool       env        ()C {return FlagTest(flag, ENV      );}   void env     (bool on) {FlagSet(flag, ENV      , on);}
-   bool       alphaLum   ()C {return FlagTest(flag, ALPHA_LUM);}   void alphaLum(bool on) {FlagSet(flag, ALPHA_LUM, on);}
-   bool       hasColor   ()C {return FlagTest(flag, HAS_COLOR);}   void hasColor(bool on) {FlagSet(flag, HAS_COLOR, on);}
-   bool       hasAlpha   ()C {return FlagTest(flag, HAS_ALPHA);}   void hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on);}
+   bool       mipMaps    ()C {return FlagOn(flag, MIP_MAPS );}   void mipMaps (bool on) {FlagSet(flag, MIP_MAPS , on);}
+   bool       pow2       ()C {return FlagOn(flag, POW2     );}   void pow2    (bool on) {FlagSet(flag, POW2     , on);}
+   bool       sRGB       ()C {return FlagOn(flag, SRGB     );}   void sRGB    (bool on) {FlagSet(flag, SRGB     , on);}
+   bool       env        ()C {return FlagOn(flag, ENV      );}   void env     (bool on) {FlagSet(flag, ENV      , on);}
+   bool       alphaLum   ()C {return FlagOn(flag, ALPHA_LUM);}   void alphaLum(bool on) {FlagSet(flag, ALPHA_LUM, on);}
+   bool       hasColor   ()C {return FlagOn(flag, HAS_COLOR);}   void hasColor(bool on) {FlagSet(flag, HAS_COLOR, on);}
+   bool       hasAlpha   ()C {return FlagOn(flag, HAS_ALPHA);}   void hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on);}
    bool       hasAlpha2  ()C {return hasAlpha() || alphaLum();}
    bool       hasAlpha3  ()C {return ignoreAlpha() ? false : hasAlpha2();}
    IMAGE_TYPE androidType()C {return             (type==COMPRESSED                || type==COMPRESSED2)  ? hasAlpha3() ? (sRGB() ? IMAGE_ETC2_RGBA_SRGB : IMAGE_ETC2_RGBA) : (sRGB() ? IMAGE_ETC2_RGB_SRGB : IMAGE_ETC2_RGB) : IMAGE_NONE;} // if want to be compressed then use ETC2_RGBA or ETC2_RGB
@@ -1903,8 +1903,8 @@ class ElmImageAtlas : ElmData
    Memc<Img> images;
    TimeStamp file_time, mip_maps_time, compress_time;
 
-   bool mipMaps ()C {return FlagTest(flag, MIP_MAPS);}   void mipMaps (bool on) {FlagSet(flag, MIP_MAPS, on);}
-   bool compress()C {return FlagTest(flag, COMPRESS);}   void compress(bool on) {FlagSet(flag, COMPRESS, on);}
+   bool mipMaps ()C {return FlagOn(flag, MIP_MAPS);}   void mipMaps (bool on) {FlagSet(flag, MIP_MAPS, on);}
+   bool compress()C {return FlagOn(flag, COMPRESS);}   void compress(bool on) {FlagSet(flag, COMPRESS, on);}
 
  C Img* find(C UID &id)C {return ConstCast(T).find(id);}
    Img* find(C UID &id)  {       return images.binaryFind  (id,    Img.Compare);}
@@ -2132,8 +2132,8 @@ class ElmIcon : ElmData
    TimeStamp icon_settings_time, obj_time, file_time, anim_id_time, anim_pos_time, variation_time;
 
    ElmImage.TYPE     type(Project *proj)C {if(proj)if(Elm *elm=proj.findElm(icon_settings_id))if(ElmIconSetts *data=elm.iconSettsData())return data.type; return ElmImage.COMPRESSED;}
-   bool          hasColor(             )C {return FlagTest(flag, HAS_COLOR);}   ElmIcon& hasColor(bool on) {FlagSet(flag, HAS_COLOR, on); return T;}
-   bool          hasAlpha(             )C {return FlagTest(flag, HAS_ALPHA);}   ElmIcon& hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on); return T;}
+   bool          hasColor(             )C {return FlagOn(flag, HAS_COLOR);}   ElmIcon& hasColor(bool on) {FlagSet(flag, HAS_COLOR, on); return T;}
+   bool          hasAlpha(             )C {return FlagOn(flag, HAS_ALPHA);}   ElmIcon& hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on); return T;}
    IMAGE_TYPE androidType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return             (type==ElmImage.COMPRESSED               || type==ElmImage.COMPRESSED2)  ? hasAlpha() ? IMAGE_ETC2_RGBA_SRGB : IMAGE_ETC2_RGB_SRGB : IMAGE_NONE;} // if want to be compressed then use ETC2_RGBA or ETC2_RGB
    IMAGE_TYPE     iOSType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return             (type==ElmImage.COMPRESSED               || type==ElmImage.COMPRESSED2)  ?              IMAGE_PVRTC1_4_SRGB                        : IMAGE_NONE;} // if want to be compressed then use PVRTC1_4
    IMAGE_TYPE     uwpType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return (!UWPBC7 && (type==ElmImage.COMPRESSED && hasAlpha() || type==ElmImage.COMPRESSED2)) ? hasAlpha() ? IMAGE_BC3_SRGB       : IMAGE_BC1_SRGB      : IMAGE_NONE;} // in this case we only want to replace BC7 format, which will happen only if image is COMPRESSED with alpha, or COMPRESSED2
@@ -2952,16 +2952,16 @@ class ElmApp : ElmData
 
    virtual bool mayContain(C UID &id)C override {return id==icon || id==notification_icon || id==image_portrait || id==image_landscape || id==gui_skin;}
 
-   int     embedEngineData(     )C {return FlagTest(flag, EMBED_ENGINE_DATA) ? FlagTest(flag, EMBED_ENGINE_DATA_FULL) ? 2 : 1 : 0;}
-   ElmApp& embedEngineData(int e)  {       FlagSet (flag, EMBED_ENGINE_DATA, e!=0); FlagSet(flag, EMBED_ENGINE_DATA_FULL, e>1); return T;}
+   int     embedEngineData(     )C {return FlagOn (flag, EMBED_ENGINE_DATA) ? FlagOn(flag, EMBED_ENGINE_DATA_FULL) ? 2 : 1 : 0;}
+   ElmApp& embedEngineData(int e)  {       FlagSet(flag, EMBED_ENGINE_DATA, e!=0); FlagSet(flag, EMBED_ENGINE_DATA_FULL, e>1); return T;}
 
-   bool publishProjData ()C {return FlagTest(flag, PUBLISH_PROJ_DATA  );}   ElmApp& publishProjData (bool on) {FlagSet(flag, PUBLISH_PROJ_DATA  , on); return T;}
-   bool publishPhysxDll ()C {return FlagTest(flag, PUBLISH_PHYSX_DLL  );}   ElmApp& publishPhysxDll (bool on) {FlagSet(flag, PUBLISH_PHYSX_DLL  , on); return T;}
-   bool publishSteamDll ()C {return FlagTest(flag, PUBLISH_STEAM_DLL  );}   ElmApp& publishSteamDll (bool on) {FlagSet(flag, PUBLISH_STEAM_DLL  , on); return T;}
-   bool publishOpenVRDll()C {return FlagTest(flag, PUBLISH_OPEN_VR_DLL);}   ElmApp& publishOpenVRDll(bool on) {FlagSet(flag, PUBLISH_OPEN_VR_DLL, on); return T;}
-   bool publishDataAsPak()C {return FlagTest(flag, PUBLISH_DATA_AS_PAK);}   ElmApp& publishDataAsPak(bool on) {FlagSet(flag, PUBLISH_DATA_AS_PAK, on); return T;}
-   bool androidExpansion()C {return FlagTest(flag, ANDROID_EXPANSION  );}   ElmApp& androidExpansion(bool on) {FlagSet(flag, ANDROID_EXPANSION  , on); return T;}
- //bool windowsCodeSign ()C {return FlagTest(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
+   bool publishProjData ()C {return FlagOn(flag, PUBLISH_PROJ_DATA  );}   ElmApp& publishProjData (bool on) {FlagSet(flag, PUBLISH_PROJ_DATA  , on); return T;}
+   bool publishPhysxDll ()C {return FlagOn(flag, PUBLISH_PHYSX_DLL  );}   ElmApp& publishPhysxDll (bool on) {FlagSet(flag, PUBLISH_PHYSX_DLL  , on); return T;}
+   bool publishSteamDll ()C {return FlagOn(flag, PUBLISH_STEAM_DLL  );}   ElmApp& publishSteamDll (bool on) {FlagSet(flag, PUBLISH_STEAM_DLL  , on); return T;}
+   bool publishOpenVRDll()C {return FlagOn(flag, PUBLISH_OPEN_VR_DLL);}   ElmApp& publishOpenVRDll(bool on) {FlagSet(flag, PUBLISH_OPEN_VR_DLL, on); return T;}
+   bool publishDataAsPak()C {return FlagOn(flag, PUBLISH_DATA_AS_PAK);}   ElmApp& publishDataAsPak(bool on) {FlagSet(flag, PUBLISH_DATA_AS_PAK, on); return T;}
+   bool androidExpansion()C {return FlagOn(flag, ANDROID_EXPANSION  );}   ElmApp& androidExpansion(bool on) {FlagSet(flag, ANDROID_EXPANSION  , on); return T;}
+ //bool windowsCodeSign ()C {return FlagOn(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
 
    // operations
    virtual void newData()override
@@ -4014,15 +4014,15 @@ class Elm
    Elm(C Elm &src) {T=src;}
 
    // get
-   bool importing     ()C {return FlagTest(flag, IMPORTING       );}   Elm& importing     (bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
-   bool opened        ()C {return FlagTest(flag, OPENED          );}   Elm& opened        (bool on) {FlagSet(flag, OPENED          ,  on); return T;}
-   bool removed       ()C {return FlagTest(flag, REMOVED         );}   Elm& removed       (bool on) {FlagSet(flag, REMOVED         ,  on); return T;} // this checks only if this element is    removed, it doesn't check the parents
-   bool publish       ()C {return FlagOff (flag, NO_PUBLISH      );}   Elm& publish       (bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;} // this checks only if this element is    publish, it doesn't check the parents
-   bool noPublish     ()C {return FlagTest(flag, NO_PUBLISH      );}   Elm& noPublish     (bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;} // this checks only if this element is no publish, it doesn't check the parents
-   bool finalRemoved  ()C {return FlagTest(flag, FINAL_REMOVED   );}   Elm& finalRemoved  (bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
-   bool finalExists   ()C {return FlagOff (flag, FINAL_REMOVED   );}   Elm& finalExists   (bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
-   bool finalPublish  ()C {return FlagOff (flag, FINAL_NO_PUBLISH);}   Elm& finalPublish  (bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;} // this includes 'finalExists'  as well !!
-   bool finalNoPublish()C {return FlagTest(flag, FINAL_NO_PUBLISH);}   Elm& finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;} // this includes 'finalRemoved' as well !!
+   bool importing     ()C {return FlagOn (flag, IMPORTING       );}   Elm& importing     (bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
+   bool opened        ()C {return FlagOn (flag, OPENED          );}   Elm& opened        (bool on) {FlagSet(flag, OPENED          ,  on); return T;}
+   bool removed       ()C {return FlagOn (flag, REMOVED         );}   Elm& removed       (bool on) {FlagSet(flag, REMOVED         ,  on); return T;} // this checks only if this element is    removed, it doesn't check the parents
+   bool publish       ()C {return FlagOff(flag, NO_PUBLISH      );}   Elm& publish       (bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;} // this checks only if this element is    publish, it doesn't check the parents
+   bool noPublish     ()C {return FlagOn (flag, NO_PUBLISH      );}   Elm& noPublish     (bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;} // this checks only if this element is no publish, it doesn't check the parents
+   bool finalRemoved  ()C {return FlagOn (flag, FINAL_REMOVED   );}   Elm& finalRemoved  (bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
+   bool finalExists   ()C {return FlagOff(flag, FINAL_REMOVED   );}   Elm& finalExists   (bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
+   bool finalPublish  ()C {return FlagOff(flag, FINAL_NO_PUBLISH);}   Elm& finalPublish  (bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;} // this includes 'finalExists'  as well !!
+   bool finalNoPublish()C {return FlagOn (flag, FINAL_NO_PUBLISH);}   Elm& finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;} // this includes 'finalRemoved' as well !!
  C Str& srcFile       ()C {return data ?  data.src_file : S;}
    bool initialized   ()C {return data && data.ver;}
 

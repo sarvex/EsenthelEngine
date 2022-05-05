@@ -282,13 +282,13 @@ TexInfoGetter TIG;
    ListElm& ListElm::set(Elm &elm, ElmNode &node, int depth, int vis_parent, bool parent_removed)
    {
       T.elm=&elm;
-      return set(elm.type, elm.name, FlagTest(node.flag, ELM_EDITED), elm.importing(), elm.removed() || parent_removed, depth, vis_parent);
+      return set(elm.type, elm.name, FlagOn(node.flag, ELM_EDITED), elm.importing(), elm.removed() || parent_removed, depth, vis_parent);
    }
    ListElm& ListElm::set(EEItem &item, bool opened, int depth, bool parent_removed)
    {
       T.item=&item;
       hasVisibleChildren(item.children.elms()>0, opened);
-      return set(item.type, item.base_name, FlagTest(item.flag, ELM_EDITED), false, parent_removed, depth, -1);
+      return set(item.type, item.base_name, FlagOn(item.flag, ELM_EDITED), false, parent_removed, depth, -1);
    }
 ListElm::ListElm() : size_known(true), tex_size_calculated(false), depth(0), offset(0), color(BLACK), color_temp(BLACK), elm(null), item(null), opened_icon(null), icon(null), size(0) {}
 

@@ -417,8 +417,8 @@ p_scale=&add("Item 3D Scale"          , MemberDesc(MEMBER(Options, item_3d_scale
             bool this_contains_name=true, child_contains_name=true; // always show when no filter
             if(Proj.filter().is())
             {
-                this_contains_name=(FlagTest(child.flag, ELM_CONTAINS_NAME) || parent_contains_name); // for performance reasons, merge 'this_contains_name' with 'parent_contains_name'
-               child_contains_name= FlagTest(child.flag, ELM_CONTAINS_NAME_CHILD);
+                this_contains_name=(FlagOn(child.flag, ELM_CONTAINS_NAME) || parent_contains_name); // for performance reasons, merge 'this_contains_name' with 'parent_contains_name'
+               child_contains_name= FlagOn(child.flag, ELM_CONTAINS_NAME_CHILD);
             }
             if(ElmCompatible(elm.type, elm_type) && this_contains_name)
             {

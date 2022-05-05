@@ -614,10 +614,10 @@ class Texture
    Texture& usesAlpha() {channels=4; return T;}
    Texture& normal   () {channels=2; flags|=SIGN; return T;}
 
-   bool sRGB      ()C {return FlagTest(flags, SRGB      );}   Texture& sRGB      (bool on) {FlagSet(flags, SRGB      , on); return T;}
-   bool sign      ()C {return FlagTest(flags, SIGN      );}   Texture& sign      (bool on) {FlagSet(flags, SIGN      , on); return T;}
-   bool dynamic   ()C {return FlagTest(flags, DYNAMIC   );}   Texture& dynamic   (bool on) {FlagSet(flags, DYNAMIC   , on); return T;}
-   bool regenerate()C {return FlagTest(flags, REGENERATE);}   Texture& regenerate(bool on) {FlagSet(flags, REGENERATE, on); return T;}
+   bool sRGB      ()C {return FlagOn(flags, SRGB      );}   Texture& sRGB      (bool on) {FlagSet(flags, SRGB      , on); return T;}
+   bool sign      ()C {return FlagOn(flags, SIGN      );}   Texture& sign      (bool on) {FlagSet(flags, SIGN      , on); return T;}
+   bool dynamic   ()C {return FlagOn(flags, DYNAMIC   );}   Texture& dynamic   (bool on) {FlagSet(flags, DYNAMIC   , on); return T;}
+   bool regenerate()C {return FlagOn(flags, REGENERATE);}   Texture& regenerate(bool on) {FlagSet(flags, REGENERATE, on); return T;}
 
    static int CompareTex(C Texture &tex, C UID &tex_id) {return Compare(tex.id, tex_id);}
 }

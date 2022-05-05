@@ -329,7 +329,7 @@ void ImageProps(C Image &image, UID *hash, IMAGE_TYPE *best_type, uint flags, Ed
               bc2=true, // BC2 8-bit uses 4-bit alpha
               bc4=true, // BC4 4-bit is (R,0,0,1)
               bc5=true, // BC5 8-bit is (R,G,0,1)
-              srgb=FlagTest(flags, SRGB),
+              srgb=FlagOn(flags, SRGB),
               calc_type=(type==IMAGE_NONE), // if have to calculate type, always calculate type if unknown (even if 'best_type' is null), because it affects hash
               force_alpha=((flags&IGNORE_ALPHA) && image.typeInfo().a), // if we want to ignore alpha, and source had alpha, then we need to adjust as if it has full alpha, this is done because: ignoring alpha may save the image in format that doesn't support the alpha channel, however if the same image is later used for something else, and now wants to use that alpha channel, then it needs to be created as a different texture (with different hash)
               extract=((hash && (sign ? image.hwType()!=IMAGE_R8G8B8A8_SIGN : (image.hwType()!=IMAGE_R8G8B8A8 && image.hwType()!=IMAGE_R8G8B8A8_SRGB))) // hash is based on RGBA format

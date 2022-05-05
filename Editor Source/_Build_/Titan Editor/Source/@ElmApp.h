@@ -62,7 +62,7 @@ class ElmApp : ElmData
    bool publishOpenVRDll()C;   ElmApp& publishOpenVRDll(bool on);
    bool publishDataAsPak()C;   ElmApp& publishDataAsPak(bool on);
    bool androidExpansion()C;   ElmApp& androidExpansion(bool on);
- //bool windowsCodeSign ()C {return FlagTest(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
+ //bool windowsCodeSign ()C {return FlagOn(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
 
    // operations
    virtual void newData()override;

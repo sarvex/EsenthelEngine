@@ -557,8 +557,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    }
    ::AppPropsEditor::ORIENT AppPropsEditor::FlagToOrient(uint flag)
    {
-      bool portrait =FlagTest(flag, DIRF_Y),
-           landscape=FlagTest(flag, DIRF_X);
+      bool portrait =FlagOn(flag, DIRF_Y),
+           landscape=FlagOn(flag, DIRF_X);
       if( flag==(DIRF_X|DIRF_UP)  )return ORIENT_ALL_NO_DOWN     ;
       if((flag&DIRF_X)==DIRF_RIGHT)return ORIENT_LANDSCAPE_LOCKED;
       if((flag&DIRF_Y)==DIRF_UP   )return ORIENT_PORTRAIT_LOCKED ;

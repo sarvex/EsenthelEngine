@@ -125,7 +125,7 @@ SplitAnimation SplitAnim;
       }
    }
    bool SplitAnimation::Create(int &data, C Str &key, ptr user) {data=0; return true;}
-   bool SplitAnimation::IsNumber(C Str &str) {return FlagTest(CharFlag(str[0]), CHARF_DIG);}
+   bool SplitAnimation::IsNumber(C Str &str) {return FlagOn(CharFlag(str[0]), CHARF_DIG);}
    void SplitAnimation::add(C Str &text)
    {
       // auto-detect from following samples: (watch out as names may include numbers)

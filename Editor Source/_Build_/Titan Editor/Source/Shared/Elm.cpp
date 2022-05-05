@@ -230,19 +230,19 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       }
    }
    ElmData::~ElmData() {}
-   bool     ElmObjClass::ovrAccess()C {return FlagTest( flag, OVR_ACCESS           );}
+   bool     ElmObjClass::ovrAccess()C {return   FlagOn( flag, OVR_ACCESS           );}
    void ElmObjClass::ovrAccess(bool     on  ) {FlagSet(flag, OVR_ACCESS, on);}
-   bool     ElmObjClass::terrain()C {return FlagTest( flag, TERRAIN              );}
+   bool     ElmObjClass::terrain()C {return   FlagOn( flag, TERRAIN              );}
    void ElmObjClass::terrain(bool     on  ) {FlagSet(flag, TERRAIN   , on);}
-   bool     ElmObjClass::ovrPath()C {return FlagTest( flag, OVR_PATH             );}
+   bool     ElmObjClass::ovrPath()C {return   FlagOn( flag, OVR_PATH             );}
    void ElmObjClass::ovrPath(bool     on  ) {FlagSet(flag, OVR_PATH  , on);}
    OBJ_PATH ElmObjClass::pathSelf()C {return OBJ_PATH((flag>>PATH_SHIFT)&PATH_MASK);}
    void ElmObjClass::pathSelf(OBJ_PATH path) {FlagDisable(flag, PATH_MASK<<PATH_SHIFT); flag|=((path&PATH_MASK)<<PATH_SHIFT);}
    void ElmObjClass::from(C EditObject &params)
    {
       flag=0;
-      ovrAccess(FlagTest(params.flag, EditObject::OVR_ACCESS)); terrain (params.access==OBJ_ACCESS_TERRAIN);
-      ovrPath  (FlagTest(params.flag, EditObject::OVR_PATH  )); pathSelf(params.path                      );
+      ovrAccess(FlagOn(params.flag, EditObject::OVR_ACCESS)); terrain (params.access==OBJ_ACCESS_TERRAIN);
+      ovrPath  (FlagOn(params.flag, EditObject::OVR_PATH  )); pathSelf(params.path                      );
    }
    uint ElmObjClass::undo(C ElmObjClass &src) {return super::undo(src);}
    uint ElmObjClass::sync(C ElmObjClass &src) {return super::sync(src);}
@@ -507,11 +507,11 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    ElmMaterial::ElmMaterial() : base_0_tex(UIDZero), base_1_tex(UIDZero), base_2_tex(UIDZero), detail_tex(UIDZero), macro_tex(UIDZero), emissive_tex(UIDZero), flag(0), tex_quality(Edit::Material::MEDIUM) {REPAO(tex_downsize)=0;}
    bool ElmMaterial::equal(C ElmMaterial &src)C {return super::equal(src);}
    bool ElmMaterial::newer(C ElmMaterial &src)C {return super::newer(src);}
-   bool ElmMaterial::usesTexAlpha()C {return FlagTest(flag, USES_TEX_ALPHA);}
+   bool ElmMaterial::usesTexAlpha()C {return FlagOn(flag, USES_TEX_ALPHA);}
    void ElmMaterial::usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
-   bool ElmMaterial::usesTexBump()C {return FlagTest(flag, USES_TEX_BUMP );}
+   bool ElmMaterial::usesTexBump()C {return FlagOn(flag, USES_TEX_BUMP );}
    void ElmMaterial::usesTexBump(bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
-   bool ElmMaterial::usesTexGlow()C {return FlagTest(flag, USES_TEX_GLOW );}
+   bool ElmMaterial::usesTexGlow()C {return FlagOn(flag, USES_TEX_GLOW );}
    void ElmMaterial::usesTexGlow(bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
    bool ElmMaterial::mayContain(C UID &id)C {return false;}
    bool ElmMaterial::containsTex(C UID &id, bool test_merged)C 
@@ -658,11 +658,11 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    }
    bool ElmWaterMtrl::equal(C ElmMaterial &src)C {return super::equal(src);}
    bool ElmWaterMtrl::newer(C ElmMaterial &src)C {return super::newer(src);}
-   bool ElmWaterMtrl::usesTexAlpha()C {return FlagTest(flag, USES_TEX_ALPHA);}
+   bool ElmWaterMtrl::usesTexAlpha()C {return FlagOn(flag, USES_TEX_ALPHA);}
    void ElmWaterMtrl::usesTexAlpha(bool on) {return FlagSet(flag, USES_TEX_ALPHA, on);}
-   bool ElmWaterMtrl::usesTexBump()C {return FlagTest(flag, USES_TEX_BUMP );}
+   bool ElmWaterMtrl::usesTexBump()C {return FlagOn(flag, USES_TEX_BUMP );}
    void ElmWaterMtrl::usesTexBump(bool on) {return FlagSet(flag, USES_TEX_BUMP , on);}
-   bool ElmWaterMtrl::usesTexGlow()C {return FlagTest(flag, USES_TEX_GLOW );}
+   bool ElmWaterMtrl::usesTexGlow()C {return FlagOn(flag, USES_TEX_GLOW );}
    void ElmWaterMtrl::usesTexGlow(bool on) {return FlagSet(flag, USES_TEX_GLOW , on);}
    bool ElmWaterMtrl::equal(C ElmWaterMtrl &src)C {return super::equal(src);}
    bool ElmWaterMtrl::newer(C ElmWaterMtrl &src)C {return super::newer(src);}
@@ -964,9 +964,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          if(n.name=="DensityTime" )density_time=n.asText();
       }
    }
-   bool ElmAnim::loop()C {return FlagTest(flag, LOOP  );}
+   bool ElmAnim::loop()C {return FlagOn(flag, LOOP  );}
    ElmAnim& ElmAnim::loop(bool on) {FlagSet(flag, LOOP  , on); return T;}
-   bool ElmAnim::linear()C {return FlagTest(flag, LINEAR);}
+   bool ElmAnim::linear()C {return FlagOn(flag, LINEAR);}
    ElmAnim& ElmAnim::linear(bool on) {FlagSet(flag, LINEAR, on); return T;}
    bool ElmAnim::equal(C ElmAnim &src)C {return super::equal(src) && loop_time==src.loop_time && linear_time==src.linear_time && skel_time==src.skel_time && file_time==src.file_time;}
    bool ElmAnim::newer(C ElmAnim &src)C {return super::newer(src) || loop_time> src.loop_time || linear_time> src.linear_time || skel_time> src.skel_time || file_time> src.file_time;}
@@ -1119,8 +1119,8 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
                               nodes.New().set   ("Linear"       , linear());
       if(rootMove()          )nodes.New().setRaw("RootMove"     , root_move);
       if(rootRot ()          )nodes.New().setRaw("RootRot"      , root_rot );
-      if(flag&ROOT_DEL_POS   )nodes.New().set   ("RootDelPos"   , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagTest(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagTest(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagTest(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
-      if(flag&ROOT_DEL_ROT   )nodes.New().set   ("RootDelRot"   , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagTest(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagTest(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagTest(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_POS   )nodes.New().set   ("RootDelPos"   , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_ROT   )nodes.New().set   ("RootDelRot"   , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
       if(flag&ROOT_SMOOTH_ROT)nodes.New().set   ("RootSmoothRot");
       if(flag&ROOT_SMOOTH_POS)nodes.New().set   ("RootSmoothPos");
       if(fps>0               )nodes.New().set   ("FPS"          , fps);
@@ -1415,19 +1415,19 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    bool         ElmImage::envActual()C {return mode==IMAGE_CUBE && env();}
    bool     ElmImage::mipMapsActual()C {return envActual() ? true : mipMaps();}
    bool       ElmImage::ignoreAlpha()C {return IsCube(mode);}
-   bool       ElmImage::mipMaps()C {return FlagTest(flag, MIP_MAPS );}
+   bool       ElmImage::mipMaps()C {return FlagOn(flag, MIP_MAPS );}
    void ElmImage::mipMaps(bool on) {FlagSet(flag, MIP_MAPS , on);}
-   bool       ElmImage::pow2()C {return FlagTest(flag, POW2     );}
+   bool       ElmImage::pow2()C {return FlagOn(flag, POW2     );}
    void ElmImage::pow2(bool on) {FlagSet(flag, POW2     , on);}
-   bool       ElmImage::sRGB()C {return FlagTest(flag, SRGB     );}
+   bool       ElmImage::sRGB()C {return FlagOn(flag, SRGB     );}
    void ElmImage::sRGB(bool on) {FlagSet(flag, SRGB     , on);}
-   bool       ElmImage::env()C {return FlagTest(flag, ENV      );}
+   bool       ElmImage::env()C {return FlagOn(flag, ENV      );}
    void ElmImage::env(bool on) {FlagSet(flag, ENV      , on);}
-   bool       ElmImage::alphaLum()C {return FlagTest(flag, ALPHA_LUM);}
+   bool       ElmImage::alphaLum()C {return FlagOn(flag, ALPHA_LUM);}
    void ElmImage::alphaLum(bool on) {FlagSet(flag, ALPHA_LUM, on);}
-   bool       ElmImage::hasColor()C {return FlagTest(flag, HAS_COLOR);}
+   bool       ElmImage::hasColor()C {return FlagOn(flag, HAS_COLOR);}
    void ElmImage::hasColor(bool on) {FlagSet(flag, HAS_COLOR, on);}
-   bool       ElmImage::hasAlpha()C {return FlagTest(flag, HAS_ALPHA);}
+   bool       ElmImage::hasAlpha()C {return FlagOn(flag, HAS_ALPHA);}
    void ElmImage::hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on);}
    bool       ElmImage::hasAlpha2()C {return hasAlpha() || alphaLum();}
    bool       ElmImage::hasAlpha3()C {return ignoreAlpha() ? false : hasAlpha2();}
@@ -1586,9 +1586,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       bool ElmImageAtlas::Img::equal(C Img &src)C {return removed_time==src.removed_time;}
       bool ElmImageAtlas::Img::newer(C Img &src)C {return removed_time> src.removed_time;}
       bool ElmImageAtlas::Img::undo(C Img &src) {return Undo(removed_time, src.removed_time, removed, src.removed);}
-   bool ElmImageAtlas::mipMaps()C {return FlagTest(flag, MIP_MAPS);}
+   bool ElmImageAtlas::mipMaps()C {return FlagOn(flag, MIP_MAPS);}
    void ElmImageAtlas::mipMaps(bool on) {FlagSet(flag, MIP_MAPS, on);}
-   bool ElmImageAtlas::compress()C {return FlagTest(flag, COMPRESS);}
+   bool ElmImageAtlas::compress()C {return FlagOn(flag, COMPRESS);}
    void ElmImageAtlas::compress(bool on) {FlagSet(flag, COMPRESS, on);}
  C ::ElmImageAtlas::Img* ElmImageAtlas::find(C UID &id)C {return ConstCast(T).find(id);}
    ::ElmImageAtlas::Img* ElmImageAtlas::find(C UID &id)  {       return images.binaryFind  (id,    Img::Compare);}
@@ -1782,9 +1782,9 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       }
    }
    ElmImage::TYPE     ElmIcon::type(Project *proj)C {if(proj)if(Elm *elm=proj->findElm(icon_settings_id))if(ElmIconSetts *data=elm->iconSettsData())return data->type; return ElmImage::COMPRESSED;}
-   bool          ElmIcon::hasColor(             )C {return FlagTest(flag, HAS_COLOR);}
+   bool          ElmIcon::hasColor(             )C {return FlagOn(flag, HAS_COLOR);}
    ElmIcon& ElmIcon::hasColor(bool on) {FlagSet(flag, HAS_COLOR, on); return T;}
-   bool          ElmIcon::hasAlpha(             )C {return FlagTest(flag, HAS_ALPHA);}
+   bool          ElmIcon::hasAlpha(             )C {return FlagOn(flag, HAS_ALPHA);}
    ElmIcon& ElmIcon::hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on); return T;}
    IMAGE_TYPE ElmIcon::androidType(Project *proj)C {ElmImage::TYPE type=T.type(proj); return             (type==ElmImage::COMPRESSED               || type==ElmImage::COMPRESSED2)  ? hasAlpha() ? IMAGE_ETC2_RGBA_SRGB : IMAGE_ETC2_RGB_SRGB : IMAGE_NONE;}
    IMAGE_TYPE     ElmIcon::iOSType(Project *proj)C {ElmImage::TYPE type=T.type(proj); return             (type==ElmImage::COMPRESSED               || type==ElmImage::COMPRESSED2)  ?              IMAGE_PVRTC1_4_SRGB                        : IMAGE_NONE;}
@@ -2446,19 +2446,19 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
           || icon_time>src.icon_time || notification_icon_time>src.notification_icon_time || image_portrait_time>src.image_portrait_time || image_landscape_time>src.image_landscape_time || gui_skin_time>src.gui_skin_time;
    }
    bool ElmApp::mayContain(C UID &id)C {return id==icon || id==notification_icon || id==image_portrait || id==image_landscape || id==gui_skin;}
-   int     ElmApp::embedEngineData(     )C {return FlagTest(flag, EMBED_ENGINE_DATA) ? FlagTest(flag, EMBED_ENGINE_DATA_FULL) ? 2 : 1 : 0;}
-   ElmApp& ElmApp::embedEngineData(int e)  {       FlagSet (flag, EMBED_ENGINE_DATA, e!=0); FlagSet(flag, EMBED_ENGINE_DATA_FULL, e>1); return T;}
-   bool ElmApp::publishProjData()C {return FlagTest(flag, PUBLISH_PROJ_DATA  );}
+   int     ElmApp::embedEngineData(     )C {return FlagOn (flag, EMBED_ENGINE_DATA) ? FlagOn(flag, EMBED_ENGINE_DATA_FULL) ? 2 : 1 : 0;}
+   ElmApp& ElmApp::embedEngineData(int e)  {       FlagSet(flag, EMBED_ENGINE_DATA, e!=0); FlagSet(flag, EMBED_ENGINE_DATA_FULL, e>1); return T;}
+   bool ElmApp::publishProjData()C {return FlagOn(flag, PUBLISH_PROJ_DATA  );}
    ElmApp& ElmApp::publishProjData(bool on) {FlagSet(flag, PUBLISH_PROJ_DATA  , on); return T;}
-   bool ElmApp::publishPhysxDll()C {return FlagTest(flag, PUBLISH_PHYSX_DLL  );}
+   bool ElmApp::publishPhysxDll()C {return FlagOn(flag, PUBLISH_PHYSX_DLL  );}
    ElmApp& ElmApp::publishPhysxDll(bool on) {FlagSet(flag, PUBLISH_PHYSX_DLL  , on); return T;}
-   bool ElmApp::publishSteamDll()C {return FlagTest(flag, PUBLISH_STEAM_DLL  );}
+   bool ElmApp::publishSteamDll()C {return FlagOn(flag, PUBLISH_STEAM_DLL  );}
    ElmApp& ElmApp::publishSteamDll(bool on) {FlagSet(flag, PUBLISH_STEAM_DLL  , on); return T;}
-   bool ElmApp::publishOpenVRDll()C {return FlagTest(flag, PUBLISH_OPEN_VR_DLL);}
+   bool ElmApp::publishOpenVRDll()C {return FlagOn(flag, PUBLISH_OPEN_VR_DLL);}
    ElmApp& ElmApp::publishOpenVRDll(bool on) {FlagSet(flag, PUBLISH_OPEN_VR_DLL, on); return T;}
-   bool ElmApp::publishDataAsPak()C {return FlagTest(flag, PUBLISH_DATA_AS_PAK);}
+   bool ElmApp::publishDataAsPak()C {return FlagOn(flag, PUBLISH_DATA_AS_PAK);}
    ElmApp& ElmApp::publishDataAsPak(bool on) {FlagSet(flag, PUBLISH_DATA_AS_PAK, on); return T;}
-   bool ElmApp::androidExpansion()C {return FlagTest(flag, ANDROID_EXPANSION  );}
+   bool ElmApp::androidExpansion()C {return FlagOn(flag, ANDROID_EXPANSION  );}
    ElmApp& ElmApp::androidExpansion(bool on) {FlagSet(flag, ANDROID_EXPANSION  , on); return T;}
    void ElmApp::newData()
 {
@@ -3453,23 +3453,23 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       copyParams(src);
    }
    Elm::Elm(C Elm &src) : type(ELM_NONE), flag(0), file_size(-1), id(UID().randomizeValid()), parent_id(UIDZero), data(null) {T=src;}
-   bool Elm::importing()C {return FlagTest(flag, IMPORTING       );}
+   bool Elm::importing()C {return FlagOn (flag, IMPORTING       );}
    Elm& Elm::importing(bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
-   bool Elm::opened()C {return FlagTest(flag, OPENED          );}
+   bool Elm::opened()C {return FlagOn (flag, OPENED          );}
    Elm& Elm::opened(bool on) {FlagSet(flag, OPENED          ,  on); return T;}
-   bool Elm::removed()C {return FlagTest(flag, REMOVED         );}
+   bool Elm::removed()C {return FlagOn (flag, REMOVED         );}
    Elm& Elm::removed(bool on) {FlagSet(flag, REMOVED         ,  on); return T;}
-   bool Elm::publish()C {return FlagOff (flag, NO_PUBLISH      );}
+   bool Elm::publish()C {return FlagOff(flag, NO_PUBLISH      );}
    Elm& Elm::publish(bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;}
-   bool Elm::noPublish()C {return FlagTest(flag, NO_PUBLISH      );}
+   bool Elm::noPublish()C {return FlagOn (flag, NO_PUBLISH      );}
    Elm& Elm::noPublish(bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;}
-   bool Elm::finalRemoved()C {return FlagTest(flag, FINAL_REMOVED   );}
+   bool Elm::finalRemoved()C {return FlagOn (flag, FINAL_REMOVED   );}
    Elm& Elm::finalRemoved(bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
-   bool Elm::finalExists()C {return FlagOff (flag, FINAL_REMOVED   );}
+   bool Elm::finalExists()C {return FlagOff(flag, FINAL_REMOVED   );}
    Elm& Elm::finalExists(bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
-   bool Elm::finalPublish()C {return FlagOff (flag, FINAL_NO_PUBLISH);}
+   bool Elm::finalPublish()C {return FlagOff(flag, FINAL_NO_PUBLISH);}
    Elm& Elm::finalPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;}
-   bool Elm::finalNoPublish()C {return FlagTest(flag, FINAL_NO_PUBLISH);}
+   bool Elm::finalNoPublish()C {return FlagOn (flag, FINAL_NO_PUBLISH);}
    Elm& Elm::finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;}
  C Str& Elm::srcFile()C {return data ?  data->src_file : S;}
    bool Elm::initialized()C {return data && data->ver;}

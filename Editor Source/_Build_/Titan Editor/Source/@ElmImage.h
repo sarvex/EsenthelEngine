@@ -41,13 +41,13 @@ class ElmImage : ElmData
    bool         envActual()C;
    bool     mipMapsActual()C; // if Cube Env then always create mip maps
    bool       ignoreAlpha()C;
-   bool       mipMaps    ()C;   void mipMaps (bool on);
-   bool       pow2       ()C;   void pow2    (bool on);
-   bool       sRGB       ()C;   void sRGB    (bool on);
-   bool       env        ()C;   void env     (bool on);
-   bool       alphaLum   ()C;   void alphaLum(bool on);
-   bool       hasColor   ()C;   void hasColor(bool on);
-   bool       hasAlpha   ()C;   void hasAlpha(bool on);
+   bool       mipMaps    ()C;  void mipMaps (bool on);
+   bool       pow2       ()C;  void pow2    (bool on);
+   bool       sRGB       ()C;  void sRGB    (bool on);
+   bool       env        ()C;  void env     (bool on);
+   bool       alphaLum   ()C;  void alphaLum(bool on);
+   bool       hasColor   ()C;  void hasColor(bool on);
+   bool       hasAlpha   ()C;  void hasAlpha(bool on);
    bool       hasAlpha2  ()C;
    bool       hasAlpha3  ()C;
    IMAGE_TYPE androidType()C; // if want to be compressed then use ETC2_RGBA or ETC2_RGB

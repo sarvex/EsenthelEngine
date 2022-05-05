@@ -1881,15 +1881,15 @@ class AnimEditor : Viewport4Region
       ElmAnim *data=T.data();
       loop           .set(data && data.loop  (), QUIET);
       linear         .set(data && data.linear(), QUIET);
-      root_from_body .set(data && FlagTest(data.flag, ElmAnim.ROOT_FROM_BODY ), QUIET);
-      root_del_pos_x .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_POS_X ), QUIET);
-      root_del_pos_y .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_POS_Y ), QUIET);
-      root_del_pos_z .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_POS_Z ), QUIET);
-      root_del_rot_x .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_ROT_X ), QUIET);
-      root_del_rot_y .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_ROT_Y ), QUIET);
-      root_del_rot_z .set(data && FlagTest(data.flag, ElmAnim.ROOT_DEL_ROT_Z ), QUIET);
-      root_smooth_rot.set(data && FlagTest(data.flag, ElmAnim.ROOT_SMOOTH_ROT), QUIET);
-      root_smooth_pos.set(data && FlagTest(data.flag, ElmAnim.ROOT_SMOOTH_POS), QUIET);
+      root_from_body .set(data && FlagOn(data.flag, ElmAnim.ROOT_FROM_BODY ), QUIET);
+      root_del_pos_x .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_POS_X ), QUIET);
+      root_del_pos_y .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_POS_Y ), QUIET);
+      root_del_pos_z .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_POS_Z ), QUIET);
+      root_del_rot_x .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_ROT_X ), QUIET);
+      root_del_rot_y .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_ROT_Y ), QUIET);
+      root_del_rot_z .set(data && FlagOn(data.flag, ElmAnim.ROOT_DEL_ROT_Z ), QUIET);
+      root_smooth_rot.set(data && FlagOn(data.flag, ElmAnim.ROOT_SMOOTH_ROT), QUIET);
+      root_smooth_pos.set(data && FlagOn(data.flag, ElmAnim.ROOT_SMOOTH_POS), QUIET);
       root_set_move  .set(data && data.rootMove(), QUIET);
       root_set_rot   .set(data && data.rootRot (), QUIET);
    }

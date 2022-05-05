@@ -603,7 +603,7 @@ class Client : ConnectionServer.Client
                {
                   Heightmap temp, *hm=null;
                   Memc<ObjData> objs;
-                  if(area_sync_flag&(AREA_SYNC_HEIGHT|AREA_SYNC_MTRL|AREA_SYNC_COLOR|AREA_SYNC_OBJ))hm=project.hmObjGet(world_id, area_xy, temp, objs, FlagTest(area_sync_flag, AREA_SYNC_HEIGHT|AREA_SYNC_MTRL|AREA_SYNC_COLOR), FlagTest(area_sync_flag, AREA_SYNC_OBJ));
+                  if(area_sync_flag&(AREA_SYNC_HEIGHT|AREA_SYNC_MTRL|AREA_SYNC_COLOR|AREA_SYNC_OBJ))hm=project.hmObjGet(world_id, area_xy, temp, objs, FlagOn(area_sync_flag, AREA_SYNC_HEIGHT|AREA_SYNC_MTRL|AREA_SYNC_COLOR), FlagOn(area_sync_flag, AREA_SYNC_OBJ));
                   ServerSendSetWorldArea(connection, world_id, area_xy, area_sync_flag, *area_ver, hm, objs, project.id, project.edit_path);
                }
             }

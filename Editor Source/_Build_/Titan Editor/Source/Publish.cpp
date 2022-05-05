@@ -1221,13 +1221,13 @@ void DrawPublish()
    Texture& Texture::downSize(int size) {MIN(downsize, size); return T;}
    Texture& Texture::usesAlpha() {channels=4; return T;}
    Texture& Texture::normal() {channels=2; flags|=SIGN; return T;}
-   bool Texture::sRGB()C {return FlagTest(flags, SRGB      );}
+   bool Texture::sRGB()C {return FlagOn(flags, SRGB      );}
    Texture& Texture::sRGB(bool on) {FlagSet(flags, SRGB      , on); return T;}
-   bool Texture::sign()C {return FlagTest(flags, SIGN      );}
+   bool Texture::sign()C {return FlagOn(flags, SIGN      );}
    Texture& Texture::sign(bool on) {FlagSet(flags, SIGN      , on); return T;}
-   bool Texture::dynamic()C {return FlagTest(flags, DYNAMIC   );}
+   bool Texture::dynamic()C {return FlagOn(flags, DYNAMIC   );}
    Texture& Texture::dynamic(bool on) {FlagSet(flags, DYNAMIC   , on); return T;}
-   bool Texture::regenerate()C {return FlagTest(flags, REGENERATE);}
+   bool Texture::regenerate()C {return FlagOn(flags, REGENERATE);}
    Texture& Texture::regenerate(bool on) {FlagSet(flags, REGENERATE, on); return T;}
    int Texture::CompareTex(C Texture &tex, C UID &tex_id) {return Compare(tex.id, tex_id);}
 ImageConvert::ImageConvert() : pow2(false), clamp(true ), alpha_lum(false), has_color(true ), has_alpha(true ), ignore_alpha(false), env(false), downsize(    0), mip_maps(   -1), max_size(    0), size(    0), family(ELM_IMAGE), type(-1), mode(-1) {}

@@ -922,7 +922,7 @@ EditorServer EditServer;
                   File &f=connection.data; UID elm_id=f.getUID(); byte set=f.getByte(); Edit::Material mtrl; bool ok=mtrl.load(f);
                   if(ok)
                   {
-                     bool reload_textures=FlagTest(set, 1), adjust_params=FlagTest(set, 2);
+                     bool reload_textures=FlagOn(set, 1), adjust_params=FlagOn(set, 2);
                      ok=Proj.mtrlSync(elm_id, mtrl, reload_textures, adjust_params);
                   }
                   f.reset().putByte(Edit::EI_SET_MTRL).putBool(ok); f.pos(0); connection.send(f);
@@ -931,7 +931,7 @@ EditorServer EditServer;
                case Edit::EI_RLD_MTRL_TEX:
                {
                   File &f=connection.data; UID elm_id=f.getUID(); byte texs=f.getByte();
-                  bool base=FlagTest(texs, 1), detail=FlagTest(texs, 2), macro=FlagTest(texs, 4), emissive=FlagTest(texs, 8);
+                  bool base=FlagOn(texs, 1), detail=FlagOn(texs, 2), macro=FlagOn(texs, 4), emissive=FlagOn(texs, 8);
                   bool ok=Proj.mtrlReloadTextures(elm_id, base, detail, macro, emissive);
                   f.reset().putByte(Edit::EI_RLD_MTRL_TEX).putBool(ok); f.pos(0); connection.send(f);
                }break;

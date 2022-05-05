@@ -194,9 +194,9 @@ class GuiView : Region
    static void WindowLevel     (  Window &window, C Str &t) {       window.level(TextInt(t));}
    static Str  WindowLevel     (C Window &window          ) {return window.level();}
    static void WindowMovable   (  Window &window, C Str &t) {       FlagSet (window.flag, WIN_MOVABLE, TextBool(t));}
-   static Str  WindowMovable   (C Window &window          ) {return FlagTest(window.flag, WIN_MOVABLE);}
-   static void WindowResizable (  Window &window, C Str &t) {       FlagSet (window.flag, WIN_RESIZABLE, TextBool(t));}
-   static Str  WindowResizable (C Window &window          ) {return FlagTest(window.flag, WIN_RESIZABLE);}
+   static Str  WindowMovable   (C Window &window          ) {return FlagOn (window.flag, WIN_MOVABLE);}
+   static void WindowResizable (  Window &window, C Str &t) {       FlagSet(window.flag, WIN_RESIZABLE, TextBool(t));}
+   static Str  WindowResizable (C Window &window          ) {return FlagOn (window.flag, WIN_RESIZABLE);}
    static void WindowBarVisible(  Window &window, C Str &t) {       window.barVisible(TextBool(t));}
    static Str  WindowBarVisible(C Window &window          ) {return window.barVisible();}
  //static void WindowBarHeight (  Window &window, C Str &t) {       window.barHeight (TextFlt (t));}

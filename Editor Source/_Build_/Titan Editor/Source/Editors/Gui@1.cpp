@@ -224,9 +224,9 @@ GuiView GuiEdit;
    void GuiView::WindowLevel(  Window &window, C Str &t) {       window.level(TextInt(t));}
    Str  GuiView::WindowLevel(C Window &window          ) {return window.level();}
    void GuiView::WindowMovable(  Window &window, C Str &t) {       FlagSet (window.flag, WIN_MOVABLE, TextBool(t));}
-   Str  GuiView::WindowMovable(C Window &window          ) {return FlagTest(window.flag, WIN_MOVABLE);}
-   void GuiView::WindowResizable(  Window &window, C Str &t) {       FlagSet (window.flag, WIN_RESIZABLE, TextBool(t));}
-   Str  GuiView::WindowResizable(C Window &window          ) {return FlagTest(window.flag, WIN_RESIZABLE);}
+   Str  GuiView::WindowMovable(C Window &window          ) {return FlagOn (window.flag, WIN_MOVABLE);}
+   void GuiView::WindowResizable(  Window &window, C Str &t) {       FlagSet(window.flag, WIN_RESIZABLE, TextBool(t));}
+   Str  GuiView::WindowResizable(C Window &window          ) {return FlagOn (window.flag, WIN_RESIZABLE);}
    void GuiView::WindowBarVisible(  Window &window, C Str &t) {       window.barVisible(TextBool(t));}
    Str  GuiView::WindowBarVisible(C Window &window          ) {return window.barVisible();}
    void GuiView::ButtonImage(Button   &button  , C Str &t) {button  .image=Proj.gamePath(Proj.findElmImageID(t));}

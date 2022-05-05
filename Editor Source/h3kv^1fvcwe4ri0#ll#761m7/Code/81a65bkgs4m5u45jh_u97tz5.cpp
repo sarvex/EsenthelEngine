@@ -2254,7 +2254,7 @@ class ProjectEx : ProjectHierarchy
    {
       // TODO: generating textures when the sources were not found, will reuse existing images, but due to compression, the quality will be lost, and new textures will be generated even though images are the same, this is because BC7->RGBA->BC7 is not the same
       Image      base_0, base_1, base_2;
-      TEX_FLAG   textures=createBaseTextures(base_0, base_1, base_2, material, FlagTest(changed, EditMaterial.CHANGED_FLIP_NRM_Y), FlagTest(changed, EditMaterial.CHANGED_SMOOTH_IS_ROUGH));
+      TEX_FLAG   textures=createBaseTextures(base_0, base_1, base_2, material, FlagOn(changed, EditMaterial.CHANGED_FLIP_NRM_Y), FlagOn(changed, EditMaterial.CHANGED_SMOOTH_IS_ROUGH));
       UID        old_tex_id;
       IMAGE_TYPE ct;
 
@@ -2303,7 +2303,7 @@ class ProjectEx : ProjectHierarchy
    {
       // TODO: generating textures when the sources were not found, will reuse existing images, but due to compression, the quality will be lost, and new textures will be generated even though images are the same, this is because BC7->RGBA->BC7 is not the same
       Image      base_0, base_1, base_2;
-      TEX_FLAG   textures=createBaseTextures(base_0, base_1, base_2, material, FlagTest(changed, EditMaterial.CHANGED_FLIP_NRM_Y), FlagTest(changed, EditMaterial.CHANGED_SMOOTH_IS_ROUGH));
+      TEX_FLAG   textures=createBaseTextures(base_0, base_1, base_2, material, FlagOn(changed, EditMaterial.CHANGED_FLIP_NRM_Y), FlagOn(changed, EditMaterial.CHANGED_SMOOTH_IS_ROUGH));
       UID        old_tex_id;
       IMAGE_TYPE ct;
 
@@ -3695,11 +3695,11 @@ class ProjectEx : ProjectHierarchy
       bool this_contains_name=false, child_contains_name=false;
       if(filter().is())
       {
-          this_contains_name=FlagTest(item.flag, ELM_CONTAINS_NAME);
-         child_contains_name=FlagTest(item.flag, ELM_CONTAINS_NAME_CHILD);
+          this_contains_name=FlagOn(item.flag, ELM_CONTAINS_NAME);
+         child_contains_name=FlagOn(item.flag, ELM_CONTAINS_NAME_CHILD);
          if(!(child_contains_name || this_contains_name || parent_contains_name))return;
       }
-      bool     opened=(item.opened || child_contains_name || FlagTest(item.flag, ELM_EDITED_CHILD));
+      bool     opened=(item.opened || child_contains_name || FlagOn(item.flag, ELM_EDITED_CHILD));
       ListElm &e=list.data.New().set(item, opened, depth, parent_removed);
       if(opened) // list children
          FREPA(item.children)setList(item.children[i], depth+1, parent_removed, parent_contains_name || this_contains_name);
@@ -3742,7 +3742,7 @@ class ProjectEx : ProjectHierarchy
          if(ElmVisible(elm.type))
          {
           C ElmNode &child=hierarchy[child_i];
-            if(!elm.removed() || show_removed() || FlagTest(child.flag, ELM_EDITED|ELM_EDITED_CHILD))
+            if(!elm.removed() || show_removed() || FlagOn(child.flag, ELM_EDITED|ELM_EDITED_CHILD))
                if(list.show_elm_type[elm.type] || hasVisibleChildren(child))return true;
          }
       }
@@ -3758,16 +3758,16 @@ class ProjectEx : ProjectHierarchy
          ElmNode &child  =hierarchy[child_i];
          Elm     &elm    =elms     [child_i];
          if(ee && CompareChildren(*ee, elm)<0){setList(*ee, depth, parent_removed, parent_contains_name); ee=null;} // if "Engine" item should be included before this element
-         if(!elm.removed() || show_removed() || FlagTest(child.flag, ELM_EDITED|ELM_EDITED_CHILD))if(ElmVisible(elm.type))
+         if(!elm.removed() || show_removed() || FlagOn(child.flag, ELM_EDITED|ELM_EDITED_CHILD))if(ElmVisible(elm.type))
          {
             bool this_contains_name=false, child_contains_name=false;
             if(filter().is())
             {
-                this_contains_name=FlagTest(child.flag, ELM_CONTAINS_NAME);
-               child_contains_name=FlagTest(child.flag, ELM_CONTAINS_NAME_CHILD);
+                this_contains_name=FlagOn(child.flag, ELM_CONTAINS_NAME);
+               child_contains_name=FlagOn(child.flag, ELM_CONTAINS_NAME_CHILD);
                if(!(child_contains_name || this_contains_name || parent_contains_name))continue;
             }
-            bool opened=(elm.opened() || child_contains_name || FlagTest(child.flag, ELM_EDITED_CHILD) || list.list_all_children), removed=(parent_removed || elm.removed()), no_publish=(parent_no_publish || elm.noPublish()), invalid=(!removed && !no_publish && invalidRefs(elm));
+            bool opened=(elm.opened() || child_contains_name || FlagOn(child.flag, ELM_EDITED_CHILD) || list.list_all_children), removed=(parent_removed || elm.removed()), no_publish=(parent_no_publish || elm.noPublish()), invalid=(!removed && !no_publish && invalidRefs(elm));
             if(list.show_elm_type[elm.type])
             {
                int elm_list_index=list.data.elms();
@@ -3845,7 +3845,7 @@ class ProjectEx : ProjectHierarchy
                flag|=child.flag;
             }
          }
-         return FlagTest(flag, ELM_CONTAINS_NAME|ELM_CONTAINS_NAME_CHILD);
+         return FlagOn(flag, ELM_CONTAINS_NAME|ELM_CONTAINS_NAME_CHILD);
       }
       return false;
    }
@@ -3865,7 +3865,7 @@ class ProjectEx : ProjectHierarchy
             FlagSet(item.flag, ELM_CONTAINS_NAME      ,  this_contains);
             flag|=item.flag;
          }
-         return FlagTest(flag, ELM_CONTAINS_NAME|ELM_CONTAINS_NAME_CHILD);
+         return FlagOn(flag, ELM_CONTAINS_NAME|ELM_CONTAINS_NAME_CHILD);
       }
       return false;
    }
@@ -3888,7 +3888,7 @@ class ProjectEx : ProjectHierarchy
          FlagSet(item.flag, ELM_EDITED_CHILD, editing(item.children, name));
          flag|=item.flag;
       }
-      return FlagTest(flag, ELM_EDITED|ELM_EDITED_CHILD);
+      return FlagOn(flag, ELM_EDITED|ELM_EDITED_CHILD);
    }
    ProjectEx& editing(C Str &name) {editing(CodeEdit.items, name); return T;}
    void setList(bool set_hierarchy=true, bool set_existing=true)

@@ -421,14 +421,14 @@ ConvertToAtlasClass ConvertToAtlas;
             TEX_FLAG tex_mtrl=TEXF_NONE; // what textures we've written to the atlas from this material, if there's at least one other texture of the same type in another material, then we have to force writing it for this material
             bool     forced;
             params.reflect(mtrl.edit.reflect_min, mtrl.edit.reflect_max); // calculate mul add
-            if(AddMap(forced, atlas.   color_map, mtrl.edit.   color_map, FlagTest(tex_used, TEXF_COLOR   ), mtrl, TEXF_COLOR   , mtrl.edit.color_s.xyz                                             )){tex_mtrl|=TEXF_COLOR   ; if(forced)tex_force_size|=TEXF_COLOR   ;}
-            if(AddMap(forced, atlas.   alpha_map, mtrl.edit.   alpha_map, FlagTest(tex_used, TEXF_ALPHA   ), mtrl, TEXF_ALPHA                                                                       )){tex_mtrl|=TEXF_ALPHA   ; if(forced)tex_force_size|=TEXF_ALPHA   ;}
-            if(AddMap(forced, atlas.    bump_map, mtrl.edit.    bump_map, FlagTest(tex_used, TEXF_BUMP    ), mtrl, TEXF_BUMP                                                                        )){tex_mtrl|=TEXF_BUMP    ; if(forced)tex_force_size|=TEXF_BUMP    ;}
-            if(AddMap(forced, atlas.  normal_map, mtrl.edit.  normal_map, FlagTest(tex_used, TEXF_NORMAL  ), mtrl, TEXF_NORMAL  , mtrl.edit.normal                                                  )){tex_mtrl|=TEXF_NORMAL  ; if(forced)tex_force_size|=TEXF_NORMAL  ;}
-            if(AddMap(forced, atlas.  smooth_map, mtrl.edit.  smooth_map, FlagTest(tex_used, TEXF_SMOOTH  ), mtrl, TEXF_SMOOTH  , mtrl.edit.smoothMul(), mtrl.edit.smoothAdd()                      )){tex_mtrl|=TEXF_SMOOTH  ; if(forced)tex_force_size|=TEXF_SMOOTH  ;}
-            if(AddMap(forced, atlas.   metal_map, mtrl.edit.   metal_map, FlagTest(tex_used, TEXF_METAL   ), mtrl, TEXF_METAL   , params.reflect_mul, params.reflect_add, 1-min_reflect, min_reflect)){tex_mtrl|=TEXF_METAL   ; if(forced)tex_force_size|=TEXF_METAL   ;} // 1-min_reflect because we will operate on min_reflect..1 range, so mul=1-min_reflect, add=min_reflect
-            if(AddMap(forced, atlas.    glow_map, mtrl.edit.    glow_map, FlagTest(tex_used, TEXF_GLOW    ), mtrl, TEXF_GLOW    , mtrl.edit.glow                                                    )){tex_mtrl|=TEXF_GLOW    ; if(forced)tex_force_size|=TEXF_GLOW    ;}
-            if(AddMap(forced, atlas.emissive_map, mtrl.edit.emissive_map, FlagTest(tex_used, TEXF_EMISSIVE), mtrl, TEXF_EMISSIVE, mtrl.edit.emissive_s                                              )){tex_mtrl|=TEXF_EMISSIVE; if(forced)tex_force_size|=TEXF_EMISSIVE;}
+            if(AddMap(forced, atlas.   color_map, mtrl.edit.   color_map, FlagOn(tex_used, TEXF_COLOR   ), mtrl, TEXF_COLOR   , mtrl.edit.color_s.xyz                                             )){tex_mtrl|=TEXF_COLOR   ; if(forced)tex_force_size|=TEXF_COLOR   ;}
+            if(AddMap(forced, atlas.   alpha_map, mtrl.edit.   alpha_map, FlagOn(tex_used, TEXF_ALPHA   ), mtrl, TEXF_ALPHA                                                                       )){tex_mtrl|=TEXF_ALPHA   ; if(forced)tex_force_size|=TEXF_ALPHA   ;}
+            if(AddMap(forced, atlas.    bump_map, mtrl.edit.    bump_map, FlagOn(tex_used, TEXF_BUMP    ), mtrl, TEXF_BUMP                                                                        )){tex_mtrl|=TEXF_BUMP    ; if(forced)tex_force_size|=TEXF_BUMP    ;}
+            if(AddMap(forced, atlas.  normal_map, mtrl.edit.  normal_map, FlagOn(tex_used, TEXF_NORMAL  ), mtrl, TEXF_NORMAL  , mtrl.edit.normal                                                  )){tex_mtrl|=TEXF_NORMAL  ; if(forced)tex_force_size|=TEXF_NORMAL  ;}
+            if(AddMap(forced, atlas.  smooth_map, mtrl.edit.  smooth_map, FlagOn(tex_used, TEXF_SMOOTH  ), mtrl, TEXF_SMOOTH  , mtrl.edit.smoothMul(), mtrl.edit.smoothAdd()                      )){tex_mtrl|=TEXF_SMOOTH  ; if(forced)tex_force_size|=TEXF_SMOOTH  ;}
+            if(AddMap(forced, atlas.   metal_map, mtrl.edit.   metal_map, FlagOn(tex_used, TEXF_METAL   ), mtrl, TEXF_METAL   , params.reflect_mul, params.reflect_add, 1-min_reflect, min_reflect)){tex_mtrl|=TEXF_METAL   ; if(forced)tex_force_size|=TEXF_METAL   ;} // 1-min_reflect because we will operate on min_reflect..1 range, so mul=1-min_reflect, add=min_reflect
+            if(AddMap(forced, atlas.    glow_map, mtrl.edit.    glow_map, FlagOn(tex_used, TEXF_GLOW    ), mtrl, TEXF_GLOW    , mtrl.edit.glow                                                    )){tex_mtrl|=TEXF_GLOW    ; if(forced)tex_force_size|=TEXF_GLOW    ;}
+            if(AddMap(forced, atlas.emissive_map, mtrl.edit.emissive_map, FlagOn(tex_used, TEXF_EMISSIVE), mtrl, TEXF_EMISSIVE, mtrl.edit.emissive_s                                              )){tex_mtrl|=TEXF_EMISSIVE; if(forced)tex_force_size|=TEXF_EMISSIVE;}
 
             tex_wrote|=tex_mtrl;
 
@@ -442,14 +442,14 @@ ConvertToAtlasClass ConvertToAtlas;
          // if textures didn't fill entire needed space, then we need to place a dummy to force image size
          TEX_FLAG filled=tex_filled_x&tex_filled_y; // we need both sides to be filled
          filled&=~tex_force_size; // if a texture needs to have forced size, then we must disable filled so the size is specified
-         checkSide(atlas.   color_map, FlagTest(filled, TEXF_COLOR   ));
-         checkSide(atlas.   alpha_map, FlagTest(filled, TEXF_ALPHA   ));
-         checkSide(atlas.    bump_map, FlagTest(filled, TEXF_BUMP    ));
-         checkSide(atlas.  normal_map, FlagTest(filled, TEXF_NORMAL  ));
-         checkSide(atlas.  smooth_map, FlagTest(filled, TEXF_SMOOTH  ));
-         checkSide(atlas.   metal_map, FlagTest(filled, TEXF_METAL   ));
-         checkSide(atlas.    glow_map, FlagTest(filled, TEXF_GLOW    ));
-         checkSide(atlas.emissive_map, FlagTest(filled, TEXF_EMISSIVE));
+         checkSide(atlas.   color_map, FlagOn(filled, TEXF_COLOR   ));
+         checkSide(atlas.   alpha_map, FlagOn(filled, TEXF_ALPHA   ));
+         checkSide(atlas.    bump_map, FlagOn(filled, TEXF_BUMP    ));
+         checkSide(atlas.  normal_map, FlagOn(filled, TEXF_NORMAL  ));
+         checkSide(atlas.  smooth_map, FlagOn(filled, TEXF_SMOOTH  ));
+         checkSide(atlas.   metal_map, FlagOn(filled, TEXF_METAL   ));
+         checkSide(atlas.    glow_map, FlagOn(filled, TEXF_GLOW    ));
+         checkSide(atlas.emissive_map, FlagOn(filled, TEXF_EMISSIVE));
 
          if(tex_wrote& TEXF_COLOR            ){atlas.color.xyz=                                1;                      }else atlas.color.xyz    /=mtrls.elms();                                       // if we ended up having color  map, then it means we've used the baked textures, for which we need to set the full color    multiplier
          if(tex_wrote&(TEXF_COLOR|TEXF_ALPHA)){atlas.color.w  =(alpha_num ? alpha/alpha_num : 1); atlas.technique=tech;}else atlas.color.w      /=mtrls.elms();                                       // if we ended up having alpha  map, then set parameters from alpha materials only (check color map too because alpha can come from it)

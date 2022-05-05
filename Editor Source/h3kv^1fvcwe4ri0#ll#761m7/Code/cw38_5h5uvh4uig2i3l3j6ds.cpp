@@ -522,8 +522,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                         REP(part.variations())if(Proj.invalidRef(part.variation    (i).id(), optional)){invalid=true; break;}
                      }
                      bool lit=(allow_lit && i==lit_part), sel=partSel(i);
-                     if(mode()==PHYS && phys_tabs()==PHYS_TOGGLE)SetHighlight(Color((FlagTest(part.part_flag, MSHP_NO_PHYS_BODY) && interval) ? 85 : 0, lit ? 85 : 0, lit ? 85 : 0, 0));else
-                     if(mode()==REMOVE                          )SetHighlight(Color((FlagTest(part.part_flag, MSHP_HIDDEN      ) && interval) ? 85 : 0, lit ? 85 : 0, lit ? 85 : 0, 0));else
+                     if(mode()==PHYS && phys_tabs()==PHYS_TOGGLE)SetHighlight(Color((FlagOn(part.part_flag, MSHP_NO_PHYS_BODY) && interval) ? 85 : 0, lit ? 85 : 0, lit ? 85 : 0, 0));else
+                     if(mode()==REMOVE                          )SetHighlight(Color((FlagOn(part.part_flag, MSHP_HIDDEN      ) && interval) ? 85 : 0, lit ? 85 : 0, lit ? 85 : 0, 0));else
                      if(invalid   )SetHighlight(Color(85,  0,  0, 0));else
                      if(sel && lit)SetHighlight(Color(40,  0,  0, 0));else
                      if(sel       )SetHighlight(Color(40, 40,  0, 0));else
@@ -858,8 +858,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          D.depthLock(false);
          SetMatrix(trans.matrix);
-         FREPA (mesh_skel.bones)if(mesh_skel.bones[i].flag&BONE_RAGDOLL)mesh_skel.bones[i].shape.draw(ColorAlpha(                                                  ORANGE    , (lit_bone==i) ? 1 : 0.55), false, 16);
-         FREPAO(mesh_skel.bones)                                                                .draw(ColorAlpha(FlagTest(mesh_skel.bones[i].flag, BONE_RAGDOLL) ? RED : CYAN, (lit_bone==i) ? 1 : 0.60));
+         FREPA (mesh_skel.bones)if(mesh_skel.bones[i].flag&BONE_RAGDOLL)mesh_skel.bones[i].shape.draw(ColorAlpha(                                                ORANGE    , (lit_bone==i) ? 1 : 0.55), false, 16);
+         FREPAO(mesh_skel.bones)                                                                .draw(ColorAlpha(FlagOn(mesh_skel.bones[i].flag, BONE_RAGDOLL) ? RED : CYAN, (lit_bone==i) ? 1 : 0.60));
          if(ragdoll_tabs()!=RAGDOLL_TOGGLE)if(InRange(sel_bone, mesh_skel.bones)){Matrix m=mesh_skel.bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, boneAxis());}
          D.depthUnlock();
       }
@@ -1076,7 +1076,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          MeshLod &lod=mesh.lod(i); REPA(lod.parts)if(!only_selected || ObjEdit.partOp(i) || !ObjEdit.mesh_parts.visibleOnActiveDesktop())
          {
-            MeshPart &part=lod.parts[i]; if(!mtrl || HasMaterial(part, mtrl))if(FlagTest(part.base.flag()|part.render.flag(), flag)){part.exclude(flag); changed=true;}
+            MeshPart &part=lod.parts[i]; if(!mtrl || HasMaterial(part, mtrl))if(FlagOn(part.base.flag()|part.render.flag(), flag)){part.exclude(flag); changed=true;}
          }
       }
       if(changed)
