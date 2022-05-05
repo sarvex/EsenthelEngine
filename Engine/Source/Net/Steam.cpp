@@ -117,7 +117,7 @@ static Bool SetDateFromYYYYMMDD(DateTime &dt, C Str &text)
    dt.zero();
    if(text.length()==8)
    {
-      REPA(text)if(!FlagTest(CharFlagFast(text[i]), CHARF_DIG))goto invalid;
+      REPA(text)if(FlagOff(CharFlagFast(text[i]), CHARF_DIG))goto invalid;
       dt.year =CharInt(text[0])*1000
               +CharInt(text[1])* 100
               +CharInt(text[2])*  10

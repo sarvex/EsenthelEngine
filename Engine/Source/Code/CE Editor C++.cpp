@@ -966,7 +966,7 @@ static void Add(Memb<PakFileData> &files, Pak &pak, C PakFile &pf)
 }
 static void AddFile(Memb<PakFileData> &files, Pak &pak, C PakFile &pf)
 {
-   if(!FlagTest(pf.flag, PF_STD_DIR))Add(files, pak, pf); // skip folders
+   if(FlagOff(pf.flag, PF_STD_DIR))Add(files, pak, pf); // skip folders
 }
 static void Add        (Memb<PakFileData> &files,           C PaksFile *pf) {if(pf)Add    (files, *pf->pak, *pf->file);}
 static void AddFile    (Memb<PakFileData> &files, Pak &pak, C PakFile  *pf) {if(pf)AddFile(files,      pak, *pf      );}

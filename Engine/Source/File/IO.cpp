@@ -612,7 +612,7 @@ Bool FAttrib(C Str &name, UInt attrib)
       struct stat stats; if(!lstat(utf, &stats))
       {
          UInt mode =(stats.st_mode&(S_IRWXU|S_IRWXG|S_IRWXO|S_ISUID|S_ISGID|S_ISVTX));
-         Bool write=!FlagTest(attrib, FATTRIB_READ_ONLY);
+         Bool write=FlagOff(attrib, FATTRIB_READ_ONLY);
          FlagSet(mode, S_IWUSR, write);
          FlagSet(mode, S_IWGRP, write);
          FlagSet(mode, S_IWOTH, write);

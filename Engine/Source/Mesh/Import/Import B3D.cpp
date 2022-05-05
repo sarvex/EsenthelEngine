@@ -483,8 +483,8 @@ Bool ImportB3D(C Str &name, Mesh *mesh, Skeleton *skeleton, XAnimation *animatio
                for(; !f.end() && c.size>f.pos(); )
                {
                   BRUS &b=brus.New(); b.name=GetStr(f); Int blend, fx; f>>b.color>>b.specular>>blend>>fx; REP(n_texs){Int tex_id; f>>tex_id; if(InRange(tex_id, texs))b.tex_id.add(tex_id);}
-                  b.cull       =!FlagTest(fx, 16);
-                  b.full_bright= FlagTest(fx,  1);
+                  b.cull       =FlagOff (fx, 16);
+                  b.full_bright=FlagTest(fx,  1);
                 //Log(S+"B "+blend+' '+fx+' '+b.name); FREPA(b.tex_id)Log(S+' '+texs[b.tex_id[i]].file); LogN();
                }
             }else

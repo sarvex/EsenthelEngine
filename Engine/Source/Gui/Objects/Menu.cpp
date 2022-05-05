@@ -332,7 +332,7 @@ Menu& Menu::setData(C Node<MenuElm> &node)
            MenuElm  &elm  =_elms         [i];
       elm.create(child, this);
       elm.disabled|=!elm.name.is();
-      visible[i]   =!FlagTest(elm.flag(), MENU_HIDDEN);
+      visible[i]   =FlagOff(elm.flag(), MENU_HIDDEN);
       if(child.children.elms() && !elm._menu) // if menu was already created, then ignore the following code
       {
          Menu &menu=New(elm._menu)->create(); menu._parent=this;

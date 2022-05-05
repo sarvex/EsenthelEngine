@@ -316,7 +316,7 @@ Window& Window::hide()
       // activate next window from mutual parent
       if(activate_next && parent())if(GuiObjChildren *children=parent()->children())
          REPA(*children)
-            if(GuiObj *go=(*children)[i])if(go->isWindow() && go!=this && go->asWindow().showing()/* && !FlagTest(go->asWindow().flag, WIN_IMMEDIATE_DEACT)*/)
+            if(GuiObj *go=(*children)[i])if(go->isWindow() && go!=this && go->asWindow().showing()/* && FlagOff(go->asWindow().flag, WIN_IMMEDIATE_DEACT)*/)
                {go->activate(); break;}
    }
   _fade_type =FADE_NONE;

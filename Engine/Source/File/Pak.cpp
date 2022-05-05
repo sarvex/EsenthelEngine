@@ -1580,7 +1580,7 @@ struct PakCreator
          if(progress && progress->wantStop(error_message))goto error;
 
          // save header
-         if(!FlagTest(pak_flag, PAK_NO_FILE)) // create file
+         if(FlagOff(pak_flag, PAK_NO_FILE)) // create file
          {
             if(!pak.pakFileName().is()){if(error_message)*error_message="Pak name was not specified"; goto error;}
             if(!(in_place ? f_dest.editTry(pak.pakFileName(), cipher) : f_dest.writeTry(pak.pakFileName(), cipher))){if(error_message)*error_message=CantWrite(pak.pakFileName()); goto error;}
@@ -1591,7 +1591,7 @@ struct PakCreator
          auto f_dest_cipher_offset=f_dest._cipher_offset;
 
          // process files
-         if(!FlagTest(pak_flag, PAK_NO_DATA) || FlagTest(pak_flag, PAK_SET_HASH)) // write data or set hash
+         if(FlagOff(pak_flag, PAK_NO_DATA) || FlagTest(pak_flag, PAK_SET_HASH)) // write data or set hash
          {
          #if HAS_THREADS
             if(files_to_process)
@@ -1644,7 +1644,7 @@ struct PakCreator
                   }
 
                   // write data
-                  if(!FlagTest(pak_flag, PAK_NO_DATA))
+                  if(FlagOff(pak_flag, PAK_NO_DATA))
                   {
                      if(progress && progress->wantStop(error_message))goto error;
 
@@ -2198,7 +2198,7 @@ Bool PakEqual(MemPtr<PakFileData> files, C Pak &pak)
    REPA(pak)
    {
     C PakFile &pf=pak.file(i);
-      if(!FlagTest(pf.flag, PF_STD_DIR)) // skip folders because they're not required to be in the 'PakFileData' list
+      if(FlagOff(pf.flag, PF_STD_DIR)) // skip folders because they're not required to be in the 'PakFileData' list
       {
          PakFileData **files_pfd=files_sorted.binaryFind(pak.fullName(pf), ComparePF);
          if(!Equal(files_pfd ? *files_pfd : null, &pf))return false;
@@ -2218,7 +2218,7 @@ Bool CPakEqual(C CMemPtr<PakFileData> &files, C Pak &pak)
    REPA(pak)
    {
     C PakFile &pf=pak.file(i);
-      if(!FlagTest(pf.flag, PF_STD_DIR)) // skip folders because they're not required to be in the 'PakFileData' list
+      if(FlagOff(pf.flag, PF_STD_DIR)) // skip folders because they're not required to be in the 'PakFileData' list
       {
        C PakFileData **files_pfd=files_sorted.binaryFind(pak.fullName(pf), ComparePF);
          if(!Equal(files_pfd ? *files_pfd : null, &pf))return false;

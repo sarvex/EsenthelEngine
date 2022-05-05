@@ -862,7 +862,7 @@ Bool Symbol::hasNonPrivateBase(Symbol *Class, Memc<Modif> *templates, Bool allow
    REPA(base)
    {
       Modif &b=base[i];
-      if(test_private ? !FlagTest(b.modifiers, MODIF_PRIVATE) : true)
+      if(test_private ? FlagOff(b.modifiers, MODIF_PRIVATE) : true)
       {
          Modif base=b; base.proceedToFinal(templates); if(base->hasNonPrivateBase(Class, &base.templates, true, true, rt))return true;
       }

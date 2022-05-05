@@ -1490,8 +1490,8 @@ void Application::windowCreate()
 {
    if(LogInit)LogN("Application.windowCreate");
 #if WINDOWS_OLD
-   Bool want_minmax = FlagTest(flag, APP_MINIMIZABLE|APP_MAXIMIZABLE),
-        want_close  =!FlagTest(flag, APP_NO_CLOSE                   ),
+   Bool want_minmax =FlagTest(flag, APP_MINIMIZABLE|APP_MAXIMIZABLE),
+        want_close  =FlagOff (flag, APP_NO_CLOSE                   ),
         want_buttons=(want_minmax || want_close);
 
  C wchar_t *icon=null;

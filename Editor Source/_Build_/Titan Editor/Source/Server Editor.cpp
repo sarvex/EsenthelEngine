@@ -155,13 +155,16 @@ EditorServer EditServer;
                         {
                            Edit::Elm &elm=     mems[i];
                            Elm      &src=Proj.elms[i];
-                           elm.type     =Edit::ELM_TYPE(src.type);
-                           elm.removed  = src.  removed();
-                           elm.publish  =!src.noPublish();
-                           elm.       id= src.       id;
-                           elm.parent_id= src.parent_id;
-                           elm.name     = src.name;
-                           elm.src_file = src.srcFile();
+                           elm.type=Edit::ELM_TYPE(src.type);
+                                                    elm.flags =0;
+                           if(src.removed        ())elm.flags|=Edit::Elm::REMOVED;
+                           if(src.noPublish      ())elm.flags|=Edit::Elm::NO_PUBLISH;
+                         //if(src.noPublishMobile())elm.flags|=Edit.Elm.NO_PUBLISH_MOBILE; FIXME
+                           elm.       id=src.       id;
+                           elm.parent_id=src.parent_id;
+                           elm.name     =src.name;
+                           elm.src_file =src.srcFile();
+                           // "full" will be set on the client
                         }
                         elms.point(mems);
                      }else

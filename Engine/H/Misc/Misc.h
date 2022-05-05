@@ -82,8 +82,9 @@ constexpr inline Enum  operator^  (Enum  a, Enum b) {return  Enum  (   ENUM_TYPE
           inline Enum& operator&= (Enum &a, Enum b) {return (Enum&)( ((ENUM_TYPE(Enum)&)a) &= ENUM_TYPE(Enum)(b) );} \
           inline Enum& operator^= (Enum &a, Enum b) {return (Enum&)( ((ENUM_TYPE(Enum)&)a) ^= ENUM_TYPE(Enum)(b) );}
 
-T2(TA,TB   ) inline Bool FlagTest   (TA  flags, TB f           ) {return (flags&f)!=0;}                                   // check if 'f' flag is enabled                in 'flags', in case 'f' contains multiple options then this will succeed if any of them are enabled
-T2(TA,TB   ) inline Bool FlagAll    (TA  flags, TB f           ) {return (flags&f)==f;}                                   // check if 'f' flag is enabled                in 'flags', in case 'f' contains multiple options then this will succeed if all of them are enabled
+T2(TA,TB   ) inline Bool FlagTest   (TA  flags, TB f           ) {return (flags&f)!=0;}                                   // check if 'f' flag is  enabled               in 'flags', in case 'f' contains multiple options then this will succeed if any of them are  enabled
+T2(TA,TB   ) inline Bool FlagAll    (TA  flags, TB f           ) {return (flags&f)==f;}                                   // check if 'f' flag is  enabled               in 'flags', in case 'f' contains multiple options then this will succeed if all of them are  enabled
+T2(TA,TB   ) inline Bool FlagOff    (TA  flags, TB f           ) {return (flags&f)==0;}                                   // check if 'f' flag is disabled               in 'flags', in case 'f' contains multiple options then this will succeed if all of them are disabled
 T2(TA,TB   ) inline void FlagEnable (TA &flags, TB f           ) {flags|= f;}                                             // enable   'f' flag                           in 'flags'
 T2(TA,TB   ) inline void FlagDisable(TA &flags, TB f           ) {flags&=~f;}                                             // disable  'f' flag                           in 'flags'
 T2(TA,TB   ) inline void FlagToggle (TA &flags, TB f           ) {flags^= f;}                                             // toggle   'f' flag                           in 'flags'

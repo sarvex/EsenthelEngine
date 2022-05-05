@@ -443,11 +443,11 @@ Cache<EditObject> EditObjects;
    }
    void EditObject::updateBase(cchar *edit_path)
    {
-      if(!FlagTest(flag, OVR_ACCESS        ))access=(base ? base->access : OBJ_ACCESS_TERRAIN);
-      if(!FlagTest(flag, OVR_TYPE          ))if(base)type=base->type;else type.zero();
-      if(!FlagTest(flag, OVR_CONST         ))FlagSet(flag, CONSTANT, base ? base->constant() : false);
-      if(!FlagTest(flag, OVR_PATH          ))path=(base ? base->path : OBJ_PATH_CREATE);
-      if(!FlagTest(flag, OVR_MESH_VARIATION))mesh_variation_id=(base ? base->mesh_variation_id : 0);
+      if(FlagOff(flag, OVR_ACCESS        ))access=(base ? base->access : OBJ_ACCESS_TERRAIN);
+      if(FlagOff(flag, OVR_TYPE          ))if(base)type=base->type;else type.zero();
+      if(FlagOff(flag, OVR_CONST         ))FlagSet(flag, CONSTANT, base ? base->constant() : false);
+      if(FlagOff(flag, OVR_PATH          ))path=(base ? base->path : OBJ_PATH_CREATE);
+      if(FlagOff(flag, OVR_MESH_VARIATION))mesh_variation_id=(base ? base->mesh_variation_id : 0);
       updateEditorType(edit_path);
    }
    bool EditObject::newParam(C Str &name, PARAM_TYPE type, C Project &proj)

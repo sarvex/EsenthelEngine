@@ -856,7 +856,7 @@ class AnimEditor : Viewport4Region
       if(ElmAnim *d=editor.data())
       {
          editor.undos.set("rootDelPos");
-         bool on=!FlagTest(d.flag, ElmAnim.ROOT_DEL_POS);
+         bool on=FlagOff(d.flag, ElmAnim.ROOT_DEL_POS);
          editor.root_del_pos_x.set(on, QUIET);
          editor.root_del_pos_y.set(on, QUIET);
          editor.root_del_pos_z.set(on, QUIET);
@@ -868,7 +868,7 @@ class AnimEditor : Viewport4Region
       if(ElmAnim *d=editor.data())
       {
          editor.undos.set("rootDelRot");
-         bool on=!FlagTest(d.flag, ElmAnim.ROOT_DEL_ROT);
+         bool on=FlagOff(d.flag, ElmAnim.ROOT_DEL_ROT);
          editor.root_del_rot_x.set(on, QUIET);
          editor.root_del_rot_y.set(on, QUIET);
          editor.root_del_rot_z.set(on, QUIET);
@@ -893,7 +893,7 @@ class AnimEditor : Viewport4Region
       if(ElmAnim *d=editor.data())
       {
          editor.undos.set("rootSmooth");
-         bool on=!FlagTest(d.flag, ElmAnim.ROOT_SMOOTH_ROT_POS);
+         bool on=FlagOff(d.flag, ElmAnim.ROOT_SMOOTH_ROT_POS);
          editor.root_smooth_rot.set(on, QUIET);
          editor.root_smooth_pos.set(on, QUIET);
          FlagSet(d.flag, ElmAnim.ROOT_SMOOTH_ROT_POS, on); /*d.file_time.getUTC(); already changed in 'setChanged' */ if(on){Skeleton temp, &skel=editor.skel ? *editor.skel : temp; editor.anim.adjustForSameTransformWithDifferentSkeleton(skel, skel, -1, null, ROOT_SMOOTH_ROT_POS); editor.setAnimSkel(); editor.setOrnTarget(); editor.toGui();} editor.setChanged();

@@ -4,7 +4,7 @@ namespace EE{
 static Int Compare(C Edit::Elm &elm, C UID &id) {return Compare(elm.id, id);}
 namespace Edit{
 /******************************************************************************/
-#define EI_VER 54 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
+#define EI_VER 55 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
 #define EI_STR (ENGINE_NAME " Editor Network Interface")
 
 #define CLIENT_WAIT_TIME         (   60*1000) //    60 seconds
@@ -14,27 +14,24 @@ namespace Edit{
 ASSERT( EI_NUM<=256); // because they're stored as bytes
 ASSERT(ELM_NUM<=256); // because they're stored as bytes
 /******************************************************************************/
-static Str ElmFullData(C CMemPtr<Elm> &elms, C UID &elm_id, Str &name, Bool &removed, Bool &publish) // 'elms' must be sorted by their ID
+static void Finalize(Elm &elm, C CMemPtr<Elm> &elms) // 'elms' must be sorted by their ID
 {
-   name   .clear();
-   removed=false;
-   publish=true ;
+    elm.full_name=elm.name;
+   auto flags    =elm.flags;
 
-   Memt<UID> processed;
-   for( UID cur_id=elm_id; cur_id.valid(); )
+   Memt<UID> processed; processed.add(elm.id);
+ C Elm *cur=&elm;
+parent:
+ C UID &parent_id=cur->parent_id; if(parent_id.valid() && processed.binaryInclude(parent_id))if(cur=elms.binaryFind(parent_id))
    {
-      if(      processed.binaryInclude(cur_id         )) // not yet processed
-      if(C Elm *elm=elms.binaryFind   (cur_id, Compare)) // was found in elements
-      {
-         name    =(name.is() ? elm->name+'\\'+name : elm->name);
-         removed|=elm->removed;
-         publish&=elm->publish;
-         cur_id  =elm->parent_id;
-         continue;
-      }
-      break;
+      elm.full_name=cur->name+'\\'+elm.full_name;
+          flags   |=cur->flags; // !! can use OR because we have NO_PUBLISH, if it was PUBLISH then we need a SEPARATE AND !!
+      goto parent;
    }
-   return name;
+
+   FlagSet(elm.flags, Elm::REMOVED_FULL          , FlagTest(flags, Elm::REMOVED   ));
+   FlagSet(elm.flags, Elm::NO_PUBLISH_FULL       , FlagTest(flags, Elm::NO_PUBLISH));
+   FlagSet(elm.flags, Elm::NO_PUBLISH_MOBILE_FULL, FlagTest(flags, Elm::NO_PUBLISH | Elm::NO_PUBLISH_MOBILE)); // this is NoPublish || NoPublishMobile
 }
 /******************************************************************************/
 // MATERIAL MAP
@@ -459,13 +456,9 @@ Bool EditorInterface::getElms(MemPtr<Elm> elms, Bool include_removed)
          if(f.getBool()) // if success
          if(elms.load(f))
          {
-            REPA(elms)
-            {
-               Elm &elm=elms[i];
-               ElmFullData(elms, elm.id, elm.full_name, elm.final_removed, elm.final_publish); // setup full values for convenience
-            }
+            REPA(elms)Finalize(elms[i], elms); // setup full values for convenience
             if(!include_removed) // call this at the end, once all elements have been setup, so we won't remove an element that still has unprocessed children, do this on the client, to avoid overloading the server
-               REPA(elms)if(elms[i].final_removed)elms.remove(i, true); // need to keep order because elements are sorted by ID
+               REPA(elms)if(elms[i].removedFull())elms.remove(i, true); // need to keep order because elements are sorted by ID
             return true;
          }
          goto fail;
@@ -634,6 +627,19 @@ Bool EditorInterface::setElmPublish(C CMemPtr< IDParam<Bool> > &elms)
       if(_conn.send(f))
       if(_conn.receive(CLIENT_WAIT_TIME))
       if(f.getByte()==EI_SET_ELM_PUBLISH)return f.getBool();
+      disconnect();
+   }
+   return false;
+}
+Bool EditorInterface::setElmPublishMobile(C CMemPtr< IDParam<Bool> > &elms)
+{
+   if(!elms.elms())return true;
+   if(connected())
+   {
+      File &f=_conn.data.reset(); f.putByte(EI_SET_ELM_PUBLISH_MOBILE); elms.save(f); f.pos(0);
+      if(_conn.send(f))
+      if(_conn.receive(CLIENT_WAIT_TIME))
+      if(f.getByte()==EI_SET_ELM_PUBLISH_MOBILE)return f.getBool();
       disconnect();
    }
    return false;

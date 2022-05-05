@@ -4014,15 +4014,15 @@ class Elm
    Elm(C Elm &src) {T=src;}
 
    // get
-   bool importing     ()C {return  FlagTest(flag, IMPORTING       );}   Elm& importing     (bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
-   bool opened        ()C {return  FlagTest(flag, OPENED          );}   Elm& opened        (bool on) {FlagSet(flag, OPENED          ,  on); return T;}
-   bool removed       ()C {return  FlagTest(flag, REMOVED         );}   Elm& removed       (bool on) {FlagSet(flag, REMOVED         ,  on); return T;} // this checks only if this element is    removed, it doesn't check the parents
-   bool publish       ()C {return !FlagTest(flag, NO_PUBLISH      );}   Elm& publish       (bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;} // this checks only if this element is    publish, it doesn't check the parents
-   bool noPublish     ()C {return  FlagTest(flag, NO_PUBLISH      );}   Elm& noPublish     (bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;} // this checks only if this element is no publish, it doesn't check the parents
-   bool finalRemoved  ()C {return  FlagTest(flag, FINAL_REMOVED   );}   Elm& finalRemoved  (bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
-   bool finalExists   ()C {return !FlagTest(flag, FINAL_REMOVED   );}   Elm& finalExists   (bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
-   bool finalPublish  ()C {return !FlagTest(flag, FINAL_NO_PUBLISH);}   Elm& finalPublish  (bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;} // this includes 'finalExists'  as well !!
-   bool finalNoPublish()C {return  FlagTest(flag, FINAL_NO_PUBLISH);}   Elm& finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;} // this includes 'finalRemoved' as well !!
+   bool importing     ()C {return FlagTest(flag, IMPORTING       );}   Elm& importing     (bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
+   bool opened        ()C {return FlagTest(flag, OPENED          );}   Elm& opened        (bool on) {FlagSet(flag, OPENED          ,  on); return T;}
+   bool removed       ()C {return FlagTest(flag, REMOVED         );}   Elm& removed       (bool on) {FlagSet(flag, REMOVED         ,  on); return T;} // this checks only if this element is    removed, it doesn't check the parents
+   bool publish       ()C {return FlagOff (flag, NO_PUBLISH      );}   Elm& publish       (bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;} // this checks only if this element is    publish, it doesn't check the parents
+   bool noPublish     ()C {return FlagTest(flag, NO_PUBLISH      );}   Elm& noPublish     (bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;} // this checks only if this element is no publish, it doesn't check the parents
+   bool finalRemoved  ()C {return FlagTest(flag, FINAL_REMOVED   );}   Elm& finalRemoved  (bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
+   bool finalExists   ()C {return FlagOff (flag, FINAL_REMOVED   );}   Elm& finalExists   (bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
+   bool finalPublish  ()C {return FlagOff (flag, FINAL_NO_PUBLISH);}   Elm& finalPublish  (bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;} // this includes 'finalExists'  as well !!
+   bool finalNoPublish()C {return FlagTest(flag, FINAL_NO_PUBLISH);}   Elm& finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;} // this includes 'finalRemoved' as well !!
  C Str& srcFile       ()C {return data ?  data.src_file : S;}
    bool initialized   ()C {return data && data.ver;}
 

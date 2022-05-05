@@ -2021,7 +2021,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
    if(mip_maps<=0)mip_maps=dest_total_mip_maps ; // if mip maps not specified then use full chain
    else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
-   Bool alt_type_on_fail=!FlagTest(flags, IC_NO_ALT_TYPE),
+   Bool alt_type_on_fail=FlagOff(flags, IC_NO_ALT_TYPE),
         env=(FlagTest(flags, IC_ENV_CUBE) && IsCube((IMAGE_MODE)mode) && mip_maps>1);
 
    // check if doesn't require conversion
@@ -2046,7 +2046,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
       if(same_size // if we use the same size (for which case 'filter' and IC_KEEP_EDGES are ignored)
       || (
             (filter==FILTER_BEST || filter==FILTER_DOWN || filter==FILTER_WAIFU) // we're going to use default filter for downsampling (which is typically used for mip-map generation), FILTER_WAIFU falls back to FILTER_BEST
-         && !FlagTest(flags, IC_KEEP_EDGES)                                      // we're not keeping the edges                        (which is typically used for mip-map generation)
+         && FlagOff(flags, IC_KEEP_EDGES)                                        // we're not keeping the edges                        (which is typically used for mip-map generation)
          && !env                                                                 // for 'env' allow copying only if we have same size, so we can copy only first mip-map (in case others are blurred specially)
          )
       )copied_mip_maps=CopyMipMaps(*src, target, ignore_gamma, max_mip_maps);
@@ -2132,7 +2132,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
       if(mip_maps<=0)mip_maps=dest_total_mip_maps ; // if mip maps not specified then use full chain
       else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
-      Bool  alt_type_on_fail=!FlagTest(flags, IC_NO_ALT_TYPE),
+      Bool  alt_type_on_fail=FlagOff(flags, IC_NO_ALT_TYPE),
             env=(FlagTest(flags, IC_ENV_CUBE) && mip_maps>1);
       Image temp; if(temp.createTry(size, size, 1, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail)) // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
       {

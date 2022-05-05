@@ -296,7 +296,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          if(allow_lit && p==lit_part)return true;
          if(mesh_parts.edit_selected() && !mesh_parts.partOp(p))return false;
       }
-      return !FlagTest(part.part_flag, MSHP_HIDDEN);
+      return FlagOff(part.part_flag, MSHP_HIDDEN);
    }
    bool ObjView::partOp(int p)C {return                                   !mesh_parts.edit_selected() && mesh_parts.partOp (p);}
    bool ObjView::partSel(int p)C {return (mode()==MESH || mode()==SKIN) && !mesh_parts.edit_selected() && mesh_parts.partSel(p);}

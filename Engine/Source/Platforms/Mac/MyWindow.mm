@@ -19,7 +19,7 @@ Bool PreventResizing;
 @implementation MyWindowDelegate
 -(NSSize)windowWillResize:(NSWindow*)window toSize:(NSSize)newSize
 {
-   if(!FlagTest(App.flag, APP_RESIZABLE) && [[NSApp currentEvent] type]==NSLeftMouseDragged)PreventResizing=true; // in case the app OS Window has resizable controls, but we don't want to support them, then we need to prevent resizing until dragging has finished
+   if(FlagOff(App.flag, APP_RESIZABLE) && [[NSApp currentEvent] type]==NSLeftMouseDragged)PreventResizing=true; // in case the app OS Window has resizable controls, but we don't want to support them, then we need to prevent resizing until dragging has finished
    return PreventResizing ? [window frame].size : newSize;
 }
 -(BOOL)windowShouldClose:(id)sender

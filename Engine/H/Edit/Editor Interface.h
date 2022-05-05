@@ -50,19 +50,33 @@ enum RELOAD_RESULT : Byte // Element Reload Result
 /******************************************************************************/
 struct Elm // Project Element
 {
-   ELM_TYPE   type   ; // type of the element
-   Bool       removed, // if this element is marked   as removed    (this does not include parents state which may affect the final result, see 'final_removed' for final value)
-              publish, // if this element is included in publishing (this does not include parents state which may affect the final result, see 'final_publish' for final value)
-        final_removed, // if this element or  its parents are marked   as removed
-        final_publish; // if this element and its parents are included in publishing
-   UID             id, //      ID   of the element
-            parent_id; //      ID   of the element's parent ('UIDZero' means no parent)
-   Str           name, //      name of the element
-            full_name, // full name of the element (including its parents)
-             src_file; // source file from which this element was created
+   enum
+   {
+      REMOVED               =1<<0,
+      REMOVED_FULL          =1<<1,
+      NO_PUBLISH            =1<<2,
+      NO_PUBLISH_FULL       =1<<3,
+      NO_PUBLISH_MOBILE     =1<<4,
+      NO_PUBLISH_MOBILE_FULL=1<<5,
+   };
 
-   Bool save(File &f)C {f<<type<<removed<<publish<<id<<parent_id<<name<<src_file; return f.ok();}
-   Bool load(File &f)  {f>>type>>removed>>publish>>id>>parent_id>>name>>src_file; return f.ok();}
+   ELM_TYPE type; //      type of the element
+   Byte    flags; //     flags of the element
+   UID        id, //      ID   of the element
+       parent_id; //      ID   of the element's parent ('UIDZero' means no parent)
+   Str      name, //      name of the element
+       full_name, // full name of the element (including its parents)
+        src_file; // source file from which this element was created
+
+   Bool removed          ()C {return FlagTest(flags, REMOVED               );} // if this element                  is marked   as removed               (this does not include parents state               which may affect the final result, see 'removedFull'       for final value)
+   Bool removedFull      ()C {return FlagTest(flags, REMOVED_FULL          );} // if this element or  its parents are marked   as removed
+   Bool publish          ()C {return FlagOff (flags, NO_PUBLISH            );} // if this element                  is included in publishing            (this does not include parents state               which may affect the final result, see 'publishFull'       for final value)
+   Bool publishFull      ()C {return FlagOff (flags, NO_PUBLISH_FULL       );} // if this element and its parents are included in publishing
+   Bool publishMobile    ()C {return FlagOff (flags, NO_PUBLISH_MOBILE     );} // if this element                  is included in publishing for Mobile (this does not include parents state and 'publish' which may affect the final result, see 'publishMobileFull' for final value)
+   Bool publishMobileFull()C {return FlagOff (flags, NO_PUBLISH_MOBILE_FULL);} // if this element and its parents are included in publishing for Mobile
+
+   Bool save(File &f)C {f<<type<<flags<<id<<parent_id<<name<<src_file; return f.ok();}
+   Bool load(File &f)  {f>>type>>flags>>id>>parent_id>>name>>src_file; return f.ok();}
 };
 /******************************************************************************/
 struct Project // Project
@@ -284,11 +298,12 @@ struct EditorInterface
       UID       newElm  (ELM_TYPE type, C Str &name,                                       C UID &parent_id=UIDZero); // create a new element in the project of 'type', 'name' and assigned to 'parent_id' parent (use 'UIDZero' for no parent), this method does not support following types: ELM_MESH, ELM_SKEL, ELM_PHYS, ELM_WORLD (for creating worlds please use 'newWorld' method)      , ID of the newly created element will be returned or 'UIDZero' if failed
       UID       newWorld(               C Str &name, Int area_size=64, Int terrain_res=64, C UID &parent_id=UIDZero); // create a new world   in the project            'name' and assigned to 'parent_id' parent (use 'UIDZero' for no parent), 'area_size'=size of a single area (in meters, valid values are: 32, 64, 128), 'terrain_res'=terrain resolution (valid values are: 32, 64, 128), ID of the newly created element will be returned or 'UIDZero' if failed
 
-      Bool setElmName   (C CMemPtr< IDParam<Str > > &elms); // set 'name'          for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element name
-      Bool setElmRemoved(C CMemPtr< IDParam<Bool> > &elms); // set 'removed' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element removed state
-      Bool setElmPublish(C CMemPtr< IDParam<Bool> > &elms); // set 'publish' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element publish state
-      Bool setElmParent (C CMemPtr< IDParam<UID > > &elms); // set 'parent'        for elements, where 'IDParam.id'=element ID, 'IDParam.value'=parent ID (use 'UIDZero' for no parent)
-      Bool setElmSrcFile(C CMemPtr< IDParam<Str > > &elms); // set 'src_file'      for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element source file (this does not reload the element, it only adjusts the source file for it)
+      Bool setElmName         (C CMemPtr< IDParam<Str > > &elms); // set 'name'          for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element name
+      Bool setElmRemoved      (C CMemPtr< IDParam<Bool> > &elms); // set 'removed' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element removed state
+      Bool setElmPublish      (C CMemPtr< IDParam<Bool> > &elms); // set 'publish' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element publish state
+      Bool setElmPublishMobile(C CMemPtr< IDParam<Bool> > &elms); // set 'publish' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element publish state for Mobile
+      Bool setElmParent       (C CMemPtr< IDParam<UID > > &elms); // set 'parent'        for elements, where 'IDParam.id'=element ID, 'IDParam.value'=parent ID (use 'UIDZero' for no parent)
+      Bool setElmSrcFile      (C CMemPtr< IDParam<Str > > &elms); // set 'src_file'      for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element source file (this does not reload the element, it only adjusts the source file for it)
 
       Bool       reloadElms  (C CMemPtr<UID> &elms, Bool remember_result                    ); // reload elements specified by their ID, elements will be reloaded from their current 'Elm.src_file', which can be changed using the 'setElmSrcFile' method. This method does not wait until elements finish reloading, it only requests the reload, and returns true if the request was accepted, and false if request failed. Which means that even if this method returns true, reload may still fail, for example if the element 'src_file' was not found. 'remember_result'=if this is set to true, then upon completion of reload process, the Editor will remember reload result for each element, which can be obtained later using 'reloadResult' method, while 'forgetReloadResult' can be called to forget those results.
       Bool cancelReloadElms  (C CMemPtr<UID> &elms                                          ); // cancel reloading elements specified by their ID
@@ -458,6 +473,7 @@ enum EDITOR_INTERFACE_COMMANDS
    EI_SET_ELM_NAME,
    EI_SET_ELM_REMOVED,
    EI_SET_ELM_PUBLISH,
+   EI_SET_ELM_PUBLISH_MOBILE,
    EI_SET_ELM_PARENT,
    EI_SET_ELM_SRC_FILE,
 

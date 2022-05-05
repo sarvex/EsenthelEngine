@@ -3453,23 +3453,23 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       copyParams(src);
    }
    Elm::Elm(C Elm &src) : type(ELM_NONE), flag(0), file_size(-1), id(UID().randomizeValid()), parent_id(UIDZero), data(null) {T=src;}
-   bool Elm::importing()C {return  FlagTest(flag, IMPORTING       );}
+   bool Elm::importing()C {return FlagTest(flag, IMPORTING       );}
    Elm& Elm::importing(bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
-   bool Elm::opened()C {return  FlagTest(flag, OPENED          );}
+   bool Elm::opened()C {return FlagTest(flag, OPENED          );}
    Elm& Elm::opened(bool on) {FlagSet(flag, OPENED          ,  on); return T;}
-   bool Elm::removed()C {return  FlagTest(flag, REMOVED         );}
+   bool Elm::removed()C {return FlagTest(flag, REMOVED         );}
    Elm& Elm::removed(bool on) {FlagSet(flag, REMOVED         ,  on); return T;}
-   bool Elm::publish()C {return !FlagTest(flag, NO_PUBLISH      );}
+   bool Elm::publish()C {return FlagOff (flag, NO_PUBLISH      );}
    Elm& Elm::publish(bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;}
-   bool Elm::noPublish()C {return  FlagTest(flag, NO_PUBLISH      );}
+   bool Elm::noPublish()C {return FlagTest(flag, NO_PUBLISH      );}
    Elm& Elm::noPublish(bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;}
-   bool Elm::finalRemoved()C {return  FlagTest(flag, FINAL_REMOVED   );}
+   bool Elm::finalRemoved()C {return FlagTest(flag, FINAL_REMOVED   );}
    Elm& Elm::finalRemoved(bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
-   bool Elm::finalExists()C {return !FlagTest(flag, FINAL_REMOVED   );}
+   bool Elm::finalExists()C {return FlagOff (flag, FINAL_REMOVED   );}
    Elm& Elm::finalExists(bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
-   bool Elm::finalPublish()C {return !FlagTest(flag, FINAL_NO_PUBLISH);}
+   bool Elm::finalPublish()C {return FlagOff (flag, FINAL_NO_PUBLISH);}
    Elm& Elm::finalPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;}
-   bool Elm::finalNoPublish()C {return  FlagTest(flag, FINAL_NO_PUBLISH);}
+   bool Elm::finalNoPublish()C {return FlagTest(flag, FINAL_NO_PUBLISH);}
    Elm& Elm::finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;}
  C Str& Elm::srcFile()C {return data ?  data->src_file : S;}
    bool Elm::initialized()C {return data && data->ver;}

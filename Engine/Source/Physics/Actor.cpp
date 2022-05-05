@@ -76,7 +76,7 @@ Actor& Actor::addAccel  (C Vec &accel              ) {if(_dynamic && !kinematic(
 Actor& Actor::gravity  (Bool on)  {if(    _actor   && gravity  ()!=on){_actor  ->setActorFlag     (   PxActorFlag    ::eDISABLE_GRAVITY, !on); if( on)sleep(false);} return T;}
 Actor& Actor::kinematic(Bool on)  {if(    _dynamic && kinematic()!=on){_dynamic->setRigidBodyFlag (   PxRigidBodyFlag::eKINEMATIC      ,  on); if(!on)sleep(false);} return T;}
 Bool   Actor::kinematic(       )C {return _dynamic ?    FlagTest((UInt)_dynamic->getRigidBodyFlags(), PxRigidBodyFlag::eKINEMATIC           ) : false;}
-Bool   Actor::gravity  (       )C {return _actor   ?   !FlagTest((UInt)_actor  ->getActorFlags    (), PxActorFlag    ::eDISABLE_GRAVITY     ) : true ;}
+Bool   Actor::gravity  (       )C {return _actor   ?    FlagOff ((UInt)_actor  ->getActorFlags    (), PxActorFlag    ::eDISABLE_GRAVITY     ) : true ;}
 Bool   Actor::ccd      (       )C {return _dynamic ?    FlagTest((UInt)_dynamic->getRigidBodyFlags(), PxRigidBodyFlag::eENABLE_CCD          ) : false;}
 
 Bool Actor::ray      ()C {if(_actor){PxShape *shape; if(_actor->getShapes(&shape, 1))return FlagTest((UInt)shape->getFlags(), PxShapeFlag::eSCENE_QUERY_SHAPE);} return false;}
@@ -319,7 +319,7 @@ Actor& Actor::user(Ptr data)  {if(    _actor)  _actor->user=data; return T;}
 Ptr    Actor::obj(       )C {return _actor ? _actor->obj : null       ;}
 Actor& Actor::obj(Ptr obj)  {if(    _actor)  _actor->obj=obj; return T;}
 
-Bool   Actor::gravity(       )C {return _actor ? !FlagTest(_actor->getFlags(), BT_DISABLE_WORLD_GRAVITY) : true;}
+Bool   Actor::gravity(       )C {return _actor ? FlagOff(_actor->getFlags(), BT_DISABLE_WORLD_GRAVITY) : true;}
 Actor& Actor::gravity(Bool on)
 {
    if(_actor)
@@ -547,7 +547,7 @@ Actor& Actor::kinematic(Bool on)
    }
    return T;
 }
-Bool   Actor::collision(       )C {return _actor ? !FlagTest(_actor->getCollisionFlags(), btCollisionObject::CF_NO_CONTACT_RESPONSE) : true;}
+Bool   Actor::collision(       )C {return _actor ? FlagOff(_actor->getCollisionFlags(), btCollisionObject::CF_NO_CONTACT_RESPONSE) : true;}
 Actor& Actor::collision(Bool on)
 {
    if(_actor)
