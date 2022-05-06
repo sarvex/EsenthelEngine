@@ -1207,7 +1207,7 @@ class ProjectEx : ProjectHierarchy
             Swap(change.elms, removed);
          }
          setList(false);
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void restore(Memc<UID> &ids, bool set_undo=true)
@@ -1228,7 +1228,7 @@ class ProjectEx : ProjectHierarchy
          }
          setList(false);
          Importer.investigate(ids); // !! CALL AFTER 'setList' BECAUSE MAY RELY ON HIERARCHY !!
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
 
@@ -1276,7 +1276,7 @@ class ProjectEx : ProjectHierarchy
             Swap(change.elms, processed);
          }
          refresh(false);
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void setElmPublish(Memc<UID> &ids, sbyte all, sbyte mobile, bool parents_only, bool set_undo=true) // !! WARNING: MIGHT SORT 'ids' !!
@@ -3214,7 +3214,7 @@ class ProjectEx : ProjectHierarchy
       resumeServer(); // call after setting list because may rely on hierarchy
    }
 
-   void elmParentRemovePublishChanged(bool network=false)
+   void elmChangedParentRemovePublish(bool network=false)
    {
       activateSources(); // rebuild sources if needed
       if( network)WorldEdit.delayedValidateRefs();else WorldEdit.validateRefs();
@@ -3255,7 +3255,7 @@ class ProjectEx : ProjectHierarchy
          }
          refresh();
          Importer.investigate(changed); // !! CALL AFTER 'setList' BECAUSE MAY RELY ON HIERARCHY !!
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void drag(Memc<UID> &elms, GuiObj *focus_obj, C Vec2 &screen_pos)
@@ -3288,7 +3288,7 @@ class ProjectEx : ProjectHierarchy
             elms.clear(); // processed
             refresh();
             Importer.investigate(changed); // !! CALL AFTER 'refresh' BECAUSE MAY RELY ON HIERARCHY !!
-            elmParentRemovePublishChanged();
+            elmChangedParentRemovePublish();
          }
       }
    }
@@ -3663,33 +3663,35 @@ class ProjectEx : ProjectHierarchy
       {
          case Edit.EXE_APK:
          case Edit.EXE_IOS:
-         case Edit.EXE_WEB: flag|=Elm.NO_PUBLISH_MOBILE; break;
+         case Edit.EXE_WEB:
+       //case Edit.EXE_NS : Nintendo Switch excluded because its game sizes can be big
+            flag|=Elm.NO_PUBLISH_MOBILE; break;
       }
       return flag;
    }
-   void getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag)
+   void getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag)
    {
       REPA(node.children)
       {
          int  child_i=node.children[i];
          Elm &elm    =elms[child_i];
-         if(!(elm.flag&flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
+         if(!(elm.flag&publish_flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
          {
             app_elms.add(&elm);
-            getPublishElms(app_elms, hierarchy[child_i], flag);
+            getPublishElms(app_elms, hierarchy[child_i], publish_flag);
          }
       }
    }
-   void getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag, C UID &app_id, bool inside_valid)
+   void getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag, C UID &app_id, bool inside_valid)
    {
       REPA(node.children)
       {
          int  child_i=node.children[i];
          Elm &elm    =elms[child_i];
-         if(!(elm.flag&flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
+         if(!(elm.flag&publish_flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
          {
             if(inside_valid)app_elms.add(&elm);
-            getActiveAppElms(app_elms, hierarchy[child_i], flag, app_id, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
+            getActiveAppElms(app_elms, hierarchy[child_i], publish_flag, app_id, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
          }
       }
    }

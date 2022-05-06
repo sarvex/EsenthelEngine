@@ -42,7 +42,7 @@ class CodeView : Region, Edit.CodeEditorInterface
       Misc.build.menu("Nintendo Switch"  , configEXE()==Edit.EXE_NS   , QUIET);
       Misc.build.text=Edit.ShortName(configEXE());
       Proj.refresh(false, true); // 'refresh' because 'finalPublish' depends on Platform 'configEXE', have to reset publish, set invalid refs (missing dependencies), warnings, etc.
-      Proj.elmParentRemovePublishChanged();
+      Proj.elmChangedParentRemovePublish();
    }
    virtual void visibleChangedOptions      ()override {Misc.build.menu("View Options"           , visibleOptions      (), QUIET);}
    virtual void visibleChangedOpenedFiles  ()override {}
