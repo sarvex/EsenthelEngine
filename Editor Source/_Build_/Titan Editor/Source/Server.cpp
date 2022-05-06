@@ -248,7 +248,7 @@ ServerClass Server;
                   {
                      proj->setListCurSel(); elm->setParent(parent_id, parent_time);
                      proj->setList();
-                     proj->elmParentRemovePublishChanged(true);
+                     proj->elmChangedParentRemovePublish(true);
                   }
                }break;
 
@@ -260,7 +260,7 @@ ServerClass Server;
                      proj->setListCurSel();
                      FREPA(elm_ids)if(Elm *elm=proj->findElm(elm_ids[i]))if(removed_time>elm->removed_time)elm->setRemoved(removed, removed_time);
                      proj->setList(false);
-                     proj->elmParentRemovePublishChanged(true);
+                     proj->elmChangedParentRemovePublish(true);
                   }
                }break;
 
@@ -272,7 +272,7 @@ ServerClass Server;
                      proj->setListCurSel();
                      FREPA(elm_ids)if(Elm *elm=proj->findElm(elm_ids[i]))if(publish_time>elm->publish_time)elm->setPublish((publish>=0) ? publish : elm->publish(), (publish_mobile>=0) ? publish_mobile : elm->publishMobile(), publish_time);
                      proj->setList(false);
-                     proj->elmParentRemovePublishChanged(true);
+                     proj->elmChangedParentRemovePublish(true);
                   }
                }break;
 

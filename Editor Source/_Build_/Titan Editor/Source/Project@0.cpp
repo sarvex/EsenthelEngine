@@ -1239,7 +1239,7 @@ void DrawProject()
             Swap(change->elms, removed);
          }
          setList(false);
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void ProjectEx::restore(Memc<UID> &ids, bool set_undo)
@@ -1260,7 +1260,7 @@ void DrawProject()
          }
          setList(false);
          Importer.investigate(ids); // !! CALL AFTER 'setList' BECAUSE MAY RELY ON HIERARCHY !!
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void ProjectEx::_setElmPublish(ElmNode &node, Memc<UID> &sorted_ids, uint test, uint set, Memc<UID> &processed, C TimeStamp &time) // process recursively to disable only parents without their children
@@ -1306,7 +1306,7 @@ void DrawProject()
             Swap(change->elms, processed);
          }
          refresh(false);
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void ProjectEx::setElmPublish(Memc<UID> &ids, sbyte all, sbyte mobile, bool parents_only, bool set_undo) // !! WARNING: MIGHT SORT 'ids' !!
@@ -3160,7 +3160,7 @@ void DrawProject()
       Importer.investigate(root); // call after setting list because may rely on hierarchy
       resumeServer(); // call after setting list because may rely on hierarchy
    }
-   void ProjectEx::elmParentRemovePublishChanged(bool network)
+   void ProjectEx::elmChangedParentRemovePublish(bool network)
    {
       activateSources(); // rebuild sources if needed
       if( network)WorldEdit.delayedValidateRefs();else WorldEdit.validateRefs();
@@ -3200,7 +3200,7 @@ void DrawProject()
          }
          refresh();
          Importer.investigate(changed); // !! CALL AFTER 'setList' BECAUSE MAY RELY ON HIERARCHY !!
-         elmParentRemovePublishChanged();
+         elmChangedParentRemovePublish();
       }
    }
    void ProjectEx::drag(Memc<UID> &elms, GuiObj *focus_obj, C Vec2 &screen_pos)
@@ -3233,7 +3233,7 @@ void DrawProject()
             elms.clear(); // processed
             refresh();
             Importer.investigate(changed); // !! CALL AFTER 'refresh' BECAUSE MAY RELY ON HIERARCHY !!
-            elmParentRemovePublishChanged();
+            elmChangedParentRemovePublish();
          }
       }
    }
@@ -3602,33 +3602,35 @@ void DrawProject()
       {
          case Edit::EXE_APK:
          case Edit::EXE_IOS:
-         case Edit::EXE_WEB: flag|=Elm::NO_PUBLISH_MOBILE; break;
+         case Edit::EXE_WEB:
+       //case Edit.EXE_NS : Nintendo Switch excluded because its game sizes can be big
+            flag|=Elm::NO_PUBLISH_MOBILE; break;
       }
       return flag;
    }
-   void ProjectEx::getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag)
+   void ProjectEx::getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag)
    {
       REPA(node.children)
       {
          int  child_i=node.children[i];
          Elm &elm    =elms[child_i];
-         if(!(elm.flag&flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
+         if(!(elm.flag&publish_flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
          {
             app_elms.add(&elm);
-            getPublishElms(app_elms, hierarchy[child_i], flag);
+            getPublishElms(app_elms, hierarchy[child_i], publish_flag);
          }
       }
    }
-   void ProjectEx::getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag, C UID &app_id, bool inside_valid)
+   void ProjectEx::getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag, C UID &app_id, bool inside_valid)
    {
       REPA(node.children)
       {
          int  child_i=node.children[i];
          Elm &elm    =elms[child_i];
-         if(!(elm.flag&flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
+         if(!(elm.flag&publish_flag)) // exists and publishable, "!" because we have NO_PUBLISH* flags
          {
             if(inside_valid)app_elms.add(&elm);
-            getActiveAppElms(app_elms, hierarchy[child_i], flag, app_id, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
+            getActiveAppElms(app_elms, hierarchy[child_i], publish_flag, app_id, (elm.type==ELM_LIB) ? true : (elm.type==ELM_APP) ? (elm.id==app_id) : inside_valid); // include elements from all libraries and from active app only, in other case inherit valid from the parent
          }
       }
    }

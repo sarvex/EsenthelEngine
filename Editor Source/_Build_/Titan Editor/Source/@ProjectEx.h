@@ -530,7 +530,7 @@ public:
    virtual void eraseWorldAreaObjs(C UID &world_id, C VecI2 &area_xy)override;
    virtual void eraseRemoved(bool full)override;
 
-   void elmParentRemovePublishChanged(bool network=false);
+   void elmChangedParentRemovePublish(bool network=false);
 
    void setElmParent(Memc<Edit::IDParam<UID>> &elms, bool adjust_elms=false, bool as_undo=false); // 'adjust_elms'=if this is performed because of undo, and in that case we need to remember current parents, so we can undo this change later
    void drag(Memc<UID> &elms, GuiObj *focus_obj, C Vec2 &screen_pos);
@@ -562,10 +562,10 @@ public:
    static int CompareChildren(C EEItem &a, C Elm &b);
    bool hasInvalid(ElmNode &node);
    static uint PublishableFlag(Edit::EXE_TYPE exe_type=CodeEdit.configEXE());
-   void getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag);
-   void getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint flag, C UID&app_id, bool inside_valid);
-   void getPublishElms  (Memt<Elm*> &app_elms, Edit::EXE_TYPE exe_type);                                
-   void getActiveAppElms(Memt<Elm*> &app_elms, Edit::EXE_TYPE exe_type);                                 // set 'false' to ignore sources placed in root
+   void getPublishElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag);
+   void getActiveAppElms(Memt<Elm*> &app_elms, ElmNode &node, uint publish_flag, C UID&app_id, bool inside_valid);
+   void getPublishElms  (Memt<Elm*> &app_elms, Edit::EXE_TYPE exe_type);                                        
+   void getActiveAppElms(Memt<Elm*> &app_elms, Edit::EXE_TYPE exe_type);                                         // set 'false' to ignore sources placed in root
 
    void activateSources(int rebuild=0); // -1=never, 0=auto, 1=always
    static void ActivateApp(ElmList::AppCheck &app_check);
