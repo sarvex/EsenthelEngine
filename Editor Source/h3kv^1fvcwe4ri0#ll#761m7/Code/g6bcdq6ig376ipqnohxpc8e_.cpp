@@ -211,14 +211,14 @@ class Client : ConnectionServer.Client
                File f; ServerWriteRemoveElms(f.writeMem(), processed, removed, removed_time, project.id); Server.distribute(f, project, this);
             }break;
 
-            case CS_NO_PUBLISH_ELMS: if(user && user.canWrite() && project)
+            case CS_PUBLISH_ELMS: if(user && user.canWrite() && project)
             {
-               Memc<UID> elm_ids; bool no_publish; TimeStamp publish_time; ServerRecvNoPublishElms(connection.data, elm_ids, no_publish, publish_time);
+               Memc<UID> elm_ids; sbyte publish, publish_mobile; TimeStamp publish_time; ServerRecvPublishElms(connection.data, elm_ids, publish, publish_mobile, publish_time);
                Memc<UID> processed; REPA(elm_ids)if(Elm *elm=project.findElm(elm_ids[i]))if(publish_time>elm.publish_time)
                {
-                  elm.setNoPublish(no_publish, publish_time); processed.add(elm.id);
+                  elm.setPublish((publish>=0) ? publish : elm.publish(), (publish_mobile>=0) ? publish_mobile : elm.publishMobile(), publish_time); processed.add(elm.id);
                }
-               File f; ServerWriteNoPublishElms(f.writeMem(), processed, no_publish, publish_time, project.id); Server.distribute(f, project, this);
+               File f; ServerWritePublishElms(f.writeMem(), processed, publish, publish_mobile, publish_time, project.id); Server.distribute(f, project, this);
             }break;
 
             case CS_GET_ELM_NAMES: if(user && project)
@@ -274,10 +274,10 @@ class Client : ConnectionServer.Client
                   }else
                   if(elm.type==proj_elm.type)
                   {
-                     if(elm.   name_time>proj_elm.   name_time)proj_elm.setName     (elm.name       , elm.   name_time);
-                     if(elm. parent_time>proj_elm. parent_time)proj_elm.setParent   (elm.parent_id  , elm. parent_time);
-                     if(elm.removed_time>proj_elm.removed_time)proj_elm.setRemoved  (elm.removed  (), elm.removed_time);
-                     if(elm.publish_time>proj_elm.publish_time)proj_elm.setNoPublish(elm.noPublish(), elm.publish_time);
+                     if(elm.   name_time>proj_elm.   name_time)proj_elm.setName   (elm.name     ,                      elm.   name_time);
+                     if(elm. parent_time>proj_elm. parent_time)proj_elm.setParent (elm.parent_id,                      elm. parent_time);
+                     if(elm.removed_time>proj_elm.removed_time)proj_elm.setRemoved(elm.removed(),                      elm.removed_time);
+                     if(elm.publish_time>proj_elm.publish_time)proj_elm.setPublish(elm.publish(), elm.publishMobile(), elm.publish_time);
                      if(elm.data && (!proj_elm.data || proj_elm.data.ver!=elm.data.ver))
                      {
                         data.pos(0); extra.pos(0); bool elm_newer_src, src_newer_elm; if(project.syncElm(proj_elm, elm, data, extra, true, elm_newer_src, src_newer_elm))Server.distributeElmLong(proj_elm.id, project, this);

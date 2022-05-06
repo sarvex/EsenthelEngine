@@ -203,7 +203,7 @@ void Source::clearSuggestions()
 void Source::refreshSuggestions()
 {
    Memc<CodeEditorInterface::ElmLink> elms; CE.cei().getProjPublishElms(elms);
-   C Str &t=Replace(suggestions_textline(), '/', '\\'); // use back-slash everywhere because it's used for elm full names
+ C Str &t=Replace(suggestions_textline(), '/', '\\'); // use back-slash everywhere because it's used for elm full names
    suggestions     .clear();
    suggestions_list.clear().columnVisible(0, true);
    if(t.is()) // if we have some text typed

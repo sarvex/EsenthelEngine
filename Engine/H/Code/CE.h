@@ -212,10 +212,10 @@ struct CodeEditorInterface
    virtual Bool          appPublishSteamDll                 () {return              false;} // get if copy Steam  dll                  of current app
    virtual Bool          appPublishOpenVRDll                () {return              false;} // get if copy OpenVR dll                  of current app
    virtual Bool          appPublishDataAsPak                () {return               true;} // get if publish data as paks             of current app
-   virtual void          appSpecificFiles                   (MemPtr<PakFileData> files) { } // get specific files                      of current app
-   virtual void          appInvalidProperty                 (C Str &msg               ) { } // called when application property was detected as invalid
-   virtual void          appLanguages                       (MemPtr<LANG_TYPE> langs  ) {langs.clear();} // get supported languages    of current app
    virtual Long          appSaveSize                        () {return                 -1;} // get max save disk usage                 of current app
+   virtual void          appInvalidProperty                 (C Str &msg                                  ) {              } // called when application property was detected as invalid
+   virtual void          appSpecificFiles                   (MemPtr<PakFileData> files, EXE_TYPE exe_type) {              } // get specific files      of current app
+   virtual void          appLanguages                       (MemPtr<LANG_TYPE> langs                     ) {langs.clear();} // get supported languages of current app
 
    virtual Rect         menuRect    (                      ) {return D.rect();}
    virtual Rect       sourceRect    (                      ) {return D.rect();}
@@ -796,5 +796,6 @@ extern Memc<Str      > Suggestions;
 void SuggestionsUsed    (C Str &text);
 Int  SuggestionsPriority(C Str &suggestion, C Str &text, Bool all_up_case);
 #endif
+CChar8* ShortName(EXE_TYPE type);
 } // namespace
 /******************************************************************************/

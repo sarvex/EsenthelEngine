@@ -93,7 +93,7 @@ class Project
                Elm &elm=elms[i]; if(elm.parent_id==parent && elm.name==name && ElmVisible(elm.type)) // don't list hidden types
                {
                   found_elm=&elm;
-                  if(!elm.removed())break; // stop looking if this element exists
+                  if(elm.exists())break; // stop looking if this element exists
                }
             }
             if(!p.is()   )return found_elm;
@@ -773,7 +773,7 @@ class Project
       // remove unused meshes
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_MESH && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_MESH && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
 
       used.clear();
@@ -786,7 +786,7 @@ class Project
       // remove unused skel
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_SKEL && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_SKEL && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
 
       used.clear();
@@ -799,7 +799,7 @@ class Project
       // remove unused phys
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_PHYS && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_PHYS && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
    }
    virtual void eraseElm(C UID &elm_id)
@@ -2924,7 +2924,7 @@ class ProjectHierarchy : Project
                {
                   found_elm =&elm;
                   found_node=&hierarchy[child_i];
-                  if(!elm.removed())break; // stop looking if this element exists
+                  if(elm.exists())break; // stop looking if this element exists
                }
             }
             if(!p.is()    )return found_elm;

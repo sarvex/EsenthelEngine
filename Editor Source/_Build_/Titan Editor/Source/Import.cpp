@@ -740,13 +740,12 @@ ImporterClass Importer;
          SyncLocker locker(lock);
          REPA(node.children) // go from back
          {
-            int      child_i=node.children [i];
-            ElmNode &child  =Proj.hierarchy[child_i];
-            Elm     &elm    =Proj.elms     [child_i];
-            if(ImportRemovedElms || !elm.removed())
+            int  child_i=node.children[i];
+            Elm &elm    =Proj.elms[child_i];
+            if(ImportRemovedElms || elm.exists())
             {
-               investigate(child);
-               investigate(elm  );
+               investigate(Proj.hierarchy[child_i]);
+               investigate(elm);
             }
          }
       }

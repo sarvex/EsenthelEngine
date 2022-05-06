@@ -188,7 +188,7 @@ void CodeEditor::loadSettings(C TextNode &code)
          if(p->value=="mac"  )configEXE(EXE_MAC  );else
          if(p->value=="ios"  )configEXE(EXE_IOS  );else
          if(p->value=="linux")configEXE(EXE_LINUX);else
-         if(p->value=="ns"   )configEXE(EXE_NS   );else
+         if(p->value=="ns"  || p->value=="nsp" || p->value=="switch")configEXE(EXE_NS);else
          if(p->value=="web" || p->value=="html" || p->value=="js")configEXE(EXE_WEB);
       }
    }

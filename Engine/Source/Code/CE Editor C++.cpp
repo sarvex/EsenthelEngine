@@ -1035,7 +1035,7 @@ static Bool CreateAppPak(C Str &name, Bool &exists, Bool *changed=null)
    exists=false;
    if(changed)*changed=false;
 
-   Memb<PakFileData> files; CE.cei().appSpecificFiles(files);
+   Memb<PakFileData> files; CE.cei().appSpecificFiles(files, CE.build_exe_type);
    if(files.elms())
    {
       exists=true;

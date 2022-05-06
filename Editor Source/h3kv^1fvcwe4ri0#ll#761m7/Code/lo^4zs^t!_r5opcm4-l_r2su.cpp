@@ -807,7 +807,7 @@ class ImporterClass
          {
             int  child_i=node.children[i];
             Elm &elm    =Proj.elms[child_i];
-            if(ImportRemovedElms || !elm.removed())
+            if(ImportRemovedElms || elm.exists())
             {
                investigate(Proj.hierarchy[child_i]);
                investigate(elm);

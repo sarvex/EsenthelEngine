@@ -205,11 +205,11 @@ ConvertToAtlasClass ConvertToAtlas;
          REPA(non_atlased)if(Elm *elm=Proj.findElm(non_atlased[i]))
          {
             if(mode==REPLACE_NO_PUBLISH || mode==REPLACE_REMOVE){elm->setParent(atlased[i], time); Server.setElmParent(*elm);} // move 'non_atlased' to 'atlased'
-            if(mode==REPLACE_NO_PUBLISH)elm->setNoPublish(true, time);else
-            if(mode==REPLACE_REMOVE    )elm->setRemoved  (true, time);
+            if(mode==REPLACE_NO_PUBLISH)elm->setPublish(false, time);else
+            if(mode==REPLACE_REMOVE    )elm->setRemoved(true , time);
          }
-         if(mode==REPLACE_NO_PUBLISH)Server.noPublishElms(non_atlased, true, time);else
-         if(mode==REPLACE_REMOVE    )Server.removeElms   (non_atlased, true, time);
+         if(mode==REPLACE_NO_PUBLISH)Server.publishElms(non_atlased, false, -1, time);else
+         if(mode==REPLACE_REMOVE    )Server. removeElms(non_atlased, true ,     time);
 
          /*if(mode==NEW_NO_PUBLISH || mode==NEW_REMOVE) // move sub elements from 'non_atlased' -> 'atlased'
          {
@@ -239,11 +239,11 @@ ConvertToAtlasClass ConvertToAtlas;
       // process materials
       REPA(mtrl_ids)if(Elm *elm=Proj.findElm(mtrl_ids[i]))
       {
-         if(mode==REPLACE_NO_PUBLISH)elm->setNoPublish(true, time);else
-         if(mode==REPLACE_REMOVE    )elm->setRemoved  (true, time);
+         if(mode==REPLACE_NO_PUBLISH)elm->setPublish(false, time);else
+         if(mode==REPLACE_REMOVE    )elm->setRemoved(true , time);
       }
-      if(mode==REPLACE_NO_PUBLISH)Server.noPublishElms(mtrl_ids, true, time);else
-      if(mode==REPLACE_REMOVE    )Server.removeElms   (mtrl_ids, true, time);
+      if(mode==REPLACE_NO_PUBLISH)Server.publishElms(mtrl_ids, false, -1, time);else
+      if(mode==REPLACE_REMOVE    )Server. removeElms(mtrl_ids, true ,     time);
 
       if(mode==REPLACE_NO_PUBLISH || mode==REPLACE_REMOVE)REPA(Proj.elms) // move material sub elements to atlas
       {

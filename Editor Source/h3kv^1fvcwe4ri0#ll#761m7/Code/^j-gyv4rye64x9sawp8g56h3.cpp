@@ -40,6 +40,9 @@ class CodeView : Region, Edit.CodeEditorInterface
       Misc.build.menu("Linux"            , configEXE()==Edit.EXE_LINUX, QUIET);
       Misc.build.menu("Web"              , configEXE()==Edit.EXE_WEB  , QUIET);
       Misc.build.menu("Nintendo Switch"  , configEXE()==Edit.EXE_NS   , QUIET);
+      Misc.build.text=Edit.ShortName(configEXE());
+      Proj.refresh(false, true); // 'refresh' because 'finalPublish' depends on Platform 'configEXE', have to reset publish, set invalid refs (missing dependencies), warnings, etc.
+      Proj.elmParentRemovePublishChanged();
    }
    virtual void visibleChangedOptions      ()override {Misc.build.menu("View Options"           , visibleOptions      (), QUIET);}
    virtual void visibleChangedOpenedFiles  ()override {}
@@ -113,12 +116,12 @@ class CodeView : Region, Edit.CodeEditorInterface
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
 
-   virtual void appSpecificFiles(MemPtr<PakFileData> files)override
+   virtual void appSpecificFiles(MemPtr<PakFileData> files, Edit.EXE_TYPE exe_type)override
    {
       Memc<ImageGenerate> generate;
       Memc<ImageConvert>  convert;
-      Memt<Elm*>          app_elms; Proj.getActiveAppElms(app_elms);
-      AddPublishFiles(app_elms, files, generate, convert);
+      Memt<Elm*>          app_elms; Proj.getActiveAppElms(app_elms, exe_type);
+      AddPublishFiles(app_elms, files, generate, convert, exe_type);
       // all generations/conversions need to be processed here so 'files' point correctly
       WorkerThreads.process1(generate, ImageGenerateProcess);
       WorkerThreads.process1(convert , ImageConvertProcess );
@@ -216,7 +219,7 @@ class CodeView : Region, Edit.CodeEditorInterface
    }
    virtual Str idToText(C UID &id, Bool *valid)override {return Proj.idToText(id, valid, ProjectEx.ID_SKIP_UNKNOWN);} // if we're in code then it already displays an ID, no need to write the same ID on top of that
 
-   virtual void getProjPublishElms(Memc<ElmLink> &elms)override
+   virtual void getProjPublishElms(Memc<ElmLink> &elms)override // get all publishable elements in the project, this is used for auto-complete
    {
       elms.clear(); FREPA(Proj.elms) // process in order
       {

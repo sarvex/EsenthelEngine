@@ -104,16 +104,16 @@ class ServerClass : Connection
    void syncCodes         (  Memc<ElmTypeVer > &elms       ) {if(canRead ())ClientSendGetCodeVer (T, elms);}
    void syncCodes         (C Memc<ElmCodeData> &elms       ) {if(canWrite())ClientSendSetCodeData(T, elms);}
 
-   void    newElm    (     Elm  &elm                                     ) {if(canWrite())ClientSendNewElm       (T, elm );}
-   void renameElm    (     Elm  &elm                                     ) {if(canWrite())ClientSendRenameElm    (T, elm.id, elm.name     , elm.  name_time);}
-   void setElmParent (     Elm  &elm                                     ) {if(canWrite())ClientSendSetElmParent (T, elm.id, elm.parent_id, elm.parent_time);}
-   void removeElms   (Memc<UID> &elms, bool removed   , C TimeStamp &time) {if(canWrite())ClientSendRemoveElms   (T, elms  , removed   , time);}
-   void noPublishElms(Memc<UID> &elms, bool no_publish, C TimeStamp &time) {if(canWrite())ClientSendNoPublishElms(T, elms  , no_publish, time);}
-   void getElmNames  (Memc<UID> &elms                                    ) {if(canRead ())ClientSendGetElmNames  (T, elms);}
-   void getTextures  (Memc<UID> &texs                                    ) {if(canRead ())ClientSendGetTextures  (T, texs);}
-   void getElmShort  (Memc<UID> &elms                                    ) {if(canRead ())ClientSendGetElmShort  (T, elms);}
-   void getElmLong   (Memc<UID> &elms                                    ) {if(canRead ())ClientSendGetElmLong   (T, elms);}
-   void getElmLong   (   C UID  &elm_id                                  ) {Memc<UID> elms; elms.add(elm_id); getElmLong(elms);}
+   void    newElm   (     Elm  &elm                                                         ) {if(canWrite())ClientSendNewElm      (T, elm );}
+   void renameElm   (     Elm  &elm                                                         ) {if(canWrite())ClientSendRenameElm   (T, elm.id, elm.name     , elm.  name_time);}
+   void setElmParent(     Elm  &elm                                                         ) {if(canWrite())ClientSendSetElmParent(T, elm.id, elm.parent_id, elm.parent_time);}
+   void  removeElms (Memc<UID> &elms, bool  removed,                       C TimeStamp &time) {if(canWrite())ClientSendRemoveElms  (T, elms  , removed,                 time);}
+   void publishElms (Memc<UID> &elms, sbyte publish, sbyte publish_mobile, C TimeStamp &time) {if(canWrite())ClientSendPublishElms (T, elms  , publish, publish_mobile, time);}
+   void getElmNames (Memc<UID> &elms                                                        ) {if(canRead ())ClientSendGetElmNames (T, elms);}
+   void getTextures (Memc<UID> &texs                                                        ) {if(canRead ())ClientSendGetTextures (T, texs);}
+   void getElmShort (Memc<UID> &elms                                                        ) {if(canRead ())ClientSendGetElmShort (T, elms);}
+   void getElmLong  (Memc<UID> &elms                                                        ) {if(canRead ())ClientSendGetElmLong  (T, elms);}
+   void getElmLong  (   C UID  &elm_id                                                      ) {Memc<UID> elms; elms.add(elm_id); getElmLong(elms);}
 
    void setTex     (C UID &tex_id) {if(canWrite() && tex_id.valid() && texs.binaryInclude(tex_id))Synchronizer.setTex(tex_id);} // send if it wasn't available on the server yet, this should be called everytime a texture is created in the project (OR reused in case it was created before but not yet sent because it was not used at that time)
    void setElmShort(C UID &elm_id) {if(canWrite())Synchronizer.setElmShort(elm_id);} // this sets only ID TYPE DATA       but no NAME, PARENT, etc.
@@ -276,7 +276,7 @@ class ServerClass : Connection
                   {
                      proj.setListCurSel(); elm.setParent(parent_id, parent_time);
                      proj.setList();
-                     proj.activateSources(); // rebuild sources if needed
+                     proj.elmParentRemovePublishChanged(true);
                   }
                }break;
 
@@ -288,21 +288,19 @@ class ServerClass : Connection
                      proj.setListCurSel();
                      FREPA(elm_ids)if(Elm *elm=proj.findElm(elm_ids[i]))if(removed_time>elm.removed_time)elm.setRemoved(removed, removed_time);
                      proj.setList(false);
-                     proj.activateSources(); // rebuild sources if needed
-                     WorldEdit.delayedValidateRefs();
+                     proj.elmParentRemovePublishChanged(true);
                   }
                }break;
 
-               case CS_NO_PUBLISH_ELMS: if(proj)
+               case CS_PUBLISH_ELMS: if(proj)
                {
-                  Memc<UID> elm_ids; bool no_publish; TimeStamp publish_time; UID proj_id; ClientRecvNoPublishElms(data, elm_ids, no_publish, publish_time, proj_id);
+                  Memc<UID> elm_ids; sbyte publish, publish_mobile; TimeStamp publish_time; UID proj_id; ClientRecvPublishElms(data, elm_ids, publish, publish_mobile, publish_time, proj_id);
                   if(proj_id==proj.id)
                   {
                      proj.setListCurSel();
-                     FREPA(elm_ids)if(Elm *elm=proj.findElm(elm_ids[i]))if(publish_time>elm.publish_time)elm.setNoPublish(no_publish, publish_time);
+                     FREPA(elm_ids)if(Elm *elm=proj.findElm(elm_ids[i]))if(publish_time>elm.publish_time)elm.setPublish((publish>=0) ? publish : elm.publish(), (publish_mobile>=0) ? publish_mobile : elm.publishMobile(), publish_time);
                      proj.setList(false);
-                     proj.activateSources(); // rebuild sources if needed
-                     WorldEdit.delayedValidateRefs();
+                     proj.elmParentRemovePublishChanged(true);
                   }
                }break;
 
@@ -350,10 +348,10 @@ class ServerClass : Connection
                      }else
                      if(elm.type==proj_elm.type)
                      {
-                        if(elm.   name_time>proj_elm.   name_time)proj.setElmName(proj_elm, elm.name       , elm.   name_time);
-                        if(elm. parent_time>proj_elm. parent_time)proj_elm.setParent   (    elm.parent_id  , elm. parent_time);
-                        if(elm.removed_time>proj_elm.removed_time)proj_elm.setRemoved  (    elm.removed  (), elm.removed_time);
-                        if(elm.publish_time>proj_elm.publish_time)proj_elm.setNoPublish(    elm.noPublish(), elm.publish_time);
+                        if(elm.   name_time>proj_elm.   name_time)proj    .setElmName(proj_elm, elm.name     ,                      elm.   name_time);
+                        if(elm. parent_time>proj_elm. parent_time)proj_elm.setParent (          elm.parent_id,                      elm. parent_time);
+                        if(elm.removed_time>proj_elm.removed_time)proj_elm.setRemoved(          elm.removed(),                      elm.removed_time);
+                        if(elm.publish_time>proj_elm.publish_time)proj_elm.setPublish(          elm.publish(), elm.publishMobile(), elm.publish_time);
                         if(elm.data && (!proj_elm.data || elm.data.ver!=proj_elm.data.ver))
                         {
                            elm_data.pos(0); elm_extra.pos(0); proj.syncElm(proj_elm, elm, elm_data, elm_extra, true);

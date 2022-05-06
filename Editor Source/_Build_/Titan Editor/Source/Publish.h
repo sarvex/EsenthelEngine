@@ -32,7 +32,7 @@ void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
 void ImageConvertProcess(ImageConvert &convert, ptr user, int thread_index);
 bool PublishFunc(Thread &thread);
 Texture* GetTexture(MemPtr<Texture> textures, C UID &tex_id);
-void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGenerate> &generate, Memc<ImageConvert> &convert);
+void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGenerate> &generate, Memc<ImageConvert> &convert, Edit::EXE_TYPE exe_type);
 void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Memc<ImageConvert> &convert, Memc<Mems<byte>> &file_data);
 void GetPublishFiles(Memb<PakFileData> &files);
 bool InitPublish();

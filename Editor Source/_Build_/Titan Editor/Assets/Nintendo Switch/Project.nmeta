@@ -17,8 +17,8 @@
 			<Language>AmericanEnglish</Language>
 			<IconPath>Icon.bmp</IconPath>
 		</Icon>
-		<ReleaseVersion>71</ReleaseVersion>
-		<DisplayVersion>71</DisplayVersion>
+		<ReleaseVersion>72</ReleaseVersion>
+		<DisplayVersion>72</DisplayVersion>
 		<StartupUserAccount>Required</StartupUserAccount>
 		<UserAccountSwitchLock>Disable</UserAccountSwitchLock>
 		<Screenshot>Allow</Screenshot>

@@ -592,6 +592,19 @@ UID EditorInterface::newWorld(C Str &name, Int area_size, Int terrain_res, C UID
    return UIDZero;
 }
 /******************************************************************************/
+Bool EditorInterface::setElmCmd(Byte cmd, C CMemPtr< IDParam<Bool> > &elms)
+{
+   if(!elms.elms())return true;
+   if(connected())
+   {
+      File &f=_conn.data.reset(); f.putByte(cmd); elms.save(f); f.pos(0);
+      if(_conn.send(f))
+      if(_conn.receive(CLIENT_WAIT_TIME))
+      if(f.getByte()==cmd)return f.getBool();
+      disconnect();
+   }
+   return false;
+}
 Bool EditorInterface::setElmName(C CMemPtr< IDParam<Str> > &elms)
 {
    if(!elms.elms())return true;
@@ -605,45 +618,10 @@ Bool EditorInterface::setElmName(C CMemPtr< IDParam<Str> > &elms)
    }
    return false;
 }
-Bool EditorInterface::setElmRemoved(C CMemPtr< IDParam<Bool> > &elms)
-{
-   if(!elms.elms())return true;
-   if(connected())
-   {
-      File &f=_conn.data.reset(); f.putByte(EI_SET_ELM_REMOVED); elms.save(f); f.pos(0);
-      if(_conn.send(f))
-      if(_conn.receive(CLIENT_WAIT_TIME))
-      if(f.getByte()==EI_SET_ELM_REMOVED)return f.getBool();
-      disconnect();
-   }
-   return false;
-}
-Bool EditorInterface::setElmPublish(C CMemPtr< IDParam<Bool> > &elms)
-{
-   if(!elms.elms())return true;
-   if(connected())
-   {
-      File &f=_conn.data.reset(); f.putByte(EI_SET_ELM_PUBLISH); elms.save(f); f.pos(0);
-      if(_conn.send(f))
-      if(_conn.receive(CLIENT_WAIT_TIME))
-      if(f.getByte()==EI_SET_ELM_PUBLISH)return f.getBool();
-      disconnect();
-   }
-   return false;
-}
-Bool EditorInterface::setElmPublishMobile(C CMemPtr< IDParam<Bool> > &elms)
-{
-   if(!elms.elms())return true;
-   if(connected())
-   {
-      File &f=_conn.data.reset(); f.putByte(EI_SET_ELM_PUBLISH_MOBILE); elms.save(f); f.pos(0);
-      if(_conn.send(f))
-      if(_conn.receive(CLIENT_WAIT_TIME))
-      if(f.getByte()==EI_SET_ELM_PUBLISH_MOBILE)return f.getBool();
-      disconnect();
-   }
-   return false;
-}
+Bool EditorInterface::setElmRemoved      (C CMemPtr< IDParam<Bool> > &elms) {return setElmCmd(EI_SET_ELM_REMOVED       , elms);}
+Bool EditorInterface::setElmPublish      (C CMemPtr< IDParam<Bool> > &elms) {return setElmCmd(EI_SET_ELM_PUBLISH       , elms);}
+Bool EditorInterface::setElmPublishMobile(C CMemPtr< IDParam<Bool> > &elms) {return setElmCmd(EI_SET_ELM_PUBLISH_MOBILE, elms);}
+
 Bool EditorInterface::setElmParent(C CMemPtr< IDParam<UID> > &elms)
 {
    if(!elms.elms())return true;

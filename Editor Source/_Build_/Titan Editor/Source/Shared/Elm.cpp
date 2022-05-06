@@ -3453,35 +3453,40 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       copyParams(src);
    }
    Elm::Elm(C Elm &src) : type(ELM_NONE), flag(0), file_size(-1), id(UID().randomizeValid()), parent_id(UIDZero), data(null) {T=src;}
-   bool Elm::importing()C {return FlagOn (flag, IMPORTING       );}
-   Elm& Elm::importing(bool on) {FlagSet(flag, IMPORTING       ,  on); return T;}
-   bool Elm::opened()C {return FlagOn (flag, OPENED          );}
-   Elm& Elm::opened(bool on) {FlagSet(flag, OPENED          ,  on); return T;}
-   bool Elm::exists()C {return FlagOff(flag, REMOVED         );}
-   Elm& Elm::exists(bool on) {FlagSet(flag, REMOVED         , !on); return T;}
-   bool Elm::removed()C {return FlagOn (flag, REMOVED         );}
-   Elm& Elm::removed(bool on) {FlagSet(flag, REMOVED         ,  on); return T;}
-   bool Elm::publish()C {return FlagOff(flag, NO_PUBLISH      );}
-   Elm& Elm::publish(bool on) {FlagSet(flag, NO_PUBLISH      , !on); return T;}
-   bool Elm::noPublish()C {return FlagOn (flag, NO_PUBLISH      );}
-   Elm& Elm::noPublish(bool on) {FlagSet(flag, NO_PUBLISH      ,  on); return T;}
-   bool Elm::finalRemoved()C {return FlagOn (flag, FINAL_REMOVED   );}
-   Elm& Elm::finalRemoved(bool on) {FlagSet(flag, FINAL_REMOVED   ,  on); return T;}
-   bool Elm::finalExists()C {return FlagOff(flag, FINAL_REMOVED   );}
-   Elm& Elm::finalExists(bool on) {FlagSet(flag, FINAL_REMOVED   , !on); return T;}
-   bool Elm::finalPublish()C {return FlagOff(flag, FINAL_NO_PUBLISH);}
-   Elm& Elm::finalPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH, !on); return T;}
-   bool Elm::finalNoPublish()C {return FlagOn (flag, FINAL_NO_PUBLISH);}
-   Elm& Elm::finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH,  on); return T;}
+   bool Elm::importing()C {return FlagOn (flag, IMPORTING        );}
+   Elm& Elm::importing(bool on) {FlagSet(flag, IMPORTING        ,  on); return T;}
+   bool Elm::opened()C {return FlagOn (flag, OPENED           );}
+   Elm& Elm::opened(bool on) {FlagSet(flag, OPENED           ,  on); return T;}
+   bool Elm::exists()C {return FlagOff(flag, REMOVED          );}
+   Elm& Elm::exists(bool on) {FlagSet(flag, REMOVED          , !on); return T;}
+   bool Elm::removed()C {return FlagOn (flag, REMOVED          );}
+   Elm& Elm::removed(bool on) {FlagSet(flag, REMOVED          ,  on); return T;}
+   bool   Elm::publish()C {return FlagOff(flag, NO_PUBLISH       );}
+   Elm&   Elm::publish(bool on) {FlagSet(flag, NO_PUBLISH       , !on); return T;}
+   bool Elm::noPublish()C {return FlagOn (flag, NO_PUBLISH       );}
+   Elm& Elm::noPublish(bool on) {FlagSet(flag, NO_PUBLISH       ,  on); return T;}
+   bool   Elm::publishMobile()C {return FlagOff(flag, NO_PUBLISH_MOBILE);}
+   Elm&   Elm::publishMobile(bool on) {FlagSet(flag, NO_PUBLISH_MOBILE, !on); return T;}
+   bool Elm::noPublishMobile()C {return FlagOn (flag, NO_PUBLISH_MOBILE);}
+   Elm& Elm::noPublishMobile(bool on) {FlagSet(flag, NO_PUBLISH_MOBILE,  on); return T;}
+   bool Elm::finalRemoved()C {return FlagOn (flag, FINAL_REMOVED    );}
+   Elm& Elm::finalRemoved(bool on) {FlagSet(flag, FINAL_REMOVED    ,  on); return T;}
+   bool Elm::finalExists()C {return FlagOff(flag, FINAL_REMOVED    );}
+   Elm& Elm::finalExists(bool on) {FlagSet(flag, FINAL_REMOVED    , !on); return T;}
+   bool Elm::finalPublish()C {return FlagOff(flag, FINAL_NO_PUBLISH );}
+   Elm& Elm::finalPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH , !on); return T;}
+   bool Elm::finalNoPublish()C {return FlagOn (flag, FINAL_NO_PUBLISH );}
+   Elm& Elm::finalNoPublish(bool on) {FlagSet(flag, FINAL_NO_PUBLISH ,  on); return T;}
  C Str& Elm::srcFile()C {return data ?  data->src_file : S;}
    bool Elm::initialized()C {return data && data->ver;}
-   void Elm::resetFinal() {FlagEnable(flag, FINAL_REMOVED|FINAL_NO_PUBLISH);}
-   Elm& Elm::setRemoved(  bool removed   , C TimeStamp &time) {T.removed  (removed   ); T.removed_time=time; return T;}
-   Elm& Elm::setNoPublish(  bool no_publish, C TimeStamp &time) {T.noPublish(no_publish); T.publish_time=time; return T;}
-   Elm& Elm::setName(C Str &name      , C TimeStamp &time) {T.name     =name       ; T.   name_time=time; return T;}
-   Elm& Elm::setParent(C UID &parent_id , C TimeStamp &time) {T.parent_id=parent_id  ; T. parent_time=time; return T;}
-   Elm& Elm::setParent(C Elm *parent    , C TimeStamp &time) {return setParent(parent ? parent->id : UIDZero, time);}
-   Elm& Elm::setSrcFile(C Str &src_file  , C TimeStamp &time) {if(ElmData *data=Data()){data->setSrcFile(src_file, time); data->newVer();} return T;}
+   void Elm::resetFinal() {FlagEnable(flag, FINAL);}
+   Elm& Elm::setRemoved(  bool removed  ,              C TimeStamp &time) {T.removed  (removed );                          T.removed_time=time; return T;}
+   Elm& Elm::setPublish(  bool all      ,              C TimeStamp &time) {T.publish  (all     );                          T.publish_time=time; return T;}
+   Elm& Elm::setPublish(  bool all      , bool mobile, C TimeStamp &time) {T.publish  (all     ); T.publishMobile(mobile); T.publish_time=time; return T;}
+   Elm& Elm::setName(C Str &name     ,              C TimeStamp &time) {T.name     =name     ;                          T.   name_time=time; return T;}
+   Elm& Elm::setParent(C UID &parent_id,              C TimeStamp &time) {T.parent_id=parent_id;                          T. parent_time=time; return T;}
+   Elm& Elm::setParent(C Elm *parent   ,              C TimeStamp &time) {return setParent(parent ? parent->id : UIDZero, time);}
+   Elm& Elm::setSrcFile(C Str &src_file ,              C TimeStamp &time) {if(ElmData *data=Data()){data->setSrcFile(src_file, time); data->newVer();} return T;}
    ElmObjClass  *   Elm::objClassData() {if(type==ELM_OBJ_CLASS  ){if(!data)data=new ElmObjClass  ; return CAST(ElmObjClass  , data);} return null;}
    C ElmObjClass  *   Elm::objClassData()C {return (type==ELM_OBJ_CLASS  ) ? CAST(ElmObjClass  , data) : null;}
    ElmObj       *        Elm::objData() {if(type==ELM_OBJ        ){if(!data)data=new ElmObj       ; return CAST(ElmObj       , data);} return null;}
@@ -3661,12 +3666,23 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       }
       return 0;
    }
+   void Elm::LoadOldFlag(byte &flag, File &f)
+   {
+      byte b; f>>b;
+                  flag =0;
+      if(b&(1<<0))flag|=IMPORTING;
+      if(b&(1<<1))flag|=OPENED;
+      if(b&(1<<2))flag|=REMOVED;
+      if(b&(1<<3))flag|=NO_PUBLISH;
+      if(b&(1<<7))flag|=DATA;
+   }
    bool Elm::save(File &f, bool network, bool skip_name_data)C
    {
       byte flag=T.flag;
-      if(data   )flag|=DATA;
+                 FlagDisable(flag, FINAL    ); // don't save FINAL because they're always recalculated
       if(network)FlagDisable(flag, IMPORTING); // don't transmit IMPORTING status over network, to make reload requests local only, so one reload doesn't trigger reload on all connected computers
-      f.cmpUIntV(3);
+      if(data   )flag|=DATA; // !! ENABLE AFTER DISABLING OTHERS ABOVE BECAUSE BITS MAY OVERLAP !!
+      f.cmpUIntV(4);
       f<<id<<parent_id<<type<<flag;
       f<<name_time<<parent_time<<removed_time<<publish_time;
       if(!skip_name_data)f<<name;
@@ -3680,7 +3696,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
    {
       switch(f.decUIntV())
       {
-         case 3:
+         case 4:
          {
             f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
             f>>name_time>>parent_time>>removed_time>>publish_time;
@@ -3697,9 +3713,26 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
             if(f.ok())return true;
          }break;
 
+         case 3:
+         {
+            f>>id>>parent_id>>type; LoadOldFlag(flag, f); if(type>=ELM_NUM)return false;
+            f>>name_time>>parent_time>>removed_time>>publish_time;
+            if(!skip_name_data)f>>name;
+
+            // data
+            Delete(data); if(flag&DATA) // if has data
+            {
+               FlagDisable(flag, DATA);
+               ElmData *data=Data(); if(!data)return false;
+               if(skip_name_data)f>>data->ver;
+               else             if(!data->load(f))return false;
+            }
+            if(f.ok())return true;
+         }break;
+
          case 2:
          {
-            f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
+            f>>id>>parent_id>>type; LoadOldFlag(flag, f); if(type>=ELM_NUM)return false;
             f>>name_time>>parent_time>>removed_time>>publish_time;
             if(!skip_name_data)GetStr2(f, name);
 
@@ -3716,7 +3749,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
 
          case 1:
          {
-            f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
+            f>>id>>parent_id>>type; LoadOldFlag(flag, f); if(type>=ELM_NUM)return false;
             f>>name_time>>parent_time>>removed_time>>publish_time;
             if(!skip_name_data)GetStr(f, name);
 
@@ -3733,7 +3766,7 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
 
          case 0:
          {
-            f>>id>>parent_id>>type>>flag; if(type>=ELM_NUM)return false;
+            f>>id>>parent_id>>type; LoadOldFlag(flag, f); if(type>=ELM_NUM)return false;
             f>>name_time>>parent_time>>removed_time; publish_time.zero();
             if(!skip_name_data)GetStr(f, name);
 
@@ -3757,14 +3790,15 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
                            node.nodes.New().set  ("Name"   , name);
       if(parent_id.valid())node.nodes.New().setFN("Parent" , parent_id);
       if(removed        ())node.nodes.New().set  ("Removed");
-      if(noPublish      ())node.nodes.New().set  ("Publish", publish());
+      if(noPublish      ())node.nodes.New().set  ("Publish"      , publish      ());
+      if(noPublishMobile())node.nodes.New().set  ("PublishMobile", publishMobile());
 
                            node.nodes.New().set("NameTime"   ,    name_time.text());
                            node.nodes.New().set("ParentTime" ,  parent_time.text());
       if(removed_time.is())node.nodes.New().set("RemovedTime", removed_time.text());
       if(publish_time.is())node.nodes.New().set("PublishTime", publish_time.text());
       // IMPORTING OPENED flags are not saved, because this text format is used for SVN synchronization, and we don't want to send these flags to other computers
-      // FINAL_REMOVED FINAL_NO_PUBLISH flags are not saved because they are calculated based on other flags and parents
+      // FINAL            flags are not saved, because they are calculated based on other flags and parents
       if(data)data->save(node.nodes.New().setName("Data").nodes);
    }
    bool Elm::load(C TextNode &node, Str &error) // assumes that 'error' doesn't need to be cleared at start, and 'T.id' was already set
@@ -3773,16 +3807,17 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
       REPA(node.nodes)
       {
        C TextNode &n=node.nodes[i];
-         if(n.name=="Type"       ){REP(ELM_NUM)if(n.value==ElmTypeNameNoSpaceDummy.names[i]){type=ELM_TYPE(i); break;}}else
-         if(n.name=="Name"       )n.getValue(name     );else
-         if(n.name=="Parent"     )n.getValue(parent_id);else
-         if(n.name=="Removed"    )removed     (n.asBool1());else
-         if(n.name=="Publish"    )publish     (n.asBool1());else
-         if(n.name=="NameTime"   )name_time   =n.asText () ;else
-         if(n.name=="ParentTime" )parent_time =n.asText () ;else
-         if(n.name=="RemovedTime")removed_time=n.asText () ;else
-         if(n.name=="PublishTime")publish_time=n.asText () ;else
-         if(n.name=="Data"       )data_node=&n; // remember for later, because to load data, first we must know the type
+         if(n.name=="Type"         ){REP(ELM_NUM)if(n.value==ElmTypeNameNoSpaceDummy.names[i]){type=ELM_TYPE(i); break;}}else
+         if(n.name=="Name"         )n.getValue(name     );else
+         if(n.name=="Parent"       )n.getValue(parent_id);else
+         if(n.name=="Removed"      )removed      (n.asBool1());else
+         if(n.name=="Publish"      )publish      (n.asBool1());else
+         if(n.name=="PublishMobile")publishMobile(n.asBool1());else
+         if(n.name=="NameTime"     )name_time    =n.asText () ;else
+         if(n.name=="ParentTime"   )parent_time  =n.asText () ;else
+         if(n.name=="RemovedTime"  )removed_time =n.asText () ;else
+         if(n.name=="PublishTime"  )publish_time =n.asText () ;else
+         if(n.name=="Data"         )data_node    =&n; // remember for later, because to load data, first we must know the type
       }
       if(!type){error=S+"Element \""+node.name+"\" has no type"; return false;}
       if(data_node)if(ElmData *data=Data())data->load(ConstCast(data_node->nodes));/*else return false; we can silently ignore this*/

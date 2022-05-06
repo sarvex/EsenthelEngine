@@ -260,7 +260,7 @@ class SynchronizerClass
 
       // compare versions
       Memc<UID     > get_names, get_textures, set_textures, get_short, get_long, set_long;
-      Memc<Elm*    > set_names, set_parents, set_removed, set_no_publish;
+      Memc<Elm*    > set_names, set_parents, set_removed, set_publish;
       Memc<ElmDepth> set_full;
       FREPA(local.elms)
       {
@@ -276,8 +276,8 @@ class SynchronizerClass
             if(l.removed_time<s.removed_time)l.setRemoved(s.removed(), s.removed_time);else // get from server
             if(l.removed_time>s.removed_time)set_removed.add(&l);                           // set to   server
 
-            if(l.publish_time<s.publish_time)l.setNoPublish(s.noPublish(), s.publish_time);else // get from server
-            if(l.publish_time>s.publish_time)set_no_publish.add(&l);                            // set to   server
+            if(l.publish_time<s.publish_time)l.setPublish(s.publish(), s.publishMobile(), s.publish_time);else // get from server
+            if(l.publish_time>s.publish_time)set_publish.add(&l);                                              // set to   server
 
             // data
             if(s.type==l.type) // just in case
@@ -309,8 +309,8 @@ class SynchronizerClass
       FREPA(set_names     )Server.renameElm   (*set_names  [i]);
       FREPA(set_parents   )Server.setElmParent(*set_parents[i]);
       Memc<UID> temp1; temp1.setNum(1);
-      FREPA(set_removed   ){Elm &elm=*set_removed   [i]; temp1[0]=elm.id; Server.   removeElms(temp1, elm.  removed(), elm.removed_time);}
-      FREPA(set_no_publish){Elm &elm=*set_no_publish[i]; temp1[0]=elm.id; Server.noPublishElms(temp1, elm.noPublish(), elm.publish_time);}
+      FREPA(set_removed){Elm &elm=*set_removed[i]; temp1[0]=elm.id; Server. removeElms(temp1, elm.removed(),                      elm.removed_time);}
+      FREPA(set_publish){Elm &elm=*set_publish[i]; temp1[0]=elm.id; Server.publishElms(temp1, elm.publish(), elm.publishMobile(), elm.publish_time);}
 
       // send elms
       REPAO(set_full).depth=Proj.depth(set_full[i].elm); set_full.sort(CompareDepth); // sort by depth so root elements are sent first

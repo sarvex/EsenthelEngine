@@ -80,7 +80,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index);
 
-   virtual void appSpecificFiles(MemPtr<PakFileData> files)override;
+   virtual void appSpecificFiles(MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)override;
    virtual void appInvalidProperty(C Str &msg)override;
 
    virtual void validateActiveSources()override;
@@ -101,7 +101,7 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual void elmPreview  (C UID &id, C Vec2 &pos, bool mouse, C Rect&clip)override;
    virtual Str idToText(C UID &id, Bool *valid)override;                     // if we're in code then it already displays an ID, no need to write the same ID on top of that
 
-   virtual void getProjPublishElms(Memc<ElmLink> &elms)override;
+   virtual void getProjPublishElms(Memc<ElmLink> &elms)override; // get all publishable elements in the project, this is used for auto-complete
 
    Str importPaths(C Str &path)C;
 

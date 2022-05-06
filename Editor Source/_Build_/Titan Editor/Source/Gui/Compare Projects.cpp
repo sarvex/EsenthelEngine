@@ -85,9 +85,9 @@ CompareProjects CompareProjs;
                   if(elm_b && elm_b->finalExists())
                   {
                      if(test_data    && (elm_a.data ? elm_a.data->ver.ver : 0)!=(elm_b->data ? elm_b->data->ver.ver : 0) && DiffElm(proj_a, elm_a, proj_b, *elm_b)
-                     || test_name    && elm_a.  name_time!=elm_b->  name_time && !Equal(elm_a.name, elm_b->name, true)
-                     || test_parent  && elm_a.parent_time!=elm_b->parent_time &&        elm_a.parent_id!=elm_b->parent_id
-                     || test_publish && elm_a.noPublish()!=elm_b->noPublish())
+                     || test_name    &&  elm_a.  name_time!=elm_b->  name_time && !Equal(elm_a.name           , elm_b->name, true)
+                     || test_parent  &&  elm_a.parent_time!=elm_b->parent_time &&        elm_a.parent_id      !=elm_b->parent_id
+                     || test_publish && (elm_a.publish()  !=elm_b->publish()   ||        elm_a.publishMobile()!=elm_b->publishMobile()))
                         if(different.binaryInclude(elm_a.id))
                            data.New().setElm(proj_a, elm_a);
                   }else

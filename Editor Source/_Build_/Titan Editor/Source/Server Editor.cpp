@@ -159,7 +159,7 @@ EditorServer EditServer;
                                                     elm.flags =0;
                            if(src.removed        ())elm.flags|=Edit::Elm::REMOVED;
                            if(src.noPublish      ())elm.flags|=Edit::Elm::NO_PUBLISH;
-                         //if(src.noPublishMobile())elm.flags|=Edit.Elm.NO_PUBLISH_MOBILE; FIXME
+                           if(src.noPublishMobile())elm.flags|=Edit::Elm::NO_PUBLISH_MOBILE;
                            elm.       id=src.       id;
                            elm.parent_id=src.parent_id;
                            elm.name     =src.name;
@@ -292,6 +292,7 @@ EditorServer EditServer;
                }break;
 
                case Edit::EI_SET_ELM_PUBLISH:
+               case Edit::EI_SET_ELM_PUBLISH_MOBILE:
                {
                   bool ok=false;
                   if(Proj.valid())
@@ -300,11 +301,11 @@ EditorServer EditServer;
                      {
                         ok=true;
                         Memc<UID> publish, no_publish; FREPA(elms)if(elms[i].value)publish.add(elms[i].id);else no_publish.add(elms[i].id);
-                        Proj.disablePublish(no_publish, false);
-                        Proj. enablePublish(   publish);
+                        Proj.setElmPublish(no_publish, (cmd==Edit::EI_SET_ELM_PUBLISH) ? false : -1, (cmd==Edit::EI_SET_ELM_PUBLISH_MOBILE) ? false : -1, false); // disable
+                        Proj.setElmPublish(   publish, (cmd==Edit::EI_SET_ELM_PUBLISH) ? true  : -1, (cmd==Edit::EI_SET_ELM_PUBLISH_MOBILE) ? true  : -1, false); //  enable
                      }
                   }
-                  File &f=connection.data.reset().putByte(Edit::EI_SET_ELM_PUBLISH).putBool(ok); f.pos(0); connection.send(f);
+                  File &f=connection.data.reset().putByte(cmd).putBool(ok); f.pos(0); connection.send(f);
                }break;
 
                case Edit::EI_SET_ELM_PARENT:

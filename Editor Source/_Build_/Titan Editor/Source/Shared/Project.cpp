@@ -67,7 +67,7 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
                Elm &elm=elms[i]; if(elm.parent_id==parent && elm.name==name && ElmVisible(elm.type)) // don't list hidden types
                {
                   found_elm=&elm;
-                  if(!elm.removed())break; // stop looking if this element exists
+                  if(elm.exists())break; // stop looking if this element exists
                }
             }
             if(!p.is()   )return found_elm;
@@ -715,7 +715,7 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
       // remove unused meshes
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_MESH && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_MESH && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
 
       used.clear();
@@ -728,7 +728,7 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
       // remove unused skel
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_SKEL && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_SKEL && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
 
       used.clear();
@@ -741,7 +741,7 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
       // remove unused phys
       REPA(elms)
       {
-         Elm &elm=elms[i]; if(elm.type==ELM_PHYS && !elm.removed() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
+         Elm &elm=elms[i]; if(elm.type==ELM_PHYS && elm.exists() && !used.binaryHas(elm.id))elm.setRemoved(true, time);
       }
    }
    void Project::eraseElm(C UID &elm_id)
@@ -2674,12 +2674,11 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
    {
       FREPA(node.children) // list in order
       {
-         int      child_i    =node.children[i];
-         ElmNode &child      =hierarchy[child_i];
-         Elm     &elm        =elms     [child_i];
-         bool     elm_removed=(elm.removed() || parent_removed);
+         int  child_i    =node.children[i];
+         Elm &elm        =elms[child_i];
+         bool elm_removed=(elm.removed() || parent_removed);
          if(elm_removed)removed.add(elm.id);
-         floodRemoved(removed, child, elm_removed);
+         floodRemoved(removed, hierarchy[child_i], elm_removed);
       }
    }
    void ProjectHierarchy::floodHierarchy(ElmNode &node)
@@ -2798,7 +2797,7 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
                {
                   found_elm =&elm;
                   found_node=&hierarchy[child_i];
-                  if(!elm.removed())break; // stop looking if this element exists
+                  if(elm.exists())break; // stop looking if this element exists
                }
             }
             if(!p.is()    )return found_elm;

@@ -401,7 +401,7 @@ p_scale=&add("Item 3D Scale"          , MemberDesc(MEMBER(Options, item_3d_scale
       super       .moveAbove(go);
       viewport    .moveAbove(go);
    }
-   void listElms(ElmNode &node, bool parent_contains_name=false)
+   void listElms(ElmNode &node, bool parent_contains_name=false) // add project elements to the Theater list
    {
       node.children.sort(ProjectEx.CompareChildren); // needs to be sorted in case it wasn't before (this can happen if these elements aren't visible in the list)
       ELM_TYPE elm_type=modes[mode()];

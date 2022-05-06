@@ -367,16 +367,18 @@ Texture* GetTexture(MemPtr<Texture> textures, C UID &tex_id)
    }
    return null;
 }
-void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGenerate> &generate, Memc<ImageConvert> &convert)
+void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGenerate> &generate, Memc<ImageConvert> &convert, Edit::EXE_TYPE exe_type)
 {
+   if(!elms.elms())return;
+
    Memx<Texture> publish_texs; // textures to be published, need to use Memx because below pointers are stored
 
- C bool android=(PublishExeType==Edit::EXE_APK),
-            iOS=(PublishExeType==Edit::EXE_IOS),
-            uwp=(PublishExeType==Edit::EXE_UWP),
-            web=(PublishExeType==Edit::EXE_WEB),
-             ns=(PublishExeType==Edit::EXE_NS ),
-  mtrl_simplify=Proj.materialSimplify(PublishExeType);
+ C bool android=(exe_type==Edit::EXE_APK),
+            iOS=(exe_type==Edit::EXE_IOS),
+            uwp=(exe_type==Edit::EXE_UWP),
+            web=(exe_type==Edit::EXE_WEB),
+             ns=(exe_type==Edit::EXE_NS ),
+  mtrl_simplify=Proj.materialSimplify(exe_type);
    TEX_SIZE_PLATFORM tsp=(ns ? TSP_SWITCH : (android || iOS || web) ? TSP_MOBILE : TSP_NUM);
 
    // elements
@@ -698,7 +700,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
    if(PublishProjectPackage) // publish as *.ProjectPackage
    {
       Project temp; temp=Proj;
-      Memc<UID> remove; Proj.floodRemoved(remove, Proj.root); remove.sort(Compare);
+      Memc<UID> remove; Proj.floodRemoved(remove, Proj.root); remove.sort();
       REPA(temp.elms)if(remove.binaryHas(temp.elms[i].id))temp.elms.removeValid(i, true);
       temp.getTextures(temp.texs); // keep only used textures
 
@@ -886,19 +888,16 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
       }
 
       // Project files
+      Memt<Elm*> elms;
       if(CodeEdit.appPublishProjData() || PublishDataOnly)
       {
-         Memt<Elm*> elms; FREPA(Proj.elms) // process in order
-         {
-            Elm &elm=Proj.elms[i]; if(elm.finalPublish() && ElmPublish(elm.type))elms.add(&elm);
-         }
-         AddPublishFiles(elms, files, generate, convert);
+         Proj.getPublishElms(elms, PublishExeType);
       }else
       if(PublishExeType==Edit::EXE_UWP || PublishExeType==Edit::EXE_APK || PublishExeType==Edit::EXE_IOS || PublishExeType==Edit::EXE_NS) // for Windows New, Android, iOS and Switch, if Project data is not included, then include only App data
       {
-         Memt<Elm*> elms; Proj.getActiveAppElms(elms);
-         AddPublishFiles(elms, files, generate, convert);
+         Proj.getActiveAppElms(elms, PublishExeType);
       }
+      AddPublishFiles(elms, files, generate, convert, PublishExeType);
    }
 }
 void GetPublishFiles(Memb<PakFileData> &files) // this is to be called outside of publishing just to get a list of files

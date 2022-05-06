@@ -2117,5 +2117,23 @@ Str LinuxBuildParams(C Str &project, C Str &config, Int build_threads)
    return S+(config.is() ? S+"CONF=\""+config+"\" " : S)+"-j"+build_threads+" -C \""+UnixPath(project)+'"';
 }
 /******************************************************************************/
+CChar8* ShortName(EXE_TYPE type)
+{
+   switch(type)
+   {
+      case EXE_EXE  : return "EXE";
+      case EXE_DLL  : return "DLL";
+      case EXE_LIB  : return "LIB";
+      case EXE_UWP  : return "UWP";
+      case EXE_APK  : return "APK";
+      case EXE_MAC  : return "Mac";
+      case EXE_IOS  : return "iOS";
+      case EXE_LINUX: return "Linux";
+      case EXE_NS   : return "NS";
+      case EXE_WEB  : return "Web";
+      default       : return null;
+   }
+}
+/******************************************************************************/
 }}
 /******************************************************************************/

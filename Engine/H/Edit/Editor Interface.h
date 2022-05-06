@@ -53,10 +53,12 @@ struct Elm // Project Element
    enum
    {
       REMOVED               =1<<0,
-      REMOVED_FULL          =1<<1,
-      NO_PUBLISH            =1<<2,
-      NO_PUBLISH_FULL       =1<<3,
-      NO_PUBLISH_MOBILE     =1<<4,
+      NO_PUBLISH            =1<<1,
+      NO_PUBLISH_MOBILE     =1<<2,
+
+      // these don't need to be saved because they're recalculated on the client
+      REMOVED_FULL          =1<<3,
+      NO_PUBLISH_FULL       =1<<4,
       NO_PUBLISH_MOBILE_FULL=1<<5,
    };
 
@@ -65,14 +67,14 @@ struct Elm // Project Element
    UID        id, //      ID   of the element
        parent_id; //      ID   of the element's parent ('UIDZero' means no parent)
    Str      name, //      name of the element
-       full_name, // full name of the element (including its parents)
+       full_name, // full name of the element including its parents, not saved because it's recalculated on the client
         src_file; // source file from which this element was created
 
-   Bool removed          ()C {return FlagOn (flags, REMOVED               );} // if this element                  is marked   as removed               (this does not include parents state               which may affect the final result, see 'removedFull'       for final value)
+   Bool removed          ()C {return FlagOn (flags, REMOVED               );} // if this element                  is marked   as removed               (this does not include parents state                       which may affect the final result, see 'removedFull'       for final value)
    Bool removedFull      ()C {return FlagOn (flags, REMOVED_FULL          );} // if this element or  its parents are marked   as removed
-   Bool publish          ()C {return FlagOff(flags, NO_PUBLISH            );} // if this element                  is included in publishing            (this does not include parents state               which may affect the final result, see 'publishFull'       for final value)
+   Bool publish          ()C {return FlagOff(flags, NO_PUBLISH            );} // if this element                  is included in publishing            (this does not include parents state and 'removed'         which may affect the final result, see 'publishFull'       for final value)
    Bool publishFull      ()C {return FlagOff(flags, NO_PUBLISH_FULL       );} // if this element and its parents are included in publishing
-   Bool publishMobile    ()C {return FlagOff(flags, NO_PUBLISH_MOBILE     );} // if this element                  is included in publishing for Mobile (this does not include parents state and 'publish' which may affect the final result, see 'publishMobileFull' for final value)
+   Bool publishMobile    ()C {return FlagOff(flags, NO_PUBLISH_MOBILE     );} // if this element                  is included in publishing for Mobile (this does not include parents state and 'removed/publish' which may affect the final result, see 'publishMobileFull' for final value)
    Bool publishMobileFull()C {return FlagOff(flags, NO_PUBLISH_MOBILE_FULL);} // if this element and its parents are included in publishing for Mobile
 
    Bool save(File &f)C {f<<type<<flags<<id<<parent_id<<name<<src_file; return f.ok();}
@@ -298,6 +300,9 @@ struct EditorInterface
       UID       newElm  (ELM_TYPE type, C Str &name,                                       C UID &parent_id=UIDZero); // create a new element in the project of 'type', 'name' and assigned to 'parent_id' parent (use 'UIDZero' for no parent), this method does not support following types: ELM_MESH, ELM_SKEL, ELM_PHYS, ELM_WORLD (for creating worlds please use 'newWorld' method)      , ID of the newly created element will be returned or 'UIDZero' if failed
       UID       newWorld(               C Str &name, Int area_size=64, Int terrain_res=64, C UID &parent_id=UIDZero); // create a new world   in the project            'name' and assigned to 'parent_id' parent (use 'UIDZero' for no parent), 'area_size'=size of a single area (in meters, valid values are: 32, 64, 128), 'terrain_res'=terrain resolution (valid values are: 32, 64, 128), ID of the newly created element will be returned or 'UIDZero' if failed
 
+#if EE_PRIVATE
+      Bool setElmCmd          (Byte cmd, C CMemPtr< IDParam<Bool> > &elms);
+#endif
       Bool setElmName         (C CMemPtr< IDParam<Str > > &elms); // set 'name'          for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element name
       Bool setElmRemoved      (C CMemPtr< IDParam<Bool> > &elms); // set 'removed' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element removed state
       Bool setElmPublish      (C CMemPtr< IDParam<Bool> > &elms); // set 'publish' state for elements, where 'IDParam.id'=element ID, 'IDParam.value'=element publish state
@@ -550,7 +555,7 @@ enum EDITOR_INTERFACE_COMMANDS
 
    EI_NUM,
 #if EE_PRIVATE
-   // !! when changing this, don't forget to increment EI_VER !!
+   // !! WHEN CHANGING THIS, DON'T FORGET TO INCREMENT 'EI_VER' !!
 #endif
 };
 enum EDITOR_INTERFACE_OBJ_COMMANDS : Byte

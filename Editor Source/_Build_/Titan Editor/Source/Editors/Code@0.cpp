@@ -69,6 +69,9 @@ AppPropsEditor AppPropsEdit;
       Misc.build.menu("Linux"            , configEXE()==Edit::EXE_LINUX, QUIET);
       Misc.build.menu("Web"              , configEXE()==Edit::EXE_WEB  , QUIET);
       Misc.build.menu("Nintendo Switch"  , configEXE()==Edit::EXE_NS   , QUIET);
+      Misc.build.text=Edit::ShortName(configEXE());
+      Proj.refresh(false, true); // 'refresh' because 'finalPublish' depends on Platform 'configEXE', have to reset publish, set invalid refs (missing dependencies), warnings, etc.
+      Proj.elmParentRemovePublishChanged();
    }
    void CodeView::visibleChangedOptions(){Misc.build.menu("View Options"           , visibleOptions      (), QUIET);}
    void CodeView::visibleChangedOpenedFiles(){}
@@ -136,12 +139,12 @@ AppPropsEditor AppPropsEdit;
    void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    void CodeView::ImageConvertProcess(ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
-   void CodeView::appSpecificFiles(MemPtr<PakFileData> files)
+   void CodeView::appSpecificFiles(MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)
 {
       Memc<ImageGenerate> generate;
       Memc<ImageConvert>  convert;
-      Memt<Elm*>          app_elms; Proj.getActiveAppElms(app_elms);
-      AddPublishFiles(app_elms, files, generate, convert);
+      Memt<Elm*>          app_elms; Proj.getActiveAppElms(app_elms, exe_type);
+      AddPublishFiles(app_elms, files, generate, convert, exe_type);
       // all generations/conversions need to be processed here so 'files' point correctly
       WorkerThreads.process1(generate, ImageGenerateProcess);
       WorkerThreads.process1(convert , ImageConvertProcess );
