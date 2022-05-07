@@ -730,8 +730,6 @@ ref struct Exiter sealed
 };
 #elif ANDROID
 extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_closedError(JNIEnv *env, jclass clazz) {ExitNow();}
-static void      CmdCallbackDummy(android_app *app, int32_t        cmd) {}
-static int32_t InputCallbackDummy(android_app *app, AInputEvent *event) {return 0;}
 #endif
 #if !SWITCH
 void Application::showError(CChar *error)
@@ -794,9 +792,9 @@ void Application::showError(CChar *error)
 
             if(App.mainThread())
             {
-               // replace with dummy callbacks
-               AndroidApp->onAppCmd    =  CmdCallbackDummy;
-               AndroidApp->onInputEvent=InputCallbackDummy;
+               // remove callbacks
+               AndroidApp->onAppCmd    =null;
+               AndroidApp->onInputEvent=null;
 
                android_poll_source *source;
                for(; !AndroidApp->destroyRequested && ALooper_pollAll(-1, null, null, (void**)&source)>=0; ) // since the message box is only queued, we need to wait until it's actually displayed, need to check for 'destroyRequested' as well, in case the system decided to close the app before 'closedError' got called
