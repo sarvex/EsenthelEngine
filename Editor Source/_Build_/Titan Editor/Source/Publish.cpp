@@ -914,6 +914,7 @@ void GetPublishFiles(Memb<PakFileData> &files) // this is to be called outside o
 /******************************************************************************/
 bool InitPublish()
 {
+   App.stayAwake(AWAKE_SYSTEM);
    PublishOk=false;
    PublishErrorMessage.clear();
    Publish.progress.reset();
@@ -937,6 +938,7 @@ void ShutPublish()
    Proj.resume();
    App.stateNormal().flash();
    if(!PublishOk)Gui.msgBox("Publishing Failed", PublishErrorMessage);
+   App.stayAwake(AWAKE_OFF);
 }
 /******************************************************************************/
 void PublishSuccess(C Str &open_path, C Str &text)
