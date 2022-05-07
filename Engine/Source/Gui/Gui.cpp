@@ -174,6 +174,41 @@ GuiObj* GUI::objNearest(C Vec2 &pos, C Vec2 &dir, Vec2 &out_pos)C
    out_pos=pos;
    return null;
 }
+void GUI::moveMouse(C Vec2 &dir)C
+{
+   if(Gui.msLit())
+   {
+     _List *list;
+      if(Gui.msLit()->type()==GO_LIST)
+      {
+         list=&Gui.msLit()->asList();
+      list:
+         int vis=list->nearest(Ms.pos()+list->scrollDelta().chsY(), dir); if(vis>=0)
+         {
+            list->scrollTo(vis); if(list->scrollingMain())
+            {
+               Ms.pos(list->visToScreenRect(vis).center()-list->scrollDelta().chsY());
+               return;
+            }
+         }
+      }else
+      if(Region *region=Gui.msLit()->firstScrollableRegion())
+         if(GuiObj *nearest=region->nearest(Ms.pos()+region->scrollDelta().chsY(), dir))
+      {
+         if(nearest->type()==GO_LIST)
+         {
+            list=&nearest->asList();
+            goto list;
+         }
+         region->scrollTo(*nearest); if(region->scrolling())
+         {
+            Ms.pos(nearest->screenRect().center()-region->scrollDelta().chsY());
+            return;
+         }
+      }
+   }
+   Vec2 pos; if(GuiObj *nearest=Gui.objNearest(Ms.pos(), dir, pos))Ms.pos(pos);
+}
 /******************************************************************************/
 Color GUI::backgroundColor()C {if(GuiSkin *skin=Gui.skin())return skin->background_color; return         WHITE;}
 Color GUI::    borderColor()C {if(GuiSkin *skin=Gui.skin())return skin->    border_color; return Color(0, 112);}

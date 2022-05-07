@@ -46,6 +46,8 @@ struct GUI // Graphical User Interface
    GuiObj* objAtPos  (C Vec2 &pos                            )C; // get         gui object at            'pos' screen position
    GuiObj* objNearest(C Vec2 &pos, C Vec2 &dir, Vec2 &out_pos)C; // get nearest gui object starting from 'pos' screen position towards 'dir' direction
 
+   void moveMouse(C Vec2 &dir)C; // move mouse cursor to the nearest gui object from current mouse position towards 'dir' direction
+
    Flt updateTime()C {return _update_time;} // get CPU time needed to perform last 'update' method
 
    Color backgroundColor()C; // get background color of the current skin, this is 'Gui.skin.background_color'
