@@ -22,7 +22,7 @@ static void Finalize(Elm &elm, C CMemPtr<Elm> &elms) // 'elms' must be sorted by
    Memt<UID> processed; processed.add(elm.id);
  C Elm *cur=&elm;
 parent:
- C UID &parent_id=cur->parent_id; if(parent_id.valid() && processed.binaryInclude(parent_id))if(cur=elms.binaryFind(parent_id))
+ C UID &parent_id=cur->parent_id; if(parent_id.valid() && processed.binaryInclude(parent_id))if(cur=elms.binaryFind(parent_id, Compare))
    {
       elm.full_name=cur->name+'\\'+elm.full_name;
           flags   |=cur->flags; // !! can use OR because we have NO_PUBLISH, if it was PUBLISH then we need a SEPARATE AND !!
