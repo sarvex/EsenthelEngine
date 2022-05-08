@@ -910,7 +910,7 @@ DisplayClass::DisplayClass() : _monitors(Compare, null, null, 4)
   _image_mip_bias  =-0.50f;
    _font_mip_bias  =-0.75f;
   _bend_leafs      =true;
-  _particles_soft  =!MOBILE;
+  _particles_soft  =true;
   _particles_smooth=!MOBILE;
 //_temp_anti_alias =_temp_super_res=_temp_dual=false;
 //_shader_model    =SM_UNKNOWN;

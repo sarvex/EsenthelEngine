@@ -265,7 +265,7 @@ struct DisplayClass : DisplayState, DisplayDraw // Display Control
    DisplayClass& colorPalette1    (C ImagePtr &palette); C ImagePtr& colorPalette1    ()C {return _color_palette[1]   ;} // set/get color palette image that is used during RM_PALETTE1 rendering mode, palette textures need to have a height of 4 pixels (width can be set freely), where each row represents an intensity color palette for respectively (red, green, blue, alpha) components when rendering in RM_PALETTE1 mode, default=null
 
    // Particles
-   DisplayClass& particlesSoft      (Bool on);   Bool particlesSoft      ()C {return _particles_soft  ;} // set/get Particles Softing          (true/false, default=true (false for Mobile)), the change is instant, you can call it real-time
+   DisplayClass& particlesSoft      (Bool on);   Bool particlesSoft      ()C {return _particles_soft  ;} // set/get Particles Softing          (true/false, default=true                   ), the change is instant, you can call it real-time
    DisplayClass& particlesSmoothAnim(Bool on);   Bool particlesSmoothAnim()C {return _particles_smooth;} // set/get Particles Smooth Animation (true/false, default=true (false for Mobile)), if enabled then particles with animated images will be displayed with better quality by smooth blending between animation frames, the change is instant, you can call it real-time
 
    // Temporal
