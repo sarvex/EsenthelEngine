@@ -164,8 +164,10 @@ void UpdateLocation(JNI &jni)
 void DeviceVibrate(Flt intensity, Flt duration)
 {
 #if ANDROID
-   if(Jni && ActivityClass && vibrate)
-      Jni->CallStaticVoidMethod(ActivityClass, vibrate, jint(FltToByte(intensity)), jint(RoundPos(duration*1000)));
+   if(Jni && ActivityClass && vibrate)if(Byte int_byte=FltToByte(intensity)) // 0 will crash
+   {
+      Int milliseconds=RoundPos(duration*1000); if(milliseconds>0)Jni->CallStaticVoidMethod(ActivityClass, vibrate, jint(int_byte), jint(milliseconds)); // <0 will crash, =0 is useless
+   }
 #endif
 }
 /******************************************************************************/

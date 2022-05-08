@@ -828,7 +828,7 @@ public class EsenthelActivity extends NativeActivity
       if(vibrator!=null)
       {
          if(Build.VERSION.SDK_INT>=26)vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, intensity));else
-         if(intensity>0              )vibrator.vibrate(milliseconds);
+                                      vibrator.vibrate(milliseconds);
       }
    }
    /******************************************************************************/
