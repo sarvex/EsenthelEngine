@@ -204,18 +204,18 @@ struct CodeEditorInterface
    virtual ImagePtr      appNotificationIcon                () {return               null;} // get notification icon                   of current app
    virtual Int           appEmbedEngineData                 () {return                  0;} // get if embed   engine  data             of current app
    virtual Cipher*       appEmbedCipher                     () {return               null;} // get cipher      used for embedding data of current app
-   virtual COMPRESS_TYPE appEmbedCompress                   () {return      COMPRESS_NONE;} // get compression used for embedding data of current app
-   virtual Int           appEmbedCompressLevel              () {return                  0;} // get compression used for embedding data of current app
-   virtual DateTime      appEmbedSettingsTime               () {return  DateTime().zero();} // get settings time    for embedding data of current app
    virtual Bool          appPublishProjData                 () {return               true;} // get if publish project data             of current app
    virtual Bool          appPublishPhysxDll                 () {return               true;} // get if copy PhysX  dll's                of current app
    virtual Bool          appPublishSteamDll                 () {return              false;} // get if copy Steam  dll                  of current app
    virtual Bool          appPublishOpenVRDll                () {return              false;} // get if copy OpenVR dll                  of current app
    virtual Bool          appPublishDataAsPak                () {return               true;} // get if publish data as paks             of current app
    virtual Long          appSaveSize                        () {return                 -1;} // get max save disk usage                 of current app
-   virtual void          appInvalidProperty                 (C Str &msg                                  ) {              } // called when application property was detected as invalid
-   virtual void          appSpecificFiles                   (MemPtr<PakFileData> files, EXE_TYPE exe_type) {              } // get specific files      of current app
-   virtual void          appLanguages                       (MemPtr<LANG_TYPE> langs                     ) {langs.clear();} // get supported languages of current app
+   virtual void          appInvalidProperty                 (C Str &msg                                  ) {                         } // called when application property was detected as invalid
+   virtual COMPRESS_TYPE appEmbedCompress                   (                           EXE_TYPE exe_type) {return     COMPRESS_NONE;} // get compression used for embedding data of current app
+   virtual Int           appEmbedCompressLevel              (                           EXE_TYPE exe_type) {return                 0;} // get compression used for embedding data of current app
+   virtual DateTime      appEmbedSettingsTime               (                           EXE_TYPE exe_type) {return DateTime().zero();} // get settings time    for embedding data of current app
+   virtual void          appSpecificFiles                   (MemPtr<PakFileData> files, EXE_TYPE exe_type) {                         } // get specific files      of current app
+   virtual void          appLanguages                       (MemPtr<LANG_TYPE  > langs                   ) {langs.clear();           } // get supported languages of current app
 
    virtual Rect         menuRect    (                      ) {return D.rect();}
    virtual Rect       sourceRect    (                      ) {return D.rect();}

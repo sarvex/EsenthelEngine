@@ -1,5 +1,5 @@
 /******************************************************************************/
-enum TEX_SIZE_PLATFORM
+enum TEX_SIZE_PLATFORM : byte
 {
    TSP_MOBILE,
    TSP_SWITCH,

@@ -1024,9 +1024,9 @@ static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, Bool 
    }
 
    Cipher *cipher=(use_cipher ? CE.cei().appEmbedCipher() : null);
-   if(CompareFile(FileInfoSystem(dest).modify_time_utc, CE.cei().appEmbedSettingsTime())>0 && PakEqual(files, dest, cipher))return true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
+   if(CompareFile(FileInfoSystem(dest).modify_time_utc, CE.cei().appEmbedSettingsTime(CE.build_exe_type))>0 && PakEqual(files, dest, cipher))return true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
    if(changed)*changed=true;
-   if(!PakCreate(files, dest, 0, cipher, CE.cei().appEmbedCompress(), CE.cei().appEmbedCompressLevel()))return Error("Can't create Embedded Engine Pak");
+   if(!PakCreate(files, dest, 0, cipher, CE.cei().appEmbedCompress(CE.build_exe_type), CE.cei().appEmbedCompressLevel(CE.build_exe_type)))return Error("Can't create Embedded Engine Pak");
    return true;
 }
 static Bool CreateAppPak(C Str &name, Bool &exists, Bool *changed=null)
@@ -1040,8 +1040,8 @@ static Bool CreateAppPak(C Str &name, Bool &exists, Bool *changed=null)
    {
       exists=true;
       Cipher *cipher=CE.cei().appEmbedCipher();
-      if(CompareFile(FileInfoSystem(name).modify_time_utc, CE.cei().appEmbedSettingsTime())>0 && PakEqual(files, name, cipher))ok=true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
-      else {if(changed)*changed=true; ok=PakCreate(files, name, 0, cipher, CE.cei().appEmbedCompress(), CE.cei().appEmbedCompressLevel());}
+      if(CompareFile(FileInfoSystem(name).modify_time_utc, CE.cei().appEmbedSettingsTime(CE.build_exe_type))>0 && PakEqual(files, name, cipher))ok=true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
+      else {if(changed)*changed=true; ok=PakCreate(files, name, 0, cipher, CE.cei().appEmbedCompress(CE.build_exe_type), CE.cei().appEmbedCompressLevel(CE.build_exe_type));}
    }else
    {
       ok=true;

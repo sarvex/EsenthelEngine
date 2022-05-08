@@ -97,9 +97,6 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual UID               appGuiSkin                         ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.gui_skin               ; return super.appGuiSkin();}
    virtual int               appEmbedEngineData                 ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.embedEngineData ()     ; return super.appEmbedEngineData();}
    virtual Cipher*           appEmbedCipher                     ()override {static ProjectCipher cipher; /*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return cipher.set(Proj)(); return super.appEmbedCipher();}
-   virtual COMPRESS_TYPE     appEmbedCompress                   ()override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Proj.compress_type              ; return super.appEmbedCompress();}
-   virtual int               appEmbedCompressLevel              ()override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Proj.compress_level             ; return super.appEmbedCompressLevel();}
-   virtual DateTime          appEmbedSettingsTime               ()override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Max(Max(Proj.compress_type_time, Proj.compress_level_time), Max(Proj.cipher_time, Proj.cipher_key_time)).asDateTime(); return super.appEmbedSettingsTime();} // return Max of all params affecting PAKs
    virtual Bool              appPublishProjData                 ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.publishProjData ()     ; return super.appPublishProjData();}
    virtual Bool              appPublishPhysxDll                 ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.publishPhysxDll ()     ; return super.appPublishPhysxDll();}
    virtual Bool              appPublishSteamDll                 ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())return app_data.publishSteamDll ()     ; return super.appPublishSteamDll();}
@@ -116,7 +113,10 @@ class CodeView : Region, Edit.CodeEditorInterface
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
 
-   virtual void appSpecificFiles(MemPtr<PakFileData> files, Edit.EXE_TYPE exe_type)override
+   virtual COMPRESS_TYPE appEmbedCompress     (                           Edit.EXE_TYPE exe_type)override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [Proj.compression(exe_type)]; return super.appEmbedCompress     (exe_type);}
+   virtual int           appEmbedCompressLevel(                           Edit.EXE_TYPE exe_type)override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_level[Proj.compression(exe_type)]; return super.appEmbedCompressLevel(exe_type);}
+   virtual DateTime      appEmbedSettingsTime (                           Edit.EXE_TYPE exe_type)override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Max(Proj.compress_time [Proj.compression(exe_type)], Max(Proj.cipher_time, Proj.cipher_key_time)).asDateTime(); return super.appEmbedSettingsTime(exe_type);} // return Max of all params affecting PAKs
+   virtual void          appSpecificFiles     (MemPtr<PakFileData> files, Edit.EXE_TYPE exe_type)override
    {
       Memc<ImageGenerate> generate;
       Memc<ImageConvert>  convert;

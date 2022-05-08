@@ -624,6 +624,13 @@ enum OP_OBJ_MODE
    OP_OBJ_SET_GROUP,
 };
 /******************************************************************************/
+enum PROJ_CMPR_PLATFORM : byte
+{
+   PCP_DEFAULT,
+   PCP_MOBILE ,
+   PCP_NUM    ,
+};
+/******************************************************************************/
 enum PUBLISH_STAGE
 {
    PUBLISH_MTRL_SIMPLIFY,
@@ -645,7 +652,7 @@ enum SAVE_MODE
    SAVE_AUTO   , //    auto-save
 };
 /******************************************************************************/
-enum TEX_SIZE_PLATFORM
+enum TEX_SIZE_PLATFORM : byte
 {
    TSP_MOBILE,
    TSP_SWITCH,
@@ -706,8 +713,8 @@ const int           ForceInstaller=-2, // -2=disable and don't update, -1=disabl
                     MeshSplitMinVtxs=12000, // min number of vertexes in a mesh to split it
                     MeshSplitMinSize=4;
 const uint          NewElmTime=1;
-const uint ProjectVersion     =94, // !! increase this by one if any of engine/editor asset formats have changed !!
-           ClientServerVersion=94;
+const uint ProjectVersion     =95, // !! increase this by one if any of engine/editor asset formats have changed !!
+           ClientServerVersion=95;
 const int           ServerNetworkCompressionLevel=9           , ClientNetworkCompressionLevel=9            , ProjectPackageCompressionLevel=9;
 /******************************************************************************/
 // TYPEDEFS

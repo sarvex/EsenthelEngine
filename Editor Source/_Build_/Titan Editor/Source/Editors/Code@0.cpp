@@ -124,9 +124,6 @@ AppPropsEditor AppPropsEdit;
    UID               CodeView::appGuiSkin(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->gui_skin               ; return super::appGuiSkin();}
    int               CodeView::appEmbedEngineData(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->embedEngineData ()     ; return super::appEmbedEngineData();}
    Cipher*           CodeView::appEmbedCipher(){static ProjectCipher cipher; /*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return cipher.set(Proj)(); return super::appEmbedCipher();}
-   COMPRESS_TYPE     CodeView::appEmbedCompress(){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Proj.compress_type              ; return super::appEmbedCompress();}
-   int               CodeView::appEmbedCompressLevel(){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Proj.compress_level             ; return super::appEmbedCompressLevel();}
-   DateTime          CodeView::appEmbedSettingsTime(){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Max(Max(Proj.compress_type_time, Proj.compress_level_time), Max(Proj.cipher_time, Proj.cipher_key_time)).asDateTime(); return super::appEmbedSettingsTime();}
    Bool              CodeView::appPublishProjData(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->publishProjData ()     ; return super::appPublishProjData();}
    Bool              CodeView::appPublishPhysxDll(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->publishPhysxDll ()     ; return super::appPublishPhysxDll();}
    Bool              CodeView::appPublishSteamDll(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())return app_data->publishSteamDll ()     ; return super::appPublishSteamDll();}
@@ -139,7 +136,10 @@ AppPropsEditor AppPropsEdit;
    void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    void CodeView::ImageConvertProcess(ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
-   void CodeView::appSpecificFiles(MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)
+   COMPRESS_TYPE CodeView::appEmbedCompress(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [Proj.compression(exe_type)]; return super::appEmbedCompress     (exe_type);}
+   int           CodeView::appEmbedCompressLevel(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_level[Proj.compression(exe_type)]; return super::appEmbedCompressLevel(exe_type);}
+   DateTime      CodeView::appEmbedSettingsTime(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Max(Proj.compress_time [Proj.compression(exe_type)], Max(Proj.cipher_time, Proj.cipher_key_time)).asDateTime(); return super::appEmbedSettingsTime(exe_type);}
+   void          CodeView::appSpecificFiles(MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)
 {
       Memc<ImageGenerate> generate;
       Memc<ImageConvert>  convert;

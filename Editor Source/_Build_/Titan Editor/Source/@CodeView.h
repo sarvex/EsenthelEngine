@@ -61,9 +61,6 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual UID               appGuiSkin                         ()override; 
    virtual int               appEmbedEngineData                 ()override; 
    virtual Cipher*           appEmbedCipher                     ()override; 
-   virtual COMPRESS_TYPE     appEmbedCompress                   ()override; 
-   virtual int               appEmbedCompressLevel              ()override; 
-   virtual DateTime          appEmbedSettingsTime               ()override;  // return Max of all params affecting PAKs
    virtual Bool              appPublishProjData                 ()override; 
    virtual Bool              appPublishPhysxDll                 ()override; 
    virtual Bool              appPublishSteamDll                 ()override; 
@@ -80,7 +77,10 @@ class CodeView : Region, Edit::CodeEditorInterface
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
    static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index);
 
-   virtual void appSpecificFiles(MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)override;
+   virtual COMPRESS_TYPE appEmbedCompress     (                           Edit::EXE_TYPE exe_type)override;
+   virtual int           appEmbedCompressLevel(                           Edit::EXE_TYPE exe_type)override;
+   virtual DateTime      appEmbedSettingsTime (                           Edit::EXE_TYPE exe_type)override; // return Max of all params affecting PAKs
+   virtual void          appSpecificFiles     (MemPtr<PakFileData> files, Edit::EXE_TYPE exe_type)override;
    virtual void appInvalidProperty(C Str &msg)override;
 
    virtual void validateActiveSources()override;

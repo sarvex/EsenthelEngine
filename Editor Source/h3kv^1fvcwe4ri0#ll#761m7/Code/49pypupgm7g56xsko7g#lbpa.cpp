@@ -283,7 +283,7 @@ bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit
 DATA_STATE PublishDataState() // state of project data
 {
    if(!PublishProjectDataPath.is())return DATA_READY; // if we don't want to create project data pak (no file)
-   if(CompareFile(FileInfoSystem(PublishProjectDataPath).modify_time_utc, CodeEdit.appEmbedSettingsTime())>0) // if existing Pak time is newer than settings (compression/encryption)
+   if(CompareFile(FileInfoSystem(PublishProjectDataPath).modify_time_utc, CodeEdit.appEmbedSettingsTime(PublishExeType))>0) // if existing Pak time is newer than settings (compression/encryption)
    {
       bool need_optimized=PublishDataNeedOptimized(); // test if optimized 
       Memt<DataRangeAbs> used_file_ranges;
@@ -560,12 +560,13 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
    if(PublishDataAsPak)
    {
+      PROJ_CMPR_PLATFORM pcp=Proj.compression(PublishExeType);
       switch(PublishDataState())
       {
          case DATA_READY : PublishOk=true; break;
-         case DATA_UPDATE: PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); if(PublishOk)break;
+         case DATA_UPDATE: PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type[pcp], PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level[pcp], &PublishErrorMessage, &Publish.progress); if(PublishOk)break;
          // !! here no break !! fully recreate if 'PakReplaceInPlace' failed
-         default         : PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type, PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level, &PublishErrorMessage, &Publish.progress); break;
+         default         : PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type[pcp], PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level[pcp], &PublishErrorMessage, &Publish.progress); break;
       }
    }else
    {
@@ -642,8 +643,8 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
             uwp=(exe_type==Edit.EXE_UWP),
             web=(exe_type==Edit.EXE_WEB),
              ns=(exe_type==Edit.EXE_NS ),
-  mtrl_simplify=Proj.materialSimplify(exe_type);
-   TEX_SIZE_PLATFORM tsp=(ns ? TSP_SWITCH : (android || iOS || web) ? TSP_MOBILE : TSP_NUM);
+           mtrl_simplify=Proj.materialSimplify(exe_type);
+   TEX_SIZE_PLATFORM tsp=Proj.texSize         (exe_type);
 
    // elements
    FREPA(elms)if(Elm *elm=elms[i])if(ElmPublish(elm.type))
