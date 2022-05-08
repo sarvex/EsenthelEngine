@@ -135,7 +135,7 @@ static JavaVM        *JVM;
        JMethodID      getRotation,
                       InputDeviceGetDevice, InputDeviceGetName,
                       KeyCharacterMapLoad, KeyCharacterMapGet,
-                      getLastKnownLocation, getLatitude, getLongitude, getAltitude, getAccuracy, getSpeed, getTime, requestLocationUpdates, removeUpdates;
+                      getLastKnownLocation, getLatitude, getLongitude, getAltitude, getAccuracy, getSpeed, getTime, requestLocationUpdates, removeUpdates, vibrate;
        Int            AndroidSDK;
        AAssetManager *AssetManager;
        android_app   *AndroidApp;
@@ -683,6 +683,7 @@ static void JavaShut()
    DefaultDisplay      .del();
    Activity            =null;
    getRotation         =null;
+   vibrate             =null;
 
 #if 0 // we need these even after 'JavaShut'
    ActivityClass        .del();
@@ -813,6 +814,11 @@ static void JavaGetInput()
       InputDeviceGetDevice=Jni.staticFunc(InputDeviceClass, "getDevice", "(I)Landroid/view/InputDevice;");
       InputDeviceGetName  =Jni.func      (InputDeviceClass, "getName"  , "()Ljava/lang/String;"         );
    }
+
+
+   if(!vibrate)
+      if(Jni && ActivityClass)
+         vibrate=Jni.staticFunc(ActivityClass, "vibrate", "(II)V");
 }
 static void JavaDisplay()
 {

@@ -161,6 +161,14 @@ void UpdateLocation(JNI &jni)
 }
 #endif
 /******************************************************************************/
+void DeviceVibrate(Flt intensity, Flt duration)
+{
+#if ANDROID
+   if(Jni && ActivityClass && vibrate)
+      Jni->CallStaticVoidMethod(ActivityClass, vibrate, jint(FltToByte(intensity)), jint(RoundPos(duration*1000)));
+#endif
+}
+/******************************************************************************/
 // INPUT BUTTON
 /******************************************************************************/
 Bool InputButton::on()C

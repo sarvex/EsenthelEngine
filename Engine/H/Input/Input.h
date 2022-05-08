@@ -277,4 +277,5 @@ void UpdateLocation(                  Bool gps, JNI &jni);
 void UpdateLocation(                            JNI &jni);
 #endif
 #endif
+void DeviceVibrate(Flt intensity, Flt duration); // set device vibration, 'intensity'=how strong 0..1, 'duration'=how long (in seconds)
 /******************************************************************************/

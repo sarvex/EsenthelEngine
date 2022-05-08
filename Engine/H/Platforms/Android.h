@@ -122,7 +122,7 @@ typedef jfieldID  JFieldID;
 extern jobject   Activity; // 'Activity' should not use 'JObject' because it's not dynamically obtained
 extern JClass    ActivityClass, ClipboardManagerClass;
 extern JObject   ClipboardManager, LocationManager, GPS_PROVIDER, NETWORK_PROVIDER, EsenthelLocationListener[2];
-extern JMethodID getLastKnownLocation, getLatitude, getLongitude, getAltitude, getAccuracy, getSpeed, getTime, requestLocationUpdates, removeUpdates;
+extern JMethodID getLastKnownLocation, getLatitude, getLongitude, getAltitude, getAccuracy, getSpeed, getTime, requestLocationUpdates, removeUpdates, vibrate;
 
 extern android_app   *AndroidApp;
 extern Str8           AndroidPackageName;

@@ -49,6 +49,8 @@ import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.StatFs;
+import android.os.Vibrator;
+import android.os.VibrationEffect;
 import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
@@ -249,6 +251,7 @@ public class EsenthelActivity extends NativeActivity
    static Handler              handler;
    static PublicKey            license_key;
    static String               android_id;
+   static Vibrator             vibrator;
           EditText             edit_text;
           TextWatcher          text_watcher;
    static WakeLock             wake_lock;
@@ -386,6 +389,15 @@ public class EsenthelActivity extends NativeActivity
          {
             wifi_lock=wifi_manager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, ""); // will crash if null is used
             if(wifi_lock!=null)wifi_lock.setReferenceCounted(false); // disable ref counting so one 'release' will be immediate
+         }
+      }
+      if(vibrator==null)
+      {
+         vibrator=(Vibrator)getSystemService(Context.VIBRATOR_SERVICE); if(vibrator!=null)
+         {
+          //log("hasVibrator"+vibrator.hasVibrator());
+          //log("hasAmplitudeControl"+vibrator.hasAmplitudeControl());
+            if(!vibrator.hasVibrator())vibrator=null;
          }
       }
 
@@ -811,6 +823,14 @@ public class EsenthelActivity extends NativeActivity
    public final float refreshRate() {return getWindowManager().getDefaultDisplay().getRefreshRate();}
    public final long screen() {Point size=new Point(); getWindowManager().getDefaultDisplay().getRealSize(size); return size.x | (((long)size.y)<<32);}
 
+   public static final void vibrate(int intensity, int milliseconds) // intensity=0..255
+   {
+      if(vibrator!=null)
+      {
+         if(Build.VERSION.SDK_INT>=26)vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, intensity));else
+         if(intensity>0              )vibrator.vibrate(milliseconds);
+      }
+   }
    /******************************************************************************/
    // KEYBOARD
    /******************************************************************************/
