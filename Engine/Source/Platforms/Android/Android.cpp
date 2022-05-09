@@ -1132,6 +1132,7 @@ static void InitKeyMap()
 commands for testing PAD locally without uploading to Play Store - https://developer.android.com/guide/playcore/asset-delivery/test
 For testing "Esenthel/Project/Project.vcxproj" first have to turn on all #PlayAssetDelivery in "build.gradle" and "settings.gradle"
 Rebuild Project
+May need to uninstall app on device if asset pack data was changed
 Run powershell in "Project/Android" path
 Copy all commands below and paste (Ctrl+V) to powershell, press Enter:
 
