@@ -1130,6 +1130,7 @@ static void InitKeyMap()
 // PLAY ASSET DELIVERY
 /******************************************************************************
 commands for testing PAD locally without uploading to Play Store - https://developer.android.com/guide/playcore/asset-delivery/test
+bundletool-all downloaded from https://github.com/google/bundletool/releases
 For testing "Esenthel/Project/Project.vcxproj" first have to turn on all #PlayAssetDelivery in "build.gradle" and "settings.gradle"
 Rebuild Project
 May need to uninstall app on device if asset pack data was changed
