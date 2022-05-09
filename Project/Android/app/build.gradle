@@ -42,12 +42,13 @@ android {
 			outputFileName = MSBUILD_ANDROID_OUTPUT_APK_NAME
 		}
 	}
+	//assetPacks = [":Data0"] // #PlayAssetDelivery
 }
 
 dependencies {
 	implementation fileTree(dir: "libs", include: ["*.jar"])
 
-	/**
+	/** // #PlayAssetDelivery
 	implementation files("../../../Editor Data/Code/Android/libs/play-core-native-sdk/playcore.aar")
 	implementation("com.google.android.play:integrity:1.0.0") // NEEDED BY "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native
 	/**/
