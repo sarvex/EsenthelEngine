@@ -263,6 +263,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release GL|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -297,6 +298,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug GL|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -331,6 +333,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DX11|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -362,6 +365,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Universal DX11|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -404,6 +408,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DX11|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -435,6 +440,7 @@
     <CLanguageStandard>c17</CLanguageStandard>
     <CppLanguageStandard>cpp17</CppLanguageStandard>
     <UseOfStl>cpp_static</UseOfStl>
+    <AndroidMinSdkVersion>21</AndroidMinSdkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Universal DX11|NX64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
