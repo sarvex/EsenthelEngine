@@ -2,22 +2,22 @@
 apply from: '.agde/agde.gradle'
 
 buildscript {
-    repositories {
-       google()
-       mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0-alpha02'
-    }
+	repositories {
+		google()
+		mavenCentral()
+	}
+	dependencies {
+		classpath 'com.android.tools.build:gradle:7.3.0-alpha02'
+	}
 }
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
+	repositories {
+		google()
+		mavenCentral()
+	}
 }
 
 task clean(type: Delete) {
-    delete rootProject.buildDir
+	delete rootProject.buildDir
 }

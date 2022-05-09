@@ -15,6 +15,33 @@ enum PROJ_CMPR_PLATFORM : byte
 
 uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
 /******************************************************************************/
+TEX_SIZE_PLATFORM ProjTexSize(Edit.EXE_TYPE type)
+{
+   switch(type)
+   {
+      case Edit.EXE_NS: return TSP_SWITCH;
+
+      case Edit.EXE_APK:
+      case Edit.EXE_IOS:
+      case Edit.EXE_WEB:
+         return TSP_MOBILE;
+
+      default: return TSP_NUM;
+   }
+}
+PROJ_CMPR_PLATFORM ProjCompres(Edit.EXE_TYPE type)
+{
+   switch(type)
+   {
+      case Edit.EXE_APK:
+      case Edit.EXE_IOS:
+      case Edit.EXE_WEB:
+         return PCP_MOBILE;
+
+      default: return PCP_DEFAULT;
+   }
+}
+/******************************************************************************/
 class Project
 {
    bool              text_data=false, synchronize=true;
@@ -358,42 +385,6 @@ class Project
       return n;
    }
 
-   bool materialSimplify(Edit.EXE_TYPE type)C
-   {
-      switch(material_simplify)
-      {
-         default       : return false; // MS_NEVER
-         case MS_MOBILE: return type==Edit.EXE_APK || type==Edit.EXE_IOS || type==Edit.EXE_NS;
-         case MS_ALWAYS: return true;
-      }
-   }
-   TEX_SIZE_PLATFORM texSize(Edit.EXE_TYPE type)C
-   {
-      switch(type)
-      {
-         case Edit.EXE_NS: return TSP_SWITCH;
-
-         case Edit.EXE_APK:
-         case Edit.EXE_IOS:
-         case Edit.EXE_WEB:
-            return TSP_MOBILE;
-
-         default: return TSP_NUM;
-      }
-   }
-   PROJ_CMPR_PLATFORM compression(Edit.EXE_TYPE type)C
-   {
-      switch(type)
-      {
-         case Edit.EXE_APK:
-         case Edit.EXE_IOS:
-         case Edit.EXE_WEB:
-            return PCP_MOBILE;
-
-         default: return PCP_DEFAULT;
-      }
-   }
-
    bool isBasedOnObjs(C Elm &elm, C Memt<UID> &objs)C // check if 'elm' is based on 'objs' (assumes that 'objs' is sorted)
    {
       Memt<UID> processed;
@@ -624,6 +615,16 @@ class Project
          }break;
       }
       return false;
+   }
+
+   bool materialSimplify(Edit.EXE_TYPE type)C
+   {
+      switch(material_simplify)
+      {
+         default       : return false; // MS_NEVER
+         case MS_MOBILE: return type==Edit.EXE_APK || type==Edit.EXE_IOS || type==Edit.EXE_NS;
+         case MS_ALWAYS: return true;
+      }
    }
 
    // operations

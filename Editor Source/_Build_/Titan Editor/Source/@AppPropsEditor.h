@@ -110,6 +110,8 @@ class AppPropsEditor : PropWin
    static Str  NintendoLegalInfo           (C AppPropsEditor &ap             );
    static void AndroidLicenseKey           (  AppPropsEditor &ap, C Str &text);
    static Str  AndroidLicenseKey           (C AppPropsEditor &ap             );
+   static void PlayAssetDelivery           (  AppPropsEditor &ap, C Str &text);
+   static Str  PlayAssetDelivery           (C AppPropsEditor &ap             );
    static void Build                       (  AppPropsEditor &ap, C Str &text);
    static Str  Build                       (C AppPropsEditor &ap             );
    static void SaveSize                    (  AppPropsEditor &ap, C Str &text);

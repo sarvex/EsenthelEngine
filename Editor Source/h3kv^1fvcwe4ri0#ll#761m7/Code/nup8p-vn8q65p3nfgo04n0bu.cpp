@@ -2874,7 +2874,7 @@ class ElmApp : ElmData
       PUBLISH_PROJ_DATA     =1<<1,
       PUBLISH_PHYSX_DLL     =1<<2,
       PUBLISH_DATA_AS_PAK   =1<<3,
-      ANDROID_EXPANSION     =1<<4,
+      PLAY_ASSET_DELIVERY   =1<<4, // Android https://developer.android.com/guide/playcore/asset-delivery
       PUBLISH_STEAM_DLL     =1<<5,
       PUBLISH_OPEN_VR_DLL   =1<<6,
       EMBED_ENGINE_DATA_FULL=1<<7,
@@ -2908,7 +2908,7 @@ class ElmApp : ElmData
                      fb_app_id_time, am_app_id_ios_time, am_app_id_google_time, cb_app_id_ios_time, cb_app_signature_ios_time, cb_app_id_google_time, cb_app_signature_google_time,
                      libs_windows_time, libs_mac_time, libs_linux_time, libs_android_time, libs_ios_time, libs_nintendo_time,
                      package_time, android_license_key_time, location_usage_reason_time, build_time, save_size_time, storage_time, supported_orientations_time,
-                     embed_engine_data_time, publish_proj_data_time, publish_physx_dll_time, publish_steam_dll_time, publish_open_vr_dll_time, publish_data_as_pak_time, android_expansion_time,
+                     embed_engine_data_time, publish_proj_data_time, publish_physx_dll_time, publish_steam_dll_time, publish_open_vr_dll_time, publish_data_as_pak_time, play_asset_delivery_time,
                      icon_time, notification_icon_time, image_portrait_time, image_landscape_time, gui_skin_time,
                      ms_publisher_id_time, ms_publisher_name_time,
                      xbl_program_time, xbl_title_id_time, xbl_scid_time, 
@@ -2929,7 +2929,7 @@ class ElmApp : ElmData
           && am_app_id_ios_time==src.am_app_id_ios_time && am_app_id_google_time==src.am_app_id_google_time
           && cb_app_id_ios_time==src.cb_app_id_ios_time && cb_app_signature_ios_time==src.cb_app_signature_ios_time && cb_app_id_google_time==src.cb_app_id_google_time && cb_app_signature_google_time==src.cb_app_signature_google_time
           && storage_time==src.storage_time && supported_orientations_time==src.supported_orientations_time
-          && embed_engine_data_time==src.embed_engine_data_time && publish_proj_data_time==src.publish_proj_data_time && publish_physx_dll_time==src.publish_physx_dll_time && publish_steam_dll_time==src.publish_steam_dll_time && publish_open_vr_dll_time==src.publish_open_vr_dll_time && publish_data_as_pak_time==src.publish_data_as_pak_time && android_expansion_time==src.android_expansion_time
+          && embed_engine_data_time==src.embed_engine_data_time && publish_proj_data_time==src.publish_proj_data_time && publish_physx_dll_time==src.publish_physx_dll_time && publish_steam_dll_time==src.publish_steam_dll_time && publish_open_vr_dll_time==src.publish_open_vr_dll_time && publish_data_as_pak_time==src.publish_data_as_pak_time && play_asset_delivery_time==src.play_asset_delivery_time
           && icon_time==src.icon_time && notification_icon_time==src.notification_icon_time && image_portrait_time==src.image_portrait_time && image_landscape_time==src.image_landscape_time && gui_skin_time==src.gui_skin_time;
    }
    bool newer(C ElmApp &src)C
@@ -2946,7 +2946,7 @@ class ElmApp : ElmData
           || am_app_id_ios_time>src.am_app_id_ios_time || am_app_id_google_time>src.am_app_id_google_time
           || cb_app_id_ios_time>src.cb_app_id_ios_time || cb_app_signature_ios_time>src.cb_app_signature_ios_time || cb_app_id_google_time>src.cb_app_id_google_time || cb_app_signature_google_time>src.cb_app_signature_google_time
           || storage_time>src.storage_time || supported_orientations_time>src.supported_orientations_time
-          || embed_engine_data_time>src.embed_engine_data_time || publish_proj_data_time>src.publish_proj_data_time || publish_physx_dll_time>src.publish_physx_dll_time || publish_steam_dll_time>src.publish_steam_dll_time || publish_open_vr_dll_time>src.publish_open_vr_dll_time || publish_data_as_pak_time>src.publish_data_as_pak_time || android_expansion_time>src.android_expansion_time
+          || embed_engine_data_time>src.embed_engine_data_time || publish_proj_data_time>src.publish_proj_data_time || publish_physx_dll_time>src.publish_physx_dll_time || publish_steam_dll_time>src.publish_steam_dll_time || publish_open_vr_dll_time>src.publish_open_vr_dll_time || publish_data_as_pak_time>src.publish_data_as_pak_time || play_asset_delivery_time>src.play_asset_delivery_time
           || icon_time>src.icon_time || notification_icon_time>src.notification_icon_time || image_portrait_time>src.image_portrait_time || image_landscape_time>src.image_landscape_time || gui_skin_time>src.gui_skin_time;
    }
 
@@ -2955,13 +2955,13 @@ class ElmApp : ElmData
    int     embedEngineData(     )C {return FlagOn (flag, EMBED_ENGINE_DATA) ? FlagOn(flag, EMBED_ENGINE_DATA_FULL) ? 2 : 1 : 0;}
    ElmApp& embedEngineData(int e)  {       FlagSet(flag, EMBED_ENGINE_DATA, e!=0); FlagSet(flag, EMBED_ENGINE_DATA_FULL, e>1); return T;}
 
-   bool publishProjData ()C {return FlagOn(flag, PUBLISH_PROJ_DATA  );}   ElmApp& publishProjData (bool on) {FlagSet(flag, PUBLISH_PROJ_DATA  , on); return T;}
-   bool publishPhysxDll ()C {return FlagOn(flag, PUBLISH_PHYSX_DLL  );}   ElmApp& publishPhysxDll (bool on) {FlagSet(flag, PUBLISH_PHYSX_DLL  , on); return T;}
-   bool publishSteamDll ()C {return FlagOn(flag, PUBLISH_STEAM_DLL  );}   ElmApp& publishSteamDll (bool on) {FlagSet(flag, PUBLISH_STEAM_DLL  , on); return T;}
-   bool publishOpenVRDll()C {return FlagOn(flag, PUBLISH_OPEN_VR_DLL);}   ElmApp& publishOpenVRDll(bool on) {FlagSet(flag, PUBLISH_OPEN_VR_DLL, on); return T;}
-   bool publishDataAsPak()C {return FlagOn(flag, PUBLISH_DATA_AS_PAK);}   ElmApp& publishDataAsPak(bool on) {FlagSet(flag, PUBLISH_DATA_AS_PAK, on); return T;}
-   bool androidExpansion()C {return FlagOn(flag, ANDROID_EXPANSION  );}   ElmApp& androidExpansion(bool on) {FlagSet(flag, ANDROID_EXPANSION  , on); return T;}
- //bool windowsCodeSign ()C {return FlagOn(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
+   bool publishProjData  ()C {return FlagOn(flag, PUBLISH_PROJ_DATA  );}   ElmApp& publishProjData  (bool on) {FlagSet(flag, PUBLISH_PROJ_DATA  , on); return T;}
+   bool publishPhysxDll  ()C {return FlagOn(flag, PUBLISH_PHYSX_DLL  );}   ElmApp& publishPhysxDll  (bool on) {FlagSet(flag, PUBLISH_PHYSX_DLL  , on); return T;}
+   bool publishSteamDll  ()C {return FlagOn(flag, PUBLISH_STEAM_DLL  );}   ElmApp& publishSteamDll  (bool on) {FlagSet(flag, PUBLISH_STEAM_DLL  , on); return T;}
+   bool publishOpenVRDll ()C {return FlagOn(flag, PUBLISH_OPEN_VR_DLL);}   ElmApp& publishOpenVRDll (bool on) {FlagSet(flag, PUBLISH_OPEN_VR_DLL, on); return T;}
+   bool publishDataAsPak ()C {return FlagOn(flag, PUBLISH_DATA_AS_PAK);}   ElmApp& publishDataAsPak (bool on) {FlagSet(flag, PUBLISH_DATA_AS_PAK, on); return T;}
+   bool playAssetDelivery()C {return FlagOn(flag, PLAY_ASSET_DELIVERY);}   ElmApp& playAssetDelivery(bool on) {FlagSet(flag, PLAY_ASSET_DELIVERY, on); return T;}
+ //bool windowsCodeSign  ()C {return FlagOn(flag, WINDOWS_CODE_SIGN  );}   ElmApp& windowsCodeSign  (bool on) {FlagSet(flag, WINDOWS_CODE_SIGN  , on); return T;}
 
    // operations
    virtual void newData()override
@@ -2977,7 +2977,7 @@ class ElmApp : ElmData
       am_app_id_ios_time++; am_app_id_google_time++;
       cb_app_id_ios_time++; cb_app_signature_ios_time++; cb_app_id_google_time++; cb_app_signature_google_time++;
       package_time++; android_license_key_time++; location_usage_reason_time++; build_time++; save_size_time++; storage_time++; supported_orientations_time++;
-      embed_engine_data_time++; publish_proj_data_time++; publish_physx_dll_time++; publish_steam_dll_time++; publish_open_vr_dll_time++; publish_data_as_pak_time++; android_expansion_time++;
+      embed_engine_data_time++; publish_proj_data_time++; publish_physx_dll_time++; publish_steam_dll_time++; publish_open_vr_dll_time++; publish_data_as_pak_time++; play_asset_delivery_time++;
       icon_time++; notification_icon_time++; image_portrait_time++; image_landscape_time++; gui_skin_time++;
    }
    uint undo(C ElmApp &src)
@@ -3027,14 +3027,14 @@ class ElmApp : ElmData
          ch|=Undo(       cb_app_id_google_time, src.       cb_app_id_google_time, cb_app_id_google       , src.cb_app_id_google       );
          ch|=Undo(cb_app_signature_google_time, src.cb_app_signature_google_time, cb_app_signature_google, src.cb_app_signature_google);
 
-         if(Undo(embed_engine_data_time  , src.embed_engine_data_time  )){ch=true; embedEngineData (src.embedEngineData ());}
-         if(Undo(publish_proj_data_time  , src.publish_proj_data_time  )){ch=true; publishProjData (src.publishProjData ());}
-         if(Undo(publish_physx_dll_time  , src.publish_physx_dll_time  )){ch=true; publishPhysxDll (src.publishPhysxDll ());}
-         if(Undo(publish_steam_dll_time  , src.publish_steam_dll_time  )){ch=true; publishSteamDll (src.publishSteamDll ());}
-         if(Undo(publish_open_vr_dll_time, src.publish_open_vr_dll_time)){ch=true; publishOpenVRDll(src.publishOpenVRDll());}
-         if(Undo(publish_data_as_pak_time, src.publish_data_as_pak_time)){ch=true; publishDataAsPak(src.publishDataAsPak());}
-         if(Undo(android_expansion_time  , src.android_expansion_time  )){ch=true; androidExpansion(src.androidExpansion());}
-       //if(Undo(windows_code_sign_time  , src.windows_code_sign_time  )){ch=true; windowsCodeSign (src.windowsCodeSign ());}
+         if(Undo(embed_engine_data_time  , src.embed_engine_data_time  )){ch=true; embedEngineData  (src.embedEngineData  ());}
+         if(Undo(publish_proj_data_time  , src.publish_proj_data_time  )){ch=true; publishProjData  (src.publishProjData  ());}
+         if(Undo(publish_physx_dll_time  , src.publish_physx_dll_time  )){ch=true; publishPhysxDll  (src.publishPhysxDll  ());}
+         if(Undo(publish_steam_dll_time  , src.publish_steam_dll_time  )){ch=true; publishSteamDll  (src.publishSteamDll  ());}
+         if(Undo(publish_open_vr_dll_time, src.publish_open_vr_dll_time)){ch=true; publishOpenVRDll (src.publishOpenVRDll ());}
+         if(Undo(publish_data_as_pak_time, src.publish_data_as_pak_time)){ch=true; publishDataAsPak (src.publishDataAsPak ());}
+         if(Undo(play_asset_delivery_time, src.play_asset_delivery_time)){ch=true; playAssetDelivery(src.playAssetDelivery());}
+       //if(Undo(windows_code_sign_time  , src.windows_code_sign_time  )){ch=true; windowsCodeSign  (src.windowsCodeSign  ());}
       }
       ch|=Undo(supported_orientations_time, src.supported_orientations_time, supported_orientations, src.supported_orientations);
       ch|=Undo(                  icon_time, src.                  icon_time, icon                  , src.icon                  );
@@ -3095,14 +3095,14 @@ class ElmApp : ElmData
          ch|=Sync(       cb_app_id_google_time, src.       cb_app_id_google_time, cb_app_id_google       , src.cb_app_id_google       );
          ch|=Sync(cb_app_signature_google_time, src.cb_app_signature_google_time, cb_app_signature_google, src.cb_app_signature_google);
 
-         if(Sync(embed_engine_data_time  , src.embed_engine_data_time  )){ch=true; embedEngineData (src.embedEngineData ());}
-         if(Sync(publish_proj_data_time  , src.publish_proj_data_time  )){ch=true; publishProjData (src.publishProjData ());}
-         if(Sync(publish_physx_dll_time  , src.publish_physx_dll_time  )){ch=true; publishPhysxDll (src.publishPhysxDll ());}
-         if(Sync(publish_steam_dll_time  , src.publish_steam_dll_time  )){ch=true; publishSteamDll (src.publishSteamDll ());}
-         if(Sync(publish_open_vr_dll_time, src.publish_open_vr_dll_time)){ch=true; publishOpenVRDll(src.publishOpenVRDll());}
-         if(Sync(publish_data_as_pak_time, src.publish_data_as_pak_time)){ch=true; publishDataAsPak(src.publishDataAsPak());}
-         if(Sync(android_expansion_time  , src.android_expansion_time  )){ch=true; androidExpansion(src.androidExpansion());}
-       //if(Sync(windows_code_sign_time  , src.windows_code_sign_time  )){ch=true; windowsCodeSign (src.windowsCodeSign ());}
+         if(Sync(embed_engine_data_time  , src.embed_engine_data_time  )){ch=true; embedEngineData  (src.embedEngineData  ());}
+         if(Sync(publish_proj_data_time  , src.publish_proj_data_time  )){ch=true; publishProjData  (src.publishProjData  ());}
+         if(Sync(publish_physx_dll_time  , src.publish_physx_dll_time  )){ch=true; publishPhysxDll  (src.publishPhysxDll  ());}
+         if(Sync(publish_steam_dll_time  , src.publish_steam_dll_time  )){ch=true; publishSteamDll  (src.publishSteamDll  ());}
+         if(Sync(publish_open_vr_dll_time, src.publish_open_vr_dll_time)){ch=true; publishOpenVRDll (src.publishOpenVRDll ());}
+         if(Sync(publish_data_as_pak_time, src.publish_data_as_pak_time)){ch=true; publishDataAsPak (src.publishDataAsPak ());}
+         if(Sync(play_asset_delivery_time, src.play_asset_delivery_time)){ch=true; playAssetDelivery(src.playAssetDelivery());}
+       //if(Sync(windows_code_sign_time  , src.windows_code_sign_time  )){ch=true; windowsCodeSign  (src.windowsCodeSign  ());}
       }
       ch|=Sync(supported_orientations_time, src.supported_orientations_time, supported_orientations, src.supported_orientations);
       ch|=Sync(                  icon_time, src.                  icon_time, icon                  , src.icon                  );
@@ -3136,7 +3136,7 @@ class ElmApp : ElmData
       f<<headers_windows_time<<headers_mac_time<<headers_linux_time<<headers_android_time<<headers_ios_time<<headers_nintendo_time;
       f<<libs_windows_time<<libs_mac_time<<libs_linux_time<<libs_android_time<<libs_ios_time<<libs_nintendo_time;
       f<<package_time<<android_license_key_time<<location_usage_reason_time<<build_time<<save_size_time<<storage_time<<supported_orientations_time;
-      f<<embed_engine_data_time<<publish_proj_data_time<<publish_physx_dll_time<<publish_steam_dll_time<<publish_open_vr_dll_time<<publish_data_as_pak_time<<android_expansion_time;
+      f<<embed_engine_data_time<<publish_proj_data_time<<publish_physx_dll_time<<publish_steam_dll_time<<publish_open_vr_dll_time<<publish_data_as_pak_time<<play_asset_delivery_time;
       f<<icon_time<<notification_icon_time<<image_portrait_time<<image_landscape_time<<gui_skin_time;
       return f.ok();
    }
@@ -3164,7 +3164,7 @@ class ElmApp : ElmData
             f>>headers_windows_time>>headers_mac_time>>headers_linux_time>>headers_android_time>>headers_ios_time>>headers_nintendo_time;
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time>>libs_nintendo_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>save_size_time>>storage_time>>supported_orientations_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3186,7 +3186,7 @@ class ElmApp : ElmData
             f>>headers_windows_time>>headers_mac_time>>headers_linux_time>>headers_android_time>>headers_ios_time>>headers_nintendo_time;
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time>>libs_nintendo_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>save_size_time>>storage_time>>supported_orientations_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3208,7 +3208,7 @@ class ElmApp : ElmData
             f>>headers_windows_time>>headers_mac_time>>headers_linux_time>>headers_android_time>>headers_ios_time>>headers_nintendo_time;
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time>>libs_nintendo_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>save_size_time>>storage_time>>supported_orientations_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3230,7 +3230,7 @@ class ElmApp : ElmData
             f>>headers_windows_time>>headers_mac_time>>headers_linux_time>>headers_android_time>>headers_ios_time>>headers_nintendo_time;
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time>>libs_nintendo_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3254,7 +3254,7 @@ class ElmApp : ElmData
             f>>fb_app_id_time;
             f>>am_app_id_ios_time>>am_app_id_google_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3276,7 +3276,7 @@ class ElmApp : ElmData
             f>>fb_app_id_time;
             f>>am_app_id_ios_time>>am_app_id_google_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3296,7 +3296,7 @@ class ElmApp : ElmData
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3313,7 +3313,7 @@ class ElmApp : ElmData
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>notification_icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3330,7 +3330,7 @@ class ElmApp : ElmData
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3347,7 +3347,7 @@ class ElmApp : ElmData
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_open_vr_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3364,7 +3364,7 @@ class ElmApp : ElmData
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
             f>>cb_app_id_ios_time>>cb_app_signature_ios_time>>cb_app_id_google_time>>cb_app_signature_google_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3379,7 +3379,7 @@ class ElmApp : ElmData
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time>>cb_app_id_ios_time>>cb_app_signature_ios_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3394,7 +3394,7 @@ class ElmApp : ElmData
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_steam_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3409,7 +3409,7 @@ class ElmApp : ElmData
             f>>libs_windows_time>>libs_mac_time>>libs_linux_time>>libs_android_time>>libs_ios_time;
             f>>package_time>>android_license_key_time>>location_usage_reason_time>>build_time>>storage_time>>supported_orientations_time;
             f>>fb_app_id_time;
-            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_data_as_pak_time>>android_expansion_time;
+            f>>embed_engine_data_time>>publish_proj_data_time>>publish_physx_dll_time>>publish_data_as_pak_time>>play_asset_delivery_time;
             f>>icon_time>>image_portrait_time>>image_landscape_time>>gui_skin_time;
             if(f.ok())return true;
          }break;
@@ -3508,7 +3508,7 @@ class ElmApp : ElmData
          {
             bool embed_engine_data;
             GetStr(f, headers_windows); GetStr(f, libs_windows); GetStr(f, package); f>>build>>storage>>supported_orientations>>embed_engine_data>>icon>>image_portrait>>headers_windows_time>>libs_windows_time>>package_time>>build_time>>storage_time>>supported_orientations_time>>embed_engine_data_time>>icon_time>>image_portrait_time;
-            embedEngineData(embed_engine_data).publishProjData(true).publishPhysxDll(true).publishDataAsPak(true).androidExpansion(false); // set non-saved options
+            embedEngineData(embed_engine_data).publishProjData(true).publishPhysxDll(true).publishDataAsPak(true).playAssetDelivery(false); // set non-saved options
             if(f.ok())return true;
          }break;
       }
@@ -3567,7 +3567,7 @@ class ElmApp : ElmData
       REPA(StorageModes)if(storage==StorageModes[i].mode){nodes.New().set("Storage", StorageModes[i].name); break;}
                                     nodes.New().set("SupportedOrientations", supported_orientations);
       if(location_usage_reason.is())nodes.New().set("LocationUsageReason"  , location_usage_reason);
-      if(androidExpansion        ())nodes.New().set("AndroidExpansion"     );
+      if(playAssetDelivery       ())nodes.New().set("PlayAssetDelivery"    );
       if(android_license_key  .is())nodes.New().set("AndroidLicenseKey"    , android_license_key);
 
       {
@@ -3661,7 +3661,7 @@ class ElmApp : ElmData
       nodes.New().set("StorageTime"              , storage_time.text());
       nodes.New().set("SupportedOrientationsTime", supported_orientations_time.text());
       nodes.New().set("LocationUsageReasonTime"  , location_usage_reason_time.text());
-      nodes.New().set("AndroidExpansionTime"     , android_expansion_time.text());
+      nodes.New().set("PlayAssetDeliveryTime"    , play_asset_delivery_time.text());
       nodes.New().set("AndroidLicenseKeyTime"    , android_license_key_time.text());
 
       nodes.New().set("FacebookAppIDTime", fb_app_id_time.text());
@@ -3711,7 +3711,7 @@ class ElmApp : ElmData
          if(n.name=="Storage"                     ){REPA(StorageModes)if(n.value==StorageModes[i].name){storage=StorageModes[i].mode; break;}}else
          if(n.name=="SupportedOrientations"       )supported_orientations=n.asInt();else
          if(n.name=="LocationUsageReason"         )n.getValue(location_usage_reason);else
-         if(n.name=="AndroidExpansion"            )androidExpansion(n.asBool1());else
+         if(n.name=="PlayAssetDelivery"           )playAssetDelivery(n.asBool1());else
          if(n.name=="AndroidLicenseKey"           )n.getValue(android_license_key);else
 
          if(n.name=="Microsoft")
@@ -3819,7 +3819,7 @@ class ElmApp : ElmData
          if(n.name=="StorageTime"              )storage_time=n.asText();else
          if(n.name=="SupportedOrientationsTime")supported_orientations_time=n.asText();else
          if(n.name=="LocationUsageReasonTime"  )location_usage_reason_time=n.asText();else
-         if(n.name=="AndroidExpansionTime"     )android_expansion_time=n.asText();else
+         if(n.name=="PlayAssetDeliveryTime"    )play_asset_delivery_time=n.asText();else
          if(n.name=="AndroidLicenseKeyTime"    )android_license_key_time=n.asText();else
 
          if(n.name=="FacebookAppIDTime")fb_app_id_time=n.asText();

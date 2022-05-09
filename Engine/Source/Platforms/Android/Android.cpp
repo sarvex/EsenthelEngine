@@ -43,6 +43,11 @@
 /******************************************************************************/
 #include "stdafx.h"
 #if ANDROID
+
+#include "../../../../ThirdPartyLibs/begin.h"
+#include "../../../../ThirdPartyLibs/play-core-native-sdk/include/asset_pack.h"
+#include "../../../../ThirdPartyLibs/end.h"
+
 ASSERT(SIZE(Long)>=SIZE(Ptr)); // some pointers are processed using Long's on Java
 namespace EE{
 /******************************************************************************/

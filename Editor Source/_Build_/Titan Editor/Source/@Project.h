@@ -1,5 +1,4 @@
 ﻿/******************************************************************************/
-// Project Data
 /******************************************************************************/
 class Project
 {
@@ -150,10 +149,6 @@ class Project
    RectI getWorldAreas(C UID &world_id, bool water=true);
    int worldAreasToRebuild(C UID *world_id=null);
 
-   bool materialSimplify(Edit::EXE_TYPE type)C;
-   TEX_SIZE_PLATFORM texSize(Edit::EXE_TYPE type)C;
-   PROJ_CMPR_PLATFORM compression(Edit::EXE_TYPE type)C;
-
    bool isBasedOnObjs(C Elm &elm, C Memt<UID> &objs)C; // check if 'elm' is based on 'objs' (assumes that 'objs' is sorted)
    void getExtendedObjs(C Memt<UID> &objs, Memt<UID> &exts)C; // get list of all objects that are based on 'objs' (assumes that 'objs' is sorted)
 
@@ -175,6 +170,8 @@ class Project
    bool invalidTex(C UID &tex_id                     )C; // is specified and is not present
    bool invalidRef(C UID &elm_id, bool optional=false)C; // is specified and is not present
    bool invalidRefs(Elm &elm); // check if this element has invalid references
+
+   bool materialSimplify(Edit::EXE_TYPE type)C;
 
    // operations
    Elm& getFolder(C Str &name, C UID &parent_id, bool &added, bool ignore_removed=true);

@@ -278,19 +278,22 @@ enum DATA_STATE
    DATA_CREATE, // need to be fully recreated
    DATA_UPDATE, // just update
 }
-bool PublishDataNeedOptimized() {return false /*PublishBuildMode==Edit.BUILD_PUBLISH*/;} // never optimize automatically, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
 bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit.EXE_APK || exe==Edit.EXE_IOS || exe==Edit.EXE_NS;}
-DATA_STATE PublishDataState() // state of project data
+bool PublishDataNeedOptimized()
 {
-   if(!PublishProjectDataPath.is())return DATA_READY; // if we don't want to create project data pak (no file)
-   if(CompareFile(FileInfoSystem(PublishProjectDataPath).modify_time_utc, CodeEdit.appEmbedSettingsTime(PublishExeType))>0) // if existing Pak time is newer than settings (compression/encryption)
+   return (PublishExeType==Edit.EXE_APK || PublishExeType==Edit.EXE_IOS) && PublishBuildMode==Edit.BUILD_PUBLISH; // optimize only for Android/iOS Publishing, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
+}
+DATA_STATE PublishDataState(MemPtr<PakFileData> files, C Str &pak_name) // state of project data
+{
+   if(!pak_name.is())return DATA_READY; // if we don't want to create project data pak (no file)
+   if(CompareFile(FileInfoSystem(pak_name).modify_time_utc, CodeEdit.appEmbedSettingsTime(PublishExeType))>0) // if existing Pak time is newer than settings (compression/encryption)
    {
       bool need_optimized=PublishDataNeedOptimized(); // test if optimized 
       Memt<DataRangeAbs> used_file_ranges;
-      Pak pak; if(pak.loadEx(PublishProjectDataPath, Publish.cipher(), 0, null, null, need_optimized ? &used_file_ranges : null)==PAK_LOAD_OK)
+      Pak pak; if(pak.loadEx(pak_name, Publish.cipher(), 0, null, null, need_optimized ? &used_file_ranges : null)==PAK_LOAD_OK)
       {
          if(need_optimized && used_file_ranges.elms()!=1)return DATA_CREATE; // needs to be optimized, so fully recreate
-         return PakEqual(PublishFiles, pak) ? DATA_READY : DATA_UPDATE;
+         return PakEqual(files, pak) ? DATA_READY : DATA_UPDATE;
       }
    }
    return DATA_CREATE;
@@ -336,6 +339,7 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
 {
    PublishRes.del();
 
+   CodeEdit.android_asset_packs=-1;
    PublishExePath       =exe_name;
    PublishExeType       =exe_type;
    PublishBuildMode     =build_mode;
@@ -522,7 +526,7 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
       SetPublishFiles(PublishFiles, PublishGenerate, PublishConvert, PublishFileData); // detect files for packing
       if(!PublishGenerate.elms() && !PublishConvert.elms()) // if there are no elements to generate and convert
          if(PublishDataAsPak) // if we're creating a pak
-            if(PublishDataState()==DATA_READY) // if data already available
+            if(PublishDataState(PublishFiles, PublishProjectDataPath)==DATA_READY) // if data already available
                {PublishSuccess(); return true;} // exit already
    }
 
@@ -548,6 +552,16 @@ void ImageConvertProcess(ImageConvert &convert, ptr user, int thread_index)
       {SyncLocker locker(PublishLock); Publish.progress.progress+=1.0/PublishConvert.elms();}
    }
 }
+bool SetPak(MemPtr<PakFileData> files, C Str &pak_name)
+{
+   DATA_STATE             state=PublishDataState(files, pak_name); if(state==DATA_READY)return true;
+   PROJ_CMPR_PLATFORM       pcp=ProjCompres(PublishExeType);
+   COMPRESS_TYPE compress      =PublishProjectPackage ? ProjectPackageCompression      : Proj.compress_type [pcp];
+   int           compress_level=PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level[pcp];
+   if(state==DATA_UPDATE && PakReplaceInPlace(files, pak_name, PAK_SET_HASH, Publish.cipher(), compress, compress_level, &PublishErrorMessage, &Publish.progress))return true;
+                     return PakCreate        (files, pak_name, PAK_SET_HASH, Publish.cipher(), compress, compress_level, &PublishErrorMessage, &Publish.progress);
+}
+/******************************************************************************/
 bool PublishFunc(Thread &thread)
 {
    // generate
@@ -560,14 +574,34 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
    if(PublishDataAsPak)
    {
-      PROJ_CMPR_PLATFORM pcp=Proj.compression(PublishExeType);
-      switch(PublishDataState())
+      if(PublishExeType==Edit.EXE_APK && PublishBuildMode==Edit.BUILD_PUBLISH && CodeEdit.appGooglePlayAssetDelivery())
       {
-         case DATA_READY : PublishOk=true; break;
-         case DATA_UPDATE: PublishOk=PakReplaceInPlace(PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type[pcp], PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level[pcp], &PublishErrorMessage, &Publish.progress); if(PublishOk)break;
-         // !! here no break !! fully recreate if 'PakReplaceInPlace' failed
-         default         : PublishOk=PakCreate        (PublishFiles, PublishProjectDataPath, PAK_SET_HASH, Publish.cipher(), PublishProjectPackage ? ProjectPackageCompression : Proj.compress_type[pcp], PublishProjectPackage ? ProjectPackageCompressionLevel : Proj.compress_level[pcp], &PublishErrorMessage, &Publish.progress); break;
-      }
+         FDelFile(PublishProjectDataPath); // delete main project data so it won't be included in the APK
+         Str android_path=CodeEdit.androidPath(); if(!android_path.is()){PublishErrorMessage="Invalid 'androidPath'"; return false;} android_path.tailSlash(true);
+         const int           max_size=500<<20; // 500 MB (there's 512 MB limit for each PAK, so keep a little smaller because of PAK header) - https://developer.android.com/guide/playcore/asset-delivery
+               long        split_size=0;
+         Memt<PakFileData> split;
+         CodeEdit.android_asset_packs=0;
+         for(int i=0; ; i++)
+         {
+          C PakFileData *pfd=PublishFiles.addr(i);
+            long pfd_size=(pfd ? pfd.data.size() : 0);
+            if(  pfd_size>=max_size){PublishErrorMessage=S+"File too big:\n"+pfd.name; return false;} // a single file cannot be bigger than asset pack
+            if(!pfd || split_size+pfd_size>max_size) // if reached the end, or adding this file would break the limit
+            {
+               if(split.elms()) // have any data
+               {
+                  Str pack_name=S+"Data"+CodeEdit.android_asset_packs;
+                  Str pack_path=android_path+pack_name+"/src/main/assets/";
+                  FCreateDirs(pack_path);
+                  if(!SetPak(split, pack_path+pack_name+".pak"))return false;
+                  split.clear(); split_size=0; CodeEdit.android_asset_packs++;
+               }
+               if(!pfd){PublishOk=true; break;} // finished
+            }
+            split.add(*pfd); split_size+=pfd_size;
+         }
+      }else PublishOk=SetPak(PublishFiles, PublishProjectDataPath);
    }else
    {
       Memc<Str> dest_paths;
@@ -644,7 +678,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
             web=(exe_type==Edit.EXE_WEB),
              ns=(exe_type==Edit.EXE_NS ),
            mtrl_simplify=Proj.materialSimplify(exe_type);
-   TEX_SIZE_PLATFORM tsp=Proj.texSize         (exe_type);
+   TEX_SIZE_PLATFORM tsp=ProjTexSize          (exe_type);
 
    // elements
    FREPA(elms)if(Elm *elm=elms[i])if(ElmPublish(elm.type))

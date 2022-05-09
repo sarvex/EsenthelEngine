@@ -4,6 +4,33 @@
 
 uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
 /******************************************************************************/
+TEX_SIZE_PLATFORM ProjTexSize(Edit::EXE_TYPE type)
+{
+   switch(type)
+   {
+      case Edit::EXE_NS: return TSP_SWITCH;
+
+      case Edit::EXE_APK:
+      case Edit::EXE_IOS:
+      case Edit::EXE_WEB:
+         return TSP_MOBILE;
+
+      default: return TSP_NUM;
+   }
+}
+PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
+{
+   switch(type)
+   {
+      case Edit::EXE_APK:
+      case Edit::EXE_IOS:
+      case Edit::EXE_WEB:
+         return PCP_MOBILE;
+
+      default: return PCP_DEFAULT;
+   }
+}
+/******************************************************************************/
 
 /******************************************************************************/
    Project::Project() : text_data(false), synchronize(true), cipher(CIPHER_NONE), material_simplify(MS_NEVER), id(UIDZero), app_id(UIDZero), hm_mtrl_id(UIDZero), water_mtrl_id(UIDZero)
@@ -310,41 +337,6 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
       if(WorldVer *world_ver=worldVerFind(*world_id)) n+=world_ver->rebuild.elms(); // check only specified world
       return n;
    }
-   bool Project::materialSimplify(Edit::EXE_TYPE type)C
-   {
-      switch(material_simplify)
-      {
-         default       : return false; // MS_NEVER
-         case MS_MOBILE: return type==Edit::EXE_APK || type==Edit::EXE_IOS || type==Edit::EXE_NS;
-         case MS_ALWAYS: return true;
-      }
-   }
-   TEX_SIZE_PLATFORM Project::texSize(Edit::EXE_TYPE type)C
-   {
-      switch(type)
-      {
-         case Edit::EXE_NS: return TSP_SWITCH;
-
-         case Edit::EXE_APK:
-         case Edit::EXE_IOS:
-         case Edit::EXE_WEB:
-            return TSP_MOBILE;
-
-         default: return TSP_NUM;
-      }
-   }
-   PROJ_CMPR_PLATFORM Project::compression(Edit::EXE_TYPE type)C
-   {
-      switch(type)
-      {
-         case Edit::EXE_APK:
-         case Edit::EXE_IOS:
-         case Edit::EXE_WEB:
-            return PCP_MOBILE;
-
-         default: return PCP_DEFAULT;
-      }
-   }
    bool Project::isBasedOnObjs(C Elm &elm, C Memt<UID> &objs)C // check if 'elm' is based on 'objs' (assumes that 'objs' is sorted)
    {
       Memt<UID> processed;
@@ -565,6 +557,15 @@ uint CC4_PRDT=CC4('P', 'R', 'D', 'T'); // Project Data
          }break;
       }
       return false;
+   }
+   bool Project::materialSimplify(Edit::EXE_TYPE type)C
+   {
+      switch(material_simplify)
+      {
+         default       : return false; // MS_NEVER
+         case MS_MOBILE: return type==Edit::EXE_APK || type==Edit::EXE_IOS || type==Edit::EXE_NS;
+         case MS_ALWAYS: return true;
+      }
    }
    Elm& Project::getFolder(C Str &name, C UID &parent_id, bool &added, bool ignore_removed)
    {

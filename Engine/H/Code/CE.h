@@ -52,6 +52,8 @@ enum XBOX_LIVE : Byte // https://docs.microsoft.com/en-us/gaming/xbox-live/get-s
 };
 struct CodeEditorInterface
 {
+   Int android_asset_packs=-1; // -1=not using asset packs
+
    void del        ();
    void clear      ();
    void create     (GuiObj &parent, Bool menu_on_top);
@@ -62,6 +64,7 @@ struct CodeEditorInterface
    Bool initialized();
    Str  title      ();
    Str  appPath    (C Str &app_name);
+   Str   androidPath();
    Str   androidProjectPakPath();
    Str       iOSProjectPakPath();
    Str       UWPProjectPakPath();
@@ -182,6 +185,7 @@ struct CodeEditorInterface
    virtual UID           appXboxLiveSCID                    () {return            UIDZero;} // get Xbox Live SCID                      of current app
    virtual Bool          appWindowsCodeSign                 () {return              false;} // get if code sign exe                    of current app
    virtual Str           appGooglePlayLicenseKey            () {return                  S;} // get Google Play license key             of current app
+   virtual Bool          appGooglePlayAssetDelivery         () {return              false;} // get Google Play Asset Delivery          of current app
    virtual Str           appLocationUsageReason             () {return                  S;} // get location usage reason               of current app
    virtual Str           appNintendoInitialCode             () {return                  S;} // get Nintendo Initial Code               of current app
    virtual ULong         appNintendoAppID                   () {return                  0;} // get Nintendo App ID                     of current app

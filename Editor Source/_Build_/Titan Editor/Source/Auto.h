@@ -6,6 +6,7 @@ extern cchar *C   PROJECT_DATA_PATH;
 extern cchar *C   PROJECT_NAME     ;
 extern cchar *C   APP_NAME         ;
 extern const UID  APP_GUI_SKIN     ;
+extern const bool GOOGLE_PLAY_ASSET_DELIVERY;
 extern Cipher *C  PROJECT_CIPHER   ;
 /******************************************************************************/
 void INIT(bool load_engine_data=true, bool load_project_data=true);

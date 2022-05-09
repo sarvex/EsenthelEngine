@@ -2318,6 +2318,7 @@ static Str UnixEncode(C Str &s)
 /******************************************************************************/
 Bool CodeEditor::generateAndroidProj()
 {
+   Int asset_packs=cei().android_asset_packs;
    Str bin_path=BinPath(false),
        src_path="Code/Android/", // this is inside "Editor.pak"
       dest_path=build_path+"Android/";
@@ -2342,6 +2343,27 @@ Bool CodeEditor::generateAndroidProj()
          if(!CreateEngineEmbedPak(src, dest, false))return false;
       }else
          if(!CopyFile(src, dest))return false;
+   }
+
+   // asset packs
+   Str app_build_gradle_asset_packs;
+   FREP(asset_packs)
+   {
+      Str name=S+"Data"+i;
+      FileText f; f.writeMem(UTF_8_NAKED);
+      f.putLine("apply plugin: 'com.android.asset-pack'");
+      f.putLine("assetPack {");
+      f.depth++;
+      f.putLine(S+"packName = '"+name+'\'');
+      f.putLine("dynamicDelivery {");
+      f.depth++;
+      f.putLine("deliveryType = 'fast-follow'");
+      f.depth--;
+      f.putLine("}");
+      f.depth--;
+      f.putLine("}");
+      if(!OverwriteOnChangeLoud(f, dest_path+name+"/build.gradle"))return false;
+      if(app_build_gradle_asset_packs.is())app_build_gradle_asset_packs+=", "; app_build_gradle_asset_packs+=S+"\":"+name+'"';
    }
 
    Str res=dest_path+"app/src/main/res/";
@@ -2489,9 +2511,18 @@ Bool CodeEditor::generateAndroidProj()
       dest_libs=Str(projects_build_path).tailSlash(true)+"_Android_\\"; FCreateDir(dest_libs); // path where to store Android libs "_Build_\_Android_\"
    Memc<Str> modules;
    if(cei().appGooglePlayLicenseKey().is())modules.add("play-licensing");
-   FREPA(modules) // process in order
+
+   Memc<Str> deps; // dependencies
+   Memc<Str> extract=modules;
+   if(asset_packs>=0)
    {
-    C Str &lib=modules[i];
+      extract.add("play-core-native-sdk");
+      deps.add(S+"implementation files('"+UnixPath(GetRelativePath(dest_path+"app", dest_libs+"play-core-native-sdk/playcore.aar"))+"')");
+      deps.add(  "implementation('com.google.android.play:integrity:1.0.0')"); // needed by "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native
+   }
+   FREPA(extract) // process in order
+   {
+    C Str &lib=extract[i];
       Str src_path=src_libs+lib, dest_path=dest_libs+lib;
       if(C PaksFile *pf=Paks.find(src_path)){if(!FCopy(*pf->pak, *pf->file, dest_path, FILE_OVERWRITE_DIFFERENT))return ErrorWrite(dest_path);}else return ErrorRead(src_path);
    }
@@ -2534,19 +2565,22 @@ Bool CodeEditor::generateAndroidProj()
    {
       FileText ft; if(!ft.read(src_path+"app/build.gradle"))return ErrorRead("build.gradle");
       Str data=ft.getAll();
-      data=Replace(data, "com.esenthel.project", app_package);
+      data=Replace(data, "com.esenthel.project", app_package, true, WHOLE_WORD_STRICT);
 
       if(!android_cert_file.is() || !FExistSystem(android_cert_file)){options.activateCert(); return Error("Android Certificate File was not specified or was not found.");}
       if( android_cert_pass.length()<6                              ){options.activateCert(); return Error("Android Certificate Password must be at least 6 characters long.");}
-      data=Replace(data, "CERTIFICATE_PATH", UnixPath(android_cert_file));
-      data=Replace(data, "CERTIFICATE_PASS",          android_cert_pass );
+      data=Replace(data, "CERTIFICATE_PATH", UnixPath(android_cert_file), true, WHOLE_WORD_STRICT);
+      data=Replace(data, "CERTIFICATE_PASS",          android_cert_pass , true, WHOLE_WORD_STRICT);
 
-      if(modules.elms())
+      if(modules.elms() || deps.elms())
       {
          Str src="dependencies {", dest=src;
          FREPA(modules)dest+=S+"\n\timplementation project(':"+modules[i]+"')";
-         data=Replace(data, src, dest);
+         FREPA(deps   )dest+=S+"\n\t"+deps[i];
+         data=Replace(data, src, dest, true, WHOLE_WORD_STRICT);
       }
+
+      data=Replace(data, "ASSET_PACKS", app_build_gradle_asset_packs, true, WHOLE_WORD_STRICT);
 
       SetFile(ft, data, UTF_8_NAKED);
       if(!OverwriteOnChangeLoud(ft, dest_path+"app/build.gradle"))return false;
@@ -2555,6 +2589,7 @@ Bool CodeEditor::generateAndroidProj()
    {
       FileText f; f.writeMem(UTF_8_NAKED);
       f.putLine("include ':app'");
+      FREP(asset_packs)f.putLine(S+"include ':Data"+i+'\'');
       if(modules.elms())
       {
          Str rel_path=UnixPath(GetRelativePath(dest_path, dest_libs));

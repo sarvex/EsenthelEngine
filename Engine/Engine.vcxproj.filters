@@ -325,6 +325,9 @@
     <Filter Include="H\_\Bullet\Android">
       <UniqueIdentifier>{125fec80-4d59-4041-8c66-9e0b4246f15e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="H\_\Libs\Android\play-core-native-sdk">
+      <UniqueIdentifier>{dca49df0-6320-4723-9a08-eb1632be05e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="H\Engine.h">
@@ -8746,6 +8749,78 @@
     </Object>
     <Object Include="..\ThirdPartyLibs\Bullet\Android\obj\local\arm64-v8a\objs\Bullet\src\BulletCollision\CollisionDispatch\SphereTriangleDetector.o">
       <Filter>H\_\Bullet\Android</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\app_update_options_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\appupdate.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\asset_pack.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\asset_pack_manager.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\assetpacks.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\collection_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\common.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\gms_task_manager_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\gms_tasks.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\install.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\integrity.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\integrity_manager.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\integrity_request_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\integrity_response_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\jni_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\location_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\review.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\review_manager.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\state_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\task_manager_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\tasks.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\app_update.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\app_update_info_helper_impl.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
+    </Object>
+    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\app_update_manager.cc.o">
+      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
     </Object>
   </ItemGroup>
 </Project>
