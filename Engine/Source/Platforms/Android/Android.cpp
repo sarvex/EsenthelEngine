@@ -1127,6 +1127,128 @@ static void InitKeyMap()
    }
 }
 /******************************************************************************/
+// PLAY ASSET DELIVERY
+/******************************************************************************/
+struct PlayAssetDelivery
+{
+   Bool create(Int asset_packs, Cipher *project_cipher);
+   void del   ();
+
+   Bool update();
+
+   ULong completed()C {return _completed;}
+   ULong total    ()C {return _total    ;}
+
+#if !EE_PRIVATE
+private:
+#endif
+   Int     asset_packs;
+   ULong  _completed, _total;
+   Cipher *cipher;
+#if EE_PRIVATE
+   void zero() {_completed=_total=0; asset_packs=0; cipher=null;}
+#endif
+   PlayAssetDelivery();
+};
+PlayAssetDelivery PAD;
+/******************************************************************************/
+static void Error(AssetPackErrorCode error)
+{
+   CChar8 *msg; 
+   switch(error)
+   {
+      case ASSET_PACK_APP_UNAVAILABLE      : msg="App Info unavailable"; break;
+      case ASSET_PACK_UNAVAILABLE          : msg="Asset pack unavailable"; break;
+      case ASSET_PACK_INVALID_REQUEST      : msg="Invalid request"; break;
+      case ASSET_PACK_DOWNLOAD_NOT_FOUND   : msg="Download not found"; break;
+      case ASSET_PACK_API_NOT_AVAILABLE    : msg="API unavailable"; break;
+      case ASSET_PACK_NETWORK_ERROR        : msg="Network error"; break;
+      case ASSET_PACK_ACCESS_DENIED        : msg="Access denied"; break;
+      case ASSET_PACK_INSUFFICIENT_STORAGE : msg="Insufficient storage"; break;
+      case ASSET_PACK_PLAY_STORE_NOT_FOUND : msg="Google Play Store app not found"; break;
+      case ASSET_PACK_NETWORK_UNRESTRICTED : msg="NETWORK_UNRESTRICTED"; break;
+      case ASSET_PACK_APP_NOT_OWNED        : msg="App isn't owned"; break;
+      case ASSET_PACK_INTERNAL_ERROR       : msg="Internal Error"; break;
+      case ASSET_PACK_INITIALIZATION_NEEDED: msg="Initialization needed"; break;
+      case ASSET_PACK_INITIALIZATION_FAILED: msg="Initialization failed"; break;
+      default                              : msg="Unknown error"; break;
+   }
+   Exit(S+"Google Play Asset Delivery failed:\n"+msg);
+}
+struct AssetPack
+{
+   AssetPackDownloadState *state=null;
+  ~AssetPack() {AssetPackDownloadState_destroy(state);}
+};
+static CChar8* AssetPackName(Char8 (&name)[16], Int i)
+{
+   Char8 temp[256]; Set(name, "Data"); Append(name, TextInt(i, temp));
+   return name;
+}
+PlayAssetDelivery::PlayAssetDelivery() {zero();}
+Bool PlayAssetDelivery::create(Int asset_packs, Cipher *project_cipher)
+{
+   del();
+
+   const int MAX_ASSET_PACKS=16;
+   if(asset_packs==0)return true;
+   if(asset_packs<0 || asset_packs>MAX_ASSET_PACKS)Exit("invalid 'asset_packs'");
+   T.asset_packs=asset_packs;
+   T.cipher=project_cipher;
+
+   auto error=AssetPackManager_init(AndroidApp->activity->vm, AndroidApp->activity->clazz); if(error!=ASSET_PACK_NO_ERROR)Error(error);
+    Char8  names   [MAX_ASSET_PACKS][16];
+   CChar8 *name_ptr[MAX_ASSET_PACKS];
+   FREP(asset_packs)name_ptr[i]=AssetPackName(names[i], i);
+   error=AssetPackManager_requestInfo(name_ptr, asset_packs); if(error!=ASSET_PACK_NO_ERROR)Error(error);
+
+   return update();
+}
+void PlayAssetDelivery::del()
+{
+   AssetPackManager_destroy();
+   zero();
+}
+Bool PlayAssetDelivery::update()
+{
+  _completed=_total=0;
+   Int finished=0;
+   FREP(asset_packs)
+   {
+      Char8 name[16]; AssetPackName(name, i);
+      AssetPack asset_pack; auto error=AssetPackManager_getDownloadState(name, &asset_pack.state); if(error!=ASSET_PACK_NO_ERROR || !asset_pack.state)Error(error);
+      AssetPackDownloadStatus status=AssetPackDownloadState_getStatus(asset_pack.state);
+   #if DEBUG && 0
+      LogN(S+"state"+i+"   "+status);
+   #endif
+      switch(status)
+      {
+         case ASSET_PACK_NOT_INSTALLED: {CChar8 *name_ptr[]={name}; error=AssetPackManager_requestDownload(name_ptr, 1); if(error!=ASSET_PACK_NO_ERROR)Error(error);} break;
+         case ASSET_PACK_WAITING_FOR_WIFI: error=AssetPackManager_showCellularDataConfirmation(AndroidApp->activity->clazz); if(error!=ASSET_PACK_NO_ERROR)Error(error); break;
+         case ASSET_PACK_DOWNLOAD_COMPLETED: finished++; break;
+      }
+     _completed+=AssetPackDownloadState_getBytesDownloaded     (asset_pack.state);
+     _total    +=AssetPackDownloadState_getTotalBytesToDownload(asset_pack.state);
+   }
+   if(finished==asset_packs)
+   {
+      FREP(asset_packs) // process in order
+      {
+         Char8 name[16]; AssetPackName(name, i);
+         AssetPackLocation *location=null; auto error=AssetPackManager_getAssetPackLocation(name, &location); if(error!=ASSET_PACK_NO_ERROR || !location)Error(error);
+      #if DEBUG && 0
+         AssetPackStorageMethod storage_method=AssetPackLocation_getStorageMethod(location); LogN(S+"storage:"+storage_method);
+      #endif
+         auto path=AssetPackLocation_getAssetsPath(location); if(!Is(path))Exit("Empty Asset Pack Path");
+         Paks.add(Str(path).tailSlash(true)+"Data.pak", cipher, false);
+         AssetPackLocation_destroy(location); // !! after this can't use 'path' anymore !!
+      }
+      Paks.rebuild();
+      del(); return true;
+   }
+   return false;
+}
+/******************************************************************************/
 } // namespace EE
 /******************************************************************************/
 extern "C"
