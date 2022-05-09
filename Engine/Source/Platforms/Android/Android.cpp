@@ -1128,6 +1128,15 @@ static void InitKeyMap()
 }
 /******************************************************************************/
 // PLAY ASSET DELIVERY
+/******************************************************************************
+commands for testing PAD locally without uploading to Play Store
+Run powershell in "Project/Android" path
+Copy all commands below and paste (Ctrl+V) to powershell, press Enter:
+
+./gradlew bundleRelease
+del app/build/output.apks
+java -jar C:/bundletool-all.jar build-apks --bundle=app/build/outputs/bundle/release/app-release.aab --output=app/build/output.apks --local-testing
+java -jar C:/bundletool-all.jar install-apks --apks=app/build/output.apks --adb=C:/Progs/AndroidSDK/platform-tools/adb.exe
 /******************************************************************************/
 struct PlayAssetDelivery
 {
