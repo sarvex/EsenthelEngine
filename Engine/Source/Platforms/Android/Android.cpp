@@ -1204,8 +1204,8 @@ Bool PlayAssetDelivery::create(Int asset_packs, Cipher *project_cipher)
    del();
 
    const int MAX_ASSET_PACKS=16;
-   if(asset_packs==0)return true;
-   if(asset_packs<0 || asset_packs>MAX_ASSET_PACKS)Exit("invalid 'asset_packs'");
+   if(asset_packs<=0)return true;
+   DYNAMIC_ASSERT(asset_packs<=MAX_ASSET_PACKS, "asset_packs>MAX_ASSET_PACKS");
    T.asset_packs=asset_packs;
    T.cipher=project_cipher;
 
