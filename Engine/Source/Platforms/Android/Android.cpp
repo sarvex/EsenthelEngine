@@ -650,8 +650,8 @@ static void CmdCallback(android_app *app, int32_t cmd)
       case APP_CMD_LOST_FOCUS  : LOG("APP_CMD_LOST_FOCUS"  ); FlagSet(AndroidState, AS_FOCUSED, false); SetActive(); break;
       case APP_CMD_START       : LOG("APP_CMD_START"       ); FlagSet(AndroidState, AS_STOPPED, false); SetActive(); break;
       case APP_CMD_STOP        : LOG("APP_CMD_STOP"        ); FlagSet(AndroidState, AS_STOPPED, true ); SetActive(); break;
-      case APP_CMD_PAUSE       : LOG("APP_CMD_PAUSE"       ); FlagSet(AndroidState, AS_PAUSED , true ); SetActive(); break;
-      case APP_CMD_RESUME      : LOG("APP_CMD_RESUME"      ); FlagSet(AndroidState, AS_PAUSED , false); SetActive(); break;
+      case APP_CMD_PAUSE       : LOG("APP_CMD_PAUSE"       ); FlagSet(AndroidState, AS_PAUSED , true ); SetActive(); AssetPackManager_onPause (); break;
+      case APP_CMD_RESUME      : LOG("APP_CMD_RESUME"      ); FlagSet(AndroidState, AS_PAUSED , false); SetActive(); AssetPackManager_onResume(); break;
 
       case APP_CMD_DESTROY             : LOG("APP_CMD_DESTROY"             ); break;
       case APP_CMD_SAVE_STATE          : LOG("APP_CMD_SAVE_STATE"          ); if(App.save_state)App.save_state(); break;
