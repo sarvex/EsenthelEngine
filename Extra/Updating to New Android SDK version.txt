@@ -7,6 +7,7 @@ Min SDK required to run the app on Android:
 Update "Editor Data\Code\Android\app\src\mainAndroidManifest.xml"
 <uses-sdk android:minSdkVersion=""
 
+Update "Engine\Engine.vcxproj"
 Update "Project\Project.vcxproj"
 Update "Editor Data\Code\Windows\Project.vcxproj"
 VS project properties \ General \ Minimum Android SDK Version
