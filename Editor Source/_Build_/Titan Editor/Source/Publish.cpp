@@ -102,6 +102,8 @@ bool StartPublish(C Str &exe_name, Edit::EXE_TYPE exe_type, Edit::BUILD_MODE bui
 {
    PublishRes.del();
 
+   if(exe_type==Edit::EXE_AAB && (build_mode==Edit::BUILD_PLAY || build_mode==Edit::BUILD_DEBUG))exe_type=Edit::EXE_APK; // cannot play AAB, only APK
+
    CodeEdit.android_asset_packs=-1;
    PublishExePath       =exe_name;
    PublishExeType       =exe_type;
@@ -337,7 +339,7 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
    if(PublishDataAsPak)
    {
-      if(PublishExeType==Edit::EXE_AAB && PublishBuildMode==Edit::BUILD_PUBLISH && CodeEdit.appGooglePlayAssetDelivery()) // asset packs are only for AAB (not APK)
+      if(PublishExeType==Edit::EXE_AAB && CodeEdit.appGooglePlayAssetDelivery()) // asset packs are only for AAB (not APK)
       {
          FDelFile(PublishProjectDataPath); // delete main project data so it won't be included in the APK
          Str android_path=CodeEdit.androidPath(); if(!android_path.is()){PublishErrorMessage="Invalid 'androidPath'"; return false;} android_path.tailSlash(true);
