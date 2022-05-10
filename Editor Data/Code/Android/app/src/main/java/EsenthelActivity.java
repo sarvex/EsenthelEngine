@@ -162,33 +162,6 @@ public class EsenthelActivity extends NativeActivity
    public static final int SYSTEM_BAR_OVERLAY=1;
    public static final int SYSTEM_BAR_VISIBLE=2;
 
-   // !! these must be equal to 'AdMobClass.BANNER_TYPE' !!
-   public static final int AD_BANNER          =0;
-   public static final int AD_MEDIUM_RECTANGLE=1;
-   public static final int AD_FULL_BANNER     =2;
-   public static final int AD_LEADERBOARD     =3;
-   public static final int AD_SMART_BANNER    =4;
-   public static final int AD_INTERSTITIAL    =5;
-
-   // !! these must be equal to 'AdMobClass.STATE' !!
-   public static final int AD_NONE   =0;
-   public static final int AD_LOADING=1;
-   public static final int AD_DONE   =2;
-   public static final int AD_ERROR  =3;
-
-   // !! these must be equal to 'ChartboostClass.RESULT' !!
-   public static final int INTERSTITIAL_LOADED   =0;
-   public static final int INTERSTITIAL_LOAD_FAIL=1;
-   public static final int INTERSTITIAL_DISPLAYED=2;
-   public static final int INTERSTITIAL_CLOSED   =3;
-   public static final int INTERSTITIAL_CLICKED  =4;
-   public static final int REWARDED_VIDEO_LOADED   =5;
-   public static final int REWARDED_VIDEO_LOAD_FAIL=6;
-   public static final int REWARDED_VIDEO_DISPLAYED=7;
-   public static final int REWARDED_VIDEO_CLOSED   =8;
-   public static final int REWARDED_VIDEO_COMPLETED=9;
-   public static final int REWARDED_VIDEO_CLICKED  =10;
-
    // !! these must be equal to 'PlatformStore.RESULT' !!
    public static final int RES_OK                 =-1; // this is not a 'PlatformStore.RESULT' but a temp value
    public static final int RES_PURCHASED          =0;
@@ -218,30 +191,6 @@ public class EsenthelActivity extends NativeActivity
    public static final int POST_ERROR=0;
    public static final int POST_CANCEL=1;
    public static final int POST_SUCCESS=2;
-
-   // Item types
-   public static final String ITEM_TYPE_INAPP="inapp";
-   public static final String ITEM_TYPE_SUBS ="subs";
-
-   // some fields on the getSkuDetails response bundle
-   public static final String GET_SKU_DETAILS_ITEM_LIST="ITEM_ID_LIST";
-
-   // Keys for the responses from InAppBillingService
-   public static final String RESPONSE_CODE = "RESPONSE_CODE";
-   public static final String RESPONSE_GET_SKU_DETAILS_LIST = "DETAILS_LIST";
-   public static final String RESPONSE_BUY_INTENT = "BUY_INTENT";
-   public static final String RESPONSE_INAPP_PURCHASE_DATA = "INAPP_PURCHASE_DATA";
-   public static final String RESPONSE_INAPP_SIGNATURE = "INAPP_DATA_SIGNATURE";
-   public static final String RESPONSE_INAPP_ITEM_LIST = "INAPP_PURCHASE_ITEM_LIST";
-   public static final String RESPONSE_INAPP_PURCHASE_DATA_LIST = "INAPP_PURCHASE_DATA_LIST";
-   public static final String RESPONSE_INAPP_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE_LIST";
-   public static final String INAPP_CONTINUATION_TOKEN = "INAPP_CONTINUATION_TOKEN";
-
-   // signature verification
-   private static final String KEY_FACTORY_ALGORITHM="RSA";
-   private static final String   SIGNATURE_ALGORITHM="SHA1withRSA";
-
-   public static final int REQUEST_CODE_IAB=0;
 
    // variables
    static EsenthelActivity     activity;
@@ -1032,6 +981,20 @@ public class EsenthelActivity extends NativeActivity
    // ADMOB
    /******************************************************************************/
 /*ADMOB*\
+   // !! these must be equal to 'AdMobClass.BANNER_TYPE' !!
+   public static final int AD_BANNER          =0;
+   public static final int AD_MEDIUM_RECTANGLE=1;
+   public static final int AD_FULL_BANNER     =2;
+   public static final int AD_LEADERBOARD     =3;
+   public static final int AD_SMART_BANNER    =4;
+   public static final int AD_INTERSTITIAL    =5;
+
+   // !! these must be equal to 'AdMobClass.STATE' !!
+   public static final int AD_NONE   =0;
+   public static final int AD_LOADING=1;
+   public static final int AD_DONE   =2;
+   public static final int AD_ERROR  =3;
+
    static AdRequest      ad_request;
           AdView         ad_view;
    static boolean        ad_view_loaded=false, // if ad_view is loaded
@@ -1250,6 +1213,27 @@ public class EsenthelActivity extends NativeActivity
    // IAB - In App Billing
    /******************************************************************************
    import com.android.vending.billing.IInAppBillingService;
+
+   // Item types
+   public static final String ITEM_TYPE_INAPP="inapp";
+   public static final String ITEM_TYPE_SUBS ="subs";
+
+   // some fields on the getSkuDetails response bundle
+   public static final String GET_SKU_DETAILS_ITEM_LIST="ITEM_ID_LIST";
+
+   // Keys for the responses from InAppBillingService
+   public static final String RESPONSE_CODE = "RESPONSE_CODE";
+   public static final String RESPONSE_GET_SKU_DETAILS_LIST = "DETAILS_LIST";
+   public static final String RESPONSE_BUY_INTENT = "BUY_INTENT";
+   public static final String RESPONSE_INAPP_PURCHASE_DATA = "INAPP_PURCHASE_DATA";
+   public static final String RESPONSE_INAPP_SIGNATURE = "INAPP_DATA_SIGNATURE";
+   public static final String RESPONSE_INAPP_ITEM_LIST = "INAPP_PURCHASE_ITEM_LIST";
+   public static final String RESPONSE_INAPP_PURCHASE_DATA_LIST = "INAPP_PURCHASE_DATA_LIST";
+   public static final String RESPONSE_INAPP_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE_LIST";
+   public static final String INAPP_CONTINUATION_TOKEN = "INAPP_CONTINUATION_TOKEN";
+
+   public static final int REQUEST_CODE_IAB=0;
+
    // Billing response codes
    public static final int BILLING_RESPONSE_RESULT_OK = 0;
    public static final int BILLING_RESPONSE_RESULT_USER_CANCELED = 1;
@@ -1259,6 +1243,10 @@ public class EsenthelActivity extends NativeActivity
    public static final int BILLING_RESPONSE_RESULT_ERROR = 6;
    public static final int BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED = 7;
    public static final int BILLING_RESPONSE_RESULT_ITEM_NOT_OWNED = 8;
+
+   // signature verification
+   private static final String KEY_FACTORY_ALGORITHM="RSA";
+   private static final String   SIGNATURE_ALGORITHM="SHA1withRSA";
 
    static IInAppBillingService iab_service;
    static ServiceConnection    iab_service_conn;
@@ -1613,6 +1601,19 @@ public class EsenthelActivity extends NativeActivity
    // CHARTBOOST
    /******************************************************************************/
 /*CHARTBOOST*\
+   // !! these must be equal to 'ChartboostClass.RESULT' !!
+   public static final int INTERSTITIAL_LOADED   =0;
+   public static final int INTERSTITIAL_LOAD_FAIL=1;
+   public static final int INTERSTITIAL_DISPLAYED=2;
+   public static final int INTERSTITIAL_CLOSED   =3;
+   public static final int INTERSTITIAL_CLICKED  =4;
+   public static final int REWARDED_VIDEO_LOADED   =5;
+   public static final int REWARDED_VIDEO_LOAD_FAIL=6;
+   public static final int REWARDED_VIDEO_DISPLAYED=7;
+   public static final int REWARDED_VIDEO_CLOSED   =8;
+   public static final int REWARDED_VIDEO_COMPLETED=9;
+   public static final int REWARDED_VIDEO_CLICKED  =10;
+
    public static final boolean chartboostVisible() {return Chartboost.isAnyViewVisible();}
 
    public static final void    chartboostInterstitialLoad     () {       Chartboost.cacheInterstitial(CBLocation.LOCATION_DEFAULT);}
