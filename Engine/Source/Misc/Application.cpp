@@ -806,14 +806,8 @@ void Application::showError(CChar *error)
          }else // can't display a message box if app is minimized, so display a toast instead
          {
             Str message=S+App.name()+" exited"; if(Is(error))message.line()+=error;
-            JNI jni;
-            if(jni && ActivityClass)
-            if(JMethodID toast=jni.staticFunc(ActivityClass, "toast", "(Ljava/lang/String;)V"))
-               if(JString text=JString(jni, message))
-            {
-               jni->CallStaticVoidMethod(ActivityClass, toast, text());
-               Time.wait(4000); // wait 4 seconds because toast will disappear as soon as we crash
-            }
+            OSToast(message);
+            Time.wait(4000); // wait 4 seconds because toast will disappear as soon as we crash
          }
       }
    #elif IOS
@@ -1115,6 +1109,9 @@ void LoadEmbeddedPaks(Cipher *cipher)
 #endif
    Paks.rebuild();
 }
+#if !ANDROID
+void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher) {}
+#endif
 /******************************************************************************/
 Bool Application::create0()
 {

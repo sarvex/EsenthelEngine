@@ -208,6 +208,7 @@ private:
 void StartEEManually(Ptr dll_module_instance); // this function imitates "WinMain" function, and should be called only in a DLL based application to start the engine manually
 
 void LoadEmbeddedPaks(Cipher *cipher); // load PAK files embedded in Application executable file, you can call this inside 'InitPre' function, 'cipher'=Cipher used for encrypting PAK files
+void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher); // load Project Data from Android Asset Packs
 
 void SupportCompressBC   (); // call this inside 'InitPre' function to add support for compressing IMAGE_BC6/7 formats                     , using this will however make your executable file bigger
 void SupportCompressETC  (); // call this inside 'InitPre' function to add support for compressing IMAGE_ETC   formats                     , using this will however make your executable file bigger

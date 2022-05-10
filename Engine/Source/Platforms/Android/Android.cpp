@@ -231,6 +231,17 @@ jobject JObjectArray::operator[](Int i)C {return _jni->GetObjectArrayElement(T, 
      JObjectArray::JObjectArray(JNI &jni, int elms) : JObject(jni, jni->NewObjectArray(elms, jni->FindClass("java/lang/String"), NULL)) {}
 void JObjectArray::set(Int i, CChar8 *t) {if(_ && _jni)_jni->SetObjectArrayElement(T, i, _jni->NewStringUTF(t));}
 /******************************************************************************/
+void Overlay(C Str &text)
+{
+#if ANDROID
+   JNI jni;
+   if(jni && ActivityClass)
+   if(JMethodID overlay=jni.staticFunc(ActivityClass, "overlay", "(Ljava/lang/String;)V"))
+      if(JString jtext=JString(jni, text))
+         jni->CallStaticVoidMethod(ActivityClass, overlay, jtext());
+#endif
+}
+/******************************************************************************/
 static Str JavaInputDeviceName(Int i)
 {
    if(Jni && InputDeviceGetDevice && InputDeviceGetName)
@@ -1127,6 +1138,77 @@ static void InitKeyMap()
    }
 }
 /******************************************************************************/
+static Bool Loop()
+{
+   VecI2 old_posi=Ms.desktopPos();
+
+   LOG2("ALooper_pollAll");
+
+   Bool wait_end_set=false; Int wait=(App.active() ? App.active_wait : 0); UInt wait_end; // don't wait for !active, because we already wait after the event loop, and that would make 2 waits
+
+   Int id, events; android_poll_source *source;
+wait:
+   while((id=ALooper_pollAll(wait, null, &events, (void**)&source))>=0) // process all events, using negative 'wait' for 'ALooper_pollAll' means unlimited wait
+   {
+      LOG2(S+"ALooper Source:"+Ptr(source)+", id:"+id);
+      if(source)source->process(AndroidApp, source); // process this event
+      LOG2(S+"ALooper processed");
+
+      if(id==LOOPER_ID_USER) // sensor data
+      {
+         ASensorEvent event;
+      #if DEBUG
+         if(!SensorEventQueue)LOG("Received sensor event but the 'SensorEventQueue' is null");
+      #endif
+         while(ASensorEventQueue_getEvents(SensorEventQueue, &event, 1)>0)switch(event.type)
+         {
+            case ASENSOR_TYPE_ACCELEROMETER : AccelerometerValue.set(-event.acceleration.x, -event.acceleration.y,  event.acceleration.z); break;
+            case ASENSOR_TYPE_GYROSCOPE     :     GyroscopeValue.set( event.vector      .x,  event.vector      .y, -event.vector      .z); break;
+            case ASENSOR_TYPE_MAGNETIC_FIELD:  MagnetometerValue.set( event.magnetic    .x,  event.magnetic    .y, -event.magnetic    .z); break;
+         }
+      }
+
+      wait=0; // don't wait for next events, in case app 'activate' status changed or it was requested to be closed or destroyed
+      // no need to check for 'App._close' or 'AndroidApp->destroyRequested' here, because we will do it below since we're setting wait=0 we don't risk with unlimited waits
+   }
+   if(App._close) // first check if we want to close manually
+   {
+      App.del(); // manually call shut down
+      ExitNow(); // do complete reset (including state of global variables) by killing the process
+   }
+   if(AndroidApp->destroyRequested)return false; // this is triggered by 'ANativeActivity_finish', just break out of the loop so app can get minimized
+   if(!App.active()) // we may need to wait
+      if(wait=((App.flag&APP_WORK_IN_BACKGROUND) ? App.background_wait : -1)) // how long
+   {
+      if(wait>0) // finite wait
+      {
+         if(wait_end_set) // if we already set the end time limit
+         {
+            wait=wait_end-Time.curTimeMs(); if(wait<=0)goto stop; // calculate remaining time
+         }else
+         {
+            wait_end=Time.curTimeMs()+wait;
+            wait_end_set=true;
+         }
+      }//else wait=-1; // use negative wait to force unlimited wait in 'ALooper_pollAll', no need for this, because 'wait' is already negative
+      goto wait;
+   }
+stop:
+
+   // process input
+   Ms._delta_pixeli_clp= Ms. desktopPos()-old_posi;
+   Ms._delta_rel.x     = Ms._delta_pixeli_clp.x;
+   Ms._delta_rel.y     =-Ms._delta_pixeli_clp.y;
+
+   LOG2(S+"AndroidApp->window:"+(AndroidApp->window!=null));
+#if DEBUG
+   if(!eglGetCurrentContext())LOG("No current EGL Context available on the main thread");
+#endif
+   UpdateSize();
+   App.update();
+   return true;
+}
+/******************************************************************************/
 // PLAY ASSET DELIVERY
 /******************************************************************************
 commands for testing PAD locally without uploading to Play Store - https://developer.android.com/guide/playcore/asset-delivery/test
@@ -1158,12 +1240,14 @@ private:
    Int     asset_packs;
    ULong  _completed, _total;
    Cipher *cipher;
+
 #if EE_PRIVATE
    void zero() {_completed=_total=0; asset_packs=0; cipher=null;}
 #endif
+
+  ~PlayAssetDelivery() {del();}
    PlayAssetDelivery();
 };
-PlayAssetDelivery PAD;
 /******************************************************************************/
 static void Error(AssetPackErrorCode error)
 {
@@ -1262,6 +1346,33 @@ Bool PlayAssetDelivery::update()
    return false;
 }
 /******************************************************************************/
+static Bool  LoadAndroidAssetPacksUpdate() {return true;}
+static void  LoadAndroidAssetPacksDraw  () {if(D.created())D.clearCol();}
+static State LoadAndroidAssetPacksState (LoadAndroidAssetPacksUpdate, LoadAndroidAssetPacksDraw);
+static Str   MB(ULong i) {return TextInt(i>>20, -1, 3);}
+void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
+{
+   PlayAssetDelivery pad; if(!pad.create(asset_packs, cipher))
+   {
+      Int active_wait=App.active_wait; App.active_wait=10;
+      State *active=StateActive, *next=StateNext; StateActive=StateNext=&LoadAndroidAssetPacksState;
+      Flt time=Time.curTime()+1; // show message only after some time to avoid blinking if startup is fast
+   again:
+      if(Time.curTime()>=time)
+      {
+         Str s="Downloading Asset Packs\n";
+         if(pad.total())s+=S+MB(pad.completed())+" / "+MB(pad.total())+" MB"; s+='\n';
+         if(pad.total())s+=S+pad.completed()*100/pad.total()+'%';
+         Overlay(s);
+      }
+      if(!Loop      ())Exit(); // destroy requested
+      if(!pad.update())goto again;
+      Overlay(S);
+      App.active_wait=active_wait;
+      StateActive=active; StateNext=next;
+   }
+}
+/******************************************************************************/
 } // namespace EE
 /******************************************************************************/
 extern "C"
@@ -1320,76 +1431,7 @@ void android_main(android_app *app)
    JavaLocation ();
    InitSensor   ();
    LOG("LoopStart");
-   for(;;)
-   {
-      VecI2 old_posi=Ms.desktopPos();
-
-      LOG2("ALooper_pollAll");
-
-      Bool wait_end_set=false; Int wait=(App.active() ? App.active_wait : 0); UInt wait_end; // don't wait for !active, because we already wait after the event loop, and that would make 2 waits
-
-      Int id, events; android_poll_source *source;
-   wait:
-      while((id=ALooper_pollAll(wait, null, &events, (void**)&source))>=0) // process all events, using negative 'wait' for 'ALooper_pollAll' means unlimited wait
-      {
-         LOG2(S+"ALooper Source:"+Ptr(source)+", id:"+id);
-         if(source)source->process(AndroidApp, source); // process this event
-         LOG2(S+"ALooper processed");
-
-         if(id==LOOPER_ID_USER) // sensor data
-         {
-            ASensorEvent event;
-         #if DEBUG
-            if(!SensorEventQueue)LOG("Received sensor event but the 'SensorEventQueue' is null");
-         #endif
-            while(ASensorEventQueue_getEvents(SensorEventQueue, &event, 1)>0)switch(event.type)
-            {
-               case ASENSOR_TYPE_ACCELEROMETER : AccelerometerValue.set(-event.acceleration.x, -event.acceleration.y,  event.acceleration.z); break;
-               case ASENSOR_TYPE_GYROSCOPE     :     GyroscopeValue.set( event.vector      .x,  event.vector      .y, -event.vector      .z); break;
-               case ASENSOR_TYPE_MAGNETIC_FIELD:  MagnetometerValue.set( event.magnetic    .x,  event.magnetic    .y, -event.magnetic    .z); break;
-            }
-         }
-
-         wait=0; // don't wait for next events, in case app 'activate' status changed or it was requested to be closed or destroyed
-         // no need to check for 'App._close' or 'AndroidApp->destroyRequested' here, because we will do it below since we're setting wait=0 we don't risk with unlimited waits
-      }
-      if(App._close) // first check if we want to close manually
-      {
-         App.del(); // manually call shut down
-         ExitNow(); // do complete reset (including state of global variables) by killing the process
-      }
-      if(AndroidApp->destroyRequested)break; // this is triggered by 'ANativeActivity_finish', just break out of the loop so app can get minimized
-      if(!App.active()) // we may need to wait
-         if(wait=((App.flag&APP_WORK_IN_BACKGROUND) ? App.background_wait : -1)) // how long
-      {
-         if(wait>0) // finite wait
-         {
-            if(wait_end_set) // if we already set the end time limit
-            {
-               wait=wait_end-Time.curTimeMs(); if(wait<=0)goto stop; // calculate remaining time
-            }else
-            {
-               wait_end=Time.curTimeMs()+wait;
-               wait_end_set=true;
-            }
-         }//else wait=-1; // use negative wait to force unlimited wait in 'ALooper_pollAll', no need for this, because 'wait' is already negative
-         goto wait;
-      }
-   stop:
-
-      // process input
-      Ms._delta_pixeli_clp= Ms. desktopPos()-old_posi;
-      Ms._delta_rel.x     = Ms._delta_pixeli_clp.x;
-      Ms._delta_rel.y     =-Ms._delta_pixeli_clp.y;
-
-      LOG2(S+"AndroidApp->window:"+(AndroidApp->window!=null));
-   #if DEBUG
-      if(!eglGetCurrentContext())LOG("No current EGL Context available on the main thread");
-   #endif
-      UpdateSize();
-      App.update();
-   }
-
+   for(; Loop(); );
    LOG("LoopEnd");
    KeyboardLoaded=false;
    ShutSensor(); // !! call before 'JavaShut' !!

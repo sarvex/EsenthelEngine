@@ -1583,6 +1583,16 @@ void OSMsgBox(C Str &title, C Str &text, Bool error)
    JavaScriptRun(S+"alert(\""+CString(text)+"\")"); 
 #endif
 }
+void OSToast(C Str &text)
+{
+#if ANDROID
+   JNI jni;
+   if(jni && ActivityClass)
+   if(JMethodID toast=jni.staticFunc(ActivityClass, "toast", "(Ljava/lang/String;)V"))
+      if(JString jtext=JString(jni, text))
+         jni->CallStaticVoidMethod(ActivityClass, toast, jtext());
+#endif
+}
 /******************************************************************************/
 static struct Locale
 {

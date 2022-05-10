@@ -569,6 +569,8 @@
       #undef MAX
       #undef ERROR
       #undef KB
+      #undef MB
+      #undef GB
    #endif
 
    // Physics

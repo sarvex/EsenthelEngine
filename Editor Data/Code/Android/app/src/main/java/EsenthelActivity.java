@@ -28,6 +28,7 @@ import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.location.Location;
@@ -77,6 +78,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 /*CHARTBOOST*\
 import com.chartboost.sdk.*;
@@ -256,6 +258,7 @@ public class EsenthelActivity extends NativeActivity
           TextWatcher          text_watcher;
    static WakeLock             wake_lock;
    static WifiLock             wifi_lock;
+   static TextView             text_view;
    static ViewTreeObserver.OnGlobalLayoutListener global_layout_listener;
 
    public static final void    log   (String s) {Log.e("Titan", s);}
@@ -559,6 +562,42 @@ public class EsenthelActivity extends NativeActivity
          @Override public final void run()
          {
             Toast.makeText(context, text, Toast.LENGTH_LONG).show();
+         }
+      });
+   }
+   public static final void overlay(final String text)
+   {
+      if(activity!=null)activity.runOnUiThread(new Runnable()
+      {
+         @Override public final void run()
+         {
+            if(Is(text))
+            {
+               if(text_view==null)
+               {
+                  text_view=new TextView      (activity);
+                  text_view.setTextColor      (Color.WHITE);
+                  text_view.setBackgroundColor(Color.BLACK);
+                  text_view.setGravity        (Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL);
+
+                  WindowManager.LayoutParams layout_params=new WindowManager.LayoutParams(
+                     ViewGroup.LayoutParams.MATCH_PARENT, // fill entire screen
+                     ViewGroup.LayoutParams.MATCH_PARENT,
+    	               android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
+                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                     android.graphics.PixelFormat.TRANSPARENT);
+                  layout_params.gravity = Gravity.CENTER | Gravity.CENTER;
+                  activity.getWindowManager().addView(text_view, layout_params);
+               }
+               text_view.setText(text);
+            }else
+            {
+               if(text_view!=null)
+               {
+                  activity.getWindowManager().removeView(text_view);
+                  text_view=null;
+               }
+            }
          }
       });
    }
