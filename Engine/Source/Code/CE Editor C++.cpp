@@ -1670,6 +1670,17 @@ Bool CodeEditor::generateVSProj(Int version)
                if(XmlNode *type=prop->findNode("ConfigurationType"))
                   type->data.setNum(1)[0]="DynamicLibrary"; // or "Application" or "StaticLibrary"
 
+         // Android
+         /* this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
+         if(build_exe_type==EXE_AAB)
+            for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
+               if(C XmlParam *condition=prop->findParam("Condition"))
+                  if(Contains(condition->value, "Android", false, WHOLE_WORD_STRICT))
+         {
+            prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging
+            prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation
+         }*/
+
          // Platform toolset #VisualStudio
          CChar8 *platform_toolset=null, *platform_toolset_xp=null;
          if(version==10) platform_toolset=platform_toolset_xp="v100";else
@@ -1685,7 +1696,7 @@ Bool CodeEditor::generateVSProj(Int version)
                if(C XmlParam *label=prop->findParam("Label"))if(label->value=="Configuration")
          {
           C XmlParam *condition=prop->findParam("Condition");
-            Bool      keep     =(condition && Contains(condition->value, "Emscripten"));
+            Bool      keep     =(condition && Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT));
             if(!keep) // keep default value
             {
                Bool winXP=(condition && Contains(condition->value, "Win32", false, WHOLE_WORD_STRICT) && ContainsAny(condition->value, u"GL DX9", false, WHOLE_WORD_STRICT)); // only Win32 DX9/GL is for WinXP
@@ -3175,6 +3186,7 @@ void CodeEditor::build(BUILD_MODE mode)
             {
                Str params=MSBuildParams(build_project_file, config, platform);
                if(build_exe_type==EXE_UWP)params.space()+="/p:AppxPackageSigningEnabled=false"; // disable code signing for Windows Universal builds, otherwise build will fail
+               if(build_exe_type==EXE_AAB)params.space()+="/p:AndroidEnablePackaging=false"; // disable APK generation because it's not needed for AAB #AndroidEnablePackaging
                build_msbuild=build_process.create(msbuild, params);
             }
             if(!build_msbuild)
