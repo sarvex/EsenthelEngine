@@ -53,6 +53,7 @@ class MiscRegion : Region
    static void ConfigLIB    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_LIB  );}
    static void ConfigUWP    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_UWP  );}
    static void ConfigAPK    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_APK  );}
+   static void ConfigAAB    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_AAB  );}
    static void ConfigMAC    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_MAC  );}
    static void ConfigIOS    (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_IOS  );}
    static void ConfigLinux  (MiscRegion &mr) {CodeEdit.configEXE  (Edit.EXE_LINUX);}
@@ -254,6 +255,7 @@ class MiscRegion : Region
          build_menu.New().create("Windows Universal", ConfigUWP  , T).flag(MENU_TOGGLABLE);
       #if WINDOWS
          build_menu.New().create("Android APK"      , ConfigAPK  , T).flag(MENU_TOGGLABLE);
+         build_menu.New().create("Android AAB"      , ConfigAAB  , T).flag(MENU_TOGGLABLE);
          build_menu.New().create("Nintendo Switch"  , ConfigNS   , T).flag(MENU_TOGGLABLE);
          build_menu.New().create("Web"              , ConfigWeb  , T).flag(MENU_TOGGLABLE);
       #elif MAC

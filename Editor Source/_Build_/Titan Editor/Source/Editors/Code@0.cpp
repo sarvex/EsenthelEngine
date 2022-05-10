@@ -64,6 +64,7 @@ AppPropsEditor AppPropsEdit;
       Misc.build.menu("Windows LIB"      , configEXE()==Edit::EXE_LIB  , QUIET);
       Misc.build.menu("Windows Universal", configEXE()==Edit::EXE_UWP  , QUIET);
       Misc.build.menu("Android APK"      , configEXE()==Edit::EXE_APK  , QUIET);
+      Misc.build.menu("Android AAB"      , configEXE()==Edit::EXE_AAB  , QUIET);
       Misc.build.menu("Mac APP"          , configEXE()==Edit::EXE_MAC  , QUIET);
       Misc.build.menu("iOS APP"          , configEXE()==Edit::EXE_IOS  , QUIET);
       Misc.build.menu("Linux"            , configEXE()==Edit::EXE_LINUX, QUIET);
@@ -445,10 +446,10 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       makeAuto(true); // before exporting, reset auto header to force PUBLISH as true, important because exported projects are meant to be distributed to other computers, and compiled for publishing (such as EE Editor), in such case they can't be using paths from this computer, therefore publishing will make them use target paths
       if(ok=super::Export(mode))if(data)
       {
-         Edit::EXE_TYPE exe=(Edit::EXE_TYPE)-1;
+         Edit::EXE_TYPE exe=Edit::EXE_NUM;
          switch(mode)
          {
-            case Edit::EXPORT_EXE    : exe=configEXE(); break;
+            case Edit::EXPORT_EXE    : exe=configEXE() ; break;
             case Edit::EXPORT_ANDROID: exe=Edit::EXE_APK; break;
             case Edit::EXPORT_XCODE  : exe=Edit::EXE_IOS; break;
 
@@ -460,7 +461,7 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
             case Edit::EXPORT_VS2022:
                exe=Edit::EXE_UWP; break;
          }
-         if(exe>=0 && PublishDataNeeded(exe))StartPublish(S, exe, Edit::BUILD_PUBLISH, true);
+         if(exe!=Edit::EXE_NUM && PublishDataNeeded(exe))StartPublish(S, exe, Edit::BUILD_PUBLISH, true);
       }
       makeAuto(false); // restore after exporting
       return ok;

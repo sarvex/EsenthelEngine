@@ -15,7 +15,6 @@ cchar *C   PROJECT_DATA_PATH=((WINDOWS_NEW || MOBILE || WEB) ? u"Project.pak" : 
 cchar *C   PROJECT_NAME     =u"Editor";
 cchar *C   APP_NAME         =u"Titan Editor";
 const UID  APP_GUI_SKIN     =UID(0, 0, 0, 0);
-const bool GOOGLE_PLAY_ASSET_DELIVERY=false; // this is set to true when project data is managed by Google Play Asset Delivery
 Cipher *C  PROJECT_CIPHER   =null;
 /******************************************************************************/
 // FUNCTIONS

@@ -3601,6 +3601,7 @@ void DrawProject()
       switch(exe_type)
       {
          case Edit::EXE_APK:
+         case Edit::EXE_AAB:
          case Edit::EXE_IOS:
          case Edit::EXE_WEB:
        //case Edit.EXE_NS : Nintendo Switch excluded because its game sizes can be big

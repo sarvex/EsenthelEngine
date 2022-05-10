@@ -22,6 +22,7 @@ TEX_SIZE_PLATFORM ProjTexSize(Edit.EXE_TYPE type)
       case Edit.EXE_NS: return TSP_SWITCH;
 
       case Edit.EXE_APK:
+      case Edit.EXE_AAB:
       case Edit.EXE_IOS:
       case Edit.EXE_WEB:
          return TSP_MOBILE;
@@ -34,6 +35,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit.EXE_TYPE type)
    switch(type)
    {
       case Edit.EXE_APK:
+      case Edit.EXE_AAB:
       case Edit.EXE_IOS:
       case Edit.EXE_WEB:
          return PCP_MOBILE;
@@ -622,7 +624,7 @@ class Project
       switch(material_simplify)
       {
          default       : return false; // MS_NEVER
-         case MS_MOBILE: return type==Edit.EXE_APK || type==Edit.EXE_IOS || type==Edit.EXE_NS;
+         case MS_MOBILE: return type==Edit.EXE_APK || type==Edit.EXE_AAB || type==Edit.EXE_IOS || type==Edit.EXE_NS;
          case MS_ALWAYS: return true;
       }
    }

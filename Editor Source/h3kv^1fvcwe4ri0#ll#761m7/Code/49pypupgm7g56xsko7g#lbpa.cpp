@@ -278,10 +278,10 @@ enum DATA_STATE
    DATA_CREATE, // need to be fully recreated
    DATA_UPDATE, // just update
 }
-bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit.EXE_APK || exe==Edit.EXE_IOS || exe==Edit.EXE_NS;}
+bool PublishDataNeeded(Edit.EXE_TYPE exe) {return exe==Edit.EXE_UWP || exe==Edit.EXE_APK || exe==Edit.EXE_AAB || exe==Edit.EXE_IOS || exe==Edit.EXE_NS;}
 bool PublishDataNeedOptimized()
 {
-   return (PublishExeType==Edit.EXE_APK || PublishExeType==Edit.EXE_IOS) && PublishBuildMode==Edit.BUILD_PUBLISH; // optimize only for Android/iOS Publishing, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
+   return (PublishExeType==Edit.EXE_APK || PublishExeType==Edit.EXE_AAB || PublishExeType==Edit.EXE_IOS) && PublishBuildMode==Edit.BUILD_PUBLISH; // optimize only for Android/iOS Publishing, because for large games with many GB that would require potentially rewriting all data, if user wants to manually optimize, he would have to delete the publish project before publishing
 }
 DATA_STATE PublishDataState(MemPtr<PakFileData> files, C Str &pak_name) // state of project data
 {
@@ -485,7 +485,7 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
             FCreateDirs(GetPath(PublishProjectDataPath));
          }
       }else
-      if(exe_type==Edit.EXE_APK)
+      if(exe_type==Edit.EXE_APK || exe_type==Edit.EXE_AAB)
       {
          PublishDataAsPak=true; // always set to true because files inside APK (assets) can't be modified by the app, so there's no point in storing them separately
          //if(CodeEdit.appPublishProjData()) always setup 'PublishProjectDataPath' because even if we don't include Project data, we still include App data
@@ -574,7 +574,7 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
    if(PublishDataAsPak)
    {
-      if(PublishExeType==Edit.EXE_APK && PublishBuildMode==Edit.BUILD_PUBLISH && CodeEdit.appGooglePlayAssetDelivery())
+      if(PublishExeType==Edit.EXE_AAB && PublishBuildMode==Edit.BUILD_PUBLISH && CodeEdit.appGooglePlayAssetDelivery()) // asset packs are only for AAB (not APK)
       {
          FDelFile(PublishProjectDataPath); // delete main project data so it won't be included in the APK
          Str android_path=CodeEdit.androidPath(); if(!android_path.is()){PublishErrorMessage="Invalid 'androidPath'"; return false;} android_path.tailSlash(true);
@@ -671,7 +671,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
 
    Memx<Texture> publish_texs; // textures to be published, need to use Memx because below pointers are stored
 
- C bool android=(exe_type==Edit.EXE_APK),
+ C bool android=(exe_type==Edit.EXE_APK || exe_type==Edit.EXE_AAB),
             iOS=(exe_type==Edit.EXE_IOS),
             uwp=(exe_type==Edit.EXE_UWP),
             web=(exe_type==Edit.EXE_WEB),
@@ -1191,7 +1191,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
       {
          Proj.getPublishElms(elms, PublishExeType);
       }else
-      if(PublishExeType==Edit.EXE_UWP || PublishExeType==Edit.EXE_APK || PublishExeType==Edit.EXE_IOS || PublishExeType==Edit.EXE_NS) // for Windows New, Android, iOS and Switch, if Project data is not included, then include only App data
+      if(PublishExeType==Edit.EXE_UWP || PublishExeType==Edit.EXE_APK || PublishExeType==Edit.EXE_AAB || PublishExeType==Edit.EXE_IOS || PublishExeType==Edit.EXE_NS) // for Windows New, Android, iOS and Switch, if Project data is not included, then include only App data
       {
          Proj.getActiveAppElms(elms, PublishExeType);
       }
