@@ -1671,15 +1671,15 @@ Bool CodeEditor::generateVSProj(Int version)
                   type->data.setNum(1)[0]="DynamicLibrary"; // or "Application" or "StaticLibrary"
 
          // Android
-         /* this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
+         // this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
          if(build_exe_type==EXE_AAB)
             for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
                if(C XmlParam *condition=prop->findParam("Condition"))
                   if(Contains(condition->value, "Android", false, WHOLE_WORD_STRICT))
          {
-            prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging
+          //prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging, at the moment can't disable because this is needed to generate ".agde"
             prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation
-         }*/
+         }
 
          // Platform toolset #VisualStudio
          CChar8 *platform_toolset=null, *platform_toolset_xp=null;
@@ -3186,7 +3186,7 @@ void CodeEditor::build(BUILD_MODE mode)
             {
                Str params=MSBuildParams(build_project_file, config, platform);
                if(build_exe_type==EXE_UWP)params.space()+="/p:AppxPackageSigningEnabled=false"; // disable code signing for Windows Universal builds, otherwise build will fail
-               if(build_exe_type==EXE_AAB)params.space()+="/p:AndroidEnablePackaging=false"; // disable APK generation because it's not needed for AAB #AndroidEnablePackaging
+             //if(build_exe_type==EXE_AAB)params.space()+="/p:AndroidEnablePackaging=false"; // disable APK generation because it's not needed for AAB #AndroidEnablePackaging, however with this command ".agde" is not generated, and gradle build fails
                build_msbuild=build_process.create(msbuild, params);
             }
             if(!build_msbuild)
