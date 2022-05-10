@@ -157,7 +157,7 @@ static Str AppName(C Str &str, EXE_TYPE exe_type)
    FREPA(str)
    {
       Char c=str[i];
-      if(exe_type==EXE_APK)
+      if(exe_type==EXE_APK || exe_type==EXE_AAB)
       {
          if(c=='&')c='n'; // android will fail when uploading '&' APK to device
       }
@@ -319,6 +319,7 @@ Bool CodeEditor::verifyBuildPath()
       case EXE_MAC  : build_exe=build_path+build_project_name+".app"; break;
       case EXE_IOS  : build_exe=build_path+build_project_name+".app"; break;
       case EXE_APK  : build_exe=build_path+"Android/"+(build_debug ? "Debug/" : "Release/")+build_project_name+".apk"; break;
+      case EXE_AAB  : build_exe=build_path+"Android/app/build/outputs/bundle/"+(build_debug ? "debug" : "release")+"/app-"+(build_debug ? "debug" : "release")+".aab"; break;
       case EXE_LINUX: build_exe=build_path+CleanNameForMakefile(build_project_name); break;
       case EXE_NS   : build_exe=build_path+"NX64/"      +(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".nsp" ; break; // warning: this must match codes below if(build_exe_type==EXE_NS )config+=" DX11";
       case EXE_WEB  : build_exe=build_path+"Emscripten/"+(build_debug ? "Debug DX11/" : "Release DX11/")+build_project_name+".html"; break; // warning: this must match codes below if(build_exe_type==EXE_WEB)config+=" DX11";
@@ -1200,7 +1201,7 @@ Bool CodeEditor::generateVSProj(Int version)
 {
    // !! For UWP don't store assets deeper than "Assets" (for example "Assets/UWP") because that would affect the final asset locations in the UWP executable !!
 
-   if(build_exe_type!=EXE_EXE && build_exe_type!=EXE_DLL /*&& build_exe_type!=EXE_LIB*/ && build_exe_type!=EXE_UWP && build_exe_type!=EXE_APK && build_exe_type!=EXE_NS && build_exe_type!=EXE_WEB)return Error("Visual Studio projects support only EXE, DLL, Universal, Android, NintendoSwitch and Web configurations.");
+   if(build_exe_type!=EXE_EXE && build_exe_type!=EXE_DLL /*&& build_exe_type!=EXE_LIB*/ && build_exe_type!=EXE_UWP && build_exe_type!=EXE_APK && build_exe_type!=EXE_AAB && build_exe_type!=EXE_NS && build_exe_type!=EXE_WEB)return Error("Visual Studio projects support only EXE, DLL, Universal, Android, NintendoSwitch and Web configurations.");
    if(build_exe_type==EXE_WEB && version<10)return Error("WEB configuration requires Visual Studio 2010 or newer.");
 
    Str bin_path    =BinPath(false),
@@ -3009,10 +3010,13 @@ static EXPORT_MODE ExeToMode(EXE_TYPE exe)
    {
       default: return EXPORT_VS;
 
-      case EXE_APK: return EXPORT_ANDROID;
+      case EXE_APK:
+      case EXE_AAB:
+         return EXPORT_ANDROID;
 
       case EXE_MAC:
-      case EXE_IOS: return EXPORT_XCODE;
+      case EXE_IOS:
+         return EXPORT_XCODE;
 
       case EXE_LINUX: return EXPORT_LINUX_NETBEANS;
    }
@@ -3025,13 +3029,14 @@ Bool CodeEditor::Export(EXPORT_MODE mode, BUILD_MODE build_mode)
    switch(mode) // override EXE type when exporting
    {
       case EXPORT_LINUX_NETBEANS:
-      case EXPORT_LINUX_MAKE    : build_exe_type=EXE_LINUX; break;
-      case EXPORT_ANDROID       : build_exe_type=EXE_APK  ; break;
-      case EXPORT_XCODE         : if(build_exe_type!=EXE_MAC && build_exe_type!=EXE_IOS)build_exe_type=EXE_MAC; break;
+      case EXPORT_LINUX_MAKE    :                                                       build_exe_type=EXE_LINUX; break;
+      case EXPORT_ANDROID       : if(build_exe_type!=EXE_APK && build_exe_type!=EXE_AAB)build_exe_type=EXE_APK  ; break;
+      case EXPORT_XCODE         : if(build_exe_type!=EXE_MAC && build_exe_type!=EXE_IOS)build_exe_type=EXE_MAC  ; break;
       // no need to check for VS as it will just fail with a message box about exe/dll/web support only
    }
 
    if(build_exe_type==EXE_DLL && (build_mode==BUILD_PLAY || build_mode==BUILD_DEBUG))build_mode=BUILD_BUILD;
+   if(build_exe_type==EXE_AAB && (build_mode==BUILD_PLAY || build_mode==BUILD_DEBUG))build_exe_type=EXE_APK; // cannot play AAB, only APK
  T.build_mode             =build_mode;
    build_debug            =((build_mode==BUILD_PUBLISH) ? false : config_debug); // set before 'verifyBuildPath' and before creating android project
    build_windows_code_sign=((build_mode==BUILD_PUBLISH) && build_exe_type==EXE_EXE && options.authenticode()/*cei().appWindowsCodeSign()*/);
@@ -3131,7 +3136,7 @@ void CodeEditor::build(BUILD_MODE mode)
       build_phases =build_steps=0;
 
       Int build_threads=Cpu.threads();
-      if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
+      if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_APK || build_exe_type==EXE_AAB || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)
       {
          build_phases=1+build_windows_code_sign;
          build_steps =3+build_windows_code_sign; FREPA(build_files)if(build_files[i].mode==BuildFile::SOURCE)build_steps++; // stdafx.cpp, linking, wait for end, *.cpp
@@ -3139,13 +3144,14 @@ void CodeEditor::build(BUILD_MODE mode)
          Str config=(build_debug ? "Debug" : "Release");
          if(build_exe_type==EXE_UWP)config+=" Universal";
 
-         if(build_exe_type==EXE_APK)config+=" DX11";else // always use the same config for APK because it uses    GL
+         if(build_exe_type==EXE_APK
+         || build_exe_type==EXE_AAB)config+=" DX11";else // always use the same config for APK because it uses    GL
          if(build_exe_type==EXE_NS )config+=" DX11";else // always use the same config for NS  because it uses    GL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_WEB)config+=" DX11";else // always use the same config for WEB because it uses WebGL, warning: this must match codes above: (build_debug ? "Debug DX11/" : "Release DX11/")
          if(build_exe_type==EXE_UWP)config+=" DX11";else
                                     config+=" DX11"; // config_api
 
-         Str platform=((build_exe_type==EXE_APK) ? "5) Android" : (build_exe_type==EXE_NS) ? "4) Nintendo Switch" : (build_exe_type==EXE_WEB) ? "3) Web" : /*config_32_bit ? "2) 32 bit" :*/ "1) 64 bit");
+         Str platform=((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) ? "5) Android" : (build_exe_type==EXE_NS) ? "4) Nintendo Switch" : (build_exe_type==EXE_WEB) ? "3) Web" : /*config_32_bit ? "2) 32 bit" :*/ "1) 64 bit");
 
          if(build_exe_type==EXE_WEB) // currently WEB compilation is available only through VC++ 2010
          {
@@ -3177,7 +3183,7 @@ void CodeEditor::build(BUILD_MODE mode)
                VSBuild(build_project_file, config, platform, build_log);
             }
 
-            if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY)
+            if((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY)
             {
                build_package=AndroidPackage(cei().appPackage());
                build_phases=2; // build + adb(install)
@@ -3199,7 +3205,7 @@ void CodeEditor::build(BUILD_MODE mode)
          if(!build_process.create("xcodebuild", XcodeBuildParams(build_project_file, build_debug ? "Debug" : "Release", (build_exe_type==EXE_MAC) ? "Mac" : "iOS"))) // sdk "iphonesimulator"
             Error("Error launching \"xcodebuild\" system command.\nPlease make sure you have Xcode installed.");
       }/*else
-      if(build_exe_type==EXE_APK)
+      if(build_exe_type==EXE_APK || build_exe_type==EXE_AAB)
       {
          Bool sign=!build_debug; // we want to sign with our own certificate (note that this can be done only in RELEASE mode, because in DEBUG, Android SDK will automatically sign the package with its own Debug certificate, and our own signing will fail)
          if(  sign)
@@ -3244,6 +3250,7 @@ void CodeEditor::debug()
          if(Export(EXPORT_VS, BUILD_DEBUG))VSRun(build_project_file, S); break;
 
       case EXE_APK:
+      case EXE_AAB:
          if(Export(EXPORT_ANDROID, BUILD_DEBUG))VSRun(build_project_file, S); break;
 
       case EXE_DLL: build(); break;
@@ -3255,11 +3262,11 @@ void CodeEditor::debug()
 void CodeEditor::openIDE()
 {
 #if WINDOWS
-                            if(Export((config_exe==EXE_APK) ? EXPORT_ANDROID : EXPORT_VS, BUILD_IDE))VSOpen(build_project_file);
+                            if(Export((config_exe==EXE_APK || config_exe==EXE_AAB) ? EXPORT_ANDROID : EXPORT_VS, BUILD_IDE))VSOpen(build_project_file);
 #elif MAC
-                            if(Export(EXPORT_XCODE                                      , BUILD_IDE))Run   (build_project_file);
+                            if(Export(EXPORT_XCODE                                                             , BUILD_IDE))Run   (build_project_file);
 #elif LINUX
-   if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS                             , BUILD_IDE))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
+   if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS                                                    , BUILD_IDE))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
 #endif
 }
 /******************************************************************************/

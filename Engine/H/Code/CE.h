@@ -8,11 +8,13 @@ enum EXE_TYPE : Byte // Executable Type
    EXE_LIB  , // Windows Statically  Linked Library (currently not supported, reserved for future use)
    EXE_UWP  , // Windows Universal App
    EXE_APK  , // Android Application Package
+   EXE_AAB  , // Android Application Bundle
    EXE_MAC  , // Mac     Application
    EXE_IOS  , // iOS     Application
    EXE_LINUX, // Linux
    EXE_NS   , // Nintendo Switch
    EXE_WEB  , // Web     Html/JavaScript
+   EXE_NUM  ,
 };
 enum EXPORT_MODE : Byte // Export Mode
 {

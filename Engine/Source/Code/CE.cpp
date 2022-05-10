@@ -1289,7 +1289,7 @@ void CodeEditor::update(Bool active)
             lines=Split(build_output, '\n');
          }
          buildClear();
-         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_MAC || build_exe_type==EXE_IOS || build_exe_type==EXE_LINUX || build_exe_type==EXE_APK || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)build_step=0; // we're going to count compilation progress for these platforms
+         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_MAC || build_exe_type==EXE_IOS || build_exe_type==EXE_LINUX || build_exe_type==EXE_APK || build_exe_type==EXE_AAB || build_exe_type==EXE_NS || build_exe_type==EXE_WEB)build_step=0; // we're going to count compilation progress for these platforms
          FREPA(lines)
          {
           C Str &line=lines[i];
@@ -1326,7 +1326,7 @@ void CodeEditor::update(Bool active)
                      }else break;
                   }
                }else
-               if(build_exe_type==EXE_APK)
+               if(build_exe_type==EXE_APK || build_exe_type==EXE_AAB)
                {
                   if(Ends    (line, ".o")
                   && Contains(line, ".cpp -> ", true, WHOLE_WORD_STRICT))build_step++;
@@ -1356,7 +1356,7 @@ void CodeEditor::update(Bool active)
          build_process.del();
          Bool was_log;
          if(was_log=build_log.is()){FDelFile(build_log); build_log.clear();}
-         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB || build_exe_type==EXE_APK)
+         if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL || build_exe_type==EXE_LIB || build_exe_type==EXE_UWP || build_exe_type==EXE_WEB || build_exe_type==EXE_APK || build_exe_type==EXE_AAB)
          {
             Bool ok=false;
             if(build_phase==0)
@@ -1439,7 +1439,7 @@ void CodeEditor::update(Bool active)
                         build_output.line();
                      }
                   }else
-                  if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // install APK
+                  if((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) // install APK
                   {
                      build_process.create(adbPath(), S+"install -r -d -t --fastdeploy \""+build_exe+"\""); // -r reinstall if already exists, -d Allow version code downgrade, -t allow test packages, --fastdeploy Quickly update an installed package by only updating the parts of the APK that changed https://developer.android.com/studio/command-line/adb#dpm Warning: --fastdeploy currently does not report certificate mismatch errors https://issuetracker.google.com/issues/231040652
                   }
@@ -1450,7 +1450,7 @@ void CodeEditor::update(Bool active)
                ok=(exit_code==0);
                if(ok)build_phase++;
             }else
-            if(build_phase==1 && build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // verify install APK
+            if(build_phase==1 && (build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) // verify install APK
             {
                // can't use 'exit_code' because it's always zero
                if(build_data.elms()) // detect success
@@ -1463,7 +1463,7 @@ void CodeEditor::update(Bool active)
                   if(ok)build_phase++;
                }
             }
-            if(ok && build_phase==(build_windows_code_sign ? 2 : (build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 2 : 1))switch(build_mode)
+            if(ok && build_phase==(build_windows_code_sign ? 2 : ((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) ? 2 : 1))switch(build_mode)
             {
                case BUILD_PLAY:
                {
@@ -1471,7 +1471,9 @@ void CodeEditor::update(Bool active)
                   {
                      case EXE_EXE: Run(build_exe); break;
                      case EXE_WEB: goto publish; // when playing for WEB we will create PAKs after compilation, so call publish success to do so
+
                      case EXE_APK:
+                     case EXE_AAB:
                      {
                         build_phase++;
                         build_process.create(adbPath(), S+"shell am start \""+build_package+"/.EsenthelActivity\""); // https://developer.android.com/studio/command-line/adb#am
@@ -1482,7 +1484,7 @@ void CodeEditor::update(Bool active)
              //case BUILD_DEBUG  : if(build_exe_type==EXE_EXE)VSRun(build_project_file); break; // no need to call this because building was done by launching VS and it will automatically run the app
                case BUILD_PUBLISH: publish: cei().publishSuccess(build_exe, build_exe_type, build_mode, build_project_id); break;
             }else
-            if(build_phase==((build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 3 : -2))
+            if(build_phase==(((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) ? 3 : -2))
             {
                visibleAndroidDevLog(true); // show dev log
             }
@@ -1527,7 +1529,7 @@ void CodeEditor::update(Bool active)
                case BUILD_PUBLISH: cei().publishSuccess(build_exe, build_exe_type, build_mode, build_project_id); break;
             }
          }/*else
-         if(build_exe_type==EXE_APK)
+         if(build_exe_type==EXE_APK || build_exe_type==EXE_AAB)
          {
             if(build_phase==0) // link with ant
             {
@@ -2127,6 +2129,7 @@ CChar8* ShortName(EXE_TYPE type)
       case EXE_LIB  : return "LIB";
       case EXE_UWP  : return "UWP";
       case EXE_APK  : return "APK";
+      case EXE_AAB  : return "AAB";
       case EXE_MAC  : return "Mac";
       case EXE_IOS  : return "iOS";
       case EXE_LINUX: return "Linux";
