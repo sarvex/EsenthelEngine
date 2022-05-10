@@ -1320,7 +1320,9 @@ Bool PlayAssetDelivery::update()
    #endif
       switch(status)
       {
-         case ASSET_PACK_NOT_INSTALLED: {CChar8 *name_ptr[]={name}; error=AssetPackManager_requestDownload(name_ptr, 1); if(error!=ASSET_PACK_NO_ERROR)Error(error);} break;
+         case ASSET_PACK_DOWNLOAD_CANCELED:
+         case ASSET_PACK_NOT_INSTALLED:
+            {CChar8 *name_ptr[]={name}; error=AssetPackManager_requestDownload(name_ptr, 1); if(error!=ASSET_PACK_NO_ERROR)Error(error);} break;
          case ASSET_PACK_WAITING_FOR_WIFI: error=AssetPackManager_showCellularDataConfirmation(AndroidApp->activity->clazz); if(error!=ASSET_PACK_NO_ERROR)Error(error); break;
          case ASSET_PACK_DOWNLOAD_COMPLETED: finished++; break;
       }
@@ -1354,8 +1356,9 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
 {
    PlayAssetDelivery pad; if(!pad.create(asset_packs, cipher))
    {
-      Int active_wait=App.active_wait; App.active_wait=10;
-      State *active=StateActive, *next=StateNext; StateActive=StateNext=&LoadAndroidAssetPacksState;
+      auto   app_flag=App.flag       ; FlagDisable(App.flag, APP_WORK_IN_BACKGROUND);
+      Int active_wait=App.active_wait;             App.active_wait=10;
+      State   *active=StateActive, *next=StateNext; StateActive=StateNext=&LoadAndroidAssetPacksState;
       Flt time=Time.curTime()+1; // show message only after some time to avoid blinking if startup is fast
    again:
       if(Time.curTime()>=time)
@@ -1367,7 +1370,8 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
       }
       if(!Loop      ())Exit(); // destroy requested
       if(!pad.update())goto again;
-      Overlay(S);
+      Overlay(S); // hide overlay
+      App.flag       =   app_flag;
       App.active_wait=active_wait;
       StateActive=active; StateNext=next;
    }
