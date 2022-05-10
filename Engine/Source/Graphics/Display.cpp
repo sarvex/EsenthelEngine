@@ -1694,7 +1694,7 @@ void DisplayClass::androidOpen()
       MainContext.surface=eglCreateWindowSurface(GLDisplay, GLConfig, AndroidApp->window, win_attribs); if(!MainContext.surface)Exit("Can't create EGLSurface.");
       MainContext.lock();
       setDeviceSettings(); // reset device state, also needed because of thread ID change
-   }else Exit("OpenGL Display and MainContext not available.");
+   }//else Exit("OpenGL Display and MainContext not available."); don't exit because this might be called in 'LoadAndroidAssetPacks' while display is still not created
 #endif
 }
 Bool DisplayClass::create()

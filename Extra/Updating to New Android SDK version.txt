@@ -1,14 +1,27 @@
 /******************************************************************************/
+MIN SDK:
 update Android SDK, NDK
 delete old packages
-/******************************************************************************/
+
 Min SDK required to run the app on Android:
 
-Update "Editor Data\Code\Android\app\src\mainAndroidManifest.xml"
+Update "Editor Data\Code\Android\app\src\main\AndroidManifest.xml"
 <uses-sdk android:minSdkVersion=""
 
 Update "Engine\Engine.vcxproj"
 Update "Project\Project.vcxproj"
 Update "Editor Data\Code\Windows\Project.vcxproj"
 VS project properties \ General \ Minimum Android SDK Version
+/******************************************************************************/
+
+
+
+/******************************************************************************/
+TARGET SDK:
+Update "Editor Data\Code\Android\app\src\main\AndroidManifest.xml"
+android:targetSdkVersion=""
+
+Update "Editor Data\Code\Android\app\build.gradle"
+Update "Project\Android\app\build.gradle"
+targetSdkVersion
 /******************************************************************************/
