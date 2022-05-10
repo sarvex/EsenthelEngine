@@ -1337,7 +1337,7 @@ Bool PlayAssetDelivery::update()
          AssetPackStorageMethod storage_method=AssetPackLocation_getStorageMethod(location); LogN(S+"storage:"+storage_method);
       #endif
          auto path=AssetPackLocation_getAssetsPath(location); if(!Is(path))Exit("Empty Asset Pack Path");
-         Paks.add(Str(path).tailSlash(true)+"Data.pak", cipher, false);
+         Paks.add(Str(path).tailSlash(true)+name+".pak", cipher, false);
          AssetPackLocation_destroy(location); // !! after this can't use 'path' anymore !!
       }
       Paks.rebuild();

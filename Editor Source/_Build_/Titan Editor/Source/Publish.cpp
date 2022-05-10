@@ -357,9 +357,10 @@ bool PublishFunc(Thread &thread)
             {
                if(split.elms()) // have any data
                {
-                  Str pack_path=android_path+"Data"+CodeEdit.android_asset_packs+"/src/main/assets/";
+                  Str pack_name=S+"Data"+CodeEdit.android_asset_packs,
+                      pack_path=android_path+pack_name+"/src/main/assets/";
                   FCreateDirs(pack_path);
-                  if(!SetPak(split, pack_path+"Data.pak"))return false;
+                  if(!SetPak(split, pack_path+pack_name+".pak"))return false; // !! FILE NAMES MUST BE UNIQUE BECAUSE ANDROID GRADLE WILL COMPLAIN IF THERE ARE MULTIPLE FILES WITH SAME NAMES ACROSS DIFFERENT ASSET PACKS !!
                   split.clear(); split_size=0; CodeEdit.android_asset_packs++;
                }
                if(!pfd){PublishOk=true; break;} // finished
