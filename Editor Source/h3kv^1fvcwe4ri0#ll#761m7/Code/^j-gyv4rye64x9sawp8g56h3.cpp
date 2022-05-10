@@ -314,7 +314,7 @@ class CodeView : Region, Edit.CodeEditorInterface
          data+=S+"cchar *C   APP_NAME         =u\""+CString(appName())+"\";\n";
          data+=S+"const int  APP_BUILD        ="+appBuild()+";\n";
          data+=S+"const UID  APP_GUI_SKIN     ="+appGuiSkin().asCString()+";\n";
-         data+=S+"const bool GOOGLE_PLAY_ASSET_DELIVERY="+TextBool(appGooglePlayAssetDelivery())+"; // this is set to true when project data is managed by Google Play Asset Delivery\n";
+       //data+=S+"const bool GOOGLE_PLAY_ASSET_DELIVERY="+TextBool(appGooglePlayAssetDelivery())+"; // this is set to true when project data is managed by Google Play Asset Delivery\n";
          if(cchar8 *cipher_class=(InRange(Proj.cipher, CIPHER_NUM) ? CipherText[Proj.cipher].clazz : null))
          {
             data+=S+cipher_class+"   _PROJECT_CIPHER   ("; FREPA(Proj.cipher_key){if(i)data+=", "; data+=Proj.cipher_key[i];} data+=");\n";
@@ -336,6 +336,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
          data+="   if(load_engine_data )if(!EMBED_ENGINE_DATA)Paks.add(ENGINE_DATA_PATH); // load engine data\n";
          data+="   if(load_project_data) // load project data\n";
          data+="   {\n";
+      if(CodeEdit.android_asset_packs>=0) // generate this code only when using asset packs
+       data+=S+"      if(ANDROID)LoadAndroidAssetPacks("+CodeEdit.android_asset_packs+", PROJECT_CIPHER);else\n";
          data+="      if(WINDOWS_NEW || MOBILE || WEB || PUBLISH)Paks.add(PROJECT_DATA_PATH, PROJECT_CIPHER);else DataPath(PROJECT_DATA_PATH);\n";
          data+="   }\n";
          data+="}\n";

@@ -969,6 +969,7 @@ void ShutPublish()
    PublishConvert     .del();
    PublishFileData    .del();
    PublishSkipOptimize.del();
+   CodeEdit.android_asset_packs=-1; // clear so next 'makeAuto' won't generate asset pack code
    Proj.resume();
    App.stateNormal().flash();
    if(!PublishOk)Gui.msgBox("Publishing Failed", PublishErrorMessage);
