@@ -1671,15 +1671,16 @@ Bool CodeEditor::generateVSProj(Int version)
                   type->data.setNum(1)[0]="DynamicLibrary"; // or "Application" or "StaticLibrary"
 
          // Android
-         // this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
+         /* this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
+            this will not work because if APK is up to date then 'bundleRelease' is ignored
          if(build_exe_type==EXE_AAB)
             for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
                if(C XmlParam *condition=prop->findParam("Condition"))
                   if(Contains(condition->value, "Android", false, WHOLE_WORD_STRICT))
          {
-          //prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging, at the moment can't disable because this is needed to generate ".agde"
-            prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation
-         }
+            prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging !! AT THE MOMENT CAN'T DISABLE BECAUSE THIS IS NEEDED TO GENERATE ".agde" !!
+            prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation !! WILL BE IGNORED IF APK IS UP TO DATE !!
+         }*/
 
          // Platform toolset #VisualStudio
          CChar8 *platform_toolset=null, *platform_toolset_xp=null;
@@ -3195,7 +3196,8 @@ void CodeEditor::build(BUILD_MODE mode)
                VSBuild(build_project_file, config, platform, build_log);
             }
 
-            if((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY)
+            if(build_exe_type==EXE_AAB)build_phases=2;else // build + "gradlew bundle*" #AndroidEnablePackaging
+            if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY)
             {
                build_package=AndroidPackage(cei().appPackage());
                build_phases=2; // build + adb(install)

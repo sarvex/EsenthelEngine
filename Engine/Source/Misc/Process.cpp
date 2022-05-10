@@ -535,8 +535,8 @@ Bool ConsoleProcess::create(C Str &name, C Str &params, Bool hidden, Bool binary
                   si.wShowWindow=SW_HIDE;
                }
 
-               Str app=name, base=GetBase(app), cmd, cur_dir;
-               if(GetExt(app)=="bat" || GetExt(app)=="cmd")
+               Str app=name, base=GetBase(app), cmd, cur_dir, ext=GetExt(app);
+               if(ext=="bat" || ext=="cmd")
                {
                   cur_dir=GetPath(app);
                   cmd    =(Contains(base, ' ') ? S+"/c \""+base+'"' : S+"/c "+base); // must use quotes only when needed, otherwise this will fail

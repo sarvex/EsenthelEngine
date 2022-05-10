@@ -4,6 +4,8 @@ class CodeView : Region, Edit::CodeEditorInterface
    Memx<EEItem > items;
    Memc<EEItem*> items_sorted;
 
+   void clearAuto();
+
    virtual void configChangedDebug()override;
    virtual void configChanged32Bit()override;
    virtual void configChangedAPI()override;

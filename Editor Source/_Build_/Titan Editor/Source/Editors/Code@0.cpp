@@ -43,6 +43,10 @@ AppPropsEditor AppPropsEdit;
       "ID@Xbox, Managed Partners", // 1
    };
 /******************************************************************************/
+   void CodeView::clearAuto()
+   {
+      android_asset_packs=-1;
+   }
    void CodeView::configChangedDebug()
 {
       Misc.build.menu("Debug"  ,  configDebug(), QUIET);
@@ -350,8 +354,8 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
          data+="   if(load_engine_data )if(!EMBED_ENGINE_DATA)Paks.add(ENGINE_DATA_PATH); // load engine data\n";
          data+="   if(load_project_data) // load project data\n";
          data+="   {\n";
-      if(CodeEdit.android_asset_packs>=0) // generate this code only when using asset packs
-       data+=S+"      if(ANDROID)LoadAndroidAssetPacks("+CodeEdit.android_asset_packs+", PROJECT_CIPHER);else\n";
+      if(android_asset_packs>=0) // generate this code only when using asset packs
+       data+=S+"      if(ANDROID)LoadAndroidAssetPacks("+android_asset_packs+", PROJECT_CIPHER);else\n";
          data+="      if(WINDOWS_NEW || MOBILE || WEB || PUBLISH)Paks.add(PROJECT_DATA_PATH, PROJECT_CIPHER);else DataPath(PROJECT_DATA_PATH);\n";
          data+="   }\n";
          data+="}\n";
@@ -413,10 +417,10 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    {
       switch(mode)
       {
-         case Edit::BUILD_BUILD  :                 super::build  ();                  break;
-         case Edit::BUILD_PUBLISH: makeAuto(true); super::publish(); makeAuto(false); break;
-         case Edit::BUILD_PLAY   :                 super::play   ();                  break;
-         case Edit::BUILD_DEBUG  :                 super::debug  ();                  break;
+         case Edit::BUILD_BUILD  :                 super::build  ();                               break;
+         case Edit::BUILD_PUBLISH: makeAuto(true); super::publish(); clearAuto(); makeAuto(false); break; // 'clearAuto' so we already set correct codes with this 'makeAuto'
+         case Edit::BUILD_PLAY   :                 super::play   ();                               break;
+         case Edit::BUILD_DEBUG  :                 super::debug  ();                               break;
       }
    }
    void CodeView::buildDo(Edit::BUILD_MODE mode)

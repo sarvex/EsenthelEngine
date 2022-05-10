@@ -341,7 +341,7 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
 
    if(exe_type==Edit.EXE_AAB && (build_mode==Edit.BUILD_PLAY || build_mode==Edit.BUILD_DEBUG))exe_type=Edit.EXE_APK; // cannot play AAB, only APK
 
-   CodeEdit.android_asset_packs=-1;
+   CodeEdit.clearAuto();
    PublishExePath       =exe_name;
    PublishExeType       =exe_type;
    PublishBuildMode     =build_mode;
@@ -1237,7 +1237,7 @@ void ShutPublish()
    PublishConvert     .del();
    PublishFileData    .del();
    PublishSkipOptimize.del();
-   CodeEdit.android_asset_packs=-1; // clear so next 'makeAuto' won't generate asset pack code
+   CodeEdit.clearAuto(); // clear needed for next 'makeAuto'
    Proj.resume();
    App.stateNormal().flash();
    if(!PublishOk)Gui.msgBox("Publishing Failed", PublishErrorMessage);

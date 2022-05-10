@@ -1439,7 +1439,11 @@ void CodeEditor::update(Bool active)
                         build_output.line();
                      }
                   }else
-                  if((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) // install APK
+                  if(build_exe_type==EXE_AAB) // gradlew bundle*
+                  {
+                     build_process.create(build_path+PLATFORM("Android/gradlew.bat", "Android/gradlew"), build_debug ? "bundleDebug" : "bundleRelease");
+                  }else
+                  if(build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // install APK
                   {
                      build_process.create(adbPath(), S+"install -r -d -t --fastdeploy \""+build_exe+"\""); // -r reinstall if already exists, -d Allow version code downgrade, -t allow test packages, --fastdeploy Quickly update an installed package by only updating the parts of the APK that changed https://developer.android.com/studio/command-line/adb#dpm Warning: --fastdeploy currently does not report certificate mismatch errors https://issuetracker.google.com/issues/231040652
                   }
@@ -1450,7 +1454,12 @@ void CodeEditor::update(Bool active)
                ok=(exit_code==0);
                if(ok)build_phase++;
             }else
-            if(build_phase==1 && (build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) // verify install APK
+            if(build_phase==1 && build_exe_type==EXE_AAB) // verify gradlew bundle*
+            {
+               ok=(exit_code==0);
+               if(ok)build_phase++;
+            }else
+            if(build_phase==1 && build_exe_type==EXE_APK && build_mode==BUILD_PLAY) // verify install APK
             {
                // can't use 'exit_code' because it's always zero
                if(build_data.elms()) // detect success
@@ -1463,7 +1472,12 @@ void CodeEditor::update(Bool active)
                   if(ok)build_phase++;
                }
             }
-            if(ok && build_phase==(build_windows_code_sign ? 2 : ((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) ? 2 : 1))switch(build_mode)
+            if(ok && build_phase==(
+                     build_windows_code_sign                            ? 2
+                  : (build_exe_type==EXE_AAB                          ) ? 2
+                  : (build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 2
+                  :                                                       1
+            ))switch(build_mode)
             {
                case BUILD_PLAY:
                {
@@ -1484,7 +1498,7 @@ void CodeEditor::update(Bool active)
              //case BUILD_DEBUG  : if(build_exe_type==EXE_EXE)VSRun(build_project_file); break; // no need to call this because building was done by launching VS and it will automatically run the app
                case BUILD_PUBLISH: publish: cei().publishSuccess(build_exe, build_exe_type, build_mode, build_project_id); break;
             }else
-            if(build_phase==(((build_exe_type==EXE_APK || build_exe_type==EXE_AAB) && build_mode==BUILD_PLAY) ? 3 : -2))
+            if(build_phase==((build_exe_type==EXE_APK && build_mode==BUILD_PLAY) ? 3 : -2))
             {
                visibleAndroidDevLog(true); // show dev log
             }
