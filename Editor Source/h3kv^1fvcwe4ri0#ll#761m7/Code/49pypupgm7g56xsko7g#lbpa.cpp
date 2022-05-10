@@ -523,13 +523,14 @@ bool StartPublish(C Str &exe_name, Edit.EXE_TYPE exe_type, Edit.BUILD_MODE build
    }
 
    if(build_mode!=Edit.BUILD_PUBLISH) // if there's no need to wait for fully complete data (for example we want to Play/Debug game on mobile which requires PAK creation)
+      if(PublishDataAsPak) // if we're creating a pak
+         if(!(PublishExeType==Edit.EXE_AAB && CodeEdit.appGooglePlayAssetDelivery())) // no asset packs
    {
       Proj.flush(); // flush what we've changed
       SetPublishFiles(PublishFiles, PublishGenerate, PublishConvert, PublishFileData); // detect files for packing
       if(!PublishGenerate.elms() && !PublishConvert.elms()) // if there are no elements to generate and convert
-         if(PublishDataAsPak) // if we're creating a pak
-            if(PublishDataState(PublishFiles, PublishProjectDataPath)==DATA_READY) // if data already available
-               {PublishSuccess(); return true;} // exit already
+         if(PublishDataState(PublishFiles, PublishProjectDataPath)==DATA_READY) // if data already available
+            {PublishSuccess(); return true;} // exit already
    }
 
    StatePublish.set(StateFadeTime);
