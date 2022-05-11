@@ -1177,8 +1177,8 @@ Bool Application::create1()
    if(!testInstance())return false;
        windowCreate();
        InitSound   ();
-   if(!InputDevices.create())Exit(MLTC(u"Can't create DirectInput", PL,u"Nie można utworzyć DirectInput"));
    if(!D           .create())return false;
+       InputDevices.create(); // create input devices after display, because mouse might use 'D.res' for initial position, and some sensors are set based on screen refresh rate
 #if WINDOWS_OLD
    if(!(flag&APP_HIDDEN) && hidden())show(true); // if we don't want window hidden, but it is (for example due to WS_EX_NOREDIRECTIONBITMAP) then show it
    window().activate(); // manually activate because on Windows if application is loading for a long time, then it might lose focus

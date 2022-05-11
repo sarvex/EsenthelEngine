@@ -234,7 +234,7 @@ struct InputDevicesClass // Input Devices
 #endif
 
    void del    ();
-   Bool create ();
+   void create ();
    void update ();
    void clear  ();
    void acquire(Bool on);

@@ -359,31 +359,29 @@ void InputDevicesClass::del()
    VR.shut(); // !! delete as last, after the mouse, because it may try to reset the mouse cursor, so we need to make sure that mouse cursor was already deleted !!
 }
 /******************************************************************************/
-Bool InputDevicesClass::create()
+void InputDevicesClass::create()
 {
    if(LogInit)LogN("InputDevicesClass.create");
 #if WINDOWS_OLD
    if(LogInit)LogN("DirectInput8Create");
    #if DIRECT_INPUT
-      if(OK(DirectInput8Create(App._hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (Ptr*)&DI, null)))
+      DYNAMIC_ASSERT(OK(DirectInput8Create(App._hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (Ptr*)&DI, null)), "Can't create DirectInput");
    #endif
 #endif
-   {
-      Kb  .create();
-      Ms  .create();
-      InitJoypads();
-    //VR  .init  (); this is now to be called manually in 'InitPre'
-   #if IOS
-      CoreMotionMgr=[[CMMotionManager alloc] init];
-      CoreMotionMgr.accelerometerUpdateInterval=1.0f/60; // 60 Hz
-      CoreMotionMgr.         gyroUpdateInterval=1.0f/60; // 60 Hz
-   #elif SWITCH
-      NS::CreateInput();
-   #endif
-      if(App.active())acquire(true);
-      return true;
-   }
-   return false;
+   Kb  .create();
+   Ms  .create();
+   InitJoypads();
+ //VR  .init  (); this is now to be called manually in 'InitPre'
+#if IOS
+   Int hz=(D.freq()>0 ? D.freq() : 60); // default to 60 events per second
+   Flt interval=1.0f/hz;
+   CoreMotionMgr=[[CMMotionManager alloc] init];
+   CoreMotionMgr.accelerometerUpdateInterval=interval;
+   CoreMotionMgr.         gyroUpdateInterval=interval;
+#elif SWITCH
+   NS::CreateInput();
+#endif
+   if(App.active())acquire(true);
 }
 /******************************************************************************/
 void InputDevicesClass::update()
@@ -425,11 +423,13 @@ void InputDevicesClass::acquire(Bool on)
    if(SensorEventQueue)
       if(ASensorManager *sensor_manager=ASensorManager_getInstance())
    {
+      Int hz=(D.freq()>0 ? D.freq() : 60); // default to 60 events per second
+      Int microseconds=1000*1000/hz;
       if(C ASensor *accelerometer=ASensorManager_getDefaultSensor(sensor_manager, ASENSOR_TYPE_ACCELEROMETER))
       {
          if(on) // start monitoring the accelerometer
          {
-               ASensorEventQueue_setEventRate (SensorEventQueue, accelerometer, 1000*1000/60); // 60 events per second
+               ASensorEventQueue_setEventRate (SensorEventQueue, accelerometer, microseconds);
                ASensorEventQueue_enableSensor (SensorEventQueue, accelerometer);
          }else ASensorEventQueue_disableSensor(SensorEventQueue, accelerometer); // stop monitoring accelerometer
       }
@@ -437,7 +437,7 @@ void InputDevicesClass::acquire(Bool on)
       {
          if(on) // start monitoring the gyroscope
          {
-               ASensorEventQueue_setEventRate (SensorEventQueue, gyroscope, 1000*1000/60); // 60 events per second
+               ASensorEventQueue_setEventRate (SensorEventQueue, gyroscope, microseconds);
                ASensorEventQueue_enableSensor (SensorEventQueue, gyroscope);
          }else ASensorEventQueue_disableSensor(SensorEventQueue, gyroscope); // stop monitoring gyroscope
       }

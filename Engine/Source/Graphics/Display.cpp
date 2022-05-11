@@ -915,6 +915,7 @@ DisplayClass::DisplayClass() : _monitors(Compare, null, null, 4)
 //_temp_anti_alias =_temp_super_res=_temp_dual=false;
 //_shader_model    =SM_UNKNOWN;
 //_gl_ver          .zero();
+//_freq_want       =_freq_got=0;
 
 //_initialized=false;
 //_resetting  =false;
@@ -1878,7 +1879,7 @@ Bool DisplayClass::findMode(Bool auto_full)
       SwapChainDesc.SampleDesc.Quality=0;
       SwapChainDesc.BufferUsage       =DXGI_USAGE_RENDER_TARGET_OUTPUT|DXGI_USAGE_SHADER_INPUT|DXGI_USAGE_BACK_BUFFER;
       SwapChainDesc.Flags             =DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH|(GDI_COMPATIBLE ? DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE : 0);
-      if(_freq_want && !SwapChainDesc.Windowed) // set custom frequency only if desired and in true full-screen
+      if(_freq_want>0 && !SwapChainDesc.Windowed) // set custom frequency only if desired and in true full-screen
       {
          SwapChainDesc.BufferDesc.RefreshRate.Numerator  =_freq_want;
          SwapChainDesc.BufferDesc.RefreshRate.Denominator=1;
