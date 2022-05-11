@@ -241,6 +241,7 @@
       #undef THIS
       #undef IGNORE
       #undef TRANSPARENT
+      #undef OPAQUE
       #undef ERROR
       #undef UNIQUE_NAME
       #undef INPUT_MOUSE
