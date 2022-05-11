@@ -342,9 +342,10 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                   Ms._wheel.y+=(pos.y-LastMousePos.y)*mul;
                }else
                {
-                  Ms._desktop_pixeli=pos;
-                  Ms. _window_pixeli.x=Round(AMotionEvent_getX(event, 0));
-                  Ms. _window_pixeli.y=Round(AMotionEvent_getY(event, 0));
+                  Ms.  _delta_pixeli_clp+=pos-Ms.desktopPos(); // calc based on desktop position and not window position, += because this can be called several times per frame
+                  Ms._desktop_pixeli     =pos;
+                  Ms. _window_pixeli.x   =Round(AMotionEvent_getX(event, 0));
+                  Ms. _window_pixeli.y   =Round(AMotionEvent_getY(event, 0));
                }
                LastMousePos=pos;
             }
@@ -1140,8 +1141,6 @@ static void InitKeyMap()
 /******************************************************************************/
 static Bool Loop()
 {
-   VecI2 old_posi=Ms.desktopPos();
-
    LOG2("ALooper_pollAll");
 
    Bool wait_end_set=false; Int wait=(App.active() ? App.active_wait : 0); UInt wait_end; // don't wait for !active, because we already wait after the event loop, and that would make 2 waits
@@ -1196,9 +1195,8 @@ wait:
 stop:
 
    // process input
-   Ms._delta_pixeli_clp= Ms. desktopPos()-old_posi;
-   Ms._delta_rel.x     = Ms._delta_pixeli_clp.x;
-   Ms._delta_rel.y     =-Ms._delta_pixeli_clp.y;
+   Ms._delta_rel.x= Ms._delta_pixeli_clp.x;
+   Ms._delta_rel.y=-Ms._delta_pixeli_clp.y;
 
    LOG2(S+"AndroidApp->window:"+(AndroidApp->window!=null));
 #if DEBUG
