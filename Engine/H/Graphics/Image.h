@@ -132,6 +132,10 @@ enum IMAGE_TYPE : Byte // Image Type, comments specify in which mode the type is
    IMAGE_ASTC_6x5_SRGB, // ASTC 4.27-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_6x6     , // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_6x6_SRGB, // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x5     , // ASTC 3.20-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x5_SRGB, // ASTC 3.20-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x6     , // ASTC 2.67-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x6_SRGB, // ASTC 2.67-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_8x8     , // ASTC 2.00-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_8x8_SRGB, // ASTC 2.00-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
 

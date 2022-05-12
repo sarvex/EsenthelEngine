@@ -126,12 +126,16 @@ ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the sa
    {"ASTC_6x5_SRGB"  , true , true ,0.53,4.27, 16,16,16,16,   0,0, 4,   6, 5,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR)},
    {"ASTC_6x6"       , true , true ,0.44,3.56, 16,16,16,16,   0,0, 4,   6, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_6x6_KHR)},
    {"ASTC_6x6_SRGB"  , true , true ,0.44,3.56, 16,16,16,16,   0,0, 4,   6, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR)},
+   {"ASTC_8x5"       , true , true ,0.40,3.20, 16,16,16,16,   0,0, 4,   8, 5,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_8x5_KHR)},
+   {"ASTC_8x5_SRGB"  , true , true ,0.40,3.20, 16,16,16,16,   0,0, 4,   8, 5,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR)},
+   {"ASTC_8x6"       , true , true ,0.33,2.67, 16,16,16,16,   0,0, 4,   8, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_8x6_KHR)},
+   {"ASTC_8x6_SRGB"  , true , true ,0.33,2.67, 16,16,16,16,   0,0, 4,   8, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR)},
    {"ASTC_8x8"       , true , true , 1/4,  2,  16,16,16,16,   0,0, 4,   8, 8,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_8x8_KHR)},
    {"ASTC_8x8_SRGB"  , true , true , 1/4,  2,  16,16,16,16,   0,0, 4,   8, 8,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR)},
 
    {"R11G11B10F"     , false, true ,   4, 32,  11,11,10, 0,   0,0, 3,   1, 1, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R11G11B10_FLOAT   , GL_R11F_G11F_B10F)},
    {"R9G9B9E5F"      , false, true ,   4, 32,  14,14,14, 0,   0,0, 3,   1, 1, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R9G9B9E5_SHAREDEXP, GL_RGB9_E5)},
-}; ASSERT(IMAGE_ALL_TYPES==85);
+}; ASSERT(IMAGE_ALL_TYPES==89);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
 Bool IsSRGB(IMAGE_TYPE type)
@@ -162,6 +166,8 @@ Bool IsSRGB(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5_SRGB  :
       case IMAGE_ASTC_6x5_SRGB  :
       case IMAGE_ASTC_6x6_SRGB  :
+      case IMAGE_ASTC_8x5_SRGB  :
+      case IMAGE_ASTC_8x6_SRGB  :
       case IMAGE_ASTC_8x8_SRGB  :
          return true;
    }
@@ -385,6 +391,8 @@ IMAGE_TYPE ImageTypeUncompressed(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5:
       case IMAGE_ASTC_6x5:
       case IMAGE_ASTC_6x6:
+      case IMAGE_ASTC_8x5:
+      case IMAGE_ASTC_8x6:
       case IMAGE_ASTC_8x8:
          return IMAGE_F16_4;
 
@@ -393,6 +401,8 @@ IMAGE_TYPE ImageTypeUncompressed(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5_SRGB:
       case IMAGE_ASTC_6x5_SRGB:
       case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x5_SRGB:
+      case IMAGE_ASTC_8x6_SRGB:
       case IMAGE_ASTC_8x8_SRGB:
          return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
@@ -456,6 +466,8 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
       case IMAGE_ASTC_5x5:
       case IMAGE_ASTC_6x5:
       case IMAGE_ASTC_6x6:
+      case IMAGE_ASTC_8x5:
+      case IMAGE_ASTC_8x6:
       case IMAGE_ASTC_8x8:
          return IMAGE_F16_4;
 
@@ -464,6 +476,8 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
       case IMAGE_ASTC_5x5_SRGB:
       case IMAGE_ASTC_6x5_SRGB:
       case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x5_SRGB:
+      case IMAGE_ASTC_8x6_SRGB:
       case IMAGE_ASTC_8x8_SRGB:
          return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
@@ -495,6 +509,8 @@ IMAGE_TYPE ImageTypeIncludeSRGB(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5  : return IMAGE_ASTC_5x5_SRGB;
       case IMAGE_ASTC_6x5  : return IMAGE_ASTC_6x5_SRGB;
       case IMAGE_ASTC_6x6  : return IMAGE_ASTC_6x6_SRGB;
+      case IMAGE_ASTC_8x5  : return IMAGE_ASTC_8x5_SRGB;
+      case IMAGE_ASTC_8x6  : return IMAGE_ASTC_8x6_SRGB;
       case IMAGE_ASTC_8x8  : return IMAGE_ASTC_8x8_SRGB;
    }
 }
@@ -525,6 +541,8 @@ IMAGE_TYPE ImageTypeExcludeSRGB(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5_SRGB  : return IMAGE_ASTC_5x5;
       case IMAGE_ASTC_6x5_SRGB  : return IMAGE_ASTC_6x5;
       case IMAGE_ASTC_6x6_SRGB  : return IMAGE_ASTC_6x6;
+      case IMAGE_ASTC_8x5_SRGB  : return IMAGE_ASTC_8x5;
+      case IMAGE_ASTC_8x6_SRGB  : return IMAGE_ASTC_8x6;
       case IMAGE_ASTC_8x8_SRGB  : return IMAGE_ASTC_8x8;
    }
 }
@@ -555,6 +573,8 @@ IMAGE_TYPE ImageTypeToggleSRGB(IMAGE_TYPE type)
       case IMAGE_ASTC_5x5_SRGB  : return IMAGE_ASTC_5x5  ;   case IMAGE_ASTC_5x5  : return IMAGE_ASTC_5x5_SRGB;
       case IMAGE_ASTC_6x5_SRGB  : return IMAGE_ASTC_6x5  ;   case IMAGE_ASTC_6x5  : return IMAGE_ASTC_6x5_SRGB;
       case IMAGE_ASTC_6x6_SRGB  : return IMAGE_ASTC_6x6  ;   case IMAGE_ASTC_6x6  : return IMAGE_ASTC_6x6_SRGB;
+      case IMAGE_ASTC_8x5_SRGB  : return IMAGE_ASTC_8x5  ;   case IMAGE_ASTC_8x5  : return IMAGE_ASTC_8x5_SRGB;
+      case IMAGE_ASTC_8x6_SRGB  : return IMAGE_ASTC_8x6  ;   case IMAGE_ASTC_8x6  : return IMAGE_ASTC_8x6_SRGB;
       case IMAGE_ASTC_8x8_SRGB  : return IMAGE_ASTC_8x8  ;   case IMAGE_ASTC_8x8  : return IMAGE_ASTC_8x8_SRGB;
    }
 }
@@ -871,6 +891,8 @@ Bool CanCompress(IMAGE_TYPE dest)
       case IMAGE_ASTC_5x5: case IMAGE_ASTC_5x5_SRGB:
       case IMAGE_ASTC_6x5: case IMAGE_ASTC_6x5_SRGB:
       case IMAGE_ASTC_6x6: case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x5: case IMAGE_ASTC_8x5_SRGB:
+      case IMAGE_ASTC_8x6: case IMAGE_ASTC_8x6_SRGB:
       case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
          return CompressASTC!=null;
    }
@@ -2065,6 +2087,8 @@ static Bool Compress(C Image &src, Image &dest) // assumes that 'src' and 'dest'
       case IMAGE_ASTC_5x5: case IMAGE_ASTC_5x5_SRGB:
       case IMAGE_ASTC_6x5: case IMAGE_ASTC_6x5_SRGB:
       case IMAGE_ASTC_6x6: case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x5: case IMAGE_ASTC_8x5_SRGB:
+      case IMAGE_ASTC_8x6: case IMAGE_ASTC_8x6_SRGB:
       case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
          DEBUG_ASSERT(CompressASTC, "'SupportCompressASTC/SupportCompressAll' was not called"); return CompressASTC ? CompressASTC(src, dest) : false;
    }
