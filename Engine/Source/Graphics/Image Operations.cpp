@@ -3346,8 +3346,8 @@ Bool ImageCompare::compare(C Image &a, C Image &b, Flt similar_dif, Bool alpha_w
 
                const Bool per_channel=false, // false=faster
                           high_prec  =(sa->highPrecision() || sb->highPrecision());
-               const Int      a_x_mul= sa->hwTypeInfo().bit_pp*2, // *2 because (4*4 colors / 8 bits)
-                              b_x_mul= sb->hwTypeInfo().bit_pp*2; // *2 because (4*4 colors / 8 bits)
+               const Int      a_x_mul= sa->hwTypeInfo().block_bytes,
+                              b_x_mul= sb->hwTypeInfo().block_bytes;
                const UInt    channels=4,
                             max_value=(high_prec ? 1 : 255),
                                 scale=channels*max_value;

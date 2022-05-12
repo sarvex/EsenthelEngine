@@ -1849,7 +1849,7 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
       if(dest.size3()==src.size3())
    {
       Int src_faces1=src.faces()-1,
-          x_mul     =src.hwTypeInfo().bit_pp*2; // *2 because (4*4 colors / 8 bits)
+          x_mul     =src.hwTypeInfo().block_bytes;
       REPD(mip , Min(src.mipMaps(), dest.mipMaps(), max_mip_maps))
       REPD(face, dest.faces())
       {

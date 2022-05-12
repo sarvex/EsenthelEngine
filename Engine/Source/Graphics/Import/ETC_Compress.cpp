@@ -266,7 +266,7 @@ struct ETCContext
          {
             if(quality<0)quality=0; // default to 0 as 1 is just too slow
             quality=Mid(quality, 0, EXHAUSTIVE_CODE_ACTIVE);
-            block_size=dest.hwTypeInfo().bit_pp*2;
+            block_size=dest.hwTypeInfo().block_bytes;
          }
       #endif
 
