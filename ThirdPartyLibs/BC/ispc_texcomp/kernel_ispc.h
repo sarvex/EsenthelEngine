@@ -80,6 +80,8 @@ extern "C" {
 #endif // __cplusplus
     extern void CompressBlocksBC1_ispc(struct rgba_surface * src, uint8_t * dst);
     extern void CompressBlocksBC3_ispc(struct rgba_surface * src, uint8_t * dst);
+    extern void CompressBlocksBC4_ispc(struct rgba_surface * src, uint8_t * dst);
+    extern void CompressBlocksBC5_ispc(struct rgba_surface * src, uint8_t * dst);
     extern void CompressBlocksBC6H_ispc(struct rgba_surface * src, uint8_t * dst, struct bc6h_enc_settings * settings);
     extern void CompressBlocksBC7_ispc(struct rgba_surface * src, uint8_t * dst, struct bc7_enc_settings * settings);
     extern void CompressBlocksETC1_ispc(struct rgba_surface * src, uint8_t * dst, struct etc_enc_settings * settings);
