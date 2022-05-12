@@ -1548,6 +1548,7 @@ void decode_endpoints(float endpoints[8], uint8_t coded_endpoints[], int mode)
     }
 }
 
+#pragma runtime_checks("", off)
 void dequant_decode_endpoints(float endpoints[8], uint8_t block_endpoints[], int mode, int range)
 {
     int levels = get_levels(range);
@@ -1561,6 +1562,7 @@ void dequant_decode_endpoints(float endpoints[8], uint8_t block_endpoints[], int
 
     decode_endpoints(endpoints, dequant_endpoints, mode);
 }
+#pragma runtime_checks("", restore)
 
 bool compare_endpoints(uint8_t endpoints[8], astc_block block[])
 {
@@ -2140,6 +2142,7 @@ void pack_block(astc_block block[], astc_enc_state state[])
 {
     code_block(block);
 
+#if 0 // ESENTHEL CHANGED
     foreach_active (instance) 
     {
         uniform astc_block ublock;
@@ -2168,12 +2171,43 @@ void pack_block(astc_block block[], astc_enc_state state[])
         
         for (uniform int i = 0; i < 4; i++) state->data[i] = insert(state->data[i], instance, data[i]);
     }
+#elif 0
+   #define extract(a, b   ) a
+   #define insert( a, b, c) c
+        uniform astc_block ublock;
+
+        ublock.width = block->width;
+        ublock.height = block->height;
+        ublock.dual_plane = block->dual_plane;
+        ublock.partitions = block->partitions;
+        ublock.color_endpoint_pairs = block->color_endpoint_pairs;
+
+        ublock.weight_range = extract(block->weight_range, instance);
+        ublock.color_component_selector = extract(block->color_component_selector, instance);
+        ublock.partition_id = extract(block->partition_id, instance);
+        ublock.endpoint_range = extract(block->endpoint_range, instance);
+        ublock.color_endpoint_modes[0] = extract(block->color_endpoint_modes[0], instance);
+
+        uniform int num_weights = block->width * block->height * (block->dual_plane ? 2 : 1);
+        for (uniform int i = 0; i < num_weights; i++)
+            ublock.weights[i] = extract(block->weights[i], instance);
+
+        for (uniform int i = 0; i < 8; i++)
+            ublock.endpoints[i] = extract(block->endpoints[i], instance);
+
+        uniform uint32_t data[4];
+        pack_block_c(data, &ublock);
+        
+        for (uniform int i = 0; i < 4; i++) state->data[i] = insert(state->data[i], instance, data[i]);
+#else
+    pack_block_c(state->data, block);
+#endif
 }
 
-int get_bits(uint32_t value, uniform int from, uniform int to)
+/*int get_bits(uint32_t value, uniform int from, uniform int to)
 {
     return (value >> from) & ((1 << (to + 1 - from)) - 1);
-}
+}*/
 
 void load_block_parameters(astc_block block[], uint32_t mode, uniform astc_enc_context ctx[])
 {
