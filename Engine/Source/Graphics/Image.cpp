@@ -686,7 +686,7 @@ Int PaddedWidth(Int w, Int h, Int mip, IMAGE_TYPE type)
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
          UInt mip_w=Max(1, w>>mip);
-         return Max(AlignCeil(mip_w, (UInt)ti.block_w), ti.block_w*2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+         return Max(DivCeil(mip_w, (UInt)ti.block_w), 2)*ti.block_w; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
 
@@ -704,7 +704,7 @@ Int PaddedHeight(Int w, Int h, Int mip, IMAGE_TYPE type)
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
          UInt mip_h=Max(1, h>>mip);
-         return Max(AlignCeil(mip_h, (UInt)ti.block_h), ti.block_h*2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+         return Max(DivCeil(mip_h, (UInt)ti.block_h), 2)*ti.block_h; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
 
