@@ -2183,6 +2183,9 @@
     <ClCompile Include="Source\Platforms\Android\Android-C.c">
       <Filter>Source\Platforms\Android</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Import\ASTC.cpp">
+      <Filter>Source\Graphics\Import</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Platforms\Mac\MyApplication.mm">
