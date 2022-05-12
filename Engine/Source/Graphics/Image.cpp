@@ -725,8 +725,8 @@ Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
          return Max(DivCeil(mip_w, (UInt)ti.block_w), 2)*ti.block_bytes; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
-   Int mip_w=PaddedWidth(w, h, mip, type);
-   return ImageTI[type].compressed ? mip_w*ImageTI[type].bit_pp/2 : mip_w*ImageTI[type].byte_pp; // all compressed formats use 4 rows per block (4*bit_pp/8 == bit_pp/2)
+   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=DivCeil(mip_w, (UInt)ti.block_w);
+   return mip_w*ti.block_bytes;
 }
 Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
