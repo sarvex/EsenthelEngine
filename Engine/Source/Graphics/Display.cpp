@@ -1050,7 +1050,13 @@ DisplayClass::DisplayClass() : _monitors(Compare, null, null, 4)
 void DisplayClass::init() // make this as a method because if we put this to Display constructor, then 'SecondaryContexts' may not have been initialized yet
 {
 #if DEBUG
-   REP(IMAGE_ALL_TYPES)DYNAMIC_ASSERT(ImageTI[i].high_precision==(ImageTI[i].precision>IMAGE_PRECISION_8 || IsSByte(IMAGE_TYPE(i))), "Invalid 'ImageTI.high_precision'");
+   REP(IMAGE_ALL_TYPES)
+   {
+    C auto &ti=ImageTI[i];
+      DYNAMIC_ASSERT(ti.high_precision==(ti.precision>IMAGE_PRECISION_8 || IsSByte(IMAGE_TYPE(i))), "Invalid 'ImageTI.high_precision'");
+      if(!ti.compressed                                                 )DYNAMIC_ASSERT(ti.block_bytes==ti.byte_pp                       , "Invalid 'ImageTI.block_bytes'");
+      if( ti.compressed && (i<=IMAGE_ASTC_4x4_SRGB || i>=IMAGE_ASTC_8x8))DYNAMIC_ASSERT(ti.block_bytes==ti.block_w*ti.block_h*ti.bit_pp/8, "Invalid 'ImageTI.block_bytes'");
+   }
 #endif
 
    secondaryOpenGLContexts(1); // default 1 secondary context

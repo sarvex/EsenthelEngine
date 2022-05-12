@@ -68,8 +68,8 @@ static void CompressASTCBlock(IntPtr elm_index, ASTCContext &data, Int thread_in
 /******************************************************************************/
 Bool _CompressASTC(C Image &src, Image &dest)
 {
-   if(dest.hwType()==IMAGE_ASTC_4x4
-   || dest.hwType()==IMAGE_ASTC_4x4_SRGB)
+   if(dest.hwType()==IMAGE_ASTC_4x4      || dest.hwType()==IMAGE_ASTC_6x6      || dest.hwType()==IMAGE_ASTC_8x8
+   || dest.hwType()==IMAGE_ASTC_4x4_SRGB || dest.hwType()==IMAGE_ASTC_6x6_SRGB || dest.hwType()==IMAGE_ASTC_8x8_SRGB)
    {
       ImageThreads.init(); ASTCContext data(dest);
       Int src_faces1=src.faces()-1;

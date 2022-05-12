@@ -31,97 +31,101 @@ DEFINE_CACHE(Image, Images, ImagePtr, "Image");
 static SyncLock ImageSoftLock; // it's important to use a separate lock from 'D._lock' so we don't need to wait for GPU to finish drawing
 /******************************************************************************/
 ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the same format, preferred version must be specified in 'ImageFormatToType' !!
-{ // Name            , cmprs,HiPrec,byte,bit,  R, G, B, A,Dept,S,Chn,      Precision   ,Usage,           Format
-   {"None"           , false, false,  0,  0,   0, 0, 0, 0,   0,0, 0, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, 0)},
+{ // Name            , cmprs,HiPrec,byte,bit,   R, G, B, A,Dept,S,Chn, Bx,By,Bs,       Precision   ,Usage,           Format
+   {"None"           , false, false,   0,  0,   0, 0, 0, 0,   0,0, 0,   0, 0, 0, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, 0)},
 
-   {"R8G8B8A8"       , false, false,  4, 32,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_UNORM     , GL_RGBA8       )},
-   {"R8G8B8A8_SRGB"  , false, false,  4, 32,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, GL_SRGB8_ALPHA8)},
-   {"R8G8B8A8_SIGN"  , false, true ,  4, 32,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_SNORM     , GL_RGBA8_SNORM )},
-   {"R8G8B8"         , false, false,  3, 24,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , GL_RGB8        )},
-   {"R8G8B8_SRGB"    , false, false,  3, 24,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , GL_SRGB8       )},
-   {"R8G8"           , false, false,  2, 16,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8_UNORM         , GL_RG8         )},
-   {"R8G8_SIGN"      , false, true ,  2, 16,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8_SNORM         , GL_RG8_SNORM   )},
-   {"R8"             , false, false,  1,  8,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8_UNORM           , GL_R8          )},
-   {"R8_SIGN"        , false, true ,  1,  8,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8_SNORM           , GL_R8_SNORM    )},
+   {"R8G8B8A8"       , false, false,   4, 32,   8, 8, 8, 8,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_UNORM     , GL_RGBA8       )},
+   {"R8G8B8A8_SRGB"  , false, false,   4, 32,   8, 8, 8, 8,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, GL_SRGB8_ALPHA8)},
+   {"R8G8B8A8_SIGN"  , false, true ,   4, 32,   8, 8, 8, 8,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8B8A8_SNORM     , GL_RGBA8_SNORM )},
+   {"R8G8B8"         , false, false,   3, 24,   8, 8, 8, 0,   0,0, 3,   1, 1, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , GL_RGB8        )},
+   {"R8G8B8_SRGB"    , false, false,   3, 24,   8, 8, 8, 0,   0,0, 3,   1, 1, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , GL_SRGB8       )},
+   {"R8G8"           , false, false,   2, 16,   8, 8, 0, 0,   0,0, 2,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8_UNORM         , GL_RG8         )},
+   {"R8G8_SIGN"      , false, true ,   2, 16,   8, 8, 0, 0,   0,0, 2,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8G8_SNORM         , GL_RG8_SNORM   )},
+   {"R8"             , false, false,   1,  8,   8, 0, 0, 0,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8_UNORM           , GL_R8          )},
+   {"R8_SIGN"        , false, true ,   1,  8,   8, 0, 0, 0,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_R8_SNORM           , GL_R8_SNORM    )},
 
-   {"R10G10B10A2"    , false, true ,  4, 32,  10,10,10, 2,   0,0, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R10G10B10A2_UNORM, GL_RGB10_A2)},
+   {"R10G10B10A2"    , false, true ,   4, 32,  10,10,10, 2,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R10G10B10A2_UNORM, GL_RGB10_A2)},
 
-   {"A8"             , false, false,  1,  8,   0, 0, 0, 8,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_A8_UNORM, GL_SWIZZLE ? GL_R8  : GL_ALPHA8           )},
-   {"L8"             , false, false,  1,  8,   8, 8, 8, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , GL_SWIZZLE ? GL_R8  : GL_LUMINANCE8       )},
-   {"L8_SRGB"        , false, false,  1,  8,   8, 8, 8, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , 0)},
-   {"L8A8"           , false, false,  2, 16,   8, 8, 8, 8,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , GL_SWIZZLE ? GL_RG8 : GL_LUMINANCE8_ALPHA8)},
-   {"L8A8_SRGB"      , false, false,  2, 16,   8, 8, 8, 8,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , 0)},
+   {"A8"             , false, false,   1,  8,   0, 0, 0, 8,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_A8_UNORM, GL_SWIZZLE ? GL_R8  : GL_ALPHA8           )},
+   {"L8"             , false, false,   1,  8,   8, 8, 8, 0,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , GL_SWIZZLE ? GL_R8  : GL_LUMINANCE8       )},
+   {"L8_SRGB"        , false, false,   1,  8,   8, 8, 8, 0,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , 0)},
+   {"L8A8"           , false, false,   2, 16,   8, 8, 8, 8,   0,0, 2,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , GL_SWIZZLE ? GL_RG8 : GL_LUMINANCE8_ALPHA8)},
+   {"L8A8_SRGB"      , false, false,   2, 16,   8, 8, 8, 8,   0,0, 2,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN , 0)},
 
-   {"I8"             , false, false,  1,  8,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
-   {"I16"            , false, true ,  2, 16,  16, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
-   {"I24"            , false, true ,  3, 24,  24, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
-   {"I32"            , false, true ,  4, 32,  32, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
-   {"F16"            , false, true ,  2, 16,  16, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16_FLOAT         , GL_R16F   )},
-   {"F32"            , false, true ,  4, 32,  32, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32_FLOAT         , GL_R32F   )},
-   {"F16_2"          , false, true ,  4, 32,  16,16, 0, 0,   0,0, 2, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16G16_FLOAT      , GL_RG16F  )},
-   {"F32_2"          , false, true ,  8, 64,  32,32, 0, 0,   0,0, 2, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32_FLOAT      , GL_RG32F  )},
-   {"F16_3"          , false, true ,  6, 48,  16,16,16, 0,   0,0, 3, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , GL_RGB16F )},
-   {"F32_3"          , false, true , 12, 96,  32,32,32, 0,   0,0, 3, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32B32_FLOAT   , GL_RGB32F )},
-   {"F16_4"          , false, true ,  8, 64,  16,16,16,16,   0,0, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16G16B16A16_FLOAT, GL_RGBA16F)},
-   {"F32_4"          , false, true , 16,128,  32,32,32,32,   0,0, 4, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32B32A32_FLOAT, GL_RGBA32F)},
-   {"F32_3_SRGB"     , false, true , 12, 96,  32,32,32, 0,   0,0, 3, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
-   {"F32_4_SRGB"     , false, true , 16,128,  32,32,32,32,   0,0, 4, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"I8"             , false, false,   1,  8,   8, 0, 0, 0,   0,0, 1,   1, 1, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"I16"            , false, true ,   2, 16,  16, 0, 0, 0,   0,0, 1,   1, 1, 2, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"I24"            , false, true ,   3, 24,  24, 0, 0, 0,   0,0, 1,   1, 1, 3, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"I32"            , false, true ,   4, 32,  32, 0, 0, 0,   0,0, 1,   1, 1, 4, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"F16"            , false, true ,   2, 16,  16, 0, 0, 0,   0,0, 1,   1, 1, 2, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16_FLOAT         , GL_R16F   )},
+   {"F32"            , false, true ,   4, 32,  32, 0, 0, 0,   0,0, 1,   1, 1, 4, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32_FLOAT         , GL_R32F   )},
+   {"F16_2"          , false, true ,   4, 32,  16,16, 0, 0,   0,0, 2,   1, 1, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16G16_FLOAT      , GL_RG16F  )},
+   {"F32_2"          , false, true ,   8, 64,  32,32, 0, 0,   0,0, 2,   1, 1, 8, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32_FLOAT      , GL_RG32F  )},
+   {"F16_3"          , false, true ,   6, 48,  16,16,16, 0,   0,0, 3,   1, 1, 6, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , GL_RGB16F )},
+   {"F32_3"          , false, true ,  12, 96,  32,32,32, 0,   0,0, 3,   1, 1,12, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32B32_FLOAT   , GL_RGB32F )},
+   {"F16_4"          , false, true ,   8, 64,  16,16,16,16,   0,0, 4,   1, 1, 8, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_R16G16B16A16_FLOAT, GL_RGBA16F)},
+   {"F32_4"          , false, true ,  16,128,  32,32,32,32,   0,0, 4,   1, 1,16, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_R32G32B32A32_FLOAT, GL_RGBA32F)},
+   {"F32_3_SRGB"     , false, true ,  12, 96,  32,32,32, 0,   0,0, 3,   1, 1,12, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
+   {"F32_4_SRGB"     , false, true ,  16,128,  32,32,32,32,   0,0, 4,   1, 1,16, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_UNKNOWN           , 0)},
 
-   {"BC1"            , true , false,  0,  4,   5, 6, 5, 0,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC1_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT1_EXT      )}, // set 0 alpha bits, even though BC1 can support 1-bit alpha, it's never used in the engine because it's limited (transparent pixels need to be black), so for simplicity BC1 is assumed to be only RGB, other formats are used for alpha #BC1RGB
-   {"BC1_SRGB"       , true , false,  0,  4,   5, 6, 5, 0,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC1_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT)}, // set 0 alpha bits, even though BC1 can support 1-bit alpha, it's never used in the engine because it's limited (transparent pixels need to be black), so for simplicity BC1 is assumed to be only RGB, other formats are used for alpha #BC1RGB
-   {"BC2"            , true , false,  1,  8,   5, 6, 5, 4,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC2_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT3_EXT      )},
-   {"BC2_SRGB"       , true , false,  1,  8,   5, 6, 5, 4,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC2_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT)},
-   {"BC3"            , true , false,  1,  8,   5, 6, 5, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC3_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT5_EXT      )},
-   {"BC3_SRGB"       , true , false,  1,  8,   5, 6, 5, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC3_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT)},
-   {"BC4"            , true , false,  1,  4,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC4_UNORM     , GL_COMPRESSED_RED_RGTC1               )},
-   {"BC4_SIGN"       , true , true ,  1,  4,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC4_SNORM     , GL_COMPRESSED_SIGNED_RED_RGTC1        )},
-   {"BC5"            , true , false,  1,  8,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC5_UNORM     , GL_COMPRESSED_RG_RGTC2                )},
-   {"BC5_SIGN"       , true , true ,  1,  8,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC5_SNORM     , GL_COMPRESSED_SIGNED_RG_RGTC2         )},
-   {"BC6"            , true , true ,  1,  8,  16,16,16, 0,   0,0, 3, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_BC6H_UF16     , GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT )},
-   {"BC7"            , true , false,  1,  8,   7, 7, 7, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC7_UNORM     , GL_COMPRESSED_RGBA_BPTC_UNORM         )},
-   {"BC7_SRGB"       , true , false,  1,  8,   7, 7, 7, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC7_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM   )},
+   {"BC1"            , true , false, 1/2,  4,   5, 6, 5, 0,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC1_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT1_EXT      )}, // set 0 alpha bits, even though BC1 can support 1-bit alpha, it's never used in the engine because it's limited (transparent pixels need to be black), so for simplicity BC1 is assumed to be only RGB, other formats are used for alpha #BC1RGB
+   {"BC1_SRGB"       , true , false, 1/2,  4,   5, 6, 5, 0,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC1_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT)}, // set 0 alpha bits, even though BC1 can support 1-bit alpha, it's never used in the engine because it's limited (transparent pixels need to be black), so for simplicity BC1 is assumed to be only RGB, other formats are used for alpha #BC1RGB
+   {"BC2"            , true , false,   1,  8,   5, 6, 5, 4,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC2_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT3_EXT      )},
+   {"BC2_SRGB"       , true , false,   1,  8,   5, 6, 5, 4,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC2_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT)},
+   {"BC3"            , true , false,   1,  8,   5, 6, 5, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC3_UNORM     , GL_COMPRESSED_RGBA_S3TC_DXT5_EXT      )},
+   {"BC3_SRGB"       , true , false,   1,  8,   5, 6, 5, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC3_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT)},
+   {"BC4"            , true , false, 1/2,  4,   8, 0, 0, 0,   0,0, 1,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC4_UNORM     , GL_COMPRESSED_RED_RGTC1               )},
+   {"BC4_SIGN"       , true , true , 1/2,  4,   8, 0, 0, 0,   0,0, 1,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC4_SNORM     , GL_COMPRESSED_SIGNED_RED_RGTC1        )},
+   {"BC5"            , true , false,   1,  8,   8, 8, 0, 0,   0,0, 2,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC5_UNORM     , GL_COMPRESSED_RG_RGTC2                )},
+   {"BC5_SIGN"       , true , true ,   1,  8,   8, 8, 0, 0,   0,0, 2,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC5_SNORM     , GL_COMPRESSED_SIGNED_RG_RGTC2         )},
+   {"BC6"            , true , true ,   1,  8,  16,16,16, 0,   0,0, 3,   4, 4,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_BC6H_UF16     , GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT )},
+   {"BC7"            , true , false,   1,  8,   7, 7, 7, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC7_UNORM     , GL_COMPRESSED_RGBA_BPTC_UNORM         )},
+   {"BC7_SRGB"       , true , false,   1,  8,   7, 7, 7, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_BC7_UNORM_SRGB, GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM   )},
 
-   {"ETC2_R"         , true , false,  1,  4,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_R11_EAC)},
-   {"ETC2_R_SIGN"    , true , true ,  1,  4,   8, 0, 0, 0,   0,0, 1, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SIGNED_R11_EAC)},
-   {"ETC2_RG"        , true , false,  1,  8,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RG11_EAC)},
-   {"ETC2_RG_SIGN"   , true , true ,  1,  8,   8, 8, 0, 0,   0,0, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SIGNED_RG11_EAC)},
-   {"ETC2_RGB"       , true , false,  0,  4,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGB8_ETC2)},
-   {"ETC2_RGB_SRGB"  , true , false,  0,  4,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ETC2)},
-   {"ETC2_RGBA1"     , true , false,  0,  4,   8, 8, 8, 1,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2)},
-   {"ETC2_RGBA1_SRGB", true , false,  0,  4,   8, 8, 8, 1,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2)},
-   {"ETC2_RGBA"      , true , false,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA8_ETC2_EAC)},
-   {"ETC2_RGBA_SRGB" , true , false,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC)},
+   {"ETC2_R"         , true , false, 1/2,  4,   8, 0, 0, 0,   0,0, 1,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_R11_EAC)},
+   {"ETC2_R_SIGN"    , true , true , 1/2,  4,   8, 0, 0, 0,   0,0, 1,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SIGNED_R11_EAC)},
+   {"ETC2_RG"        , true , false,   1,  8,   8, 8, 0, 0,   0,0, 2,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RG11_EAC)},
+   {"ETC2_RG_SIGN"   , true , true ,   1,  8,   8, 8, 0, 0,   0,0, 2,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SIGNED_RG11_EAC)},
+   {"ETC2_RGB"       , true , false, 1/2,  4,   8, 8, 8, 0,   0,0, 3,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGB8_ETC2)},
+   {"ETC2_RGB_SRGB"  , true , false, 1/2,  4,   8, 8, 8, 0,   0,0, 3,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ETC2)},
+   {"ETC2_RGBA1"     , true , false, 1/2,  4,   8, 8, 8, 1,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2)},
+   {"ETC2_RGBA1_SRGB", true , false, 1/2,  4,   8, 8, 8, 1,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2)},
+   {"ETC2_RGBA"      , true , false,   1,  8,   8, 8, 8, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA8_ETC2_EAC)},
+   {"ETC2_RGBA_SRGB" , true , false,   1,  8,   8, 8, 8, 8,   0,0, 4,   4, 4,16, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC)},
 
-   {"PVRTC1_2"       , true , false,  0,  2,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)},
-   {"PVRTC1_2_SRGB"  , true , false,  0,  2,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT)},
-   {"PVRTC1_4"       , true , false,  0,  4,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)},
-   {"PVRTC1_4_SRGB"  , true , false,  0,  4,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT)},
+   {"PVRTC1_2"       , true , false, 1/4,  2,   8, 8, 8, 8,   0,0, 4,   8, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG)},
+   {"PVRTC1_2_SRGB"  , true , false, 1/4,  2,   8, 8, 8, 8,   0,0, 4,   8, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT)},
+   {"PVRTC1_4"       , true , false, 1/2,  4,   8, 8, 8, 8,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)},
+   {"PVRTC1_4_SRGB"  , true , false, 1/2,  4,   8, 8, 8, 8,   0,0, 4,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT)},
 
-   {null             , false, false,  0,  0,   0, 0, 0, 0,   0,0, 0, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, 0)},
+   {null             , false, false,   0,  0,   0, 0, 0, 0,   0,0, 0,   0, 0, 0, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, 0)},
 
-   {"B8G8R8A8"       , false, false,  4, 32,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B8G8R8A8_UNORM     , 0)},
-   {"B8G8R8A8_SRGB"  , false, false,  4, 32,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, 0)},
-   {"B8G8R8"         , false, false,  3, 24,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , 0)},
-   {"B8G8R8_SRGB"    , false, false,  3, 24,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , 0)},
+   {"B8G8R8A8"       , false, false,   4, 32,   8, 8, 8, 8,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B8G8R8A8_UNORM     , 0)},
+   {"B8G8R8A8_SRGB"  , false, false,   4, 32,   8, 8, 8, 8,   0,0, 4,   1, 1, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, 0)},
+   {"B8G8R8"         , false, false,   3, 24,   8, 8, 8, 0,   0,0, 3,   1, 1, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , 0)},
+   {"B8G8R8_SRGB"    , false, false,   3, 24,   8, 8, 8, 0,   0,0, 3,   1, 1, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN            , 0)},
 
-   {"B5G6R5"         , false, false,  2, 16,   5, 6, 5, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B5G6R5_UNORM  , 0)},
-   {"B5G5R5A1"       , false, false,  2, 16,   5, 5, 5, 1,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B5G5R5A1_UNORM, 0)},
-   {"B4G4R4A4"       , false, false,  2, 16,   4, 4, 4, 4,   0,0, 4, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN       , 0)},
+   {"B5G6R5"         , false, false,   2, 16,   5, 6, 5, 0,   0,0, 3,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B5G6R5_UNORM  , 0)},
+   {"B5G5R5A1"       , false, false,   2, 16,   5, 5, 5, 1,   0,0, 4,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_B5G5R5A1_UNORM, 0)},
+   {"B4G4R4A4"       , false, false,   2, 16,   4, 4, 4, 4,   0,0, 4,   1, 1, 2, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN       , 0)},
 
-   {"D16"            , false, true ,  2, 16,   0, 0, 0, 0,  16,0, 1, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_D16_UNORM           , GL_DEPTH_COMPONENT16 )},
-   {"D24X8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,0, 1, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN             , GL_DEPTH_COMPONENT24 )},
-   {"D24S8"          , false, true ,  4, 32,   0, 0, 0, 0,  24,8, 2, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_D24_UNORM_S8_UINT   , GL_DEPTH24_STENCIL8  )},
-   {"D32"            , false, true ,  4, 32,   0, 0, 0, 0,  32,0, 1, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT           , GL_DEPTH_COMPONENT32F)},
-   {"D32S8X24"       , false, true ,  8, 64,   0, 0, 0, 0,  32,8, 2, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT_S8X24_UINT, GL_DEPTH32F_STENCIL8 )},
+   {"D16"            , false, true ,   2, 16,   0, 0, 0, 0,  16,0, 1,   1, 1, 2, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_D16_UNORM           , GL_DEPTH_COMPONENT16 )},
+   {"D24X8"          , false, true ,   4, 32,   0, 0, 0, 0,  24,0, 1,   1, 1, 4, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_UNKNOWN             , GL_DEPTH_COMPONENT24 )},
+   {"D24S8"          , false, true ,   4, 32,   0, 0, 0, 0,  24,8, 2,   1, 1, 4, IMAGE_PRECISION_24, 0, GPU_API(DXGI_FORMAT_D24_UNORM_S8_UINT   , GL_DEPTH24_STENCIL8  )},
+   {"D32"            , false, true ,   4, 32,   0, 0, 0, 0,  32,0, 1,   1, 1, 4, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT           , GL_DEPTH_COMPONENT32F)},
+   {"D32S8X24"       , false, true ,   8, 64,   0, 0, 0, 0,  32,8, 2,   1, 1, 8, IMAGE_PRECISION_32, 0, GPU_API(DXGI_FORMAT_D32_FLOAT_S8X24_UINT, GL_DEPTH32F_STENCIL8 )},
 
-   {"ETC1"           , true , false,  0,  4,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_ETC1_RGB8_OES)},
+   {"ETC1"           , true , false, 1/2,  4,   8, 8, 8, 0,   0,0, 3,   4, 4, 8, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_ETC1_RGB8_OES)},
 
-   {"ASTC_4x4"       , true , true ,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_4x4_KHR)},
-   {"ASTC_4x4_SRGB"  , true , true ,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR)},
+   {"ASTC_4x4"       , true , true ,   1,  8,  16,16,16,16,   0,0, 4,   4, 4,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_4x4_KHR)},
+   {"ASTC_4x4_SRGB"  , true , true ,   1,  8,  16,16,16,16,   0,0, 4,   4, 4,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR)},
+   {"ASTC_6x6"       , true , true ,0.44,3.56, 16,16,16,16,   0,0, 4,   6, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_6x6_KHR)},
+   {"ASTC_6x6_SRGB"  , true , true ,0.44,3.56, 16,16,16,16,   0,0, 4,   6, 6,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR)},
+   {"ASTC_8x8"       , true , true , 1/4,  2,  16,16,16,16,   0,0, 4,   8, 8,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_8x8_KHR)},
+   {"ASTC_8x8_SRGB"  , true , true , 1/4,  2,  16,16,16,16,   0,0, 4,   8, 8,16, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR)},
 
-   {"R11G11B10F"     , false, true ,  4, 32,  11,11,10, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R11G11B10_FLOAT   , GL_R11F_G11F_B10F)},
-   {"R9G9B9E5F"      , false, true ,  4, 32,  14,14,14, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R9G9B9E5_SHAREDEXP, GL_RGB9_E5)},
-}; ASSERT(IMAGE_ALL_TYPES==75);
+   {"R11G11B10F"     , false, true ,   4, 32,  11,11,10, 0,   0,0, 3,   1, 1, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R11G11B10_FLOAT   , GL_R11F_G11F_B10F)},
+   {"R9G9B9E5F"      , false, true ,   4, 32,  14,14,14, 0,   0,0, 3,   1, 1, 4, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R9G9B9E5_SHAREDEXP, GL_RGB9_E5)},
+}; ASSERT(IMAGE_ALL_TYPES==79);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
 Bool IsSRGB(IMAGE_TYPE type)
@@ -148,6 +152,8 @@ Bool IsSRGB(IMAGE_TYPE type)
       case IMAGE_PVRTC1_2_SRGB  :
       case IMAGE_PVRTC1_4_SRGB  :
       case IMAGE_ASTC_4x4_SRGB  :
+      case IMAGE_ASTC_6x6_SRGB  :
+      case IMAGE_ASTC_8x8_SRGB  :
          return true;
    }
 }
@@ -366,9 +372,13 @@ IMAGE_TYPE ImageTypeUncompressed(IMAGE_TYPE type)
          return IMAGE_F16_3;
 
       case IMAGE_ASTC_4x4:
+      case IMAGE_ASTC_6x6:
+      case IMAGE_ASTC_8x8:
          return IMAGE_F16_4;
 
       case IMAGE_ASTC_4x4_SRGB:
+      case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x8_SRGB:
          return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
 }
@@ -427,9 +437,13 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
          return IMAGE_F16_3;
 
       case IMAGE_ASTC_4x4:
+      case IMAGE_ASTC_6x6:
+      case IMAGE_ASTC_8x8:
          return IMAGE_F16_4;
 
       case IMAGE_ASTC_4x4_SRGB:
+      case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x8_SRGB:
          return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
 }
@@ -456,6 +470,8 @@ IMAGE_TYPE ImageTypeIncludeSRGB(IMAGE_TYPE type)
       case IMAGE_PVRTC1_2  : return IMAGE_PVRTC1_2_SRGB;
       case IMAGE_PVRTC1_4  : return IMAGE_PVRTC1_4_SRGB;
       case IMAGE_ASTC_4x4  : return IMAGE_ASTC_4x4_SRGB;
+      case IMAGE_ASTC_6x6  : return IMAGE_ASTC_6x6_SRGB;
+      case IMAGE_ASTC_8x8  : return IMAGE_ASTC_8x8_SRGB;
    }
 }
 IMAGE_TYPE ImageTypeExcludeSRGB(IMAGE_TYPE type)
@@ -481,6 +497,8 @@ IMAGE_TYPE ImageTypeExcludeSRGB(IMAGE_TYPE type)
       case IMAGE_PVRTC1_2_SRGB  : return IMAGE_PVRTC1_2;
       case IMAGE_PVRTC1_4_SRGB  : return IMAGE_PVRTC1_4;
       case IMAGE_ASTC_4x4_SRGB  : return IMAGE_ASTC_4x4;
+      case IMAGE_ASTC_6x6_SRGB  : return IMAGE_ASTC_6x6;
+      case IMAGE_ASTC_8x8_SRGB  : return IMAGE_ASTC_8x8;
    }
 }
 IMAGE_TYPE ImageTypeToggleSRGB(IMAGE_TYPE type)
@@ -506,6 +524,8 @@ IMAGE_TYPE ImageTypeToggleSRGB(IMAGE_TYPE type)
       case IMAGE_PVRTC1_2_SRGB  : return IMAGE_PVRTC1_2  ;   case IMAGE_PVRTC1_2  : return IMAGE_PVRTC1_2_SRGB;
       case IMAGE_PVRTC1_4_SRGB  : return IMAGE_PVRTC1_4  ;   case IMAGE_PVRTC1_4  : return IMAGE_PVRTC1_4_SRGB;
       case IMAGE_ASTC_4x4_SRGB  : return IMAGE_ASTC_4x4  ;   case IMAGE_ASTC_4x4  : return IMAGE_ASTC_4x4_SRGB;
+      case IMAGE_ASTC_6x6_SRGB  : return IMAGE_ASTC_6x6  ;   case IMAGE_ASTC_6x6  : return IMAGE_ASTC_6x6_SRGB;
+      case IMAGE_ASTC_8x8_SRGB  : return IMAGE_ASTC_8x8  ;   case IMAGE_ASTC_8x8  : return IMAGE_ASTC_8x8_SRGB;
    }
 }
 IMAGE_TYPE ImageTypeHighPrec(IMAGE_TYPE type)
@@ -657,35 +677,74 @@ IMAGE_MODE AsSoft(IMAGE_MODE mode)
 Int ImageFaces(IMAGE_MODE mode) {return IsCube(mode) ? 6 : 1;}
 Int PaddedWidth(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
-   if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-   Int mip_w=Max(1, w>>mip);
-   if(ImageTI[type].compressed)switch(type)
+ C auto &ti=ImageTI[type];
+
+   switch(type) // special cases
    {
-      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB: return Max(Ceil8(mip_w), 16); // blocks are sized 8x4 pixels, min texture size is 16x8
-      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB: return Max(Ceil4(mip_w),  8); // blocks are sized 4x4 pixels, min texture size is  8x8
-      default                                      : return     Ceil4(mip_w)     ; // blocks are sized 4x4 pixels, min texture size is  4x4
-   }                                                 return           mip_w      ;
+      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
+      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
+      {
+         w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
+         UInt mip_w=Max(1, w>>mip);
+         return Max(AlignCeil(mip_w, (UInt)ti.block_w), ti.block_w*2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+      }
+   }
+
+   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=AlignCeil(mip_w, (UInt)ti.block_w);
+   return mip_w;
 }
 Int PaddedHeight(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
-   if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-   Int mip_h=Max(1, h>>mip);
-   if(ImageTI[type].compressed)switch(type)
+ C auto &ti=ImageTI[type];
+
+   switch(type) // special cases
    {
-      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB: return Max(Ceil4(mip_h), 8); // blocks are sized 8x4 pixels, min texture size is 16x8
-      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB: return Max(Ceil4(mip_h), 8); // blocks are sized 4x4 pixels, min texture size is  8x8
-      default                                      : return     Ceil4(mip_h)    ; // blocks are sized 4x4 pixels, min texture size is  4x4
-   }                                                 return           mip_h     ;
+      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
+      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
+      {
+         w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
+         UInt mip_h=Max(1, h>>mip);
+         return Max(AlignCeil(mip_h, (UInt)ti.block_h), ti.block_h*2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+      }
+   }
+
+   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=AlignCeil(mip_h, (UInt)ti.block_h);
+   return mip_h;
 }
 Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
+ C auto &ti=ImageTI[type];
+
+   switch(type) // special cases
+   {
+      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
+      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
+      {
+         w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
+         UInt mip_w=Max(1, w>>mip);
+         return Max(DivCeil(mip_w, (UInt)ti.block_w), 2)*ti.block_bytes; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+      }
+   }
    Int mip_w=PaddedWidth(w, h, mip, type);
    return ImageTI[type].compressed ? mip_w*ImageTI[type].bit_pp/2 : mip_w*ImageTI[type].byte_pp; // all compressed formats use 4 rows per block (4*bit_pp/8 == bit_pp/2)
 }
 Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
-   Int mip_h=PaddedHeight(w, h, mip, type);
-   return ImageTI[type].compressed ? mip_h/4 : mip_h; // all compressed formats use 4 rows per block
+ C auto &ti=ImageTI[type];
+
+   switch(type) // special cases
+   {
+      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
+      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
+      {
+         w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
+         UInt mip_h=Max(1, h>>mip);
+         return Max(DivCeil(mip_h, (UInt)ti.block_h), 2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
+      }
+   }
+
+   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=DivCeil(mip_h, (UInt)ti.block_h);
+   return mip_h;
 }
 Int ImagePitch2(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
@@ -778,6 +837,8 @@ Bool CanCompress(IMAGE_TYPE dest)
          return CompressPVRTC!=null;
 
       case IMAGE_ASTC_4x4: case IMAGE_ASTC_4x4_SRGB:
+      case IMAGE_ASTC_6x6: case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
          return CompressASTC!=null;
    }
 }
@@ -1967,6 +2028,8 @@ static Bool Compress(C Image &src, Image &dest) // assumes that 'src' and 'dest'
          DEBUG_ASSERT(CompressPVRTC, "'SupportCompressPVRTC/SupportCompressAll' was not called"); return CompressPVRTC ? CompressPVRTC(src, dest, -1) : false;
 
       case IMAGE_ASTC_4x4: case IMAGE_ASTC_4x4_SRGB:
+      case IMAGE_ASTC_6x6: case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
          DEBUG_ASSERT(CompressASTC, "'SupportCompressASTC/SupportCompressAll' was not called"); return CompressASTC ? CompressASTC(src, dest) : false;
    }
    return false;

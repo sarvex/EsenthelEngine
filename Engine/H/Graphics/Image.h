@@ -122,8 +122,12 @@ enum IMAGE_TYPE : Byte // Image Type, comments specify in which mode the type is
 
    IMAGE_ETC1, // Ericsson 4-bit lossy RGB compression with no alpha (R,G,B,1), linear gamma, Soft, Android
 
-   IMAGE_ASTC_4x4     , // ASTC 8-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
-   IMAGE_ASTC_4x4_SRGB, // ASTC 8-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_4x4     , // ASTC 8.00-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_4x4_SRGB, // ASTC 8.00-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_6x6     , // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_6x6_SRGB, // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x8     , // ASTC 2.00-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_8x8_SRGB, // ASTC 2.00-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
 
    IMAGE_R11G11B10F,
    IMAGE_R9G9B9E5F ,
@@ -203,7 +207,10 @@ struct ImageTypeInfo // Image Type Information
                          a             , // number of alpha   bits
                          d             , // number of depth   bits
                          s             , // number of stencil bits
-                         channels      ; // number of channels
+                         channels      , // number of channels
+                         block_w       , // number of pixels in block X
+                         block_h       , // number of pixels in block Y
+                         block_bytes   ; // number of bytes  in block (size)
    const IMAGE_PRECISION precision     ;
 
           Byte usage     ()C {return _usage      ;} // get a combination of USAGE_FLAG, valid only if 'usageKnown' (on DX11/12, OpenGL 4.2+)
