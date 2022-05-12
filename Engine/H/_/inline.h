@@ -74,11 +74,15 @@ extern Bool  _CompressETC (C Image &src, Image &dest, Int quality=-1);
 extern Bool (*CompressETC)(C Image &src, Image &dest, Int quality   );
 inline void   SupportCompressETC() {CompressETC=_CompressETC;}
 
+extern Bool  _CompressASTC (C Image &src, Image &dest);
+extern Bool (*CompressASTC)(C Image &src, Image &dest);
+inline void   SupportCompressASTC() {CompressASTC=_CompressASTC;}
+
 extern Bool  _CompressPVRTC (C Image &src, Image &dest, Int quality=-1);
 extern Bool (*CompressPVRTC)(C Image &src, Image &dest, Int quality   );
 inline void   SupportCompressPVRTC() {if(WINDOWS_OLD || MAC || LINUX)CompressPVRTC=_CompressPVRTC;}
 
-inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressPVRTC();}
+inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressASTC(); SupportCompressPVRTC();}
 
 extern Bool  _ResizeWaifu (C Image &src, Image &dest, UInt flags);
 extern Bool (*ResizeWaifu)(C Image &src, Image &dest, UInt flags);

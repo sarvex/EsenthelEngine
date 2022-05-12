@@ -122,6 +122,9 @@ enum IMAGE_TYPE : Byte // Image Type, comments specify in which mode the type is
 
    IMAGE_ETC1, // Ericsson 4-bit lossy RGB compression with no alpha (R,G,B,1), linear gamma, Soft, Android
 
+   IMAGE_ASTC_4x4     , // ASTC 8-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_4x4_SRGB, // ASTC 8-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+
    IMAGE_R11G11B10F,
    IMAGE_R9G9B9E5F ,
 

@@ -45,7 +45,7 @@ static struct BC7ENC16Init
 }BI;
 #endif
 /******************************************************************************/
-struct Data
+struct BCContext
 {
 #if BC_ENC==BC_LIB_ISPC
    union
@@ -62,7 +62,7 @@ struct Data
    Int    thread_blocks, threads;
    VecI2  size;
 
-   Data(Image &dest)
+   BCContext(Image &dest)
    {
       T.dest=&dest;
       bc6=(dest.hwType()==IMAGE_BC6);
@@ -91,7 +91,7 @@ struct Data
    }
 };
 /******************************************************************************/
-static void CompressBC67Block(IntPtr elm_index, Data &data, Int thread_index)
+static void CompressBC67Block(IntPtr elm_index, BCContext &data, Int thread_index)
 {
    Int block_start=elm_index*data.thread_blocks, y_start=block_start*4;
 #if BC_ENC==BC_LIB_ISPC
@@ -145,7 +145,7 @@ Bool _CompressBC67(C Image &src, Image &dest)
 {
    if(dest.hwType()==IMAGE_BC6 || dest.hwType()==IMAGE_BC7 || dest.hwType()==IMAGE_BC7_SRGB)
    {
-      ImageThreads.init(); Data data(dest);
+      ImageThreads.init(); BCContext data(dest);
       Int src_faces1=src.faces()-1;
       Image temp; // define outside loop to avoid overhead
       REPD(mip, Min(src.mipMaps(), dest.mipMaps()))

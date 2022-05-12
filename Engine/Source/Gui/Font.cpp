@@ -261,9 +261,9 @@ Bool Font::imageType(IMAGE_TYPE type)
    if(!_sub_pixel)type=(FONT_SRGB           ? ImageTypeIncludeSRGB : ImageTypeExcludeSRGB)(type);else
    {              type=(FONT_SRGB_SUB_PIXEL ? ImageTypeIncludeSRGB : ImageTypeExcludeSRGB)(type);
    #if FONT_SRGB_SUB_PIXEL
-      if(type!=IMAGE_R8G8B8A8_SRGB && type!=IMAGE_B8G8R8A8_SRGB && type!=IMAGE_BC2_SRGB && type!=IMAGE_BC3_SRGB && type!=IMAGE_BC7_SRGB && type!=IMAGE_ETC2_RGBA_SRGB)return false; // sub pixel supports only these formats
+      if(type!=IMAGE_R8G8B8A8_SRGB && type!=IMAGE_B8G8R8A8_SRGB && type!=IMAGE_BC2_SRGB && type!=IMAGE_BC3_SRGB && type!=IMAGE_BC7_SRGB && type!=IMAGE_ETC2_RGBA_SRGB && type!=IMAGE_ASTC_4x4_SRGB)return false; // sub pixel supports only these formats
    #else
-      if(type!=IMAGE_R8G8B8A8      && type!=IMAGE_B8G8R8A8      && type!=IMAGE_BC2      && type!=IMAGE_BC3      && type!=IMAGE_BC7      && type!=IMAGE_ETC2_RGBA     )return false; // sub pixel supports only these formats
+      if(type!=IMAGE_R8G8B8A8      && type!=IMAGE_B8G8R8A8      && type!=IMAGE_BC2      && type!=IMAGE_BC3      && type!=IMAGE_BC7      && type!=IMAGE_ETC2_RGBA      && type!=IMAGE_ASTC_4x4     )return false; // sub pixel supports only these formats
    #endif
    }
    Bool changed=false;

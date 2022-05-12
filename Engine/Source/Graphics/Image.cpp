@@ -116,9 +116,12 @@ ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the sa
 
    {"ETC1"           , true , false,  0,  4,   8, 8, 8, 0,   0,0, 3, IMAGE_PRECISION_8 , 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_ETC1_RGB8_OES)},
 
+   {"ASTC_4x4"       , true , true ,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_RGBA_ASTC_4x4_KHR)},
+   {"ASTC_4x4_SRGB"  , true , true ,  1,  8,   8, 8, 8, 8,   0,0, 4, IMAGE_PRECISION_16, 0, GPU_API(DXGI_FORMAT_UNKNOWN, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR)},
+
    {"R11G11B10F"     , false, true ,  4, 32,  11,11,10, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R11G11B10_FLOAT   , GL_R11F_G11F_B10F)},
    {"R9G9B9E5F"      , false, true ,  4, 32,  14,14,14, 0,   0,0, 3, IMAGE_PRECISION_10, 0, GPU_API(DXGI_FORMAT_R9G9B9E5_SHAREDEXP, GL_RGB9_E5)},
-}; ASSERT(IMAGE_ALL_TYPES==73);
+}; ASSERT(IMAGE_ALL_TYPES==75);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
 Bool IsSRGB(IMAGE_TYPE type)
@@ -144,6 +147,7 @@ Bool IsSRGB(IMAGE_TYPE type)
       case IMAGE_ETC2_RGBA_SRGB :
       case IMAGE_PVRTC1_2_SRGB  :
       case IMAGE_PVRTC1_4_SRGB  :
+      case IMAGE_ASTC_4x4_SRGB  :
          return true;
    }
 }
@@ -360,6 +364,12 @@ IMAGE_TYPE ImageTypeUncompressed(IMAGE_TYPE type)
 
       case IMAGE_BC6:
          return IMAGE_F16_3;
+
+      case IMAGE_ASTC_4x4:
+         return IMAGE_F16_4;
+
+      case IMAGE_ASTC_4x4_SRGB:
+         return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
 }
 IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't return IMAGE_R8G8B8 / IMAGE_R8G8B8_SRGB
@@ -415,6 +425,12 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
       case IMAGE_BC6:
       case IMAGE_R11G11B10F:
          return IMAGE_F16_3;
+
+      case IMAGE_ASTC_4x4:
+         return IMAGE_F16_4;
+
+      case IMAGE_ASTC_4x4_SRGB:
+         return IMAGE_F16_4; // Warning: TODO: should be IMAGE_F16_4_SRGB, without it these require IC_CONVERT_GAMMA
    }
 }
 IMAGE_TYPE ImageTypeIncludeSRGB(IMAGE_TYPE type)
@@ -439,6 +455,7 @@ IMAGE_TYPE ImageTypeIncludeSRGB(IMAGE_TYPE type)
       case IMAGE_ETC2_RGBA : return IMAGE_ETC2_RGBA_SRGB;
       case IMAGE_PVRTC1_2  : return IMAGE_PVRTC1_2_SRGB;
       case IMAGE_PVRTC1_4  : return IMAGE_PVRTC1_4_SRGB;
+      case IMAGE_ASTC_4x4  : return IMAGE_ASTC_4x4_SRGB;
    }
 }
 IMAGE_TYPE ImageTypeExcludeSRGB(IMAGE_TYPE type)
@@ -463,6 +480,7 @@ IMAGE_TYPE ImageTypeExcludeSRGB(IMAGE_TYPE type)
       case IMAGE_ETC2_RGBA_SRGB : return IMAGE_ETC2_RGBA;
       case IMAGE_PVRTC1_2_SRGB  : return IMAGE_PVRTC1_2;
       case IMAGE_PVRTC1_4_SRGB  : return IMAGE_PVRTC1_4;
+      case IMAGE_ASTC_4x4_SRGB  : return IMAGE_ASTC_4x4;
    }
 }
 IMAGE_TYPE ImageTypeToggleSRGB(IMAGE_TYPE type)
@@ -487,6 +505,7 @@ IMAGE_TYPE ImageTypeToggleSRGB(IMAGE_TYPE type)
       case IMAGE_ETC2_RGBA_SRGB : return IMAGE_ETC2_RGBA ;   case IMAGE_ETC2_RGBA : return IMAGE_ETC2_RGBA_SRGB;
       case IMAGE_PVRTC1_2_SRGB  : return IMAGE_PVRTC1_2  ;   case IMAGE_PVRTC1_2  : return IMAGE_PVRTC1_2_SRGB;
       case IMAGE_PVRTC1_4_SRGB  : return IMAGE_PVRTC1_4  ;   case IMAGE_PVRTC1_4  : return IMAGE_PVRTC1_4_SRGB;
+      case IMAGE_ASTC_4x4_SRGB  : return IMAGE_ASTC_4x4  ;   case IMAGE_ASTC_4x4  : return IMAGE_ASTC_4x4_SRGB;
    }
 }
 IMAGE_TYPE ImageTypeHighPrec(IMAGE_TYPE type)
@@ -757,6 +776,9 @@ Bool CanCompress(IMAGE_TYPE dest)
       case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
          return CompressPVRTC!=null;
+
+      case IMAGE_ASTC_4x4: case IMAGE_ASTC_4x4_SRGB:
+         return CompressASTC!=null;
    }
 }
 /******************************************************************************/
@@ -1943,6 +1965,9 @@ static Bool Compress(C Image &src, Image &dest) // assumes that 'src' and 'dest'
       case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
          DEBUG_ASSERT(CompressPVRTC, "'SupportCompressPVRTC/SupportCompressAll' was not called"); return CompressPVRTC ? CompressPVRTC(src, dest, -1) : false;
+
+      case IMAGE_ASTC_4x4: case IMAGE_ASTC_4x4_SRGB:
+         DEBUG_ASSERT(CompressASTC, "'SupportCompressASTC/SupportCompressAll' was not called"); return CompressASTC ? CompressASTC(src, dest) : false;
    }
    return false;
 }
