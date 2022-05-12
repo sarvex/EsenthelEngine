@@ -31,6 +31,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  
 */
 
+// ESENTHEL CHANGED START
 typedef U8   uint8;
 typedef U16 uint16;
 typedef I32  int32;
@@ -56,6 +57,7 @@ inline float clamp(float v, float a, float b)
 {
    return (v<=a) ? a : (v>=b) ? b : v;
 }
+// ESENTHEL CHANGED END
 
 ///////////////////////////
 //   generic helpers
