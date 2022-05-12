@@ -463,9 +463,6 @@ void pack_block(uint32_t data[4], astc_block* block)
 
 void atsc_rank(const rgba_surface* src, int xx, int yy, uint32_t* mode_buffer, astc_enc_settings* settings)
 {
-#if PROGRAM_COUNT // ESENTHEL CHANGED
-    for(programIndex=0; programIndex<PROGRAM_COUNT; programIndex++)
-#endif
     ispc::astc_rank_ispc((ispc::rgba_surface*)src, xx, yy, mode_buffer, (ispc::astc_enc_settings*)settings);
 }
 
@@ -495,9 +492,6 @@ void astc_encode(const rgba_surface* src, float* block_scores, uint8_t* dst, uin
 
     assert(sizeof(ispc::rgba_surface) == sizeof(rgba_surface));
     assert(sizeof(ispc::astc_enc_settings) == sizeof(astc_enc_settings));
-#if PROGRAM_COUNT // ESENTHEL CHANGED
-    for(programIndex=0; programIndex<PROGRAM_COUNT; programIndex++)
-#endif
     ispc::astc_encode_ispc((ispc::rgba_surface*)src, block_scores, dst, list, &list_context, (ispc::astc_enc_settings*)settings);
 }
 

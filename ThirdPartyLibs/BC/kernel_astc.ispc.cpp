@@ -23,8 +23,8 @@ typedef U64 uint64;
 #define uniform
 #define varying
 #define export
-#define programIndex 0
-#define programCount 1
+//#define programIndex 0
+#define programCount 2 // 1=fails, >=2 OK
 #undef  far
 
 namespace ispc
@@ -1257,7 +1257,7 @@ void load_mode_parameters(uniform astc_mode* uniform mode, uniform uint32_t pack
     mode->endpoint_range = get_bits(packed_mode, 8, 12); // 0..20 <= 2^5
 }
 
-export void astc_rank_ispc(uniform rgba_surface src[], uniform int xx, uniform int yy, uniform uint32_t mode_buffer[], uniform astc_enc_settings settings[])
+export void astc_rank_ispc(uniform rgba_surface src[], uniform int xx, uniform int yy, uniform uint32_t mode_buffer[], uniform astc_enc_settings settings[], int programIndex) // ", int programIndex" ESENTHEL CHANGED
 {
     int tex_width = src->width / settings->block_width;
     if (xx + programIndex >= tex_width) return;
@@ -1315,6 +1315,8 @@ export void astc_rank_ispc(uniform rgba_surface src[], uniform int xx, uniform i
         mode_buffer[programCount * i + programIndex] = state->best_modes[i];
     }
 }
+// ESENTHEL CHANGED
+void astc_rank_ispc(rgba_surface src[], int xx, int yy, uint32_t mode_buffer[], astc_enc_settings settings[]) {for(int programIndex=0; programIndex<programCount; programIndex++)astc_rank_ispc(src, xx, yy, mode_buffer, settings, programIndex);}
 
 ///////////////////////////////////////////////////////////
 //				 ASTC candidate encoding
@@ -2227,7 +2229,7 @@ void load_block_parameters(astc_block block[], uint32_t mode, uniform astc_enc_c
     block->endpoint_range = get_bits(mode, 8, 12); // 0..20 <= 2^5
 }
 
-export void astc_encode_ispc(uniform rgba_surface src[], uniform float block_scores[], uniform uint8_t dst[], uniform uint64_t list[], uniform astc_enc_context list_context[], uniform astc_enc_settings settings[])
+export void astc_encode_ispc(uniform rgba_surface src[], uniform float block_scores[], uniform uint8_t dst[], uniform uint64_t list[], uniform astc_enc_context list_context[], uniform astc_enc_settings settings[], int programIndex) // ", int programIndex" ESENTHEL CHANGED
 {
     uint64_t entry = list[programIndex];
     uint32_t offset = entry >> 32;
@@ -2278,5 +2280,7 @@ export void astc_encode_ispc(uniform rgba_surface src[], uniform float block_sco
             scatter_uint((uint32_t*)dst, (yy * tex_width + xx) * 4 + i, state->data[i]);
     }
 }
+// ESENTHEL CHANGED
+void astc_encode_ispc(rgba_surface src[], float block_scores[], uint8_t dst[], uint64_t list[], astc_enc_context list_context[], astc_enc_settings settings[]) {for(int programIndex=0; programIndex<programCount; programIndex++)astc_encode_ispc(src, block_scores, dst, list, list_context, settings, programIndex);}
 
 } // namespace ispc ESENTHEL CHANGED
