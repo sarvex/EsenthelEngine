@@ -685,12 +685,12 @@ Int PaddedWidth(Int w, Int h, Int mip, IMAGE_TYPE type)
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-         UInt mip_w=Max(1, w>>mip);
+         UInt mip_w=Max(1, w>>mip); // 'UInt' for faster 'DivCeil'
          return Max(DivCeil(mip_w, (UInt)ti.block_w), 2)*ti.block_w; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
 
-   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=AlignCeil(mip_w, (UInt)ti.block_w);
+   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=AlignCeil(mip_w, (UInt)ti.block_w); // 'UInt' for faster 'AlignCeil'
    return mip_w;
 }
 Int PaddedHeight(Int w, Int h, Int mip, IMAGE_TYPE type)
@@ -703,12 +703,12 @@ Int PaddedHeight(Int w, Int h, Int mip, IMAGE_TYPE type)
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-         UInt mip_h=Max(1, h>>mip);
+         UInt mip_h=Max(1, h>>mip); // 'UInt' for faster 'DivCeil'
          return Max(DivCeil(mip_h, (UInt)ti.block_h), 2)*ti.block_h; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
 
-   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=AlignCeil(mip_h, (UInt)ti.block_h);
+   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=AlignCeil(mip_h, (UInt)ti.block_h); // 'UInt' for faster 'AlignCeil'
    return mip_h;
 }
 Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
@@ -721,11 +721,11 @@ Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-         UInt mip_w=Max(1, w>>mip);
+         UInt mip_w=Max(1, w>>mip); // 'UInt' for faster 'DivCeil'
          return Max(DivCeil(mip_w, (UInt)ti.block_w), 2)*ti.block_bytes; // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
-   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=DivCeil(mip_w, (UInt)ti.block_w);
+   UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=DivCeil(mip_w, (UInt)ti.block_w); // 'UInt' for faster 'DivCeil'
    return mip_w*ti.block_bytes;
 }
 Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
@@ -738,12 +738,12 @@ Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
       case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
       {
          w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2
-         UInt mip_h=Max(1, h>>mip);
+         UInt mip_h=Max(1, h>>mip); // 'UInt' for faster 'DivCeil'
          return Max(DivCeil(mip_h, (UInt)ti.block_h), 2); // PVRTC1 has min texture size (2bit=16x8, 4bit=8x8) which is equal to block*2
       }
    }
 
-   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=DivCeil(mip_h, (UInt)ti.block_h);
+   UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=DivCeil(mip_h, (UInt)ti.block_h); // 'UInt' for faster 'DivCeil'
    return mip_h;
 }
 Int ImagePitch2(Int w, Int h, Int mip, IMAGE_TYPE type)
