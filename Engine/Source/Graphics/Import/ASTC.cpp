@@ -30,24 +30,26 @@ struct ASTCContext
 #endif
  C Image *src;
    Image *dest;
-   Int    thread_blocks, threads;
+   Int    thread_blocks, threads, block_h;
    VecI2  size;
 
    ASTCContext(Image &dest)
    {
       T.dest=&dest;
+    C auto &ti=dest.hwTypeInfo();
+      block_h=ti.block_h;
    #if ASTC_ENC==ASTC_LIB_ISPC
       #if 1 // around 1.5x slower than BC7
-         GetProfile_astc_alpha_slow(&settings, 4, 4); // FIXME
+         GetProfile_astc_alpha_slow(&settings, ti.block_w, block_h);
       #else
-         GetProfile_astc_alpha_fast(&settings, 4, 4); // FIXME
+         GetProfile_astc_alpha_fast(&settings, ti.block_w, block_h);
       #endif
    #endif
    }
    void init(C Image &src)
    {
       T.src=&src;
-      Int total_blocks=size.y/4; // FIXME
+      Int total_blocks=size.y/block_h;
       threads  =Min(total_blocks, ImageThreads.threads1()); // +1 because we will do processing on the caller thread too
       thread_blocks=total_blocks/threads;
    }
@@ -55,13 +57,13 @@ struct ASTCContext
 /******************************************************************************/
 static void CompressASTCBlock(IntPtr elm_index, ASTCContext &data, Int thread_index)
 {
-   Int block_start=elm_index*data.thread_blocks, y_start=block_start*4; // FIXME
+   Int block_start=elm_index*data.thread_blocks, y_start=block_start*data.block_h;
 #if ASTC_ENC==ASTC_LIB_ISPC
    rgba_surface surf;
    surf.ptr   =ConstCast(data.src->data()+y_start*data.src->pitch());
    surf.stride=data.src->pitch();
    surf.width =data.size.x;
-   surf.height=((elm_index==data.threads-1) ? data.size.y-y_start : data.thread_blocks*4); // last thread must process all remaining blocks // FIXME
+   surf.height=((elm_index==data.threads-1) ? data.size.y-y_start : data.thread_blocks*data.block_h); // last thread must process all remaining blocks
    CompressBlocksASTC(&surf, data.dest->data() + block_start*data.dest->pitch(), &data.settings);
 #endif
 }
