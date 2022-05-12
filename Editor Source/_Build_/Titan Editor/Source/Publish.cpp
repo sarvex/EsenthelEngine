@@ -479,7 +479,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
             IMAGE_TYPE dest_type=IMAGE_NONE;
             if(android || iOS) // convert for android/ios, desktop/uwp/web/switch already have IMAGE_BC1 chosen
             {
-               dest_type=(android ? IMAGE_ETC2_RGB_SRGB : IMAGE_PVRTC1_4_SRGB);
+               dest_type=IMAGE_ETC2_RGB_SRGB; //(android ? IMAGE_ETC2_RGB_SRGB : IMAGE_PVRTC1_4_SRGB);
                mini_map_formats_path=Proj.formatPath(elm->id, FormatSuffix(dest_type));
                mini_map_formats_path.tailSlash(true);
                FCreateDirs(mini_map_formats_path);
@@ -630,7 +630,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
             if(android || iOS || (uwp && !UWPBC7) || (web && !WebBC7)) // desktop/switch platforms already have the best format chosen during image atlas creation
                if(ElmImageAtlas *data=elm->imageAtlasData())
                   if(data->compress())
-                     if(IMAGE_TYPE dest_type=(android ? IMAGE_ETC2_RGBA_SRGB : iOS ? IMAGE_PVRTC1_4_SRGB : uwp ? IMAGE_BC3_SRGB : IMAGE_BC3_SRGB)) // we assume that atlas images contain transparency
+                     if(IMAGE_TYPE dest_type=((android || iOS) ? IMAGE_ETC2_RGBA_SRGB : iOS ? IMAGE_PVRTC1_4_SRGB : uwp ? IMAGE_BC3_SRGB : IMAGE_BC3_SRGB)) // we assume that atlas images contain transparency
          {
             Str src_name=pfd.data.name,
                dest_name=Proj.formatPath(elm->id, FormatSuffix(dest_type));
@@ -658,7 +658,7 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
          if(elm->type==ELM_PANEL_IMAGE) // panel image
             if(android || iOS || (uwp && !UWPBC7) || (web && !WebBC7)) // desktop/switch platforms already have the best format chosen during image atlas creation
                if(ElmPanelImage *data=elm->panelImageData())
-                  if(IMAGE_TYPE dest_type=(android ? IMAGE_ETC2_RGBA_SRGB : iOS ? IMAGE_PVRTC1_4_SRGB : uwp ? IMAGE_BC3_SRGB : IMAGE_BC3_SRGB)) // we assume that panel images contain transparency
+                  if(IMAGE_TYPE dest_type=((android || iOS) ? IMAGE_ETC2_RGBA_SRGB : iOS ? IMAGE_PVRTC1_4_SRGB : uwp ? IMAGE_BC3_SRGB : IMAGE_BC3_SRGB)) // we assume that panel images contain transparency
          {
             Str src_name=pfd.data.name,
                dest_name=Proj.formatPath(elm->id, FormatSuffix(dest_type));
@@ -685,11 +685,11 @@ void AddPublishFiles(Memt<Elm*> &elms, MemPtr<PakFileData> files, Memc<ImageGene
          int change_type=-1; // sRGB is set below
          if(tex.quality<Edit::Material::FULL) // compress
          {
-            if(android)change_type=((tex.channels==1) ? (tex.sign() ? IMAGE_ETC2_R_SIGN : IMAGE_ETC2_R) : (tex.channels==2) ? (tex.sign() ? IMAGE_ETC2_RG_SIGN : IMAGE_ETC2_RG) : (tex.channels==3                   ) ? IMAGE_ETC2_RGB : IMAGE_ETC2_RGBA);else
-            if(iOS    )change_type=((tex.channels==1) ? (tex.sign() ? IMAGE_ETC2_R_SIGN : IMAGE_ETC2_R) : (tex.channels==2) ? (tex.sign() ? IMAGE_ETC2_RG_SIGN : IMAGE_ETC2_RG) : (tex.quality >=Edit::Material::MEDIUM) ? IMAGE_PVRTC1_4 : IMAGE_PVRTC1_2 );else
-            if(uwp    )change_type=((!UWPBC7 && tex.channels>=3) ? ((tex.channels==4) ? IMAGE_BC3 : IMAGE_BC1) : -1);else // here we only want to disable BC7
-            if(web    )change_type=((tex.channels<=2) ? -1 : WebBC7 ? ((tex.channels==4 || tex.quality>Edit::Material::MEDIUM) ?        -1 : IMAGE_BC1)  // texture could have alpha, however if we're not using it, then reduce to BC1 because it's only 4-bit per pixel
-                                                                    :   tex.channels==4                                      ? IMAGE_BC3 : IMAGE_BC1); // if BC7 not supported for Web, then use BC3
+            if(android || iOS)change_type=((tex.channels==1) ? (tex.sign() ? IMAGE_ETC2_R_SIGN : IMAGE_ETC2_R) : (tex.channels==2) ? (tex.sign() ? IMAGE_ETC2_RG_SIGN : IMAGE_ETC2_RG) : (tex.channels==3                   ) ? IMAGE_ETC2_RGB : IMAGE_ETC2_RGBA);else
+            if(iOS           )change_type=((tex.channels==1) ? (tex.sign() ? IMAGE_ETC2_R_SIGN : IMAGE_ETC2_R) : (tex.channels==2) ? (tex.sign() ? IMAGE_ETC2_RG_SIGN : IMAGE_ETC2_RG) : (tex.quality >=Edit::Material::MEDIUM) ? IMAGE_PVRTC1_4 : IMAGE_PVRTC1_2 );else
+            if(uwp           )change_type=((!UWPBC7 && tex.channels>=3) ? ((tex.channels==4) ? IMAGE_BC3 : IMAGE_BC1) : -1);else // here we only want to disable BC7
+            if(web           )change_type=((tex.channels<=2) ? -1 : WebBC7 ? ((tex.channels==4 || tex.quality>Edit::Material::MEDIUM) ?        -1 : IMAGE_BC1)  // texture could have alpha, however if we're not using it, then reduce to BC1 because it's only 4-bit per pixel
+                                                                           :   tex.channels==4                                      ? IMAGE_BC3 : IMAGE_BC1); // if BC7 not supported for Web, then use BC3
             if(change_type>=0 && tex.sRGB())change_type=ImageTypeIncludeSRGB((IMAGE_TYPE)change_type); // set sRGB
          }
 

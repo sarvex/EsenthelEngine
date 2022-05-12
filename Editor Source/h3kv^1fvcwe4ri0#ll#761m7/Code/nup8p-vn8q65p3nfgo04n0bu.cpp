@@ -1720,7 +1720,8 @@ class ElmImage : ElmData
    bool       hasAlpha2  ()C {return hasAlpha() || alphaLum();}
    bool       hasAlpha3  ()C {return ignoreAlpha() ? false : hasAlpha2();}
    IMAGE_TYPE androidType()C {return             (type==COMPRESSED                || type==COMPRESSED2)  ? hasAlpha3() ? (sRGB() ? IMAGE_ETC2_RGBA_SRGB : IMAGE_ETC2_RGBA) : (sRGB() ? IMAGE_ETC2_RGB_SRGB : IMAGE_ETC2_RGB) : IMAGE_NONE;} // if want to be compressed then use ETC2_RGBA or ETC2_RGB
-   IMAGE_TYPE     iOSType()C {return             (type==COMPRESSED                || type==COMPRESSED2)  ?               (sRGB() ? IMAGE_PVRTC1_4_SRGB  : IMAGE_PVRTC1_4 )                                                   : IMAGE_NONE;} // if want to be compressed then use PVRTC1_4
+   IMAGE_TYPE     iOSType()C {return androidType();}
+ //IMAGE_TYPE     iOSType()C {return             (type==COMPRESSED                || type==COMPRESSED2)  ?               (sRGB() ? IMAGE_PVRTC1_4_SRGB  : IMAGE_PVRTC1_4 )                                                   : IMAGE_NONE;} // if want to be compressed then use PVRTC1_4
    IMAGE_TYPE     uwpType()C {return (!UWPBC7 && (type==COMPRESSED && hasAlpha3() || type==COMPRESSED2)) ? hasAlpha3() ? (sRGB() ? IMAGE_BC3_SRGB       : IMAGE_BC3      ) : (sRGB() ? IMAGE_BC1_SRGB      : IMAGE_BC1     ) : IMAGE_NONE;} // in this case we only want to replace BC7 format, which will happen only if image is COMPRESSED with alpha, or COMPRESSED2
    IMAGE_TYPE     webType()C {return (!WebBC7 && (type==COMPRESSED && hasAlpha3() || type==COMPRESSED2)) ? hasAlpha3() ? (sRGB() ? IMAGE_BC3_SRGB       : IMAGE_BC3      ) : (sRGB() ? IMAGE_BC1_SRGB      : IMAGE_BC1     ) : IMAGE_NONE;} // in this case we only want to replace BC7 format, which will happen only if image is COMPRESSED with alpha, or COMPRESSED2
 
@@ -2135,7 +2136,8 @@ class ElmIcon : ElmData
    bool          hasColor(             )C {return FlagOn(flag, HAS_COLOR);}   ElmIcon& hasColor(bool on) {FlagSet(flag, HAS_COLOR, on); return T;}
    bool          hasAlpha(             )C {return FlagOn(flag, HAS_ALPHA);}   ElmIcon& hasAlpha(bool on) {FlagSet(flag, HAS_ALPHA, on); return T;}
    IMAGE_TYPE androidType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return             (type==ElmImage.COMPRESSED               || type==ElmImage.COMPRESSED2)  ? hasAlpha() ? IMAGE_ETC2_RGBA_SRGB : IMAGE_ETC2_RGB_SRGB : IMAGE_NONE;} // if want to be compressed then use ETC2_RGBA or ETC2_RGB
-   IMAGE_TYPE     iOSType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return             (type==ElmImage.COMPRESSED               || type==ElmImage.COMPRESSED2)  ?              IMAGE_PVRTC1_4_SRGB                        : IMAGE_NONE;} // if want to be compressed then use PVRTC1_4
+   IMAGE_TYPE     iOSType(Project *proj)C {return androidType(proj);}
+ //IMAGE_TYPE     iOSType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return             (type==ElmImage.COMPRESSED               || type==ElmImage.COMPRESSED2)  ?              IMAGE_PVRTC1_4_SRGB                        : IMAGE_NONE;} // if want to be compressed then use PVRTC1_4
    IMAGE_TYPE     uwpType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return (!UWPBC7 && (type==ElmImage.COMPRESSED && hasAlpha() || type==ElmImage.COMPRESSED2)) ? hasAlpha() ? IMAGE_BC3_SRGB       : IMAGE_BC1_SRGB      : IMAGE_NONE;} // in this case we only want to replace BC7 format, which will happen only if image is COMPRESSED with alpha, or COMPRESSED2
    IMAGE_TYPE     webType(Project *proj)C {ElmImage.TYPE type=T.type(proj); return (!WebBC7 && (type==ElmImage.COMPRESSED && hasAlpha() || type==ElmImage.COMPRESSED2)) ? hasAlpha() ? IMAGE_BC3_SRGB       : IMAGE_BC1_SRGB      : IMAGE_NONE;} // in this case we only want to replace BC7 format, which will happen only if image is COMPRESSED with alpha, or COMPRESSED2
 
