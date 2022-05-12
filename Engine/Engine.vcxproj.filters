@@ -1002,9 +1002,6 @@
     <ClInclude Include="Source\Graphics\Import\ETC.h">
       <Filter>Source\Graphics\Import</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Graphics\Import\PVRTC.h">
-      <Filter>Source\Graphics\Import</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Code\Compile\CE Func List.h">
       <Filter>Source\Code\Compile</Filter>
     </ClInclude>

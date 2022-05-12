@@ -23,6 +23,11 @@ namespace EE{
 /******************************************************************************/
 Bool (*CompressASTC)(C Image &src, Image &dest);
 /******************************************************************************/
+Bool DecompressASTC(C Image &src, Image &dest, Int max_mip_maps=INT_MAX)
+{
+   return false; // FIXME: TODO:
+}
+/******************************************************************************/
 struct ASTCContext
 {
 #if ASTC_ENC==ASTC_LIB_ISPC

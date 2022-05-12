@@ -4,7 +4,8 @@ namespace EE{
 /******************************************************************************/
 #include "Import/BC.h"
 #include "Import/ETC.h"
-#include "Import/PVRTC.h"
+Bool DecompressPVRTC(C Image &src, Image &dest, Int max_mip_maps=INT_MAX);
+Bool DecompressASTC (C Image &src, Image &dest, Int max_mip_maps=INT_MAX);
 
 #if DX11
    // make sure that there's direct mapping for cube face
@@ -1819,10 +1820,6 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
    {
       default: return false;
 
-      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
-      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
-         return DecompressPVRTC(src, dest, max_mip_maps);
-
       case IMAGE_BC1         : case IMAGE_BC1_SRGB       : decompress_block       =DecompressBlockBC1      ; decompress_block_pitch       =DecompressBlockBC1      ; break;
       case IMAGE_BC2         : case IMAGE_BC2_SRGB       : decompress_block       =DecompressBlockBC2      ; decompress_block_pitch       =DecompressBlockBC2      ; break;
       case IMAGE_BC3         : case IMAGE_BC3_SRGB       : decompress_block       =DecompressBlockBC3      ; decompress_block_pitch       =DecompressBlockBC3      ; break;
@@ -1840,6 +1837,20 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
       case IMAGE_ETC2_RGB    : case IMAGE_ETC2_RGB_SRGB  : decompress_block       =DecompressBlockETC2RGB  ; decompress_block_pitch       =DecompressBlockETC2RGB  ; break;
       case IMAGE_ETC2_RGBA1  : case IMAGE_ETC2_RGBA1_SRGB: decompress_block       =DecompressBlockETC2RGBA1; decompress_block_pitch       =DecompressBlockETC2RGBA1; break;
       case IMAGE_ETC2_RGBA   : case IMAGE_ETC2_RGBA_SRGB : decompress_block       =DecompressBlockETC2RGBA ; decompress_block_pitch       =DecompressBlockETC2RGBA ; break;
+
+      case IMAGE_PVRTC1_2: case IMAGE_PVRTC1_2_SRGB:
+      case IMAGE_PVRTC1_4: case IMAGE_PVRTC1_4_SRGB:
+         return DecompressPVRTC(src, dest, max_mip_maps);
+
+      case IMAGE_ASTC_4x4: case IMAGE_ASTC_4x4_SRGB:
+      case IMAGE_ASTC_5x4: case IMAGE_ASTC_5x4_SRGB:
+      case IMAGE_ASTC_5x5: case IMAGE_ASTC_5x5_SRGB:
+      case IMAGE_ASTC_6x5: case IMAGE_ASTC_6x5_SRGB:
+      case IMAGE_ASTC_6x6: case IMAGE_ASTC_6x6_SRGB:
+      case IMAGE_ASTC_8x5: case IMAGE_ASTC_8x5_SRGB:
+      case IMAGE_ASTC_8x6: case IMAGE_ASTC_8x6_SRGB:
+      case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
+         return DecompressASTC(src, dest, max_mip_maps);
    }
    if(dest.is() || dest.createTry(src.w(), src.h(), src.d(), decompress_block        ? (src.sRGB() ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8) // use 'IMAGE_R8G8B8A8'  because Decompress Block functions operate on 'Color'
                                                            : decompress_block_SByte  ?               IMAGE_R8_SIGN                         // use 'IMAGE_R8_SIGN'   because Decompress Block functions operate on 'SByte'
