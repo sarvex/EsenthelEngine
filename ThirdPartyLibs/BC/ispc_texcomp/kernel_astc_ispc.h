@@ -66,7 +66,7 @@ struct astc_enc_settings {
 struct astc_block {
     int32_t width;
     int32_t height;
-    bool dual_plane;
+    uint8_t dual_plane;
     int32_t weight_range;
     uint8_t weights[64];
     int32_t color_component_selector;
