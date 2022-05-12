@@ -124,6 +124,12 @@ enum IMAGE_TYPE : Byte // Image Type, comments specify in which mode the type is
 
    IMAGE_ASTC_4x4     , // ASTC 8.00-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_4x4_SRGB, // ASTC 8.00-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_5x4     , // ASTC 6.40-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_5x4_SRGB, // ASTC 6.40-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_5x5     , // ASTC 5.12-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_5x5_SRGB, // ASTC 5.12-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_6x5     , // ASTC 4.27-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
+   IMAGE_ASTC_6x5_SRGB, // ASTC 4.27-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_6x6     , // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_6x6_SRGB, // ASTC 3.56-bit lossy RGBA compression (R,G,B,A), sRGB   gamma, Soft, partial GL, GL ES
    IMAGE_ASTC_8x8     , // ASTC 2.00-bit lossy RGBA compression (R,G,B,A), linear gamma, Soft, partial GL, GL ES
