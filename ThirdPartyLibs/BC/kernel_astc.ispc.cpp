@@ -24,7 +24,7 @@ typedef U64 uint64;
 #define varying
 #define export
 //#define programIndex 0
-#define programCount 2 // 1=fails, >=2 OK
+#define programCount 2 // 1=fails, >=2 OK - https://github.com/GameTechDev/ISPCTextureCompressor/issues/34
 #undef  far
 
 namespace ispc
