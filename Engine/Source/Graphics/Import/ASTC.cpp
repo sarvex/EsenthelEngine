@@ -37,7 +37,7 @@ struct ASTCContext
    {
       T.dest=&dest;
    #if ASTC_ENC==ASTC_LIB_ISPC
-      #if 0 // FIXME which one?
+      #if 1 // around 1.5x slower than BC7
          GetProfile_astc_alpha_slow(&settings, 4, 4); // FIXME
       #else
          GetProfile_astc_alpha_fast(&settings, 4, 4); // FIXME
