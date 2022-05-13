@@ -2709,6 +2709,9 @@
     <Library Include="..\ThirdPartyLibs\Kartridge\Windows\kartridge-sdk-x86.lib">
       <Filter>H\_\Libs\32</Filter>
     </Library>
+    <Library Include="..\ThirdPartyLibs\BC\x64\Release Universal\ispc_texcomp.lib">
+      <Filter>H\_\Libs\64\Universal</Filter>
+    </Library>
   </ItemGroup>
   <ItemGroup>
     <Object Include="..\NintendoSwitch\ThirdPartyLibs\Zstd\zstd_common.o">
