@@ -509,50 +509,62 @@ static Bool            AssertionIDValid;
 static IOPMAssertionID AssertionID;
 #endif
 #if !SWITCH
+static void SetStayAwake() {App.setStayAwake();}
+void Application::setStayAwake()
+{
+#if IOS // can be called only on the main thread
+   if(!App.mainThread()){App._callbacks.include(SetStayAwake); return;}
+#endif
+
+   auto mode=_stay_awake;
+
+#if DESKTOP
+   if(mode==AWAKE_SCREEN) // if we want to keep the screen on
+      if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
+         mode=AWAKE_OFF; // then disable staying awake
+#endif
+
+#if WINDOWS_OLD
+   SetThreadExecutionState(ES_CONTINUOUS|((mode==AWAKE_OFF) ? 0 : (mode==AWAKE_SCREEN) ? ES_DISPLAY_REQUIRED : ES_SYSTEM_REQUIRED));
+#elif WINDOWS_NEW
+   if(StayAwake!=(mode!=AWAKE_OFF)) // !! CALLS TO 'DisplayRequest' ARE CUMULATIVE, SO CALL ONLY ON CHANGE !! - https://docs.microsoft.com/en-us/uwp/api/windows.system.display.displayrequest
+      if(DisplayRequest)
+   {
+      try // need try/catch because can throw
+      {   // can be called on secondary threads
+         if(StayAwake)DisplayRequest->RequestRelease(); // here 'StayAwake' means current state (before change)
+         else         DisplayRequest->RequestActive ();
+         StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
+      }
+      catch(...){}
+   }
+#elif MAC
+   if(AssertionIDValid){IOPMAssertionRelease(AssertionID); AssertionIDValid=false;} // release current
+   if(mode && IOPMAssertionCreateWithName((mode==AWAKE_SCREEN) ? kIOPMAssertionTypeNoDisplaySleep : kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("Busy"), &AssertionID)==kIOReturnSuccess)AssertionIDValid=true;
+#elif ANDROID
+   if(mode==AWAKE_SYSTEM) // if we want to keep the system on
+      if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
+         mode=AWAKE_OFF; // then disable staying awake
+   JNI jni;
+   if(jni && ActivityClass)
+   if(JMethodID stayAwake=jni.staticFunc(ActivityClass, "stayAwake", "(I)V"))
+      jni->CallStaticVoidMethod(ActivityClass, stayAwake, jint(mode));
+#elif IOS
+   [UIApplication sharedApplication].idleTimerDisabled=(mode!=AWAKE_OFF);
+#elif LINUX
+   // TODO: add 'stayAwake' support for Linux
+#endif
+}
+#endif
 Application& Application::stayAwake(AWAKE_MODE mode)
 {
    if(_stay_awake!=mode)
    {
      _stay_awake=mode;
-   #if DESKTOP
-      if(mode==AWAKE_SCREEN) // if we want to keep the screen on
-         if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
-            mode=AWAKE_OFF; // then disable staying awake
-   #endif
-   #if WINDOWS_OLD
-      SetThreadExecutionState(ES_CONTINUOUS|((mode==AWAKE_OFF) ? 0 : (mode==AWAKE_SCREEN) ? ES_DISPLAY_REQUIRED : ES_SYSTEM_REQUIRED));
-   #elif WINDOWS_NEW
-      if(StayAwake!=(mode!=AWAKE_OFF)) // !! CALLS TO 'DisplayRequest' ARE CUMULATIVE, SO CALL ONLY ON CHANGE !! - https://docs.microsoft.com/en-us/uwp/api/windows.system.display.displayrequest
-         if(DisplayRequest)
-      {
-         try // need try/catch because can throw
-         {   // can be called on secondary threads
-            if(StayAwake)DisplayRequest->RequestRelease(); // here 'StayAwake' means current state (before change)
-            else         DisplayRequest->RequestActive ();
-            StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
-         }
-         catch(...){}
-      }
-   #elif MAC
-      if(AssertionIDValid){IOPMAssertionRelease(AssertionID); AssertionIDValid=false;} // release current
-      if(mode && IOPMAssertionCreateWithName((mode==AWAKE_SCREEN) ? kIOPMAssertionTypeNoDisplaySleep : kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("Busy"), &AssertionID)==kIOReturnSuccess)AssertionIDValid=true;
-   #elif ANDROID
-      if(mode==AWAKE_SYSTEM) // if we want to keep the system on
-         if(!(active() || FlagOn(App.flag, APP_WORK_IN_BACKGROUND))) // however the app is not focused
-            mode=AWAKE_OFF; // then disable staying awake
-      JNI jni;
-      if(jni && ActivityClass)
-      if(JMethodID stayAwake=jni.staticFunc(ActivityClass, "stayAwake", "(I)V"))
-         jni->CallStaticVoidMethod(ActivityClass, stayAwake, jint(mode));
-   #elif IOS
-      [UIApplication sharedApplication].idleTimerDisabled=(mode!=AWAKE_OFF);
-   #elif LINUX
-      // TODO: add 'stayAwake' support for Linux
-   #endif
+      setStayAwake();
    }
    return T;
 }
-#endif
 /******************************************************************************/
 void Application::activeOrBackFullChanged()
 {
@@ -607,7 +619,7 @@ void Application::setActive(Bool active)
          else      {if(T. paused)T. paused();}
       }
    #if DESKTOP || ANDROID // also on Android in case a new Activity/Window was created, call this after potential 'paused/resumed' in case user modifies APP_WORK_IN_BACKGROUND which affect 'stayAwake'
-      if(_stay_awake){AWAKE_MODE temp=_stay_awake; _stay_awake=AWAKE_OFF; stayAwake(temp);} // reset sleeping when app gets de/activated
+      if(_stay_awake)setStayAwake(); // reset sleeping when app gets de/activated
    #endif
      _initialized=true;
    #if IOS
@@ -1197,7 +1209,7 @@ Bool Application::create1()
    window().activate(); // manually activate because on Windows if application is loading for a long time, then it might lose focus
 #endif
 #if ANDROID
-   if(_stay_awake){AWAKE_MODE temp=_stay_awake; _stay_awake=AWAKE_OFF; stayAwake(temp);} // on Android we need to apply this after window was created
+   if(_stay_awake)setStayAwake(); // on Android we need to apply this after window was created
 #endif
    if(LogInit)LogN("Init");
    if(!Init())return false;

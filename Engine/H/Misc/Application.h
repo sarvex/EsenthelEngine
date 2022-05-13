@@ -149,6 +149,7 @@ struct Application // Application Settings
    Bool activeOrBackFull       ()C {return _active || _back_full;}
    void activeOrBackFullChanged();
    void setActive(Bool active);
+   void setStayAwake();
 
    Bool testInstance  ();
    void windowCreate  ();
