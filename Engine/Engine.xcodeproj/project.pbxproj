@@ -875,9 +875,6 @@
 		3778B76C21F71218001D764E /* FBSDKCoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76721F71213001D764E /* FBSDKCoreKit.a */; };
 		3778B76D21F71218001D764E /* FBSDKLoginKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76621F71213001D764E /* FBSDKLoginKit.a */; };
 		3778B76E21F71218001D764E /* FBSDKShareKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76821F71213001D764E /* FBSDKShareKit.a */; };
-		3778B76F21F7121A001D764E /* FBSDKCoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76721F71213001D764E /* FBSDKCoreKit.a */; };
-		3778B77021F7121A001D764E /* FBSDKLoginKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76621F71213001D764E /* FBSDKLoginKit.a */; };
-		3778B77121F7121A001D764E /* FBSDKShareKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76821F71213001D764E /* FBSDKShareKit.a */; };
 		377E23621ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
 		377E23631ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
 		377E23641ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
@@ -1709,7 +1706,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3778B76F21F7121A001D764E /* FBSDKCoreKit.a in Frameworks */,
 				3716E2C41BB8EB990037177D /* libSnappy.a in Frameworks */,
 				3716E2901BB8EA140037177D /* libJpegTurbo.a in Frameworks */,
 				3716E2B01BB8EAF10037177D /* libOgg.a in Frameworks */,
@@ -1719,7 +1715,6 @@
 				3706B2E81E972C190057BFB5 /* libFDK-AAC.a in Frameworks */,
 				377FCFB81B1826E90007F1BD /* libChartboost.a in Frameworks */,
 				3716E29A1BB8EA7A0037177D /* libLZHAM.a in Frameworks */,
-				3778B77021F7121A001D764E /* FBSDKLoginKit.a in Frameworks */,
 				3716E2B21BB8EB050037177D /* libOpus.a in Frameworks */,
 				3716E28E1BB8E95D0037177D /* libFlac.a in Frameworks */,
 				3747E0AD21AE44BC0001AFC5 /* libGameAnalytics.a in Frameworks */,
@@ -1731,7 +1726,6 @@
 				3716E2861BB8E9000037177D /* libBullet.a in Frameworks */,
 				3716E2B81BB8EB310037177D /* libPng.a in Frameworks */,
 				3716E2A41BB8EAA50037177D /* libLZMA.a in Frameworks */,
-				3778B77121F7121A001D764E /* FBSDKShareKit.a in Frameworks */,
 				3716E2E61BB8EC840037177D /* libWebP.a in Frameworks */,
 				37A8F9CC18F782DE00B1A466 /* libGoogleMobileAds.a in Frameworks */,
 				3716E2CA1BB8EBDA0037177D /* libSQLite.a in Frameworks */,
