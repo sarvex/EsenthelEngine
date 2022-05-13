@@ -501,8 +501,10 @@ Application& Application::lang(LANG_TYPE lang)
    return T;
 }
 /******************************************************************************/
-#if MAC
-static Bool            AssertionIDValid=false;
+#if WINDOWS_NEW
+static Bool            StayAwake;
+#elif MAC
+static Bool            AssertionIDValid;
 static IOPMAssertionID AssertionID;
 #endif
 #if !SWITCH
@@ -519,8 +521,16 @@ Application& Application::stayAwake(AWAKE_MODE mode)
    #if WINDOWS_OLD
       SetThreadExecutionState(ES_CONTINUOUS|((mode==AWAKE_OFF) ? 0 : (mode==AWAKE_SCREEN) ? ES_DISPLAY_REQUIRED : ES_SYSTEM_REQUIRED));
    #elif WINDOWS_NEW
-      static Windows::System::Display::DisplayRequest DR; // can't be set as a global var, because crash will happen at its constructor due to system not initialized yet
-      if(mode==AWAKE_OFF)DR.RequestRelease();else DR.RequestActive();
+      if(StayAwake!=(mode!=AWAKE_OFF)) // !! CALLS TO 'DisplayRequest' ARE CUMULATIVE, SO CALL ONLY ON CHANGE !! - https://docs.microsoft.com/en-us/uwp/api/windows.system.display.displayrequest
+      {
+         static Windows::System::Display::DisplayRequest DR; // can't be set as a global var, because crash will happen at its constructor due to system not initialized yet
+         try
+         {
+            if(StayAwake)DR.RequestRelease();else DR.RequestActive();
+               StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
+         }
+         catch(...){}
+      }
    #elif MAC
       if(AssertionIDValid){IOPMAssertionRelease(AssertionID); AssertionIDValid=false;} // release current
       if(mode && IOPMAssertionCreateWithName((mode==AWAKE_SCREEN) ? kIOPMAssertionTypeNoDisplaySleep : kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("Busy"), &AssertionID)==kIOReturnSuccess)AssertionIDValid=true;
