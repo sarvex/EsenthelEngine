@@ -4,8 +4,6 @@ WINDOWS
 First unpack the Intel compiler from "Unpack here before recompiling (Win).7z" to the same folder.
 The compiler is of version 1.19.0dev
 
-replace all "export" in "kernel.ispc" and "kernel_astc.ispc" with "static export" which prevents from generating *.exp and *.lib when building apps using this library
-
 remember about applying the line in "kernel.ispc\ep_quant0367":
         if(channels==4 && ep[i*4+3]<=0.5f)err0=-1; // ESENTHEL CHANGED, BC7 allows to encode end points in 2 quantized modes, #1 standard, #2 add "0.5*levels" to all channels (1 extra bit precision, however it affects all channels at the same time, so if we have alpha=0, but RGB channels have smaller error with the extra 0.5 value, then alpha would get the +0.5 too, and it could destroy complete transparency, so this code always forces #1 version if we have alpha=0)
 

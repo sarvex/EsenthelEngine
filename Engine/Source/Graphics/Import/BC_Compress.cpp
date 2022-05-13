@@ -1,6 +1,6 @@
 /******************************************************************************
 
-   Have to keep this as a separate file, so it won't be linked if unused.
+   !! KEEP THIS AS SEPARATE CPP, SO WHEN UNUSED IT WON'T INCREASE BINARY SIZE !!
 
    BC7 - If entire block has the same alpha value, then it's best when that alpha is equal to 255,
       because in that mode, RGB will have more precision.

@@ -973,6 +973,9 @@
 		37E70CD31FEC8DCE00F10018 /* libmbedTLS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E70CD21FEC8DCE00F10018 /* libmbedTLS.a */; };
 		37E70CD51FEC8DDE00F10018 /* libmbedTLS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E70CD41FEC8DDD00F10018 /* libmbedTLS.a */; };
 		37E70CD71FEC8DF000F10018 /* libmbedTLS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37E70CD61FEC8DF000F10018 /* libmbedTLS.a */; };
+		37ECD8D1282E46C100CF0962 /* ASTC_Compress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37ECD8D0282E46C100CF0962 /* ASTC_Compress.cpp */; };
+		37ECD8D2282E46C100CF0962 /* ASTC_Compress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37ECD8D0282E46C100CF0962 /* ASTC_Compress.cpp */; };
+		37ECD8D3282E46C100CF0962 /* ASTC_Compress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37ECD8D0282E46C100CF0962 /* ASTC_Compress.cpp */; };
 		37F025632580CC07005583A8 /* HDR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37F025622580CC07005583A8 /* HDR.cpp */; };
 		37F025642580CC07005583A8 /* HDR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37F025622580CC07005583A8 /* HDR.cpp */; };
 		37F025652580CC07005583A8 /* HDR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37F025622580CC07005583A8 /* HDR.cpp */; };
@@ -1682,6 +1685,7 @@
 		37E70CD21FEC8DCE00F10018 /* libmbedTLS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedTLS.a; path = ../ThirdPartyLibs/mbedTLS/Mac/Build/Release/libmbedTLS.a; sourceTree = "<group>"; };
 		37E70CD41FEC8DDD00F10018 /* libmbedTLS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedTLS.a; path = "../ThirdPartyLibs/mbedTLS/Mac/Build/Release-iphoneos/libmbedTLS.a"; sourceTree = "<group>"; };
 		37E70CD61FEC8DF000F10018 /* libmbedTLS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedTLS.a; path = "../ThirdPartyLibs/mbedTLS/Mac/Build/Release-iphonesimulator/libmbedTLS.a"; sourceTree = "<group>"; };
+		37ECD8D0282E46C100CF0962 /* ASTC_Compress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ASTC_Compress.cpp; sourceTree = "<group>"; };
 		37F025622580CC07005583A8 /* HDR.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HDR.cpp; sourceTree = "<group>"; };
 		37F5ECC521B6269C0045D7DE /* Voxel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Voxel.cpp; sourceTree = "<group>"; };
 		37F5ECC921B626C90045D7DE /* Voxel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Voxel.h; sourceTree = "<group>"; };
@@ -2039,6 +2043,7 @@
 		0B18992012DA3FD300499CA9 /* Import */ = {
 			isa = PBXGroup;
 			children = (
+				37ECD8D0282E46C100CF0962 /* ASTC_Compress.cpp */,
 				37916A4E282D5CA0009EAF63 /* ASTC.cpp */,
 				377E23601ADC91550035617E /* BC.cpp */,
 				378590FF1F9DAE1400F8950C /* BC_Compress.cpp */,
@@ -3315,6 +3320,7 @@
 				0B18A0DE12DA4DA400499CA9 /* IO.cpp in Sources */,
 				0B18A0DF12DA4DA400499CA9 /* Pak.cpp in Sources */,
 				0B18A11612DA4E3500499CA9 /* EAGLView.mm in Sources */,
+				37ECD8D3282E46C100CF0962 /* ASTC_Compress.cpp in Sources */,
 				379084AB1B3E624C00B8E7DC /* Object.cpp in Sources */,
 				0B18A11812DA4E3500499CA9 /* iOSAppDelegate.mm in Sources */,
 				3773600B1B1822D30026D698 /* AdMob.cpp in Sources */,
@@ -3702,6 +3708,7 @@
 				0BFCAE00148C200100A3C772 /* Image Pixel.cpp in Sources */,
 				0BFCAE03148C200100A3C772 /* Image.cpp in Sources */,
 				0B0C86FD152D5E860094E5C2 /* Android.cpp in Sources */,
+				37ECD8D1282E46C100CF0962 /* ASTC_Compress.cpp in Sources */,
 				0BFABA581578F775009FA7D9 /* Image Atlas.cpp in Sources */,
 				0B002CC41594A6EB005892FA /* ICO.cpp in Sources */,
 				3773600C1B1822D30026D698 /* Chartboost.cpp in Sources */,
@@ -3925,6 +3932,7 @@
 				0B18A0D212DA4DA400499CA9 /* Chunk.cpp in Sources */,
 				0B18A0D312DA4DA400499CA9 /* File Text.cpp in Sources */,
 				0B18A0D512DA4DA400499CA9 /* File.cpp in Sources */,
+				37ECD8D2282E46C100CF0962 /* ASTC_Compress.cpp in Sources */,
 				0B18A0D612DA4DA400499CA9 /* IO.cpp in Sources */,
 				0B18A0D712DA4DA400499CA9 /* Pak.cpp in Sources */,
 				379084AA1B3E624C00B8E7DC /* Object.cpp in Sources */,

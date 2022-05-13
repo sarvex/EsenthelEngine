@@ -2183,6 +2183,9 @@
     <ClCompile Include="Source\Graphics\Import\ASTC.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Import\ASTC_Compress.cpp">
+      <Filter>Source\Graphics\Import</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Platforms\Mac\MyApplication.mm">
