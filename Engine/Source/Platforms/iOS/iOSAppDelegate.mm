@@ -58,7 +58,9 @@ static void UpdateMagnetometer(CLHeading *heading)
    }  if(LocationManager[true])UpdateMagnetometer(LocationManager[true].heading);
 
    // Facebook
+#if !IOS_SIMULATOR
    [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+#endif
 
    return true;
 }
@@ -72,7 +74,9 @@ static void UpdateMagnetometer(CLHeading *heading)
    if(App._closed)return; // do nothing if app called 'Exit'
    App.setActive(true);
    // Facebook
+#if !IOS_SIMULATOR
    [FBSDKAppEvents activateApp];
+#endif
 }
 -(void)applicationDidEnterBackground:(UIApplication*)application
 {
@@ -109,6 +113,7 @@ static void UpdateMagnetometer(CLHeading *heading)
 /******************************************************************************
 // FACEBOOK
 /******************************************************************************/
+#if !IOS_SIMULATOR
 -(BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id>*)options
 {
    BOOL   handled=[[FBSDKApplicationDelegate sharedInstance] application:application openURL:url sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey] annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
@@ -117,6 +122,7 @@ static void UpdateMagnetometer(CLHeading *heading)
 -(void)sharer         :(id<FBSDKSharing>)sharer didCompleteWithResults:(NSDictionary*)results {if(auto callback=FB.callback)callback(Facebook::POST_SUCCESS);} // copy first to temp var to avoid multi-threading issues
 -(void)sharer         :(id<FBSDKSharing>)sharer didFailWithError      :(NSError     *)error   {if(auto callback=FB.callback)callback(Facebook::POST_ERROR  );} // copy first to temp var to avoid multi-threading issues
 -(void)sharerDidCancel:(id<FBSDKSharing>)sharer;                                              {if(auto callback=FB.callback)callback(Facebook::POST_CANCEL );} // copy first to temp var to avoid multi-threading issues
+#endif
 /******************************************************************************/
 @end
 /******************************************************************************/

@@ -911,6 +911,7 @@ TaskBase TaskBases[]=
    {"Clean Apple"               , "Clean temporary files generated during Engine compilation for Apple platforms"       ,   CleanEngineApple        , false},
    {"Compile Mac"               , "Compile the Engine in Release mode for Mac only"                                     , CompileEngineMac          , false},
    {"Compile iOS"               , "Compile the Engine in Release mode for iOS only"                                     , CompileEngineiOS          , false},
+   {"Compile iOS Simulator"     , "Compile the Engine in Release mode for iOS Simulator only"                           , CompileEngineiOSSimulator , false},
    {"Compile Apple"             , "Compile the Engine in Release mode for all Apple platforms (Mac, iOS, iOS Simulator)", CompileEngineApple        , true , true},
    {"Compile Mac (Debug)"       , "Compile the Engine in Debug mode for Mac only"                                       , CompileEngineDebugMac     , false},
    {"Compile iOS (Debug)"       , "Compile the Engine in Debug mode for iOS only"                                       , CompileEngineDebugiOS     , false},
