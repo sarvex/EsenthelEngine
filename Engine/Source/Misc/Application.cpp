@@ -526,9 +526,10 @@ Application& Application::stayAwake(AWAKE_MODE mode)
          if(DisplayRequest)
       {
          try // need try/catch because can throw
-         {
-            if(StayAwake)DisplayRequest->RequestRelease();else DisplayRequest->RequestActive(); // can be called on secondary threads
-               StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
+         {   // can be called on secondary threads
+            if(StayAwake)DisplayRequest->RequestRelease(); // here 'StayAwake' means current state (before change)
+            else         DisplayRequest->RequestActive ();
+            StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
          }
          catch(...){}
       }
