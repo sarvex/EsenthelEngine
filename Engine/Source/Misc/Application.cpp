@@ -502,7 +502,8 @@ Application& Application::lang(LANG_TYPE lang)
 }
 /******************************************************************************/
 #if WINDOWS_NEW
-static Bool            StayAwake;
+static Bool                                      StayAwake;
+static Windows::System::Display::DisplayRequest ^DisplayRequest; // need to be as pointer, because crash happens if constructor is called on app startup. can't be created inside 'stayAwake' because crash will happen if that was called on secondary thread, must be created on main thread
 #elif MAC
 static Bool            AssertionIDValid;
 static IOPMAssertionID AssertionID;
@@ -522,11 +523,11 @@ Application& Application::stayAwake(AWAKE_MODE mode)
       SetThreadExecutionState(ES_CONTINUOUS|((mode==AWAKE_OFF) ? 0 : (mode==AWAKE_SCREEN) ? ES_DISPLAY_REQUIRED : ES_SYSTEM_REQUIRED));
    #elif WINDOWS_NEW
       if(StayAwake!=(mode!=AWAKE_OFF)) // !! CALLS TO 'DisplayRequest' ARE CUMULATIVE, SO CALL ONLY ON CHANGE !! - https://docs.microsoft.com/en-us/uwp/api/windows.system.display.displayrequest
+         if(DisplayRequest)
       {
-         static Windows::System::Display::DisplayRequest DR; // can't be set as a global var, because crash will happen at its constructor due to system not initialized yet
-         try
+         try // need try/catch because can throw
          {
-            if(StayAwake)DR.RequestRelease();else DR.RequestActive();
+            if(StayAwake)DisplayRequest->RequestRelease();else DisplayRequest->RequestActive(); // can be called on secondary threads
                StayAwake^=1; // !! CHANGE AFTER CALL !! because if failed then exception is thrown and this is not called
          }
          catch(...){}
@@ -1132,6 +1133,7 @@ Bool Application::create0()
    TouchesSupported=(GetSystemMetrics(SM_MAXIMUMTOUCHES)>0);
 #elif WINDOWS_NEW
    TouchesSupported=(Windows::Devices::Input::TouchCapabilities().TouchPresent>0);
+   try{DisplayRequest=ref new Windows::System::Display::DisplayRequest;}catch(...){} // need try/catch because can throw
 #elif MAC
    [MyApplication sharedApplication]; // this allocates 'NSApp' application as our custom class
    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -1266,6 +1268,8 @@ void Application::del()
    #if WINDOWS_OLD
       RELEASE(TaskbarList);
       if(ShutCOM){ShutCOM=false; CoUninitialize();} // required by 'CoInitialize'
+   #elif WINDOWS_NEW
+      DisplayRequest=null; // release
    #elif LINUX
       if(XDisplay){XCloseDisplay(XDisplay); XDisplay=null;}
    #elif MAC
