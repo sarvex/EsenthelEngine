@@ -924,7 +924,7 @@ DisplayClass::DisplayClass() : _monitors(Compare, null, null, 4)
   _density=127;
   _samples=1;
   _scale=1;
-  _unscaled_size=1; _size2=2; _rect.set(-1, -1, 1, 1); // init to 1 to avoid div by 0 at app startup which could cause crash on Web
+  _unscaled_size=1; _size2=2; _rect_ui=_rect.set(-1, -1, 1, 1); // init to 1 to avoid div by 0 at app startup which could cause crash on Web
   _disp_aspect_ratio=_disp_aspect_ratio_want=0;
   _app_aspect_ratio=1;
   _pixel_aspect=1;
@@ -2696,6 +2696,17 @@ void DisplayClass::sizeChanged()
       D._window_pixel_to_screen_mul*=D._window_pixel_to_screen_scale;
       D._window_pixel_to_screen_add*=D._window_pixel_to_screen_scale;
    }
+
+   // rect UI
+   D._rect_ui=D._rect;
+#if IOS
+   if(auto view=GetUIView())
+   {
+      Vec2 scale=ScreenScale*D._pixel_size; // convert from iOS points to pixels, then to screen
+      D._rect_ui.min.x+=view.safeAreaInsets.left*scale.x; D._rect_ui.max.x-=view.safeAreaInsets.right *scale.x;
+      D._rect_ui.min.y+=view.safeAreaInsets.top *scale.y; D._rect_ui.max.y-=view.safeAreaInsets.bottom*scale.y;
+   }
+#endif
 
    viewReset();
 }
