@@ -15,7 +15,7 @@ CLLocationManager *LocationManager[2];
 CMMotionManager   *CoreMotionMgr;
 CHHapticEngine    *Vibrator;
 
-static void DelVibrator() {[Vibrator release]; Vibrator=null;}
+static void DelVibrator() {[Vibrator release]; Vibrator=nil;}
 #endif
 Vec				   AccelerometerValue, GyroscopeValue, MagnetometerValue;
 Bool              LocationBackground[2];
@@ -176,39 +176,45 @@ void DeviceVibrate(Flt intensity, Flt duration)
 #elif IOS
    if(Vibrator)
    {
-      /*CHHapticEventParameter *param=[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
-      CHHapticEvent *event=[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
-      NSError *error; CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error]; if(!error)
+   #if 0
+      CHHapticEventParameter *param=[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:intensity];
+      CHHapticEvent *event=[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:duration];
+      NSError *error=nil; CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error]; if(!error)
+         if(auto player=[Vibrator createPlayerWithPattern:pattern error:&error])
       {
-         VibratorPlayer=[Vibrator createPlayerWithPattern:pattern error:&error];
-         if(error)DelVibratorPlayer();*/
-
+         if(!error)[player startAtTime:0 error:nil];
+       //[player release]; don't release, it will crash
+      }
+   #else
       NSDictionary *dict=
      @{
          CHHapticPatternKeyPattern:
         @[ 
            @{
-              CHHapticPatternKeyEvent:
-             @{
-                 CHHapticPatternKeyEventType    : CHHapticEventTypeHapticTransient,
-                 CHHapticPatternKeyTime         : @(CHHapticTimeImmediate),
-                 CHHapticPatternKeyEventDuration: @(duration)
-              },
+               CHHapticPatternKeyEvent:
+              @{
+                  CHHapticPatternKeyEventType      : CHHapticEventTypeHapticContinuous,
+                  CHHapticPatternKeyTime           : @(CHHapticTimeImmediate),
+                  CHHapticPatternKeyEventDuration  : @(duration),
+                  CHHapticPatternKeyEventParameters:
+                 @[
+                    @{
+                        CHHapticPatternKeyParameterID   : CHHapticEventParameterIDHapticIntensity,
+                        CHHapticPatternKeyParameterValue: @(intensity),
+                     },
+                  ],
+               },
             },
          ],
       };
-      NSError *error;
+      NSError *error=nil;
       CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithDictionary:dict error:&error]; if(!error)
-      {
          if(auto player=[Vibrator createPlayerWithPattern:pattern error:&error])
-         {
-            if(!error)
-            {
-               [player startAtTime:0 error:nil];
-            }
-            [player release];
-         }
+      {
+         if(!error)[player startAtTime:0 error:nil];
+       //[player release]; don't release, it will crash
       }
+   #endif
    }
 #endif
 }
@@ -396,7 +402,7 @@ void InputDevicesClass::del()
 #if WINDOWS_OLD && DIRECT_INPUT
    RELEASE(DI);
 #elif IOS
-   [CoreMotionMgr release]; CoreMotionMgr=null;
+   [CoreMotionMgr release]; CoreMotionMgr=nil;
    DelVibrator();
 #endif
    VR.shut(); // !! delete as last, after the mouse, because it may try to reset the mouse cursor, so we need to make sure that mouse cursor was already deleted !!
@@ -426,12 +432,12 @@ void InputDevicesClass::create()
    if(@available(iOS 14.0, *)) // 13 required for 'CHHapticEngine', 14 required for 'GCHapticDurationInfinite'
       if(CHHapticEngine.capabilitiesForHardware.supportsHaptics)
    {
-      NSError *error;
+      NSError *error=nil;
       Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error)error: DelVibrator();else
       {
          [Vibrator setResetHandler:^
          {
-            NSError *error; [Vibrator startAndReturnError:&error];
+            NSError *error=nil; [Vibrator startAndReturnError:&error];
          }];
          [Vibrator startAndReturnError:&error]; if(error)goto error;
       }
