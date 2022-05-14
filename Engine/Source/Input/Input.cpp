@@ -1,7 +1,5 @@
 /******************************************************************************/
 #include "stdafx.h"
-#include <CoreHaptics/CoreHaptics.h>
-#include <CoreHaptics/CHHapticPatternPlayer.h>
 namespace EE{
 /******************************************************************************/
 #if !IS_POW_2(INPUT_COMBO_NUM)

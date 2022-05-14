@@ -316,6 +316,8 @@
          #include <QuartzCore/QuartzCore.h>
          #include <CoreMotion/CoreMotion.h>
          #include <CoreLocation/CoreLocation.h>
+         #include <CoreHaptics/CoreHaptics.h>
+         #include <CoreHaptics/CHHapticPatternPlayer.h>
          #include <AVFoundation/AVFoundation.h>
          #include <AdSupport/ASIdentifierManager.h>
          #include <FBSDKCoreKit/FBSDKCoreKit.h>
