@@ -309,7 +309,7 @@
 				DEVELOPMENT_TEAM = 2KA8LL48VG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Assets/iOS.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"../Engine/Build/Release-iphoneos",
@@ -351,6 +351,7 @@
 					OpenAL,
 					"-lz",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -370,7 +371,7 @@
 				DEVELOPMENT_TEAM = 2KA8LL48VG;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Assets/iOS.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"../Engine/Build/Release-iphoneos",
@@ -412,6 +413,7 @@
 					OpenAL,
 					"-lz",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -495,22 +497,21 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					.,
 					../ThirdPartyLibs,
 					../ThirdPartyLibs/Bullet/lib/src,
-					"../ThirdPartyLibs/Facebook/facebook-ios-sdk/src",
+					../ThirdPartyLibs/Facebook/iOS,
 					../ThirdPartyLibs/FBX,
-					../ThirdPartyLibs/Vorbis/include,
 					../ThirdPartyLibs/Ogg/include,
+					../ThirdPartyLibs/Vorbis/include,
+					../ThirdPartyLibs/Opus/lib/include,
+					../ThirdPartyLibs/Opus/file/include,
 					../ThirdPartyLibs/Theora/include,
-					../ThirdPartyLibs/Cg/Mac,
-					../ThirdPartyLibs/PhysX/PhysX/Include,
-					../ThirdPartyLibs/PhysX/PhysX/Include/common,
-					../ThirdPartyLibs/PhysX/PhysX/Include/geometry,
-					../ThirdPartyLibs/PhysX/PhysX/Source/Common/src,
-					../ThirdPartyLibs/PhysX/PhysX/Source/GeomUtils/src,
-					../ThirdPartyLibs/PhysX/PxShared/include,
-					../ThirdPartyLibs/PhysX/PxShared/src/foundation/include,
-					.,
+					../ThirdPartyLibs/PhysX/physx/include,
+					../ThirdPartyLibs/PhysX/pxshared/include,
+					../ThirdPartyLibs/PhysX/physx/source/common/src,
+					../ThirdPartyLibs/PhysX/physx/source/foundation/include,
+					../ThirdPartyLibs/PhysX/physx/source/geomutils/src,
 				);
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = (
@@ -593,22 +594,21 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					.,
 					../ThirdPartyLibs,
 					../ThirdPartyLibs/Bullet/lib/src,
-					"../ThirdPartyLibs/Facebook/facebook-ios-sdk/src",
+					../ThirdPartyLibs/Facebook/iOS,
 					../ThirdPartyLibs/FBX,
-					../ThirdPartyLibs/Vorbis/include,
 					../ThirdPartyLibs/Ogg/include,
+					../ThirdPartyLibs/Vorbis/include,
+					../ThirdPartyLibs/Opus/lib/include,
+					../ThirdPartyLibs/Opus/file/include,
 					../ThirdPartyLibs/Theora/include,
-					../ThirdPartyLibs/Cg/Mac,
-					../ThirdPartyLibs/PhysX/PhysX/Include,
-					../ThirdPartyLibs/PhysX/PhysX/Include/common,
-					../ThirdPartyLibs/PhysX/PhysX/Include/geometry,
-					../ThirdPartyLibs/PhysX/PhysX/Source/Common/src,
-					../ThirdPartyLibs/PhysX/PhysX/Source/GeomUtils/src,
-					../ThirdPartyLibs/PhysX/PxShared/include,
-					../ThirdPartyLibs/PhysX/PxShared/src/foundation/include,
-					.,
+					../ThirdPartyLibs/PhysX/physx/include,
+					../ThirdPartyLibs/PhysX/pxshared/include,
+					../ThirdPartyLibs/PhysX/physx/source/common/src,
+					../ThirdPartyLibs/PhysX/physx/source/foundation/include,
+					../ThirdPartyLibs/PhysX/physx/source/geomutils/src,
 				);
 				OTHER_CFLAGS = (
 					"-fshort-wchar",
