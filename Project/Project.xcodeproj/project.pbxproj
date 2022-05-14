@@ -7,7 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		376C5663282FC88A0090A81D /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 376C5662282FC88A0090A81D /* CoreHaptics.framework */; };
+		3776F29E282FCBFC00033774 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3776F29D282FCBFC00033774 /* Security.framework */; };
+		3776F2A0282FCC0100033774 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3776F29F282FCC0100033774 /* WebKit.framework */; };
+		3776F2A2282FCCD400033774 /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3776F2A1282FCCD300033774 /* Engine Builder.cpp */; };
+		3776F2A3282FCCD400033774 /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3776F2A1282FCCD300033774 /* Engine Builder.cpp */; };
+		3776F2A5282FCCDE00033774 /* Engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AE6A4218E67FDF00319BDA /* Engine.a */; };
 		3782F7BC1C86878900413552 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7B31C86878900413552 /* Default-568h@2x.png */; };
 		3782F7BD1C86878900413552 /* Default-667h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7B41C86878900413552 /* Default-667h@2x.png */; };
 		3782F7BE1C86878900413552 /* Default-Portrait.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7B51C86878900413552 /* Default-Portrait.png */; };
@@ -16,17 +20,17 @@
 		3782F7C11C86878900413552 /* Icon-60@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7B81C86878900413552 /* Icon-60@3x.png */; };
 		3782F7C21C86878900413552 /* Icon-76.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7B91C86878900413552 /* Icon-76.png */; };
 		3782F7C31C86878900413552 /* Icon-76@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3782F7BA1C86878900413552 /* Icon-76@2x.png */; };
-		3782F7C61C86888E00413552 /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 378309D91A0711C8002383BF /* Engine Builder.cpp */; };
-		378309DA1A0711C8002383BF /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 378309D91A0711C8002383BF /* Engine Builder.cpp */; };
 		3799264518BD4AB300A933D5 /* iOS.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3799260818BD4AB300A933D5 /* iOS.xib */; };
 		37AD1FB91F52D16900C80985 /* Engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AE6A3F18E67FD300319BDA /* Engine.a */; };
-		37AE6A4318E67FDF00319BDA /* Engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AE6A4218E67FDF00319BDA /* Engine.a */; };
 		37C573321C868FFA00039CB1 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 37C573311C868FFA00039CB1 /* Icon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0BDA9C7F121EE06400ED5E97 /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		376C5662282FC88A0090A81D /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS15.2.sdk/System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
+		376C5662282FC88A0090A81D /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
+		3776F29D282FCBFC00033774 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
+		3776F29F282FCC0100033774 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
+		3776F2A1282FCCD300033774 /* Engine Builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "Engine Builder.cpp"; path = "Source/Engine Builder.cpp"; sourceTree = "<group>"; };
 		3782F7B31C86878900413552 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "Assets/Default-568h@2x.png"; sourceTree = "<group>"; };
 		3782F7B41C86878900413552 /* Default-667h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-667h@2x.png"; path = "Assets/Default-667h@2x.png"; sourceTree = "<group>"; };
 		3782F7B51C86878900413552 /* Default-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-Portrait.png"; path = "Assets/Default-Portrait.png"; sourceTree = "<group>"; };
@@ -35,7 +39,6 @@
 		3782F7B81C86878900413552 /* Icon-60@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon-60@3x.png"; path = "Assets/Icon-60@3x.png"; sourceTree = "<group>"; };
 		3782F7B91C86878900413552 /* Icon-76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon-76.png"; path = "Assets/Icon-76.png"; sourceTree = "<group>"; };
 		3782F7BA1C86878900413552 /* Icon-76@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Icon-76@2x.png"; path = "Assets/Icon-76@2x.png"; sourceTree = "<group>"; };
-		378309D91A0711C8002383BF /* Engine Builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "Engine Builder.cpp"; path = "Source/Engine Builder.cpp"; sourceTree = "<group>"; };
 		3799260718BD4AB300A933D5 /* iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = iOS.plist; path = Assets/iOS.plist; sourceTree = "<group>"; };
 		3799260818BD4AB300A933D5 /* iOS.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = iOS.xib; path = Assets/iOS.xib; sourceTree = "<group>"; };
 		3799260A18BD4AB300A933D5 /* Mac.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = Mac.plist; path = Assets/Mac.plist; sourceTree = "<group>"; };
@@ -53,8 +56,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				37AE6A4318E67FDF00319BDA /* Engine.a in Frameworks */,
-				376C5663282FC88A0090A81D /* CoreHaptics.framework in Frameworks */,
+				3776F29E282FCBFC00033774 /* Security.framework in Frameworks */,
+				3776F2A0282FCC0100033774 /* WebKit.framework in Frameworks */,
+				3776F2A5282FCCDE00033774 /* Engine.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,7 +76,7 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				378309D91A0711C8002383BF /* Engine Builder.cpp */,
+				3776F2A1282FCCD300033774 /* Engine Builder.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -180,6 +184,8 @@
 		376C5661282FC8890090A81D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3776F29F282FCC0100033774 /* WebKit.framework */,
+				3776F29D282FCBFC00033774 /* Security.framework */,
 				376C5662282FC88A0090A81D /* CoreHaptics.framework */,
 			);
 			name = Frameworks;
@@ -297,7 +303,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3782F7C61C86888E00413552 /* Engine Builder.cpp in Sources */,
+				3776F2A3282FCCD400033774 /* Engine Builder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,7 +311,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				378309DA1A0711C8002383BF /* Engine Builder.cpp in Sources */,
+				3776F2A2282FCCD400033774 /* Engine Builder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -361,7 +367,10 @@
 					OpenGLES,
 					"-framework",
 					OpenAL,
+					"-framework",
+					CoreHaptics,
 					"-lz",
+					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;
@@ -423,7 +432,10 @@
 					OpenGLES,
 					"-framework",
 					OpenAL,
+					"-framework",
+					CoreHaptics,
 					"-lz",
+					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;

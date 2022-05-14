@@ -369,6 +369,7 @@
 					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
+					"-framework CoreHaptics",
 					"-lz",
 					"-ObjC", // needed by Facebook
 				);
@@ -417,6 +418,7 @@
 					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
+					"-framework CoreHaptics",
 					"-lz",
 					"-ObjC", // needed by Facebook
 				);
