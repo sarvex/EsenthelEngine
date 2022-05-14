@@ -1,5 +1,6 @@
 /******************************************************************************/
 #include "stdafx.h"
+#include "../Platforms/iOS/iOS.h"
 namespace EE{
 /******************************************************************************/
 #define D3D_DEBUG     0
@@ -2703,8 +2704,8 @@ void DisplayClass::sizeChanged()
    if(auto view=GetUIView())
    {
       Vec2 scale=ScreenScale*D._pixel_size; // convert from iOS points to pixels, then to screen
-      D._rect_ui.min.x+=view.safeAreaInsets.left*scale.x; D._rect_ui.max.x-=view.safeAreaInsets.right *scale.x;
-      D._rect_ui.min.y+=view.safeAreaInsets.top *scale.y; D._rect_ui.max.y-=view.safeAreaInsets.bottom*scale.y;
+      D._rect_ui.min.x+=view.safeAreaInsets.left  *scale.x; D._rect_ui.max.x-=view.safeAreaInsets.right*scale.x;
+      D._rect_ui.min.y+=view.safeAreaInsets.bottom*scale.y; D._rect_ui.max.y-=view.safeAreaInsets.top  *scale.y;
    }
 #endif
 
