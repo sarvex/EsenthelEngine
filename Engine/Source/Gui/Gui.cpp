@@ -450,7 +450,7 @@ static void DrawPanelText(C Panel *panel, C Color &panel_color, Flt padding, C T
 {
    if(Is(text))
    {
-      Set(Tls16, text, ts, D.w2()-padding*2, AUTO_LINE_SPACE_SPLIT);
+      Set(Tls16, text, ts, D.rectUI().w()-padding*2, AUTO_LINE_SPACE_SPLIT);
 
       Flt width =0,
           height=Tls16.elms()*ts.lineHeight();
@@ -464,8 +464,8 @@ static void DrawPanelText(C Panel *panel, C Color &panel_color, Flt padding, C T
          r.min.y-=y;
          r.max.y-=y;
       }
-      if(r.max.x> D.w()){r.min.x-=r.max.x-D.w(); r.max.x=D.w();} if(r.min.x<-D.w()){r.max.x+=-D.w()-r.min.x; r.min.x=-D.w();}
-      if(r.min.y<-D.h()){r+=Vec2(0, pos.y-r.min.y+padding)    ;} if(r.max.y> D.h()){r.min.y-= r.max.y-D.h(); r.max.y= D.h();}
+      if(r.max.x>D.rectUI().max.x){r.min.x-=r.max.x-D.rectUI().max.x; r.max.x=D.rectUI().max.x;} if(r.min.x<D.rectUI().min.x){r.max.x+=D.rectUI().min.x-r.min.x; r.min.x=D.rectUI().min.x;}
+      if(r.min.y<D.rectUI().min.y){r+=Vec2(0, pos.y-r.min.y+padding)                          ;} if(r.max.y>D.rectUI().max.y){r.min.y-=r.max.y-D.rectUI().max.y; r.max.y=D.rectUI().max.y;}
 
       if(panel        )panel->draw(panel_color, r);else
       if(panel_color.a)     r.draw(panel_color);
