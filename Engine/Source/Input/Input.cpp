@@ -172,8 +172,9 @@ void DeviceVibrate(Flt intensity, Flt duration)
       Int milliseconds=RoundPos(duration*1000); if(milliseconds>0)Jni->CallStaticVoidMethod(ActivityClass, vibrate, jint(int_byte), jint(milliseconds)); // <0 will crash, =0 is useless
    }
 #elif IOS
-   if(Vibrator)
+   if(Vibrator && intensity>0)
    {
+      intensity=SqrtFast(intensity); // sqrt because on iOS small vibrations are barely noticable
    #if 0
       CHHapticEventParameter *param=[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:intensity];
       CHHapticEvent *event=[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:duration];
