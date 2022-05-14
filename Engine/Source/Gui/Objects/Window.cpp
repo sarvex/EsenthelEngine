@@ -158,7 +158,7 @@ static Rect ResizedRect(C Rect &src, C Rect &dest, UInt mask)
 static Rect MaximizedRect(C Window &window)
 {
    if(GuiObj *parent=window.parent())return parent->localClientRect();
-   return D.rect();
+   return D.rectUI();
 }
 Bool    Window::maximized()C {return InsideEps(ResizedRect(rect(), MaximizedRect(T), resize_mask), rect());}
 Window& Window::maximize ()  {return rect(ResizedRect(rect(), maximized() ? MaximizedRect(T)*0.5f : MaximizedRect(T), resize_mask));}
@@ -504,8 +504,8 @@ void Window::update(C GuiPC &gpc)
             {
                Vec2 pos=Ms.pos()-gpc.offset;
                Rect r  =rect(), size=sizeLimit();
-               MIN(size.max.x, Max(size.min.x, D.w2(), rect().w()));
-               MIN(size.max.y, Max(size.min.y, D.h2(), rect().h()));
+               MIN(size.max.x, Max(size.min.x, D.rectUI().w(), rect().w()));
+               MIN(size.max.y, Max(size.min.y, D.rectUI().h(), rect().h()));
                if(_resize&DIRF_LEFT )r.min.x=Mid(have_client_rect ? Min(pos.x, client_rect.max.x-WINDOW_PADD) : pos.x, r.max.x-size.max.x, r.max.x-size.min.x);
                if(_resize&DIRF_UP   )r.max.y=Mid(have_client_rect ? Max(pos.y, client_rect.min.y+WINDOW_PADD) : pos.y, r.min.y+size.min.y, r.min.y+size.max.y);
                if(_resize&DIRF_RIGHT)r.max.x=Mid(have_client_rect ? Max(pos.x, client_rect.min.x+WINDOW_PADD) : pos.x, r.min.x+size.min.x, r.min.x+size.max.x);
@@ -521,8 +521,8 @@ void Window::update(C GuiPC &gpc)
                   if(Ms.d().any() && resize_mask)
                   {
                      Rect r=rect(), size=sizeLimit();
-                     MIN(size.max.x, Max(size.min.x, D.w2(), rect().w()));
-                     MIN(size.max.y, Max(size.min.y, D.h2(), rect().h()));
+                     MIN(size.max.x, Max(size.min.x, D.rectUI().w(), rect().w()));
+                     MIN(size.max.y, Max(size.min.y, D.rectUI().h(), rect().h()));
                      if(resize_mask&DIRF_RIGHT)Clamp(r.max.x+=Ms.d().x, r.min.x+size.min.x, r.min.x+size.max.x);else if(resize_mask&DIRF_LEFT)Clamp(r.min.x+=Ms.d().x, r.max.x-size.max.x, r.max.x-size.min.x);
                      if(resize_mask&DIRF_DOWN )Clamp(r.min.y+=Ms.d().y, r.max.y-size.max.y, r.max.y-size.min.y);else if(resize_mask&DIRF_UP  )Clamp(r.max.y+=Ms.d().y, r.min.y+size.min.y, r.min.y+size.max.y);
                      rect(r);
@@ -545,8 +545,8 @@ void Window::update(C GuiPC &gpc)
                                                      if(  Gui.ms()==this && Ms.b(0) && !_resize){delta=(Ms.pos()-Ms.dc())-pos; UpdateStretch(delta.x, l, r, li, ri, Ms.dc().x); UpdateStretch(delta.y, d, u, di, ui, Ms.dc().y);}
                   REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && t.on( )            ){delta=( t.pos()- t.d ())-pos; UpdateStretch(delta.x, l, r, li, ri,  t.d ().x); UpdateStretch(delta.y, d, u, di, ui,  t.d ().y);}}
                   Rect rect=T.rect(), size=sizeLimit();
-                  MIN(size.max.x, Max(size.min.x, D.w2(), rect.w()));
-                  MIN(size.max.y, Max(size.min.y, D.h2(), rect.h()));
+                  MIN(size.max.x, Max(size.min.x, D.rectUI().w(), rect.w()));
+                  MIN(size.max.y, Max(size.min.y, D.rectUI().h(), rect.h()));
                   UpdateResize(rect.min.x, rect.max.x, li ? l/li : 0, ri ? r/ri : 0, size.min.x, size.max.x, flag&WIN_MOVABLE, resize_mask&DIRF_LEFT, resize_mask&DIRF_RIGHT);
                   UpdateResize(rect.min.y, rect.max.y, di ? d/di : 0, ui ? u/ui : 0, size.min.y, size.max.y, flag&WIN_MOVABLE, resize_mask&DIRF_DOWN, resize_mask&DIRF_UP   );
                   T.rect(rect);
@@ -873,7 +873,7 @@ Dialog& Dialog::autoSize()
    if(C TextStyle *ts=text.getTextStyle())
    if(Flt line_h=ts->lineHeight())
    {
-      const Flt desired_aspect=2.5f, min_w=line_h*17, max_w=(D.w()-Gui.dialog_padd)*2; // min_w gives some tolerable minimum width based on a single line height
+      const Flt desired_aspect=2.5f, min_w=line_h*17, max_w=D.rectUI().w()-Gui.dialog_padd*2; // min_w gives some tolerable minimum width based on a single line height
             Int lines=ts->textLines(text(), max_w, text.auto_line, &text_w);
       text_h=line_h*lines;
       if(text_w>min_w)
