@@ -11,7 +11,7 @@ void InitPre()
 #if DESKTOP
    DataPath("../Data");
 #endif
-#if WINDOWS_NEW || SWITCH || ANDROID
+#if WINDOWS_NEW || MOBILE
    Paks.add("Engine.pak");
 #endif
 }
