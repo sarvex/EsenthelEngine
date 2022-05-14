@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3776F29E282FCBFC00033774 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3776F29D282FCBFC00033774 /* Security.framework */; };
-		3776F2A0282FCC0100033774 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3776F29F282FCC0100033774 /* WebKit.framework */; };
 		3776F2A2282FCCD400033774 /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3776F2A1282FCCD300033774 /* Engine Builder.cpp */; };
 		3776F2A3282FCCD400033774 /* Engine Builder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3776F2A1282FCCD300033774 /* Engine Builder.cpp */; };
 		3776F2A5282FCCDE00033774 /* Engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AE6A4218E67FDF00319BDA /* Engine.a */; };
@@ -27,9 +25,6 @@
 
 /* Begin PBXFileReference section */
 		0BDA9C7F121EE06400ED5E97 /* iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		376C5662282FC88A0090A81D /* CoreHaptics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreHaptics.framework; path = System/Library/Frameworks/CoreHaptics.framework; sourceTree = DEVELOPER_DIR; };
-		3776F29D282FCBFC00033774 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = DEVELOPER_DIR; };
-		3776F29F282FCC0100033774 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = DEVELOPER_DIR; };
 		3776F2A1282FCCD300033774 /* Engine Builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "Engine Builder.cpp"; path = "Source/Engine Builder.cpp"; sourceTree = "<group>"; };
 		3782F7B31C86878900413552 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-568h@2x.png"; path = "Assets/Default-568h@2x.png"; sourceTree = "<group>"; };
 		3782F7B41C86878900413552 /* Default-667h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-667h@2x.png"; path = "Assets/Default-667h@2x.png"; sourceTree = "<group>"; };
@@ -56,8 +51,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3776F29E282FCBFC00033774 /* Security.framework in Frameworks */,
-				3776F2A0282FCC0100033774 /* WebKit.framework in Frameworks */,
 				3776F2A5282FCCDE00033774 /* Engine.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -145,7 +138,6 @@
 				29B97323FDCFA39411CA2CEA /* Libs */,
 				29B97317FDCFA39411CA2CEA /* Assets */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
-				376C5661282FC8890090A81D /* Frameworks */,
 			);
 			name = Project;
 			sourceTree = "<group>";
@@ -179,16 +171,6 @@
 				0B3494EC1564168C00C7205E /* Mac Release */,
 			);
 			name = Libs;
-			sourceTree = "<group>";
-		};
-		376C5661282FC8890090A81D /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				3776F29F282FCC0100033774 /* WebKit.framework */,
-				3776F29D282FCBFC00033774 /* Security.framework */,
-				376C5662282FC88A0090A81D /* CoreHaptics.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -350,6 +332,8 @@
 					"-framework",
 					CoreLocation,
 					"-framework",
+					CoreHaptics,
+					"-framework",
 					CoreGraphics,
 					"-framework",
 					CoreTelephony,
@@ -367,8 +351,6 @@
 					OpenGLES,
 					"-framework",
 					OpenAL,
-					"-framework",
-					CoreHaptics,
 					"-lz",
 					"-ObjC",
 				);
@@ -415,6 +397,8 @@
 					"-framework",
 					CoreLocation,
 					"-framework",
+					CoreHaptics,
+					"-framework",
 					CoreGraphics,
 					"-framework",
 					CoreTelephony,
@@ -432,8 +416,6 @@
 					OpenGLES,
 					"-framework",
 					OpenAL,
-					"-framework",
-					CoreHaptics,
 					"-lz",
 					"-ObjC",
 				);

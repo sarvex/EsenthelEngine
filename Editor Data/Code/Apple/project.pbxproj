@@ -352,6 +352,7 @@
 					"-framework CoreMedia",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
+					"-framework CoreHaptics",
 					"-framework CoreGraphics",
 					"-framework CoreTelephony",
 					"-framework AudioToolbox",
@@ -361,7 +362,6 @@
 					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
-					"-framework CoreHaptics",
 					"-lz",
 					"-ObjC", // needed by Facebook
 				);
@@ -401,6 +401,7 @@
 					"-framework CoreMedia",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
+					"-framework CoreHaptics",
 					"-framework CoreGraphics",
 					"-framework CoreTelephony",
 					"-framework AudioToolbox",
@@ -410,7 +411,6 @@
 					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
-					"-framework CoreHaptics",
 					"-lz",
 					"-ObjC", // needed by Facebook
 				);
