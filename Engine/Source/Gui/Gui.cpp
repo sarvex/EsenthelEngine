@@ -219,15 +219,15 @@ TextLine* GUI::overlayTextLine(Vec2 &offset)
    {
       TextLine &tl=kb()->asTextLine();
       Rect_LU   tl_rect(tl.screenPos(), tl.size());
-      if(Cuts(tl_rect, kb_rect) || tl_rect.min.y<-D.h())
+      if(Cuts(tl_rect, kb_rect) || tl_rect.min.y<D.rectUI().min.y)
       {
          // try to move above kb rect first (because when typing with fingers the hands are usually downwards, so they would occlude what's below them)
-         if(kb_rect.max.y+tl_rect.h()<=D.h()) // if it fits in the visible screen area
+         if(kb_rect.max.y+tl_rect.h()<=D.rectUI().max.y) // if it fits in the visible screen area
          {
             offset=kb_rect.up()+tl_rect.size()*Vec2(-0.5f, 1.0f)-tl.pos();
          }else // move at the bottom of the screen
          {
-            offset=Vec2(0, -D.h())+tl_rect.size()*Vec2(-0.5f, 1.0f)-tl.pos();
+            offset=Vec2(0, D.rectUI().min.y)+tl_rect.size()*Vec2(-0.5f, 1.0f)-tl.pos();
          }
          return &tl;
       }
