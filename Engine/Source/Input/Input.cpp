@@ -1,5 +1,7 @@
-﻿/******************************************************************************/
+/******************************************************************************/
 #include "stdafx.h"
+#include <CoreHaptics/CoreHaptics.h>
+#include <CoreHaptics/CHHapticPatternPlayer.h>
 namespace EE{
 /******************************************************************************/
 #if !IS_POW_2(INPUT_COMBO_NUM)
@@ -9,13 +11,11 @@ namespace EE{
 #if ANDROID
 ASensorEventQueue *SensorEventQueue;
 #elif IOS
-CLLocationManager        *LocationManager[2];
-CMMotionManager          *CoreMotionMgr;
-CHHapticEngine           *Vibrator;
-id<CHHapticPatternPlayer> VibratorPlayer;
+CLLocationManager *LocationManager[2];
+CMMotionManager   *CoreMotionMgr;
+CHHapticEngine    *Vibrator;
 
-static void DelVibratorPlayer() {[VibratorPlayer release]; VibratorPlayer=null;}
-static void DelVibrator      () {[Vibrator       release]; Vibrator      =null;}
+static void DelVibrator() {[Vibrator release]; Vibrator=null;}
 #endif
 Vec				   AccelerometerValue, GyroscopeValue, MagnetometerValue;
 Bool              LocationBackground[2];
@@ -176,16 +176,39 @@ void DeviceVibrate(Flt intensity, Flt duration)
 #elif IOS
    if(Vibrator)
    {
-      NSDictionary *dict=@{
-         CHHapticPatternKeyPattern: @[ 
-           @{ CHHapticPatternKeyEvent: @{
-               CHHapticPatternKeyEventType: CHHapticEventTypeHapticTransient,
-               CHHapticPatternKeyTime: @(CHHapticTimeImmediate),
-               CHHapticPatternKeyEventDuration: @1.0 },
-           },
-      ],};
-      CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithDictionary:dict error:nil];
-      [Vibrator createPlayerWithPattern:pattern error:nil];
+      /*CHHapticEventParameter *param=[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
+      CHHapticEvent *event=[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
+      NSError *error; CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error]; if(!error)
+      {
+         VibratorPlayer=[Vibrator createPlayerWithPattern:pattern error:&error];
+         if(error)DelVibratorPlayer();*/
+
+      NSDictionary *dict=
+     @{
+         CHHapticPatternKeyPattern:
+        @[ 
+           @{
+              CHHapticPatternKeyEvent:
+             @{
+                 CHHapticPatternKeyEventType    : CHHapticEventTypeHapticTransient,
+                 CHHapticPatternKeyTime         : @(CHHapticTimeImmediate),
+                 CHHapticPatternKeyEventDuration: @(duration)
+              },
+            },
+         ],
+      };
+      NSError *error;
+      CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithDictionary:dict error:&error]; if(!error)
+      {
+         if(auto player=[Vibrator createPlayerWithPattern:pattern error:&error])
+         {
+            if(!error)
+            {
+               [player startAtTime:0 error:nil];
+            }
+            [player release];
+         }
+      }
    }
 #endif
 }
@@ -374,24 +397,11 @@ void InputDevicesClass::del()
    RELEASE(DI);
 #elif IOS
    [CoreMotionMgr release]; CoreMotionMgr=null;
-   DelVibratorPlayer();
-   DelVibrator      ();
+   DelVibrator();
 #endif
    VR.shut(); // !! delete as last, after the mouse, because it may try to reset the mouse cursor, so we need to make sure that mouse cursor was already deleted !!
 }
 /******************************************************************************/
-#if IOS
-static void CreateVibratorPlayer()
-{
-   CHHapticEventParameter *param=[[CHHapticEventParameter alloc] initWithParameterID:CHHapticEventParameterIDHapticIntensity value:1.0f];
-   CHHapticEvent *event=[[CHHapticEvent alloc] initWithEventType:CHHapticEventTypeHapticContinuous parameters:[NSArray arrayWithObjects:param, nil] relativeTime:0 duration:GCHapticDurationInfinite];
-   NSError *error; CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error]; if(!error)
-   {
-      VibratorPlayer=[Vibrator createPlayerWithPattern:pattern error:&error];
-      if(error)DelVibratorPlayer();
-   }
-}
-#endif
 void InputDevicesClass::create()
 {
    if(LogInit)LogN("InputDevicesClass.create");
@@ -417,16 +427,14 @@ void InputDevicesClass::create()
       if(CHHapticEngine.capabilitiesForHardware.supportsHaptics)
    {
       NSError *error;
-      Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error){error: [Vibrator release]; Vibrator=null;}else
+      Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error)error: DelVibrator();else
       {
          [Vibrator setResetHandler:^
          {
-            DelVibratorPlayer();
             NSError *error; [Vibrator startAndReturnError:&error];
-            if(!error)CreateVibratorPlayer();
          }];
          [Vibrator startAndReturnError:&error]; if(error)goto error;
-         CreateVibratorPlayer();
+      }
    }
 #elif SWITCH
    NS::CreateInput();
