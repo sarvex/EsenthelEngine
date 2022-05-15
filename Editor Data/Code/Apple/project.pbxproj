@@ -347,22 +347,25 @@
 					"-framework QuartzCore",
 					"-framework UIKit",
 					"-framework WebKit",
-					"-framework EventKit",
-					"-framework EventKitUI",
-					"-framework CoreMedia",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
 					"-framework CoreHaptics",
-					"-framework CoreGraphics",
-					"-framework CoreTelephony",
 					"-framework AudioToolbox",
-					"-framework AVFoundation",
-					"-framework SystemConfiguration",
-					"-framework MessageUI",
-					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
 					"-lz",
+
+					// needed by Chartboost
+					"-framework AVFoundation",
+					"-framework CoreGraphics",
+					"-framework Security",
+
+					// needed by AdMob
+					"-framework EventKit",
+					"-framework EventKitUI",
+					"-framework MessageUI",
+					"-framework CoreTelephony",
+					"-framework CoreMedia",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -395,22 +398,25 @@
 					"-framework QuartzCore",
 					"-framework UIKit",
 					"-framework WebKit",
-					"-framework EventKit",
-					"-framework EventKitUI",
-					"-framework CoreMedia",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
 					"-framework CoreHaptics",
-					"-framework CoreGraphics",
-					"-framework CoreTelephony",
 					"-framework AudioToolbox",
-					"-framework AVFoundation",
-					"-framework SystemConfiguration",
-					"-framework MessageUI",
-					"-framework AdSupport",
 					"-framework OpenGLES",
 					"-framework OpenAL",
 					"-lz",
+
+					// needed by Chartboost
+					"-framework AVFoundation",
+					"-framework CoreGraphics",
+					"-framework Security",
+
+					// needed by AdMob
+					"-framework EventKit",
+					"-framework EventKitUI",
+					"-framework MessageUI",
+					"-framework CoreTelephony",
+					"-framework CoreMedia",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
