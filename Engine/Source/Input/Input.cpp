@@ -181,7 +181,7 @@ void DeviceVibrate(Flt intensity, Flt duration)
       NSError *error=nil; CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithEvents:[NSArray arrayWithObject:event] parameters:[[NSArray alloc] init] error:&error]; if(!error)
          if(auto player=[Vibrator createPlayerWithPattern:pattern error:&error])
       {
-         if(!error)[player startAtTime:0 error:nil];
+         if(!error)[player startAtTime:0 error:&error]; // don't set "error:nil" because if error happens then exception occurs with nil
        //[player release]; don't release, it will crash
       }
    #else
@@ -210,7 +210,7 @@ void DeviceVibrate(Flt intensity, Flt duration)
       CHHapticPattern *pattern=[[CHHapticPattern alloc] initWithDictionary:dict error:&error]; if(!error)
          if(auto player=[Vibrator createPlayerWithPattern:pattern error:&error])
       {
-         if(!error)[player startAtTime:0 error:nil];
+         if(!error)[player startAtTime:0 error:&error]; // don't set "error:nil" because if error happens then exception occurs with nil
        //[player release]; don't release, it will crash
       }
    #endif
