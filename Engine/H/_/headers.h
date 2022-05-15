@@ -320,9 +320,6 @@
          #include <CoreHaptics/CHHapticPatternPlayer.h>
          #include <AVFoundation/AVFoundation.h>
          #include <AdSupport/ASIdentifierManager.h>
-         #include <FBSDKCoreKit/FBSDKCoreKit.h>
-         #include <FBSDKLoginKit/FBSDKLoginKit.h>
-         #include <FBSDKShareKit/FBSDKShareKit.h>
          #include "../../../ThirdPartyLibs/Chartboost/Headers/Chartboost.h"
          #if GL
             #include <OpenGLES/EAGL.h>
@@ -702,6 +699,14 @@
       #define GL_COMPRESSED_SIGNED_RED_RGTC1               0x8DBC
       #define GL_COMPRESSED_SIGNED_RG_RGTC2                0x8DBE
       #define GL_LUMINANCE                                 0x1909
+   #endif
+
+   // Other
+   #define SUPPORT_FACEBOOK (ANDROID)// || (IOS && !IOS_SIMULATOR))
+   #if     SUPPORT_FACEBOOK && IOS
+      #include <FBSDKCoreKit/FBSDKCoreKit.h>
+      #include <FBSDKLoginKit/FBSDKLoginKit.h>
+      #include <FBSDKShareKit/FBSDKShareKit.h>
    #endif
 
    #include <algorithm> // must be after PhysX or compile errors will show on Android

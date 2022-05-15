@@ -57,8 +57,7 @@ static void UpdateMagnetometer(CLHeading *heading)
                                UpdateLocation    (LocationManager[i   ].location, i!=0);
    }  if(LocationManager[true])UpdateMagnetometer(LocationManager[true].heading);
 
-   // Facebook
-#if !IOS_SIMULATOR
+#if SUPPORT_FACEBOOK
    [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
 #endif
 
@@ -73,8 +72,8 @@ static void UpdateMagnetometer(CLHeading *heading)
 {
    if(App._closed)return; // do nothing if app called 'Exit'
    App.setActive(true);
-   // Facebook
-#if !IOS_SIMULATOR
+
+#if SUPPORT_FACEBOOK
    [FBSDKAppEvents activateApp];
 #endif
 }
@@ -113,8 +112,8 @@ static void UpdateMagnetometer(CLHeading *heading)
 /******************************************************************************
 // FACEBOOK
 /******************************************************************************/
-#if !IOS_SIMULATOR
--(BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id>*)options
+#if SUPPORT_FACEBOOK
+-(BOOL)application:(UIApplication*)application openURL:(NSURL*)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id>*)options
 {
    BOOL   handled=[[FBSDKApplicationDelegate sharedInstance] application:application openURL:url sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey] annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
    return handled;

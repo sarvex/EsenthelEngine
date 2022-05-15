@@ -4,7 +4,7 @@
 namespace EE{
 /******************************************************************************/
 Facebook FB;
-#if IOS && !IOS_SIMULATOR
+#if SUPPORT_FACEBOOK && IOS
 enum GET_FLAG
 {
    GET_ME     =1<<0,
@@ -74,24 +74,27 @@ static void FBUpdate()
 /******************************************************************************/
 Bool Facebook::loggedIn()C
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass)
    if(JMethodID facebookLoggedIn=jni.staticFunc(ActivityClass, "facebookLoggedIn", "()Z"))
       return jni->CallStaticBooleanMethod(ActivityClass, facebookLoggedIn);
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    return [FBSDKAccessToken currentAccessToken]!=null;
+#endif
 #endif
    return false;
 }
 Facebook& Facebook::logIn()
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass && Activity)
    if(JMethodID facebookLogIn=jni.func(ActivityClass, "facebookLogIn", "()V"))
       jni->CallVoidMethod(Activity, facebookLogIn);
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    if(FBSDKLoginManager *login=[[FBSDKLoginManager alloc] init])
    {
       [login logInWithReadPermissions: @[@"public_profile", @"email", @"user_friends"] fromViewController:ViewController handler:^(FBSDKLoginManagerLoginResult *result, NSError *error)
@@ -112,16 +115,18 @@ Facebook& Facebook::logIn()
      [login release];
    }
 #endif
+#endif
    return T;
 }
 Facebook& Facebook::logOut()
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass)
    if(JMethodID facebookLogOut=jni.staticFunc(ActivityClass, "facebookLogOut", "()V"))
       jni->CallStaticVoidMethod(ActivityClass, facebookLogOut);
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    #if 0
       if(FBSDKLoginManager *login=[[FBSDKLoginManager alloc] init])
       {
@@ -133,31 +138,36 @@ Facebook& Facebook::logOut()
       [FBSDKProfile     setCurrentProfile    :nil];
    #endif
 #endif
+#endif
   _me     .clear();
   _friends.clear();
    return T;
 }
 Facebook& Facebook::getMe()
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass && Activity)
    if(JMethodID facebookGetMe=jni.func(ActivityClass, "facebookGetMe", "()V"))
       jni->CallVoidMethod(Activity, facebookGetMe);
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    if(loggedIn())GetMe();else{FlagEnable(Get, GET_ME); logIn();}
+#endif
 #endif
    return T;
 }
 Facebook& Facebook::getFriends()
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass && Activity)
    if(JMethodID facebookGetFriends=jni.func(ActivityClass, "facebookGetFriends", "()V"))
       jni->CallVoidMethod(Activity, facebookGetFriends);
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    if(loggedIn())GetFriends();else{FlagEnable(Get, GET_FRIENDS); logIn();}
+#endif
 #endif
    return T;
 }
@@ -181,6 +191,7 @@ void Facebook::openPage(C Str &page_name, C Str &page_id)
 }
 void Facebook::post(C Str &url, C Str &quote)
 {
+#if SUPPORT_FACEBOOK
 #if ANDROID
    JNI jni;
    if(jni && ActivityClass && Activity)
@@ -188,7 +199,7 @@ void Facebook::post(C Str &url, C Str &quote)
    if(JString   j_url  =JString(jni, url  ))
    if(JString   j_quote=JString(jni, quote))
       jni->CallVoidMethod(Activity, facebookPost, j_url(), j_quote());
-#elif IOS && !IOS_SIMULATOR
+#elif IOS
    if(FBSDKShareLinkContent *content=[[FBSDKShareLinkContent alloc] init])
    {
       NSURLAuto ns_url=url; content.contentURL=ns_url; // !! keep 'ns_url' as temp to be deleted later, in case 'content.contentURL' is a weak reference reusing its or NSString's memory
@@ -204,11 +215,12 @@ void Facebook::post(C Str &url, C Str &quote)
       [content release]; // release 'content' after 'dialog' finished, in case it has a weak reference
    }
 #endif
+#endif
 }
 /******************************************************************************/
 } // namespace EE
 /******************************************************************************/
-#if ANDROID
+#if SUPPORT_FACEBOOK && ANDROID
 static      Facebook::UserEmail Me;
 static Mems<Facebook::User >    Friends;
 static Byte                     Result;

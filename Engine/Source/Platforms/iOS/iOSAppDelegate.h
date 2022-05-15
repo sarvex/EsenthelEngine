@@ -2,7 +2,7 @@
 @class EAGLView;
 
 @interface iOSAppDelegate : NSObject<UIApplicationDelegate, CLLocationManagerDelegate
-#if !IOS_SIMULATOR
+#if SUPPORT_FACEBOOK
 , FBSDKSharingDelegate
 #endif
 >

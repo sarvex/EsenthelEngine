@@ -872,9 +872,6 @@
 		3773600C1B1822D30026D698 /* Chartboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377360081B1822D30026D698 /* Chartboost.cpp */; };
 		3773600D1B1822D30026D698 /* Chartboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377360081B1822D30026D698 /* Chartboost.cpp */; };
 		3773600E1B1822D30026D698 /* Chartboost.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377360081B1822D30026D698 /* Chartboost.cpp */; };
-		3778B76C21F71218001D764E /* FBSDKCoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76721F71213001D764E /* FBSDKCoreKit.a */; };
-		3778B76D21F71218001D764E /* FBSDKLoginKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76621F71213001D764E /* FBSDKLoginKit.a */; };
-		3778B76E21F71218001D764E /* FBSDKShareKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3778B76821F71213001D764E /* FBSDKShareKit.a */; };
 		377E23621ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
 		377E23631ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
 		377E23641ADC91550035617E /* BC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 377E23601ADC91550035617E /* BC.cpp */; };
@@ -1612,9 +1609,6 @@
 		3764B5C92684429100BE7F56 /* Sound Resample.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "Sound Resample.cpp"; sourceTree = "<group>"; };
 		377360071B1822D30026D698 /* AdMob.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AdMob.cpp; sourceTree = "<group>"; };
 		377360081B1822D30026D698 /* Chartboost.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Chartboost.cpp; sourceTree = "<group>"; };
-		3778B76621F71213001D764E /* FBSDKLoginKit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = FBSDKLoginKit.a; path = ../ThirdPartyLibs/Facebook/iOS/FBSDKLoginKit.a; sourceTree = "<group>"; };
-		3778B76721F71213001D764E /* FBSDKCoreKit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = FBSDKCoreKit.a; path = ../ThirdPartyLibs/Facebook/iOS/FBSDKCoreKit.a; sourceTree = "<group>"; };
-		3778B76821F71213001D764E /* FBSDKShareKit.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = FBSDKShareKit.a; path = ../ThirdPartyLibs/Facebook/iOS/FBSDKShareKit.a; sourceTree = "<group>"; };
 		377E23601ADC91550035617E /* BC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BC.cpp; sourceTree = "<group>"; };
 		377E23611ADC91550035617E /* BC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BC.h; sourceTree = "<group>"; };
 		377FCFB61B1826E90007F1BD /* libChartboost.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libChartboost.a; path = ../ThirdPartyLibs/Chartboost/libChartboost.a; sourceTree = "<group>"; };
@@ -1780,7 +1774,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3716E2DE1BB8EC510037177D /* libVorbis.a in Frameworks */,
-				3778B76C21F71218001D764E /* FBSDKCoreKit.a in Frameworks */,
 				37F83D8025C44AB7000E5568 /* libPhysXExtensions_static_64.a in Frameworks */,
 				37DB7BF5190CA38800275AEE /* libGoogleMobileAds.a in Frameworks */,
 				3716E2D21BB8EC060037177D /* libTheora.a in Frameworks */,
@@ -1803,10 +1796,8 @@
 				37AE2BDB1D30F185004D8A41 /* libZStd.a in Frameworks */,
 				3716E2D81BB8EC270037177D /* libTiff.a in Frameworks */,
 				37F83D7E25C44AB7000E5568 /* libPhysXCommon_static_64.a in Frameworks */,
-				3778B76D21F71218001D764E /* FBSDKLoginKit.a in Frameworks */,
 				3716E2961BB8EA510037177D /* libLZ4.a in Frameworks */,
 				3716E2921BB8EA1D0037177D /* libJpegTurbo.a in Frameworks */,
-				3778B76E21F71218001D764E /* FBSDKShareKit.a in Frameworks */,
 				37F83D7D25C44AB7000E5568 /* libPhysXCooking_static_64.a in Frameworks */,
 				3716E28C1BB8E9530037177D /* libFlac.a in Frameworks */,
 				3716E2C01BB8EB5D0037177D /* libRecast.a in Frameworks */,
@@ -2974,9 +2965,6 @@
 		3778B76521F711F6001D764E /* Facebook */ = {
 			isa = PBXGroup;
 			children = (
-				3778B76721F71213001D764E /* FBSDKCoreKit.a */,
-				3778B76621F71213001D764E /* FBSDKLoginKit.a */,
-				3778B76821F71213001D764E /* FBSDKShareKit.a */,
 			);
 			name = Facebook;
 			sourceTree = "<group>";
