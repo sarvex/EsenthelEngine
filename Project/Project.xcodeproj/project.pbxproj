@@ -14,6 +14,7 @@
 		3799264518BD4AB300A933D5 /* iOS.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3799260818BD4AB300A933D5 /* iOS.xib */; };
 		37AD1FB91F52D16900C80985 /* Engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 37AE6A3F18E67FD300319BDA /* Engine.a */; };
 		37C573321C868FFA00039CB1 /* Icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 37C573311C868FFA00039CB1 /* Icon.icns */; };
+		A3340A352831151700FA23D2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A3340A342831151700FA23D2 /* Images.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 		37DB7C081922F09D00275AEE /* Engine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = Engine.a; path = ../Engine/build/Debug/Engine.a; sourceTree = "<group>"; };
 		37DB7C091922F17500275AEE /* Engine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = Engine.a; path = "../Engine/build/Debug-iphoneos/Engine.a"; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Project.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Project.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3340A342831151700FA23D2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Assets/Images.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +133,7 @@
 		29B97317FDCFA39411CA2CEA /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				A3340A342831151700FA23D2 /* Images.xcassets */,
 				3776F2AA282FD73A00033774 /* Engine.pak */,
 				37C573311C868FFA00039CB1 /* Icon.icns */,
 				3799260718BD4AB300A933D5 /* iOS.plist */,
@@ -237,6 +240,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A3340A352831151700FA23D2 /* Images.xcassets in Resources */,
 				3799264518BD4AB300A933D5 /* iOS.xib in Resources */,
 				3776F2AB282FD73A00033774 /* Engine.pak in Resources */,
 			);
@@ -275,6 +279,8 @@
 		0BDA9C82121EE06400ED5E97 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
@@ -340,6 +346,8 @@
 		0BDA9C83121EE06400ED5E97 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
