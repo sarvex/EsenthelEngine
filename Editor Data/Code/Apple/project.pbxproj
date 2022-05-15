@@ -346,6 +346,7 @@
 				OTHER_LDFLAGS = (
 					"-framework QuartzCore",
 					"-framework UIKit",
+					"-framework WebKit",
 					"-framework Foundation",
 					"-framework EventKit",
 					"-framework EventKitUI",
@@ -395,6 +396,7 @@
 				OTHER_LDFLAGS = (
 					"-framework QuartzCore",
 					"-framework UIKit",
+					"-framework WebKit",
 					"-framework Foundation",
 					"-framework EventKit",
 					"-framework EventKitUI",
