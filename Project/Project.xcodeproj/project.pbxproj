@@ -300,8 +300,6 @@
 					"-framework",
 					WebKit,
 					"-framework",
-					Foundation,
-					"-framework",
 					EventKit,
 					"-framework",
 					EventKitUI,
@@ -332,7 +330,6 @@
 					"-framework",
 					OpenAL,
 					"-lz",
-					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;
@@ -369,8 +366,6 @@
 					"-framework",
 					WebKit,
 					"-framework",
-					Foundation,
-					"-framework",
 					EventKit,
 					"-framework",
 					EventKitUI,
@@ -401,7 +396,6 @@
 					"-framework",
 					OpenAL,
 					"-lz",
-					"-ObjC",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.esenthel.test;
 				PRODUCT_NAME = iOS;

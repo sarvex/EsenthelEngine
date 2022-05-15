@@ -347,7 +347,6 @@
 					"-framework QuartzCore",
 					"-framework UIKit",
 					"-framework WebKit",
-					"-framework Foundation",
 					"-framework EventKit",
 					"-framework EventKitUI",
 					"-framework CoreMedia",
@@ -364,7 +363,6 @@
 					"-framework OpenGLES",
 					"-framework OpenAL",
 					"-lz",
-					"-ObjC", // needed by Facebook
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -397,7 +395,6 @@
 					"-framework QuartzCore",
 					"-framework UIKit",
 					"-framework WebKit",
-					"-framework Foundation",
 					"-framework EventKit",
 					"-framework EventKitUI",
 					"-framework CoreMedia",
@@ -414,7 +411,6 @@
 					"-framework OpenGLES",
 					"-framework OpenAL",
 					"-lz",
-					"-ObjC", // needed by Facebook
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
