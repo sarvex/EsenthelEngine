@@ -361,6 +361,8 @@
 					"-framework Security",
 
 					// needed by AdMob
+					"-framework AdSupport",
+					"-framework SystemConfiguration",
 					"-framework EventKit",
 					"-framework EventKitUI",
 					"-framework MessageUI",
@@ -412,6 +414,8 @@
 					"-framework Security",
 
 					// needed by AdMob
+					"-framework AdSupport",
+					"-framework SystemConfiguration",
 					"-framework EventKit",
 					"-framework EventKitUI",
 					"-framework MessageUI",
