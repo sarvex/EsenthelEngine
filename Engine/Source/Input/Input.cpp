@@ -431,14 +431,12 @@ void InputDevicesClass::create()
    if(@available(iOS 14.0, *)) // 13 required for 'CHHapticEngine', 14 required for 'GCHapticDurationInfinite'
       if(CHHapticEngine.capabilitiesForHardware.supportsHaptics)
    {
-      NSError *error=nil;
-      Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error)error: DelVibrator();else
+      NSError *error=nil; Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error)DelVibrator();else
       {
          [Vibrator setResetHandler:^
          {
-            NSError *error=nil; [Vibrator startAndReturnError:&error];
+            NSError *error=nil; [Vibrator startAndReturnError:&error]; // don't set "error:nil" because if error happens then exception occurs with nil
          }];
-         [Vibrator startAndReturnError:&error]; if(error)goto error;
       }
    }
 #elif SWITCH
@@ -507,6 +505,11 @@ void InputDevicesClass::acquire(Bool on)
    }
    if(on)UpdateLocation(Jni);
 #elif IOS
+   if(Vibrator) // have to stop and restart on app pause/resume, without this vibrations will stop playing
+   {
+      if(on){NSError *error=nil; [Vibrator startAndReturnError      :&error];} // don't set "error:nil" because if error happens then exception occurs with nil
+      else                       [Vibrator stopWithCompletionHandler:nil   ];
+   }
    if(CoreMotionMgr)
    {
       if(on)
