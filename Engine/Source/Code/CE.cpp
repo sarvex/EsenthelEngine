@@ -1105,8 +1105,10 @@ Source* CodeEditor:: getSource(C SourceLoc &loc, ERROR_TYPE *error)
 Int     CodeEditor::curI() {return sources.validIndex(_cur);}
 Source* CodeEditor::cur () {return                    _cur ;}
 
-void CodeEditor::nextFile() {Source *src=null; Int offset=curI()+1; FREPA(sources){Source &s=sources[Mod(offset+i, sources.elms())]; if(s.opened){src=&s; break;}} cur(src);} // activate next opened source
-void CodeEditor::prevFile() {Source *src=null; Int offset=curI()-1; FREPA(sources){Source &s=sources[Mod(offset-i, sources.elms())]; if(s.opened){src=&s; break;}} cur(src);} // activate prev opened source
+static Int TabI() {REPA(CE.code_tabs)if(CE.code_tabs.tab(i).source==CE.cur())return i; return -1;}
+
+void CodeEditor::nextFile() {if(code_tabs.tabs())cur(code_tabs.tab(Mod(TabI()+1, code_tabs.tabs())).source);} // activate next opened source
+void CodeEditor::prevFile() {if(code_tabs.tabs())cur(code_tabs.tab(Mod(TabI()-1, code_tabs.tabs())).source);} // activate prev opened source
 
 Str CodeEditor::title()
 {
@@ -1213,8 +1215,12 @@ void CodeEditor::update(Bool active)
    {
       if(Gui.kb()==&build_list)if(cur())cur()->activate();
 
-      if(Ms.bp(2) && build_region .contains(Gui.ms()))visibleOutput       (false);
-      if(Ms.bp(2) && devlog_region.contains(Gui.ms()))visibleAndroidDevLog(false);
+      if(Ms.bp(2))
+      {
+         if(build_region .contains(Gui.ms()))visibleOutput       (false);else
+         if(devlog_region.contains(Gui.ms()))visibleAndroidDevLog(false);else
+         if(code_tabs    .contains(Gui.ms())){REPA(code_tabs)if(code_tabs.tab(i).contains(Gui.ms())){close(code_tabs.tab(i).source); break;}}
+      }
 
       if(cur())cur()->suggestionsSetRect();
 

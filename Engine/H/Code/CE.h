@@ -763,9 +763,10 @@ const_mem_addr struct CodeEditor
    void    cur                 (Source *cur);
    Source& New                 ();
    void    sourceRemoved       (Source &src);
-   void    closeDo             ();
+   void    closeDo             (Source &src);
    void    closeAll            (); // close all sources ignoring any unsaved changes
-   void    close               ();
+   void    close               (Source *src);
+   void    close               () {close(cur());}
    void    saveChanges         ();
    void    saveChanges         (Memc<Edit::SaveChanges::Elm> &elms);
    void    removeUselessSources();
