@@ -141,7 +141,6 @@ AppPropsEditor AppPropsEdit;
    ImagePtr          CodeView::appNotificationIcon(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data->notification_icon)); return super::appNotificationIcon();}
    void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
-   void CodeView::ImageConvertProcess(ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
    COMPRESS_TYPE CodeView::appEmbedCompress(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [ProjCompres(exe_type)]; return super::appEmbedCompress     (exe_type);}
    int           CodeView::appEmbedCompressLevel(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_level[ProjCompres(exe_type)]; return super::appEmbedCompressLevel(exe_type);}
    DateTime      CodeView::appEmbedSettingsTime(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return Max(Proj.compress_time [ProjCompres(exe_type)], Max(Proj.cipher_time, Proj.cipher_key_time)).asDateTime(); return super::appEmbedSettingsTime(exe_type);}
@@ -153,7 +152,11 @@ AppPropsEditor AppPropsEdit;
       AddPublishFiles(app_elms, files, generate, convert, exe_type);
       // all generations/conversions need to be processed here so 'files' point correctly
       WorkerThreads.process1(generate, ImageGenerateProcess);
-      WorkerThreads.process1(convert , ImageConvertProcess );
+      if(convert.elms()) // image compression is already multi-threaded, so allow only one at a time
+      {
+         ThreadMayUseGPUData       (); FREPAO(convert).process();
+         ThreadFinishedUsingGPUData();
+      }
    }
    void CodeView::appInvalidProperty(C Str &msg)
 {

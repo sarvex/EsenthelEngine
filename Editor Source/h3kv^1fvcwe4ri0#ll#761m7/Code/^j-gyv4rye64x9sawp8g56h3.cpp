@@ -118,7 +118,6 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual void focus()override {if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
 
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
-   static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index) {ThreadMayUseGPUData(); convert .process();}
 
    virtual COMPRESS_TYPE appEmbedCompress     (                           Edit.EXE_TYPE exe_type)override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [ProjCompres(exe_type)]; return super.appEmbedCompress     (exe_type);}
    virtual int           appEmbedCompressLevel(                           Edit.EXE_TYPE exe_type)override {/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_level[ProjCompres(exe_type)]; return super.appEmbedCompressLevel(exe_type);}
@@ -131,7 +130,11 @@ class CodeView : Region, Edit.CodeEditorInterface
       AddPublishFiles(app_elms, files, generate, convert, exe_type);
       // all generations/conversions need to be processed here so 'files' point correctly
       WorkerThreads.process1(generate, ImageGenerateProcess);
-      WorkerThreads.process1(convert , ImageConvertProcess );
+      if(convert.elms()) // image compression is already multi-threaded, so allow only one at a time
+      {
+         ThreadMayUseGPUData       (); FREPAO(convert).process();
+         ThreadFinishedUsingGPUData();
+      }
    }
    virtual void appInvalidProperty(C Str &msg)override
    {

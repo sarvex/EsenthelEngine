@@ -6,7 +6,7 @@ extern Memc<ImageConvert>  PublishConvert;
 extern Memc<Mems<byte>>    PublishFileData;
 extern SyncLock            PublishLock;
 extern bool                PublishOk, PublishNoCompile, PublishOpenIDE, PublishDataAsPak, PublishDataOnly, PublishProjectPackage;
-extern int                 PublishAreasLeft, PublishPVRTCUse;
+extern int                 PublishAreasLeft;
 extern PUBLISH_STAGE       PublishStage;
 extern Str                 PublishPath,
                     PublishBinPath, // "Bin/" path (must include tail slash)
@@ -29,7 +29,6 @@ FILE_LIST_MODE CleanPublish(C FileFind &ff, bool &OK);
 bool CleanPublish(Memt<SrcDest> &files);
 bool StartPublish(C Str &exe_name, Edit::EXE_TYPE exe_type, Edit::BUILD_MODE build_mode, bool no_compile=false, C Str &custom_project_data_path=S, bool open_ide=false, bool project_package=false);
 void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
-void ImageConvertProcess(ImageConvert &convert, ptr user, int thread_index);
 bool SetPak(MemPtr<PakFileData> files, C Str &pak_name);
 bool PublishFunc(Thread &thread);
 Texture* GetTexture(MemPtr<Texture> textures, C UID &tex_id);

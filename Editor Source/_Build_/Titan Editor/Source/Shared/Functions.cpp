@@ -542,7 +542,7 @@ bool EditToGameImage(Image &edit, Image &game, bool pow2, bool srgb, bool alpha_
       if(&edit!=&game){src->copyTry(temp); src=&temp;}
       src->alphaFromBrightness().divRgbByAlpha();
    }
-   if(ignore_alpha && src->typeInfo().a) // if want to ignore alpha then set it to full as some compressed texture formats will benefit from better quality (like PVRTC)
+   if(ignore_alpha && src->typeInfo().a) // if want to ignore alpha then set it to full as some compressed texture formats will benefit from better quality (like BC7, ETC2, ASTC, PVRTC)
    {
       if(mip_maps<0)mip_maps=((src->mipMaps()==1) ? 1 : 0); // source will have now only one mip-map so we can't use "-1", auto-detect instead
       if(mode    <0)mode    =src->mode();                   // source will now be as IMAGE_SOFT      so we can't use "-1", auto-detect instead

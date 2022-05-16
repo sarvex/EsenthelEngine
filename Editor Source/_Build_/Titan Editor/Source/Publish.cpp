@@ -27,7 +27,7 @@ Memc<ImageConvert>  PublishConvert;
 Memc<Mems<byte>>    PublishFileData; // for file data allocated dynamically
 SyncLock            PublishLock;
 bool                PublishOk, PublishNoCompile, PublishOpenIDE, PublishDataAsPak, PublishDataOnly, PublishProjectPackage;
-int                 PublishAreasLeft, PublishPVRTCUse;
+int                 PublishAreasLeft;
 PUBLISH_STAGE       PublishStage;
 Str                 PublishPath,
                     PublishBinPath, // "Bin/" path (must include tail slash)
@@ -309,15 +309,6 @@ void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index)
       {SyncLocker locker(PublishLock); Publish.progress.progress+=1.0f/PublishGenerate.elms();}
    }
 }
-void ImageConvertProcess(ImageConvert &convert, ptr user, int thread_index)
-{
-   if(!Publish.progress.stop)
-   {
-      ThreadMayUseGPUData();
-      convert.process(&Publish.progress.stop);
-      {SyncLocker locker(PublishLock); Publish.progress.progress+=1.0f/PublishConvert.elms();}
-   }
-}
 bool SetPak(MemPtr<PakFileData> files, C Str &pak_name)
 {
    DATA_STATE             state=PublishDataState(files, pak_name); if(state==DATA_READY)return true;
@@ -334,7 +325,18 @@ bool PublishFunc(Thread &thread)
    PublishStage=PUBLISH_MTRL_SIMPLIFY; Publish.progress.progress=0; WorkerThreads.process1(PublishGenerate, ImageGenerateProcess);
 
    // convert
-   PublishStage=PUBLISH_TEX_OPTIMIZE; Publish.progress.progress=0; WorkerThreads.process1(PublishConvert, ImageConvertProcess);
+   if(PublishConvert.elms()) // image compression is already multi-threaded, so allow only one at a time, this is so we can check for 'stop' after other image finished, and stop immediately, without waiting for this one to be processed
+   {
+      PublishStage=PUBLISH_TEX_OPTIMIZE; Publish.progress.progress=0;
+      ThreadMayUseGPUData();
+      FREPA(PublishConvert) // process in order because of progress
+      {
+         if(Publish.progress.stop)break;
+         PublishConvert[i].process();
+         Publish.progress.progress=flt(i)/PublishConvert.elms();
+      }
+      ThreadFinishedUsingGPUData();
+   }
 
    // pak
    PublishStage=PUBLISH_PUBLISH; Publish.progress.progress=0;
@@ -1057,7 +1059,7 @@ void DrawPublish()
    D.clear(BackgroundColor());
    if(Publish.progress.stop)
    {
-      D.text(0, 0.05f, (PublishPVRTCUse ? "Waiting for PVRTC to finish" : "Stopping"));
+      D.text(0, 0.05f, "Stopping");
    }else
    {
       if(!UpdateThread.created())
@@ -1068,8 +1070,8 @@ void DrawPublish()
          Str text; switch(PublishStage)
          {
             case PUBLISH_MTRL_SIMPLIFY: text="Simplifying Materials"; break;
-            case PUBLISH_TEX_OPTIMIZE : text=(PublishSkipOptimize() ? PublishPVRTCUse ? "Waiting for PVRTC to finish" : "Copying Textures" : "Optimizing Textures"); break;
-            default                   : text=(PublishProjectPackage ? "Compressing Project" : "Publishing Project"); break;
+            case PUBLISH_TEX_OPTIMIZE : text=(PublishSkipOptimize() ? "Copying Textures"    : "Optimizing Textures"); break;
+            default                   : text=(PublishProjectPackage ? "Compressing Project" : "Publishing Project" ); break;
          }
          D.text(0, 0.05f, text);
       }
@@ -1079,10 +1081,6 @@ void DrawPublish()
       gpc.offset.zero();
       UpdateProgress.draw(gpc);
       D.clip();
-   }
-   if(PublishPVRTCUse)
-   {
-      TextStyleParams ts; ts.align.set(0, -1); ts.size=0.05f; D.text(ts, Gui.desktop()->rect(), "Compressing PVRTC (iOS Texture Format) - this may take a while.\nMaking sure textures look beautiful and use little space.");
    }
    Gui.draw();
    Draw();
@@ -1126,21 +1124,17 @@ void DrawPublish()
    bool ImageConvert::SkipOptimize(int &type, DateTime &time) // skip formats which are slow to convert
    {
       if(PublishSkipOptimize())
-         if(type==IMAGE_BC6 || type==IMAGE_BC7      || type==IMAGE_PVRTC1_2      || type==IMAGE_PVRTC1_4      || type==IMAGE_ETC2_R      || type==IMAGE_ETC2_RG      || type==IMAGE_ETC2_RGB      || type==IMAGE_ETC2_RGBA1      || type==IMAGE_ETC2_RGBA
-                            || type==IMAGE_BC7_SRGB || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB || type==IMAGE_ETC2_R_SIGN || type==IMAGE_ETC2_RG_SIGN || type==IMAGE_ETC2_RGB_SRGB || type==IMAGE_ETC2_RGBA1_SRGB || type==IMAGE_ETC2_RGBA_SRGB)
+         if(InRange(type, IMAGE_TYPES) && ImageTI[type].compressed) // if compressed
+            if(type<IMAGE_BC1 || type>IMAGE_BC5_SIGN) // BC1..BC5 compression is fast, so no need to skip
       {
-         type=-1; time.decDay(); return true; // use default type and set previous date, so the file will be regenerated next time
+         type=-1; time.decDay(); return true; // use original type and set previous date, so the file will be regenerated next time
       }
       return false;
    }
-   void ImageConvert::process(C bool *stop)C
+   void ImageConvert::process()C
    {
       DateTime time=T.time; if(!time.valid())time=FileInfo(src).modify_time_utc; // 'time' could've been empty if the file didn't exist yet at the moment of setting up this object (this can happen for dynamically generated textures)
       int type=T.type; bool skip=SkipOptimize(type, time), pvrtc=(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB);
-      SyncLockerEx locker(Lock, pvrtc); // PVRTC texture compression is already multi-threaded and uses a lot of memory, so allow only one at a time
-      if(stop && *stop)return;
-      skip|=SkipOptimize(type, time); // call this again after the 'locker' got unlocked
-      PublishPVRTC pub_pvrtc(pvrtc);
       switch(family)
       {
          case ELM_IMAGE:
@@ -1204,7 +1198,6 @@ void DrawPublish()
          {
             if(skip) // just copy
             {
-               locker.on(); // when just copying then limit to only one thread
                File f; if(f.readTry(src))SafeOverwrite(f, dest, &time);
             }else
             if(C ImagePtr &image=src)
@@ -1250,8 +1243,6 @@ void DrawPublish()
       T+=T.text    .create(Rect(0.02f, ok.rect().max.y, clientWidth()-0.02f, 0), text);
       activate();
    }
-   PublishPVRTC::PublishPVRTC(bool on) : on(on) {if(on)AtomicInc(PublishPVRTCUse);}
-  PublishPVRTC::~PublishPVRTC(       )          {if(on)AtomicDec(PublishPVRTCUse);}
    void PublishClass::ExportData(C Str &name, PublishClass &publish) {StartPublish(S, publish.export_data_exe, Edit::BUILD_PUBLISH, true, name);}
    void PublishClass::create()
    {

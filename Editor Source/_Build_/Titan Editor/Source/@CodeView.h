@@ -78,7 +78,6 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual void focus()override;
 
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
-   static void ImageConvertProcess (ImageConvert  &convert , ptr user, int thread_index);
 
    virtual COMPRESS_TYPE appEmbedCompress     (                           Edit::EXE_TYPE exe_type)override;
    virtual int           appEmbedCompressLevel(                           Edit::EXE_TYPE exe_type)override;
