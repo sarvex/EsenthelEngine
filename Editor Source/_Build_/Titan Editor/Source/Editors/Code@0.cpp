@@ -7,6 +7,7 @@ AppPropsEditor AppPropsEdit;
 /******************************************************************************/
 
 /******************************************************************************/
+   const LANG_TYPE AppPropsEditor::Languages[]={EN, DE, LANG_DUTCH, FR, IT, SP, PO, PL, RU, JP, KO, CN, TH};
    cchar8 *AppPropsEditor::OrientName[]=
    { 
       "Portrait",
@@ -139,6 +140,7 @@ AppPropsEditor AppPropsEdit;
    ImagePtr          CodeView::appImagePortrait(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->image_portrait   .valid())return ImagePtr().get(Proj.gamePath(app_data->image_portrait   )); return super::appImagePortrait();}
    ImagePtr          CodeView::appImageLandscape(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->image_landscape  .valid())return ImagePtr().get(Proj.gamePath(app_data->image_landscape  )); return super::appImageLandscape();}
    ImagePtr          CodeView::appNotificationIcon(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data->notification_icon)); return super::appNotificationIcon();}
+   void              CodeView::appLanguages(MemPtr<LANG_TYPE> langs){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData()){langs=app_data->supported_languages; return;} return super::appLanguages(langs);}
    void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    COMPRESS_TYPE CodeView::appEmbedCompress(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [ProjCompres(exe_type)]; return super::appEmbedCompress     (exe_type);}
@@ -734,6 +736,17 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    Str  AppPropsEditor::PublishOpenVRDll(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return app_data->publishOpenVRDll(); return S;}
    void AppPropsEditor::Orientation(  AppPropsEditor &ap, C Str &text) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData()){app_data->supported_orientations=OrientToFlag(ORIENT(TextInt(text))); app_data->supported_orientations_time.getUTC();}}
    Str  AppPropsEditor::Orientation(C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm->appData())return FlagToOrient(app_data->supported_orientations); return S;}
+   void AppPropsEditor::Language(ptr lang_ptr                     )
+   {
+      if(AppPropsEdit.p_languages && AppPropsEdit.elm)if(ElmApp *app_data=AppPropsEdit.elm->appData())
+      {
+         LANG_TYPE lang_type=LANG_TYPE((intptr)lang_ptr);
+         if(AppPropsEdit.p_languages->combobox.menu(LanguageName(lang_type)))app_data->supported_languages.include(lang_type);
+         else                                                               app_data->supported_languages.exclude(lang_type);
+         app_data->supported_languages_time.getUTC();
+         AppPropsEdit.setLanguages();
+      }
+   }
    void AppPropsEditor::create()
    {
       flt h=0.05f;
@@ -742,6 +755,12 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
                         add("Build Number"               , MemberDesc(DATA_INT                               ).setFunc(Build                       , Build                       )).desc("Application build number.\nUsed to identify the version of the application.\nThis must be specified in order for the application to update correctly through online stores.\nTypically you should increase this value by 1 when making each new release.").min(0).mouseEditSpeed(2); // was min(1) but Nintendo requires submitting Version 0 first, 1 fails
     Property &fb_app_id=add("Facebook App ID"            , MemberDesc(MEMBER(ElmApp, fb_app_id              )).setFunc(FacebookAppID               , FacebookAppID               )).desc("Facebook Application ID").mouseEditDel();
                         add("Supported Orientations"     , MemberDesc(DATA_INT                               ).setFunc(Orientation                 , Orientation                 )).setEnum(OrientName, Elms(OrientName)).desc("Supported orientations for mobile platforms");
+           p_languages=&add("Supported Languages"        , MemberDesc(DATA_INT                               )).setEnum();
+   {
+      Node<MenuElm> n;
+      FREPA(Languages)n.New().create(LanguageName(Languages[i]), Language, ptr(Languages[i])).flag(MENU_TOGGLABLE);
+      p_languages->combobox.setData(n);
+   }
                         add("Default Gui Skin"           , MemberDesc(MEMBER(ElmApp, gui_skin               )).setFunc(GuiSkin                     , GuiSkin                     )).elmType(ELM_GUI_SKIN).desc("Set default Gui Skin used by this Application.\nGui Skin will be loaded during Application Engine initialization stage.");
       PropEx &embed    =add("Embed Engine Data"          , MemberDesc(DATA_INT                               ).setFunc(EmbedEngineData             , EmbedEngineData             )).setEnum().desc("If embed engine data into the application executable file, so it doesn't require separate \"Engine.pak\" file.\nThis option is recommended for applications that want to be distributed as standalone executables without any additional files.\nThis option is ignored for Mobile and Web builds.\nDefault value for this option is \"No\"."); embed.combobox.setColumns(NameDescListColumn, Elms(NameDescListColumn)).setData(EmbedEngine, Elms(EmbedEngine)).menu.list.setElmDesc(MEMBER(NameDesc, desc));
                         add("Publish Project Data"       , MemberDesc(DATA_BOOL                              ).setFunc(PublishProjData             , PublishProjData             )).desc("If include project data when publishing the application.\nDisable this if your application will not initially include the data, but will download it manually later.\nDefault value for this option is true.");
@@ -845,6 +864,14 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
 
       clientRect(Rect_C(0, 0, clientWidth(), -pos.y+h*9+0.02f));
    }
+   void AppPropsEditor::setLanguages()
+   {
+      if(p_languages)
+      {
+         p_languages->combobox.text.clear();
+         if(elm)if(ElmApp *app_data=elm->appData())FREPA(app_data->supported_languages)p_languages->combobox.text.space()+=CaseUp(LanguageCode(app_data->supported_languages[i]));
+      }
+   }
    void AppPropsEditor::toGui()
    {
       super::toGui(); win_props.toGui(); mac_props.toGui(); linux_props.toGui(); android_props.toGui(); ios_props.toGui(); nintendo_props.toGui();
@@ -852,6 +879,13 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       image_portrait   .setImage();
       image_landscape  .setImage();
       notification_icon.setImage();
+
+      setLanguages();
+      if(p_languages)
+      {
+         ElmApp *app_data=(elm ? elm->appData() : null);
+         FREPA(Languages)p_languages->combobox.menu(LanguageName(Languages[i]), app_data && app_data->supported_languages.has(Languages[i]), QUIET);
+      }
    }
    AppPropsEditor& AppPropsEditor::hide(){set(null); super::hide(); return T;}
    void AppPropsEditor::flush()
@@ -912,6 +946,6 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
    }
 EEItem::EEItem() : opened(false), flag(0), type(ELM_NONE), parent(null) {}
 
-AppPropsEditor::AppPropsEditor() : elm_id(UIDZero), elm(null), changed(false), changed_headers(false), p_icon(null), p_image_portrait(null), p_image_landscape(null) {}
+AppPropsEditor::AppPropsEditor() : elm_id(UIDZero), elm(null), changed(false), changed_headers(false), p_icon(null), p_image_portrait(null), p_image_landscape(null), p_notification_icon(null), p_languages(null) {}
 
 /******************************************************************************/

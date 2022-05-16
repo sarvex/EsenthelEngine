@@ -170,3 +170,6 @@ T1(const_mem_addr TYPE) struct FixedMems : private Mems<TYPE> // Unresizable Mem
 T1(TYPE) Int Elms(C      Mems<TYPE> &mems) {return mems.elms();}
 T1(TYPE) Int Elms(C FixedMems<TYPE> &mems) {return mems.elms();}
 /******************************************************************************/
+T1(TYPE) Bool operator==(C Mems<TYPE> &a, C Mems<TYPE> &b) {if(a.elms()!=b.elms())return false; REPA(a)if(a[i]!=b[i])return false; return true ;}
+T1(TYPE) Bool operator!=(C Mems<TYPE> &a, C Mems<TYPE> &b) {if(a.elms()!=b.elms())return true ; REPA(a)if(a[i]!=b[i])return true ; return false;}
+/******************************************************************************/

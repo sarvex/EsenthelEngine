@@ -1950,20 +1950,8 @@ Bool CodeEditor::generateXcodeProj()
       {
          value.setName("array").nodes.del();
          Mems<LANG_TYPE> languages; cei().appLanguages(languages);
-         // https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundlelocalizations
-         if(                       languages.has(LANG_GERMAN    ))value.nodes.New().setName("string").data.add("de");
-         if(                       languages.has(LANG_DUTCH     ))value.nodes.New().setName("string").data.add("nl");
-         if(                       languages.has(LANG_FRENCH    ))value.nodes.New().setName("string").data.add("fr");
-         if(                       languages.has(LANG_ITALIAN   ))value.nodes.New().setName("string").data.add("it");
-         if(                       languages.has(LANG_SPANISH   ))value.nodes.New().setName("string").data.add("es");
-         if(                       languages.has(LANG_PORTUGUESE))value.nodes.New().setName("string").data.add("pt");
-         if(                       languages.has(LANG_POLISH    ))value.nodes.New().setName("string").data.add("pl");
-         if(                       languages.has(LANG_RUSSIAN   ))value.nodes.New().setName("string").data.add("ru");
-         if(                       languages.has(LANG_JAPANESE  ))value.nodes.New().setName("string").data.add("ja");
-         if(                       languages.has(LANG_KOREAN    ))value.nodes.New().setName("string").data.add("ko");
-         if(                       languages.has(LANG_CHINESE   ))value.nodes.New().setName("string").data.add("zh");
-         if(                       languages.has(LANG_THAI      ))value.nodes.New().setName("string").data.add("th");
-         if(!value.nodes.elms() || languages.has(LANG_ENGLISH   ))value.nodes.New().setName("string").data.add("en"); // always add English if no language added
+         FREPA(languages)if(CChar8 *code=LanguageCode(languages[i]))value.nodes.New().setName("string").data.add(code);
+         if(!value.nodes.elms())value.nodes.New().setName("string").data.add("en"); // always add English if no language added
       }else
       if(key=="UISupportedInterfaceOrientations")
       {

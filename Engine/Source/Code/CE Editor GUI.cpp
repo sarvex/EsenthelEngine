@@ -761,7 +761,7 @@ void CodeEditor::resize()
    Flt menu_h=menu.rect().h();
 
    Rect r=CE.cei().sourceRect();
-   code_tabs.rect(Rect(r.min.x, r.max.y-0.05f, r.max.x, r.max.y));
+   code_tabs.rect(Rect(r.min.x, r.max.y-0.045f, r.max.x, r.max.y));
 
    RegionRect(build_region, Rect(-D.w(), -D.h(), D.w(), -D.h()*0.5f)+Vec2(0, menu_on_top ? 0 : menu_h));
    build_list.elmHeight(ts.size.y).textSize(ts.size.y);//.columnHeight(ts.size.y*1.3f);

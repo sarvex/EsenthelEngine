@@ -2,6 +2,7 @@
 /******************************************************************************/
 class AppPropsEditor : PropWin
 {
+   static const LANG_TYPE Languages[];
    enum ORIENT
    {
       ORIENT_PORTRAIT        ,
@@ -37,7 +38,7 @@ class AppPropsEditor : PropWin
    UID       elm_id;
    Elm      *elm;
    bool      changed, changed_headers;
-   Property *p_icon, *p_image_portrait, *p_image_landscape, *p_notification_icon;
+   Property *p_icon, *p_image_portrait, *p_image_landscape, *p_notification_icon, *p_languages;
    AppImage    icon     ,    image_portrait     ,    image_landscape     ,    notification_icon;
    Tabs      platforms;
    PropExs   win_props, mac_props, linux_props, android_props, ios_props, nintendo_props;
@@ -152,6 +153,7 @@ class AppPropsEditor : PropWin
  //static Str  WindowsCodeSign             (C AppPropsEditor &ap             ) {if(ap.elm)if(ElmApp *app_data=ap.elm.appData())return app_data.windowsCodeSign(); return S;}
    static void Orientation                 (  AppPropsEditor &ap, C Str &text);
    static Str  Orientation                 (C AppPropsEditor &ap             );
+   static void Language                    (ptr lang_ptr                     );
 
    enum PLATFORM
    {
@@ -168,6 +170,7 @@ class AppPropsEditor : PropWin
 ;
    ASSERT(Edit::XBOX_LIVE_CREATORS==0 && Edit::XBOX_LIVE_ID_XBOX==1 && Edit::XBOX_LIVE_NUM==2);
    void create();
+   void setLanguages();
    void toGui();
 
    virtual AppPropsEditor& hide()override;
