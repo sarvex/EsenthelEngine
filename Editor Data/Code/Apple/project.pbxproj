@@ -349,7 +349,7 @@
 					"-framework WebKit",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
-					"-framework CoreHaptics",
+					"-weak_framework CoreHaptics", // requires iOS 13.0
 					"-framework AudioToolbox",
 					"-framework OpenGLES",
 					"-framework OpenAL",
@@ -402,7 +402,7 @@
 					"-framework WebKit",
 					"-framework CoreMotion",
 					"-framework CoreLocation",
-					"-framework CoreHaptics",
+					"-weak_framework CoreHaptics", // requires iOS 13.0
 					"-framework AudioToolbox",
 					"-framework OpenGLES",
 					"-framework OpenAL",

@@ -428,7 +428,7 @@ void InputDevicesClass::create()
    CoreMotionMgr.         gyroUpdateInterval=interval;
 
    // Vibrator
-   if(@available(iOS 14.0, *)) // 13 required for 'CHHapticEngine', 14 required for 'GCHapticDurationInfinite'
+   if([CHHapticEngine class]) // if class was found, this is needed because CoreHaptics is linked optionally as "weak_framework CoreHaptics"
       if(CHHapticEngine.capabilitiesForHardware.supportsHaptics)
    {
       NSError *error=nil; Vibrator=[[CHHapticEngine alloc] initAndReturnError:&error]; if(error)DelVibrator();else
