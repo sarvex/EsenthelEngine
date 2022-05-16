@@ -1594,72 +1594,82 @@ void OSToast(C Str &text)
 #endif
 }
 /******************************************************************************/
-static struct Locale
+struct Language
 {
    LANG_TYPE lang;
-   CChar8   *code;
-}locale[]=
+   CChar8   *code, *name;
+}static const Languages[]=
 {
-   {(LANG_TYPE)LANG_AFRIKAANS , "af"},
-   {(LANG_TYPE)LANG_ARABIC    , "ar"},
-   {(LANG_TYPE)LANG_ARMENIAN  , "hy"},
-   {(LANG_TYPE)LANG_BELARUSIAN, "be"},
-   {(LANG_TYPE)LANG_BULGARIAN , "bg"},
-   {(LANG_TYPE)LANG_CHINESE   , "zh"},
-   {(LANG_TYPE)LANG_CROATIAN  , "hr"},
-   {(LANG_TYPE)LANG_CZECH     , "cs"},
-   {(LANG_TYPE)LANG_DANISH    , "da"},
-   {(LANG_TYPE)LANG_DUTCH     , "nl"},
-   {(LANG_TYPE)LANG_ENGLISH   , "en"},
-   {(LANG_TYPE)LANG_ESTONIAN  , "et"},
-   {(LANG_TYPE)LANG_FILIPINO  , "tl"},
-   {(LANG_TYPE)LANG_FINNISH   , "fi"},
-   {(LANG_TYPE)LANG_FRENCH    , "fr"},
-   {(LANG_TYPE)LANG_GALICIAN  , "gl"},
-   {(LANG_TYPE)LANG_GERMAN    , "de"},
-   {(LANG_TYPE)LANG_GREEK     , "el"},
-   {(LANG_TYPE)LANG_HEBREW    , "he"},
-   {(LANG_TYPE)LANG_HUNGARIAN , "hu"},
-   {(LANG_TYPE)LANG_HINDI     , "hi"},
-   {(LANG_TYPE)LANG_ICELANDIC , "is"},
-   {(LANG_TYPE)LANG_INDONESIAN, "id"},
-   {(LANG_TYPE)LANG_IRISH     , "ga"},
-   {(LANG_TYPE)LANG_ITALIAN   , "it"},
-   {(LANG_TYPE)LANG_JAPANESE  , "ja"},
-   {(LANG_TYPE)LANG_KOREAN    , "ko"},
-   {(LANG_TYPE)LANG_LATVIAN   , "lv"},
-   {(LANG_TYPE)LANG_LITHUANIAN, "lt"},
-   {(LANG_TYPE)LANG_MALAY     , "ms"},
-   {(LANG_TYPE)LANG_MONGOLIAN , "mn"},
-   {(LANG_TYPE)LANG_NORWEGIAN , "nb"},
-   {(LANG_TYPE)LANG_NORWEGIAN , "nn"},
-   {(LANG_TYPE)LANG_PERSIAN   , "fa"},
-   {(LANG_TYPE)LANG_POLISH    , "pl"},
-   {(LANG_TYPE)LANG_PORTUGUESE, "pt"},
-   {(LANG_TYPE)LANG_RUSSIAN   , "ru"},
-   {(LANG_TYPE)LANG_ROMANIAN  , "ro"},
-   {(LANG_TYPE)LANG_SERBIAN   , "sr"},
-   {(LANG_TYPE)LANG_SPANISH   , "es"},
-   {(LANG_TYPE)LANG_SLOVAK    , "sk"},
-   {(LANG_TYPE)LANG_SLOVENIAN , "sl"},
-   {(LANG_TYPE)LANG_SWAHILI   , "sw"},
-   {(LANG_TYPE)LANG_SWEDISH   , "sv"},
-   {(LANG_TYPE)LANG_TAMIL     , "ta"},
-   {(LANG_TYPE)LANG_THAI      , "th"},
-   {(LANG_TYPE)LANG_TURKISH   , "tr"},
-   {(LANG_TYPE)LANG_UKRAINIAN , "uk"},
-   {(LANG_TYPE)LANG_VIETNAMESE, "vi"},
-   {(LANG_TYPE)LANG_XHOSA     , "xh"},
-   {(LANG_TYPE)LANG_ZULU      , "zu"},
+   {(LANG_TYPE)LANG_AFRIKAANS , "af", "Afrikaans"},
+   {(LANG_TYPE)LANG_ARABIC    , "ar", "Arabic"},
+   {(LANG_TYPE)LANG_ARMENIAN  , "hy", "Armenian"},
+   {(LANG_TYPE)LANG_BELARUSIAN, "be", "Belarusian"},
+   {(LANG_TYPE)LANG_BULGARIAN , "bg", "Bulgarian"},
+   {(LANG_TYPE)LANG_CHINESE   , "zh", "Chinese"},
+   {(LANG_TYPE)LANG_CROATIAN  , "hr", "Croatian"},
+   {(LANG_TYPE)LANG_CZECH     , "cs", "Czech"},
+   {(LANG_TYPE)LANG_DANISH    , "da", "Danish"},
+   {(LANG_TYPE)LANG_DUTCH     , "nl", "Dutch"},
+   {(LANG_TYPE)LANG_ENGLISH   , "en", "English"},
+   {(LANG_TYPE)LANG_ESTONIAN  , "et", "Estonian"},
+   {(LANG_TYPE)LANG_FILIPINO  , "tl", "Filipino"},
+   {(LANG_TYPE)LANG_FINNISH   , "fi", "Finnish"},
+   {(LANG_TYPE)LANG_FRENCH    , "fr", "French"},
+   {(LANG_TYPE)LANG_GALICIAN  , "gl", "Galician"},
+   {(LANG_TYPE)LANG_GERMAN    , "de", "German"},
+   {(LANG_TYPE)LANG_GREEK     , "el", "Greek"},
+   {(LANG_TYPE)LANG_HEBREW    , "he", "Hebrew"},
+   {(LANG_TYPE)LANG_HUNGARIAN , "hu", "Hungarian"},
+   {(LANG_TYPE)LANG_HINDI     , "hi", "Hindi"},
+   {(LANG_TYPE)LANG_ICELANDIC , "is", "Icelandic"},
+   {(LANG_TYPE)LANG_INDONESIAN, "id", "Indonesian"},
+   {(LANG_TYPE)LANG_IRISH     , "ga", "Irish"},
+   {(LANG_TYPE)LANG_ITALIAN   , "it", "Italian"},
+   {(LANG_TYPE)LANG_JAPANESE  , "ja", "Japanese"},
+   {(LANG_TYPE)LANG_KOREAN    , "ko", "Korean"},
+   {(LANG_TYPE)LANG_LATVIAN   , "lv", "Latvian"},
+   {(LANG_TYPE)LANG_LITHUANIAN, "lt", "Lithuanian"},
+   {(LANG_TYPE)LANG_MALAY     , "ms", "Malay"},
+   {(LANG_TYPE)LANG_MONGOLIAN , "mn", "Mongolian"},
+   {(LANG_TYPE)LANG_NORWEGIAN , "nb", "Norwegian"},
+   {(LANG_TYPE)LANG_NORWEGIAN , "nn", "Norwegian"},
+   {(LANG_TYPE)LANG_PERSIAN   , "fa", "Persian"},
+   {(LANG_TYPE)LANG_POLISH    , "pl", "Polish"},
+   {(LANG_TYPE)LANG_PORTUGUESE, "pt", "Portuguese"},
+   {(LANG_TYPE)LANG_RUSSIAN   , "ru", "Russian"},
+   {(LANG_TYPE)LANG_ROMANIAN  , "ro", "Romanian"},
+   {(LANG_TYPE)LANG_SERBIAN   , "sr", "Serbian"},
+   {(LANG_TYPE)LANG_SPANISH   , "es", "Spanish"},
+   {(LANG_TYPE)LANG_SLOVAK    , "sk", "Slovak"},
+   {(LANG_TYPE)LANG_SLOVENIAN , "sl", "Slovenian"},
+   {(LANG_TYPE)LANG_SWAHILI   , "sw", "Swahili"},
+   {(LANG_TYPE)LANG_SWEDISH   , "sv", "Swedish"},
+   {(LANG_TYPE)LANG_TAMIL     , "ta", "Tamil"},
+   {(LANG_TYPE)LANG_THAI      , "th", "Thai"},
+   {(LANG_TYPE)LANG_TURKISH   , "tr", "Turkish"},
+   {(LANG_TYPE)LANG_UKRAINIAN , "uk", "Ukrainian"},
+   {(LANG_TYPE)LANG_VIETNAMESE, "vi", "Vietnamese"},
+   {(LANG_TYPE)LANG_XHOSA     , "xh", "Xhosa"},
+   {(LANG_TYPE)LANG_ZULU      , "zu", "Zulu"},
 };
-LANG_TYPE LanguageCode(C Str &lang)
+LANG_TYPE LanguageCode(CChar8 *code)
 {
-   if(lang.is())FREPA(locale)if(Starts(lang, locale[i].code))return locale[i].lang;
+   if(Is(code))FREPA(Languages)if(Starts(code, Languages[i].code))return Languages[i].lang;
+   return LANG_UNKNOWN;
+}
+LANG_TYPE LanguageCode(C Str &code)
+{
+   if(code.is())FREPA(Languages)if(Starts(code, Languages[i].code))return Languages[i].lang;
    return LANG_UNKNOWN;
 }
 CChar8* LanguageCode(LANG_TYPE lang)
 {
-   if(lang)FREPA(locale)if(locale[i].lang==lang)return locale[i].code;
+   if(lang)FREPA(Languages)if(Languages[i].lang==lang)return Languages[i].code;
+   return null;
+}
+CChar8* LanguageName(LANG_TYPE lang)
+{
+   if(lang)FREPA(Languages)if(Languages[i].lang==lang)return Languages[i].name;
    return null;
 }
 LANG_TYPE OSLanguage()

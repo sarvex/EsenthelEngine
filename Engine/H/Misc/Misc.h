@@ -757,8 +757,10 @@ enum LANG_TYPE : Byte
    TH=LANG_THAI      ,
 };
 LANG_TYPE OSLanguage        (              ); // get Operating System Language
-LANG_TYPE   LanguageCode    (   C Str &lang); // get language      from language code
+LANG_TYPE   LanguageCode    (CChar8   *code); // get language      from language code
+LANG_TYPE   LanguageCode    (C Str    &code); // get language      from language code
 CChar8*     LanguageCode    (LANG_TYPE lang); // get language code from language
+CChar8*     LanguageName    (LANG_TYPE lang); // get language name from language
 Str         LanguageSpecific(LANG_TYPE lang); // get specific alphabet characters for the selected language
 /******************************************************************************/
 enum COUNTRY : Byte

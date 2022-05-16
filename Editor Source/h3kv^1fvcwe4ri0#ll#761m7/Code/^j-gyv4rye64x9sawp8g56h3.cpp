@@ -114,6 +114,7 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual ImagePtr          appImagePortrait                   ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.image_portrait   .valid())return ImagePtr().get(Proj.gamePath(app_data.image_portrait   )); return super.appImagePortrait();}
    virtual ImagePtr          appImageLandscape                  ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.image_landscape  .valid())return ImagePtr().get(Proj.gamePath(app_data.image_landscape  )); return super.appImageLandscape();}
    virtual ImagePtr          appNotificationIcon                ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data.notification_icon)); return super.appNotificationIcon();}
+   virtual void              appLanguages                       (MemPtr<LANG_TYPE> langs)override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData()){langs=app_data.supported_languages; return;} return super.appLanguages(langs);}
 
    virtual void focus()override {if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
 

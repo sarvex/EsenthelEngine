@@ -1385,20 +1385,20 @@ Bool CodeEditor::generateVSProj(Int version)
 
             {
                Mems<LANG_TYPE> langs; cei().appLanguages(langs);
-               const Bool all=true;
-               if(all || langs.has(EN)){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");}
-               if(all || langs.has(DE)) AddNintendoLang(*Application, "German");
-               if(all || langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
-               if(all || langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
-               if(all || langs.has(IT)) AddNintendoLang(*Application, "Italian");
-               if(all || langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
-               if(all || langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
-             //if(all || langs.has(PL)) AddNintendoLang(*Application, "Polish"); unsupported by Nintendo
-               if(all || langs.has(RU)) AddNintendoLang(*Application, "Russian");
-               if(all || langs.has(JP)) AddNintendoLang(*Application, "Japanese");
-               if(all || langs.has(KO)) AddNintendoLang(*Application, "Korean");
-               if(all || langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
-             //if(all || langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
+               Int nodes=Application->nodes.elms();
+               if(langs.has(DE)) AddNintendoLang(*Application, "German");
+               if(langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
+               if(langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
+               if(langs.has(IT)) AddNintendoLang(*Application, "Italian");
+               if(langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
+               if(langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
+             //if(langs.has(PL)) AddNintendoLang(*Application, "Polish"); unsupported by Nintendo
+               if(langs.has(RU)) AddNintendoLang(*Application, "Russian");
+               if(langs.has(JP)) AddNintendoLang(*Application, "Japanese");
+               if(langs.has(KO)) AddNintendoLang(*Application, "Korean");
+               if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
+             //if(langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
+               if(langs.has(EN) || nodes==Application->nodes.elms()){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");} // always add English if no language added
             }
 
             Long save_size=cei().appSaveSize(); if(save_size<0)save_size=32*1024*1024; // if save size is unspecified, then for simplicity use max possible without having to contact Nintendo for approval (32MB*2=64MB total)
@@ -1932,11 +1932,10 @@ Bool CodeEditor::generateXcodeProj()
    // iOS.plist
    if(!xml.load("Code/Apple/iOS.plist"))return ErrorRead("Code/Apple/iOS.plist");
    if(XmlNode *plist=xml   .findNode("plist"))
-   if(XmlNode *dict =plist->findNode("dict" ))FREPA(dict->nodes)if(dict->nodes[i].name=="key" && InRange(i+1, dict->nodes))
+   if(XmlNode *dict =plist->findNode("dict" ))FREPA(dict->nodes)if(dict->nodes[i].name=="key" && dict->nodes[i].data.elms() && InRange(i+1, dict->nodes))
    {
-      XmlNode &node =dict->nodes[i  ];
+    C Str     &key  =dict->nodes[i].data[0];
       XmlNode &value=dict->nodes[i+1];
-      Str key; FREPA(node.data)key.space()+=node.data[i];
       if(key=="CFBundleDisplayName")
       {
          value.setName("string").nodes.del();
@@ -1946,6 +1945,25 @@ Bool CodeEditor::generateXcodeProj()
       {
          value.setName("string").nodes.del();
          value.data.setNum(1)[0]=cei().appBuild();
+      }else
+      if(key=="CFBundleLocalizations")
+      {
+         value.setName("array").nodes.del();
+         Mems<LANG_TYPE> languages; cei().appLanguages(languages);
+         // https://developer.apple.com/documentation/bundleresources/information_property_list/cfbundlelocalizations
+         if(                       languages.has(LANG_GERMAN    ))value.nodes.New().setName("string").data.add("de");
+         if(                       languages.has(LANG_DUTCH     ))value.nodes.New().setName("string").data.add("nl");
+         if(                       languages.has(LANG_FRENCH    ))value.nodes.New().setName("string").data.add("fr");
+         if(                       languages.has(LANG_ITALIAN   ))value.nodes.New().setName("string").data.add("it");
+         if(                       languages.has(LANG_SPANISH   ))value.nodes.New().setName("string").data.add("es");
+         if(                       languages.has(LANG_PORTUGUESE))value.nodes.New().setName("string").data.add("pt");
+         if(                       languages.has(LANG_POLISH    ))value.nodes.New().setName("string").data.add("pl");
+         if(                       languages.has(LANG_RUSSIAN   ))value.nodes.New().setName("string").data.add("ru");
+         if(                       languages.has(LANG_JAPANESE  ))value.nodes.New().setName("string").data.add("ja");
+         if(                       languages.has(LANG_KOREAN    ))value.nodes.New().setName("string").data.add("ko");
+         if(                       languages.has(LANG_CHINESE   ))value.nodes.New().setName("string").data.add("zh");
+         if(                       languages.has(LANG_THAI      ))value.nodes.New().setName("string").data.add("th");
+         if(!value.nodes.elms() || languages.has(LANG_ENGLISH   ))value.nodes.New().setName("string").data.add("en"); // always add English if no language added
       }else
       if(key=="UISupportedInterfaceOrientations")
       {
