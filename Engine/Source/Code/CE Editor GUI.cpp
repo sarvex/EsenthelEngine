@@ -490,6 +490,7 @@ static void ScrollChanged         (CodeEditor::Options &op) {if(op.ce)op.ce->scr
 static void LineNumbersChanged    (CodeEditor::Options &op) {if(op.ce && op.ce->cur())op.ce->cur()->setRegionSize();}
 static void HideHorizontalSlidebar(CodeEditor::Options &op) {if(op.ce)op.ce->hideSlideBarChanged();}
 static void AutoHideMenuBar       (CodeEditor::Options &op) {if(op.ce)op.ce->setMenuBarVisibility();}
+static void ShowFileTabs          (CodeEditor::Options &op) {CE.code_tabs.visible(op.show_file_tabs()); CE.resize();}
 
 static void FacebookAndroidKeyHash(CodeEditor::Options &op)
 {
@@ -539,7 +540,7 @@ void CodeEditor::Options::create(CodeEditor &ce)
    };
 
    T.ce=&ce;
-   Gui+=super::create(Rect_C(0, 0, 1.2f, 0.885f), "Editor Options").hide(); button[2].show();
+   Gui+=super::create(Rect_C(0, 0, 1.2f, 0.954f), "Editor Options").hide(); button[2].show();
    CChar8 *tabs_t[]={"Code Editor", "Paths", "Certificates", "Importing"};
    Flt Y=-0.05f;
    T+=tabs.create(Rect_C(clientWidth()/2, Y, 0.8f, 0.05f), 0, tabs_t, Elms(tabs_t), true).valid(true).set(0); Y-=0.10f;
@@ -562,6 +563,7 @@ void CodeEditor::Options::create(CodeEditor &ce)
       tab+=  line_numbers            .create(Rect_C(clientWidth()/2, y, w, h), "Show Line Numbers"         ).func(LineNumbersChanged, T); line_numbers.mode=BUTTON_TOGGLE; y-=s;
       tab+=  hide_horizontal_slidebar.create(Rect_C(clientWidth()/2, y, w, h), "Hide Horizontal SlideBar"  ).func(HideHorizontalSlidebar, T); hide_horizontal_slidebar.mode=BUTTON_TOGGLE; y-=s;
       tab+=  auto_hide_menu          .create(Rect_C(clientWidth()/2, y, w, h), "Auto-Hide MenuBar"         ).func(AutoHideMenuBar, T); auto_hide_menu.mode=BUTTON_TOGGLE; y-=s;
+      tab+=  show_file_tabs          .create(Rect_C(clientWidth()/2, y, w, h), "Show File Tabs"            ).func(ShowFileTabs, T); show_file_tabs.mode=BUTTON_TOGGLE; show_file_tabs.set(true, QUIET); y-=s;
       tab+=t_export_path_mode        .create(Vec2(0.475f, y), "Project Export Paths:");
       tab+=  export_path_mode        .create(Rect_R((clientWidth()+w)/2, y, 0.24f, h), path_mode_t, Elms(path_mode_t)).set(0); y-=s;
    }
@@ -757,6 +759,9 @@ void CodeEditor::resize()
 
    menu.parentClientRectChanged(null, &NoTemp(D.rect()));
    Flt menu_h=menu.rect().h();
+
+   Rect r=CE.cei().sourceRect();
+   code_tabs.rect(Rect(r.min.x, r.max.y-0.05f, r.max.x, r.max.y));
 
    RegionRect(build_region, Rect(-D.w(), -D.h(), D.w(), -D.h()*0.5f)+Vec2(0, menu_on_top ? 0 : menu_h));
    build_list.elmHeight(ts.size.y).textSize(ts.size.y);//.columnHeight(ts.size.y*1.3f);

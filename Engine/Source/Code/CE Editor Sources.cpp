@@ -3,6 +3,19 @@
 namespace EE{
 namespace Edit{
 /******************************************************************************/
+void Source::setOpened(Bool opened)
+{
+   if(T.opened!=opened)
+   {
+      T.opened=opened;
+      if(opened)CE.code_tabs.New(loc.base_name).source=this;      // create new tab
+      else REPA(CE.code_tabs)if(CE.code_tabs.tab(i).source==this) // remove     tab
+      {
+         CE.code_tabs.remove(i);
+         break;
+      }
+   }
+}
 void CodeEditor::cur(Source *cur)
 {
    if(T._cur!=cur && parent)
@@ -14,12 +27,18 @@ void CodeEditor::cur(Source *cur)
          cur->moveToBottom().moveAbove(menu); // move to bottom below 'browse_mode' buttons, but above 'menu' so alt is processed properly (Menu Alt detection relies on 'Kb.k' detection, which can be eaten by this gui object, so make sure 'menu' is processed first)
          cur->prepareForDraw();
          cur->activate();
-         if(!cur->opened)
+         cur->setOpened(true);
+         /*if(!cur->opened)
          {
             cur->opened=true;
           //sources.moveToEnd(curI()); this won't work with 'find previous/next' and can make engine headers be between custom sources
-         }
+         }*/
          if(cur->used())init(); // if activated a used source then make sure that Code Editor is initialized (do this after operating on 'cur' in case 'init' will somehow change/delete it)
+         REPA(CE.code_tabs)if(CE.code_tabs.tab(i).source==cur) // set active tab
+         {
+            CE.code_tabs.set(i, QUIET);
+            break;
+         }
       }
       b_close.visible(T._cur!=null && menu.visible()); // close button is visible on top of menu (so display only if that's visible too)
       cei().sourceChanged(true);
@@ -48,7 +67,7 @@ void CodeEditor::sourceRemoved(Source &src)
    }
 
    // exclude from opened
-   src.opened=false;
+   src.setOpened(false);
 
    // make sure it's not current
    if(cur()==&src)nextFile();
@@ -58,7 +77,7 @@ void CodeEditor::closeDo()
 {
    if(Source *s=cur())
    {
-      s->opened=false; // close
+      s->setOpened(false); // close
       prevFile(); // activate previous opened source
       if(s->used())s->reload();else sources.removeData(s, true); // if 's' is used in the project then reload to maintain last saved position (in case there were some changes applied, but the user decided not to save them), if not then remove from 'sources'
       cei().sourceChanged();

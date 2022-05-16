@@ -430,6 +430,7 @@ const_mem_addr struct Source : Region
    void prepareForDraw();
    void validateView  ();
    void setView       (Bool comments, Bool funcs, Bool func_bodies, Bool private_members);
+   void setOpened     (Bool opened);
 
    virtual GuiObj& hide  (            )override {clearSuggestions(); return super::hide();}
    virtual GuiObj* test  (C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)override;

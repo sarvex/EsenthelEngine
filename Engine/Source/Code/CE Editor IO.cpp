@@ -97,6 +97,7 @@ void CodeEditor::saveSettings(TextNode &code)
       edit.nodes.New().set("ShowLineNumbers"        , options.line_numbers            ());
       edit.nodes.New().set("HideHorizontalSlidebar" , options.hide_horizontal_slidebar());
       edit.nodes.New().set("AutoHideMenuBar"        , options.auto_hide_menu          ());
+      edit.nodes.New().set("ShowFileTabs"           , options.show_file_tabs          ());
       edit.nodes.New().set("ExportPathMode"         , options.export_path_mode        ());
 
    TextNode &conf=code.nodes.New().setName("Configuration");
@@ -136,14 +137,15 @@ void CodeEditor::loadSettings(C TextNode &code)
    }
    if(C TextNode *edit=code.findNode("Edit")) // editing settings
    {
-      if(C TextNode *p=edit->findNode("AutocompleteOnEnterOnly"))options.ac_on_enter             .set(p->asBool());
-      if(C TextNode *p=edit->findNode("SimpleMode"             ))options.simple                  .set(p->asBool());
-      if(C TextNode *p=edit->findNode("ImmediateScroll"        ))options.imm_scroll              .set(p->asBool());
-      if(C TextNode *p=edit->findNode("EndOfLineClip"          ))options.eol_clip                .set(p->asBool());
-      if(C TextNode *p=edit->findNode("ShowLineNumbers"        ))options.line_numbers            .set(p->asBool());
-      if(C TextNode *p=edit->findNode("HideHorizontalSlidebar" ))options.hide_horizontal_slidebar.set(p->asBool());
-      if(C TextNode *p=edit->findNode("AutoHideMenuBar"        ))options.auto_hide_menu          .set(p->asBool());
-      if(C TextNode *p=edit->findNode("ExportPathMode"         ))options.export_path_mode        .set(p->asBool());
+      if(C TextNode *p=edit->findNode("AutocompleteOnEnterOnly"))options.ac_on_enter             .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("SimpleMode"             ))options.simple                  .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("ImmediateScroll"        ))options.imm_scroll              .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("EndOfLineClip"          ))options.eol_clip                .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("ShowLineNumbers"        ))options.line_numbers            .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("HideHorizontalSlidebar" ))options.hide_horizontal_slidebar.set(p->asBool1());
+      if(C TextNode *p=edit->findNode("AutoHideMenuBar"        ))options.auto_hide_menu          .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("ShowFileTabs"           ))options.show_file_tabs          .set(p->asBool1());
+      if(C TextNode *p=edit->findNode("ExportPathMode"         ))options.export_path_mode        .set(p->asBool ());
    }
    if(C TextNode *paths=code.findNode("Paths"))
    {

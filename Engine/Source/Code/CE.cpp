@@ -836,6 +836,10 @@ void CodeEditor::replacePath(C Str &src, C Str &dest)
    REPAO(sources).replacePath(src, dest);
 }
 /******************************************************************************/
+static void CodeTabChanged(Ptr user)
+{
+   if(InRange(CE.code_tabs(), CE.code_tabs))CE.cur(CE.code_tabs.tab(CE.code_tabs()).source); // set source
+}
 void CodeEditor::create(GuiObj *parent, Bool menu_on_top)
 {
    T.parent     =parent;
@@ -969,6 +973,7 @@ void CodeEditor::create(GuiObj *parent, Bool menu_on_top)
          Gui          +=devlog_clear .create("Clear"   ).func(DevlogClear  , T);
          Gui          +=devlog_io    .create("txt", S, SystemPath(SP_DESKTOP), DevlogExport, DevlogExport, T); devlog_io.textline.set("Android Device Log.txt");
       }
+     *parent+=code_tabs.create((CChar**)null, 0, true).func(CodeTabChanged).valid(true);
       find   .create();
       replace.create();
       save_changes.create();
@@ -1080,7 +1085,8 @@ Flt  CodeEditor::fontSpaceOffset()C {return (1-CE.ts.space.y)*CE.ts.size.y*0.5f;
 Rect CodeEditor::sourceRect     ()
 {
    Rect   r(-D.w(), build_region.visible() ? build_region.rect().max.y : -D.h(), D.w(), D.h());
-   if(menu.visibleFull())if(menu_on_top)MIN(r.max.y, menu.rect().min.y);else MAX(r.min.y, menu.rect().max.y); // check 'visibleFull' in case 'menu' is attached to a Tabs.Tab
+   if(menu     .visible())if(menu_on_top)MIN(r.max.y, menu     .rect().min.y);else MAX(r.min.y, menu.rect().max.y);
+   if(code_tabs.visible())               MIN(r.max.y, code_tabs.rect().min.y);
    return r&cei().sourceRect();
 }
 Source* CodeEditor::findSource(C SourceLoc &loc) {if(loc.is())REPA(sources)if(sources[i].loc==loc)return &sources[i]; return null;}
@@ -1812,7 +1818,6 @@ Str  CodeEditorInterface::nintendoProjectPakPath(                     ) {Str bui
 void CodeEditorInterface::saveChanges(                                                                                                ) {CE.saveChanges();}
 void CodeEditorInterface::saveChanges(Memc<Edit::SaveChanges::Elm> &elms                                                              ) {CE.saveChanges(elms);}
 void CodeEditorInterface::saveChanges(Memc<Edit::SaveChanges::Elm> &elms, void (*after_save_close)(Bool all_saved, Ptr user), Ptr user) {CE.save_changes.set(elms, after_save_close, user);}
-void CodeEditorInterface::sourceRename     (C UID &id  ) {SourceLoc loc=id; if(Source *source=CE.findSource(loc))source->loc=loc;}
 Bool CodeEditorInterface::sourceCur        (C Str &name) {CE.init(); return CE.load(name);} // 'init' in case we're loading source from data
 Bool CodeEditorInterface::sourceCur        (C UID &id  ) {           return CE.load(id  );}
 Bool CodeEditorInterface::sourceCurIs      (           ) {return CE.cur()!=null;}
@@ -1832,6 +1837,17 @@ void CodeEditorInterface::visibleOutput       (Bool on) {       CE.visibleOutput
 Bool CodeEditorInterface::visibleAndroidDevLog(       ) {return CE.visibleAndroidDevLog(  );}
 void CodeEditorInterface::visibleAndroidDevLog(Bool on) {       CE.visibleAndroidDevLog(on);}
 
+void CodeEditorInterface::sourceRename(C UID &id)
+{
+   SourceLoc loc=id; if(Source *source=CE.findSource(loc))
+   {
+      source->loc=loc;
+      REPA(CE.code_tabs)if(CE.code_tabs.tab(i).source==source)
+      {
+         CE.code_tabs.tab(i).text(loc.base_name); break;
+      }
+   }
+}
 void CodeEditorInterface::paste(C CMemPtr<UID> &elms, GuiObj *obj, C Vec2 &screen_pos)
 {
    if(Source *src=CE.cur())
