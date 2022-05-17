@@ -124,6 +124,8 @@ ref struct FrameworkView sealed : IFrameworkView
       applicationView->Activated  += ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &FrameworkView::OnActivated );
       CoreApplication::Suspending += ref new      EventHandler<SuspendingEventArgs^                      >(this, &FrameworkView::OnSuspending);
       CoreApplication::Resuming   += ref new      EventHandler<             Object^                      >(this, &FrameworkView::OnResuming  );
+
+      Windows::System::MemoryManager::AppMemoryUsageIncreased += ref new EventHandler<Object^>(this, &FrameworkView::OnAppMemoryUsageIncreased);
    }
    virtual void SetWindow(CoreWindow^ window) // called before 'Load'
    {
@@ -259,6 +261,10 @@ ref struct FrameworkView sealed : IFrameworkView
       if(App._closed)return; // do nothing if app called 'Exit'
       ResumeSound();
     //App.setActive(true); just use 'OnWindowActivated'
+   }
+   void OnAppMemoryUsageIncreased(Object^ sender, Object^ args)
+   {
+      if(MemoryManager::AppMemoryUsageLevel==AppMemoryUsageLevel::OverLimit)App.lowMemory();
    }
    void OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
    {
