@@ -1229,18 +1229,20 @@ struct PlayAssetDelivery
 
    Bool update();
 
+   Bool  updating ()C {return _updating ;}
    ULong completed()C {return _completed;}
    ULong total    ()C {return _total    ;}
 
 #if !EE_PRIVATE
 private:
 #endif
+   Bool   _updating;
    Int     asset_packs;
    ULong  _completed, _total;
    Cipher *cipher;
 
 #if EE_PRIVATE
-   void zero() {_completed=_total=0; asset_packs=0; cipher=null;}
+   void zero() {_updating=false; asset_packs=0; _completed=_total=0; cipher=null;}
 #endif
 
   ~PlayAssetDelivery() {del();}
@@ -1307,7 +1309,7 @@ void PlayAssetDelivery::del()
 Bool PlayAssetDelivery::update()
 {
   _completed=_total=0;
-   Int finished=0;
+   Int finished=0, updating=0;
    FREP(asset_packs)
    {
       Char8 name[16]; AssetPackName(name, i);
@@ -1321,13 +1323,14 @@ Bool PlayAssetDelivery::update()
          case ASSET_PACK_DOWNLOAD_CANCELED:
          case ASSET_PACK_NOT_INSTALLED:
             {CChar8 *name_ptr[]={name}; error=AssetPackManager_requestDownload(name_ptr, 1); if(error!=ASSET_PACK_NO_ERROR)Error(error);} break;
-         case ASSET_PACK_WAITING_FOR_WIFI: error=AssetPackManager_showCellularDataConfirmation(AndroidApp->activity->clazz); if(error!=ASSET_PACK_NO_ERROR)Error(error); break;
+         case ASSET_PACK_WAITING_FOR_WIFI  : error=AssetPackManager_showCellularDataConfirmation(AndroidApp->activity->clazz); if(error!=ASSET_PACK_NO_ERROR)Error(error); break;
          case ASSET_PACK_DOWNLOAD_COMPLETED: finished++; break;
+         case ASSET_PACK_TRANSFERRING      : updating++; break;
       }
      _completed+=AssetPackDownloadState_getBytesDownloaded     (asset_pack.state);
      _total    +=AssetPackDownloadState_getTotalBytesToDownload(asset_pack.state);
    }
-   if(finished==asset_packs)
+   if(finished==asset_packs) // all finished
    {
       FREP(asset_packs) // process in order
       {
@@ -1343,6 +1346,7 @@ Bool PlayAssetDelivery::update()
       Paks.rebuild();
       del(); return true;
    }
+   if(finished+updating==asset_packs)_updating=true; // all finished downloading, but some are still updating
    return false;
 }
 /******************************************************************************/
@@ -1361,10 +1365,13 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
    again:
       if(Time.curTime()>=time)
       {
-         Str s="Downloading Asset Packs\n";
-         if(pad.total())s+=S+MB(pad.completed())+" / "+MB(pad.total())+" MB"; s+='\n';
-         if(pad.total())s+=S+pad.completed()*100/pad.total()+'%';
-         Overlay(s);
+         if(pad.updating())Overlay("Updating Asset Packs\n\n");else
+         {
+            Str s="Downloading Asset Packs\n";
+            if(pad.total())s+=S+MB(pad.completed())+" / "+MB(pad.total())+" MB"; s+='\n';
+            if(pad.total())s+=S+pad.completed()*100/pad.total()+'%';
+            Overlay(s);
+         }
       }
       if(!Loop      ())Exit(); // destroy requested
       if(!pad.update())goto again;
