@@ -4,7 +4,7 @@ namespace EE{
 static Int Compare(C Edit::Elm &elm, C UID &id) {return Compare(elm.id, id);}
 namespace Edit{
 /******************************************************************************/
-#define EI_VER 55 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
+#define EI_VER 56 // this needs to be increased every time a new command is added, existing one is changed, or some of engine class file formats get updated
 #define EI_STR (ENGINE_NAME " Editor Network Interface")
 
 #define CLIENT_WAIT_TIME         (   60*1000) //    60 seconds
@@ -1025,6 +1025,18 @@ Bool EditorInterface::setImage(C UID &elm_id, C Image &image)
       if(_conn.send(f))
       if(_conn.receive(CLIENT_WAIT_TIME))
       if(f.getByte()==EI_SET_IMAGE)return f.getBool();
+      disconnect();
+   }
+   return false;
+}
+Bool EditorInterface::setImageMipMaps(C UID &elm_id, Bool mip_maps)
+{
+   if(elm_id.valid() && connected())
+   {
+      File &f=_conn.data.reset(); f.putByte(EI_SET_IMAGE_MIP_MAPS).putUID(elm_id).putBool(mip_maps); f.pos(0);
+      if(_conn.send(f))
+      if(_conn.receive(CLIENT_WAIT_TIME))
+      if(f.getByte()==EI_SET_IMAGE_MIP_MAPS)return f.getBool();
       disconnect();
    }
    return false;

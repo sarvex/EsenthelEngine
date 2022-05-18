@@ -368,6 +368,8 @@ struct EditorInterface
       Bool getImage(C UID &elm_id,   Image &image); // get image of 'elm_id' ELM_IMAGE element in the project, false on fail
       Bool setImage(C UID &elm_id, C Image &image); // set image of 'elm_id' ELM_IMAGE element in the project, false on fail
 
+      Bool setImageMipMaps(C UID &elm_id, Bool mip_maps); // set if 'elm_id' ELM_IMAGE element in the project should have mip-maps, false on fail
+
       // code
       Bool getCode(C UID &elm_id,   Str &code); // get source code of 'elm_id' ELM_CODE element in the project, false on fail
       Bool setCode(C UID &elm_id, C Str &code); // set source code of 'elm_id' ELM_CODE element in the project, false on fail
@@ -511,6 +513,7 @@ enum EDITOR_INTERFACE_COMMANDS
 
    EI_GET_IMAGE,
    EI_SET_IMAGE,
+   EI_SET_IMAGE_MIP_MAPS,
    EI_GET_CODE,
    EI_SET_CODE,
    EI_GET_FILE,

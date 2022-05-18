@@ -856,6 +856,13 @@ EditorServer EditServer;
                   f.reset().putByte(Edit::EI_SET_IMAGE).putBool(ok).pos(0); connection.send(f);
                }break;
 
+               case Edit::EI_SET_IMAGE_MIP_MAPS:
+               {
+                  File &f=connection.data; UID elm_id=f.getUID(); bool mips=f.getBool();
+                  bool ok=Proj.imageMipMap(elm_id, mips);
+                  f.reset().putByte(Edit::EI_SET_IMAGE_MIP_MAPS).putBool(ok).pos(0); connection.send(f);
+               }break;
+
                // CODE
                case Edit::EI_GET_CODE:
                {

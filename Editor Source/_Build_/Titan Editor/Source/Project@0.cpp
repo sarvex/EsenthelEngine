@@ -1471,19 +1471,24 @@ void DrawProject()
       }
       return false;
    }
-   void ProjectEx::imageMipMap(C MemPtr<UID> &elm_ids, bool on)
+   bool ProjectEx::imageMipMap(C MemPtr<UID> &elm_ids, bool on)
    {
-      REPA(elm_ids)
-      if(Elm *image=findElm(elm_ids[i], ELM_IMAGE))
-      if(ElmImage *image_data=image->imageData())
-      if(image_data->mipMaps()!=on)
-      if(ImageEdit.elm==image)ImageEdit.setMipMap(on);else
+      bool ok=true;
+      REPA(elm_ids)if(Elm *image=findElm(elm_ids[i], ELM_IMAGE))
       {
-         image_data->newVer();
-         image_data->mipMaps(on); image_data->mip_maps_time.now();
-         makeGameVer(*image);
-         Server.setElmShort(image->id);
-      }
+         if(ElmImage *image_data=image->imageData())
+         {
+            if(image_data->mipMaps()!=on)
+            if(ImageEdit.elm==image)ImageEdit.setMipMap(on);else
+            {
+               image_data->newVer();
+               image_data->mipMaps(on); image_data->mip_maps_time.now();
+               makeGameVer(*image);
+               Server.setElmShort(image->id);
+            }
+         }else ok=false;
+      }else ok=false;
+      return ok;
    }
    void ProjectEx::imageResize(C MemPtr<UID> &elm_ids, C VecI2 &size)
    {

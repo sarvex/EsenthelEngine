@@ -378,7 +378,7 @@ public:
    void meshMergeCoplanarFaces(C MemPtr<UID> &elm_ids);
    bool forceImageSize(Str &file, C VecI2 &size, bool relative);
    bool forceImageSize(Str &file, C VecI2 &size, bool relative, TimeStamp &file_time, C TimeStamp &time);
-   void imageMipMap(C MemPtr<UID> &elm_ids, bool on);
+   bool imageMipMap(C MemPtr<UID> &elm_ids, bool on);
    void imageResize(C MemPtr<UID> &elm_ids, C VecI2 &size);
    void mtrlResetAlpha(C MemPtr<UID> &elm_ids);
    void mtrlSetRGB(C MemPtr<UID> &elm_ids, C Vec &srgb, bool mul=false);
