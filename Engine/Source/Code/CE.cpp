@@ -585,7 +585,7 @@ static void EditRedo        (   ) {                   CE.redo      ();}
 static void EditCut         (   ) {if(!CE.view_mode())CE.cut       ();}
 static void EditCopy        (   ) {if(!CE.view_mode())CE.copy      ();}
 static void EditPaste       (   ) {if(!CE.view_mode())CE.paste     ();}
-static void EditPaste2      (   ) {if(!CE.view_mode())CE.paste     (false);}
+static void EditPaste2      (   ) {if(!CE.view_mode())CE.paste     (null, false);}
 static void EditSeparator   (   ) {if(!CE.view_mode())CE.separator ();}
 static void EditSelectAll   (   ) {if(!CE.view_mode())CE.selectAll ();}
 static void EditSelectWord  (   ) {if(!CE.view_mode())CE.selectWord();}
@@ -602,6 +602,41 @@ static void EditPrevCurPos  (   ) {CE.prevCurPos();}
 static void EditNextCurPos  (   ) {CE.nextCurPos();}
 static void EditAutoComplete(   ) {if(CE.cur())CE.cur()->listSuggestions( 1);}
 static void EditAutoCompleteElm() {if(CE.cur())CE.cur()->listSuggestions(-2);}
+
+static void TemplateEmptyApplication()
+{
+   if(CE.view_mode())return;
+   Str t=
+"/******************************************************************************/\n\
+void InitPre()\n\
+{\n\
+   INIT();\n\
+   App.flag=APP_MINIMIZABLE|APP_MAXIMIZABLE|APP_RESIZABLE;\n\
+}\n\
+bool Init()\n\
+{\n\
+   return true;\n\
+}\n\
+void Shut()\n\
+{\n\
+}\n\
+/******************************************************************************/\n\
+Bool Update()\n\
+{\n\
+   if(Kb.bp(KB_ESC))return false;\n\
+   Gui.update();\n\
+   return true;\n\
+}\n\
+/******************************************************************************/\n\
+void Draw()\n\
+{\n\
+   D.clearCol();\n\
+   Gui.draw();\n\
+}\n\
+/******************************************************************************/\n\
+";
+   CE.paste(&t);
+}
 
 static void EditNextFile() {CE.nextFile();}
 static void EditPrevFile() {CE.prevFile();}
@@ -679,7 +714,7 @@ void CodeEditor::setMenu(Node<MenuElm> &menu)
 {
    {
       {
-         Node<MenuElm> &f=menu+="File";
+         Node<MenuElm> &f=(menu+="File");
        /*f.New().create("New"      , MenuNew      ).kbsc(KbSc(KB_N, KBSC_CTRL_CMD));
          f++;*/
          f.New().create("Save"     , MenuOverwrite).kbsc(KbSc(KB_F2               )).kbsc2(KbSc(KB_S, KBSC_CTRL_CMD           ));
@@ -690,7 +725,7 @@ void CodeEditor::setMenu(Node<MenuElm> &menu)
          f.New().create("Locate"   , MenuLocate   ).kbsc(KbSc(KB_L , KBSC_CTRL_CMD       )).desc("Locate this file in the Project");
       }
       {
-         Node<MenuElm> &e=menu+="Edit";
+         Node<MenuElm> &e=(menu+="Edit");
          e.New().create("Undo" , EditUndo).kbsc(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_REPEAT));
          e.New().create("Redo" , EditRedo).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_REPEAT)).kbsc2(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
          e.New().create("Undo2", EditUndo).kbsc(KbSc(KB_BACK, KBSC_ALT           |KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space (besides on Windows Notepad they also work and are not listed)
@@ -702,6 +737,10 @@ void CodeEditor::setMenu(Node<MenuElm> &menu)
          e.New().create("Paste Don't Move Cursor", EditPaste2).kbsc(KbSc('V', KBSC_CTRL_CMD|KBSC_REPEAT)).desc("This option performs Paste without moving the cursor");
          e++;
          e.New().create("Insert Separator", EditSeparator).kbsc(KbSc(KB_ENTER, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
+         {
+            Node<MenuElm> &t=(e+="Insert Template");
+            t.New().create("Empty Application", TemplateEmptyApplication);
+         }
          e++;
          e.New().create("Select All" , EditSelectAll ).kbsc(KbSc('a', KBSC_CTRL_CMD));
          e.New().create("Select Word", EditSelectWord).kbsc(KbSc('w', KBSC_CTRL_CMD));

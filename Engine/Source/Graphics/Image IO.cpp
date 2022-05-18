@@ -1698,14 +1698,14 @@ void Image::cancelStream() // called when image is deleted !! WARNING: IN 'IMAGE
    }
 }
 
-static inline Bool Wait(Image &image, Int mip)
+static inline Bool Wait(C Image &image, Int mip)
 #if IMAGE_STREAM_FULL
    {return                        image._stream&IMAGE_STREAM_LOADING;}
 #else
    {return mip<image._base_mip && image._stream&IMAGE_STREAM_LOADING;}
 #endif
 
-Bool Image::waitForStream(Int mip)
+Bool Image::waitForStream(Int mip)C
 {
    if(Wait(T, mip))
    {

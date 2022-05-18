@@ -373,9 +373,9 @@ struct Image // Image (Texture)
    void lockedBaseMip(Int base_mip); // !! NEEDS 'D._lock' !!
    void       baseMip(Int base_mip);
    void  cancelStream();
-   Bool waitForStream(Int mip=0);
    Bool updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0);
 #endif
+   Bool   waitForStream(Int mip=0)C; // wait until streaming has finished, false on fail
    Image& updateMipMaps(FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0); // update mip maps of the image, 'flags'=IMAGE_COPY_FLAG, 'mip_start'=index of the mip map to start with (this mip map will be taken, and downsampled to following mip maps)
 
    Bool blurCubeMipMaps(); // blur mip maps based on increasing angles per mip-map, this method is only for Cube Images, false on fail

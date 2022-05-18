@@ -602,6 +602,8 @@ void     MeshLod::includeUsedBones(Bool (&bones)[256]       )C {REPAO(parts).inc
 void     MeshLod::    setUsedBones(Bool (&bones)[256]       )C {Zero(bones); includeUsedBones(bones);}
 
 MeshLod& MeshLod::freeOpenGLESData() {REPAO(parts).freeOpenGLESData(); return T;}
+
+Bool MeshLod::waitForStream()C {Bool ok=true; REPA(parts)ok&=parts[i].waitForStream(); return ok;}
 /******************************************************************************/
 // FIX
 /******************************************************************************/

@@ -697,15 +697,15 @@ const_mem_addr struct CodeEditor
    static void HideAndFocusCE(GuiObj &go);
 
    // edit
-   void undo      (                  ) {if(cur())cur()->undo     ();}
-   void redo      (                  ) {if(cur())cur()->redo     ();}
-   void cut       (                  ) {if(cur())cur()->cut      ();}
-   void copy      (                  ) {if(cur())cur()->copy     ();}
-   void paste     (Bool move_cur=true) {if(cur())cur()->paste    (null, move_cur);}
-   void separator (                  ) {if(cur())cur()->separator();}
-   void selectAll (                  ) {if(cur())cur()->selAll   ();}
-   void selectWord(                  ) {if(cur())cur()->selWord  ();}
-   void makeCase  (Bool upper        ) {if(cur())cur()->makeCase (upper);}
+   void undo      (                                    ) {if(cur())cur()->undo     ();}
+   void redo      (                                    ) {if(cur())cur()->redo     ();}
+   void cut       (                                    ) {if(cur())cur()->cut      ();}
+   void copy      (                                    ) {if(cur())cur()->copy     ();}
+   void paste     (C Str *text=null, Bool move_cur=true) {if(cur())cur()->paste    (text, move_cur);}
+   void separator (                                    ) {if(cur())cur()->separator();}
+   void selectAll (                                    ) {if(cur())cur()->selAll   ();}
+   void selectWord(                                    ) {if(cur())cur()->selWord  ();}
+   void makeCase  (Bool upper                          ) {if(cur())cur()->makeCase (upper);}
 
    // C++
    void VS     (C Str &command,   Bool console,   Bool hidden              );

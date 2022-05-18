@@ -122,6 +122,8 @@ struct MeshPart // Mesh Base + Mesh Render
    MeshPart& setRandomLeafBending(Flt random_value  ); // this method will set    unique bending for different leafs (this will only affect mesh parts which have leaf-based material), 'random_value'=any random value
    MeshPart& delRandomLeafBending(                  ); // this method will remove unique bending for different leafs
 
+   Bool waitForStream()C; // wait until streaming has finished, false on fail
+
    // draw
       // default drawing, doesn't use automatic Frustum Culling, this doesn't draw the mesh immediately, instead it adds the mesh to a draw list
       void draw(C MatrixM          &matrix, C MatrixM &matrix_prev )C; // add mesh to draw list using 'matrix'    matrix          velocities based on 'matrix_prev' matrix from previous frame, this should be called only in RM_PREPARE, when used it will automatically draw meshes in following modes when needed: RM_EARLY_Z RM_OPAQUE RM_OPAQUE_M RM_EMISSIVE RM_BLEND

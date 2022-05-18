@@ -139,6 +139,8 @@ struct MeshLod // Level of Detail, array of Mesh Part's
 
    MeshLod& freeOpenGLESData(); // this method is used only under OpenGL ES (on other platforms it is ignored), the method frees the software copy of the GPU data which increases available memory, however after calling this method the data can no longer be accessed on the CPU (can no longer be locked or saved to file)
 
+   Bool waitForStream()C; // wait until streaming has finished, false on fail
+
    // fix
    MeshLod& fixTexOffset  (Byte tex_index=0); // fix texture offset  , this reduces big texture coordinates to small ones increasing texturing quality on low precision video cards
    MeshLod& fixTexWrapping(Byte tex_index=0); // fix texture wrapping, fixes texture coordinates created by spherical/tube mapping (this can add new vertexes to the mesh)
