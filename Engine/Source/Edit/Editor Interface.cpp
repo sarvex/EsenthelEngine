@@ -333,7 +333,27 @@ Bool EditorInterface::connect(Str &message, Int timeout)
 {
    disconnect();
    if(timeout<0)timeout=1000; UInt start_time=Time.curTimeMs();
-   ConnectAttempt c[128]; FREPAO(c).create(65535-i);
+   ConnectAttempt c[128];
+   
+   // if applications are run through the Editor then it passes its Editor Network Interface port as "EditorPort" param
+   FREPA(App.cmd_line)
+   {
+    C Str &param=App.cmd_line[i]; if(param=="EditorPort")
+      {
+         if(InRange(i+1, App.cmd_line))
+         {
+            Int port=TextInt(App.cmd_line[i+1]); if(port>0)
+            {
+               c[0].create(port);
+               goto created;
+            }
+         }
+         break;
+      }
+   }
+   FREPAO(c).create(65535-i);
+created:
+
    for(;;)
    {
       Bool connecting=false;
