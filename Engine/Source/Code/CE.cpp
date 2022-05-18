@@ -1495,7 +1495,13 @@ void CodeEditor::update(Bool active)
                {
                   switch(build_exe_type)
                   {
-                     case EXE_EXE: Run(build_exe); break;
+                     case EXE_EXE:
+                     {
+                        Str params;
+                        Int editor_port=CE.cei().editorAddrPort(); if(editor_port>0)params.space()+=S+"EditorPort "+editor_port;
+                        Run(build_exe, params);
+                     }break;
+
                      case EXE_WEB: goto publish; // when playing for WEB we will create PAKs after compilation, so call publish success to do so
 
                      case EXE_APK:
