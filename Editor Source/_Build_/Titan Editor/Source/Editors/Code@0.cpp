@@ -141,6 +141,8 @@ AppPropsEditor AppPropsEdit;
    ImagePtr          CodeView::appImageLandscape(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->image_landscape  .valid())return ImagePtr().get(Proj.gamePath(app_data->image_landscape  )); return super::appImageLandscape();}
    ImagePtr          CodeView::appNotificationIcon(){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData())if(app_data->notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data->notification_icon)); return super::appNotificationIcon();}
    void              CodeView::appLanguages(MemPtr<LANG_TYPE> langs){if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app->appData()){langs=app_data->supported_languages; return;} return super::appLanguages(langs);}
+   int  CodeView::editorAddrPort(              ){return EditServer.port        ();}
+   void CodeView::editorAddr(SockAddr &addr){  addr=EditServer.localAddress();}
    void CodeView::focus(){if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
    void CodeView::ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}
    COMPRESS_TYPE CodeView::appEmbedCompress(                           Edit::EXE_TYPE exe_type){/*if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())*/return     Proj.compress_type [ProjCompres(exe_type)]; return super::appEmbedCompress     (exe_type);}

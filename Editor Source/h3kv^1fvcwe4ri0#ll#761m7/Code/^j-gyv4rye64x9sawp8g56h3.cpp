@@ -116,6 +116,9 @@ class CodeView : Region, Edit.CodeEditorInterface
    virtual ImagePtr          appNotificationIcon                ()override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData())if(app_data.notification_icon.valid())return ImagePtr().get(Proj.gamePath(app_data.notification_icon)); return super.appNotificationIcon();}
    virtual void              appLanguages                       (MemPtr<LANG_TYPE> langs)override {if(Elm *app=Proj.findElm(Proj.curApp()))if(ElmApp *app_data=app.appData()){langs=app_data.supported_languages; return;} return super.appLanguages(langs);}
 
+   virtual int  editorAddrPort(              )override {return EditServer.port        ();}
+   virtual void editorAddr    (SockAddr &addr)override {  addr=EditServer.localAddress();}
+
    virtual void focus()override {if(Mode.tabAvailable(MODE_CODE))Mode.set(MODE_CODE);}
 
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index) {ThreadMayUseGPUData(); generate.process();}

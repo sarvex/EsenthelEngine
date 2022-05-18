@@ -234,6 +234,9 @@ struct CodeEditorInterface
 
    virtual void validateActiveSources() {} // called when sources need to have their activation reset
 
+   virtual Int  editorAddrPort(              ) {return     0;} // get Editor Network Interface Address Port
+   virtual void editorAddr    (SockAddr &addr) {addr.clear();} // get Editor Network Interface Address
+
    virtual Bool elmValid    (C UID &id              ) {return false;} // if element of this ID exists in the project
    virtual Str  elmBaseName (C UID &id              ) {return     S;} // get base name of element
    virtual Str  elmFullName (C UID &id              ) {return     S;} // get full name of element

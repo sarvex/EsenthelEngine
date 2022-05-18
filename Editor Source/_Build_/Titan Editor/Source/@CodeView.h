@@ -76,6 +76,9 @@ class CodeView : Region, Edit::CodeEditorInterface
    virtual ImagePtr          appNotificationIcon                ()override;                      
    virtual void              appLanguages                       (MemPtr<LANG_TYPE>langs)override;
 
+   virtual int  editorAddrPort(              )override;
+   virtual void editorAddr    (SockAddr &addr)override;
+
    virtual void focus()override;
 
    static void ImageGenerateProcess(ImageGenerate &generate, ptr user, int thread_index);
