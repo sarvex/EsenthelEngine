@@ -182,7 +182,7 @@ ref struct FrameworkView sealed : IFrameworkView
          MagnetometerHandler=ref new TypedEventHandler<Sensors::Magnetometer^, MagnetometerReadingChangedEventArgs^>(this, &FrameworkView::OnMagnetometerChanged);
       }
     //SystemNavigationManager::GetForCurrentView()->AppViewBackButtonVisibility = Windows::UI::Core::AppViewBackButtonVisibility::Visible; // display back button on app title bar
-    //SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &FrameworkView::OnBackRequested); For Windows Phone this was about the onscreen back button in the nav bar, but now when tested this is triggered even when pressing gamepad B button, so disable this to avoid confusion
+      SystemNavigationManager::GetForCurrentView()->BackRequested += ref new EventHandler<BackRequestedEventArgs^>(this, &FrameworkView::OnBackRequested);
 
       ApplicationView::GetForCurrentView()->SetPreferredMinSize(Size(Max(1, PixelsToDips(1)), Max(1, PixelsToDips(1)))); // using <1 means to use system default min size, so use Max 1 to always set a custom size
 
@@ -489,12 +489,13 @@ ref struct FrameworkView sealed : IFrameworkView
          }break;
       }
    }
- /*void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args)
+   void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args) // This is called when pressing GamePad B button, and on Windows Phone onscreen back button in the nav bar. By default these actions suspend the game
    {
-      args->Handled=true; // disable app close on back press
+      args->Handled=true; // !! THIS HAS TO BE CALLED TO DISABLE APP CLOSE !!
+    /*Don't trigger this because this function is also called due to GamePad B buttons
       Kb.push   (KB_NAV_BACK, -1);
-      Kb.release(KB_NAV_BACK); // release immediately because there's no callback for a release
-   }*/
+      Kb.release(KB_NAV_BACK); // release immediately because there's no callback for a release*/
+   }
 #if KEY_EVENTS
    void OnAcceleratorKeyActivated(CoreDispatcher^ sender, AcceleratorKeyEventArgs^ args)
    {
