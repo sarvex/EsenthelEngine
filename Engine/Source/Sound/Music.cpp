@@ -349,7 +349,7 @@ void MusicManager::playSong(Int global_song)
    }else
    {
       fadeOut(OLD);
-      fadeOut(CUR);
+      fadeOut(CUR); _song[CUR]=-1; // clear to -1 to prevent from auto-playing the next song
    }
 }
 /******************************************************************************/
