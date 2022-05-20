@@ -404,12 +404,13 @@ Str SystemPath(SYSTEM_PATH type); // get system path, Sample Usage: SystemPath(S
 /******************************************************************************/
 enum PERMISSION // Permissions
 {
-   PERMISSION_EXTERNAL_STORAGE, // allow accessing files outside of application folders
-   PERMISSION_LOCATION        , // allow accessing device location  using 'Location*' functions
-   PERMISSION_SOUND_RECORD    , // allow recording sounds           using 'SoundRecord'
-   PERMISSION_USER_NAME       , // allow accessing system user name using 'OSUserName' and 'OSUserEmail'
+   PERMISSION_EXTERNAL_STORAGE  , // allow accessing files outside of application folders
+   PERMISSION_LOCATION          , // allow accessing device location  using 'Location*' functions
+   PERMISSION_SOUND_RECORD      , // allow recording sounds           using 'SoundRecord'
+   PERMISSION_USER_NAME         , // allow accessing system user name using 'OSUserName' and 'OSUserEmail'
+   PERMISSION_USER_COMMUNICATION, // allow communication between users
 #if EE_PRIVATE
-   PERMISSION_NUM             , // number of permissions
+   PERMISSION_NUM               , // number of permissions
 #endif
 };
 Bool HasPermission(PERMISSION permission); // check if Application has specified 'permission', this function is only intended for Android, on other platforms it   always returns true

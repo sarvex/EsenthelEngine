@@ -1997,9 +1997,11 @@ static CChar8* AndroidPermissions[]=
    "android.permission.ACCESS_FINE_LOCATION"  , // 1
    "android.permission.RECORD_AUDIO"          , // 2
    "android.permission.READ_CONTACTS"         , // 3
+ //null                                       , // 4 PERMISSION_USER_COMMUNICATION NintendoSwitch
 };
-ASSERT(PERMISSION_EXTERNAL_STORAGE==0 && PERMISSION_LOCATION==1 && PERMISSION_SOUND_RECORD==2 && PERMISSION_USER_NAME==3 && PERMISSION_NUM==4);
+ASSERT(PERMISSION_EXTERNAL_STORAGE==0 && PERMISSION_LOCATION==1 && PERMISSION_SOUND_RECORD==2 && PERMISSION_USER_NAME==3 && PERMISSION_USER_COMMUNICATION==4 && PERMISSION_NUM==5);
 #endif
+#if !SWITCH
 Bool HasPermission(PERMISSION permission)
 {
 #if ANDROID
@@ -2033,6 +2035,7 @@ void GetPermission(PERMISSION permission)
    }
 #endif
 }
+#endif
 static Int PermissionAsked; ASSERT(PERMISSION_NUM<=32); // each permission is stored in separate bit
 void RequirePermission(PERMISSION permission)
 {
