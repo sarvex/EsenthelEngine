@@ -404,17 +404,17 @@ Str SystemPath(SYSTEM_PATH type); // get system path, Sample Usage: SystemPath(S
 /******************************************************************************/
 enum PERMISSION // Permissions
 {
-   PERMISSION_EXTERNAL_STORAGE  , // allow accessing files outside of application folders
-   PERMISSION_LOCATION          , // allow accessing device location  using 'Location*' functions
-   PERMISSION_SOUND_RECORD      , // allow recording sounds           using 'SoundRecord'
-   PERMISSION_USER_NAME         , // allow accessing system user name using 'OSUserName' and 'OSUserEmail'
-   PERMISSION_USER_COMMUNICATION, // allow communication between users
+   PERMISSION_EXTERNAL_STORAGE  , // allow accessing files outside of application folders                  [Supported Platforms: Android]
+   PERMISSION_LOCATION          , // allow accessing device location  using 'Location*' functions          [Supported Platforms: Android]
+   PERMISSION_SOUND_RECORD      , // allow recording sounds           using 'SoundRecord'                  [Supported Platforms: Android]
+   PERMISSION_USER_NAME         , // allow accessing system user name using 'OSUserName' and 'OSUserEmail' [Supported Platforms: Android]
+   PERMISSION_USER_COMMUNICATION, // allow communication between users                                     [Supported Platforms: NintendoSwitch]
 #if EE_PRIVATE
    PERMISSION_NUM               , // number of permissions
 #endif
 };
-Bool HasPermission(PERMISSION permission); // check if Application has specified 'permission', this function is only intended for Android, on other platforms it   always returns true
-void GetPermission(PERMISSION permission); // request                  specified 'permission', this function is only intended for Android, on other platforms it's always ignored
+Bool HasPermission(PERMISSION permission); // check if Application has specified 'permission'
+void GetPermission(PERMISSION permission); // request                  specified 'permission'
 #if EE_PRIVATE
 void RequirePermission(PERMISSION permission); // if(!HasPermission(permission))GetPermission(permission)
 #endif
