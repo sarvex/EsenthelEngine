@@ -22,6 +22,7 @@
     <DisplayVersion>0</DisplayVersion>
     <StartupUserAccount>Required</StartupUserAccount>
     <UserAccountSwitchLock>Disable</UserAccountSwitchLock>
+    <ParentalControl>FreeCommunication</ParentalControl>
     <Screenshot>Allow</Screenshot>
     <DataLossConfirmation>None</DataLossConfirmation>
     <LogoType>LicensedByNintendo</LogoType>
