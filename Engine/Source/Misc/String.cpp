@@ -2088,6 +2088,10 @@ Str  WindowsPath    (C Str &path) {return Replace(path, '/', '\\');}
 Str     UnixPath    (C Str &path) {return Replace(path, '\\', '/');}
 Str8    UnixPathUTF8(C Str &path) {return UTF8(UnixPath(path));}
 /******************************************************************************/
+#if !SWITCH
+Str Censor(C Str &text) {return text;}
+#endif
+/******************************************************************************/
 CChar8* TextBool(Bool b) {return b ? "true" : "false";}
 CChar8* TextInt(Int i, Char8 (&temp)[256], Int digits, Int separate)
 {
