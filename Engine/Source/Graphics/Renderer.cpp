@@ -1918,7 +1918,7 @@ void RendererClass::temporal(ImageRTPtr &dilated_motion) // !! assumes 'resolveM
             Sh.ImgX[3]->set(old_weight);
          }
       #endif
-         set(_ctx->new_data, _ctx->new_alpha, _ctx->new_col, null, null, true);
+         set(_ctx->new_col, _ctx->new_data, _ctx->new_alpha, null, null, true);
          Shader *shader=Sh.Temporal[D.temporalAntiAlias()+2*D.temporalSuperRes()-1][D._view_main.full][alpha];
          REPS(_eye, _eye_num)
          {
