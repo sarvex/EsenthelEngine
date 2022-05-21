@@ -97,6 +97,18 @@ static Str AndroidPackage(C Str &name) {return Replace(name, '-', '_');} // Andr
 Bool CodeEditor::verifyVS()
 {
    if(build_exe_type==EXE_UWP && !ValidatePackage())return false;
+   if(build_exe_type==EXE_NS && build_mode==BUILD_PUBLISH)
+   {
+      Str error;
+      if(!cei().appNintendoInitialCode  ().is())error.line(2)+="Please specify Nintendo Initial Code.";
+      if( cei().appNintendoAppID        ()  <=0)error.line(2)+="Please specify Nintendo App ID.";
+      if(!cei().appNintendoPublisherName().is())error.line(2)+="Please specify Nintendo Publisher Name.";
+      if(error.is())
+      {
+         CE.cei().appInvalidProperty(error);
+         return false;
+      }
+   }
    if(devenv_version.x<=0)validateDevEnv();
    Str message; if(CheckVisualStudio(devenv_version, &message, false))return true; // we can't check the minor version because EXE have it always set to 0 (last tested on VS 2017 regular+preview)
    options.activatePaths(); return Error(message);
@@ -114,11 +126,11 @@ Bool CodeEditor::verifyAndroid()
 {
    Str error;
 
-   if(! android_sdk  .is())error.line(2)+="The path to Android SDK has not been specified.";else
-   if(!     adbPath().is())error.line(2)+="Can't find \"adb\" tool in Android SDK.";else
-   if(!zipalignPath().is())error.line(2)+="Can't find \"zipalign\" tool in Android SDK.";
+        if(! android_sdk  .is())error.line(2)+="The path to Android SDK has not been specified.";else
+        if(!     adbPath().is())error.line(2)+="Can't find \"adb\" tool in Android SDK.";
+ /*else if(!zipalignPath().is())error.line(2)+="Can't find \"zipalign\" tool in Android SDK.";
 
- /*if(! android_ndk  .is()      )error.line(2)+="The path to Android NDK has not been specified.";else
+   if(! android_ndk  .is()      )error.line(2)+="The path to Android NDK has not been specified.";else
    if(Contains(android_ndk, ' '))error.line(2)+="Android NDK will not work if it's stored in a path with spaces.\nPlease move the Android NDK folder to a path without spaces and try again.";else
    if(!ndkBuildPath().is()      )error.line(2)+="Can't find \"ndk-build\" tool in Android NDK.";*/
 
@@ -3143,9 +3155,35 @@ void CodeEditor::killBuild()
 /******************************************************************************/
 void CodeEditor::build(BUILD_MODE mode)
 {
-   if((mode==BUILD_PLAY || mode==BUILD_PUBLISH) && (config_exe==EXE_UWP || config_exe==EXE_IOS || config_exe==EXE_NS)){openIDE(); return;} // Play/Publish for WindowsNew and iOS must be done from the IDE
+   if(mode==BUILD_DEBUG)switch(config_exe) // DEBUG
+   {
+      case EXE_EXE:
+      case EXE_UWP:
+      case EXE_NS :
+         if(Export(EXPORT_VS, BUILD_DEBUG))VSRun(build_project_file, S); break;
 
-   if(Export(EXPORT_EXE, mode))
+      case EXE_APK:
+      case EXE_AAB:
+         if(Export(EXPORT_ANDROID, BUILD_DEBUG))VSRun(build_project_file, S); break;
+
+      case EXE_DLL:
+      case EXE_LIB:
+         break;
+
+      default: openIDE(); break;
+   }else
+   if( mode==BUILD_IDE // OPEN IDE
+   || (mode==BUILD_PLAY || mode==BUILD_PUBLISH) && (config_exe==EXE_UWP || config_exe==EXE_IOS || config_exe==EXE_NS)) // Play/Publish for WindowsNew, iOS and Switch must be done from the IDE
+   {
+   #if WINDOWS
+                               if(Export((config_exe==EXE_APK || config_exe==EXE_AAB) ? EXPORT_ANDROID : EXPORT_VS, mode))VSOpen(build_project_file);
+   #elif MAC
+                               if(Export(EXPORT_XCODE                                                             , mode))Run   (build_project_file);
+   #elif LINUX
+      if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS                                                    , mode))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
+   #endif
+   }else
+   if(Export(EXPORT_EXE, mode)) // BUILD
    {
       build_list.highlight_line=-1;
       build_list.highlight_time= 0;
@@ -3254,41 +3292,9 @@ void CodeEditor::build(BUILD_MODE mode)
    }
 }
 /******************************************************************************/
-void CodeEditor::play()
-{
-   build(BUILD_PLAY);
-}
-/******************************************************************************/
-void CodeEditor::debug()
-{
- //build(BUILD_DEBUG);
-   switch(config_exe)
-   {
-      case EXE_EXE:
-      case EXE_UWP:
-      case EXE_NS :
-         if(Export(EXPORT_VS, BUILD_DEBUG))VSRun(build_project_file, S); break;
-
-      case EXE_APK:
-      case EXE_AAB:
-         if(Export(EXPORT_ANDROID, BUILD_DEBUG))VSRun(build_project_file, S); break;
-
-      case EXE_DLL: build(); break;
-
-      default: play(); break;
-   }
-}
-/******************************************************************************/
-void CodeEditor::openIDE()
-{
-#if WINDOWS
-                            if(Export((config_exe==EXE_APK || config_exe==EXE_AAB) ? EXPORT_ANDROID : EXPORT_VS, BUILD_IDE))VSOpen(build_project_file);
-#elif MAC
-                            if(Export(EXPORT_XCODE                                                             , BUILD_IDE))Run   (build_project_file);
-#elif LINUX
-   if(verifyLinuxNetBeans())if(Export(EXPORT_LINUX_NETBEANS                                                    , BUILD_IDE))Run   (Str(netbeans_path).tailSlash(true)+"bin/netbeans", S+"--open \""+build_path+'"');
-#endif
-}
+void CodeEditor::play   () {build(BUILD_PLAY );}
+void CodeEditor::debug  () {build(BUILD_DEBUG);}
+void CodeEditor::openIDE() {build(BUILD_IDE  );}
 /******************************************************************************/
 void CodeEditor::runToCursor()
 {
