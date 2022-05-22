@@ -580,6 +580,7 @@
         <itemPath>../Source/Misc/String.cpp</itemPath>
         <itemPath>../Source/Misc/Thread.cpp</itemPath>
         <itemPath>../Source/Misc/Timer.cpp</itemPath>
+        <itemPath>../Source/Misc/Translation.cpp</itemPath>
         <itemPath>../Source/Misc/Video.cpp</itemPath>
         <itemPath>../Source/Misc/Windows.cpp</itemPath>
       </logicalFolder>
@@ -1943,6 +1944,8 @@
       <item path="../Source/Misc/Thread.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Misc/Timer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../Source/Misc/Translation.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Misc/Video.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -3358,6 +3361,8 @@
       <item path="../Source/Misc/Thread.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Misc/Timer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../Source/Misc/Translation.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Misc/Video.cpp" ex="false" tool="1" flavor2="0">
       </item>

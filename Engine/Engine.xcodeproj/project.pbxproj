@@ -1010,6 +1010,9 @@
 		37FA23A51D229F2200EEFAAE /* OpenVR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37D4D6A61D05419E00F6A3D6 /* OpenVR.cpp */; };
 		37FA23A61D229F2200EEFAAE /* Touch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0B18995312DA3FD300499CA9 /* Touch.cpp */; };
 		37FA23A71D229F2200EEFAAE /* Virtual Reality.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 37D4D6A71D05419E00F6A3D6 /* Virtual Reality.cpp */; };
+		A375E780283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
+		A375E781283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
+		A375E782283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1697,6 +1700,7 @@
 		37F83D7725C44AB6000E5568 /* libPhysXCommon_static_64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhysXCommon_static_64.a; path = ../ThirdPartyLibs/PhysX/physx/bin/ios.arm_64/release/libPhysXCommon_static_64.a; sourceTree = "<group>"; };
 		37F83D7825C44AB7000E5568 /* libPhysXVehicle_static_64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhysXVehicle_static_64.a; path = ../ThirdPartyLibs/PhysX/physx/bin/ios.arm_64/release/libPhysXVehicle_static_64.a; sourceTree = "<group>"; };
 		37F83D7925C44AB7000E5568 /* libPhysXExtensions_static_64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhysXExtensions_static_64.a; path = ../ThirdPartyLibs/PhysX/physx/bin/ios.arm_64/release/libPhysXExtensions_static_64.a; sourceTree = "<group>"; };
+		A375E77F283A313400C71054 /* Translation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Translation.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2241,6 +2245,7 @@
 				0B189B2412DA3FED00499CA9 /* String.cpp */,
 				0B189B2612DA3FED00499CA9 /* Thread.cpp */,
 				0B189B2712DA3FED00499CA9 /* Timer.cpp */,
+				A375E77F283A313400C71054 /* Translation.cpp */,
 				0BED2FC216B6E4210088106C /* Video.cpp */,
 				0B189B2812DA3FED00499CA9 /* Windows.cpp */,
 			);
@@ -3301,6 +3306,7 @@
 				0B189BEA12DA3FED00499CA9 /* Connection.cpp in Sources */,
 				0B189BEB12DA3FED00499CA9 /* Download.cpp in Sources */,
 				0B189BEC12DA3FED00499CA9 /* Ftp.cpp in Sources */,
+				A375E782283A313400C71054 /* Translation.cpp in Sources */,
 				0B189BEF12DA3FED00499CA9 /* Socket.cpp in Sources */,
 				0B18A0DA12DA4DA400499CA9 /* Chunk.cpp in Sources */,
 				0B18A0DB12DA4DA400499CA9 /* File Text.cpp in Sources */,
@@ -3571,6 +3577,7 @@
 				0B189B4712DA3FED00499CA9 /* Mesh Overlay.cpp in Sources */,
 				0B189B4812DA3FED00499CA9 /* Mesh Part.cpp in Sources */,
 				0B3F4C62183199FB00518C8B /* Esenthel Store.cpp in Sources */,
+				A375E780283A313400C71054 /* Translation.cpp in Sources */,
 				0B189B4912DA3FED00499CA9 /* Mesh Render.cpp in Sources */,
 				3701EA801D570B9C00A6C9DB /* Cipher.cpp in Sources */,
 				0B189B4A12DA3FED00499CA9 /* Mshb Add Remove.cpp in Sources */,
@@ -3913,6 +3920,7 @@
 				0B189BA712DA3FED00499CA9 /* Thread.cpp in Sources */,
 				0B189BA812DA3FED00499CA9 /* Timer.cpp in Sources */,
 				0B189BA912DA3FED00499CA9 /* Windows.cpp in Sources */,
+				A375E781283A313400C71054 /* Translation.cpp in Sources */,
 				0B189BAA12DA3FED00499CA9 /* Connection.cpp in Sources */,
 				0B189BAB12DA3FED00499CA9 /* Download.cpp in Sources */,
 				0B189BAC12DA3FED00499CA9 /* Ftp.cpp in Sources */,
