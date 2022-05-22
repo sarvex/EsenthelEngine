@@ -649,7 +649,7 @@ enum JOINT_FLAG
    JOINT_SPHERICAL_LIMIT_SWING_Y=1<<2,
    JOINT_SPHERICAL_LIMIT_SWING_Z=1<<3,
 };
-Bool Joint::save(File &f)C
+Bool Joint::save(File &f)C // !! IF MAKING ANY CHANGE, UPDATE TO NEW VERSION BECAUSE THIS IS USED IN SAVE GAMES !!
 {
    f.cmpUIntV(0); // version
 
