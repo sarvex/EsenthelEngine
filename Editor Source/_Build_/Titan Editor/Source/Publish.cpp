@@ -1003,7 +1003,7 @@ void PublishSuccess()
    }else
    {
       Str text;
-      if(PublishProjectDataPath.is())text=S+(PublishProjectPackage ? "Project size: " : "Project data size: ")+FileSize(FSize(PublishProjectDataPath));
+      if(PublishProjectDataPath.is())text=S+(PublishProjectPackage ? "Project size: " : "Project data size: ")+SizeBytes(FSize(PublishProjectDataPath));
       else                           text="Publishing succeeded";
       PublishSuccess(PublishPath, text);
    }

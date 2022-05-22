@@ -478,9 +478,9 @@ AnimEditor AnimEdit;
             refresh_needed=false;
             if(src)anim=*src;else anim.del();
             File f;
-            if(     file_size){anim.save(f.writeMem());      file_size->display(S+     "File Size: "+FileSizeKB(f.size()));}
+            if(     file_size){anim.save(f.writeMem());      file_size->display(S+     "File Size: "+SizeKB(f.size()));}
             optimizeDo(anim);
-            if(optimized_size){anim.save(f.reset   ()); optimized_size->display(S+"Optimized Size: "+FileSizeKB(f.size()));}
+            if(optimized_size){anim.save(f.reset   ()); optimized_size->display(S+"Optimized Size: "+SizeKB(f.size()));}
          }
          return preview ? &anim : src;
       }

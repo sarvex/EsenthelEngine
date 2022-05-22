@@ -1,5 +1,4 @@
 ﻿/******************************************************************************/
-extern cchar8 *SizeSuffix[];
 extern cchar8 *FormatSuffixes[]
 ;
 extern int FormatSuffixElms;
@@ -10,8 +9,6 @@ bool SafeOverwrite(File &src, C Str &dest, ReadWriteSync &rws);
 bool SafeOverwriteChunk(File &src, C Str &dest, ReadWriteSync &rws);
 bool SafeCopy(C Str &src, C Str &dest);
 void RemoveChunk(C Str &file, C Str &chunk, ReadWriteSync &rws);
-Str FileSize(long size, char dot=',');
-Str FileSizeKB(long size);
 void SavedImage        (C Str &name);
 void SavedImageAtlas   (C Str &name);
 void SavedEditSkel     (C Str &name);

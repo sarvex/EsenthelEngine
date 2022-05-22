@@ -2607,7 +2607,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          if(VisibleQuads(lod))a.add(S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTris     (lod)+" tri"+CountS(VisibleTris     (lod))+", "+VisibleQuads(lod)+" quad"+CountS(VisibleQuads(lod)));
          else                 a.add(S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTrisTotal(lod)+" tri"+CountS(VisibleTrisTotal(lod)));
          int parts=lod.partsAfterJoinAll(true, true, false, MeshJoinAllTestVtxFlag, true); a.add(S+parts+" draw call"+CountS(parts));
-         int size=0; REP(mesh.lods())size+=VisibleSize(mesh.lod(i)); a.add(S+"Mesh size "+FileSize(size));
+         int size=0; REP(mesh.lods())size+=VisibleSize(mesh.lod(i)); a.add(S+"Mesh size "+SizeBytes(size));
          if(mode()==LOD)a.add(S+mesh.lods()+" LOD"+CountS(mesh.lods()));
          if(mesh.is())
          {

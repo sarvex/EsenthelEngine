@@ -98,8 +98,8 @@ MiscRegion Misc;
       }
       about+="\n\n";
       Str s=Cpu.name(); if(s.is())s+=", "; s+=S+Cpu.threads()+" HW Threads"; if(s.is())about.line()+=S+"CPU: "+s;
-          s=D.deviceName(); if(s.is()){if(D.deviceMemory()>0)s+=S+", "+FileSize(D.deviceMemory(), '.')+" RAM"; about.line()+=S+"GPU: "+s;}
-      MemStats m; m.get(); if(m.total_phys>0)about.line()+=S+"RAM: "+FileSize(m.total_phys, '.');
+          s=D.deviceName(); if(s.is()){if(D.deviceMemory()>0)s+=S+", "+SizeBytes(D.deviceMemory(), '.')+" RAM"; about.line()+=S+"GPU: "+s;}
+      MemStats m; m.get(); if(m.total_phys>0)about.line()+=S+"RAM: "+SizeBytes(m.total_phys, '.');
           s=OSName(); if(s.is())about.line()+=S+"Operating System: "+s;
           s=OSUserName(); if(s.is())about.line()+=S+"System User Name: "+s;
       #if DESKTOP

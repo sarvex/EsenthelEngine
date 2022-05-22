@@ -961,7 +961,7 @@ class ElmProperties : ClosableWindow
          elm_id=elm.id;
          id   .set(elm.id.asCString());
          file .set(EncodeFileName(elm.id));
-         size .clear(); if(FExist(Proj.gamePath(elm.id)))size.set(FileSize(FSize(Proj.gamePath(elm.id))));
+         size .clear(); if(FExist(Proj.gamePath(elm.id)))size.set(SizeBytes(FSize(Proj.gamePath(elm.id))));
          Class.set(ElmTypeClass[elm.type]);
          Mems<FileParams> files=FileParams.Decode(elm.srcFile());
          Str src_text; FREPA(files)src_text.line()+=files[i].name; // ignore parameters

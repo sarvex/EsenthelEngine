@@ -50,7 +50,7 @@ class ListElm
    static Str Size(C ListElm &data)
    {
       long size=data.fileSize(); if(!size)return S;
-      Str    s=FileSize(size); if(!data.size_known)s+='+';
+      Str    s=SizeBytes(size); if(!data.size_known)s+='+';
       return s;
    }
 

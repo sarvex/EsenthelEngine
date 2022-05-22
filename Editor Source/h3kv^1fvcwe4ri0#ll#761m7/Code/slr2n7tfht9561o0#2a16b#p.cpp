@@ -658,13 +658,13 @@ class StoreClass : ClosableWindow
                   if(SafeOverwrite(src, dest))
                   {
                      open.show(); cancel.text="Close"; if(GetExt(file)==ProjectPackageExt)import.show();
-                     text.set(S+"Done ("+FileSize(down.totalSize())+")");
+                     text.set(S+"Done ("+SizeBytes(down.totalSize())+")");
                   }else text.set("Failed to save file");
                   progress.set(1);
                 //flash();
                }
             }break;
-            case DWNL_DOWNLOAD: {long done=file_done.size()+down.done(); text.set(FileSize(done)+" / "+(down.totalSize()>=0 ? FileSize(down.totalSize()) : S+"?")); progress.set(done, down.totalSize());} break;
+            case DWNL_DOWNLOAD: {long done=file_done.size()+down.done(); text.set(SizeBytes(done)+" / "+(down.totalSize()>=0 ? SizeBytes(down.totalSize()) : S+"?")); progress.set(done, down.totalSize());} break;
             case DWNL_ERROR   : if(down.done())retry.show(); text.set("Error occured"); break; // if downloaded anything
             default           : text.set("Connecting"); break;
          }
@@ -856,7 +856,7 @@ class StoreClass : ClosableWindow
       void update()
       {
          long sent=T.sent+down.sent(), size=src.size();
-         text.set(display+"("+FileSize(sent)+" / "+FileSize(size)+")");
+         text.set(display+"("+SizeBytes(sent)+" / "+SizeBytes(size)+")");
          progress.set(sent, size);
          visible(item_id==AppStore.cur_item);
       }
@@ -1658,7 +1658,7 @@ class StoreClass : ClosableWindow
                                       upload.params.New().set("item_file_file", file_file);
                                       upload.params.New().set("item_file_name", file_name);
                         upload.transfer();
-                     }else Gui.msgBox(S, S+"File size "+FileSize(src.size())+" exceeds "+FileSize(EsenthelStoreMaxFileSize)+" limit");
+                     }else Gui.msgBox(S, S+"File size "+SizeBytes(src.size())+" exceeds "+SizeBytes(EsenthelStoreMaxFileSize)+" limit");
                   }else Gui.msgBox(S, S+"Can't read file \""+name+"\"");
                }
             }
@@ -1688,7 +1688,7 @@ class StoreClass : ClosableWindow
                         Swap(src, upload.src);
                         Memt<HTTPParam> params; setUserParams(params, "set_item_icon"); params.New().set("i", S+cur_item); params.New().set("item_icon", ext);
                         upload.down.create(EsenthelStoreURL, params, &upload.src);
-                     }else Gui.msgBox(S, S+"File size "+FileSize(src.size())+" exceeds "+FileSize(EsenthelStoreMaxIconSize)+" limit");
+                     }else Gui.msgBox(S, S+"File size "+SizeBytes(src.size())+" exceeds "+SizeBytes(EsenthelStoreMaxIconSize)+" limit");
                   }else Gui.msgBox(S, S+"Couldn't import image \""+name+"\"");
                   break;
                }
@@ -1722,7 +1722,7 @@ class StoreClass : ClosableWindow
                         Swap(src, upload.src);
                         Memt<HTTPParam> params; setUserParams(params, "set_item_image"); params.New().set("i", S+cur_item); params.New().set("item_image_index", S+image_index); params.New().set("item_image_status", ext);
                         upload.down.create(EsenthelStoreURL, params, &upload.src);
-                     }else Gui.msgBox(S, S+"File size "+FileSize(src.size())+" exceeds "+FileSize(EsenthelStoreMaxImageSize)+" limit");
+                     }else Gui.msgBox(S, S+"File size "+SizeBytes(src.size())+" exceeds "+SizeBytes(EsenthelStoreMaxImageSize)+" limit");
                   }else Gui.msgBox(S, S+"Couldn't import image \""+name+"\"");
                   break;
                }

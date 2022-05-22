@@ -623,7 +623,7 @@ void DrawCopyElms()
             {
                case PAK_LOAD_OK                 : break;
                case PAK_LOAD_UNSUPPORTED_VERSION: Gui.msgBox(S, "Selected project was created with a newer version of the engine."); return;
-               case PAK_LOAD_INCOMPLETE_DATA    : Gui.msgBox(S, S+"Selected project file is incomplete:\nFile size is: "+FileSize(actual_size)+"\nIt should be: "+FileSize(expected_size)+"\nIf downloaded from Esenthel Store, please make sure that the download was not interrupted.\nConsider downloading using " ENGINE_NAME " Editor which supports resuming interrupted downloads."); return;
+               case PAK_LOAD_INCOMPLETE_DATA    : Gui.msgBox(S, S+"Selected project file is incomplete:\nFile size is: "+SizeBytes(actual_size)+"\nIt should be: "+SizeBytes(expected_size)+"\nIf downloaded from Esenthel Store, please make sure that the download was not interrupted.\nConsider downloading using " ENGINE_NAME " Editor which supports resuming interrupted downloads."); return;
                default                          : Gui.msgBox(S, "Can't load selected project"); return;
             }
 

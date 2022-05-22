@@ -473,7 +473,7 @@ if(appGuiSkin().valid())data+="   Gui.default_skin=APP_GUI_SKIN; // set default 
       {
          if(PublishDataNeeded(exe_type)) // if data was already published then package is ready
          {
-            PublishSuccess(exe_name, S+"File name: "+GetBase(exe_name)+"\nFile size: "+FileSize(FSize(exe_name)));
+            PublishSuccess(exe_name, S+"File name: "+GetBase(exe_name)+"\nFile size: "+SizeBytes(FSize(exe_name)));
          }else // proceed to data publishing
          {
             StartPublish(exe_name, exe_type, build_mode);

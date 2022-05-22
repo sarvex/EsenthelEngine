@@ -508,8 +508,8 @@ class ServerClass : Connection
           rcving=uint(rcvdTotal()-stats_rcvd)/d; stats_rcvd=rcvdTotal();
       }
       Misc.online.desc(S+"Access: "+UserAccessText[access].name
-                        +"\nSent: "+FileSize  (sentTotal())+  ",   Received: " +FileSize  (rcvdTotal())
-                     +"\nSending: "+FileSizeKB(sending    )+"/s,   Receiving: "+FileSizeKB(rcving)+"/s"
+                        +"\nSent: "+SizeBytes(sentTotal())+  ",   Received: " +SizeBytes(rcvdTotal())
+                     +"\nSending: "+SizeKB   (sending    )+"/s,   Receiving: "+SizeKB   (rcving)+"/s"
              "\nElements to send: "+(Synchronizer.queuedElms()+(queued()>0))); // if there is data in the buffer then count it as one extra element
 
       EditServer.update(busy);

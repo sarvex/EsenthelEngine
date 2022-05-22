@@ -169,7 +169,7 @@ TexInfoGetter TIG;
    Str ListElm::Size(C ListElm &data)
    {
       long size=data.fileSize(); if(!size)return S;
-      Str    s=FileSize(size); if(!data.size_known)s+='+';
+      Str    s=SizeBytes(size); if(!data.size_known)s+='+';
       return s;
    }
    void ListElm::IncludeTex(Memt<UID> &texs, C UID &tex_id) {if(tex_id.valid())texs.binaryInclude(tex_id);}

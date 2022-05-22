@@ -34,24 +34,6 @@ void RemoveChunk(C Str &file, C Str &chunk, ReadWriteSync &rws)
    }
 }
 /******************************************************************************/
-cchar8 *SizeSuffix[]={"", " KB", " MB", " GB", " TB"};
-Str FileSize(long size, char dot=',')
-{
-   const int f=10;
-   size*=f;
-   int i=0; for(; i<Elms(SizeSuffix)-1 && size>=1000*f; i++, size>>=10); // check for "1000*f" instead of "1024*f", because we want to avoid displaying things like "1 001 MB"
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i){s+=dot; s+=size%10;} s+=SizeSuffix[i];
-   return s;
-}
-Str FileSizeKB(long size)
-{
-   const int f=10;
-   size*=f;
-   int i=1; size>>=10;
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i){s+=','; s+=size%10;} s+=SizeSuffix[i];
-   return s;
-}
-/******************************************************************************/
 void SavedImage        (C Str &name) {if(ImagePtr       e=ImagePtr     ().find(name))if(!IsServer)e->load(name);} // on server the file may be compressed
 void SavedImageAtlas   (C Str &name) {if(ImageAtlasPtr  e=ImageAtlasPtr().find(name))if(!IsServer)e->load(name);}
 void SavedEditSkel     (C Str &name) {}
