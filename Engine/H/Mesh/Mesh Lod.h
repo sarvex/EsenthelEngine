@@ -42,8 +42,9 @@ struct MeshLod // Level of Detail, array of Mesh Part's
    Flt       area     (Vec *center=null                     )C;                            // get surface area of all mesh faces, 'center'=if specified then it will be calculated as the average surface center
    Flt       dist     (                                     )C;   MeshLod& dist(Flt dist); // get/set LOD distance
 
-   Bool hasDrawGroup    ( Int draw_group_index)C; // check if at least one MeshPart has specified draw group enum index
-   Bool hasDrawGroupMask(UInt draw_group_mask )C; // check if at least one MeshPart has specified draw group enum mask
+   Bool hasDrawGroup           ( Int draw_group_index               )C; // check if at least one MeshPart has specified draw group enum index
+   Bool hasDrawGroupMask       (UInt draw_group_mask                )C; // check if at least one MeshPart has specified draw group enum mask
+   Bool hasDrawGroupInVariation( Int draw_group_index, Int variation)C; // check if at least one MeshPart has specified draw group enum index and is visible in specified variation
 
    Int partsAfterJoinAll(Bool test_material, Bool test_draw_group, Bool test_name, MESH_FLAG test_vtx_flag=MESH_NONE, Bool skip_hidden=true)C; // calculate how many parts this mesh will have after 'joinAll' would be called with specified parameters, 'test_material'=join only those MeshParts which have the same material, 'test_draw_group'=join only those MeshParts which have the same draw group, 'test_name'=join only those MeshParts which have the same name, 'test_vtx_flag'=join only those MeshParts which have same vertex flag, 'skip_hidden'=if skip calculating hidden parts
 
