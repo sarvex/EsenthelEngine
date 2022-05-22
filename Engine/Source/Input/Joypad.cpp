@@ -721,10 +721,10 @@ void InitJoypads()
    Joypad::_button_name[JB_X]="X";
    Joypad::_button_name[JB_Y]="Y";
 
-   Joypad::_button_name[JB_L1]="L1";
-   Joypad::_button_name[JB_R1]="R1";
-   Joypad::_button_name[JB_L2]="L2";
-   Joypad::_button_name[JB_R2]="R2";
+   Joypad::_button_name[JB_L1]=SWITCH ?  "L" : "LB";
+   Joypad::_button_name[JB_R1]=SWITCH ?  "R" : "RB";
+   Joypad::_button_name[JB_L2]=SWITCH ? "ZL" : "LT";
+   Joypad::_button_name[JB_R2]=SWITCH ? "ZR" : "RT";
 
    Joypad::_button_name[JB_LTHUMB]="LThumb";
    Joypad::_button_name[JB_RTHUMB]="RThumb";
