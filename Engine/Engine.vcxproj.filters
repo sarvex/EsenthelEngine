@@ -1113,6 +1113,9 @@
     <ClInclude Include="Source\Shaders\Motion Blur.h">
       <Filter>Source\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="H\Misc\Translation.h">
+      <Filter>H\Misc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -2149,6 +2152,9 @@
     </ClCompile>
     <ClCompile Include="Source\Graphics\Import\ASTC_Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Misc\Translation.cpp">
+      <Filter>Source\Misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

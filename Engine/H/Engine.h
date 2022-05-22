@@ -195,6 +195,7 @@ namespace EE // Esenthel Engine namespace
    #include "Misc/Callback.h"
    #include "Misc/DLL.h"
    #include "Misc/Printer.h"
+   #include "Misc/Translation.h"
    /******************************************************************************/
    // MATH
    /******************************************************************************/
