@@ -697,6 +697,40 @@ void IDGenerator::Return(UInt id) // return ID so it can be re-used later
    }
 }
 /******************************************************************************/
+static CChar8 *SizeSuffix[]={"", " KB", " MB", " GB", " TB", " PB", " EB", " ZB"};
+Str SizeBytes(Long size, Char dot)
+{
+   const Int f=10;
+   size*=f;
+   Int i=0; for(; i<Elms(SizeSuffix)-1 && size>=1000*f; i++, size>>=10); // check for "1000*f" instead of "1024*f", because we want to avoid displaying things like "1 001 MB"
+   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=dot; s+=size%10;} s+=SizeSuffix[i];
+   return s;
+}
+Str SizeKB(Long size, Char dot)
+{
+   const Int f=10;
+   size*=f;
+   Int i=1; size>>=10*i;
+   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffix[i];
+   return s;
+}
+Str SizeMB(Long size, Char dot)
+{
+   const Int f=10;
+   size*=f;
+   Int i=2; size>>=10*i;
+   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffix[i];
+   return s;
+}
+Str SizeGB(Long size, Char dot)
+{
+   const Int f=10;
+   size*=f;
+   Int i=3; size>>=10*i;
+   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffix[i];
+   return s;
+}
+/******************************************************************************/
 #if DESKTOP
 static Char LogFile[MAX_LONG_PATH]={'l', 'o', 'g', '.', 't', 'x', 't', '\0'}; // use Char array to allow working even after app is being destroyed (destructors called)
 #else

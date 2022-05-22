@@ -196,6 +196,11 @@ UInt Shr(UInt x, Int i); // safe "x>>i", works ok on negative 'i', and 'i' great
 UInt Rol(UInt x, Int i); // safe "x ROL i" (Rotate Left ), works ok on negative 'i', and 'i' greater than 32
 UInt Ror(UInt x, Int i); // safe "x ROR i" (Rotate Right), works ok on negative 'i', and 'i' greater than 32
 
+Str SizeBytes(Long size, Char dot=','); // return size in      Bytes as text in a shortened version, example: SizeBytes(1024) -> "1,0 KB", SizeBytes(1024*1024) ->   "1,0 MB", SizeBytes(1024*1024*1024) ->       "1,0 GB"
+Str SizeKB   (Long size, Char dot=','); // return size in Kilo-Bytes as text in a shortened version, example: SizeKB   (1024) -> "1,0 KB", SizeKB   (1024*1024) -> "1 024 KB", SizeKB   (1024*1024*1024) -> "1 048 576 KB"
+Str SizeMB   (Long size, Char dot=','); // return size in Mega-Bytes as text in a shortened version, example: SizeMB   (1024) -> "0,0 MB", SizeMB   (1024*1024) ->   "1,0 MB", SizeMB   (1024*1024*1024) ->     "1 024 MB"
+Str SizeGB   (Long size, Char dot=','); // return size in Giga-Bytes as text in a shortened version, example: SizeGB   (1024) -> "0,0 GB", SizeGB   (1024*1024) ->   "0,0 GB", SizeMB   (1024*1024*1024) ->       "1,0 GB"
+
 void LogConsole(  Bool on=true);                  // open a console window which will include all messages that were passed to 'Log' and 'LogN' functions, if 'on' is set to false then the console window will be closed instead of opened, this function does not prevent from outputting messages to the log file, if you wish to output only to the console the please open the console using 'LogConsole' and clear the log file name using "LogName(S);" (this function works only on Windows)
 void LogName   (C Str &name   );   Str LogName(); // set/get name for the log file, default="log.txt" (null on Mobile platforms), specifying an empty file name prevents any writing to the file
 void LogDel    (              );                  // delete           the log file
@@ -205,50 +210,6 @@ void LogShow   (Bool thread_id, Bool date, Bool time, Bool cur_time); // set whi
 
 Bool ClipSet(C Str &text); // set system clipboard value to 'text'
 Str  ClipGet(           ); // get system clipboard value
-
-enum OS_VER : Byte // Operating System Version
-{
-   OS_UNKNOWN,
-
-   WINDOWS_UNKNOWN,
-   WINDOWS_2000,
-   WINDOWS_XP,
-   WINDOWS_XP_64,
-   WINDOWS_VISTA,
-   WINDOWS_7,
-   WINDOWS_8,
-   WINDOWS_10,
-   WINDOWS_11,
-   WINDOWS_SERVER_2003,
-   WINDOWS_SERVER_2003_R2,
-   WINDOWS_SERVER_2008,
-   WINDOWS_SERVER_2008_R2,
-   WINDOWS_SERVER_2012,
-   WINDOWS_SERVER_2012_R2,
-   WINDOWS_SERVER_2016,
-   WINDOWS_SERVER_2019,
-   WINDOWS_SERVER_2022,
-
-   OS_MAC,
-
-   OS_LINUX,
-
-   OS_ANDROID,
-
-   OS_IOS,
-
-   OS_NINTENDO_SWITCH,
-};
-       VecI4   OSVerNumber     (                  ); // get Operating System version number
-       OS_VER  OSVer           (                  ); // get Operating System version
-       OS_VER  OSGroup         (OS_VER ver=OSVer()); // get Operating System group, this ignores specific versions and returns just the main groups, such as WINDOWS_UNKNOWN, OS_MAC, OS_LINUX, OS_ANDROID, OS_IOS, OS_NINTENDO_SWITCH
-       CChar8* OSName          (OS_VER ver=OSVer()); // get Operating System name
-inline Bool    OSWindows       (OS_VER ver=OSVer()) {return ver>=WINDOWS_UNKNOWN && ver<=WINDOWS_SERVER_2022;} // if  Operating System is Windows
-inline Bool    OSMac           (OS_VER ver=OSVer()) {return ver==OS_MAC                                     ;} // if  Operating System is Mac
-inline Bool    OSLinux         (OS_VER ver=OSVer()) {return ver==OS_LINUX                                   ;} // if  Operating System is Linux
-inline Bool    OSAndroid       (OS_VER ver=OSVer()) {return ver==OS_ANDROID                                 ;} // if  Operating System is Android
-inline Bool    OSiOS           (OS_VER ver=OSVer()) {return ver==OS_IOS                                     ;} // if  Operating System is iOS
-inline Bool    OSNintendoSwitch(OS_VER ver=OSVer()) {return ver==OS_NINTENDO_SWITCH                         ;} // if  Operating System is Nintendo Switch
 
 Bool OSUserNameNeedsPermission(       ); // if calling 'OSUserName' might result in OS asking for permission
 Str  OSUserName (Bool short_name=false); // get the user name  of currently logged in user in the Operating System, on Android this requires PERMISSION_USER_NAME
@@ -613,6 +574,50 @@ struct DataRangeAbs
 Int Compare    (C DataRangeRel &a, C DataRangeRel &b);
 Int Compare    (C DataRangeAbs &a, C DataRangeAbs &b);
 Int CompareSize(C DataRangeRel &a, C DataRangeRel &b);
+/******************************************************************************/
+enum OS_VER : Byte // Operating System Version
+{
+   OS_UNKNOWN,
+
+   WINDOWS_UNKNOWN,
+   WINDOWS_2000,
+   WINDOWS_XP,
+   WINDOWS_XP_64,
+   WINDOWS_VISTA,
+   WINDOWS_7,
+   WINDOWS_8,
+   WINDOWS_10,
+   WINDOWS_11,
+   WINDOWS_SERVER_2003,
+   WINDOWS_SERVER_2003_R2,
+   WINDOWS_SERVER_2008,
+   WINDOWS_SERVER_2008_R2,
+   WINDOWS_SERVER_2012,
+   WINDOWS_SERVER_2012_R2,
+   WINDOWS_SERVER_2016,
+   WINDOWS_SERVER_2019,
+   WINDOWS_SERVER_2022,
+
+   OS_MAC,
+
+   OS_LINUX,
+
+   OS_ANDROID,
+
+   OS_IOS,
+
+   OS_NINTENDO_SWITCH,
+};
+       VecI4   OSVerNumber     (                  ); // get Operating System version number
+       OS_VER  OSVer           (                  ); // get Operating System version
+       OS_VER  OSGroup         (OS_VER ver=OSVer()); // get Operating System group, this ignores specific versions and returns just the main groups, such as WINDOWS_UNKNOWN, OS_MAC, OS_LINUX, OS_ANDROID, OS_IOS, OS_NINTENDO_SWITCH
+       CChar8* OSName          (OS_VER ver=OSVer()); // get Operating System name
+inline Bool    OSWindows       (OS_VER ver=OSVer()) {return ver>=WINDOWS_UNKNOWN && ver<=WINDOWS_SERVER_2022;} // if  Operating System is Windows
+inline Bool    OSMac           (OS_VER ver=OSVer()) {return ver==OS_MAC                                     ;} // if  Operating System is Mac
+inline Bool    OSLinux         (OS_VER ver=OSVer()) {return ver==OS_LINUX                                   ;} // if  Operating System is Linux
+inline Bool    OSAndroid       (OS_VER ver=OSVer()) {return ver==OS_ANDROID                                 ;} // if  Operating System is Android
+inline Bool    OSiOS           (OS_VER ver=OSVer()) {return ver==OS_IOS                                     ;} // if  Operating System is iOS
+inline Bool    OSNintendoSwitch(OS_VER ver=OSVer()) {return ver==OS_NINTENDO_SWITCH                         ;} // if  Operating System is Nintendo Switch
 /******************************************************************************/
 enum LANG_TYPE : Byte
 {
