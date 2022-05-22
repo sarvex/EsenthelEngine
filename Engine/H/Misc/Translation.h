@@ -1,5 +1,5 @@
 /******************************************************************************/
-enum TRANS_FORM : byte // Translation Form
+enum TRANS_FORM : Byte // Translation Form
 {
    TF_MALE   , // masculine
    TF_FEMALE , // feminine
