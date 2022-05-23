@@ -178,10 +178,11 @@ struct SkelAnim // helper class for 'Skeleton' <-> 'Animation' relation, 'SkelAn
    SkelAnim& create(C Skeleton &skeleton, C Animation &animation); // create object to be used for 'skeleton' and 'animation' pair, 'animation' must point to constant memory address (only pointer to it is stored through which the object can be later accessed)
 
    // get
-   CChar*     name     ()C {return  Animations.name(_animation         );} // get animation name
-   UID        id       ()C {return  Animations.id  (_animation         );} // get animation name ID
+   Bool       is       ()C {return _animation!=null                     ;} // get if created
  C Animation* animation()C {return _animation                           ;} // get animation object
    Flt        length   ()C {return _animation ? _animation->length() : 0;} // get animation length
+   CChar*     name     ()C {return  Animations.name(_animation         );} // get animation name
+   UID        id       ()C {return  Animations.id  (_animation         );} // get animation name ID
 
    Int eventCount(CChar8 *name)C {return _animation ? _animation->eventCount(name) : 0;} // get number of events with specified name in this animation
 
