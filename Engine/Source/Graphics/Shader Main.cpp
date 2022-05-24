@@ -644,11 +644,10 @@ void MainShaderClass::getTechniques()
    // BASIC 2D
    REPD(alpha , 2)
    REPD(dither, 2)Draw[alpha][dither]=get(S8+"Draw"+alpha+dither);
-   SetCol=get("SetCol" );
-   DrawC =get("DrawC"  );
-   DrawG =get("DrawG"  );
-   DrawCG=get("DrawCG" );
-   DrawA =get("DrawA"  );
+   SetCol=get("SetCol");
+   DrawC =get("DrawC" );
+   DrawG =get("DrawG" );
+   DrawCG=get("DrawCG");
    if(D.shaderModel()>=SM_4)
    {
                                  DrawMs1=get("DrawMs1");

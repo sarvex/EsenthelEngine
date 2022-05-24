@@ -3791,7 +3791,25 @@ Bool DisplayClass::drawFade()C
       }else
       {
          Sh.Step->set(_fade_alpha);
-         Sh.DrawA->draw(Renderer._fade);
+         Bool perceptual=true;
+         if(perceptual)
+            if(C ImageRTPtr &in1=Renderer.getBackBuffer())
+         {
+          C auto &in0=Renderer._fade;
+          C auto &out=Renderer._cur[0];
+            ALPHA_MODE alpha=D.alpha(ALPHA_NONE);
+            Bool in0_gamma=LINEAR_GAMMA, in0_swap_srgb=(in0_gamma && in0->canSwapSRV()); if(in0_swap_srgb){in0_gamma=false; in0->swapSRV();}
+            Bool in1_gamma=LINEAR_GAMMA, in1_swap_srgb=(in1_gamma && in1->canSwapSRV()); if(in1_swap_srgb){in1_gamma=false; in1->swapSRV();}
+            Bool out_gamma=LINEAR_GAMMA, out_swap_srgb=(out_gamma && out->canSwapRTV()); if(out_swap_srgb){out_gamma=false; out->swapRTV(); Renderer.set(Renderer._cur[0], Renderer._cur_ds, true);}
+            Sh.Img[1]->set(in1);
+            Sh.get(S8+"Fade"+in0_gamma+in1_gamma+out_gamma)->draw(Renderer._fade);
+            if(in0_swap_srgb) in0->swapSRV();
+            if(in1_swap_srgb) in1->swapSRV();
+            if(out_swap_srgb){out->swapRTV(); Renderer.set(Renderer._cur[0], Renderer._cur_ds, true);}
+            D.alpha(alpha);
+            return true;
+         }
+         Sh.get("DrawA")->draw(Renderer._fade);
       }
       return true;
    }

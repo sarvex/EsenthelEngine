@@ -374,7 +374,7 @@ ImageRTPtr RendererClass::getBackBuffer() // this may get called during renderin
 {
    if(Image *src=_cur[0])
    {
-      ImageRTPtr hlp(ImageRTDesc(src->w(), src->h(), IMAGERT_SRGBA)); // here Alpha is used for storing opacity
+      ImageRTPtr hlp(ImageRTDesc(src->w(), src->h(), GetImageRTType(src->type())));
       src->copyHw(*hlp, true);
       return hlp;
    }
