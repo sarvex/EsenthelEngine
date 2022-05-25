@@ -159,6 +159,15 @@ Joypad::Joypad()
 {
    ASSERT(ELMS(_last_t)==ELMS(_button));
 
+#if JP_DIRECT_INPUT
+  _offset_x=_offset_y=0;
+#endif
+#if JP_X_INPUT
+  _xinput=0xFF;
+#endif
+#if JP_GAMEPAD_INPUT
+  _vibrations=false;
+#endif
 #if SWITCH
    Zero(_vibration_handle); Zero(_sensor_handle);
 #endif
@@ -173,12 +182,10 @@ CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_na
 /******************************************************************************/
 Bool Joypad::supportsVibrations()C
 {
-#if WINDOWS
 #if JP_X_INPUT
    return _xinput!=0xFF;
 #elif JP_GAMEPAD_INPUT
    return _vibrations;
-#endif
 #elif SWITCH
    return _vibration_handle[0];// || _vibration_handle[1]; check only first because second will be available only if first is
 #endif
@@ -197,7 +204,6 @@ Int Joypad::index()C {return Joypads.index(this);}
 #if !SWITCH
 Joypad& Joypad::vibration(C Vec2 &vibration)
 {
-#if WINDOWS
 #if JP_X_INPUT
    if(_xinput!=0xFF)
    {
@@ -214,7 +220,6 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
       v.RightMotor=vibration.y;
      _gamepad->Vibration=v;
    }
-#endif
 #endif
    return T;
 }

@@ -95,7 +95,7 @@
    #define JP_X_INPUT       WINDOWS_OLD
    #define JP_GAMEPAD_INPUT WINDOWS_NEW // use on WINDOWS_NEW to allow 'App.joypad_user_changed'
    #define JP_DIRECT_INPUT  (WINDOWS_OLD && 0) // disable DirectInput-only Joypads because it introduces 0.25s delay to engine startup. Modern Joypads use XInput, so this is only for old Joypads.
-   #if (KB_RAW_INPUT+KB_DIRECT_INPUT)!=1 || (MS_RAW_INPUT+MS_DIRECT_INPUT)!=1 || (JP_X_INPUT && JP_GAMEPAD_INPUT)
+   #if (KB_RAW_INPUT+KB_DIRECT_INPUT)!=1 || (MS_RAW_INPUT+MS_DIRECT_INPUT)!=1 || (JP_X_INPUT && JP_GAMEPAD_INPUT) // XInput can't be used together with GamePadInput
       #error Invalid Input API configuration
    #endif
    #define DIRECT_INPUT (KB_DIRECT_INPUT || MS_DIRECT_INPUT || JP_DIRECT_INPUT)

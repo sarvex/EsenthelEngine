@@ -137,13 +137,14 @@ private:
 #endif
    BS_FLAG _button[32];
 #if WINDOWS
-   Byte    _xinput=0xFF;
-#endif
 #if WINDOWS_OLD
-   Byte    _offset_x=0, _offset_y=0;
+   Byte    _offset_x, _offset_y; // JP_DIRECT_INPUT can be combined with JP_X_INPUT/JP_GAMEPAD_INPUT
 #endif
-#if WINDOWS_NEW
-   Bool    _vibrations=false;
+   union
+   {
+      struct{Byte _xinput    ;}; // JP_X_INPUT
+      struct{Bool _vibrations;}; // JP_GAMEPAD_INPUT
+   };
 #endif
 #if SWITCH
    Bool    _mini=false;
@@ -163,13 +164,15 @@ private:
 #else
    Ptr     _device=null;
 #endif
-#elif WINDOWS_NEW
+#endif
+#if WINDOWS
 #if EE_PRIVATE && JP_GAMEPAD_INPUT
    Windows::Gaming::Input::Gamepad ^_gamepad;
 #else
    Ptr     _gamepad=null;
 #endif
-#elif MAC
+#endif
+#if MAC
    Ptr     _device=null;
 #endif
 
