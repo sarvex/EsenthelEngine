@@ -486,11 +486,15 @@ void Joypad::update()
          // digital pad
          switch(state.rgdwPOV[0])
          {
-            case UINT_MAX: diri.zero(      ); dir.zero(      ); break;
-            case        0: diri.set ( 0,  1); dir.set ( 0,  1); break;
-            case     9000: diri.set ( 1,  0); dir.set ( 1,  0); break;
-            case    18000: diri.set ( 0, -1); dir.set ( 0, -1); break;
-            case    27000: diri.set (-1,  0); dir.set (-1,  0); break;
+            case UINT_MAX: diri.zero(      ); dir.zero(                  ); break;
+            case        0: diri.set ( 0,  1); dir.set (       0,        1); break;
+            case     4500: diri.set ( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
+            case     9000: diri.set ( 1,  0); dir.set (       1,        0); break;
+            case    13500: diri.set ( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
+            case    18000: diri.set ( 0, -1); dir.set (       0,       -1); break;
+            case    22500: diri.set (-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
+            case    27000: diri.set (-1,  0); dir.set (      -1,        0); break;
+            case    31500: diri.set (-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
             default      : CosSin(dir.x, dir.y, PI_2-DegToRad(state.rgdwPOV[0]/100.0f)); diri.set(Round(dir.x), Round(dir.y)); break;
          }
 
