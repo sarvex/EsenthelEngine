@@ -3,8 +3,8 @@
 #define SUPPORT_WINDOWS_7  (        GL) // 0=uses XAudio 2.9 (which requires Windows 10), 1=uses DirectSound
 
 #define JP_X_INPUT       (WINDOWS_OLD && (SUPPORT_WINDOWS_XP || SUPPORT_WINDOWS_7))
-#define JP_GAMEPAD_INPUT (WINDOWS     && !JP_X_INPUT           ) // always use on WINDOWS_NEW to allow 'App.joypad_user_changed'
-#define JP_DIRECT_INPUT  (WINDOWS_OLD && !JP_GAMEPAD_INPUT && 0) // disable DirectInput-only Joypads because it introduces 0.25s delay to engine startup. Modern Joypads use XInput, so this is only for old Joypads.
+#define JP_GAMEPAD_INPUT (WINDOWS     && !JP_X_INPUT) // always use on WINDOWS_NEW to allow 'App.joypad_user_changed'
+#define JP_DIRECT_INPUT  (WINDOWS_OLD && 0) // disable DirectInput-only Joypads because it introduces 0.25s delay to engine startup. Modern Joypads use XInput, so this is only for old Joypads.
 
 #if EE_PRIVATE
    // Threads
@@ -97,7 +97,7 @@
    #define KB_DIRECT_INPUT  0
    #define MS_RAW_INPUT     1
    #define MS_DIRECT_INPUT  0
-   #if (KB_RAW_INPUT+KB_DIRECT_INPUT)!=1 || (MS_RAW_INPUT+MS_DIRECT_INPUT)!=1 || ((JP_X_INPUT || JP_DIRECT_INPUT) && JP_GAMEPAD_INPUT) // (XInput or DirectInput) can't be used together with GamePadInput
+   #if (KB_RAW_INPUT+KB_DIRECT_INPUT)!=1 || (MS_RAW_INPUT+MS_DIRECT_INPUT)!=1 || (JP_X_INPUT && JP_GAMEPAD_INPUT) // XInput can't be used together with GamePadInput
       #error Invalid Input API configuration
    #endif
    #define DIRECT_INPUT (KB_DIRECT_INPUT || MS_DIRECT_INPUT || JP_DIRECT_INPUT)

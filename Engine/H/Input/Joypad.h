@@ -149,6 +149,9 @@ private:
    Bool    _mini=false;
 #endif
    Bool    _connected=false;
+#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT
+   U16     _vendor_id=0, _product_id=0;
+#endif
    Flt     _last_t[32], _dir_t, _dir_at[2];
    UInt    _id=0;
 #if SWITCH

@@ -6,6 +6,16 @@ static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32];
 MemtN<Joypad, 4> Joypads;
 /******************************************************************************/
+static Int FindJoypadI(U16 vendor_id, U16 product_id)
+{
+#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT
+   REPA(Joypads)
+   {
+      Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id)return i;
+   }
+#endif
+   return -1;
+}
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameControllerStatics> RawGameControllerStatics;
@@ -24,6 +34,7 @@ struct GamePadChange
       {
          if(FindJoypadI(gamepad.Get())>=0)return; // make sure it's not already listed
 
+         U16  vendor_id=0, product_id=0;
          UInt joypad_id=0;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
@@ -33,6 +44,14 @@ struct GamePadChange
             {
                RawGameControllerStatics->FromGameController(game_controller.Get(), &raw_game_controller); if(raw_game_controller)
                {
+                  raw_game_controller->get_HardwareVendorId (& vendor_id);
+                  raw_game_controller->get_HardwareProductId(&product_id);
+               #if JP_DIRECT_INPUT // if we use DirectInput then have to remove all DirectInput joypads with same vendor/product ID as they will be processed using this API instead
+                  REPA(Joypads) // go from back because we remove
+                  {
+                     Joypad &jp=Joypads[i]; if(jp._device && jp._vendor_id==vendor_id && jp._product_id==product_id)Joypads.remove(i, true);
+                  }
+               #endif
                   raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
                   {
                      HSTRING id=null; raw_game_controller2->get_NonRoamableId(&id); C wchar_t *controller_id=WindowsGetStringRawBuffer(id, null); joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
@@ -46,6 +65,8 @@ struct GamePadChange
 
          if(raw_game_controller)
          {
+            joypad. _vendor_id= vendor_id;
+            joypad._product_id=product_id;
             Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
             {
                unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
@@ -55,8 +76,6 @@ struct GamePadChange
          {
             HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
          }
-       //raw_game_controller->get_HardwareProductId
-       //raw_game_controller->get_HardwareVendorId
       }else Joypads.remove(FindJoypadI(gamepad.Get()), true);
    }
 };
@@ -647,14 +666,14 @@ static Bool IsXInputDevice(C GUID &pGuidProductFromDirectInput) // !! Warning: t
                               {
                                  if(var.vt==VT_BSTR && var.bstrVal!=null && wcsstr(var.bstrVal, L"IG_")) // Check if the device ID contains "IG_". If it does, then it's an XInput device
                                  {
-                                    DWORD dwPid=0, dwVid=0; // If it does, then get the VID/PID from var.bstrVal
+                                    DWORD vendor_id=0, product_id=0; // If it does, then get the VID/PID from var.bstrVal
                                  #pragma warning(push)
                                  #pragma warning(disable:4996)
-                                    WCHAR *strVid=wcsstr(var.bstrVal, L"VID_"); if(strVid && swscanf(strVid, L"VID_%4X", &dwVid)!=1)dwVid=0;
-                                    WCHAR *strPid=wcsstr(var.bstrVal, L"PID_"); if(strPid && swscanf(strPid, L"PID_%4X", &dwPid)!=1)dwPid=0;
+                                    WCHAR *strVid=wcsstr(var.bstrVal, L"VID_"); if(strVid && swscanf(strVid, L"VID_%4X", & vendor_id)!=1) vendor_id=0;
+                                    WCHAR *strPid=wcsstr(var.bstrVal, L"PID_"); if(strPid && swscanf(strPid, L"PID_%4X", &product_id)!=1)product_id=0;
                                  #pragma warning(pop)
 
-                                    if(MAKELONG(dwVid, dwPid)==pGuidProductFromDirectInput.Data1) // Compare the VID/PID to the DInput device
+                                    if(MAKELONG(vendor_id, product_id)==pGuidProductFromDirectInput.Data1) // Compare the VID/PID to the DInput device
                                        xinput=true;
                                  }
                                  VariantClear(&var);
@@ -703,8 +722,10 @@ static BOOL CALLBACK EnumAxes(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *user)
 }
 static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 {
-   if((!JP_X_INPUT && !JP_GAMEPAD_INPUT) // if not using XInput/GamePad API then we can always list this device
-   ||  !IsXInputDevice(DIDevInst->guidProduct)) // XInput gamepads are listed elsewhere
+   U16  vendor_id=LOWORD(DIDevInst->guidProduct.Data1);
+   U16 product_id=HIWORD(DIDevInst->guidProduct.Data1);
+   if(!(JP_X_INPUT       && IsXInputDevice(DIDevInst->guidProduct))    // can skip this check if we're not using       XInput, but if we are then we can't add this device if it's XInput because those devices are listed elsewhere
+   && !(JP_GAMEPAD_INPUT && FindJoypadI   (vendor_id, product_id)>=0)) // can skip this check if we're not using GamePadInput, but if we are then we can't add this device if it's already created through another API
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
       Bool added; Joypad &joypad=GetJoypad(id, added);
@@ -717,6 +738,8 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          {
             Swap(joypad._device, did);
             joypad._name=DIDevInst->tszProductName;
+            joypad. _vendor_id= vendor_id;
+            joypad._product_id=product_id;
 
             // disable auto centering ?
             DIPROPDWORD dipdw; Zero(dipdw);
@@ -738,9 +761,18 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 void ListJoypads()
 {
 #if JP_X_INPUT || JP_DIRECT_INPUT
-   REPAO(Joypads)._connected=false; // assume that all are disconnected
+   REPA(Joypads) // assume that all are disconnected
+   {
+      Joypad &jp=Joypads[i];
+   #if JP_X_INPUT
+      if(jp._xinput!=0xFF)jp._connected=false;
+   #endif
+   #if JP_DIRECT_INPUT
+      if(jp._device)jp._connected=false;
+   #endif
+   }
 
-   #if JP_GAMEPAD_INPUT && WINDOWS_OLD
+   #if JP_GAMEPAD_INPUT && WINDOWS_OLD && 0
       if(GamepadStatics) this is handled in GamePadAdded/GamePadRemoved
       {
          Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::Gamepad*>> gamepads; GamepadStatics->get_Gamepads(&gamepads); if(gamepads)

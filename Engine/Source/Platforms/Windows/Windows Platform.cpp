@@ -781,10 +781,10 @@ void GamePadChange::process()
       Joypad &joypad=Joypads.New(); joypad._id=joypad_id; joypad._connected=true; joypad._gamepad=gamepad;
       if(controller)
       {
-         joypad._name=controller->DisplayName->Data();
+         joypad._name      =controller->DisplayName->Data();
+         joypad. _vendor_id=controller->HardwareVendorId;
+         joypad._product_id=controller->HardwareProductId;
          if(auto motors=controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
-       //auto   prod_id=controller->HardwareProductId;
-       //auto vendor_id=controller->HardwareVendorId;
       }
       // set callback after everything was set, in case it's called right away
       joypad._gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
