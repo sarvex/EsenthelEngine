@@ -6,7 +6,77 @@ static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32];
 MemtN<Joypad, 4> Joypads;
 /******************************************************************************/
-#if MAC
+#if JP_GAMEPAD_INPUT && WINDOWS_OLD
+static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
+static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameControllerStatics> RawGameControllerStatics;
+static EventRegistrationToken GamePadAddedToken, GamePadRemovedToken;
+
+static Int FindJoypadI(ABI::Windows::Gaming::Input::IGamepad* gamepad) {REPA(Joypads)if(Joypads[i]._gamepad.Get()==gamepad)return i; return -1;}
+
+struct GamePadChange
+{
+   Bool                                                          added;
+   Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad> gamepad;
+
+   void process()
+   {
+      if(added)
+      {
+         if(FindJoypadI(gamepad.Get())>=0)return; // make sure it's not already listed
+
+         UInt joypad_id=0;
+         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
+         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
+         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGameController    >     game_controller; gamepad->QueryInterface(IID_PPV_ARGS(&game_controller)); if(game_controller)
+         {
+            if(RawGameControllerStatics)
+            {
+               RawGameControllerStatics->FromGameController(game_controller.Get(), &raw_game_controller); if(raw_game_controller)
+               {
+                  raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
+                  {
+                     HSTRING id=null; raw_game_controller2->get_NonRoamableId(&id); C wchar_t *controller_id=WindowsGetStringRawBuffer(id, null); joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
+                  }
+               }
+            }
+         }
+
+         joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
+         Joypad &joypad=Joypads.New(); joypad._id=joypad_id; joypad._connected=true; joypad._gamepad=gamepad;
+
+         if(raw_game_controller)
+         {
+            Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
+            {
+               unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
+            }
+         }
+         if(raw_game_controller2)
+         {
+            HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
+         }
+       //raw_game_controller->get_HardwareProductId
+       //raw_game_controller->get_HardwareVendorId
+      }else Joypads.remove(FindJoypadI(gamepad.Get()), true);
+   }
+};
+static MemcThreadSafe<GamePadChange> GamePadChanges;
+
+static void GamePadChanged()
+{
+   MemcThreadSafeLock lock(GamePadChanges); FREPA(GamePadChanges)GamePadChanges.lockedElm(i).process(); GamePadChanges.lockedClear(); // process in order
+}
+static void GamePadChanged(Bool added, ABI::Windows::Gaming::Input::IGamepad* gamepad)
+{
+   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad;}
+   App.addFuncCall(GamePadChanged);
+}
+
+// !! THESE ARE CALLED ON SECONDARY THREADS !!
+static struct GamePadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(true , gamepad); return S_OK;}}GamePadAdded;
+static struct GamePadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(false, gamepad); return S_OK;}}GamePadRemoved;
+
+#elif MAC
 struct MacJoypad
 {
    struct Elm
@@ -159,15 +229,6 @@ Joypad::Joypad()
 {
    ASSERT(ELMS(_last_t)==ELMS(_button));
 
-#if JP_DIRECT_INPUT
-  _offset_x=_offset_y=0;
-#endif
-#if JP_X_INPUT
-  _xinput=0xFF;
-#endif
-#if JP_GAMEPAD_INPUT
-  _vibrations=false;
-#endif
 #if SWITCH
    Zero(_vibration_handle); Zero(_sensor_handle);
 #endif
@@ -215,10 +276,19 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
 #elif JP_GAMEPAD_INPUT
    if(_gamepad)
    {
+   #if WINDOWS_OLD
+      ABI::Windows::Gaming::Input::GamepadVibration v;
+   #else
       Windows::Gaming::Input::GamepadVibration v;
+   #endif
       v. LeftMotor=vibration.x;
       v.RightMotor=vibration.y;
+      v.LeftTrigger=v.RightTrigger=0;
+   #if WINDOWS_OLD
+     _gamepad->put_Vibration(v);
+   #else
      _gamepad->Vibration=v;
+   #endif
    }
 #endif
    return T;
@@ -337,44 +407,71 @@ void Joypad::update()
 #elif JP_GAMEPAD_INPUT
    if(_gamepad)
    {
+   #if WINDOWS_OLD
+      ABI::Windows::Gaming::Input::GamepadReading state; if(OK(_gamepad->GetCurrentReading(&state)))
+   #else
       auto state=_gamepad->GetCurrentReading();
+   #endif
+      {
+         // buttons
+         Byte button[JB_UWP_NUM];
+      #if WINDOWS_OLD
+         button[JB_A      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_A);
+         button[JB_B      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_B);
+         button[JB_X      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_X);
+         button[JB_Y      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Y);
+         button[JB_L1     ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftShoulder);
+         button[JB_R1     ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightShoulder);
+         button[JB_LTHUMB ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftThumbstick);
+         button[JB_RTHUMB ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightThumbstick);
+         button[JB_BACK   ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_View);
+         button[JB_START  ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Menu);
+         button[JB_PADDLE1]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle1);
+         button[JB_PADDLE2]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle2);
+         button[JB_PADDLE3]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle3);
+         button[JB_PADDLE4]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle4);
+      #else
+         button[JB_A      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::A);
+         button[JB_B      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::B);
+         button[JB_X      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::X);
+         button[JB_Y      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Y);
+         button[JB_L1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftShoulder);
+         button[JB_R1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder);
+         button[JB_LTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftThumbstick);
+         button[JB_RTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick);
+         button[JB_BACK   ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::View);
+         button[JB_START  ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Menu);
+         button[JB_PADDLE1]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1);
+         button[JB_PADDLE2]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2);
+         button[JB_PADDLE3]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3);
+         button[JB_PADDLE4]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4);
+      #endif
+         button[JB_L2]=(state. LeftTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+         button[JB_R2]=(state.RightTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+         ASSERT(ELMS(button)<=ELMS(T._button));
+         update(button, Elms(button));
 
-      // buttons
-      Byte button[JB_UWP_NUM];
-      button[JB_A      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::A);
-      button[JB_B      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::B);
-      button[JB_X      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::X);
-      button[JB_Y      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Y);
-      button[JB_L1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftShoulder);
-      button[JB_R1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder);
-      button[JB_L2     ]=      (state. LeftTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-      button[JB_R2     ]=      (state.RightTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-      button[JB_LTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftThumbstick);
-      button[JB_RTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick);
-      button[JB_BACK   ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::View);
-      button[JB_START  ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Menu);
-      button[JB_PADDLE1]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1);
-      button[JB_PADDLE2]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2);
-      button[JB_PADDLE3]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3);
-      button[JB_PADDLE4]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4);
-      ASSERT(ELMS(button)<=ELMS(T._button));
-      update(button, Elms(button));
+         // digital pad
+      #if WINDOWS_OLD
+         diri.set(FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft),
+                  FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown));
+      #else
+         diri.set(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
+                  FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
+      #endif
+         dir=diri;
+         Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
 
-      // digital pad
-      diri.set(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
-               FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
-      dir=diri;
-      Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
+         // analog pad
+         dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
+         dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
 
-      // analog pad
-      dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
-      dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
+         // triggers
+         trigger[0]=state. LeftTrigger;
+         trigger[1]=state.RightTrigger;
 
-      // triggers
-      trigger[0]=state. LeftTrigger;
-      trigger[1]=state.RightTrigger;
-
-      updateOK(); return;
+         updateOK(); return;
+      }
    }
 #endif
 #if JP_DIRECT_INPUT
@@ -602,8 +699,8 @@ static BOOL CALLBACK EnumAxes(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *user)
 }
 static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 {
-   if(!JP_X_INPUT // if not using XInput API then we can always list this device
-   || !IsXInputDevice(DIDevInst->guidProduct)) // XInput gamepads are listed elsewhere
+   if((!JP_X_INPUT && !JP_GAMEPAD_INPUT) // if not using XInput/GamePad API then we can always list this device
+   ||  !IsXInputDevice(DIDevInst->guidProduct)) // XInput gamepads are listed elsewhere
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
       Bool added; Joypad &joypad=GetJoypad(id, added);
@@ -636,9 +733,23 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 /******************************************************************************/
 void ListJoypads()
 {
-#if WINDOWS && !JP_GAMEPAD_INPUT
+#if JP_X_INPUT || JP_DIRECT_INPUT
    REPAO(Joypads)._connected=false; // assume that all are disconnected
 
+   #if JP_GAMEPAD_INPUT && WINDOWS_OLD
+      if(GamepadStatics) this is handled in GamePadAdded/GamePadRemoved
+      {
+         Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::Gamepad*>> gamepads; GamepadStatics->get_Gamepads(&gamepads); if(gamepads)
+         {
+            unsigned gamepad_count=0; gamepads->get_Size(&gamepad_count); for(unsigned i=0; i<gamepad_count; i++)
+            {
+               Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad> gamepad; gamepads->GetAt(i, &gamepad); if(gamepad)
+               {
+               }
+            }
+         }
+      }
+   #endif
    #if JP_X_INPUT
       ASSERT(XUSER_MAX_COUNT==4);
       FREP  (XUSER_MAX_COUNT) // XInput supports only 4 gamepads (process in order)
@@ -755,11 +866,31 @@ void InitJoypads()
    Joypad::_button_name[JB_PLUS ]="+",
 #endif
 
+#if JP_GAMEPAD_INPUT && WINDOWS_OLD
+   RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad).Get(), __uuidof(ABI::Windows::Gaming::Input::IGamepadStatics), &GamepadStatics); if(GamepadStatics)
+   {
+      RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_RawGameController).Get(), __uuidof(ABI::Windows::Gaming::Input::IRawGameControllerStatics), &RawGameControllerStatics); // set this before 'GamePadAdded'
+      GamepadStatics->add_GamepadAdded  (&GamePadAdded  , &GamePadAddedToken);
+      GamepadStatics->add_GamepadRemoved(&GamePadRemoved, &GamePadRemovedToken);
+   }
+#endif
+
    ListJoypads();
 }
 void ShutJoypads()
 {
-      Joypads.del();
+#if JP_GAMEPAD_INPUT && WINDOWS_OLD
+   if(GamepadStatics)
+   {
+      GamepadStatics->remove_GamepadAdded  (GamePadAddedToken);
+      GamepadStatics->remove_GamepadRemoved(GamePadRemovedToken);
+      RawGameControllerStatics=null;
+      GamepadStatics=null;
+   }
+#endif
+
+   Joypads.del();
+
 #if MAC
    MacJoypads.del();
    if(HidManager)

@@ -136,15 +136,14 @@ struct Joypad // Joypad Input
 private:
 #endif
    BS_FLAG _button[32];
-#if WINDOWS
-#if WINDOWS_OLD
-   Byte    _offset_x, _offset_y; // JP_DIRECT_INPUT can be combined with JP_X_INPUT/JP_GAMEPAD_INPUT
+#if JP_DIRECT_INPUT
+   Byte    _offset_x=0, _offset_y=0;
 #endif
-   union
-   {
-      struct{Byte _xinput    ;}; // JP_X_INPUT
-      struct{Bool _vibrations;}; // JP_GAMEPAD_INPUT
-   };
+#if JP_X_INPUT
+   Byte    _xinput=0xFF;
+#endif
+#if JP_GAMEPAD_INPUT
+   Bool    _vibrations=false;
 #endif
 #if SWITCH
    Bool    _mini=false;
@@ -158,16 +157,20 @@ private:
    Color2  _color_left, _color_right;
    Sensor  _sensor_left, _sensor_right;
    Str     _name;
-#if WINDOWS_OLD
-#if EE_PRIVATE && JP_DIRECT_INPUT
+#if JP_DIRECT_INPUT
+#if EE_PRIVATE
    IDirectInputDevice8 *_device=null;
 #else
    Ptr     _device=null;
 #endif
 #endif
-#if WINDOWS
-#if EE_PRIVATE && JP_GAMEPAD_INPUT
-   Windows::Gaming::Input::Gamepad ^_gamepad;
+#if JP_GAMEPAD_INPUT
+#if EE_PRIVATE
+   #if WINDOWS_OLD
+      Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad> _gamepad;
+   #else
+      Windows::Gaming::Input::Gamepad ^_gamepad;
+   #endif
 #else
    Ptr     _gamepad=null;
 #endif
