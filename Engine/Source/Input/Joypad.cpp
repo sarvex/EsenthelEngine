@@ -701,7 +701,9 @@ static BOOL CALLBACK EnumAxes(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *user)
 {
    Joypad &joypad=*(Joypad*)user;
 
-   // Logitech RumblePad 2 uses: (x0=lX, y0=lY, x1=lZ, y1=lRz)
+   // Logitech RumblePad 2                     uses: (x0=lX, y0=lY, x1=lZ , y1=lRz)
+   // Logitech F310        in DirectInput mode uses: (x0=lX, y0=lY, x1=lZ , y1=lRz)
+   // Logitech F310        in XInput      mode uses: (x0=lX, y0=lY, x1=lRx, y1=lRy)
    Int offset=0;
    if(pdidoi->guidType==GUID_ZAxis )offset=OFFSET(DIJOYSTATE, lZ );else
    if(pdidoi->guidType==GUID_RxAxis)offset=OFFSET(DIJOYSTATE, lRx);else
@@ -710,11 +712,14 @@ static BOOL CALLBACK EnumAxes(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *user)
 
    if(offset)
    {
-      if(!joypad._offset_x       )joypad._offset_x=offset;else
-      if( joypad._offset_x<offset)joypad._offset_y=offset;else // X axis is assumed to be specified before Y axis
+      if(!joypad._offset_x || offset<joypad._offset_x) // X axis is assumed to be specified before Y axis
       {
          joypad._offset_y=joypad._offset_x;
          joypad._offset_x=        offset;
+      }else
+      if(!joypad._offset_y || offset<joypad._offset_y)// Y axis is assumed to be specified before other axes
+      {
+         joypad._offset_y=offset;
       }
    }
 
@@ -737,7 +742,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          if(OK(did->SetCooperativeLevel(App.window(), DISCL_EXCLUSIVE|DISCL_FOREGROUND)))
          {
             Swap(joypad._device, did);
-            joypad._name=DIDevInst->tszProductName;
+            joypad.      _name=DIDevInst->tszProductName;
             joypad. _vendor_id= vendor_id;
             joypad._product_id=product_id;
 
