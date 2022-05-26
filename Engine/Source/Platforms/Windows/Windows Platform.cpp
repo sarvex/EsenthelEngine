@@ -601,7 +601,7 @@ ref struct FrameworkView sealed : IFrameworkView
       auto controller=Windows::Gaming::Input::RawGameController::FromGameController(gamepad); if(controller)
       {
        C wchar_t *controller_id=controller->NonRoamableId->Data();
-            joypad_id=xxHash64Mem(controller_id, Length(controller_id));
+            joypad_id=xxHash64Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
       }else joypad_id=0;
       joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
       Joypad &joypad=Joypads.New(); joypad._id=joypad_id; joypad._connected=true; joypad._gamepad=gamepad;
