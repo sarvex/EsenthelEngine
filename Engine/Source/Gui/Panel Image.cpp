@@ -766,10 +766,17 @@ struct PanelImageCreate
             if(panel_image._tex_x[y][0]>panel_image._tex_x[y][1])panel_image._tex_x[y][0]=panel_image._tex_x[y][1]=Avg(panel_image._tex_x[y][0], panel_image._tex_x[y][1]); // this can happen because we're applying 'tex_ofs'
             REPAD(x, panel_image._tex_x[y])panel_image._tex_x[y][x]/=image_size.x;
          }
-         if(panel_image._tex_y[0]>             EPS)MIN(panel_image._tex_y[0]+=tex_ofs, image_size.y); // if there's anything in the top    section, then apply offset to avoid blending with it
-         if(panel_image._tex_y[1]<image_size.y-EPS)MAX(panel_image._tex_y[1]-=tex_ofs,            0); // if there's anything in the bottom section, then apply offset to avoid blending with it
-         if(panel_image._tex_y[0]>panel_image._tex_y[1])panel_image._tex_y[0]=panel_image._tex_y[1]=Avg(panel_image._tex_y[0], panel_image._tex_y[1]); // this can happen because we're applying 'tex_ofs'
+         Bool top_mid_bottom[3];
+         if(  top_mid_bottom[0]=(panel_image._tex_y[0]>             EPS))MIN(panel_image._tex_y[0]+=tex_ofs, image_size.y); // if there's anything in the top    section, then apply offset to avoid blending with it
+         if(  top_mid_bottom[2]=(panel_image._tex_y[1]<image_size.y-EPS))MAX(panel_image._tex_y[1]-=tex_ofs,            0); // if there's anything in the bottom section, then apply offset to avoid blending with it
+              top_mid_bottom[1]=(panel_image._tex_y[0]<panel_image._tex_y[1]);                                              // if there's anything in the middle section
+         if(                     panel_image._tex_y[0]>panel_image._tex_y[1])panel_image._tex_y[0]=panel_image._tex_y[1]=Avg(panel_image._tex_y[0], panel_image._tex_y[1]); // this can happen because we're applying 'tex_ofs'
          REPAO(panel_image._tex_y)/=image_size.y;
+
+         // if any section is empty, then copy from another, so we can use '_same_x' optimization
+         REPAD(i, top_mid_bottom)if(!top_mid_bottom[i]) // empty
+         REPAD(j, top_mid_bottom)if( top_mid_bottom[j]) // valid
+            {Copy(panel_image._tex_x[i], panel_image._tex_x[j]); break;} // copy to empty from valid, stop
 
          max_scale=Max(params.max_side_stretch, 0);
          panel_image._same_x=true; REPAD(x, panel_image._tex_x[0])if(!Equal(panel_image._tex_x[0][x], panel_image._tex_x[1][x]) || !Equal(panel_image._tex_x[1][x], panel_image._tex_x[2][x]))panel_image._same_x=false;
