@@ -1752,12 +1752,24 @@ void PanelImage::drawBorders(C Color &color, C Color &color_add, C Rect &rect)C
 /******************************************************************************/
 static void Clip(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
 {
-   if(min_pos>=clip_pos)min_pos=max_pos=clip_pos;else
-   if(max_pos> clip_pos)
+   if(max_pos>clip_pos) // if need to clip
    {
+      if(min_pos<clip_pos) // min is before clipping, size is >0, section is visible, adjust 'max_tex'. Here check for "<" instead of "<=" because calculations inside are more expensive than for "else" case.
+      {
+         Flt frac=LerpR(min_pos, max_pos, clip_pos);
+          max_tex=Lerp (min_tex, max_tex, frac);
+      }else min_pos=clip_pos; // clip fully by setting both positions to 'clip_pos' to set zero size, we can ignore adjusting 'max_tex'
+            max_pos=clip_pos;
+   }
+}
+static void Clip1(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
+{
+   if(max_pos>clip_pos) // if need to clip
+   { // always adjust 'max_tex'
       Flt frac=LerpR(min_pos, max_pos, clip_pos);
-      max_pos=clip_pos;
-      max_tex=Lerp(min_tex, max_tex, frac);
+       max_tex=Lerp (min_tex, max_tex, frac);
+      if(min_pos>clip_pos)min_pos=clip_pos;
+                          max_pos=clip_pos;
    }
 }
 void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt frac_x, Bool include_padding)C
@@ -1872,15 +1884,15 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt L=l; Clip(      l, x[0][0],           0, tex_x[0][0], pos_x);
-                  Clip(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
-                  Clip(x[0][1],       r, tex_x[0][1], tex_r      , pos_x);
+         Flt L=l; Clip (      l, x[0][0],           0, tex_x[0][0], pos_x);
+                  Clip (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
 
-             l=L; Clip(      l, x[1][0],           0, tex_x[1][0], pos_x);
-                  Clip(x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], pos_x);
+             l=L; Clip (      l, x[1][0],           0, tex_x[1][0], pos_x);
+                  Clip (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], pos_x);
+                  Clip1(x[1][1],       r, tex_x[1][1], tex_r      , pos_x); // here have to used 'Clip1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
 
-             l=L; Clip(      l, x[2][0],           0, tex_x[2][0], pos_x);
-                  Clip(x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], pos_x);
+             l=L; Clip (      l, x[2][0],           0, tex_x[2][0], pos_x);
+                  Clip (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], pos_x);
 
          v[ 0].pos.set(      l, y0);
          v[ 1].pos.set(x[0][0], y0);

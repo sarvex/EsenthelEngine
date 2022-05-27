@@ -856,7 +856,7 @@ bool HighPrecTransform(C Str &name)
        || name=="blur" || name=="sharpen"
        || name=="bump" || name=="bumpClamp"
        || name=="contrast" || name=="contrastLum" || name=="contrastAlphaWeight" || name=="contrastLumAlphaWeight"
-       || name=="brightness" || name=="brightnessLum"
+       || name=="brightness" || name=="brightnessLum" || name=="brightnessLumS"
        || name=="gamma" || name=="gammaA" || name=="gammaLum" || name=="gammaLumPhoto" || name=="gammaSat"
        || name=="SRGBToLinear" || name=="LinearToSRGB"
        || name=="greyPhoto"
@@ -1221,6 +1221,18 @@ Vec2  LerpToMad(flt from, flt to) {return Vec2(to-from, from);}
 Vec2 ILerpToMad(flt from, flt to) {return Vec2(1/(to-from), from/(from-to));}
 flt   FloatSelf(flt x) {return x;}
 flt   PowMax   (flt x, flt y) {return (x<=0) ? 0 : Pow(x, y);}
+
+flt _ApplyBrightness(flt x, flt brightness) // !! ASSUMES THAT "x>0 && x<1 && brightness" !!
+{
+   x=Sqr(x);
+   if(brightness<0)x=SigmoidSqrtInv(x*SigmoidSqrt(brightness))/            brightness ;
+   else            x=SigmoidSqrt   (x*            brightness )/SigmoidSqrt(brightness);
+   return SqrtFast(x);
+}
+void ApplyBrightness(flt &x, flt brightness)
+{
+   if(x>0 && x<1 && brightness)x=_ApplyBrightness(x, brightness);
+}
 
 void Crop(Image &image, int x, int y, int w, int h, C Color &background, bool hp=true)
 {
@@ -1700,7 +1712,8 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
       flt bright=param.asFlt(), mul; flt (*f)(flt);
       if( bright)
       {
-         if(bright<0){mul=1/bright; bright=SigmoidSqrt(bright); f=SigmoidSqrtInv;}else{mul=1/SigmoidSqrt(bright); f=SigmoidSqrt;}
+         if(bright<0){mul=1/            bright ; bright=SigmoidSqrt(bright); f=SigmoidSqrtInv;}
+         else        {mul=1/SigmoidSqrt(bright);                             f=SigmoidSqrt   ;}
          for(int z=box.min.z; z<box.max.z; z++)
          for(int y=box.min.y; y<box.max.y; y++)
          for(int x=box.min.x; x<box.max.x; x++)
@@ -1711,6 +1724,25 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
                flt new_lum=Sqr(old_lum);
                new_lum=f(new_lum*bright)*mul;
                new_lum=SqrtFast(new_lum);
+               c.xyz*=new_lum/old_lum;
+               image.color3DF(x, y, z, c);
+            }
+         }
+      }
+   }else
+   if(param.name=="brightnessLumS")
+   {
+      if(flt bright=param.asFlt())
+      for(int z=box.min.z; z<box.max.z; z++)
+      for(int y=box.min.y; y<box.max.y; y++)
+      for(int x=box.min.x; x<box.max.x; x++)
+      {
+         Vec4 c=image.color3DF(x, y, z);
+         flt old_lum=c.xyz.max(); if(old_lum>0 && old_lum<1)
+         {
+            flt sat=RgbToHsb(c.xyz).y; if(flt b=bright*sat)
+            {
+               flt new_lum=_ApplyBrightness(old_lum, b);
                c.xyz*=new_lum/old_lum;
                image.color3DF(x, y, z, c);
             }
@@ -2751,12 +2783,9 @@ force_src_resize:
                               case APPLY_BRIGHTNESS:
                               {
                                  c=base;
-                                 Vec &bright=l.xyz; if(bright.any())
-                                 {
-                                    if(c.x>0 && c.x<1){c.x=Sqr(c.x); if(bright.x<0)c.x=SigmoidSqrtInv(c.x*SigmoidSqrt(bright.x))/bright.x;else c.x=SigmoidSqrt(c.x*bright.x)/SigmoidSqrt(bright.x); c.x=SqrtFast(c.x);}
-                                    if(c.y>0 && c.y<1){c.y=Sqr(c.y); if(bright.y<0)c.y=SigmoidSqrtInv(c.y*SigmoidSqrt(bright.y))/bright.y;else c.y=SigmoidSqrt(c.y*bright.y)/SigmoidSqrt(bright.y); c.y=SqrtFast(c.y);}
-                                    if(c.z>0 && c.z<1){c.z=Sqr(c.z); if(bright.z<0)c.z=SigmoidSqrtInv(c.z*SigmoidSqrt(bright.z))/bright.z;else c.z=SigmoidSqrt(c.z*bright.z)/SigmoidSqrt(bright.z); c.z=SqrtFast(c.z);}
-                                 }
+                                 ApplyBrightness(c.x, l.x);
+                                 ApplyBrightness(c.y, l.y);
+                                 ApplyBrightness(c.z, l.z);
                               }break;
 
                               case APPLY_BRIGHTNESS_LUM:
@@ -2766,11 +2795,7 @@ force_src_resize:
                                  {
                                     flt old_lum=c.xyz.max(); if(old_lum>0 && old_lum<1)
                                     {
-                                       flt mul; flt (*f)(flt);
-                                       if(bright<0){mul=1/bright; bright=SigmoidSqrt(bright); f=SigmoidSqrtInv;}else{mul=1/SigmoidSqrt(bright); f=SigmoidSqrt;}
-                                       flt new_lum=Sqr(old_lum);
-                                       new_lum=f(new_lum*bright)*mul;
-                                       new_lum=SqrtFast(new_lum);
+                                       flt new_lum=_ApplyBrightness(old_lum, bright);
                                        c.xyz*=new_lum/old_lum;
                                     }
                                  }

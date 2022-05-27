@@ -190,6 +190,8 @@ Vec2  LerpToMad(flt from, flt to);
 Vec2 ILerpToMad(flt from, flt to);
 flt   FloatSelf(flt x);
 flt   PowMax   (flt x, flt y);
+flt _ApplyBrightness(flt x, flt brightness);
+void ApplyBrightness(flt &x, flt brightness);
 void Crop(Image &image, int x, int y, int w, int h, C Color &background, bool hp=true);
 void TransformImage(Image &image, TextParam param, bool clamp, C Color &background=TRANSPARENT);
 void TransformImage(Image &image, C MemPtr<TextParam> &params, bool clamp, C Color &background=TRANSPARENT);
