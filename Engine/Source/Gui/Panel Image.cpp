@@ -2102,18 +2102,21 @@ void PanelImage::drawFrac2(C Color &color, C Color &color_add, C Rect &rect, Flt
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
+         // top
          Flt L=l; ClipR (l      , x[0][0], tex_l      , tex_x[0][0], clip_max_x);
                   ClipR (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_max_x);
 
                   ClipL (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_min_x);
                   ClipL (l      , x[0][0], tex_l      , tex_x[0][0], clip_min_x);
 
+         // bottom
     tex_l=0; l=L; ClipR (l      , x[2][0], tex_l      , tex_x[2][0], clip_max_x);
                   ClipR (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], clip_max_x);
 
                   ClipL (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], clip_min_x);
                   ClipL (l      , x[2][0], tex_l      , tex_x[2][0], clip_min_x);
 
+         // middle
     tex_l=0; l=L; ClipR (l      , x[1][0], tex_l      , tex_x[1][0], clip_max_x);
                   ClipR (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], clip_max_x);
                   ClipR1(x[1][1], r      , tex_x[1][1], tex_r      , clip_max_x); // here have to used 'ClipR1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
