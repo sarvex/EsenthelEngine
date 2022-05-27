@@ -2061,15 +2061,15 @@ void PanelImage::drawVerticalFrac(C Color &color, C Color &color_add, C Rect &re
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt B=b; Clip(      b, y[0][0],           0, tex_x[0][0], pos_y);
-                  Clip(y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
-                  Clip(y[0][1],       t, tex_x[0][1], tex_t      , pos_y);
+         Flt B=b; Clip (      b, y[0][0],           0, tex_x[0][0], pos_y);
+                  Clip (y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
 
-             b=B; Clip(      b, y[1][0],           0, tex_x[1][0], pos_y);
-                  Clip(y[1][0], y[1][1], tex_x[1][0], tex_x[1][1], pos_y);
+             b=B; Clip (      b, y[1][0],           0, tex_x[1][0], pos_y);
+                  Clip (y[1][0], y[1][1], tex_x[1][0], tex_x[1][1], pos_y);
+                  Clip1(y[1][1],       t, tex_x[1][1], tex_t      , pos_y); // here have to used 'Clip1' which adjusts 'tex_t' even if section is fully clipped, because this 'tex_t' might still be used for top/bottom sections. Also calculate 'tex_t' based on middle section, because top/bottom might be empty/hidden.
 
-             b=B; Clip(      b, y[2][0],           0, tex_x[2][0], pos_y);
-                  Clip(y[2][0], y[2][1], tex_x[2][0], tex_x[2][1], pos_y);
+             b=B; Clip (      b, y[2][0],           0, tex_x[2][0], pos_y);
+                  Clip (y[2][0], y[2][1], tex_x[2][0], tex_x[2][1], pos_y);
 
          v[ 0].pos.set(x0,       b);
          v[ 1].pos.set(x0, y[0][0]);
