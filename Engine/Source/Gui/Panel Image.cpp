@@ -1335,22 +1335,22 @@ void PanelImage::draw(C Color &color, C Color &color_add, C Rect &rect)C
 
       if(_same_x)
       {
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
-         v[ 4].pos.set(      l, y1);
+         v[ 3].pos.set(r      , y0);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
-         v[ 8].pos.set(      l, y2);
+         v[ 7].pos.set(r      , y1);
+         v[ 8].pos.set(l      , y2);
          v[ 9].pos.set(x[0][0], y2);
          v[10].pos.set(x[0][1], y2);
-         v[11].pos.set(      r, y2);
-         v[12].pos.set(      l, y3);
+         v[11].pos.set(r      , y2);
+         v[12].pos.set(l      , y3);
          v[13].pos.set(x[0][0], y3);
          v[14].pos.set(x[0][1], y3);
-         v[15].pos.set(      r, y3);
+         v[15].pos.set(r      , y3);
 
          v[ 0].tex.set(           0,         0);
          v[ 1].tex.set(_tex_x[0][0],         0);
@@ -1389,29 +1389,29 @@ void PanelImage::draw(C Color &color, C Color &color_add, C Rect &rect)C
             x[2][1]=rect.max.x-_size_x[2][1];
          }
 
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
+         v[ 3].pos.set(r      , y0);
 
-         v[ 4].pos.set(      l, y1);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
+         v[ 7].pos.set(r      , y1);
          v[ 8].pos.set(x[1][0], y1);
          v[ 9].pos.set(x[1][1], y1);
 
-         v[10].pos.set(      l, y2);
+         v[10].pos.set(l      , y2);
          v[11].pos.set(x[1][0], y2);
          v[12].pos.set(x[1][1], y2);
-         v[13].pos.set(      r, y2);
+         v[13].pos.set(r      , y2);
          v[14].pos.set(x[2][0], y2);
          v[15].pos.set(x[2][1], y2);
 
-         v[16].pos.set(      l, y3);
+         v[16].pos.set(l      , y3);
          v[17].pos.set(x[2][0], y3);
          v[18].pos.set(x[2][1], y3);
-         v[19].pos.set(      r, y3);
+         v[19].pos.set(r      , y3);
 
          v[ 0].tex.set(           0, 0);
          v[ 1].tex.set(_tex_x[0][0], 0);
@@ -1488,22 +1488,22 @@ void PanelImage::drawVertical(C Color &color, C Color &color_add, C Rect &rect)C
 
       if(_same_x)
       {
-         v[ 0].pos.set(x0,       b);
+         v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
          v[ 2].pos.set(x0, y[0][1]);
-         v[ 3].pos.set(x0,       t);
-         v[ 4].pos.set(x1,       b);
+         v[ 3].pos.set(x0, t      );
+         v[ 4].pos.set(x1, b      );
          v[ 5].pos.set(x1, y[0][0]);
          v[ 6].pos.set(x1, y[0][1]);
-         v[ 7].pos.set(x1,       t);
-         v[ 8].pos.set(x2,       b);
+         v[ 7].pos.set(x1, t      );
+         v[ 8].pos.set(x2, b      );
          v[ 9].pos.set(x2, y[0][0]);
          v[10].pos.set(x2, y[0][1]);
-         v[11].pos.set(x2,       t);
-         v[12].pos.set(x3,       b);
+         v[11].pos.set(x2, t      );
+         v[12].pos.set(x3, b      );
          v[13].pos.set(x3, y[0][0]);
          v[14].pos.set(x3, y[0][1]);
-         v[15].pos.set(x3,       t);
+         v[15].pos.set(x3, t      );
 
          v[ 0].tex.set(           0,         0);
          v[ 1].tex.set(_tex_x[0][0],         0);
@@ -1542,29 +1542,29 @@ void PanelImage::drawVertical(C Color &color, C Color &color_add, C Rect &rect)C
             y[2][1]=rect.max.y-_size_x[2][1];
          }
 
-         v[ 0].pos.set(x0,       b);
+         v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
          v[ 2].pos.set(x0, y[0][1]);
-         v[ 3].pos.set(x0,       t);
+         v[ 3].pos.set(x0, t      );
 
-         v[ 4].pos.set(x1,       b);
+         v[ 4].pos.set(x1, b      );
          v[ 5].pos.set(x1, y[0][0]);
          v[ 6].pos.set(x1, y[0][1]);
-         v[ 7].pos.set(x1,       t);
+         v[ 7].pos.set(x1, t      );
          v[ 8].pos.set(x1, y[1][0]);
          v[ 9].pos.set(x1, y[1][1]);
 
-         v[10].pos.set(x2,       b);
+         v[10].pos.set(x2, b      );
          v[11].pos.set(x2, y[1][0]);
          v[12].pos.set(x2, y[1][1]);
-         v[13].pos.set(x2,       t);
+         v[13].pos.set(x2, t      );
          v[14].pos.set(x2, y[2][0]);
          v[15].pos.set(x2, y[2][1]);
 
-         v[16].pos.set(x3,       b);
+         v[16].pos.set(x3, b      );
          v[17].pos.set(x3, y[2][0]);
          v[18].pos.set(x3, y[2][1]);
-         v[19].pos.set(x3,       t);
+         v[19].pos.set(x3, t      );
 
          v[ 0].tex.set(           0, 0);
          v[ 1].tex.set(_tex_x[0][0], 0);
@@ -1640,22 +1640,22 @@ void PanelImage::drawBorders(C Color &color, C Color &color_add, C Rect &rect)C
 
       if(_same_x)
       {
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
-         v[ 4].pos.set(      l, y1);
+         v[ 3].pos.set(r      , y0);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
-         v[ 8].pos.set(      l, y2);
+         v[ 7].pos.set(r      , y1);
+         v[ 8].pos.set(l      , y2);
          v[ 9].pos.set(x[0][0], y2);
          v[10].pos.set(x[0][1], y2);
-         v[11].pos.set(      r, y2);
-         v[12].pos.set(      l, y3);
+         v[11].pos.set(r      , y2);
+         v[12].pos.set(l      , y3);
          v[13].pos.set(x[0][0], y3);
          v[14].pos.set(x[0][1], y3);
-         v[15].pos.set(      r, y3);
+         v[15].pos.set(r      , y3);
 
          v[ 0].tex.set(           0,         0);
          v[ 1].tex.set(_tex_x[0][0],         0);
@@ -1694,29 +1694,29 @@ void PanelImage::drawBorders(C Color &color, C Color &color_add, C Rect &rect)C
             x[2][1]=rect.max.x-_size_x[2][1];
          }
 
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
+         v[ 3].pos.set(r      , y0);
 
-         v[ 4].pos.set(      l, y1);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
+         v[ 7].pos.set(r      , y1);
          v[ 8].pos.set(x[1][0], y1);
          v[ 9].pos.set(x[1][1], y1);
 
-         v[10].pos.set(      l, y2);
+         v[10].pos.set(l      , y2);
          v[11].pos.set(x[1][0], y2);
          v[12].pos.set(x[1][1], y2);
-         v[13].pos.set(      r, y2);
+         v[13].pos.set(r      , y2);
          v[14].pos.set(x[2][0], y2);
          v[15].pos.set(x[2][1], y2);
 
-         v[16].pos.set(      l, y3);
+         v[16].pos.set(l      , y3);
          v[17].pos.set(x[2][0], y3);
          v[18].pos.set(x[2][1], y3);
-         v[19].pos.set(      r, y3);
+         v[19].pos.set(r      , y3);
 
          v[ 0].tex.set(           0, 0);
          v[ 1].tex.set(_tex_x[0][0], 0);
@@ -1756,8 +1756,11 @@ static void Clip(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip
    {
       if(min_pos<clip_pos) // min is before clipping, size is >0, section is visible, adjust 'max_tex'. Here check for "<" instead of "<=" because calculations inside are more expensive than for "else" case.
       {
-         Flt frac=LerpR(min_pos, max_pos, clip_pos);
-          max_tex=Lerp (min_tex, max_tex, frac);
+         if(Flt delta=max_pos-min_pos)
+         {
+            Flt frac=(clip_pos-min_pos)/delta; // LerpR(min_pos, max_pos, clip_pos);
+            max_tex=Lerp(min_tex, max_tex, frac);
+         }
       }else min_pos=clip_pos; // clip fully by setting both positions to 'clip_pos' to set zero size, we can ignore adjusting 'max_tex'
             max_pos=clip_pos;
    }
@@ -1766,8 +1769,11 @@ static void Clip1(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt cli
 {
    if(max_pos>clip_pos) // if need to clip
    { // always adjust 'max_tex'
-      Flt frac=LerpR(min_pos, max_pos, clip_pos);
-       max_tex=Lerp (min_tex, max_tex, frac);
+      if(Flt delta=max_pos-min_pos)
+      {
+         Flt frac=(clip_pos-min_pos)/delta; // LerpR(min_pos, max_pos, clip_pos);
+         max_tex=Lerp(min_tex, max_tex, frac);
+      }
       if(min_pos>clip_pos)min_pos=clip_pos;
                           max_pos=clip_pos;
    }
@@ -1813,33 +1819,33 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
       }
 
       Flt pos_x=(include_padding ? Lerp(l, r, frac_x) : rect.lerpX(frac_x)),
-          tex_x[3][2], // [y][x]
-          tex_r=1;
+          tex_r=1,
+          tex_x[3][2]; // [y][x]
       tex_x[0][0]=_tex_x[0][0];
       tex_x[0][1]=_tex_x[0][1];
 
       if(_same_x)
       {
-         Clip(      l, x[0][0],           0, tex_x[0][0], pos_x);
+         Clip(l      , x[0][0],           0, tex_x[0][0], pos_x);
          Clip(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
-         Clip(x[0][1],       r, tex_x[0][1], tex_r      , pos_x);
+         Clip(x[0][1], r      , tex_x[0][1], tex_r      , pos_x);
 
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
-         v[ 4].pos.set(      l, y1);
+         v[ 3].pos.set(r      , y0);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
-         v[ 8].pos.set(      l, y2);
+         v[ 7].pos.set(r      , y1);
+         v[ 8].pos.set(l      , y2);
          v[ 9].pos.set(x[0][0], y2);
          v[10].pos.set(x[0][1], y2);
-         v[11].pos.set(      r, y2);
-         v[12].pos.set(      l, y3);
+         v[11].pos.set(r      , y2);
+         v[12].pos.set(l      , y3);
          v[13].pos.set(x[0][0], y3);
          v[14].pos.set(x[0][1], y3);
-         v[15].pos.set(      r, y3);
+         v[15].pos.set(r      , y3);
 
          v[ 0].tex.set(          0,         0);
          v[ 1].tex.set(tex_x[0][0],         0);
@@ -1884,39 +1890,39 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt L=l; Clip (      l, x[0][0],           0, tex_x[0][0], pos_x);
+         Flt L=l; Clip (l      , x[0][0],           0, tex_x[0][0], pos_x);
                   Clip (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
 
-             l=L; Clip (      l, x[1][0],           0, tex_x[1][0], pos_x);
+             l=L; Clip (l      , x[1][0],           0, tex_x[1][0], pos_x);
                   Clip (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], pos_x);
-                  Clip1(x[1][1],       r, tex_x[1][1], tex_r      , pos_x); // here have to used 'Clip1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
+                  Clip1(x[1][1], r      , tex_x[1][1], tex_r      , pos_x); // here have to used 'Clip1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
 
-             l=L; Clip (      l, x[2][0],           0, tex_x[2][0], pos_x);
+             l=L; Clip (l      , x[2][0],           0, tex_x[2][0], pos_x);
                   Clip (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], pos_x);
 
-         v[ 0].pos.set(      l, y0);
+         v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
          v[ 2].pos.set(x[0][1], y0);
-         v[ 3].pos.set(      r, y0);
+         v[ 3].pos.set(r      , y0);
 
-         v[ 4].pos.set(      l, y1);
+         v[ 4].pos.set(l      , y1);
          v[ 5].pos.set(x[0][0], y1);
          v[ 6].pos.set(x[0][1], y1);
-         v[ 7].pos.set(      r, y1);
+         v[ 7].pos.set(r      , y1);
          v[ 8].pos.set(x[1][0], y1);
          v[ 9].pos.set(x[1][1], y1);
 
-         v[10].pos.set(      l, y2);
+         v[10].pos.set(l      , y2);
          v[11].pos.set(x[1][0], y2);
          v[12].pos.set(x[1][1], y2);
-         v[13].pos.set(      r, y2);
+         v[13].pos.set(r      , y2);
          v[14].pos.set(x[2][0], y2);
          v[15].pos.set(x[2][1], y2);
 
-         v[16].pos.set(      l, y3);
+         v[16].pos.set(l      , y3);
          v[17].pos.set(x[2][0], y3);
          v[18].pos.set(x[2][1], y3);
-         v[19].pos.set(      r, y3);
+         v[19].pos.set(r      , y3);
 
          v[ 0].tex.set(          0, 0);
          v[ 1].tex.set(tex_x[0][0], 0);
@@ -1990,33 +1996,33 @@ void PanelImage::drawVerticalFrac(C Color &color, C Color &color_add, C Rect &re
       }
 
       Flt pos_y=(include_padding ? Lerp(b, t, frac_y) : rect.lerpY(frac_y)),
-          tex_x[3][2], // [y][x]
-          tex_t=1;
+          tex_t=1,
+          tex_x[3][2]; // [y][x]
       tex_x[0][0]=_tex_x[0][0];
       tex_x[0][1]=_tex_x[0][1];
 
       if(_same_x)
       {
-         Clip(      b, y[0][0],           0, tex_x[0][0], pos_y);
+         Clip(b      , y[0][0],           0, tex_x[0][0], pos_y);
          Clip(y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
-         Clip(y[0][1],       t, tex_x[0][1], tex_t      , pos_y);
+         Clip(y[0][1], t      , tex_x[0][1], tex_t      , pos_y);
 
-         v[ 0].pos.set(x0,       b);
+         v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
          v[ 2].pos.set(x0, y[0][1]);
-         v[ 3].pos.set(x0,       t);
-         v[ 4].pos.set(x1,       b);
+         v[ 3].pos.set(x0, t      );
+         v[ 4].pos.set(x1, b      );
          v[ 5].pos.set(x1, y[0][0]);
          v[ 6].pos.set(x1, y[0][1]);
-         v[ 7].pos.set(x1,       t);
-         v[ 8].pos.set(x2,       b);
+         v[ 7].pos.set(x1, t      );
+         v[ 8].pos.set(x2, b      );
          v[ 9].pos.set(x2, y[0][0]);
          v[10].pos.set(x2, y[0][1]);
-         v[11].pos.set(x2,       t);
-         v[12].pos.set(x3,       b);
+         v[11].pos.set(x2, t      );
+         v[12].pos.set(x3, b      );
          v[13].pos.set(x3, y[0][0]);
          v[14].pos.set(x3, y[0][1]);
-         v[15].pos.set(x3,       t);
+         v[15].pos.set(x3, t      );
 
          v[ 0].tex.set(          0,         0);
          v[ 1].tex.set(tex_x[0][0],         0);
@@ -2061,39 +2067,39 @@ void PanelImage::drawVerticalFrac(C Color &color, C Color &color_add, C Rect &re
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt B=b; Clip (      b, y[0][0],           0, tex_x[0][0], pos_y);
+         Flt B=b; Clip (b      , y[0][0],           0, tex_x[0][0], pos_y);
                   Clip (y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
 
-             b=B; Clip (      b, y[1][0],           0, tex_x[1][0], pos_y);
+             b=B; Clip (b      , y[1][0],           0, tex_x[1][0], pos_y);
                   Clip (y[1][0], y[1][1], tex_x[1][0], tex_x[1][1], pos_y);
-                  Clip1(y[1][1],       t, tex_x[1][1], tex_t      , pos_y); // here have to used 'Clip1' which adjusts 'tex_t' even if section is fully clipped, because this 'tex_t' might still be used for top/bottom sections. Also calculate 'tex_t' based on middle section, because top/bottom might be empty/hidden.
+                  Clip1(y[1][1], t      , tex_x[1][1], tex_t      , pos_y); // here have to used 'Clip1' which adjusts 'tex_t' even if section is fully clipped, because this 'tex_t' might still be used for top/bottom sections. Also calculate 'tex_t' based on middle section, because top/bottom might be empty/hidden.
 
-             b=B; Clip (      b, y[2][0],           0, tex_x[2][0], pos_y);
+             b=B; Clip (b      , y[2][0],           0, tex_x[2][0], pos_y);
                   Clip (y[2][0], y[2][1], tex_x[2][0], tex_x[2][1], pos_y);
 
-         v[ 0].pos.set(x0,       b);
+         v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
          v[ 2].pos.set(x0, y[0][1]);
-         v[ 3].pos.set(x0,       t);
+         v[ 3].pos.set(x0, t      );
 
-         v[ 4].pos.set(x1,       b);
+         v[ 4].pos.set(x1, b      );
          v[ 5].pos.set(x1, y[0][0]);
          v[ 6].pos.set(x1, y[0][1]);
-         v[ 7].pos.set(x1,       t);
+         v[ 7].pos.set(x1, t      );
          v[ 8].pos.set(x1, y[1][0]);
          v[ 9].pos.set(x1, y[1][1]);
 
-         v[10].pos.set(x2,       b);
+         v[10].pos.set(x2, b      );
          v[11].pos.set(x2, y[1][0]);
          v[12].pos.set(x2, y[1][1]);
-         v[13].pos.set(x2,       t);
+         v[13].pos.set(x2, t      );
          v[14].pos.set(x2, y[2][0]);
          v[15].pos.set(x2, y[2][1]);
 
-         v[16].pos.set(x3,       b);
+         v[16].pos.set(x3, b      );
          v[17].pos.set(x3, y[2][0]);
          v[18].pos.set(x3, y[2][1]);
-         v[19].pos.set(x3,       t);
+         v[19].pos.set(x3, t      );
 
          v[ 0].tex.set(          0, 0);
          v[ 1].tex.set(tex_x[0][0], 0);
