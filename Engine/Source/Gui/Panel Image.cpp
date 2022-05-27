@@ -680,7 +680,7 @@ struct PanelImageCreate
          if(bottom_left_image || bottom_image || bottom_right_image
          ||        left_image || center_image ||        right_image)MIN(panel_image._tex_y[1], y2); // any of these images require 'y2'
 
-         Flt tex_ofs=(0.5f+(super_sample>1))*super_sample; // if we're doing super-sampling then it means we'll have to down-sample the image later, this means we'll be getting neighbor pixels, so we need to padd more
+         Flt tex_ofs=0.5f*super_sample; // this is to avoid problems when stretching a Gui Window panel image, where the center/background gets blended with borders due to bilinear pixel filtering in the shader
          alignTex();
 
          // lines
@@ -761,15 +761,15 @@ struct PanelImageCreate
          alignTex();
          REPAD(y, panel_image._tex_x)
          {
-            if(!Equal(panel_image._tex_x[y][0],            0))panel_image._tex_x[y][0]+=tex_ofs;
-            if(!Equal(panel_image._tex_x[y][1], image_size.x))panel_image._tex_x[y][1]-=tex_ofs;
+            if(panel_image._tex_x[y][0]>             EPS)MIN(panel_image._tex_x[y][0]+=tex_ofs, image_size.x); // if there's anything in the left  section, then apply offset to avoid blending with it
+            if(panel_image._tex_x[y][1]<image_size.x-EPS)MAX(panel_image._tex_x[y][1]-=tex_ofs,            0); // if there's anything in the right section, then apply offset to avoid blending with it
+            if(panel_image._tex_x[y][0]>panel_image._tex_x[y][1])panel_image._tex_x[y][0]=panel_image._tex_x[y][1]=Avg(panel_image._tex_x[y][0], panel_image._tex_x[y][1]); // this can happen because we're applying 'tex_ofs'
             REPAD(x, panel_image._tex_x[y])panel_image._tex_x[y][x]/=image_size.x;
-            if(panel_image._tex_x[y][0]>panel_image._tex_x[y][1])panel_image._tex_x[y][0]=panel_image._tex_x[y][1]=Avg(panel_image._tex_x[y][0], panel_image._tex_x[y][1]);
          }
-         if(!Equal(panel_image._tex_y[0],            0))panel_image._tex_y[0]+=tex_ofs;
-         if(!Equal(panel_image._tex_y[1], image_size.y))panel_image._tex_y[1]-=tex_ofs;
+         if(panel_image._tex_y[0]>             EPS)MIN(panel_image._tex_y[0]+=tex_ofs, image_size.y); // if there's anything in the top    section, then apply offset to avoid blending with it
+         if(panel_image._tex_y[1]<image_size.y-EPS)MAX(panel_image._tex_y[1]-=tex_ofs,            0); // if there's anything in the bottom section, then apply offset to avoid blending with it
+         if(panel_image._tex_y[0]>panel_image._tex_y[1])panel_image._tex_y[0]=panel_image._tex_y[1]=Avg(panel_image._tex_y[0], panel_image._tex_y[1]); // this can happen because we're applying 'tex_ofs'
          REPAO(panel_image._tex_y)/=image_size.y;
-         if(panel_image._tex_y[0]>panel_image._tex_y[1])panel_image._tex_y[0]=panel_image._tex_y[1]=Avg(panel_image._tex_y[0], panel_image._tex_y[1]);
 
          max_scale=Max(params.max_side_stretch, 0);
          panel_image._same_x=true; REPAD(x, panel_image._tex_x[0])if(!Equal(panel_image._tex_x[0][x], panel_image._tex_x[1][x]) || !Equal(panel_image._tex_x[1][x], panel_image._tex_x[2][x]))panel_image._same_x=false;
