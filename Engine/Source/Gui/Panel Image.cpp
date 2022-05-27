@@ -621,14 +621,14 @@ struct PanelImageCreate
          Flt mul=0.5f*resolution*params.images_size;
          x3=image_size.x; // don't subtract one because here the right  coordinate is exclusive
          y3=image_size.y; // don't subtract one because here the bottom coordinate is exclusive
-         y1=Min(   Round(params.          top_height*mul), image_size_2.y);
-         y2=Max(y3-Round(params.       bottom_height*mul), image_size_2.y);
-         x1=Min(   Round(params.   left_right_width *mul), image_size_2.x);
-         x2=Max(x3-Round(params.   left_right_width *mul), image_size_2.x);
-     top_x1=Min(   Round(params.   top_corner_width *mul), image_size_2.x);
-     top_x2=Max(x3-Round(params.   top_corner_width *mul), image_size_2.x);
-  bottom_x1=Min(   Round(params.bottom_corner_width *mul), image_size_2.x);
-  bottom_x2=Max(x3-Round(params.bottom_corner_width *mul), image_size_2.x);
+         y1=Min(   Round(params.          top_height*mul),              y3);
+         y2=Max(y3-Round(params.       bottom_height*mul),              y1);
+         x1=Min(   Round(params.   left_right_width *mul), image_size_2i.x);
+         x2=Max(x3-Round(params.   left_right_width *mul), image_size_2i.x);
+     top_x1=Min(   Round(params.   top_corner_width *mul), image_size_2i.x);
+     top_x2=Max(x3-Round(params.   top_corner_width *mul), image_size_2i.x);
+  bottom_x1=Min(   Round(params.bottom_corner_width *mul), image_size_2i.x);
+  bottom_x2=Max(x3-Round(params.bottom_corner_width *mul), image_size_2i.x);
 
          GetFracMulAddFromImage(        0,    top_x1,  0, y1,     top_left_image, image_frac_mul_add[0][0], top_left_image==top_right_image);
          GetFracMulAddFromImage(   top_x1,    top_x2,  0, y1,          top_image, image_frac_mul_add[1][0]);
