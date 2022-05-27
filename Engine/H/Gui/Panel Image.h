@@ -145,6 +145,7 @@ struct PanelImage
 
    void drawFrac        (C Color &color, C Color &color_add, C Rect &rect, Flt frac_x, Bool include_padding)C; // draw at specified 'rect' screen rectangle with custom colors and horizontally limited to 'frac_x' (0..1) fraction, 'include_padding'=if take padding into account when processing the fraction
    void drawVerticalFrac(C Color &color, C Color &color_add, C Rect &rect, Flt frac_y, Bool include_padding)C; // draw at specified 'rect' screen rectangle with custom colors and   vertically limited to 'frac_y' (0..1) fraction, 'include_padding'=if take padding into account when processing the fraction
+   void drawFrac2       (C Color &color, C Color &color_add, C Rect &rect, Flt frac_min_x, Flt frac_max_x  )C; // draw at specified 'rect' screen rectangle with custom colors and horizontally limited to 'frac_min_x'..'frac_max_x' (0..1) fraction
 
    void drawBaseLines   (C Color &line_color, C Rect &rect)C; // draw lines on unscaled image
    void drawScaledLines (C Color &line_color, C Rect &rect)C; // draw lines on   scaled image

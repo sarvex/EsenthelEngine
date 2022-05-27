@@ -1750,7 +1750,7 @@ void PanelImage::drawBorders(C Color &color, C Color &color_add, C Rect &rect)C
    VI.clear();
 }
 /******************************************************************************/
-static void Clip(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
+static void ClipR(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
 {
    if(max_pos>clip_pos) // if need to clip
    {
@@ -1765,7 +1765,22 @@ static void Clip(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip
             max_pos=clip_pos;
    }
 }
-static void Clip1(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
+static void ClipL(Flt &min_pos, Flt &max_pos, Flt &min_tex, Flt max_tex, Flt clip_pos)
+{
+   if(min_pos<clip_pos) // if need to clip
+   {
+      if(max_pos>clip_pos) // max is after clipping, size is >0, section is visible, adjust 'min_tex'. Here check for ">" instead of ">=" because calculations inside are more expensive than for "else" case.
+      {
+         if(Flt delta=max_pos-min_pos)
+         {
+            Flt frac=(clip_pos-min_pos)/delta; // LerpR(min_pos, max_pos, clip_pos);
+            min_tex=Lerp(min_tex, max_tex, frac);
+         }
+      }else max_pos=clip_pos; // clip fully by setting both positions to 'clip_pos' to set zero size, we can ignore adjusting 'max_tex'
+            min_pos=clip_pos;
+   }
+}
+static void ClipR1(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt clip_pos)
 {
    if(max_pos>clip_pos) // if need to clip
    { // always adjust 'max_tex'
@@ -1776,6 +1791,19 @@ static void Clip1(Flt &min_pos, Flt &max_pos, Flt min_tex, Flt &max_tex, Flt cli
       }
       if(min_pos>clip_pos)min_pos=clip_pos;
                           max_pos=clip_pos;
+   }
+}
+static void ClipL1(Flt &min_pos, Flt &max_pos, Flt &min_tex, Flt max_tex, Flt clip_pos)
+{
+   if(min_pos<clip_pos) // if need to clip
+   { // always adjust 'min_tex'
+      if(Flt delta=max_pos-min_pos)
+      {
+         Flt frac=(clip_pos-min_pos)/delta; // LerpR(min_pos, max_pos, clip_pos);
+         min_tex=Lerp(min_tex, max_tex, frac);
+      }
+      if(max_pos<clip_pos)max_pos=clip_pos;
+                          min_pos=clip_pos;
    }
 }
 void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt frac_x, Bool include_padding)C
@@ -1826,9 +1854,9 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
 
       if(_same_x)
       {
-         Clip(l      , x[0][0],           0, tex_x[0][0], pos_x);
-         Clip(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
-         Clip(x[0][1], r      , tex_x[0][1], tex_r      , pos_x);
+         ClipR(l      , x[0][0],           0, tex_x[0][0], pos_x);
+         ClipR(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
+         ClipR(x[0][1], r      , tex_x[0][1], tex_r      , pos_x);
 
          v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
@@ -1890,15 +1918,15 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt L=l; Clip (l      , x[0][0],           0, tex_x[0][0], pos_x);
-                  Clip (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
+         Flt L=l; ClipR (l      , x[0][0],           0, tex_x[0][0], pos_x);
+                  ClipR (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], pos_x);
 
-             l=L; Clip (l      , x[1][0],           0, tex_x[1][0], pos_x);
-                  Clip (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], pos_x);
-                  Clip1(x[1][1], r      , tex_x[1][1], tex_r      , pos_x); // here have to used 'Clip1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
+             l=L; ClipR (l      , x[1][0],           0, tex_x[1][0], pos_x);
+                  ClipR (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], pos_x);
+                  ClipR1(x[1][1], r      , tex_x[1][1], tex_r      , pos_x); // here have to used 'ClipR1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
 
-             l=L; Clip (l      , x[2][0],           0, tex_x[2][0], pos_x);
-                  Clip (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], pos_x);
+             l=L; ClipR (l      , x[2][0],           0, tex_x[2][0], pos_x);
+                  ClipR (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], pos_x);
 
          v[ 0].pos.set(l      , y0);
          v[ 1].pos.set(x[0][0], y0);
@@ -1944,6 +1972,200 @@ void PanelImage::drawFrac(C Color &color, C Color &color_add, C Rect &rect, Flt 
          v[15].tex.set(tex_x[2][1], _tex_y[1]);
 
          v[16].tex.set(          0, 1);
+         v[17].tex.set(tex_x[2][0], 1);
+         v[18].tex.set(tex_x[2][1], 1);
+         v[19].tex.set(tex_r      , 1);
+      }
+
+      if(image.partial())REP(vtxs)v[i].tex*=image._part.xy;
+
+      VI.flushIndexed(_same_x ? IndBufPanel : IndBufPanelEx, 3*3*2*3);
+   }
+   VI.clear();
+}
+void PanelImage::drawFrac2(C Color &color, C Color &color_add, C Rect &rect, Flt frac_min_x, Flt frac_max_x)C
+{
+   if(frac_min_x>=1 || frac_max_x<=0 || frac_max_x<=frac_min_x)return;
+   if(image.mipMaps()>1)VI.clampAniso(); // if have mip maps then use high quality sampler to workaround that when squeezing image in one dimension then smaller mip maps are used even the other dimension is stretched
+   VI.color  (color    );
+   VI.color1 (color_add);
+   VI.image  (&image   );
+   VI.setType(VI_2D_TEX, VI_SP_COL);
+   const Int vtxs=(_same_x ? 16 : 20);
+   if(Vtx2DTex *v=(Vtx2DTex*)VI.addVtx(vtxs))
+   {
+      Flt scale; Bool scale_do=getSideScale(rect, scale);
+      Flt l =rect.min.x, r =rect.max.x, x[3][2], // [y][x]
+          y0=rect.max.y, y3=rect.min.y, y1, y2;
+      if(scale_do)
+      {
+         y1     =y0-_size_y[0]   *scale;
+         y2     =y3+_size_y[1]   *scale;
+         x[0][0]=l +_size_x[0][0]*scale;
+         x[0][1]=r -_size_x[0][1]*scale;
+
+         if(_padd_any)
+         {
+            Flt padd;
+            padd=_padd.x*(_force_uniform_stretch[0] ? rect.w() : scale); l -=padd; r +=padd;
+            padd=_padd.y*(_force_uniform_stretch[1] ? rect.h() : scale); y0+=padd; y3-=padd;
+         }
+      }else
+      {
+         y1     =y0-_size_y[0];
+         y2     =y3+_size_y[1];
+         x[0][0]=l +_size_x[0][0];
+         x[0][1]=r -_size_x[0][1];
+
+         if(_padd_any)
+         {
+            if(_force_uniform_stretch[0]){Flt padd=_padd.x*rect.w(); l -=padd; r +=padd;}else{l -=_padd.x; r +=_padd.x;}
+            if(_force_uniform_stretch[1]){Flt padd=_padd.y*rect.h(); y0+=padd; y3-=padd;}else{y0+=_padd.y; y3-=_padd.y;}
+         }
+      }
+
+      Flt tex_l=0,
+          tex_r=1,
+          tex_x[3][2]; // [y][x]
+      tex_x[0][0]=_tex_x[0][0];
+      tex_x[0][1]=_tex_x[0][1];
+      Flt clip_min_x=rect.lerpX(frac_min_x);
+      Flt clip_max_x=rect.lerpX(frac_max_x);
+
+      if(_same_x)
+      {
+         ClipR(l      , x[0][0], tex_l      , tex_x[0][0], clip_max_x);
+         ClipR(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_max_x);
+         ClipR(x[0][1], r      , tex_x[0][1], tex_r      , clip_max_x);
+
+         ClipL(x[0][1], r      , tex_x[0][1], tex_r      , clip_min_x);
+         ClipL(x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_min_x);
+         ClipL(l      , x[0][0], tex_l      , tex_x[0][0], clip_min_x);
+
+         v[ 0].pos.set(l      , y0);
+         v[ 1].pos.set(x[0][0], y0);
+         v[ 2].pos.set(x[0][1], y0);
+         v[ 3].pos.set(r      , y0);
+         v[ 4].pos.set(l      , y1);
+         v[ 5].pos.set(x[0][0], y1);
+         v[ 6].pos.set(x[0][1], y1);
+         v[ 7].pos.set(r      , y1);
+         v[ 8].pos.set(l      , y2);
+         v[ 9].pos.set(x[0][0], y2);
+         v[10].pos.set(x[0][1], y2);
+         v[11].pos.set(r      , y2);
+         v[12].pos.set(l      , y3);
+         v[13].pos.set(x[0][0], y3);
+         v[14].pos.set(x[0][1], y3);
+         v[15].pos.set(r      , y3);
+
+         v[ 0].tex.set(tex_l      ,         0);
+         v[ 1].tex.set(tex_x[0][0],         0);
+         v[ 2].tex.set(tex_x[0][1],         0);
+         v[ 3].tex.set(tex_r      ,         0);
+
+         v[ 4].tex.set(tex_l      , _tex_y[0]);
+         v[ 5].tex.set(tex_x[0][0], _tex_y[0]);
+         v[ 6].tex.set(tex_x[0][1], _tex_y[0]);
+         v[ 7].tex.set(tex_r      , _tex_y[0]);
+
+         v[ 8].tex.set(tex_l      , _tex_y[1]);
+         v[ 9].tex.set(tex_x[0][0], _tex_y[1]);
+         v[10].tex.set(tex_x[0][1], _tex_y[1]);
+         v[11].tex.set(tex_r      , _tex_y[1]);
+
+         v[12].tex.set(tex_l      ,         1);
+         v[13].tex.set(tex_x[0][0],         1);
+         v[14].tex.set(tex_x[0][1],         1);
+         v[15].tex.set(tex_r      ,         1);
+      }else
+      {
+         if(scale_do)
+         {
+            x[1][0]=rect.min.x+_size_x[1][0]*scale;
+            x[1][1]=rect.max.x-_size_x[1][1]*scale;
+
+            x[2][0]=rect.min.x+_size_x[2][0]*scale;
+            x[2][1]=rect.max.x-_size_x[2][1]*scale;
+         }else
+         {
+            x[1][0]=rect.min.x+_size_x[1][0];
+            x[1][1]=rect.max.x-_size_x[1][1];
+
+            x[2][0]=rect.min.x+_size_x[2][0];
+            x[2][1]=rect.max.x-_size_x[2][1];
+         }
+
+         tex_x[1][0]=_tex_x[1][0];
+         tex_x[1][1]=_tex_x[1][1];
+
+         tex_x[2][0]=_tex_x[2][0];
+         tex_x[2][1]=_tex_x[2][1];
+
+         Flt L=l; ClipR (l      , x[0][0], tex_l      , tex_x[0][0], clip_max_x);
+                  ClipR (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_max_x);
+
+                  ClipL (x[0][0], x[0][1], tex_x[0][0], tex_x[0][1], clip_min_x);
+                  ClipL (l      , x[0][0], tex_l      , tex_x[0][0], clip_min_x);
+
+    tex_l=0; l=L; ClipR (l      , x[2][0], tex_l      , tex_x[2][0], clip_max_x);
+                  ClipR (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], clip_max_x);
+
+                  ClipL (x[2][0], x[2][1], tex_x[2][0], tex_x[2][1], clip_min_x);
+                  ClipL (l      , x[2][0], tex_l      , tex_x[2][0], clip_min_x);
+
+    tex_l=0; l=L; ClipR (l      , x[1][0], tex_l      , tex_x[1][0], clip_max_x);
+                  ClipR (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], clip_max_x);
+                  ClipR1(x[1][1], r      , tex_x[1][1], tex_r      , clip_max_x); // here have to used 'ClipR1' which adjusts 'tex_r' even if section is fully clipped, because this 'tex_r' might still be used for top/bottom sections. Also calculate 'tex_r' based on middle section, because top/bottom might be empty/hidden.
+
+                  ClipL (x[1][1], r      , tex_x[1][1], tex_r      , clip_min_x);
+                  ClipL (x[1][0], x[1][1], tex_x[1][0], tex_x[1][1], clip_min_x);
+                  ClipL1(l      , x[1][0], tex_l      , tex_x[1][0], clip_min_x); // here have to used 'ClipL1' which adjusts 'tex_l' even if section is fully clipped, because this 'tex_l' might still be used for top/bottom sections. Also calculate 'tex_l' based on middle section, because top/bottom might be empty/hidden.
+
+         v[ 0].pos.set(l      , y0);
+         v[ 1].pos.set(x[0][0], y0);
+         v[ 2].pos.set(x[0][1], y0);
+         v[ 3].pos.set(r      , y0);
+
+         v[ 4].pos.set(l      , y1);
+         v[ 5].pos.set(x[0][0], y1);
+         v[ 6].pos.set(x[0][1], y1);
+         v[ 7].pos.set(r      , y1);
+         v[ 8].pos.set(x[1][0], y1);
+         v[ 9].pos.set(x[1][1], y1);
+
+         v[10].pos.set(l      , y2);
+         v[11].pos.set(x[1][0], y2);
+         v[12].pos.set(x[1][1], y2);
+         v[13].pos.set(r      , y2);
+         v[14].pos.set(x[2][0], y2);
+         v[15].pos.set(x[2][1], y2);
+
+         v[16].pos.set(l      , y3);
+         v[17].pos.set(x[2][0], y3);
+         v[18].pos.set(x[2][1], y3);
+         v[19].pos.set(r      , y3);
+
+         v[ 0].tex.set(tex_l      , 0);
+         v[ 1].tex.set(tex_x[0][0], 0);
+         v[ 2].tex.set(tex_x[0][1], 0);
+         v[ 3].tex.set(tex_r      , 0);
+
+         v[ 4].tex.set(tex_l      , _tex_y[0]);
+         v[ 5].tex.set(tex_x[0][0], _tex_y[0]);
+         v[ 6].tex.set(tex_x[0][1], _tex_y[0]);
+         v[ 7].tex.set(tex_r      , _tex_y[0]);
+         v[ 8].tex.set(tex_x[1][0], _tex_y[0]);
+         v[ 9].tex.set(tex_x[1][1], _tex_y[0]);
+
+         v[10].tex.set(tex_l      , _tex_y[1]);
+         v[11].tex.set(tex_x[1][0], _tex_y[1]);
+         v[12].tex.set(tex_x[1][1], _tex_y[1]);
+         v[13].tex.set(tex_r      , _tex_y[1]);
+         v[14].tex.set(tex_x[2][0], _tex_y[1]);
+         v[15].tex.set(tex_x[2][1], _tex_y[1]);
+
+         v[16].tex.set(tex_l      , 1);
          v[17].tex.set(tex_x[2][0], 1);
          v[18].tex.set(tex_x[2][1], 1);
          v[19].tex.set(tex_r      , 1);
@@ -2003,9 +2225,9 @@ void PanelImage::drawVerticalFrac(C Color &color, C Color &color_add, C Rect &re
 
       if(_same_x)
       {
-         Clip(b      , y[0][0],           0, tex_x[0][0], pos_y);
-         Clip(y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
-         Clip(y[0][1], t      , tex_x[0][1], tex_t      , pos_y);
+         ClipR(b      , y[0][0],           0, tex_x[0][0], pos_y);
+         ClipR(y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
+         ClipR(y[0][1], t      , tex_x[0][1], tex_t      , pos_y);
 
          v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
@@ -2067,15 +2289,15 @@ void PanelImage::drawVerticalFrac(C Color &color, C Color &color_add, C Rect &re
          tex_x[2][0]=_tex_x[2][0];
          tex_x[2][1]=_tex_x[2][1];
 
-         Flt B=b; Clip (b      , y[0][0],           0, tex_x[0][0], pos_y);
-                  Clip (y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
+         Flt B=b; ClipR (b      , y[0][0],           0, tex_x[0][0], pos_y);
+                  ClipR (y[0][0], y[0][1], tex_x[0][0], tex_x[0][1], pos_y);
 
-             b=B; Clip (b      , y[1][0],           0, tex_x[1][0], pos_y);
-                  Clip (y[1][0], y[1][1], tex_x[1][0], tex_x[1][1], pos_y);
-                  Clip1(y[1][1], t      , tex_x[1][1], tex_t      , pos_y); // here have to used 'Clip1' which adjusts 'tex_t' even if section is fully clipped, because this 'tex_t' might still be used for top/bottom sections. Also calculate 'tex_t' based on middle section, because top/bottom might be empty/hidden.
+             b=B; ClipR (b      , y[1][0],           0, tex_x[1][0], pos_y);
+                  ClipR (y[1][0], y[1][1], tex_x[1][0], tex_x[1][1], pos_y);
+                  ClipR1(y[1][1], t      , tex_x[1][1], tex_t      , pos_y); // here have to used 'ClipR1' which adjusts 'tex_t' even if section is fully clipped, because this 'tex_t' might still be used for top/bottom sections. Also calculate 'tex_t' based on middle section, because top/bottom might be empty/hidden.
 
-             b=B; Clip (b      , y[2][0],           0, tex_x[2][0], pos_y);
-                  Clip (y[2][0], y[2][1], tex_x[2][0], tex_x[2][1], pos_y);
+             b=B; ClipR (b      , y[2][0],           0, tex_x[2][0], pos_y);
+                  ClipR (y[2][0], y[2][1], tex_x[2][0], tex_x[2][1], pos_y);
 
          v[ 0].pos.set(x0, b      );
          v[ 1].pos.set(x0, y[0][0]);
