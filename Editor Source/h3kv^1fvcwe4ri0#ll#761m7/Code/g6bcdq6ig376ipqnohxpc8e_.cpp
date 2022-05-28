@@ -1,3 +1,7 @@
+/******************************************************************************
+
+   WARNING: TODO: sync will be broken if received data but failed to save it. (for example not enough disk space)
+
 /******************************************************************************/
 class Client : ConnectionServer.Client
 {
@@ -59,6 +63,11 @@ class Client : ConnectionServer.Client
             world_sync .del  ();
          mini_map_sync .del  ();
       }
+   }
+   
+   void saveError()
+   {
+      Gui.msgBox("Error", "Can't save data");
    }
 
    virtual bool update()override
@@ -240,8 +249,11 @@ class Client : ConnectionServer.Client
                UID tex_id; File cmpr_tex_data; ServerRecvSetTexture(connection.data, tex_id, cmpr_tex_data.writeMem());
                if(project.texs.binaryInclude(tex_id))
                {
-                  cmpr_tex_data.pos(0); SafeOverwrite(cmpr_tex_data, project.tex_path+EncodeFileName(tex_id));
-                  Server.distributeTex(tex_id, project, this);
+                  cmpr_tex_data.pos(0); if(SafeOverwrite(cmpr_tex_data, project.tex_path+EncodeFileName(tex_id)))Server.distributeTex(tex_id, project, this);else
+                  {
+                     saveError();
+                     project.texs.binaryExclude(tex_id);
+                  }
                }
             }break;
 
