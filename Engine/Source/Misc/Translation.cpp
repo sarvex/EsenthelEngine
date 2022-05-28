@@ -1,7 +1,7 @@
 ﻿/******************************************************************************
 MLT("", DE, "", FR, "", IT, "", SP, "", PO, "", PL, "", RU, "", JP, "", KO, "", CN, "", TH, "")
 MLTC(u"", DE, u"", FR, u"", IT, u"", SP, u"", PO, u"", PL, u"", RU, u"", JP, u"", KO, u"", CN, u"", TH, u"")
-cchar* T() {return MLTC(u"", DE, u"", FR, u"", IT, u"", SP, u"", PO, u"", PL, u"", RU, u"", JP, u"", KO, u"", CN, u"", TH, u"");}
+CChar* T() {return MLTC(u"", DE, u"", FR, u"", IT, u"", SP, u"", PO, u"", PL, u"", RU, u"", JP, u"", KO, u"", CN, u"", TH, u"");}
 /******************************************************************************/
 #include "stdafx.h"
 namespace EE{
@@ -218,6 +218,7 @@ CChar* TRealistic() {return MLTC(u"Realistic", DE, u"Realistisch", FR, u"Réalis
 CChar* TRecenterVR() {return MLTC(u"Recenter VR", DE, u"VR neu Zentrieren", FR, u"VR plus récente", IT, u"VR più recente", SP, u"VR Reciente", PO, u"RV mais recente", PL, u"Wycentruj VR", RU, u"Рецентрировать VR", JP, u"最近のVR", KO, u"최근 VR", CN, u"中心VR", TH, u"ล่าสุดVR");}
 CChar* TRemove() {return MLTC(u"Remove", DE, u"Entfernen", FR, u"Éliminer", IT, u"Rimuovere", SP, u"Remover", PO, u"Remover", PL, u"Usuń", RU, u"Удалять", JP, u"削除する", KO, u"제거하다", CN, u"消除", TH, u"ลบ");}
 CChar* TRename() {return MLTC(u"Rename", DE, u"Umbenennen", FR, u"Renommer", IT, u"Rinominare", SP, u"Rebautizar", PO, u"Renomear", PL, u"Zmień Nazwę", RU, u"Переименовать", JP, u"名前を変更", KO, u"이름 바꾸기", CN, u"改名", TH, u"เปลี่ยนชื่อ");}
+CChar* TReport() {return MLTC(u"Report", DE, u"Melden", FR, u"Signaler", IT, u"Segnala", SP, u"Reportar", PO, u"Denunciar", PL, u"Zgłoś", RU, u"Отчет", JP, u"報告", KO, u"보고서", CN, u"报告", TH, u"รายงาน");}
 CChar* TResolution() {return MLTC(u"Resolution", DE, u"Auflösung", FR, u"Résolution", IT, u"Risoluzione", SP, u"Resolución", PO, u"Resolução", PL, u"Rozdzielczość", RU, u"Разрешение", JP, u"画面の解像度", KO, u"화면 해상도", CN, u"屏幕分辨率", TH, u"ความละเอียดหน้าจอ");}
 CChar* TRestart() {return MLTC(u"Restart", DE, u"Neu starten", FR, u"Redémarrage", IT, u"Ricomincia", SP, u"Reiniciar", PO, u"Reiniciar", PL, u"Zrestartuj", RU, u"Начать сначала", JP, u"再起動", KO, u"재시작", CN, u"重新开始", TH, u"เริ่มต้นใหม่");}
 CChar* TRevive() {return MLTC(u"Revive", DE, u"Beleben", FR, u"Relancer", IT, u"Rianima", SP, u"Reanimar", PO, u"Reviver", PL, u"Wskrześ", RU, u"Возродить", JP, u"復活する", KO, u"소생", CN, u"复活", TH, u"ฟื้นคืนชีพ");}

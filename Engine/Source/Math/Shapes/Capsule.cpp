@@ -177,6 +177,14 @@ Flt Dist(C Capsule &a, C Capsule &b)
                                           : Dist(a.ballEdge(), b.ballEdge())
                  )-a.r-b.r); // !! WARNING: for simplicity this assumes that ballR==r !!
 }
+Flt DistFull(C Capsule &a, C Capsule &b)
+{
+   return (a.isBall() ? b.isBall() ? Dist(a.pos       , b.pos       )
+                                   : Dist(a.pos       , b.ballEdge())
+                      : b.isBall() ? Dist(b.pos       , a.ballEdge())
+                                   : Dist(a.ballEdge(), b.ballEdge())
+          )-a.r-b.r; // !! WARNING: for simplicity this assumes that ballR==r !!
+}
 Flt DistCapsulePlane(C Capsule &capsule, C Vec &plane, C Vec &normal)
 {
    return DistPointPlane(capsule.nearest(normal), plane, normal);

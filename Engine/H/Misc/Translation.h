@@ -207,6 +207,7 @@ CChar* TRealistic();
 CChar* TRecenterVR();
 CChar* TRemove();
 CChar* TRename();
+CChar* TReport();
 CChar* TResolution();
 CChar* TRestart();
 CChar* TRevive();

@@ -140,6 +140,7 @@ struct CapsuleM // Capsule Shape (mixed precision)
        Flt Dist            (C OBox     &obox   , C Capsule &capsule             ); // distance between box      and a capsule
        Flt Dist            (C Ball     &ball   , C Capsule &capsule             ); // distance between ball     and a capsule
        Flt Dist            (C Capsule  &a      , C Capsule &b                   ); // distance between capsule  and a capsule
+       Flt DistFull        (C Capsule  &a      , C Capsule &b                   ); // distance between capsule  and a capsule, can return negative values if shapes intersect
        Flt DistCapsulePlane(C Capsule  &capsule, C Vec     &plane, C Vec &normal); // distance between capsule  and a plane
        Dbl DistCapsulePlane(C Capsule  &capsule, C VecD    &plane, C Vec &normal); // distance between capsule  and a plane
        Dbl DistCapsulePlane(C CapsuleM &capsule, C VecD    &plane, C Vec &normal); // distance between capsule  and a plane
