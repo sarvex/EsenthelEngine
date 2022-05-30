@@ -130,7 +130,7 @@ struct FBX
    FbxGlobalSettings        *global_settings=null;
    Int                       sdk_major=0, sdk_minor=0, sdk_revision=0;
    Mems<Node>                nodes;
-   Memc<FbxSurfaceMaterial*> engine_mtrl_to_fbx_mtrl; // this will point from EE Material 'materials' container index to FBX Material pointer
+   Memc<FbxSurfaceMaterial*> engine_mtrl_to_fbx_mtrl; // this will point from Engine Material 'materials' container index to FBX Material pointer
    Flt                       scale=1.0f;
    Str                       app_name;
 
@@ -209,7 +209,7 @@ struct FBX
                   node.ee_name=node.full_name=FromUTF8(node.node->GetName());
 
                   // type
-                  if(FbxNodeAttribute *attrib=node.node->GetNodeAttribute()) // this will be null for the identity "RootNode"
+                  if(FbxNodeAttribute *attrib=node.node->GetNodeAttribute()) // this will be null for the identity "RootNode", but can also be null for some animations
                      switch(attrib->GetAttributeType())
                   {
                      case FbxNodeAttribute::eNull    : node.dummy=true; node.bone=all_nodes_as_bones; break;
@@ -679,7 +679,7 @@ struct FBX
                if(polys>0)
                {
                   MeshBase base;
-                  Int      texs=Mid(fbx_mesh->GetElementUVCount(), 0, 4); // EE supports only up to 4
+                  Int      texs=Mid(fbx_mesh->GetElementUVCount(), 0, 4); // Engine supports only up to 4
 
                   Bool one_material=true;
                   REP(fbx_mesh->GetElementMaterialCount())
@@ -1152,7 +1152,7 @@ struct FBX
                               for(Node *n=&node; n!=animated_node_ancestor; ) // gather all transforms starting from this 'node' to 'animated_node_ancestor' inclusive
                               {
                                  n=n->parent;
-                                 transform=n->node->EvaluateLocalTransform(time)*transform; // FBX multiply order is reversed compared to EE
+                                 transform=n->node->EvaluateLocalTransform(time)*transform; // FBX multiply order is reversed compared to Engine
                                  node_local*=n->local;
                               }
                               MatrixD anim_matrix=MATRIX(transform);
