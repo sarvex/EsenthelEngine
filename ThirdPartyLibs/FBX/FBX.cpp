@@ -130,14 +130,14 @@ struct FBX
    FbxGlobalSettings        *global_settings=null;
    Int                       sdk_major=0, sdk_minor=0, sdk_revision=0;
    Mems<Node>                nodes;
-   Memc<FbxSurfaceMaterial*> ee_mtrl_to_fbx_mtrl; // this will point from EE Material 'materials' container index to FBX Material pointer
+   Memc<FbxSurfaceMaterial*> engine_mtrl_to_fbx_mtrl; // this will point from EE Material 'materials' container index to FBX Material pointer
    Flt                       scale=1.0f;
    Str                       app_name;
 
    Int   findNodeI(FbxNode *node)C {REPA(nodes)if(nodes[i].node==node)return i; return -1;}
    Node* findNode (FbxNode *node)  {return nodes.addr(findNodeI(node));}
 
-   Int findMaterial(FbxSurfaceMaterial *mtrl)C {return ee_mtrl_to_fbx_mtrl.find(mtrl);}
+   Int findMaterial(FbxSurfaceMaterial *mtrl)C {return engine_mtrl_to_fbx_mtrl.find(mtrl);}
 
   ~FBX()
    {
@@ -202,8 +202,8 @@ struct FBX
 
                // set nodes
                nodes.setNum(scene->GetNodeCount()); // create all nodes up-front !! this is important because we're using 'Mems' !!
-               REPAO(nodes).node=scene->GetNode(i); // set node link
-               REPA (nodes)
+                REPAO(nodes).node=scene->GetNode(i); // set node link
+               FREPA (nodes)
                {
                   Node &node=nodes[i];
                   node.ee_name=node.full_name=FromUTF8(node.node->GetName());
@@ -434,7 +434,7 @@ struct FBX
             // params
             if(FbxSurfacePhong *phong=FbxCast<FbxSurfacePhong>(mtrl))
             {
-               xm=&materials.New(); ee_mtrl_to_fbx_mtrl.add(mtrl);
+               xm=&materials.New(); engine_mtrl_to_fbx_mtrl.add(mtrl);
             /* Don't set anything because artists never set those parameters, and they usually should be tweaked in-engine anyway
                FbxDouble3 amb  =phong->Ambient           ; //xm->emissive  .set(amb[0], amb[1], amb[2]);
                FbxDouble3 dif  =phong->Diffuse           ; xm->color.xyz.set(dif[0], dif[1], dif[2]);
@@ -448,7 +448,7 @@ struct FBX
             }else
             if(FbxSurfaceLambert *lambert=FbxCast<FbxSurfaceLambert>(mtrl))
             {
-               xm=&materials.New(); ee_mtrl_to_fbx_mtrl.add(mtrl);
+               xm=&materials.New(); engine_mtrl_to_fbx_mtrl.add(mtrl);
             /* Don't set anything because artists never set those parameters, and they usually should be tweaked in-engine anyway
                FbxDouble3 amb  =lambert->Ambient           ; //xm->emissive  .set(amb[0], amb[1], amb[2]);
                FbxDouble3 dif  =lambert->Diffuse           ; xm->color.xyz.set(dif[0], dif[1], dif[2]);
@@ -518,7 +518,7 @@ struct FBX
             }
          #endif
          }
-         REPA(duplicate_name)if(duplicate_name[i])materials[i].name+=S+'\\'+(ULong)ee_mtrl_to_fbx_mtrl[i]->GetUniqueID(); // append the name with materials Unique ID
+         REPA(duplicate_name)if(duplicate_name[i])materials[i].name+=S+'\\'+(ULong)engine_mtrl_to_fbx_mtrl[i]->GetUniqueID(); // append the name with materials Unique ID
       }
    }
    void boneRemap(C MemPtrN<Byte, 256> &old_to_new)
@@ -1231,7 +1231,7 @@ Bool _ImportFBX(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> 
       Skeleton temp, *skel=(skeleton ? skeleton : (mesh || xskeleton || animations) ? &temp : null); // if skel not specified, but we want mesh, xskeleton or animations, then we have to process it (mesh requires it for skinning: bone names and types, animations require for skeleton bone transforms, parents, etc.)
       {
          SyncLocker locker(Lock);
-         fbx.set(materials); // !! call before creating meshes to setup 'ee_mtrl_to_fbx_mtrl' !!
+         fbx.set(materials); // !! call before creating meshes to setup 'engine_mtrl_to_fbx_mtrl' !!
          if(skel)
          {
             fbx.setNodesAsBoneFromSkin();
