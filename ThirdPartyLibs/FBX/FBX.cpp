@@ -215,7 +215,8 @@ struct FBX
                      case FbxNodeAttribute::eNull    : node.dummy=true; node.bone=all_nodes_as_bones; break;
                      case FbxNodeAttribute::eSkeleton: node.bone =true; break;
                      case FbxNodeAttribute::eMesh    : node.mesh =true; break;
-                  }
+                  }else
+                  if(all_nodes_as_bones)node.bone=true; // this is needed because some animations can have all node attributes null
 
                   // matrix
                   node.local =MATRIX(node.node->EvaluateLocalTransform ());
