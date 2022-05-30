@@ -1095,7 +1095,7 @@ struct FBX
                            AddKeyTimes(cur->node->LclScaling.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_Y), scale_times, fps);
                            AddKeyTimes(cur->node->LclScaling.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_Z), scale_times, fps);
 
-                           cur=cur->parent; if(!cur || cur->bone)break; // if there's no parent, or it's a bone (its animations are alread stored in it so we can skip them), then break
+                           cur=cur->parent; if(!cur || cur->bone)break; // if there's no parent, or it's a bone (its animations are already stored in it so we can skip them), then break
                         }
 
                         if(rot_times.elms() || pos_times.elms() || scale_times.elms())
