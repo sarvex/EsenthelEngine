@@ -1146,7 +1146,7 @@ struct FBX
                             C FbxTime   &time      =times[i];
                               Flt        t         =time.GetSecondDouble()-time_start;
                               FbxAMatrix transform =node.node->EvaluateLocalTransform(time);
-                              MatrixD    node_local=node.local;
+                              MatrixD3   node_local=node.local;
                               for(Node *n=&node; n!=animated_node_ancestor; ) // gather all transforms starting from this 'node' to 'animated_node_ancestor' inclusive
                               {
                                  n=n->parent;
@@ -1179,8 +1179,8 @@ struct FBX
                                  VecD p=anim_matrix.pos;
                               #if 0
                                  if(Node *parent=animated_node_ancestor->parent)p*=parent->global; // convert to world space (here we don't use 'local_to_world' because that includes this node orientation, but node position is independent on its orientation)
-                                 p-=sbon.pos; // set as world space delta from bone
-                                 if(sbon.parent!=0xFF)p*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
+                                                                                p-=sbon.pos; // set as world space delta from bone
+                                 if(sbon.parent!=0xFF                          )p*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
                               #else // optimized
                                  p*=pos_matrix;
                               #endif
