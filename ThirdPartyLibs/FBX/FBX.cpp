@@ -1077,12 +1077,10 @@ struct FBX
                      {
                         rot_times.clear(); pos_times.clear(); scale_times.clear();
 
-                        Node *animated_node_ancestor=&node; // there's following node hierarchy starting from root: null <-> root <-> .. <-> bone_node_parent (nearest node that is a bone) <-> .. (some bones) <-> animated_node_ancestor (first node that has some animations, in most cases this is 'node' however if there were some parent bones that are ignored, then this could point to one of them) <-> .. <-> node (currently processed node), at start set to "&node" so we don't have to call 'hasAnim' below, this is never set to another node that is a bone (only 'node' can be set or another nodes that have animations but aren't bones)
+                        Node *animated_node_ancestor=&node; // there's following node hierarchy starting from root: null <-> root <-> .. <-> bone_node_parent (nearest node that is a bone) <-> .. (some nodes) <-> animated_node_ancestor (first node that has some animations, in most cases this is 'node' however if there were some parent bones that are ignored, then this could point to one of them) <-> .. <-> node (currently processed node), at start set to "&node" so we don't have to call 'hasAnim' below, this is never set to another node that is a bone (only 'node' can be set or another nodes that have animations but aren't bones)
 
                         for(Node *cur=&node; ; )
                         {
-                           if(cur!=&node && cur->hasAnim(anim_layer))animated_node_ancestor=cur; // remember the last encountered node that has some animations !! 'hasAnim' assumes that 'SetCurrentAnimationStack' was already called !!
-
                            AddKeyTimes(cur->node->LclRotation.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_X), rot_times, fps);
                            AddKeyTimes(cur->node->LclRotation.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_Y), rot_times, fps);
                            AddKeyTimes(cur->node->LclRotation.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_Z), rot_times, fps);
@@ -1096,6 +1094,7 @@ struct FBX
                            AddKeyTimes(cur->node->LclScaling.GetCurve(anim_layer, FBXSDK_CURVENODE_COMPONENT_Z), scale_times, fps);
 
                            cur=cur->parent; if(!cur || cur->bone)break; // if there's no parent, or it's a bone (its animations are already stored in it so we can skip them), then break
+                           if(cur->hasAnim(anim_layer))animated_node_ancestor=cur; // remember the last encountered node that has some animations !! 'hasAnim' assumes that 'SetCurrentAnimationStack' was already called !! check this after proceeding to the parent, so we don't call this for 'node' itself, since we've already set 'animated_node_ancestor' to it
                         }
 
                         if(rot_times.elms() || pos_times.elms() || scale_times.elms())
