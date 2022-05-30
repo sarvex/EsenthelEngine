@@ -1118,19 +1118,17 @@ struct FBX
                         #endif
                            SkelBone &sbon=skeleton->bones[node.bone_index];
                            AnimBone &abon=xanim.anim.bones.New(); abon.set(sbon.name);
-                           MatrixD   parent_matrix_inv; if(sbon.parent!=0xFF)skeleton->bones[sbon.parent].inverse(parent_matrix_inv);
+                           MatrixD3  parent_matrix_inv; if(sbon.parent!=0xFF)skeleton->bones[sbon.parent].inverse(parent_matrix_inv);
 
                            // orientation
                            MatrixD3 local_to_world; animated_node_ancestor->local.orn().inverseNonOrthogonal(local_to_world); local_to_world*=animated_node_ancestor->global.orn(); // GetTransform(animated_node_ancestor->local.orn(), animated_node_ancestor->global.orn());
-                           MatrixD3 local_node_to_local_bone; if(sbon.parent!=0xFF)local_to_world.mul(parent_matrix_inv.orn(), local_node_to_local_bone);else local_node_to_local_bone=local_to_world; // after we convert to world space with 'local_to_world', we then convert it to bone in its parent space
+                           MatrixD3 local_node_to_local_bone; if(sbon.parent!=0xFF)local_to_world.mul(parent_matrix_inv, local_node_to_local_bone);else local_node_to_local_bone=local_to_world; // after we convert to world space with 'local_to_world', we then convert it to bone in its parent space
 
                            // position
-                           Node   *animated_node_ancestor_parent=animated_node_ancestor->parent;
-                           Bool    pos_transform=(animated_node_ancestor_parent || sbon.parent!=0xFF); // if have to transform by 'pos_matrix'
                            MatrixD pos_matrix;
-                           if(animated_node_ancestor_parent && sbon.parent!=0xFF)           animated_node_ancestor_parent->global.mul(parent_matrix_inv, pos_matrix);else // both transforms, pos_matrix=animated_node_ancestor_parent->global*parent_matrix_inv
-                           if(animated_node_ancestor_parent                     )pos_matrix=animated_node_ancestor_parent->global                                   ;else // 1    transform , pos_matrix=animated_node_ancestor_parent->global
-                           if(                                 sbon.parent!=0xFF)pos_matrix=                                          parent_matrix_inv             ;     // 1    transform , pos_matrix=                                      parent_matrix_inv
+                           if(Node *parent=animated_node_ancestor->parent)pos_matrix=parent->global;else pos_matrix.identity();
+                                                                          pos_matrix.moveBack(sbon.pos);
+                           if(sbon.parent!=0xFF                          )pos_matrix*=parent_matrix_inv;
 
                            abon.orns  .setNum(  rot_times.elms());
                            abon.poss  .setNum(  pos_times.elms());
@@ -1166,7 +1164,7 @@ struct FBX
                                  anim.z=anim_matrix.x;
                               #if 0
                                  anim*=local_to_world; // convert to world space
-                                 if(sbon.parent!=0xFF)anim*=parent_matrix_inv.orn(); // convert to local space (relative to skeleton parent bone)
+                                 if(sbon.parent!=0xFF)anim*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
                               #else // optimized
                                  anim*=local_node_to_local_bone; // convert from local node to local bone space
                               #endif
@@ -1178,12 +1176,13 @@ struct FBX
                               // position
                               if(pos_times.binarySearch(time, index, CompareTime))
                               {
-                                 VecD p=anim_matrix.pos-node_local.pos;
+                                 VecD p=anim_matrix.pos;
                               #if 0
                                  if(Node *parent=animated_node_ancestor->parent)p*=parent->global; // convert to world space (here we don't use 'local_to_world' because that includes this node orientation, but node position is independent on its orientation)
+                                 p-=sbon.pos; // set as world space delta from bone
                                  if(sbon.parent!=0xFF)p*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
                               #else // optimized
-                                 if(pos_transform)p*=pos_matrix;
+                                 p*=pos_matrix;
                               #endif
                                  AnimKeys::Pos &pos=abon.poss[index]; pos.time=t; pos.pos=p;
                               }
