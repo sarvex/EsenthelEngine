@@ -4474,7 +4474,7 @@ class ProjectEx : ProjectHierarchy
             if(ext=="mtrl"                                                                                      )type=ELM_MTRL ;else
             if(ext=="anim"                                                                                      )type=ELM_ANIM ;else
             if(ext=="c" || ext=="cpp" || ext=="h" || ext=="cc" || ext=="cxx" || ext=="m" || ext=="mm"           )type=ELM_CODE ;else
-            if(Ends(name, ".mesh.ascii") || Ends(name, ".xps.ascii")                                            )type=ELM_OBJ  ;else
+            if(ext=="skel" || Ends(name, ".mesh.ascii") || Ends(name, ".xps.ascii")                             )type=ELM_OBJ  ;else
                                                                                                                  type=ELM_FILE ;
             if(Elm *elm=newElm(type, parent_id, &NoTemp(GetBaseNoExt(name)), false))
             {

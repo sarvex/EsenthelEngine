@@ -2214,6 +2214,7 @@ EXTENSION_TYPE ExtType(C Str &ext)
    // Engine formats
    if(ext=="img" )return EXT_IMAGE;
    if(ext=="mesh")return EXT_MESH;
+ //if(ext=="skel")return EXT_SKEL;
  //if(ext=="mtrl")return EXT_MATERIAL;
  //if(ext=="phys")return EXT_PHYS;
 
