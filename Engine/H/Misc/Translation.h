@@ -190,6 +190,7 @@ CChar* TPoisonBomb();
 CChar* TPoisonCloud();
 CChar* TPolearm();
 CChar* TPotion();
+CChar* TPoweredBy();
 Str    TPoweredBy(CChar *name);
 CChar* TPress();
 CChar* TPreviousItem();
