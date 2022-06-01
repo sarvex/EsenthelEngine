@@ -51,70 +51,6 @@
 ASSERT(SIZE(Long)>=SIZE(Ptr)); // some pointers are processed using Long's on Java
 namespace EE{
 /******************************************************************************/
-#ifndef    AMETA_CAPS_LOCK_ON
-   #define AMETA_CAPS_LOCK_ON 0x100000
-#endif
-#ifndef    AINPUT_SOURCE_STYLUS
-   #define AINPUT_SOURCE_STYLUS (0x00004000|AINPUT_SOURCE_CLASS_POINTER)
-#endif
-
-#ifndef    AMOTION_EVENT_ACTION_HOVER_MOVE
-   #define AMOTION_EVENT_ACTION_HOVER_MOVE 7
-#endif
-#ifndef    AMOTION_EVENT_ACTION_SCROLL
-   #define AMOTION_EVENT_ACTION_SCROLL 8
-#endif
-#ifndef    AMOTION_EVENT_ACTION_HOVER_ENTER
-   #define AMOTION_EVENT_ACTION_HOVER_ENTER 9
-#endif
-#ifndef    AMOTION_EVENT_ACTION_HOVER_EXIT
-   #define AMOTION_EVENT_ACTION_HOVER_EXIT 10
-#endif
-
-#ifndef    AMOTION_EVENT_AXIS_VSCROLL
-   #define AMOTION_EVENT_AXIS_VSCROLL 9
-#endif
-#ifndef    AMOTION_EVENT_AXIS_HSCROLL
-   #define AMOTION_EVENT_AXIS_HSCROLL 10
-#endif
-
-#ifndef    AINPUT_SOURCE_JOYSTICK
-   #define AINPUT_SOURCE_JOYSTICK 0x01000010
-#endif
-
-#ifndef    AMOTION_EVENT_AXIS_X
-   #define AMOTION_EVENT_AXIS_X 0
-#endif
-#ifndef    AMOTION_EVENT_AXIS_Y
-   #define AMOTION_EVENT_AXIS_Y 1
-#endif
-#ifndef    AMOTION_EVENT_AXIS_RX
-   #define AMOTION_EVENT_AXIS_RX 12
-#endif
-#ifndef    AMOTION_EVENT_AXIS_RY
-   #define AMOTION_EVENT_AXIS_RY 13
-#endif
-#ifndef    AMOTION_EVENT_AXIS_HAT_X
-   #define AMOTION_EVENT_AXIS_HAT_X 15
-#endif
-#ifndef    AMOTION_EVENT_AXIS_HAT_Y
-   #define AMOTION_EVENT_AXIS_HAT_Y 16
-#endif
-
-#ifndef    HISTORY_CURRENT
-   #define HISTORY_CURRENT (-0x80000000)
-#endif
-
-#ifndef    AMETA_CTRL_ON
-   #define AMETA_CTRL_ON 0x1000
-#endif
-#ifndef    AMETA_CTRL_LEFT_ON
-   #define AMETA_CTRL_LEFT_ON 0x2000
-#endif
-#ifndef    AMETA_CTRL_RIGHT_ON
-   #define AMETA_CTRL_RIGHT_ON 0x4000
-#endif
-
 #if DEBUG
    #define LOG(x) LogN(x)
 #else
@@ -303,13 +239,15 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
             {
-               Joypad &jp=Joypads(action_index); if(!jp._name.is()){jp._name=JavaInputDeviceName(device); if(!jp._name.is())jp._name="Joypad";}
-               jp.dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X, action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y, action_index));
-               jp.dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X    , action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
-               jp.dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX   , action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY   , action_index));
+               Bool added; Joypad &jp=GetJoypad(device, added); if(added)jp._name=JavaInputDeviceName(device);
+               jp.dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
+                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
+               jp.dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X       , action_index),
+                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y       , action_index));
+               jp.dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX      , action_index),
+                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY      , action_index));
+               jp.trigger[0]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_LTRIGGER, action_index);
+               jp.trigger[1]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RTRIGGER, action_index);
                jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
             }
          }else
@@ -488,7 +426,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
             if(key==KB_BACK ){key=KB_DEL; Kb._disable_shift=true;}else // Shift+Back  = Del (this is     universal behaviour on Android platform)
             if(key==KB_ENTER){key=KB_INS; Kb._disable_shift=true;}     // Shift+Enter = Ins (this is non-universal behaviour on Android platform)
          }*/
-         Joypad *joypad=null; if(joy){Bool empty=!InRange(0, Joypads); joypad=&Joypads(0); if(empty)joypad->_name=JavaInputDeviceName(device); joy--;}
+         Joypad *joypad=null; if(joy!=255){Bool added; joypad=&GetJoypad(device, added); if(added)joypad->_name=JavaInputDeviceName(device);}
 
 //LogN(S+"dev:"+device+", code:"+code+", meta:"+meta+", key:"+key+", action:"+(int)AKeyEvent_getAction(event));
 //if(!key)LogN(S+"key:"+code);
@@ -1094,18 +1032,19 @@ static void InitKeyMap()
    KeyMap[168]=KB_ZOOM_IN ; // AKEYCODE_ZOOM_IN
    KeyMap[169]=KB_ZOOM_OUT; // AKEYCODE_ZOOM_OUT
 
-   JoyMap[AKEYCODE_BUTTON_A     ]=1;
-   JoyMap[AKEYCODE_BUTTON_B     ]=2;
-   JoyMap[AKEYCODE_BUTTON_X     ]=3;
-   JoyMap[AKEYCODE_BUTTON_Y     ]=4;
-   JoyMap[AKEYCODE_BUTTON_L1    ]=5;
-   JoyMap[AKEYCODE_BUTTON_R1    ]=6;
-   JoyMap[AKEYCODE_BUTTON_L2    ]=7;
-   JoyMap[AKEYCODE_BUTTON_R2    ]=8;
-   JoyMap[AKEYCODE_BUTTON_SELECT]=9;
-   JoyMap[AKEYCODE_BUTTON_START ]=10;
-   JoyMap[AKEYCODE_BUTTON_THUMBL]=11;
-   JoyMap[AKEYCODE_BUTTON_THUMBR]=12;
+   SetMem(JoyMap, 255);
+   JoyMap[AKEYCODE_BUTTON_A     ]=JB_A;
+   JoyMap[AKEYCODE_BUTTON_B     ]=JB_B;
+   JoyMap[AKEYCODE_BUTTON_X     ]=JB_X;
+   JoyMap[AKEYCODE_BUTTON_Y     ]=JB_Y;
+   JoyMap[AKEYCODE_BUTTON_L1    ]=JB_L1;
+   JoyMap[AKEYCODE_BUTTON_R1    ]=JB_R1;
+   JoyMap[AKEYCODE_BUTTON_L2    ]=JB_L2;
+   JoyMap[AKEYCODE_BUTTON_R2    ]=JB_R2;
+   JoyMap[AKEYCODE_BUTTON_THUMBL]=JB_LTHUMB;
+   JoyMap[AKEYCODE_BUTTON_THUMBR]=JB_RTHUMB;
+   JoyMap[AKEYCODE_BUTTON_SELECT]=JB_SELECT;
+   JoyMap[AKEYCODE_BUTTON_START ]=JB_START;
 
    REPD(shift, 2)
    REPD(caps , 2)if(shift || caps)

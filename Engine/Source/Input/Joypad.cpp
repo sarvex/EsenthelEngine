@@ -2,7 +2,7 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define SORT_JOYPADS_BY_ID 1
+#define SORT_JOYPADS_BY_ID 0 // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder"
 /******************************************************************************/
 static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
