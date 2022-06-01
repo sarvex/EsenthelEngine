@@ -244,10 +244,12 @@ inline Bool Any(C Dbl &x, C Dbl &y, C Dbl &z, C Dbl &w); // faster version of "x
 /******************************************************************************/
 // CHANGE SIGN
 /******************************************************************************/
-inline void CHS(Int  &x) {x=-x;}
-inline void CHS(Long &x) {x=-x;}
-inline void CHS(Flt  &x) {((U32&) x)   ^=SIGN_BIT;} // works as "x=-x;" but faster
-inline void CHS(Dbl  &x) {((U32*)&x)[1]^=SIGN_BIT;} // works as "x=-x;" but faster
+inline void CHS(SByte &x) {x=-x;}
+inline void CHS(Short &x) {x=-x;}
+inline void CHS(Int   &x) {x=-x;}
+inline void CHS(Long  &x) {x=-x;}
+inline void CHS(Flt   &x) {((U32&) x)   ^=SIGN_BIT;} // works as "x=-x;" but faster
+inline void CHS(Dbl   &x) {((U32*)&x)[1]^=SIGN_BIT;} // works as "x=-x;" but faster
 #if EE_PRIVATE
 INLINE Bool NegativeSB(Flt  x) {return FlagOn     ((UInt&)x, SIGN_BIT);}
 INLINE void      CHSSB(Flt &x) {       FlagToggle ((UInt&)x, SIGN_BIT);}
@@ -1266,6 +1268,8 @@ struct VecSB2 // Vector 2D (SByte)
    Int     max         ()C {return    Max (x, y);} // components maximum
    Int     sum         ()C {return         x+ y ;} // components sum
    VecSB2& reverse     ()  {Swap(x, y); return T;} // reverse components order
+   VecSB2& chsX        ()  {CHS(x);     return T;} // change sign of X component
+   VecSB2& chsY        ()  {CHS(y);     return T;} // change sign of Y component
 
    VecSB2() {}
    VecSB2(SByte i         ) {set(i   );}
@@ -1334,6 +1338,9 @@ struct VecSB // Vector 3D (SByte)
    Int    sum         (         )C {return             x+ y+ z ;} // components sum
    Int    find        (Int value)C;                               // get index of first component that equals 'value' (-1 if none)
    VecSB& reverse     (         )  {       Swap(x, z); return T;} // reverse components order
+   VecSB& chsX        (         )  {           CHS(x); return T;} // change sign of X component
+   VecSB& chsY        (         )  {           CHS(y); return T;} // change sign of Y component
+   VecSB& chsZ        (         )  {           CHS(z); return T;} // change sign of Z component
 
    VecSB() {}
    VecSB(SByte i                  ) {set(i      );}
@@ -1424,7 +1431,11 @@ struct VecSB4 // Vector 4D (SByte)
    Int     max         (         )C {return Max (x, y, z, w);}                             // components maximum
    Int     sum         (         )C {return      x+ y+ z+ w ;}                             // components sum
    Int     find        (Int value)C;                                                       // get index of first component that equals 'value' (-1 if none)
-   VecSB4& reverse     (         ) {Swap(c[0], c[3]); Swap(c[1], c[2]); return T;}         // reverse components order
+   VecSB4& reverse     (         )  {Swap(c[0], c[3]); Swap(c[1], c[2]); return T;}        // reverse components order
+   VecSB4& chsX        (         )  {CHS(x); return T;}                                    // change sign of X component
+   VecSB4& chsY        (         )  {CHS(y); return T;}                                    // change sign of Y component
+   VecSB4& chsZ        (         )  {CHS(z); return T;}                                    // change sign of Z component
+   VecSB4& chsW        (         )  {CHS(w); return T;}                                    // change sign of W component
 
    VecSB4() {}
    VecSB4(SByte i                           ) {set(i         );}
