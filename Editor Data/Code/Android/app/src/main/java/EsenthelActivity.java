@@ -360,7 +360,7 @@ public class EsenthelActivity extends NativeActivity
          {
             input_device_listener=new InputManager.InputDeviceListener()
             {
-               @Override public void onInputDeviceAdded  (int deviceId) {}
+               @Override public void onInputDeviceAdded  (int deviceId) {com.esenthel.Native.deviceAdded  (deviceId);}
                @Override public void onInputDeviceRemoved(int deviceId) {com.esenthel.Native.deviceRemoved(deviceId);}
                @Override public void onInputDeviceChanged(int deviceId) {}
             };

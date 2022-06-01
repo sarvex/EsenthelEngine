@@ -226,16 +226,16 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 {
    LOG2("InputCallback");
    Int device=AInputEvent_getDeviceId(event);
+   Int source=AInputEvent_getSource  (event);
    switch(    AInputEvent_getType    (event))
    {
       case AINPUT_EVENT_TYPE_MOTION:
       {
-         Int  source      =(AInputEvent_getSource(event) & ~AINPUT_SOURCE_CLASS_POINTER), // disable 'AINPUT_SOURCE_CLASS_POINTER' because all have it (including AINPUT_SOURCE_MOUSE and AINPUT_SOURCE_STYLUS)
-              action      =AMotionEvent_getAction(event),
+         Int  action      =AMotionEvent_getAction(event),
               action_type = (action&AMOTION_EVENT_ACTION_MASK),
               action_index=((action&AMOTION_EVENT_ACTION_POINTER_INDEX_MASK)>>AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
-         Bool stylus      =FlagOn(source, AINPUT_SOURCE_STYLUS);
-         if(source&AINPUT_SOURCE_JOYSTICK)
+         Bool stylus      =FlagOn(source, AINPUT_SOURCE_STYLUS & ~AINPUT_SOURCE_CLASS_POINTER); // disable 'AINPUT_SOURCE_CLASS_POINTER' because (AINPUT_SOURCE_TOUCHSCREEN, AINPUT_SOURCE_MOUSE, AINPUT_SOURCE_STYLUS) have it
+         if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
             {
@@ -251,7 +251,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
             }
          }else
-         if((source&AINPUT_SOURCE_MOUSE) && !stylus)  // check for stylus because on "Samsung Galaxy Note 2" stylus input generates both "AINPUT_SOURCE_STYLUS|AINPUT_SOURCE_MOUSE" at the same time
+         if((source&(AINPUT_SOURCE_MOUSE & ~AINPUT_SOURCE_CLASS_POINTER)) && !stylus) // disable 'AINPUT_SOURCE_CLASS_POINTER' because (AINPUT_SOURCE_TOUCHSCREEN, AINPUT_SOURCE_MOUSE, AINPUT_SOURCE_STYLUS) have it, check for 'stylus' because on "Samsung Galaxy Note 2" stylus input generates both "AINPUT_SOURCE_STYLUS|AINPUT_SOURCE_MOUSE" at the same time
          {
             if(action_type==AMOTION_EVENT_ACTION_SCROLL)
             {
@@ -412,21 +412,35 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 
       case AINPUT_EVENT_TYPE_KEY:
       {
-         Int    code =AKeyEvent_getKeyCode  (event),
-                meta =AKeyEvent_getMetaState(event);
+         Int  code =AKeyEvent_getKeyCode(event);
+         Byte bcode=Byte(code);
+
+         if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
+         {
+            Byte joy=JoyMap[bcode]; if(joy!=255)
+            {
+               Bool added; Joypad &joypad=GetJoypad(device, added); if(added)joypad._name=JavaInputDeviceName(device);
+               switch(AKeyEvent_getAction(event))
+               {
+                  case AKEY_EVENT_ACTION_DOWN    : joypad.push   (joy); break;
+                  case AKEY_EVENT_ACTION_UP      : joypad.release(joy); break;
+                  case AKEY_EVENT_ACTION_MULTIPLE: joypad.push   (joy); joypad.release(joy); break;
+               }
+            }
+            return 1;
+         }
+
+         Int    meta =AKeyEvent_getMetaState(event);
          Bool   ctrl =FlagOn(meta, (Int)AMETA_CTRL_ON     ),
                 shift=FlagOn(meta, (Int)AMETA_SHIFT_ON    ),
                 alt  =FlagOn(meta, (Int)AMETA_ALT_ON      ),
                 caps =FlagOn(meta, (Int)AMETA_CAPS_LOCK_ON);
-         Byte   bcode=Byte(code);
          KB_KEY key  =KeyMap[bcode];
-         Byte   joy  =JoyMap[bcode];
          /*if(shift && !ctrl && !alt && !Kb.anyWin())
          {
             if(key==KB_BACK ){key=KB_DEL; Kb._disable_shift=true;}else // Shift+Back  = Del (this is     universal behaviour on Android platform)
             if(key==KB_ENTER){key=KB_INS; Kb._disable_shift=true;}     // Shift+Enter = Ins (this is non-universal behaviour on Android platform)
          }*/
-         Joypad *joypad=null; if(joy!=255){Bool added; joypad=&GetJoypad(device, added); if(added)joypad->_name=JavaInputDeviceName(device);}
 
 //LogN(S+"dev:"+device+", code:"+code+", meta:"+meta+", key:"+key+", action:"+(int)AKeyEvent_getAction(event));
 //if(!key)LogN(S+"key:"+code);
@@ -436,8 +450,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          if(KeySource!=KEY_JAVA)
          {
             // get 'KeyCharacterMap' for this device
-            if(!joypad)
-               if(!KeyboardLoaded || KeyboardDeviceID!=device)
+            if(!KeyboardLoaded || KeyboardDeviceID!=device)
             {
                KeyboardLoaded  =true;
                KeyboardDeviceID=device;
@@ -468,30 +481,22 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          {
             case AKEY_EVENT_ACTION_DOWN:
             {
-               if(joypad)joypad->push(joy);
-                         Kb     .push(key, code); Kb.queue(chr, code); // !! queue characters after push !!
+               Kb.push(key, code); Kb.queue(chr, code); // !! queue characters after push !!
             }break;
 
             case AKEY_EVENT_ACTION_UP:
             {
-               if(joypad)joypad->release(joy);
-                         Kb     .release(key);
+               Kb.release(key);
             }break;
 
             case AKEY_EVENT_ACTION_MULTIPLE:
             {
-               if(joypad)
-               {
-                  joypad->push   (joy);
-                  joypad->release(joy);
-               }
                Kb.push   (key, code); Kb.queue(chr, code); // !! queue characters after push !!
                Kb.release(key      );
             }break;
          }
          // on some systems 'dispatchKeyEvent' will not be called if we return 1
          if(chr              // if we did receive a character then we don't need 'dispatchKeyEvent' anymore
-         || joypad           // no point in forwarding joy buttons further
          || key==KB_NAV_BACK // on Asus Transformer Prime pressing this hardware keyboard key will close the app
          )return 1;
       }return 0; // call 'dispatchKeyEvent'
@@ -1341,6 +1346,7 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass cl
                        Kb._recti.set(w-r_size,        0,      w,      h);     // right  size is the biggest
 }
 
+JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {}
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceRemoved(JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceRemoved, Ptr(device_id));} // may be called on a secondary thread
 
 }

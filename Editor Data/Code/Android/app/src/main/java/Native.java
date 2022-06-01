@@ -25,6 +25,7 @@ public class Native
    public static native void   audioRecord    (long sound_record, ByteBuffer buf, int size);
    public static native void   closedError    ();
    public static native void   notification   (int id, boolean selected);
+   public static native void   deviceAdded    (int device_id);
    public static native void   deviceRemoved  (int device_id);
 
    static
