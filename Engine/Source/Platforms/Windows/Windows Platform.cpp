@@ -778,17 +778,19 @@ void GamePadChange::process()
             joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
       }else joypad_id=0;
       joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
-      Joypad &joypad=Joypads.New(); joypad._id=joypad_id; joypad._connected=true; joypad._gamepad=gamepad;
-      if(controller)
+      Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
       {
-         joypad._name      =controller->DisplayName->Data();
-         joypad. _vendor_id=controller->HardwareVendorId;
-         joypad._product_id=controller->HardwareProductId;
-         if(auto motors=controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
+         joypad._gamepad=gamepad;
+         if(controller)
+         {
+            joypad._name      =controller->DisplayName->Data();
+            joypad. _vendor_id=controller->HardwareVendorId;
+            joypad._product_id=controller->HardwareProductId;
+            if(auto motors=controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
+         }
+         // set callback after everything was set, in case it's called right away
+         joypad._gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
       }
-      // set callback after everything was set, in case it's called right away
-      joypad._gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
-         Joypads.sort  (Compare); // sort by their ID
    }else Joypads.remove(FindJoypadI(gamepad), true);
 }
 #endif

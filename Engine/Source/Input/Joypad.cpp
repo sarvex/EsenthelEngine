@@ -2,6 +2,8 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
+#define SORT_JOYPADS_BY_ID 1
+/******************************************************************************/
 static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
 MemtN<Joypad, 4> Joypads;
@@ -61,22 +63,24 @@ struct GamePadChange
          }
 
          joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
-         Joypad &joypad=Joypads.New(); joypad._id=joypad_id; joypad._connected=true; joypad._gamepad=gamepad;
-
-         if(raw_game_controller)
+         Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
          {
-            joypad. _vendor_id= vendor_id;
-            joypad._product_id=product_id;
-            Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
+            joypad._gamepad=gamepad;
+
+            if(raw_game_controller)
             {
-               unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
+               joypad. _vendor_id= vendor_id;
+               joypad._product_id=product_id;
+               Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
+               {
+                  unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
+               }
+            }
+            if(raw_game_controller2)
+            {
+               HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
             }
          }
-         if(raw_game_controller2)
-         {
-            HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
-         }
-            Joypads.sort  (Compare); // sort by their ID
       }else Joypads.remove(FindJoypadI(gamepad.Get()), true);
    }
 };
@@ -97,42 +101,13 @@ static struct GamePadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL:
 static struct GamePadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(false, gamepad); return S_OK;}}GamePadRemoved;
 
 #elif MAC
-struct MacJoypad
-{
-   struct Elm
-   {
-      enum TYPE : Byte
-      {
-         PAD   ,
-         BUTTON,
-         AXIS  ,
-      };
-      TYPE               type;
-      Int                index;
-      IOHIDElementCookie cookie;
-      Int                avg, max; // button_on=(val>avg);
-      Flt                mul, add;
-
-      void setPad   (C IOHIDElementCookie &cookie                    , Int max) {T.type=PAD   ; T.cookie=cookie; T.max  =max+1; T.mul=-PI2/T.max; T.add=PI_2;}
-      void setButton(C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=BUTTON; T.cookie=cookie; T.index=index; T.avg=(min+max)/2;}
-      void setAxis  (C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index&1){CHS(mul); CHS(add);}} // change sign for vertical
-   };
-
-   static Int Compare(C Elm &a, C Elm                &b) {return ::Compare(UIntPtr(a.cookie), UIntPtr(b.cookie));}
-   static Int Compare(C Elm &a, C IOHIDElementCookie &b) {return ::Compare(UIntPtr(a.cookie), UIntPtr(b       ));}
-
-   Mems<Elm> elms;
-   Byte      button[32];
-
-   void         zero() {Zero(button);}
-   MacJoypad() {zero();}
-
-   NO_COPY_CONSTRUCTOR(MacJoypad);
-};
-static MemtN<MacJoypad, 4> MacJoypads;
+ASSERT(MEMBER_SIZE(Joypad::Elm, cookie)==SIZE(UInt)); // because it's stored as UInt for EE_PRIVATE
 static IOHIDManagerRef HidManager;
 static UInt JoypadsID;
 /******************************************************************************/
+static Int Compare(C Joypad::Elm &a, C Joypad::Elm        &b) {return Compare(UIntPtr(a.cookie), UIntPtr(b.cookie));}
+static Int Compare(C Joypad::Elm &a, C IOHIDElementCookie &b) {return Compare(UIntPtr(a.cookie), UIntPtr(b       ));}
+
 static NSMutableDictionary* JoypadCriteria(UInt32 inUsagePage, UInt32 inUsage)
 {
    NSMutableDictionary* dict=[[NSMutableDictionary alloc] init];
@@ -142,9 +117,9 @@ static NSMutableDictionary* JoypadCriteria(UInt32 inUsagePage, UInt32 inUsage)
 } 
 static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
 {
-   Memt<MacJoypad::Elm> elms;
-   Int                  buttons=0, axes=0;
-   NSArray             *elements=(NSArray*)IOHIDDeviceCopyMatchingElements(device, null, kIOHIDOptionsTypeNone);
+   Memt<Joypad::Elm> elms;
+   Int               buttons=0, axes=0;
+   NSArray          *elements=(NSArray*)IOHIDDeviceCopyMatchingElements(device, null, kIOHIDOptionsTypeNone);
    FREP([elements count]) // process in order
    {
       IOHIDElementRef element=(IOHIDElementRef)[elements objectAtIndex: i];
@@ -156,85 +131,82 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
           lmin =IOHIDElementGetLogicalMin (element),
           lmax =IOHIDElementGetLogicalMax (element);
       IOHIDElementCookie cookie=IOHIDElementGetCookie(element);
-      //CFStringRef elm_name=IOHIDElementGetName(element); NSLog(@"%@", (NSString*)elm_name);
+    //CFStringRef      elm_name=IOHIDElementGetName  (element); NSLog(@"%@", (NSString*)elm_name);
 
       if(type==kIOHIDElementTypeInput_Misc || type==kIOHIDElementTypeInput_Axis || type==kIOHIDElementTypeInput_Button)
       {
-         if((max-min==1) || page==kHIDPage_Button || type==kIOHIDElementTypeInput_Button){if(InRange(buttons, MEMBER(MacJoypad, button)))elms.New().setButton(cookie, buttons++, min, max);}else
-         if(usage>=0x30 && usage<0x36                                                   )                                                elms.New().setAxis  (cookie, axes   ++, min, max); else
-         if(usage==0x39                                                                 )                                                elms.New().setPad   (cookie,                lmax);
+         if((max-min==1) || page==kHIDPage_Button || type==kIOHIDElementTypeInput_Button){if(InRange(buttons, MEMBER(Joypad, _mac_button)))elms.New().setButton(cookie, buttons++, min, max);}else
+         if(usage>=0x30 && usage<0x36                                                   )                                                  elms.New().setAxis  (cookie, axes   ++, min, max); else
+         if(usage==0x39                                                                 )                                                  elms.New().setPad   (cookie,                lmax);
       }
    }
 
    if(elms.elms())
    {
-      elms.sort(MacJoypad::Compare); // sort so 'binaryFind' can be used later
+      elms.sort(Compare); // sort so 'binaryFind' can be used later
 
       NSString *name  =(NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey     )); // do not release this !!
     //NSString *serial=(NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDSerialNumberKey)); // do not release this ? this was null on "Logitech Rumblepad 2"
 	   Int    vendorId=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey    )) intValue];
 	   Int   productId=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
 
-         Joypad & jp=   Joypads.New();
-      MacJoypad &mjp=MacJoypads.New();
-       jp._id    =JoypadsID++;
-       jp._name  =name;
-       jp._device=device;
-      mjp. elms  =elms;
+      Bool added; Joypad &jp=GetJoypad(JoypadsID++, added); if(added)
+      {
+         jp._name  =name;
+         jp._device=device;
+         jp._elms  =elms;
+      }
    }
 }
 static void JoypadRemoved(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
 {
-   REPA(Joypads)if(Joypads[i]._device==device)
-   {
-         Joypads.remove(i, true);
-      MacJoypads.remove(i, true);
-   }
+   REPA(Joypads)if(Joypads[i]._device==device){Joypads.remove(i, true); break;}
 }
 static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValueRef value)
 {
    IOHIDElementRef element=IOHIDValueGetElement (value  );
    IOHIDDeviceRef  device =IOHIDElementGetDevice(element); // or IOHIDQueueGetDevice((IOHIDQueueRef)inSender);
-   REPA(Joypads)if(Joypads[i]._device==device)
+   REPA(Joypads)
    {
-         Joypad & jp=   Joypads[i];
-      MacJoypad &mjp=MacJoypads[i];
-      if(MacJoypad::Elm *elm=mjp.elms.binaryFind(IOHIDElementGetCookie(element), MacJoypad::Compare))
+      Joypad &jp=Joypads[i]; if(jp._device==device)
       {
-         Int val=IOHIDValueGetIntegerValue(value);
-         switch(elm->type)
+         if(C Joypad::Elm *elm=jp._elms.binaryFind(IOHIDElementGetCookie(element), Compare))
          {
-            case MacJoypad::Elm::PAD:
+            Int val=IOHIDValueGetIntegerValue(value);
+            switch(elm->type)
             {
-               if(InRange(val, elm->max))
+               case Joypad::Elm::PAD:
                {
-                  CosSin(jp.dir.x, jp.dir.y, val*elm->mul+elm->add);
-                  jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
-               }else
-               {
-                  jp.dir.zero();
-                  jp.setDiri(0, 0);
-               }
-            }break;
+                  if(InRange(val, elm->max))
+                  {
+                     CosSin(jp.dir.x, jp.dir.y, val*elm->mul+elm->add);
+                     jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
+                  }else
+                  {
+                     jp.dir.zero();
+                     jp.setDiri(0, 0);
+                  }
+               }break;
 
-            case MacJoypad::Elm::BUTTON:
-            {
-               mjp.button[elm->index]=(val>elm->avg);
-            }break;
-
-            case MacJoypad::Elm::AXIS:
-            {
-               switch(elm->index)
+               case Joypad::Elm::BUTTON:
                {
-                  case 0: jp.dir_a[0].x=val*elm->mul+elm->add; break;
-                  case 1: jp.dir_a[0].y=val*elm->mul+elm->add; break;
-                  case 2: jp.dir_a[1].x=val*elm->mul+elm->add; break;
-                  case 3: jp.dir_a[1].y=val*elm->mul+elm->add; break;
-               }
-            }break;
+                  jp._mac_button[elm->index]=(val>elm->avg);
+               }break;
+
+               case Joypad::Elm::AXIS:
+               {
+                  switch(elm->index)
+                  {
+                     case 0: jp.dir_a[0].x=val*elm->mul+elm->add; break;
+                     case 1: jp.dir_a[0].y=val*elm->mul+elm->add; break;
+                     case 2: jp.dir_a[1].x=val*elm->mul+elm->add; break;
+                     case 3: jp.dir_a[1].y=val*elm->mul+elm->add; break;
+                  }
+               }break;
+            }
          }
+         break;
       }
-      break;
    }
 }
 #endif
@@ -250,8 +222,8 @@ Joypad::~Joypad()
    {
       Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD)
       {
-         if(input.device==device)Inputs.remove(i, true);else // if this input is for joypad being deleted, then delete the input and keep order
-         if(input.device> device)input .device--;            // adjust the index
+         if(input.device> device)input .device--;else    // adjust the index
+         if(input.device==device)Inputs.remove(i, true); // if this input is for joypad being deleted, then delete the input and keep order
       }
    }
 }
@@ -261,12 +233,20 @@ Joypad::Joypad()
 
 #if SWITCH
    Zero(_vibration_handle); Zero(_sensor_handle);
+#elif MAC
+   Zero(_mac_button);
 #endif
 
   _color_left .zero();
   _color_right.zero();
 
    zero();
+
+   // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
+   Int device=index(); if(device>=0 && device<Joypads.elms()-1)REPA(Inputs) // if it's in 'Joypads' and it's not the last one
+   {
+      Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD && input.device>=device)input.device++;
+   }
 }
 CChar8* Joypad::buttonName(Int b)C {return InRange(b, _button_name) ? _button_name[b] : null;}
 CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_name[b] : null;}
@@ -549,13 +529,9 @@ void Joypad::update()
    }
 #endif
 #elif MAC
-   Int index=T.index(); if(InRange(index, MacJoypads))
-   {
-    C MacJoypad &mjp=MacJoypads[index];
-      ASSERT(ELMS(T._button)==ELMS(mjp.button));
-      update(mjp.button, Elms(mjp.button));
-      updateOK(); return;
-   }
+   ASSERT(ELMS(T._button)==ELMS(T._mac_button));
+   update( T._mac_button,  Elms(T._mac_button));
+   updateOK(); return;
 #else
    updateOK(); return; // updated externally
 #endif
@@ -643,15 +619,25 @@ void JoypadSensors(Bool calculate)
 void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_names, C CMemPtr<Color> &player_colors) {}
 #endif
 /******************************************************************************/
+static Int Compare(C Joypad &a, C UInt &b) {return Compare(a.id(), b);}
 Joypad* FindJoypad(UInt id)
 {
+#if SORT_JOYPADS_BY_ID
+   return Joypads.binaryFind(id, Compare);
+#else
    REPA(Joypads)if(Joypads[i].id()==id)return &Joypads[i];
+#endif
    return null;
 }
 Joypad& GetJoypad(UInt id, Bool &added)
 {
    added=false;
-   Joypad *joypad=FindJoypad(id); if(!joypad){added=true; joypad=&Joypads.New(); joypad->_id=id;} joypad->_connected=true;
+#if SORT_JOYPADS_BY_ID
+   Joypad *joypad; Int index; if(Joypads.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads.NewAt(index); joypad->_id=id; added=true;}
+#else
+   Joypad *joypad=FindJoypad(id);                                                         if(!joypad){joypad=&Joypads.New  (     ); joypad->_id=id; added=true;}
+#endif
+   joypad->_connected=true;
    return *joypad;
 }
 UInt NewJoypadID(UInt id)
@@ -764,8 +750,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
    && !(JP_GAMEPAD_INPUT && FindJoypadI   (vendor_id, product_id)>=0)) // can skip this check if we're not using GamePadInput, but if we are then we can't add this device if it's already created through another API
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
-      Bool added; Joypad &joypad=GetJoypad(id, added);
-      if(  added)
+      Bool added; Joypad &joypad=GetJoypad(id, added); if(added)
       {
          IDirectInputDevice8 *did=null;
          if(OK(InputDevices.DI->CreateDevice(DIDevInst->guidInstance, &did, null)))
@@ -828,8 +813,7 @@ void ListJoypads()
       {
          XINPUT_STATE state; if(XInputGetState(i, &state)==ERROR_SUCCESS) // if returned valid input
          {
-            Bool added; Joypad &joypad=GetJoypad(i, added); // index is used for the ID for XInput gamepads
-            if(  added)
+            Bool added; Joypad &joypad=GetJoypad(i, added); if(added) // index is used for the ID for XInput gamepads
             {
                joypad._xinput=i;
                joypad._name  =S+"X Gamepad #"+(i+1);
@@ -842,7 +826,6 @@ void ListJoypads()
    #endif
 
    REPA(Joypads)if(!Joypads[i]._connected)Joypads.remove(i, true); // remove disconnected joypads
-   Joypads.sort(Compare); // sort by their ID
 #elif MAC
 	if(HidManager=IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone))
 	{
@@ -850,7 +833,7 @@ void ListJoypads()
       {
          JoypadCriteria(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick),
          JoypadCriteria(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad),
-	      JoypadCriteria(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController),
+         JoypadCriteria(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController),
       };
       NSArray *criteria_array=[NSArray arrayWithObjects: criteria[0], criteria[1], criteria[2], __null];
       IOHIDManagerSetDeviceMatchingMultiple(HidManager, (CFArrayRef)criteria_array);
@@ -977,7 +960,6 @@ void ShutJoypads()
    Joypads.del();
 
 #if MAC
-   MacJoypads.del();
    if(HidManager)
    {
       IOHIDManagerClose(HidManager, kIOHIDOptionsTypeNone);

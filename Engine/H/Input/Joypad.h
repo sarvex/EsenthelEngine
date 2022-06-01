@@ -186,7 +186,34 @@ private:
 #endif
 #endif
 #if MAC
-   Ptr     _device=null;
+   struct Elm
+   {
+      enum TYPE : Byte
+      {
+         PAD   ,
+         BUTTON,
+         AXIS  ,
+      };
+      TYPE               type;
+      Int                index;
+   #if EE_PRIVATE
+      IOHIDElementCookie cookie;
+   #else
+      UInt               cookie;
+   #endif
+      Int                avg, max; // button_on=(val>avg);
+      Flt                mul, add;
+
+   #if EE_PRIVATE
+      void setPad   (C IOHIDElementCookie &cookie                    , Int max) {T.type=PAD   ; T.cookie=cookie; T.max  =max+1; T.mul=-PI2/T.max; T.add=PI_2;}
+      void setButton(C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=BUTTON; T.cookie=cookie; T.index=index; T.avg=(min+max)/2;}
+      void setAxis  (C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index&1){CHS(mul); CHS(add);}} // change sign for vertical
+   #endif
+   };
+
+   Mems<Elm> _elms;
+   Byte      _mac_button[32];
+   Ptr       _device=null;
 #endif
 
    static CChar8 *_button_name[];
@@ -209,8 +236,6 @@ Joypad* FindJoypad(UInt id); // find Joypad in 'Joypads' container according to 
 #if EE_PRIVATE
 Joypad& GetJoypad  (UInt id, Bool &added);
 UInt    NewJoypadID(UInt id); // generate a Joypad ID based on 'id' that's not yet used by any other existing Joypad
-
-inline Int Compare(C Joypad &a, C Joypad &b) {return Compare(a.id(), b.id());}
 
 void ListJoypads();
 void InitJoypads();
