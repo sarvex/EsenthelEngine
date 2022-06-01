@@ -504,6 +504,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
    }
    return 0;
 }
+static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UInt(UIntPtr(device_id_ptr)); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
 /******************************************************************************/
 enum ANDROID_STATE
 {
@@ -1323,7 +1324,6 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
 /******************************************************************************/
 } // namespace EE
 /******************************************************************************/
-static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UInt(UIntPtr(device_id_ptr)); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
 extern "C"
 {
 
