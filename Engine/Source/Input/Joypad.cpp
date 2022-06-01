@@ -244,6 +244,16 @@ Joypad::~Joypad()
 #if JP_DIRECT_INPUT
    if(_device){_device->Unacquire(); _device->Release(); _device=null;}
 #endif
+
+   // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
+   Int device=index(); if(device>=0)REPA(Inputs) // go from the end because we're removing elements
+   {
+      Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD)
+      {
+         if(input.device==device)Inputs.remove(i, true);else // if this input is for joypad being deleted, then delete the input and keep order
+         if(input.device> device)input .device--;            // adjust the index
+      }
+   }
 }
 Joypad::Joypad()
 {
