@@ -574,7 +574,6 @@ void MouseClass::_push(Byte b) // !! assumes 'b' is in range !!
    DEBUG_RANGE_ASSERT(b, _button);
    if(!(_button[b]&BS_ON))
    {
-      InputCombo.add(InputButton(INPUT_MOUSE, b));
      _button[b]|=BS_PUSHED|BS_ON;
       if(_cur==b && _first && Time.appTime()<=_start_time+DoubleClickTime+Time.ad())
       {
@@ -588,6 +587,7 @@ void MouseClass::_push(Byte b) // !! assumes 'b' is in range !!
      _cur       =b;
      _start_pos =pos();
      _start_time=Time.appTime();
+      Inputs.New().set(true, INPUT_MOUSE, b);
    }
 }
 void MouseClass::_release(Byte b) // !! assumes 'b' is in range !!
@@ -598,6 +598,7 @@ void MouseClass::_release(Byte b) // !! assumes 'b' is in range !!
       FlagDisable(_button[b], BS_ON      );
       FlagEnable (_button[b], BS_RELEASED);
       if(!selecting() && life()<=0.25f+Time.ad())_button[b]|=BS_TAPPED;
+      Inputs.New().set(false, INPUT_MOUSE, b);
    }
 }
 void MouseClass::push(Byte b)

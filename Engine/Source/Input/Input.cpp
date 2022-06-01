@@ -20,8 +20,8 @@ Bool              LocationBackground[2];
 Dbl               LocationLat[2], LocationLon[2];
 Flt               LocationAlt[2], LocationAcc[2], LocationSpd[2], LocationInterval[2]={-1, -1}, MagnetometerInterval=-1;
 DateTime          LocationTim[2];
-InputComboClass   InputCombo;
 InputDevicesClass InputDevices;
+Memc<Input>       Inputs;
 /******************************************************************************/
 // ACCELEROMETER, GYROSCOPE, MAGNETOMETER, LOCATION
 /******************************************************************************/
@@ -218,179 +218,6 @@ void DeviceVibrate(Flt intensity, Flt duration)
 #endif
 }
 /******************************************************************************/
-// INPUT BUTTON
-/******************************************************************************/
-Bool InputButton::on()C
-{
-   switch(type)
-   {
-      case INPUT_KEYBOARD: return                            Kb             .b(KB_KEY(button));
-      case INPUT_MOUSE   : return                            Ms             .b(       button );
-      case INPUT_JOYPAD  : return InRange(device, Joypads) ? Joypads[device].b(       button ) : false;
-   }
-   return false;
-}
-Bool InputButton::pd()C
-{
-   switch(type)
-   {
-      case INPUT_KEYBOARD: return                            Kb             .bp(KB_KEY(button));
-      case INPUT_MOUSE   : return                            Ms             .bp(       button );
-      case INPUT_JOYPAD  : return InRange(device, Joypads) ? Joypads[device].bp(       button ) : false;
-   }
-   return false;
-}
-Bool InputButton::rs()C
-{
-   switch(type)
-   {
-      case INPUT_KEYBOARD: return                            Kb             .br(KB_KEY(button));
-      case INPUT_MOUSE   : return                            Ms             .br(       button );
-      case INPUT_JOYPAD  : return InRange(device, Joypads) ? Joypads[device].br(       button ) : false;
-   }
-   return false;
-}
-Bool InputButton::db()C
-{
-   switch(type)
-   {
-      case INPUT_KEYBOARD: return                            Kb             .bd(KB_KEY(button));
-      case INPUT_MOUSE   : return                            Ms             .bd(       button );
-      case INPUT_JOYPAD  : return InRange(device, Joypads) ? Joypads[device].bd(       button ) : false;
-   }
-   return false;
-}
-Str InputButton::name()C
-{
-   switch(type)
-   {
-      case INPUT_KEYBOARD: return                            Kb             .   keyName(KB_KEY(button));
-      case INPUT_MOUSE   : return                            Ms             .buttonName(       button );
-      case INPUT_JOYPAD  : return InRange(device, Joypads) ? Joypads[device].buttonName(       button ) : S;
-      default            : return S;
-   }
-}
-Bool InputButton::operator==(C InputButton &b)C
-{
-   return T.button==b.button
-       && T.type  ==b.type
-       && T.device==b.device;
-}
-Bool InputButton::operator!=(C InputButton &b)C
-{
-   return T.button!=b.button
-       || T.type  !=b.type
-       || T.device!=b.device;
-}
-/******************************************************************************/
-// INPUT
-/******************************************************************************/
-Bool Input::on()C {return b[0].on() || b[1].on() || b[2].on();}
-Bool Input::pd()C {return b[0].pd() || b[1].pd() || b[2].pd();}
-Bool Input::rs()C {return b[0].rs() || b[1].rs() || b[2].rs();}
-Bool Input::db()C {return b[0].db() || b[1].db() || b[2].db();}
-
-void Input::set(C Str &name, UInt group)
-{
-   T.name =name ;
-   T.group=group;
-}
-void Input::set(C Str &name, UInt group, C InputButton &b0, C InputButton *b1, C InputButton *b2)
-{
-   T.name =name ;
-   T.group=group;
-         b[0]= b0;
-   if(b1)b[1]=*b1;else Zero(b[1]);
-   if(b2)b[2]=*b2;else Zero(b[2]);
-}
-Bool Input::operator()(C InputButton &b)C
-{
-   return T.b[0]==b
-       || T.b[1]==b
-       || T.b[2]==b;
-}
-/******************************************************************************/
-// INPUT COMBO
-/******************************************************************************/
-#define INPUT_COMBO_AND (INPUT_COMBO_NUM-1)
-
-InputComboClass::InputComboClass()
-{
-   dt=0.22f;
-}
-void InputComboClass::clear()
-{
-   pos=length=0;
-}
-void InputComboClass::add(C InputButton &inp_btn)
-{
-   t[pos]=Time.appTime();
-   b[pos]=inp_btn;
-   pos   =((pos+1)&INPUT_COMBO_AND);
-   length=Min(length+1, Elms(b));
-}
-Bool InputComboClass::operator()(C Input &i0, C Input &i1)C
-{
-   if(length>=2)
-   {
-      Byte p1=((pos-1)&INPUT_COMBO_AND),
-           p0=((pos-2)&INPUT_COMBO_AND);
-
-      return i1(b[p1]) && (Time.appTime()-t[p1]<dt)
-          && i0(b[p0]) && (t[p1]         -t[p0]<dt);
-   }
-   return false;
-}
-Bool InputComboClass::operator()(C Input &i0, C Input &i1, C Input &i2)C
-{
-   if(length>=3)
-   {
-      Byte p2=((pos-1)&INPUT_COMBO_AND),
-           p1=((pos-2)&INPUT_COMBO_AND),
-           p0=((pos-3)&INPUT_COMBO_AND);
-
-      return i2(b[p2]) && (Time.appTime()-t[p2]<dt)
-          && i1(b[p1]) && (t[p2]         -t[p1]<dt)
-          && i0(b[p0]) && (t[p1]         -t[p0]<dt);
-   }
-   return false;
-}
-Bool InputComboClass::operator()(C Input &i0, C Input &i1, C Input &i2, C Input &i3)C
-{
-   if(length>=4)
-   {
-      Byte p3=((pos-1)&INPUT_COMBO_AND),
-           p2=((pos-2)&INPUT_COMBO_AND),
-           p1=((pos-3)&INPUT_COMBO_AND),
-           p0=((pos-4)&INPUT_COMBO_AND);
-
-      return i3(b[p3]) && (Time.appTime()-t[p3]<dt)
-          && i2(b[p2]) && (t[p3]         -t[p2]<dt)
-          && i1(b[p1]) && (t[p2]         -t[p1]<dt)
-          && i0(b[p0]) && (t[p1]         -t[p0]<dt);
-   }
-   return false;
-}
-Bool InputComboClass::operator()(C Input &i0, C Input &i1, C Input &i2, C Input &i3, C Input &i4)C
-{
-   if(length>=5)
-   {
-      Byte p4=((pos-1)&INPUT_COMBO_AND),
-           p3=((pos-2)&INPUT_COMBO_AND),
-           p2=((pos-3)&INPUT_COMBO_AND),
-           p1=((pos-4)&INPUT_COMBO_AND),
-           p0=((pos-5)&INPUT_COMBO_AND);
-
-      return i4(b[p4]) && (Time.appTime()-t[p4]<dt)
-          && i3(b[p3]) && (t[p4]         -t[p3]<dt)
-          && i2(b[p2]) && (t[p3]         -t[p2]<dt)
-          && i1(b[p1]) && (t[p2]         -t[p1]<dt)
-          && i0(b[p0]) && (t[p1]         -t[p0]<dt);
-   }
-   return false;
-}
-#undef INPUT_COMBO_AND
-/******************************************************************************/
 // INPUT
 /******************************************************************************/
 void InputDevicesClass::del()
@@ -473,6 +300,7 @@ void InputDevicesClass::clear()
                          Ms      .clear();
    if(App.active())REPAO(Joypads).clear();
                            TouchesClear();
+                           Inputs.clear();
 }
 /******************************************************************************/
 void InputDevicesClass::acquire(Bool on)

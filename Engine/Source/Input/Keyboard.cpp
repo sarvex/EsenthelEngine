@@ -1042,7 +1042,7 @@ void KeyboardClass::push(KB_KEY key, Int scan_code)
            _last  =key;
            _last_t=Time.appTime();
          }
-         InputCombo.add(InputButton(INPUT_KEYBOARD, key));
+         Inputs.New().set(true, INPUT_KEYBOARD, key);
       }
       // !! set modifier flags after adjusting '_button' above !!
       k.c='\0';
@@ -1058,6 +1058,7 @@ void KeyboardClass::release(KB_KEY key)
       if(_cur==key)_cur=-1;
       FlagDisable(_button[key], BS_ON      );
       FlagEnable (_button[key], BS_RELEASED);
+      Inputs.New().set(false, INPUT_KEYBOARD, key);
    }
 }
 void KeyboardClass::queue(KB_KEY key, Char chr)

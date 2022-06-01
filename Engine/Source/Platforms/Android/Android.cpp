@@ -310,7 +310,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                               -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
                jp.dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX   , action_index),
                               -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY   , action_index));
-               jp.diri.set(Round(jp.dir.x), Round(jp.dir.y));
+               jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
             }
          }else
          if((source&AINPUT_SOURCE_MOUSE) && !stylus)  // check for stylus because on "Samsung Galaxy Note 2" stylus input generates both "AINPUT_SOURCE_STYLUS|AINPUT_SOURCE_MOUSE" at the same time

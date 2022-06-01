@@ -208,11 +208,11 @@ static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOH
                if(InRange(val, elm->max))
                {
                   CosSin(jp.dir.x, jp.dir.y, val*elm->mul+elm->add);
-                  jp.diri.set(Round(jp.dir.x), Round(jp.dir.y));
+                  jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
                }else
                {
-                  jp.dir .zero();
-                  jp.diri.zero();
+                  jp.dir.zero();
+                  jp.setDiri(0, 0);
                }
             }break;
 
@@ -405,10 +405,10 @@ void Joypad::update()
          update(button, Elms(button));
 
          // digital pad
-         diri.set(FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT),
-                  FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN));
+         setDiri(FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT),
+                 FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN));
          dir=diri;
-         Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
+         if(diri.x && diri.y)dir/=SQRT2; // dir.clipLength(1)
 
          // analog pad
          dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
@@ -472,14 +472,14 @@ void Joypad::update()
 
          // digital pad
       #if WINDOWS_OLD
-         diri.set(FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft),
-                  FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown));
+         setDiri(FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft),
+                 FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown));
       #else
-         diri.set(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
-                  FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
+         setDiri(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
+                 FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
       #endif
          dir=diri;
-         Flt l2=dir.length2(); if(l2>1)dir/=SqrtFast(l2); // dir.clipLength(1)
+         if(diri.x && diri.y)dir/=SQRT2; // dir.clipLength(1)
 
          // analog pad
          dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
@@ -505,16 +505,16 @@ void Joypad::update()
          // digital pad
          switch(state.rgdwPOV[0])
          {
-            case UINT_MAX: diri.zero(      ); dir.zero(                  ); break;
-            case        0: diri.set ( 0,  1); dir.set (       0,        1); break;
-            case     4500: diri.set ( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
-            case     9000: diri.set ( 1,  0); dir.set (       1,        0); break;
-            case    13500: diri.set ( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
-            case    18000: diri.set ( 0, -1); dir.set (       0,       -1); break;
-            case    22500: diri.set (-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
-            case    27000: diri.set (-1,  0); dir.set (      -1,        0); break;
-            case    31500: diri.set (-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
-            default      : CosSin(dir.x, dir.y, PI_2-DegToRad(state.rgdwPOV[0]/100.0f)); diri.set(Round(dir.x), Round(dir.y)); break;
+            case UINT_MAX: setDiri( 0,  0); dir.zero(                  ); break;
+            case        0: setDiri( 0,  1); dir.set (       0,        1); break;
+            case     4500: setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
+            case     9000: setDiri( 1,  0); dir.set (       1,        0); break;
+            case    13500: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
+            case    18000: setDiri( 0, -1); dir.set (       0,       -1); break;
+            case    22500: setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
+            case    27000: setDiri(-1,  0); dir.set (      -1,        0); break;
+            case    31500: setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
+            default      : CosSin(dir.x, dir.y, PI_2-DegToRad(state.rgdwPOV[0]/100.0f)); setDiri(Round(dir.x), Round(dir.y)); break;
          }
 
          // analog pad
@@ -550,11 +550,29 @@ void Joypad::update()
 #endif
    zero();
 }
+void Joypad::setDiri(Int x, Int y)
+{
+   if(diri.x!=x || diri.y!=y)
+   {
+      Int device=index();
+      if(diri.x!=x)
+      {
+         if(diri.x && device>=0)Inputs.New().set(false, INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // release
+            diri.x=x;
+         if(diri.x && device>=0)Inputs.New().set(true , INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // push
+      }
+      if(diri.y!=y)
+      {
+         if(diri.y && device>=0)Inputs.New().set(false, INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // release
+            diri.y=y;
+         if(diri.y && device>=0)Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // push
+      }
+   }
+}
 void Joypad::push(Byte b)
 {
    if(InRange(b, _button) && !(_button[b]&BS_ON))
    {
-      Int device=index(); if(device>=0)InputCombo.add(InputButton(INPUT_JOYPAD, b, device));
      _button[b]|=BS_PUSHED|BS_ON;
       if(Time.appTime()-_last_t[b]<=DoubleClickTime+Time.ad())
       {
@@ -564,6 +582,7 @@ void Joypad::push(Byte b)
       {
         _last_t[b]=Time.appTime();
       }
+      Int device=index(); if(device>=0)Inputs.New().set(true, INPUT_JOYPAD, b, device);
    }
 }
 void Joypad::release(Byte b)
@@ -572,6 +591,7 @@ void Joypad::release(Byte b)
    {
      _button[b]&=~BS_ON;
      _button[b]|= BS_RELEASED;
+      Int device=index(); if(device>=0)Inputs.New().set(false, INPUT_JOYPAD, b, device);
    }
 }
 void Joypad::eat(Int b)

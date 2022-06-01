@@ -51,6 +51,12 @@ enum JOYPAD_BUTTON // button indexes as defined for XInput/Xbox/NintendoSwitch c
    JB_U=JB_Y, // button located at the Up    side
    JB_D=JB_A, // button located at the Down  side
 #endif
+
+   // these are valid only for 'Inputs'
+   JB_DPAD_UP   =252,
+   JB_DPAD_DOWN =253,
+   JB_DPAD_LEFT =254,
+   JB_DPAD_RIGHT=255,
 };
 /******************************************************************************/
 struct Vibration
@@ -122,6 +128,7 @@ struct Joypad // Joypad Input
    // manage
    void acquire (Bool on);
    void update  (C Byte *on, Int elms);
+   void setDiri (Int x, Int y);
    void updateOK();
    void update  ();
    void clear   ();
