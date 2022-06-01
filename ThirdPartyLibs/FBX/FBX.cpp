@@ -209,14 +209,17 @@ struct FBX
                   node.ee_name=node.full_name=FromUTF8(node.node->GetName());
 
                   // type
-                  if(FbxNodeAttribute *attrib=node.node->GetNodeAttribute()) // this will be null for the identity "RootNode", but can also be null for some animations
-                     switch(attrib->GetAttributeType())
+                  if(i || node.full_name!="RootNode") // all FBX have a dummy "RootNode" at 0 index, always ignore it because there's a limit of 255 bones
                   {
-                     case FbxNodeAttribute::eNull    : node.dummy=true; node.bone=all_nodes_as_bones; break;
-                     case FbxNodeAttribute::eSkeleton: node.bone =true; break;
-                     case FbxNodeAttribute::eMesh    : node.mesh =true; break;
-                  }else
-                  if(all_nodes_as_bones)node.bone=true; // this is needed because some animations can have all node attributes null
+                     if(FbxNodeAttribute *attrib=node.node->GetNodeAttribute()) // this will be null for the identity "RootNode", but can also be null for some animations
+                        switch(attrib->GetAttributeType())
+                     {
+                        case FbxNodeAttribute::eNull    : node.dummy=true; node.bone=all_nodes_as_bones; break;
+                        case FbxNodeAttribute::eSkeleton: node.bone =true; break;
+                        case FbxNodeAttribute::eMesh    : node.mesh =true; break;
+                     }else
+                     if(all_nodes_as_bones)node.bone=true; // this is needed because some animations can have all node attributes null
+                  }
 
                   // matrix
                   node.local =MATRIX(node.node->EvaluateLocalTransform ());
