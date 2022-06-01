@@ -3,7 +3,7 @@
 namespace EE{
 /******************************************************************************/
 static Bool CalculateJoypadSensors;
-CChar8* Joypad::_button_name[32];
+CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
 MemtN<Joypad, 4> Joypads;
 /******************************************************************************/
 static Int FindJoypadI(U16 vendor_id, U16 product_id)
@@ -858,6 +858,14 @@ void InitJoypads()
 {
    if(LogInit)LogN("InitJoypads");
 
+   ASSERT(JB_NUM         <ELMS(Joypad::_button_name)
+   &&     JB_UWP_NUM     <ELMS(Joypad::_button_name)
+   &&     JB_NINTENDO_NUM<ELMS(Joypad::_button_name)
+   &&     JB_DPAD_LEFT   <ELMS(Joypad::_button_name)
+   &&     JB_DPAD_RIGHT  <ELMS(Joypad::_button_name)
+   &&     JB_DPAD_DOWN   <ELMS(Joypad::_button_name)
+   &&     JB_DPAD_UP     <ELMS(Joypad::_button_name)
+   );
    // set this first so other codes can overwrite it
    Joypad::_button_name[ 0]="1";
    Joypad::_button_name[ 1]="2";
@@ -926,6 +934,11 @@ void InitJoypads()
    Joypad::_button_name[JB_MINUS]="-",
    Joypad::_button_name[JB_PLUS ]="+",
 #endif
+
+   Joypad::_button_name[JB_DPAD_LEFT ]="DPadLeft" ;
+   Joypad::_button_name[JB_DPAD_RIGHT]="DPadRight";
+   Joypad::_button_name[JB_DPAD_DOWN ]="DPadDown" ;
+   Joypad::_button_name[JB_DPAD_UP   ]="DPadUp"   ;
 
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
    RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad).Get(), __uuidof(ABI::Windows::Gaming::Input::IGamepadStatics), &GamepadStatics); if(GamepadStatics)

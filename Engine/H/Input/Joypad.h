@@ -53,10 +53,10 @@ enum JOYPAD_BUTTON // button indexes as defined for XInput/Xbox/NintendoSwitch c
 #endif
 
    // these are valid only for 'Inputs'
-   JB_DPAD_UP   =252,
-   JB_DPAD_DOWN =253,
-   JB_DPAD_LEFT =254,
-   JB_DPAD_RIGHT=255,
+   JB_DPAD_LEFT =32,
+   JB_DPAD_RIGHT=33,
+   JB_DPAD_DOWN =34,
+   JB_DPAD_UP   =35,
 };
 /******************************************************************************/
 struct Vibration
@@ -189,7 +189,7 @@ private:
    Ptr     _device=null;
 #endif
 
-   static CChar8 *_button_name[32];
+   static CChar8 *_button_name[];
 
   ~Joypad();
    Joypad();
