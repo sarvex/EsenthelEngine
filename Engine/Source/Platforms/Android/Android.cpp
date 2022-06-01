@@ -239,7 +239,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
             {
-               Bool added; Joypad &jp=GetJoypad(device, added); if(added)jp._name=JavaInputDeviceName(device);
+               Bool added; Joypad &jp=GetJoypad(device, added);
                jp.dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
                               -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
                jp.dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X       , action_index),
@@ -412,19 +412,22 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 
       case AINPUT_EVENT_TYPE_KEY:
       {
-         Int  code =AKeyEvent_getKeyCode(event);
-         Byte bcode=Byte(code);
+         Int code=AKeyEvent_getKeyCode(event),
+           action=AKeyEvent_getAction (event);
 
          if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
-            Byte joy=JoyMap[bcode]; if(joy!=255)
+            if(InRange(code, JoyMap))
             {
-               Bool added; Joypad &joypad=GetJoypad(device, added); if(added)joypad._name=JavaInputDeviceName(device);
-               switch(AKeyEvent_getAction(event))
+               Byte joy=JoyMap[code]; if(joy!=255)
                {
-                  case AKEY_EVENT_ACTION_DOWN    : joypad.push   (joy); break;
-                  case AKEY_EVENT_ACTION_UP      : joypad.release(joy); break;
-                  case AKEY_EVENT_ACTION_MULTIPLE: joypad.push   (joy); joypad.release(joy); break;
+                  Bool added; Joypad &joypad=GetJoypad(device, added);
+                  switch(action)
+                  {
+                     case AKEY_EVENT_ACTION_DOWN    : joypad.push   (joy); break;
+                     case AKEY_EVENT_ACTION_UP      : joypad.release(joy); break;
+                     case AKEY_EVENT_ACTION_MULTIPLE: joypad.push   (joy); joypad.release(joy); break;
+                  }
                }
             }
             return 1;
@@ -435,14 +438,14 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                 shift=FlagOn(meta, (Int)AMETA_SHIFT_ON    ),
                 alt  =FlagOn(meta, (Int)AMETA_ALT_ON      ),
                 caps =FlagOn(meta, (Int)AMETA_CAPS_LOCK_ON);
-         KB_KEY key  =KeyMap[bcode];
+         KB_KEY key  =(InRange(code, KeyMap) ? KeyMap[code] : KB_NONE);
          /*if(shift && !ctrl && !alt && !Kb.anyWin())
          {
             if(key==KB_BACK ){key=KB_DEL; Kb._disable_shift=true;}else // Shift+Back  = Del (this is     universal behaviour on Android platform)
             if(key==KB_ENTER){key=KB_INS; Kb._disable_shift=true;}     // Shift+Enter = Ins (this is non-universal behaviour on Android platform)
          }*/
 
-//LogN(S+"dev:"+device+", code:"+code+", meta:"+meta+", key:"+key+", action:"+(int)AKeyEvent_getAction(event));
+//LogN(S+"dev:"+device+", code:"+code+", meta:"+meta+", key:"+key+", action:"+action);
 //if(!key)LogN(S+"key:"+code);
 
          // check for characters here still because 'dispatchKeyEvent' does not catch keys from hardware keyboards (like tablet with attachable keyboard)
@@ -477,7 +480,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
             if(chr)KeySource=KEY_CPP; // if detected and character then set CPP source
          }
 
-         switch(AKeyEvent_getAction(event))
+         switch(action)
          {
             case AKEY_EVENT_ACTION_DOWN:
             {
@@ -509,7 +512,8 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
    }
    return 0;
 }
-static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UInt(UIntPtr(device_id_ptr)); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
+static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); Bool added; Joypad &joypad=GetJoypad(device_id, added); if(added)joypad._name=JavaInputDeviceName(device_id);}
+static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
 /******************************************************************************/
 enum ANDROID_STATE
 {
@@ -1346,7 +1350,7 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass cl
                        Kb._recti.set(w-r_size,        0,      w,      h);     // right  size is the biggest
 }
 
-JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {}
+JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceAdded  , Ptr(device_id));} // may be called on a secondary thread
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceRemoved(JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceRemoved, Ptr(device_id));} // may be called on a secondary thread
 
 }

@@ -64,6 +64,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.InputDevice;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.KeyEvent;
@@ -360,11 +361,19 @@ public class EsenthelActivity extends NativeActivity
          {
             input_device_listener=new InputManager.InputDeviceListener()
             {
-               @Override public void onInputDeviceAdded  (int deviceId) {com.esenthel.Native.deviceAdded  (deviceId);}
-               @Override public void onInputDeviceRemoved(int deviceId) {com.esenthel.Native.deviceRemoved(deviceId);}
                @Override public void onInputDeviceChanged(int deviceId) {}
+               @Override public void onInputDeviceRemoved(int deviceId) {com.esenthel.Native.deviceRemoved(deviceId);}
+               @Override public void onInputDeviceAdded  (int deviceId)
+               {
+                  InputDevice device=InputDevice.getDevice(deviceId);
+                  if(device!=null)
+                     if((device.getSources()&((InputDevice.SOURCE_DPAD|InputDevice.SOURCE_GAMEPAD|InputDevice.SOURCE_JOYSTICK) & ~InputDevice.SOURCE_CLASS_BUTTON))!=0) // disable 'SOURCE_CLASS_BUTTON' because SOURCE_KEYBOARD has it
+                        if(!device.isVirtual())
+                           com.esenthel.Native.deviceAdded(deviceId);
+               }
             };
             input_manager.registerInputDeviceListener(input_device_listener, null);
+            for(int deviceId:InputDevice.getDeviceIds())input_device_listener.onInputDeviceAdded(deviceId);
          }
       }
 
