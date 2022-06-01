@@ -243,7 +243,7 @@ Joypad::Joypad()
    zero();
 
    // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
-   Int device=index(); if(device>=0 && device<Joypads.elms()-1)REPA(Inputs) // if it's in 'Joypads' and it's not the last one
+   Int device=index(); if(device>=0 && device<Joypads.elms()-1)REPA(Inputs) // if it's in 'Joypads' and it's not the last one, then it means we've just moved some existing joypads to the right
    {
       Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD && input.device>=device)input.device++;
    }
