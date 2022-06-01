@@ -852,13 +852,13 @@ void InitJoypads()
 {
    if(LogInit)LogN("InitJoypads");
 
-   ASSERT(JB_NUM         <ELMS(Joypad::_button_name)
-   &&     JB_UWP_NUM     <ELMS(Joypad::_button_name)
-   &&     JB_NINTENDO_NUM<ELMS(Joypad::_button_name)
-   &&     JB_DPAD_LEFT   <ELMS(Joypad::_button_name)
-   &&     JB_DPAD_RIGHT  <ELMS(Joypad::_button_name)
-   &&     JB_DPAD_DOWN   <ELMS(Joypad::_button_name)
-   &&     JB_DPAD_UP     <ELMS(Joypad::_button_name)
+   ASSERT(JB_NUM         <=ELMS(Joypad::_button_name)
+   &&     JB_UWP_NUM     <=ELMS(Joypad::_button_name)
+   &&     JB_NINTENDO_NUM<=ELMS(Joypad::_button_name)
+   &&     JB_DPAD_LEFT   < ELMS(Joypad::_button_name)
+   &&     JB_DPAD_RIGHT  < ELMS(Joypad::_button_name)
+   &&     JB_DPAD_DOWN   < ELMS(Joypad::_button_name)
+   &&     JB_DPAD_UP     < ELMS(Joypad::_button_name)
    );
    // set this first so other codes can overwrite it
    Joypad::_button_name[ 0]="1";
