@@ -1323,6 +1323,7 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
 /******************************************************************************/
 } // namespace EE
 /******************************************************************************/
+static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UInt(UIntPtr(device_id_ptr)); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
 extern "C"
 {
 
@@ -1339,6 +1340,8 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass cl
    if(l_size>=max_size)Kb._recti.set(       0,        0, l_size,      h);else // left   size is the biggest
                        Kb._recti.set(w-r_size,        0,      w,      h);     // right  size is the biggest
 }
+
+JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceRemoved(JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceRemoved, Ptr(device_id));} // may be called on a secondary thread
 
 }
 /******************************************************************************/

@@ -31,6 +31,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.hardware.input.InputManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.media.AudioFormat;
@@ -208,6 +209,7 @@ public class EsenthelActivity extends NativeActivity
    static WakeLock             wake_lock;
    static WifiLock             wifi_lock;
    static TextView             text_view;
+   static InputManager.InputDeviceListener         input_device_listener;
    static ViewTreeObserver.OnGlobalLayoutListener global_layout_listener;
 
    public static final void    log   (String s) {Log.e("Titan", s);}
@@ -350,6 +352,19 @@ public class EsenthelActivity extends NativeActivity
           //log("hasVibrator"+vibrator.hasVibrator());
           //log("hasAmplitudeControl"+vibrator.hasAmplitudeControl());
             if(!vibrator.hasVibrator())vibrator=null;
+         }
+      }
+      if(input_device_listener==null)
+      {
+         InputManager input_manager=(InputManager)getSystemService(Context.INPUT_SERVICE); if(input_manager!=null)
+         {
+            input_device_listener=new InputManager.InputDeviceListener()
+            {
+               @Override public void onInputDeviceAdded  (int deviceId) {}
+               @Override public void onInputDeviceRemoved(int deviceId) {com.esenthel.Native.deviceRemoved(deviceId);}
+               @Override public void onInputDeviceChanged(int deviceId) {}
+            };
+            input_manager.registerInputDeviceListener(input_device_listener, null);
          }
       }
 
