@@ -115,7 +115,7 @@ static NSMutableDictionary* JoypadCriteria(UInt32 inUsagePage, UInt32 inUsage)
    [dict setObject: [NSNumber numberWithInt: inUsage    ] forKey: (NSString*)CFSTR(kIOHIDDeviceUsageKey    )];
    return dict;
 } 
-static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
+static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device) // this is called on the main thread
 {
    Memt<Joypad::Elm> elms;
    Int               buttons=0, axes=0;
@@ -158,11 +158,11 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
       }
    }
 }
-static void JoypadRemoved(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device)
+static void JoypadRemoved(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device) // this is called on the main thread
 {
    REPA(Joypads)if(Joypads[i]._device==device){Joypads.remove(i, true); break;}
 }
-static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValueRef value)
+static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValueRef value) // this is called on the main thread
 {
    IOHIDElementRef element=IOHIDValueGetElement (value  );
    IOHIDDeviceRef  device =IOHIDElementGetDevice(element); // or IOHIDQueueGetDevice((IOHIDQueueRef)inSender);
