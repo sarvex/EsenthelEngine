@@ -788,6 +788,7 @@ void GamePadChange::process()
       }
       // set callback after everything was set, in case it's called right away
       joypad._gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         Joypads.sort  (Compare); // sort by their ID
    }else Joypads.remove(FindJoypadI(gamepad), true);
 }
 #endif

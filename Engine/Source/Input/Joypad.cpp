@@ -76,6 +76,7 @@ struct GamePadChange
          {
             HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
          }
+            Joypads.sort  (Compare); // sort by their ID
       }else Joypads.remove(FindJoypadI(gamepad.Get()), true);
    }
 };
@@ -831,7 +832,7 @@ void ListJoypads()
    #endif
 
    REPA(Joypads)if(!Joypads[i]._connected)Joypads.remove(i, true); // remove disconnected joypads
-   Joypads.sort(Compare); // sort remaining by their ID
+   Joypads.sort(Compare); // sort by their ID
 #elif MAC
 	if(HidManager=IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone))
 	{
