@@ -3,7 +3,7 @@
    Use 'Joypads' container to access Joypads input.
 
 /******************************************************************************/
-enum JOYPAD_BUTTON // button indexes as defined for XInput/Xbox/NintendoSwitch controllers
+enum JOYPAD_BUTTON : Byte // button indexes as defined for XInput/Xbox/NintendoSwitch controllers
 {
    JB_A     , // A
    JB_B     , // B
@@ -127,7 +127,7 @@ struct Joypad // Joypad Input
 #if EE_PRIVATE
    // manage
    void acquire (Bool on);
-   void update  (C Byte *on, Int elms);
+   void update  (C Bool *on, Int elms);
    void setDiri (Int x, Int y);
    void updateOK();
    void update  ();
@@ -137,17 +137,21 @@ struct Joypad // Joypad Input
    void release (Byte b);
    Int  index   ()C;
    void sensors (Bool calculate);
+   void remap   (U16 vendor_id, U16 product_id);
 #endif
 
 #if !EE_PRIVATE
 private:
 #endif
    BS_FLAG _button[32];
+#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC
+   Byte    _remap[32];
+#endif
 #if JP_DIRECT_INPUT
    Byte    _offset_x=0, _offset_y=0;
 #endif
 #if JP_X_INPUT
-   Byte    _xinput=0xFF;
+   Byte    _xinput=255;
 #endif
 #if JP_GAMEPAD_INPUT
    Bool    _vibrations=false;
@@ -230,7 +234,7 @@ private:
    };
 
    Mems<Elm> _elms;
-   Byte      _mac_button[32];
+   Bool      _mac_button[32];
    Ptr       _device=null;
 #endif
 

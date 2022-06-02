@@ -806,7 +806,8 @@ void GamePadChange::process()
             joypad. _vendor_id=raw_game_controller->HardwareVendorId;
             joypad._product_id=raw_game_controller->HardwareProductId;
          #endif
-            joypad._array_button=ref new Platform::Array<bool                        >(joypad._buttons =raw_game_controller->ButtonCount);
+            joypad.remap(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
+            joypad._array_button=ref new Platform::Array<bool                        >(joypad._buttons =raw_game_controller->ButtonCount); MIN(joypad._buttons, Elms(joypad._remap));
             joypad._array_switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches=raw_game_controller->SwitchCount);
             joypad._array_axis  =ref new Platform::Array<double                      >(joypad._axes    =raw_game_controller->  AxisCount);
             if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);

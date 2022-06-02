@@ -5,7 +5,6 @@ namespace EE{
 #define SORT_JOYPADS_BY_ID 0 // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder"
 
 // for JP_GAMEPAD_INPUT _raw_game_controller
-#define MAX_BUTTONS 32
 #define MAX_AXES     6
 #define MAX_SWITCHES 1
 /******************************************************************************/
@@ -95,7 +94,7 @@ struct GamePadChange
 
             if(raw_game_controller)
             {
-               raw_game_controller->get_ButtonCount(&joypad._buttons ); MIN(joypad._buttons , MAX_BUTTONS);
+               raw_game_controller->get_ButtonCount(&joypad._buttons ); MIN(joypad._buttons , Elms(joypad._remap));
                raw_game_controller->get_SwitchCount(&joypad._switches); MIN(joypad._switches, MAX_SWITCHES);
                raw_game_controller->get_AxisCount  (&joypad._axes    ); MIN(joypad._axes    , MAX_AXES);
                /* were empty on Logitech F310 in DirectInput mode, Nintendo JoyCons
@@ -108,6 +107,7 @@ struct GamePadChange
                joypad. _vendor_id= vendor_id;
                joypad._product_id=product_id;
             #endif
+               joypad.remap(vendor_id, product_id);
                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
                {
                   unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
@@ -189,16 +189,17 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
    {
       elms.sort(Compare); // sort so 'binaryFind' can be used later
 
-      NSString *name  =(NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey     )); // do not release this !!
-    //NSString *serial=(NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDSerialNumberKey)); // do not release this ? this was null on "Logitech Rumblepad 2"
-	   Int    vendorId=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey    )) intValue];
-	   Int   productId=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
+      NSString *name  = (NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey     )); // do not release this !!
+    //NSString *serial= (NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDSerialNumberKey)); // do not release this ? this was null on "Logitech Rumblepad 2"
+	   Int    vendor_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey    )) intValue];
+	   Int   product_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
 
       Bool added; Joypad &jp=GetJoypad(JoypadsID++, added); if(added)
       {
          jp._name  =name;
          jp._device=device;
          jp._elms  =elms;
+         jp.remap(vendor_id, product_id);
       }
    }
 }
@@ -298,7 +299,7 @@ CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_na
 Bool Joypad::supportsVibrations()C
 {
 #if JP_X_INPUT
-   return _xinput!=0xFF;
+   return _xinput!=255;
 #elif JP_GAMEPAD_INPUT
    return _vibrations;
 #elif SWITCH
@@ -320,7 +321,7 @@ Int Joypad::index()C {return Joypads.index(this);}
 Joypad& Joypad::vibration(C Vec2 &vibration)
 {
 #if JP_X_INPUT
-   if(_xinput!=0xFF)
+   if(_xinput!=255)
    {
       XINPUT_VIBRATION xvibration;
       xvibration. wLeftMotorSpeed=RoundU(Sat(vibration.x)*0xFFFF);
@@ -354,6 +355,82 @@ Joypad& Joypad::vibration(C Vibration &left, C Vibration &right)
 }
 #endif
 /******************************************************************************/
+void Joypad::remap(U16 vendor_id, U16 product_id)
+{
+#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC
+   switch(vendor_id)
+   {
+      case 1133: // Logitech
+       /*if(product_id==49693 // F310
+         || product_id==49688 // RumblePad 2
+       */
+      {
+         SetMem(_remap, 255);
+        _remap[ 1]=JB_A;
+        _remap[ 2]=JB_B;
+        _remap[ 0]=JB_X;
+        _remap[ 3]=JB_Y;
+        _remap[ 4]=JB_L1;
+        _remap[ 5]=JB_R1;
+        _remap[ 6]=JB_L2;
+        _remap[ 7]=JB_R2;
+        _remap[10]=JB_LTHUMB;
+        _remap[11]=JB_RTHUMB;
+        _remap[ 8]=JB_BACK;
+        _remap[ 9]=JB_START;
+         return;
+      }break;
+
+      case 1256: // Samsung
+      {
+         if(product_id==40960) // EI-GP20
+         {
+            SetMem(_remap, 255);
+           _remap[ 0]=JB_A;
+           _remap[ 1]=JB_B;
+           _remap[ 3]=JB_X;
+           _remap[ 4]=JB_Y;
+           _remap[ 6]=JB_L1;
+           _remap[ 7]=JB_R1;
+           _remap[10]=JB_BACK;
+           _remap[11]=JB_START;
+         //_remap[15]=JB_PLAY;
+            return;
+         }
+      }break;
+
+      case 1406: // Nintendo
+         if(product_id==8198 // JoyConL
+         || product_id==8199 // JoyConR
+         )
+      {
+         SetMem(_remap, 255);
+        _remap[ 0]=JB_A;
+        _remap[ 1]=JB_B;
+        _remap[ 2]=JB_X;
+        _remap[ 3]=JB_Y;
+        _remap[ 4]=JB_L1;
+        _remap[ 5]=JB_R1;
+         if(product_id==8198) // JoyConL
+         {
+           _remap[10]=JB_LTHUMB;
+           _remap[ 8]=JB_BACK;
+           _remap[13]=JB_START;
+         }else // JoyConR
+         {
+           _remap[11]=JB_LTHUMB;
+           _remap[12]=JB_BACK;
+           _remap[ 9]=JB_START;
+         }
+        _remap[14]=JB_MINI_S1;
+        _remap[15]=JB_MINI_S2;
+         return;
+      }break;
+   }
+   REPAO(_remap)=i;
+#endif
+}
+/******************************************************************************/
 void Joypad::zero()
 {
    Zero(_button);
@@ -375,10 +452,10 @@ void Joypad::clear()
          diri_r  .zero();
    REPAO(diri_ar).zero();
 }
-void Joypad::update(C Byte *on, Int elms)
+void Joypad::update(C Bool *on, Int elms)
 {
    MIN(elms, Elms(_button));
-   REP(elms){Byte o=on[i]; if((o!=0)!=ButtonOn(_button[i])){if(o)push(i);else release(i);}}
+   REP(elms){Bool o=on[i]; if(o!=ButtonOn(_button[i])){if(o)push(i);else release(i);}}
 }
 #if WINDOWS_NEW
 static inline Bool FlagOn(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
@@ -418,12 +495,12 @@ void Joypad::update()
 {
 #if WINDOWS
 #if JP_X_INPUT
-   if(_xinput!=0xFF)
+   if(_xinput!=255)
    {
       XINPUT_STATE state; if(XInputGetState(_xinput, &state)==ERROR_SUCCESS)
       {
          // buttons
-         Byte button[JB_NUM];
+         Bool button[JB_NUM];
          button[JB_A     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                );
          button[JB_B     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                );
          button[JB_X     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                );
@@ -468,7 +545,7 @@ void Joypad::update()
    #endif
       {
          // buttons
-         Byte button[JB_UWP_NUM];
+         Bool button[JB_UWP_NUM];
       #if WINDOWS_OLD
          button[JB_A      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_A);
          button[JB_B      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_B);
@@ -530,18 +607,27 @@ void Joypad::update()
    if(_raw_game_controller)
    {
    #if WINDOWS_OLD
-      boolean                                                   button[MAX_BUTTONS ]; ASSERT(ELMS(button)<=ELMS(T._button));
+      boolean                                                   button[ELMS(_remap)];
       DOUBLE                                                    axis  [MAX_AXES    ];
       ABI::Windows::Gaming::Input::GameControllerSwitchPosition Switch[MAX_SWITCHES];
       UINT64 timestamp;
       if(OK(_raw_game_controller->GetCurrentReading(_buttons, button, _switches, Switch, _axes, axis, &timestamp)))
+   #else
+     _raw_game_controller->GetCurrentReading(_array_button, _array_switch, _array_axis);
+      bool   *button=_array_button->Data;
+      double *axis  =_array_axis  ->Data;
+      Windows::Gaming::Input::GameControllerSwitchPosition *Switch=_array_switch->Data;
+   #endif
       {
-         update(button, _buttons);
+         REP(_buttons){Byte b=_remap[i]; if(b!=255){if(button[i])push(b);else release(b);}}
+
          if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
          if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
          if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
+
          if(_switches)switch(Switch[0])
          {
+         #if WINDOWS_OLD
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Center   : setDiri( 0,  0); dir.zero(                  ); break;
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Up       : setDiri( 0,  1); dir.set (       0,        1); break;
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
@@ -551,34 +637,20 @@ void Joypad::update()
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
             case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
+         #else
+            case Windows::Gaming::Input::GameControllerSwitchPosition::Center   : setDiri( 0,  0); dir.zero(                  ); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::Up       : setDiri( 0,  1); dir.set (       0,        1); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::Right    : setDiri( 1,  0); dir.set (       1,        0); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
+            case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
+         #endif
          }
          updateOK(); return;
       }
-   #else
-     _raw_game_controller->GetCurrentReading(_array_button, _array_switch, _array_axis);
-
-      bool *button=_array_button->Data; ASSERT(SIZE(*button)==SIZE(Byte)); update((Byte*)button, _buttons);
-
-      double *axis=_array_axis->Data;
-      if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
-      if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
-      if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
-
-      if(_switches)switch(*_array_switch->Data)
-      {
-         case Windows::Gaming::Input::GameControllerSwitchPosition::Center   : setDiri( 0,  0); dir.zero(                  ); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::Up       : setDiri( 0,  1); dir.set (       0,        1); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::Right    : setDiri( 1,  0); dir.set (       1,        0); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
-         case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
-      }
-
-      updateOK(); return;
-   #endif
    }
 #endif
 #if JP_DIRECT_INPUT
@@ -587,8 +659,7 @@ void Joypad::update()
       DIJOYSTATE state; if(OK(_device->Poll()) && OK(_device->GetDeviceState(SIZE(state), &state)))
       {
          // buttons
-         ASSERT(ELMS( T._button)==ELMS(state.rgbButtons));
-         update(state.rgbButtons, Elms(state.rgbButtons));
+         REP(Min(Elms(state.rgbButtons), Elms(_remap))){Byte b=_remap[i]; if(b!=255){if(state.rgbButtons[i])push(b);else release(b);}} // here values can be 0x80
 
          // digital pad
          switch(state.rgdwPOV[0])
@@ -864,6 +935,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
             joypad. _vendor_id= vendor_id;
             joypad._product_id=product_id;
          #endif
+            joypad.remap(vendor_id, product_id);
 
             // disable auto centering ?
             DIPROPDWORD dipdw; Zero(dipdw);
@@ -889,7 +961,7 @@ void ListJoypads()
    {
       Joypad &jp=Joypads[i];
    #if JP_X_INPUT
-      if(jp._xinput!=0xFF)jp._connected=false;
+      if(jp._xinput!=255)jp._connected=false;
    #endif
    #if JP_DIRECT_INPUT
       if(jp._device)jp._connected=false;
