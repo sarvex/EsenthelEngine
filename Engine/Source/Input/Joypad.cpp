@@ -367,7 +367,7 @@ Joypad& Joypad::vibration(C Vibration &left, C Vibration &right)
 /******************************************************************************/
 void Joypad::remap(U16 vendor_id, U16 product_id)
 {
-#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC
+#if JOYPAD_BUTTON_REMAP
    ASSERT(ELMS(_remap)==ELMS(_button));
    switch(vendor_id)
    {
@@ -438,7 +438,8 @@ void Joypad::remap(U16 vendor_id, U16 product_id)
          return;
       }break;
    }
-   REPAO(_remap)=i;
+   if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android reported mappings
+   else        REPAO(_remap)=i;
 #endif
 }
 /******************************************************************************/

@@ -70,11 +70,10 @@ JNI Jni(null);
 
 static JavaVM        *JVM;
        jobject        Activity;
-       JClass         ActivityClass, ClipboardManagerClass, InputDeviceClass, KeyCharacterMapClass;
+       JClass         ActivityClass, ClipboardManagerClass, KeyCharacterMapClass;
        JObject        DefaultDisplay, ClipboardManager, LocationManager, KeyCharacterMap,
                       GPS_PROVIDER, NETWORK_PROVIDER, EsenthelLocationListener[2];
        JMethodID      getRotation,
-                      InputDeviceGetDevice, InputDeviceGetName,
                       KeyCharacterMapLoad, KeyCharacterMapGet,
                       getLastKnownLocation, getLatitude, getLongitude, getAltitude, getAccuracy, getSpeed, getTime, requestLocationUpdates, removeUpdates, vibrate;
        Int            AndroidSDK;
@@ -178,15 +177,6 @@ void Overlay(C Str &text)
 #endif
 }
 /******************************************************************************/
-static Str JavaInputDeviceName(Int i)
-{
-   if(Jni && InputDeviceGetDevice && InputDeviceGetName)
-      if(JObject device=Jni->CallStaticObjectMethod(InputDeviceClass, InputDeviceGetDevice, jint(i)))
-         if(JString name=Jni->CallObjectMethod(device, InputDeviceGetName))
-            return name.str();
-   return S;
-}
-/******************************************************************************/
 static void UpdateOrientation()
 {
  //switch(AConfiguration_getOrientation(AndroidApp->config)) this appears to have weird enum values: ACONFIGURATION_ORIENTATION_ANY, ACONFIGURATION_ORIENTATION_PORT, ACONFIGURATION_ORIENTATION_LAND, ACONFIGURATION_ORIENTATION_SQUARE
@@ -238,17 +228,17 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
+               if(Joypad *joypad=FindJoypad(device))
             {
-               Bool added; Joypad &jp=GetJoypad(device, added);
-               jp.dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
-               jp.dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X       , action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y       , action_index));
-               jp.dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX      , action_index),
-                              -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY      , action_index));
-               jp.trigger[0]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_LTRIGGER, action_index);
-               jp.trigger[1]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RTRIGGER, action_index);
-               jp.setDiri(Round(jp.dir.x), Round(jp.dir.y));
+               joypad->dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
+                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
+               joypad->dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X       , action_index),
+                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y       , action_index));
+               joypad->dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX      , action_index),
+                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY      , action_index));
+               joypad->trigger[0]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_LTRIGGER, action_index);
+               joypad->trigger[1]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RTRIGGER, action_index);
+               joypad->setDiri(Round(joypad->dir.x), Round(joypad->dir.y));
             }
          }else
          if((source&(AINPUT_SOURCE_MOUSE & ~AINPUT_SOURCE_CLASS_POINTER)) && !stylus) // disable 'AINPUT_SOURCE_CLASS_POINTER' because (AINPUT_SOURCE_TOUCHSCREEN, AINPUT_SOURCE_MOUSE, AINPUT_SOURCE_STYLUS) have it, check for 'stylus' because on "Samsung Galaxy Note 2" stylus input generates both "AINPUT_SOURCE_STYLUS|AINPUT_SOURCE_MOUSE" at the same time
@@ -417,16 +407,24 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 
          if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
-            if(InRange(code, JoyMap))
+            if(Joypad *joypad=FindJoypad(device))
             {
-               Byte joy=JoyMap[code]; if(joy!=255)
+               Byte button;
+               Int scan_code=AKeyEvent_getScanCode(event)-304; if(InRange(scan_code, joypad->_remap))
                {
-                  Bool added; Joypad &joypad=GetJoypad(device, added);
-                  switch(action)
+                  button=joypad->_remap[scan_code]; if(button!=255)goto have_button;
+               }
+               if(InRange(code, JoyMap))
+               {
+                  button=JoyMap[code]; if(button!=255)
                   {
-                     case AKEY_EVENT_ACTION_DOWN    : joypad.push   (joy); break;
-                     case AKEY_EVENT_ACTION_UP      : joypad.release(joy); break;
-                     case AKEY_EVENT_ACTION_MULTIPLE: joypad.push   (joy); joypad.release(joy); break;
+                  have_button:
+                     switch(action)
+                     {
+                        case AKEY_EVENT_ACTION_DOWN    : joypad->push   (button); break;
+                        case AKEY_EVENT_ACTION_UP      : joypad->release(button); break;
+                        case AKEY_EVENT_ACTION_MULTIPLE: joypad->push   (button); joypad->release(button); break;
+                     }
                   }
                }
             }
@@ -512,8 +510,19 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
    }
    return 0;
 }
-static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); Bool added; Joypad &joypad=GetJoypad(device_id, added); if(added)joypad._name=JavaInputDeviceName(device_id);}
 static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
+static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); Bool added; Joypad &joypad=GetJoypad(device_id, added); if(added)
+   if(Jni)
+      if(JClass InputDevice="android/view/InputDevice")
+         if(JMethodID getDevice=Jni.staticFunc(InputDevice, "getDevice", "(I)Landroid/view/InputDevice;"))
+            if(JObject device=Jni->CallStaticObjectMethod(InputDevice, getDevice, jint(device_id)))
+   {
+                        if(JMethodID getName     =Jni.func(InputDevice, "getName"     , "()Ljava/lang/String;"))if(JString name=Jni->CallObjectMethod(device, getName))joypad._name=name.str();
+      Int  vendor_id=0; if(JMethodID getVendorId =Jni.func(InputDevice, "getVendorId" , "()I"                 )) vendor_id=Jni->CallIntMethod(device, getVendorId );
+      Int product_id=0; if(JMethodID getProductId=Jni.func(InputDevice, "getProductId", "()I"                 ))product_id=Jni->CallIntMethod(device, getProductId);
+      joypad.remap(vendor_id, product_id);
+   }
+}
 /******************************************************************************/
 enum ANDROID_STATE
 {
@@ -642,9 +651,6 @@ static void JavaShut()
    KeyCharacterMap     .del();
    KeyCharacterMapLoad =null;
    KeyCharacterMapGet  =null;
-   InputDeviceClass    .del();
-   InputDeviceGetName  =null;
-   InputDeviceGetDevice=null;
    DefaultDisplay      .del();
    Activity            =null;
    getRotation         =null;
@@ -771,15 +777,6 @@ static void JavaLooper()
 static void JavaGetInput()
 {
    LOG("JavaGetInput");
-
-   if(!InputDeviceClass)
-      if(Jni)
-      if(InputDeviceClass="android/view/InputDevice")
-   {
-      InputDeviceGetDevice=Jni.staticFunc(InputDeviceClass, "getDevice", "(I)Landroid/view/InputDevice;");
-      InputDeviceGetName  =Jni.func      (InputDeviceClass, "getName"  , "()Ljava/lang/String;"         );
-   }
-
 
    if(!vibrate)
       if(Jni && ActivityClass)

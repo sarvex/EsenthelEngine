@@ -144,7 +144,8 @@ struct Joypad // Joypad Input
 private:
 #endif
    BS_FLAG _button[32];
-#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC
+#define JOYPAD_BUTTON_REMAP (JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC || ANDROID)
+#if     JOYPAD_BUTTON_REMAP
    Byte    _remap[32];
 #endif
 #if JP_DIRECT_INPUT
