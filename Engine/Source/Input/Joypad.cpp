@@ -107,11 +107,11 @@ struct GamePadChange
                joypad. _vendor_id= vendor_id;
                joypad._product_id=product_id;
             #endif
-               joypad.remap(vendor_id, product_id);
                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
                {
                   unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
                }
+               joypad.remap(vendor_id, product_id);
             }
             if(raw_game_controller2)
             {
@@ -199,7 +199,7 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
          jp._name  =name;
          jp._device=device;
          jp._elms  =elms;
-         jp.remap(vendor_id, product_id);
+         jp. remap(vendor_id, product_id);
       }
    }
 }
