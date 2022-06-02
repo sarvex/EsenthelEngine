@@ -628,7 +628,7 @@ void Joypad::update()
       Windows::Gaming::Input::GameControllerSwitchPosition *Switch=_array_switch->Data;
    #endif
       {
-         REP(_buttons){Byte b=_remap[i]; if(b!=255){if(button[i])push(b);else release(b);}}
+         REP(_buttons){Byte b=_remap[i]; if(InRange(b, _button)){if(button[i])push(b);else release(b);}}
 
          if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
          if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
@@ -668,7 +668,7 @@ void Joypad::update()
       DIJOYSTATE state; if(OK(_device->Poll()) && OK(_device->GetDeviceState(SIZE(state), &state)))
       {
          // buttons
-         REP(Min(Elms(state.rgbButtons), Elms(_remap))){Byte b=_remap[i]; if(b!=255){if(state.rgbButtons[i])push(b);else release(b);}} // here values can be 0x80
+         REP(Min(Elms(state.rgbButtons), Elms(_remap))){Byte b=_remap[i]; if(InRange(b, _button)){if(state.rgbButtons[i])push(b);else release(b);}} // here values can be 0x80
 
          // digital pad
          switch(state.rgdwPOV[0])
