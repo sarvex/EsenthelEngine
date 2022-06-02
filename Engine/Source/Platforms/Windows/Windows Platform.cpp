@@ -782,7 +782,12 @@ void GamePadChange::process()
 
       UInt joypad_id;
       if(gamepad) // gamepad callback
+      {
          raw_game_controller=Windows::Gaming::Input::RawGameController::FromGameController(gamepad);
+      }else // raw_game_controller callback
+      {
+         if(Windows::Gaming::Input::Gamepad::FromGameController(raw_game_controller))return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
+      }
 
       if(raw_game_controller)
       {
