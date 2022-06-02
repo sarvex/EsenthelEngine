@@ -383,14 +383,14 @@ void Joypad::update(C Byte *on, Int elms)
 #if WINDOWS_NEW
 static inline Bool FlagOn(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
 #endif
-static void UpdateDirRep(VecSB2 &diri_r, C VecSB2 &diri, Flt &time)
+static void UpdateDirRep(VecSB2 &diri_r, C VecSB2 &diri, Flt &time, Flt first_time, Flt repeat_time)
 {
    if(diri.any())
    {
       if(Time.appTime()>=time)
       {
          diri_r=diri;
-         time  =Time.appTime()+((time<0) ? FirstRepeatPressTime : RepeatPressTime); // if first press, then wait longer
+         time  =Time.appTime()+((time<0) ? first_time : repeat_time); // if first press, then wait longer
       }
    }else
    {
@@ -410,9 +410,9 @@ static VecSB2 DirToDirI(C Vec2 &d)
 }
 inline void Joypad::updateOK()
 {
-   UpdateDirRep(diri_r    ,           diri     , _dir_t    );
-   UpdateDirRep(diri_ar[0], DirToDirI(dir_a[0]), _dir_at[0]);
-   UpdateDirRep(diri_ar[1], DirToDirI(dir_a[1]), _dir_at[1]);
+   UpdateDirRep(diri_r    ,           diri     , _dir_t    , FirstRepeatPressTime,       RepeatPressTime);
+   UpdateDirRep(diri_ar[0], DirToDirI(dir_a[0]), _dir_at[0], FirstRepeatPressTime, AnalogRepeatPressTime);
+   UpdateDirRep(diri_ar[1], DirToDirI(dir_a[1]), _dir_at[1], FirstRepeatPressTime, AnalogRepeatPressTime);
 }
 void Joypad::update()
 {
