@@ -156,7 +156,8 @@ private:
    Bool    _mini=false;
 #endif
    Bool    _connected=false;
-#if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT
+#define JOYPAD_VENDOR_PRODUCT_ID (JP_DIRECT_INPUT && JP_GAMEPAD_INPUT) // needed only if using both JP_DIRECT_INPUT and JP_GAMEPAD_INPUT
+#if     JOYPAD_VENDOR_PRODUCT_ID
    U16     _vendor_id=0, _product_id=0;
 #endif
 #if JP_GAMEPAD_INPUT

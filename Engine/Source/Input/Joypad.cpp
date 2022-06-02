@@ -13,6 +13,7 @@ static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
 MemtN<Joypad, 4> Joypads;
 /******************************************************************************/
+#if JP_DIRECT_INPUT
 static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
 {
 #if JP_GAMEPAD_INPUT
@@ -23,6 +24,7 @@ static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
 #endif
    return false;
 }
+#endif
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics2         > GamepadStatics2;
@@ -102,8 +104,10 @@ struct GamePadChange
                   ABI::Windows::Gaming::Input::GameControllerButtonLabel label=ABI::Windows::Gaming::Input::GameControllerButtonLabel_None;
                  _raw_game_controller->GetButtonLabel(i, &label);
                }*/
+            #if JOYPAD_VENDOR_PRODUCT_ID
                joypad. _vendor_id= vendor_id;
                joypad._product_id=product_id;
+            #endif
                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
                {
                   unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
@@ -839,8 +843,12 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 {
    U16  vendor_id=LOWORD(DIDevInst->guidProduct.Data1);
    U16 product_id=HIWORD(DIDevInst->guidProduct.Data1);
-   if(!(JP_X_INPUT       && IsXInputDevice(DIDevInst->guidProduct))  // can skip this check if we're not using       XInput, but if we are then we can't add this device if it's XInput because those devices are listed elsewhere
-   && !(JP_GAMEPAD_INPUT && IsGamePadInput(vendor_id, product_id ))) // can skip this check if we're not using GamePadInput, but if we are then we can't add this device if it's already created through another API
+#if JP_X_INPUT
+   if(!IsXInputDevice(DIDevInst->guidProduct)) // if we're using XInput then don't list this device here, it will be processed by XInput
+#endif
+#if JP_GAMEPAD_INPUT
+   if(!IsGamePadInput(vendor_id, product_id)) // if we're using GamePadInput then don't list this device here, it will be processed by GamePadInput
+#endif
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
       Bool added; Joypad &joypad=GetJoypad(id, added); if(added)
@@ -852,8 +860,10 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          {
             Swap(joypad._device, did);
             joypad.      _name=DIDevInst->tszProductName;
+         #if JOYPAD_VENDOR_PRODUCT_ID
             joypad. _vendor_id= vendor_id;
             joypad._product_id=product_id;
+         #endif
 
             // disable auto centering ?
             DIPROPDWORD dipdw; Zero(dipdw);

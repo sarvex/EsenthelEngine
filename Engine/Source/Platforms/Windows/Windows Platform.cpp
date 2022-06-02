@@ -802,8 +802,10 @@ void GamePadChange::process()
          if(raw_game_controller)
          {
             joypad._name      =raw_game_controller->DisplayName->Data();
+         #if JOYPAD_VENDOR_PRODUCT_ID
             joypad. _vendor_id=raw_game_controller->HardwareVendorId;
             joypad._product_id=raw_game_controller->HardwareProductId;
+         #endif
             joypad._array_button=ref new Platform::Array<bool                        >(joypad._buttons =raw_game_controller->ButtonCount);
             joypad._array_switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches=raw_game_controller->SwitchCount);
             joypad._array_axis  =ref new Platform::Array<double                      >(joypad._axes    =raw_game_controller->  AxisCount);
