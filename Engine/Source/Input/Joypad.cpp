@@ -179,9 +179,9 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
 
       if(type==kIOHIDElementTypeInput_Misc || type==kIOHIDElementTypeInput_Axis || type==kIOHIDElementTypeInput_Button)
       {
-         if((max-min==1) || page==kHIDPage_Button || type==kIOHIDElementTypeInput_Button){if(InRange(buttons, MEMBER(Joypad, _mac_button)))elms.New().setButton(cookie, buttons++, min, max);}else
-         if(usage>=0x30 && usage<0x36                                                   )                                                  elms.New().setAxis  (cookie, axes   ++, min, max); else
-         if(usage==0x39                                                                 )                                                  elms.New().setPad   (cookie,                lmax);
+         if((max-min==1) || page==kHIDPage_Button || type==kIOHIDElementTypeInput_Button){if(InRange(buttons, MEMBER(Joypad, _remap)))elms.New().setButton(cookie, buttons++, min, max);}else
+         if(usage>=0x30 && usage<0x36                                                   )                                             elms.New().setAxis  (cookie, axes   ++, min, max); else
+         if(usage==0x39                                                                 )                                             elms.New().setPad   (cookie,                lmax);
       }
    }
 
@@ -198,8 +198,15 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
       {
          jp._name  =name;
          jp._device=device;
-         jp._elms  =elms;
          jp. remap(vendor_id, product_id);
+         REPA(elms)
+         {
+            Joypad::Elm &elm=elms[i]; if(elm.type==Joypad::Elm::BUTTON)
+            {
+               Byte remap=jp._remap[elm.index]; if(InRange(remap, jp._mac_button))elm.index=remap;else elms.remove(i, true);
+            }
+         }
+         jp._elms=elms;
       }
    }
 }
@@ -279,6 +286,7 @@ Joypad::Joypad()
 #if SWITCH
    Zero(_vibration_handle); Zero(_sensor_handle);
 #elif MAC
+   ASSERT(ELMS(_button)==ELMS(_mac_button));
    Zero(_mac_button);
 #endif
 
@@ -358,6 +366,7 @@ Joypad& Joypad::vibration(C Vibration &left, C Vibration &right)
 void Joypad::remap(U16 vendor_id, U16 product_id)
 {
 #if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC
+   ASSERT(ELMS(_remap)==ELMS(_button));
    switch(vendor_id)
    {
       case 1133: // Logitech
@@ -697,8 +706,7 @@ void Joypad::update()
    }
 #endif
 #elif MAC
-   ASSERT(ELMS(T._button)==ELMS(T._mac_button));
-   update( T._mac_button,  Elms(T._mac_button));
+   update(_mac_button, Elms(_mac_button));
    updateOK(); return;
 #else
    updateOK(); return; // updated externally
