@@ -408,6 +408,25 @@ void Joypad::remap(U16 vendor_id, U16 product_id)
          }
       }break;
 
+      case 1356: // Sony
+      {
+         // product_id 3302 DualSense
+         SetMem(_remap, 255);
+        _remap[ 1]=JB_A;
+        _remap[ 2]=JB_B;
+        _remap[ 0]=JB_X;
+        _remap[ 3]=JB_Y;
+        _remap[ 4]=JB_L1;
+        _remap[ 5]=JB_R1;
+        _remap[ 6]=JB_L2;
+        _remap[ 7]=JB_R2;
+        _remap[10]=JB_LTHUMB;
+        _remap[11]=JB_RTHUMB;
+        _remap[ 8]=JB_BACK;
+        _remap[ 9]=JB_START;
+         return;
+      }break;
+
       case 1406: // Nintendo
          if(product_id==8198 // JoyConL
          || product_id==8199 // JoyConR
