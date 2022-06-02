@@ -162,8 +162,8 @@ static NSMutableDictionary* JoypadCriteria(UInt32 inUsagePage, UInt32 inUsage)
 static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device) // this is called on the main thread
 {
    Memt<Joypad::Elm> elms;
-   Int               buttons=0, axes=0;
    NSArray          *elements=(NSArray*)IOHIDDeviceCopyMatchingElements(device, null, kIOHIDOptionsTypeNone);
+   Int               axes=2;
    FREP([elements count]) // process in order
    {
       IOHIDElementRef element=(IOHIDElementRef)[elements objectAtIndex: i];
@@ -177,11 +177,13 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
       IOHIDElementCookie cookie=IOHIDElementGetCookie(element);
     //CFStringRef      elm_name=IOHIDElementGetName  (element); NSLog(@"%@", (NSString*)elm_name);
 
-      if(type==kIOHIDElementTypeInput_Misc || type==kIOHIDElementTypeInput_Axis || type==kIOHIDElementTypeInput_Button)
+      switch(type)
       {
-         if((max-min==1) || page==kHIDPage_Button || type==kIOHIDElementTypeInput_Button){if(InRange(buttons, MEMBER(Joypad, _remap)))elms.New().setButton(cookie, buttons++, min, max);}else
-         if(usage>=0x30 && usage<0x36                                                   )                                             elms.New().setAxis  (cookie, axes   ++, min, max); else
-         if(usage==0x39                                                                 )                                             elms.New().setPad   (cookie,                lmax);
+       //case kIOHIDElementTypeInput_Axis  : break;
+         case kIOHIDElementTypeInput_Button: usage--; if(InRange(usage, MEMBER(Joypad, _remap)))elms.New().setButton(cookie, usage     , min, max); break;
+         case kIOHIDElementTypeInput_Misc  :                       if(usage>=0x30 && usage<0x32)elms.New().setAxis  (cookie, usage-0x30, min, max);else // Left  XY (0x30, 0x31) are always for Left XY, process it like this because Samsung EI-GP20 reports these 2 times!
+                                                                   if(usage>=0x32 && usage<0x36)elms.New().setAxis  (cookie, axes++    , min, max);else // Right XY
+                                                                   if(usage==0x39              )elms.New().setPad   (cookie,                 lmax); break; // 0x39 is always DPad
       }
    }
 
