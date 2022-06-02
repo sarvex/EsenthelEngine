@@ -159,11 +159,14 @@ private:
 #if JP_DIRECT_INPUT || JP_GAMEPAD_INPUT
    U16     _vendor_id=0, _product_id=0;
 #endif
-   Flt     _last_t[32], _dir_t, _dir_at[2];
+#if JP_GAMEPAD_INPUT
+   Int     _buttons=0, _switches=0, _axes=0;
+#endif
    UInt    _id=0;
 #if SWITCH
    UInt    _vibration_handle[2], _sensor_handle[2];
 #endif
+   Flt     _last_t[32], _dir_t, _dir_at[2];
    Color2  _color_left, _color_right;
    Sensor  _sensor_left, _sensor_right;
    Str     _name;
@@ -175,15 +178,29 @@ private:
 #endif
 #endif
 #if JP_GAMEPAD_INPUT
+
 #if EE_PRIVATE
    #if WINDOWS_OLD
-      Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad> _gamepad;
+      Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > _gamepad;
+      Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController> _raw_game_controller;
    #else
-      Windows::Gaming::Input::Gamepad ^_gamepad;
+      Windows::Gaming::Input::Gamepad           ^_gamepad;
+      Windows::Gaming::Input::RawGameController ^_raw_game_controller;
    #endif
 #else
-   Ptr     _gamepad=null;
+   Ptr     _gamepad=null, _raw_game_controller=null;
 #endif
+
+#if WINDOWS_NEW
+#if EE_PRIVATE
+   Platform::Array<bool                                                > ^_array_button;
+   Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^_array_switch;
+   Platform::Array<double                                              > ^_array_axis;
+#else
+   Ptr     _array_button=null, _array_switch=null, _array_axis=null;
+#endif
+#endif
+
 #endif
 #if MAC
    struct Elm

@@ -3,6 +3,11 @@
 namespace EE{
 /******************************************************************************/
 #define SORT_JOYPADS_BY_ID 0 // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder"
+
+// for JP_GAMEPAD_INPUT _raw_game_controller
+#define MAX_BUTTONS 32
+#define MAX_AXES     6
+#define MAX_SWITCHES 1
 /******************************************************************************/
 static Bool CalculateJoypadSensors;
 CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
@@ -20,55 +25,83 @@ static Int FindJoypadI(U16 vendor_id, U16 product_id)
 }
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
+static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics2         > GamepadStatics2;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameControllerStatics> RawGameControllerStatics;
-static EventRegistrationToken GamePadAddedToken, GamePadRemovedToken;
+static EventRegistrationToken GamePadAddedToken, GamePadRemovedToken, RawGameControllerAddedToken, RawGameControllerRemovedToken;
 
-static Int FindJoypadI(ABI::Windows::Gaming::Input::IGamepad* gamepad) {REPA(Joypads)if(Joypads[i]._gamepad.Get()==gamepad)return i; return -1;}
+static Int FindJoypadI(ABI::Windows::Gaming::Input::IGamepad          * gamepad            ) {REPA(Joypads)if(Joypads[i]._gamepad            .Get()==gamepad            )return i; return -1;}
+static Int FindJoypadI(ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller) {REPA(Joypads)if(Joypads[i]._raw_game_controller.Get()==raw_game_controller)return i; return -1;}
 
 struct GamePadChange
 {
-   Bool                                                          added;
-   Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad> gamepad;
+   Bool                                                                    added;
+   Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > gamepad;
+   Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController> raw_game_controller;
 
    void process()
    {
       if(added)
       {
-         if(FindJoypadI(gamepad.Get())>=0)return; // make sure it's not already listed
+         if(gamepad            .Get() && FindJoypadI(gamepad            .Get())>=0         // make sure it's not already listed
+         || raw_game_controller.Get() && FindJoypadI(raw_game_controller.Get())>=0)return; // make sure it's not already listed
 
          U16  vendor_id=0, product_id=0;
          UInt joypad_id=0;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
-         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGameController    >     game_controller; gamepad->QueryInterface(IID_PPV_ARGS(&game_controller)); if(game_controller)
+         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGameController    >     game_controller;
+         if(gamepad) // gamepad callback
          {
-            if(RawGameControllerStatics)
+            gamepad->QueryInterface(IID_PPV_ARGS(&game_controller)); if(game_controller)
             {
-               RawGameControllerStatics->FromGameController(game_controller.Get(), &raw_game_controller); if(raw_game_controller)
+               if(RawGameControllerStatics)RawGameControllerStatics->FromGameController(game_controller.Get(), &raw_game_controller);
+            }
+         }else // raw_game_controller callback
+         if(raw_game_controller=T.raw_game_controller)
+         {
+            raw_game_controller->QueryInterface(IID_PPV_ARGS(&game_controller)); if(game_controller)
+            {
+               if(GamepadStatics2)
                {
-                  raw_game_controller->get_HardwareVendorId (& vendor_id);
-                  raw_game_controller->get_HardwareProductId(&product_id);
-               #if JP_DIRECT_INPUT // if we use DirectInput then have to remove all DirectInput joypads with same vendor/product ID as they will be processed using this API instead
-                  REPA(Joypads) // go from back because we remove
-                  {
-                     Joypad &jp=Joypads[i]; if(jp._device && jp._vendor_id==vendor_id && jp._product_id==product_id)Joypads.remove(i, true);
-                  }
-               #endif
-                  raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
-                  {
-                     HSTRING id=null; raw_game_controller2->get_NonRoamableId(&id); C wchar_t *controller_id=WindowsGetStringRawBuffer(id, null); joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
-                  }
+                  GamepadStatics2->FromGameController(game_controller.Get(), &gamepad);
+                  if(gamepad)return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
                }
+            }
+         }
+
+         if(raw_game_controller)
+         {
+            raw_game_controller->get_HardwareVendorId (& vendor_id);
+            raw_game_controller->get_HardwareProductId(&product_id);
+         #if JP_DIRECT_INPUT // if we use DirectInput then have to remove all DirectInput joypads with same vendor/product ID as they will be processed using this API instead
+            REPA(Joypads) // go from back because we remove
+            {
+               Joypad &jp=Joypads[i]; if(jp._device && jp._vendor_id==vendor_id && jp._product_id==product_id)Joypads.remove(i, true);
+            }
+         #endif
+            raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
+            {
+               HSTRING id=null; raw_game_controller2->get_NonRoamableId(&id); C wchar_t *controller_id=WindowsGetStringRawBuffer(id, null); joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
             }
          }
 
          joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
          Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
          {
-            joypad._gamepad=gamepad;
+            joypad._gamepad            =gamepad;
+            joypad._raw_game_controller=raw_game_controller;
 
             if(raw_game_controller)
             {
+               raw_game_controller->get_ButtonCount(&joypad._buttons ); MIN(joypad._buttons , MAX_BUTTONS);
+               raw_game_controller->get_SwitchCount(&joypad._switches); MIN(joypad._switches, MAX_SWITCHES);
+               raw_game_controller->get_AxisCount  (&joypad._axes    ); MIN(joypad._axes    , MAX_AXES);
+               /* were empty on Logitech F310 in DirectInput mode, Nintendo JoyCons
+               FREP(buttons)
+               {
+                  ABI::Windows::Gaming::Input::GameControllerButtonLabel label=ABI::Windows::Gaming::Input::GameControllerButtonLabel_None;
+                 _raw_game_controller->GetButtonLabel(i, &label);
+               }*/
                joypad. _vendor_id= vendor_id;
                joypad._product_id=product_id;
                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
@@ -81,7 +114,11 @@ struct GamePadChange
                HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
             }
          }
-      }else Joypads.remove(FindJoypadI(gamepad.Get()), true);
+      }else
+      {
+         if(gamepad            .Get())Joypads.remove(FindJoypadI(gamepad            .Get()), true);
+         if(raw_game_controller.Get())Joypads.remove(FindJoypadI(raw_game_controller.Get()), true);
+      }
    }
 };
 static MemcThreadSafe<GamePadChange> GamePadChanges;
@@ -90,15 +127,18 @@ static void GamePadChanged()
 {
    MemcThreadSafeLock lock(GamePadChanges); FREPA(GamePadChanges)GamePadChanges.lockedElm(i).process(); GamePadChanges.lockedClear(); // process in order
 }
-static void GamePadChanged(Bool added, ABI::Windows::Gaming::Input::IGamepad* gamepad)
+static void GamePadChanged(Bool added, ABI::Windows::Gaming::Input::IGamepad* gamepad, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)
 {
-   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad;}
+   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
    App.addFuncCall(GamePadChanged);
 }
 
 // !! THESE ARE CALLED ON SECONDARY THREADS !!
-static struct GamePadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(true , gamepad); return S_OK;}}GamePadAdded;
-static struct GamePadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(false, gamepad); return S_OK;}}GamePadRemoved;
+static struct GamePadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(true , gamepad, null); return S_OK;}}GamePadAdded;
+static struct GamePadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(false, gamepad, null); return S_OK;}}GamePadRemoved;
+
+static struct RawGameControllerAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamePadChanged(true , null, raw_game_controller); return S_OK;}}RawGameControllerAdded;
+static struct RawGameControllerRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamePadChanged(false, null, raw_game_controller); return S_OK;}}RawGameControllerRemoved;
 
 #elif MAC
 ASSERT(MEMBER_SIZE(Joypad::Elm, cookie)==SIZE(UInt)); // because it's stored as UInt for EE_PRIVATE
@@ -482,6 +522,59 @@ void Joypad::update()
 
          updateOK(); return;
       }
+   }else
+   if(_raw_game_controller)
+   {
+   #if WINDOWS_OLD
+      boolean                                                   button[MAX_BUTTONS ]; ASSERT(ELMS(button)<=ELMS(T._button));
+      DOUBLE                                                    axis  [MAX_AXES    ];
+      ABI::Windows::Gaming::Input::GameControllerSwitchPosition Switch[MAX_SWITCHES];
+      UINT64 timestamp;
+      if(OK(_raw_game_controller->GetCurrentReading(_buttons, button, _switches, Switch, _axes, axis, &timestamp)))
+      {
+         update(button, _buttons);
+         if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
+         if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
+         if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
+         if(_switches)switch(Switch[0])
+         {
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Center   : setDiri( 0,  0); dir.zero(                  ); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Up       : setDiri( 0,  1); dir.set (       0,        1); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Right    : setDiri( 1,  0); dir.set (       1,        0); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
+            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
+         }
+         updateOK(); return;
+      }
+   #else
+     _raw_game_controller->GetCurrentReading(_array_button, _array_switch, _array_axis);
+
+      bool *button=_array_button->Data; ASSERT(SIZE(*button)==SIZE(Byte)); update((Byte*)button, _buttons);
+
+      double *axis=_array_axis->Data;
+      if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
+      if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
+      if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
+
+      if(_switches)switch(*_array_switch->Data)
+      {
+         case Windows::Gaming::Input::GameControllerSwitchPosition::Center   : setDiri( 0,  0); dir.zero(                  ); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::Up       : setDiri( 0,  1); dir.set (       0,        1); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::Right    : setDiri( 1,  0); dir.set (       1,        0); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
+         case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
+      }
+
+      updateOK(); return;
+   #endif
    }
 #endif
 #if JP_DIRECT_INPUT
@@ -935,11 +1028,20 @@ void InitJoypads()
    Joypad::_button_name[JB_DPAD_UP   ]="DPadUp"   ;
 
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
-   RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad).Get(), __uuidof(ABI::Windows::Gaming::Input::IGamepadStatics), &GamepadStatics); if(GamepadStatics)
+   // !! SET ALL BEFORE ADDING CALLBACKS !!
+   RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_RawGameController).Get(), __uuidof(ABI::Windows::Gaming::Input::IRawGameControllerStatics), &RawGameControllerStatics);
+   RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad          ).Get(), __uuidof(ABI::Windows::Gaming::Input::IGamepadStatics          ), &GamepadStatics          );
+   RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_Gamepad          ).Get(), __uuidof(ABI::Windows::Gaming::Input::IGamepadStatics2         ), &GamepadStatics2         );
+   // !! ADD CALLBACKS AFTER !!
+   if(GamepadStatics)
    {
-      RoGetActivationFactory(Microsoft::WRL::Wrappers::HStringReference(RuntimeClass_Windows_Gaming_Input_RawGameController).Get(), __uuidof(ABI::Windows::Gaming::Input::IRawGameControllerStatics), &RawGameControllerStatics); // set this before 'GamePadAdded'
       GamepadStatics->add_GamepadAdded  (&GamePadAdded  , &GamePadAddedToken);
       GamepadStatics->add_GamepadRemoved(&GamePadRemoved, &GamePadRemovedToken);
+   }
+   if(RawGameControllerStatics)
+   {
+      RawGameControllerStatics->add_RawGameControllerAdded  (&RawGameControllerAdded  , &RawGameControllerAddedToken);
+      RawGameControllerStatics->add_RawGameControllerRemoved(&RawGameControllerRemoved, &RawGameControllerRemovedToken);
    }
 #endif
 
@@ -948,13 +1050,21 @@ void InitJoypads()
 void ShutJoypads()
 {
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
+   // first remove callbacks
    if(GamepadStatics)
    {
       GamepadStatics->remove_GamepadAdded  (GamePadAddedToken);
       GamepadStatics->remove_GamepadRemoved(GamePadRemovedToken);
-      RawGameControllerStatics=null;
-      GamepadStatics=null;
    }
+   if(RawGameControllerStatics)
+   {
+      RawGameControllerStatics->remove_RawGameControllerAdded  (RawGameControllerAddedToken);
+      RawGameControllerStatics->remove_RawGameControllerRemoved(RawGameControllerRemovedToken);
+   }
+   // now clear
+   GamepadStatics          =null;
+   GamepadStatics2         =null;
+   RawGameControllerStatics=null;
 #endif
 
    Joypads.del();

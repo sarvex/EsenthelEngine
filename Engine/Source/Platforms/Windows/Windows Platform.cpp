@@ -33,8 +33,9 @@ static Int FindJoypadI(Windows::Gaming::Input::IGameController ^gamepad) {REPA(J
 
 struct GamePadChange
 {
-   Bool     added;
-   Gamepad ^gamepad;
+   Bool               added;
+   Gamepad           ^gamepad;
+   RawGameController ^raw_game_controller;
 
    void process();
 };
@@ -44,9 +45,9 @@ static void GamePadChanged()
 {
    MemcThreadSafeLock lock(GamePadChanges); FREPA(GamePadChanges)GamePadChanges.lockedElm(i).process(); GamePadChanges.lockedClear(); // process in order
 }
-static void GamePadChanged(Bool added, Gamepad ^&gamepad)
+static void GamePadChanged(Bool added, Gamepad ^gamepad, RawGameController ^raw_game_controller)
 {
-   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad;}
+   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
    App.addFuncCall(GamePadChanged);
 }
 #endif
@@ -189,6 +190,9 @@ ref struct FrameworkView sealed : IFrameworkView
 
       Gamepad::GamepadAdded   += ref new EventHandler<Gamepad^>(this, &FrameworkView::OnGamepadAdded);
       Gamepad::GamepadRemoved += ref new EventHandler<Gamepad^>(this, &FrameworkView::OnGamepadRemoved);
+
+      RawGameController::RawGameControllerAdded   += ref new EventHandler<RawGameController^>(this, &FrameworkView::OnRawGameControllerAdded);
+      RawGameController::RawGameControllerRemoved += ref new EventHandler<RawGameController^>(this, &FrameworkView::OnRawGameControllerRemoved);
 
       if(accelerometer=Accelerometer::GetDefault())
       {
@@ -615,8 +619,11 @@ ref struct FrameworkView sealed : IFrameworkView
 
 #if JP_GAMEPAD_INPUT
    // !! THESE ARE CALLED ON SECONDARY THREADS !!
-   void OnGamepadAdded  (Object^ sender, Gamepad ^gamepad) {GamePadChanged(true , gamepad);}
-   void OnGamepadRemoved(Object^ sender, Gamepad ^gamepad) {GamePadChanged(false, gamepad);}
+   void OnGamepadAdded  (Object^ sender, Gamepad ^gamepad) {GamePadChanged(true , gamepad, null);}
+   void OnGamepadRemoved(Object^ sender, Gamepad ^gamepad) {GamePadChanged(false, gamepad, null);}
+
+   void OnRawGameControllerAdded  (Object^ sender, RawGameController ^raw_game_controller) {GamePadChanged(true , null, raw_game_controller);}
+   void OnRawGameControllerRemoved(Object^ sender, RawGameController ^raw_game_controller) {GamePadChanged(false, null, raw_game_controller);}
 
    void OnGamepadUserChanged(Windows::Gaming::Input::IGameController^ controller, Windows::System::UserChangedEventArgs^ args)
    {
@@ -770,28 +777,41 @@ void GamePadChange::process()
 {
    if(added)
    {
-      if(FindJoypadI(gamepad)>=0)return; // make sure it's not already listed
+      if(gamepad             && FindJoypadI(gamepad            )>=0
+      || raw_game_controller && FindJoypadI(raw_game_controller)>=0)return; // make sure it's not already listed
+
       UInt joypad_id;
-      auto controller=Windows::Gaming::Input::RawGameController::FromGameController(gamepad); if(controller)
+      if(gamepad) // gamepad callback
+         raw_game_controller=Windows::Gaming::Input::RawGameController::FromGameController(gamepad);
+
+      if(raw_game_controller)
       {
-       C wchar_t *controller_id=controller->NonRoamableId->Data();
+       C wchar_t *controller_id=raw_game_controller->NonRoamableId->Data();
             joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
       }else joypad_id=0;
       joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
       Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
       {
-         joypad._gamepad=gamepad;
-         if(controller)
+         joypad._gamepad            =gamepad;
+         joypad._raw_game_controller=raw_game_controller;
+         if(raw_game_controller)
          {
-            joypad._name      =controller->DisplayName->Data();
-            joypad. _vendor_id=controller->HardwareVendorId;
-            joypad._product_id=controller->HardwareProductId;
-            if(auto motors=controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
+            joypad._name      =raw_game_controller->DisplayName->Data();
+            joypad. _vendor_id=raw_game_controller->HardwareVendorId;
+            joypad._product_id=raw_game_controller->HardwareProductId;
+            joypad._array_button=ref new Platform::Array<bool                        >(joypad._buttons =raw_game_controller->ButtonCount);
+            joypad._array_switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches=raw_game_controller->SwitchCount);
+            joypad._array_axis  =ref new Platform::Array<double                      >(joypad._axes    =raw_game_controller->  AxisCount);
+            if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
          }
          // set callback after everything was set, in case it's called right away
-         joypad._gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         if(gamepad)gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
       }
-   }else Joypads.remove(FindJoypadI(gamepad), true);
+   }else
+   {
+      if(gamepad            )Joypads.remove(FindJoypadI(gamepad            ), true);
+      if(raw_game_controller)Joypads.remove(FindJoypadI(raw_game_controller), true);
+   }
 }
 #endif
 void Application::wait(SyncEvent &event)
