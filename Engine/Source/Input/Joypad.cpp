@@ -205,7 +205,7 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
          {
             Joypad::Elm &elm=elms[i]; if(elm.type==Joypad::Elm::BUTTON)
             {
-               Byte remap=jp._remap[elm.index]; if(InRange(remap, jp._mac_button))elm.index=remap;else elms.remove(i, true);
+               Byte remap=jp._remap[elm.index]; if(InRange(remap, jp._button))elm.index=remap;else elms.remove(i, true);
             }
          }
          jp._elms=elms;
@@ -244,7 +244,8 @@ static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOH
 
                case Joypad::Elm::BUTTON:
                {
-                  jp._mac_button[elm->index]=(val>elm->avg);
+                  if(val>elm->avg)jp.push   (elm->index);
+                  else            jp.release(elm->index);
                }break;
 
                case Joypad::Elm::AXIS:
@@ -287,9 +288,6 @@ Joypad::Joypad()
 
 #if SWITCH
    Zero(_vibration_handle); Zero(_sensor_handle);
-#elif MAC
-   ASSERT(ELMS(_button)==ELMS(_mac_button));
-   Zero(_mac_button);
 #endif
 
   _color_left .zero();
@@ -708,9 +706,6 @@ void Joypad::update()
       if(App.active())acquire(true); // if failed then try to re-acquire
    }
 #endif
-#elif MAC
-   update(_mac_button, Elms(_mac_button));
-   updateOK(); return;
 #else
    updateOK(); return; // updated externally
 #endif

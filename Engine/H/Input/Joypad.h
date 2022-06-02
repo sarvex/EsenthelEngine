@@ -235,7 +235,6 @@ private:
    };
 
    Mems<Elm> _elms;
-   Bool      _mac_button[32];
    Ptr       _device=null;
 #endif
 
