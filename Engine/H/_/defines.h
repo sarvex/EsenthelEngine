@@ -32,7 +32,7 @@
 #define MEMBER(     Class, member)        (((Class*)null)-> member)  // null based Class::member, this macro is used to obtain member information by many other macros/functions
 #define OFFSET(     Class, member)  UIntPtr(&MEMBER(Class,  member)) // get offset   of member in class
 #define MEMBER_SIZE(Class, member)     SIZE( MEMBER(Class,  member)) // get size     of member in class
-#define MEMBER_ELMS(Class, member)     Elms( MEMBER(Class,  member)) // get elements of member in class
+#define MEMBER_ELMS(Class, member)     ELMS( MEMBER(Class,  member)) // get elements of member in class
 #define  CAST(      Class, object)     dynamic_cast<Class*>(object)  // perform a dynamic cast of 'object' to 'Class' class
 #define SCAST(      Class, object)      static_cast<Class&>(object)  // perform a  static cast of 'object' to 'Class' class
 #define ELMS(       Array        )      (SIZE(Array)/SIZE(Array[0])) // get number of elements in array (this is the compile-time version, use 'Elms' instead of 'ELMS' whenever possible)
