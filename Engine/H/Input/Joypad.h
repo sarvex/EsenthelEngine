@@ -240,10 +240,13 @@ private:
       Platform::Array<bool                                                > ^button;
       Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^Switch;
       Platform::Array<double                                              > ^axis;
-      Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)==SIZE(UInt)*15); // use UInt for alignment
+   #pragma pack(push)
+   #pragma pack() // default packing required for storing WinRT classes not as ^ pointers, without this 'gamepad' members were getting corrupt values
+      Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)==SIZE(UInt)*16); // use UInt for alignment
+   #pragma pack(pop)
    #else
       Ptr  button=null, Switch=null, axis=null;
-      UInt gamepad[15];
+      UInt gamepad[16];
    #endif
    #endif
 
