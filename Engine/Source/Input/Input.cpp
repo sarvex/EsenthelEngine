@@ -277,11 +277,11 @@ void InputDevicesClass::update()
 #if SWITCH
    NS::UpdateInput();
 #endif
-                         Kb      .update();
-                         Ms      .update();
-   if(App.active())REPAO(Joypads).update();
-                           TouchesUpdate();
-                               VR.update();
+                        Kb.update();
+                        Ms.update();
+   if(App.active())Joypads.update();
+                    TouchesUpdate();
+                        VR.update();
 #if ANDROID
    if(!(Time.frame()%60))UpdateLocation(Jni); // update once per 60-frames, because it was reported that this can generate plenty of messages in the log
 #elif IOS
@@ -305,9 +305,9 @@ void InputDevicesClass::clear()
 /******************************************************************************/
 void InputDevicesClass::acquire(Bool on)
 {
-         Kb      .acquire(on);
-         Ms      .acquire(on);
-   REPAO(Joypads).acquire(on);
+        Kb.acquire(on);
+        Ms.acquire(on);
+   Joypads.acquire(on);
 #if ANDROID
    if(SensorEventQueue)
       if(ASensorManager *sensor_manager=ASensorManager_getInstance())

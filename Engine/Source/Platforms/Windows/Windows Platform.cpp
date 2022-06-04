@@ -630,7 +630,7 @@ ref struct FrameworkView sealed : IFrameworkView
       if(auto joypad_user_changed=App.joypad_user_changed) // copy to temporary first, to avoid multi-thread issues
          {Int joypad_i=FindJoypadI(controller); if(joypad_i>=0)joypad_user_changed(Joypads[joypad_i].id());}
    }
-#else
+#elif JP_X_INPUT
    void OnGamepadRemoved(Object^ sender, Gamepad ^gamepad) {App.addFuncCall(ListJoypads);} // can't call 'ListJoypads' directly because at this stage the XInput state might still be old, and return results from previous frame while the Joypad is still   available (this happened during testing)
    void OnGamepadAdded  (Object^ sender, Gamepad ^gamepad) {App.addFuncCall(ListJoypads);} // can't call 'ListJoypads' directly because at this stage the XInput state might still be old, and return results from previous frame while the Joypad is still unavailable (this happened during testing)
 #endif
@@ -806,9 +806,16 @@ void GamePadChange::process()
             joypad. _vendor_id=raw_game_controller->HardwareVendorId;
             joypad._product_id=raw_game_controller->HardwareProductId;
          #endif
-            joypad._array_button=ref new Platform::Array<bool                        >(joypad._buttons =raw_game_controller->ButtonCount); MIN(joypad._buttons, Elms(joypad._remap));
-            joypad._array_switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches=raw_game_controller->SwitchCount);
-            joypad._array_axis  =ref new Platform::Array<double                      >(joypad._axes    =raw_game_controller->  AxisCount);
+            joypad._buttons =Min(raw_game_controller->ButtonCount, Elms(joypad._remap));
+            joypad._switches=    raw_game_controller->SwitchCount;
+            joypad._axes    =    raw_game_controller->  AxisCount;
+            REPA(joypad._state)
+            {
+               auto &state=joypad._state[i]; // allocations below also zero memory, which is what we need
+               state.button=ref new Platform::Array<bool                        >(joypad._buttons );
+               state.Switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches);
+               state.axis  =ref new Platform::Array<double                      >(joypad._axes    );
+            }
             if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
             joypad.remap(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
          }
@@ -817,8 +824,8 @@ void GamePadChange::process()
       }
    }else
    {
-      if(gamepad            )Joypads.remove(FindJoypadI(gamepad            ), true);
-      if(raw_game_controller)Joypads.remove(FindJoypadI(raw_game_controller), true);
+      if(gamepad            )Joypads.remove(FindJoypadI(gamepad            ));
+      if(raw_game_controller)Joypads.remove(FindJoypadI(raw_game_controller));
    }
 }
 #endif

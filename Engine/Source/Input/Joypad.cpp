@@ -4,13 +4,12 @@ namespace EE{
 /******************************************************************************/
 #define SORT_JOYPADS_BY_ID 0 // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder"
 
-// for JP_GAMEPAD_INPUT _raw_game_controller
-#define MAX_AXES     6
-#define MAX_SWITCHES 1
+#define JOYPAD_THREAD (JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT)
+#define JOYPAD_THREAD_SLEEP 5
 /******************************************************************************/
-static Bool CalculateJoypadSensors;
-CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
-MemtN<Joypad, 4> Joypads;
+static Bool    CalculateJoypadSensors;
+       CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
+ JoypadsClass  Joypads;
 /******************************************************************************/
 #if JP_DIRECT_INPUT
 static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
@@ -24,6 +23,7 @@ static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
    return false;
 }
 #endif
+/******************************************************************************/
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics2         > GamepadStatics2;
@@ -77,7 +77,7 @@ struct GamePadChange
          #if JP_DIRECT_INPUT // if we use DirectInput then have to remove all DirectInput joypads with same vendor/product ID as they will be processed using this API instead
             REPA(Joypads) // go from back because we remove
             {
-               Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && jp._device)Joypads.remove(i, true); // remove all (not just one)
+               Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && jp._device)Joypads.remove(i); // remove all (not just one)
             }
          #endif
             raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
@@ -87,6 +87,9 @@ struct GamePadChange
          }
 
          joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
+      #if JOYPAD_THREAD
+         SyncLocker lock(JoypadThreadLock);
+      #endif
          Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
          {
             joypad._gamepad            =gamepad;
@@ -94,9 +97,9 @@ struct GamePadChange
 
             if(raw_game_controller)
             {
-               raw_game_controller->get_ButtonCount(&joypad._buttons ); MIN(joypad._buttons , Elms(joypad._remap));
-               raw_game_controller->get_SwitchCount(&joypad._switches); MIN(joypad._switches, MAX_SWITCHES);
-               raw_game_controller->get_AxisCount  (&joypad._axes    ); MIN(joypad._axes    , MAX_AXES);
+               raw_game_controller->get_ButtonCount(&joypad._buttons ); MIN(joypad._buttons , Elms(joypad._state[0].raw_game_controller.button));
+               raw_game_controller->get_SwitchCount(&joypad._switches); MIN(joypad._switches, Elms(joypad._state[0].raw_game_controller.Switch));
+               raw_game_controller->get_AxisCount  (&joypad._axes    ); MIN(joypad._axes    , Elms(joypad._state[0].raw_game_controller.axis  ));
                /* were empty on Logitech F310 in DirectInput mode, Nintendo JoyCons
                FREP(buttons)
                {
@@ -120,8 +123,8 @@ struct GamePadChange
          }
       }else
       {
-         if(gamepad            .Get())Joypads.remove(FindJoypadI(gamepad            .Get()), true);
-         if(raw_game_controller.Get())Joypads.remove(FindJoypadI(raw_game_controller.Get()), true);
+         if(gamepad            .Get())Joypads.remove(FindJoypadI(gamepad            .Get()));
+         if(raw_game_controller.Get())Joypads.remove(FindJoypadI(raw_game_controller.Get()));
       }
    }
 };
@@ -193,9 +196,12 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
 
       NSString *name  = (NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductKey     )); // do not release this !!
     //NSString *serial= (NSString*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDSerialNumberKey)); // do not release this ? this was null on "Logitech Rumblepad 2"
-	   Int    vendor_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey    )) intValue];
-	   Int   product_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
+      Int    vendor_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey    )) intValue];
+      Int   product_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
 
+   #if JOYPAD_THREAD
+      SyncLocker lock(JoypadThreadLock);
+   #endif
       Bool added; Joypad &jp=GetJoypad(JoypadsID++, added); if(added)
       {
          jp._name  =name;
@@ -214,7 +220,7 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
 }
 static void JoypadRemoved(void *inContext, IOReturn inResult, void *inSender, IOHIDDeviceRef device) // this is called on the main thread
 {
-   REPA(Joypads)if(Joypads[i]._device==device){Joypads.remove(i, true); break;}
+   REPA(Joypads)if(Joypads[i]._device==device){Joypads.remove(i); break;}
 }
 static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOHIDValueRef value) // this is called on the main thread
 {
@@ -266,6 +272,25 @@ static void JoypadAction(void *inContext, IOReturn inResult, void *inSender, IOH
 }
 #endif
 /******************************************************************************/
+static void RemovingJoypad(Memc<Input> &inputs, Int device)
+{
+   REPA(inputs) // go from the end because we're removing elements
+   {
+      Input &input=inputs[i]; if(input.type==INPUT_JOYPAD)
+      {
+         if(input.device> device)input .device--;else    // adjust the index
+         if(input.device==device)inputs.remove(i, true); // if this input is for joypad being deleted, then delete the input and keep order
+      }
+   }
+}
+static void AddingJoypad(Memc<Input> &inputs, Int device)
+{
+   REPA(inputs)
+   {
+      Input &input=inputs[i]; if(input.type==INPUT_JOYPAD && input.device>=device)input.device++;
+   }
+}
+/******************************************************************************/
 Joypad::~Joypad()
 {
 #if JP_DIRECT_INPUT
@@ -306,10 +331,10 @@ CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_na
 /******************************************************************************/
 Bool Joypad::supportsVibrations()C
 {
-#if JP_X_INPUT
-   return _xinput!=255;
-#elif JP_GAMEPAD_INPUT
+#if JP_GAMEPAD_INPUT
    return _vibrations;
+#elif JP_X_INPUT
+   return _xinput!=255;
 #elif SWITCH
    return _vibration_handle[0];// || _vibration_handle[1]; check only first because second will be available only if first is
 #endif
@@ -323,20 +348,11 @@ Bool Joypad::supportsSensors()C
    return false;
 #endif
 }
-Int Joypad::index()C {return Joypads.index(this);}
 /******************************************************************************/
 #if !SWITCH
 Joypad& Joypad::vibration(C Vec2 &vibration)
 {
-#if JP_X_INPUT
-   if(_xinput!=255)
-   {
-      XINPUT_VIBRATION xvibration;
-      xvibration. wLeftMotorSpeed=RoundU(Sat(vibration.x)*0xFFFF);
-      xvibration.wRightMotorSpeed=RoundU(Sat(vibration.y)*0xFFFF);
-      XInputSetState(_xinput, &xvibration);
-   }
-#elif JP_GAMEPAD_INPUT
+#if JP_GAMEPAD_INPUT
    if(_gamepad)
    {
    #if WINDOWS_OLD
@@ -352,6 +368,14 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
    #else
      _gamepad->Vibration=v;
    #endif
+   }
+#elif JP_X_INPUT
+   if(_xinput!=255)
+   {
+      XINPUT_VIBRATION xvibration;
+      xvibration. wLeftMotorSpeed=RoundU(Sat(vibration.x)*0xFFFF);
+      xvibration.wRightMotorSpeed=RoundU(Sat(vibration.y)*0xFFFF);
+      XInputSetState(_xinput, &xvibration);
    }
 #endif
    return T;
@@ -455,7 +479,7 @@ void Joypad::remap(U16 vendor_id, U16 product_id)
          return;
       }break;
    }
-   if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android reported mappings
+   if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android mappings
    else        REPAO(_remap)=i;
 #endif
 }
@@ -475,7 +499,7 @@ void Joypad::zero()
   _sensor_left .reset();
   _sensor_right.reset();
 }
-void Joypad::clear()
+void Joypad::clear() // called at end of frame
 {
    REPAO(_button)&=~BS_NOT_ON;
          diri_r  .zero();
@@ -486,17 +510,28 @@ void Joypad::update(C Bool *on, Int elms)
    MIN(elms, Elms(_button));
    REP(elms){Bool o=on[i]; if(o!=ButtonOn(_button[i])){if(o)push(i);else release(i);}}
 }
-#if WINDOWS_NEW
-static inline Bool FlagOn(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
-#endif
+static void UpdateDirRep1(VecSB2 &diri_r, C VecSB2 &diri, Flt &time, Flt first_time, Flt repeat_time) // skips adding for first time
+{
+   if(diri.any())
+   {
+      if(Time.appTime()>=time)
+      {
+         if(time<0){time=Time.appTime()+ first_time;}
+         else      {time=Time.appTime()+repeat_time; diri_r+=diri;}
+      }
+   }else
+   {
+      time=-FLT_MAX;
+   }
+}
 static void UpdateDirRep(VecSB2 &diri_r, C VecSB2 &diri, Flt &time, Flt first_time, Flt repeat_time)
 {
    if(diri.any())
    {
       if(Time.appTime()>=time)
       {
-         diri_r=diri;
-         time  =Time.appTime()+((time<0) ? first_time : repeat_time); // if first press, then wait longer
+         diri_r+=diri;
+         time   =Time.appTime()+((time<0) ? first_time : repeat_time); // if first press, then wait longer
       }
    }else
    {
@@ -790,6 +825,8 @@ void Joypad::acquire(Bool on)
 void Joypad::sensors(Bool calculate) {}
 #endif
 /******************************************************************************/
+// JOYPADS
+/******************************************************************************/
 void ApplyDeadZone(Vec2 &v, Flt dead_zone)
 {
    Flt len =v.length();
@@ -812,13 +849,23 @@ void JoypadSensors(Bool calculate)
 void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_names, C CMemPtr<Color> &player_colors) {}
 #endif
 /******************************************************************************/
+void JoypadsClass::remove(Int i)
+{
+#if JOYPAD_THREAD
+   if(InRange(i, T)){SyncLocker lock(JoypadThreadLock);
+#else
+   {
+#endif
+     _data.remove(i, true);
+   }
+}
 static Int Compare(C Joypad &a, C UInt &b) {return Compare(a.id(), b);}
-Joypad* FindJoypad(UInt id)
+Joypad* JoypadsClass::find(UInt id)
 {
 #if SORT_JOYPADS_BY_ID
-   return Joypads.binaryFind(id, Compare);
+   return binaryFind(id, Compare);
 #else
-   REPA(Joypads)if(Joypads[i].id()==id)return &Joypads[i];
+   REPA(T){Joypad &jp=T[i]; if(jp.id()==id)return &jp;}
 #endif
    return null;
 }
@@ -826,9 +873,9 @@ Joypad& GetJoypad(UInt id, Bool &added)
 {
    added=false;
 #if SORT_JOYPADS_BY_ID
-   Joypad *joypad; Int index; if(Joypads.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads.NewAt(index); joypad->_id=id; added=true;}
+   Joypad *joypad; Int index; if(Joypads.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads._data.NewAt(index); joypad->_id=id; added=true;}
 #else
-   Joypad *joypad=FindJoypad(id);                                                         if(!joypad){joypad=&Joypads.New  (     ); joypad->_id=id; added=true;}
+   Joypad *joypad=Joypads.find(id);                                                       if(!joypad){joypad=&Joypads._data.New  (     ); joypad->_id=id; added=true;}
 #endif
    joypad->_connected=true;
    return *joypad;
@@ -837,11 +884,22 @@ UInt NewJoypadID(UInt id)
 {
    for(;;)
    {
-      if(!FindJoypad(id))return id; // if no joypad uses this ID, then we can use it
+      if(!Joypads.find(id))return id; // if no joypad uses this ID, then we can use it
       id++; // increase
    }
 }
+/******************************************************************************/
 #if JP_DIRECT_INPUT
+static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
+{
+#if JP_GAMEPAD_INPUT
+   REPA(Joypads)
+   {
+      Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && (jp._gamepad || jp._raw_game_controller))return true;
+   }
+#endif
+   return false;
+}
 static Bool IsXInputDevice(C GUID &pGuidProductFromDirectInput) // !! Warning: this might trigger calling 'WindowMsg' !!
 {
    Bool xinput=false;
@@ -962,6 +1020,8 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          #endif
             joypad.remap(vendor_id, product_id);
 
+            REPAO(joypad._state).dinput.rgdwPOV[0]=UINT_MAX; // set initial DPAD to centered
+
             // disable auto centering ?
             DIPROPDWORD dipdw; Zero(dipdw);
             dipdw.diph.dwSize      =SIZE(dipdw);
@@ -971,7 +1031,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 
             joypad._device->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
          }
-         if(!joypad._device)Joypads.removeData(&joypad, true); // if failed to create it then remove it
+         if(!joypad._device)Joypads.remove(joypad._joypad_index); // if failed to create it then remove it
          RELEASE(did);
       }
    }
@@ -982,6 +1042,9 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 void ListJoypads()
 {
 #if JP_X_INPUT || JP_DIRECT_INPUT
+#if JOYPAD_THREAD
+   SyncLocker lock(JoypadThreadLock);
+#endif
    REPA(Joypads) // assume that all are disconnected
    {
       Joypad &jp=Joypads[i];
@@ -1025,7 +1088,7 @@ void ListJoypads()
       if(InputDevices.DI)InputDevices.DI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoypads, null, DIEDFL_ATTACHEDONLY/*|DIEDFL_FORCEFEEDBACK*/); // this would enumerate only devices with ForceFeedback
    #endif
 
-   REPA(Joypads)if(!Joypads[i]._connected)Joypads.remove(i, true); // remove disconnected joypads
+   REPA(Joypads)if(!Joypads[i]._connected)Joypads.remove(i); // remove disconnected joypads
 #elif MAC
 	if(HidManager=IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone))
 	{
@@ -1048,6 +1111,7 @@ void ListJoypads()
    }
 #endif
 }
+/******************************************************************************/
 void InitJoypads()
 {
    if(LogInit)LogN("InitJoypads");
@@ -1154,6 +1218,7 @@ void InitJoypads()
 
    ListJoypads();
 }
+/******************************************************************************/
 void ShutJoypads()
 {
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
@@ -1174,7 +1239,17 @@ void ShutJoypads()
    RawGameControllerStatics=null;
 #endif
 
-   Joypads.del();
+#if JOYPAD_THREAD
+   JoypadThread.stop();
+   JoypadEvent .on  ();
+   JoypadThread.del (); // delete the thread first
+   ThreadInputs.del ();
+#if WINDOWS_OLD
+   if(TimerRes)timeEndPeriod(TimerRes);
+#endif
+#endif
+
+   Joypads._data.del();
 
 #if MAC
    if(HidManager)

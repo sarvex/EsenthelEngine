@@ -1254,6 +1254,9 @@ struct VecSB2 // Vector 2D (SByte)
    VecSB2& set (SByte i         ) {x=y=i;        return T;}
    VecSB2& set (SByte x, SByte y) {T.x=x; T.y=y; return T;}
 
+   VecSB2& operator+=(C VecSB2 &v) {x+=v.x; y+=v.y; return T;}
+   VecSB2& operator-=(C VecSB2 &v) {x-=v.x; y-=v.y; return T;}
+
    Bool operator==(C VecSB2 &v)C {return x==v.x && y==v.y;}
    Bool operator!=(C VecSB2 &v)C {return x!=v.x || y!=v.y;}
 

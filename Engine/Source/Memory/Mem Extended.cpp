@@ -86,8 +86,12 @@ void _Memx::removeValid(Int i, Bool keep_order)
       UInt abs=_valid [i  ];
       Ptr  elm= absElm(abs);
 
-      // destroy as the first step
-      if(_del)_del(elm);
+      // destroy as the first step, this could be done as the last step, however keep consistency with all other memory containers where elements are destroyed first, this is so their destructors can properly detect their index/presence in the container
+      if(_del)
+      {
+        _del(elm);
+         DEBUG_ASSERT(absToValidIndex(abs)==i, "_Memx.removeValid"); // this error means that elm destructor modified the _Memx
+      }
 
       // put removed to invalid
       UInt inv=_invalid.addNum(1);

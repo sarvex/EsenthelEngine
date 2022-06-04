@@ -157,8 +157,13 @@ struct Input
 {
    Bool       pushed; // true=pushed, false=released
    INPUT_TYPE type  ; // input  type
-   Byte       button, // button index (KB_KEY for keyboard or index for Mouse/Joypad)
-              device; // device index (for example Joypad device index, unused for Keyboard and Mouse)
+   union
+   {
+      Byte          button; // for INPUT_MOUSE
+      KB_KEY        key   ; // for INPUT_KEYBOARD
+      JOYPAD_BUTTON jb    ; // for INPUT_JOYPAD
+   };
+   Byte device; // device index (for example Joypad device index, unused for Keyboard and Mouse)
 
    void set(Bool pushed, INPUT_TYPE type, Byte button, Byte device=0) {T.pushed=pushed; T.type=type; T.button=button; T.device=device;}
 };

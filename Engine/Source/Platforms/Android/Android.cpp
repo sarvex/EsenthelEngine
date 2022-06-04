@@ -228,7 +228,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
          if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
-               if(Joypad *joypad=FindJoypad(device))
+               if(Joypad *joypad=Joypads.find(device))
             {
                joypad->dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
                                    -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
@@ -407,7 +407,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 
          if(source&((AINPUT_SOURCE_DPAD|AINPUT_SOURCE_GAMEPAD|AINPUT_SOURCE_JOYSTICK) & ~AINPUT_SOURCE_CLASS_BUTTON)) // disable 'AINPUT_SOURCE_CLASS_BUTTON' because AINPUT_SOURCE_KEYBOARD has it
          {
-            if(Joypad *joypad=FindJoypad(device))
+            if(Joypad *joypad=Joypads.find(device))
             {
                Byte button;
                Int scan_code=AKeyEvent_getScanCode(event)-304; if(InRange(scan_code, joypad->_remap))
@@ -510,7 +510,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
    }
    return 0;
 }
-static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i, true); break;}}
+static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i); break;}}
 static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); Bool added; Joypad &joypad=GetJoypad(device_id, added); if(added)
    if(Jni)
       if(JClass InputDevice="android/view/InputDevice")

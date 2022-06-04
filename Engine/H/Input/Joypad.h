@@ -58,6 +58,10 @@ enum JOYPAD_BUTTON : Byte // button indexes as defined for XInput/Xbox/NintendoS
    JB_DPAD_DOWN =34,
    JB_DPAD_UP   =35,
 };
+#if EE_PRIVATE
+inline Bool IsDPad (JOYPAD_BUTTON button) {return button>=JB_DPAD_LEFT;}
+inline Bool IsDPadY(JOYPAD_BUTTON button) {return button>=JB_DPAD_DOWN;}
+#endif
 /******************************************************************************/
 struct Vibration
 {
@@ -129,13 +133,12 @@ struct Joypad // Joypad Input
    void acquire (Bool on);
    void update  (C Bool *on, Int elms);
    void setDiri (Int x, Int y);
-   void updateOK();
+   void updateState();
    void update  ();
    void clear   ();
    void zero    ();
    void push    (Byte b);
    void release (Byte b);
-   Int  index   ()C;
    void sensors (Bool calculate);
    void remap   (U16 vendor_id, U16 product_id);
 #endif
@@ -154,11 +157,15 @@ private:
 #if JP_X_INPUT
    Byte    _xinput=255;
 #endif
+   Byte    _joypad_index;
 #if JP_GAMEPAD_INPUT
    Bool    _vibrations=false;
 #endif
 #if SWITCH
    Bool    _mini=false;
+#endif
+#if JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT
+   Bool    _state_index=false;
 #endif
    Bool    _connected=false;
 #define JOYPAD_VENDOR_PRODUCT_ID (JP_DIRECT_INPUT && JP_GAMEPAD_INPUT) // needed only if using both JP_DIRECT_INPUT and JP_GAMEPAD_INPUT
@@ -184,7 +191,6 @@ private:
 #endif
 #endif
 #if JP_GAMEPAD_INPUT
-
 #if EE_PRIVATE
    #if WINDOWS_OLD
       Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > _gamepad;
@@ -196,17 +202,6 @@ private:
 #else
    Ptr     _gamepad=null, _raw_game_controller=null;
 #endif
-
-#if WINDOWS_NEW
-#if EE_PRIVATE
-   Platform::Array<bool                                                > ^_array_button;
-   Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^_array_switch;
-   Platform::Array<double                                              > ^_array_axis;
-#else
-   Ptr     _array_button=null, _array_switch=null, _array_axis=null;
-#endif
-#endif
-
 #endif
 #if MAC
    struct Elm
@@ -230,13 +225,59 @@ private:
    #if EE_PRIVATE
       void setPad   (C IOHIDElementCookie &cookie                    , Int max) {T.type=PAD   ; T.cookie=cookie; T.max  =max+1; T.mul=-PI2/T.max; T.add=PI_2;}
       void setButton(C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=BUTTON; T.cookie=cookie; T.index=index; T.avg=(min+max)/2;}
-      void setAxis  (C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index&1){CHS(mul); CHS(add);}} // change sign for vertical
+      void setAxis  (C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index==1 || index==3){CHS(mul); CHS(add);}} // change sign for vertical
    #endif
    };
 
    Mems<Elm> _elms;
    Ptr       _device=null;
 #endif
+
+   struct State
+   {
+   #if JP_GAMEPAD_INPUT && WINDOWS_NEW
+   #if EE_PRIVATE
+      Platform::Array<bool                                                > ^button;
+      Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^Switch;
+      Platform::Array<double                                              > ^axis;
+      Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)==SIZE(UInt)*15); // use UInt for alignment
+   #else
+      Ptr  button=null, Switch=null, axis=null;
+      UInt gamepad[15];
+   #endif
+   #endif
+
+   #if (JP_GAMEPAD_INPUT && WINDOWS_OLD) || JP_X_INPUT || JP_DIRECT_INPUT
+      union
+      {
+         struct Data
+         {
+            UInt data[(32 + 4 + 6*8)/4]; // use UInt to force alignment
+            Data() {Zero(T);}
+         }data;
+
+      #if EE_PRIVATE
+      #if JP_GAMEPAD_INPUT
+         ABI::Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)<=SIZE(data));
+
+         struct
+         {
+            boolean                                                   button[ELMS(_remap)];
+            ABI::Windows::Gaming::Input::GameControllerSwitchPosition Switch[1];
+            DOUBLE                                                    axis  [6];
+         }raw_game_controller;   ASSERT(SIZE(raw_game_controller)<=SIZE(data));
+      #endif
+      #if JP_X_INPUT
+         XINPUT_STATE xinput;   ASSERT(SIZE(xinput)<=SIZE(data));
+      #endif
+      #if JP_DIRECT_INPUT
+         DIJOYSTATE dinput;   ASSERT(SIZE(dinput)<=SIZE(data));
+      #endif
+      #endif
+      };
+   #endif
+      State() {}
+   }_state[2];
 
    static CChar8 *_button_name[];
 
@@ -245,7 +286,27 @@ private:
 
    NO_COPY_CONSTRUCTOR(Joypad);
 };
-extern MemtN<Joypad, 4> Joypads;
+/******************************************************************************/
+struct JoypadsClass // Container for Joypads
+{
+   Int     elms      (       )C {return _data.elms() ;} // number of Joypads
+   Joypad& operator[](Int  i )  {return _data     [i];} // get i-th Joypad
+   Joypad* addr      (Int  i )  {return _data.addr(i);} // get i-th Joypad      , null on fail
+   Joypad* find      (UInt id);                         // find Joypad by its ID, null on fail
+
+#if EE_PRIVATE
+   void remove (Int i); // remove i-th Joypad
+   void update ();
+   void acquire(Bool on);
+   void list   ();
+#endif
+
+#if !EE_PRIVATE
+private:
+#endif
+   MemtN<Joypad, 4> _data;
+}extern
+   Joypads;
 /******************************************************************************/
 void ApplyDeadZone(Vec2 &v, Flt dead_zone); // apply dead zone to analog direction vector, 'dead_zone'=0..1, this can be optionally called per-frame for 'Joypad.dir_a' vectors
 
@@ -254,7 +315,7 @@ Bool JoypadSensors();               // if want Joypad sensors to be calculated (
 
 void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_names=null, C CMemPtr<Color> &player_colors=null); // open OS joypad configuration screen, 'min_players'=minimum number of players required, 'max_players'=maximum number of players allowed, 'player_names'=names for each player (optional), 'player_colors'=colors for each player (optional), supported only on Nintendo Switch
 
-Joypad* FindJoypad(UInt id); // find Joypad in 'Joypads' container according to its 'id', null on fail
+inline Int Elms(C JoypadsClass &jps) {return jps.elms();}
 #if EE_PRIVATE
 Joypad& GetJoypad  (UInt id, Bool &added);
 UInt    NewJoypadID(UInt id); // generate a Joypad ID based on 'id' that's not yet used by any other existing Joypad
