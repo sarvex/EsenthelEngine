@@ -832,7 +832,7 @@ void GamePadChange::process()
             joypad.remap(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
          }
          // set callback after everything was set, in case it's called right away
-         if(gamepad            )gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         if(gamepad            )gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);else
          if(raw_game_controller)raw_game_controller->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
       }
    }else
