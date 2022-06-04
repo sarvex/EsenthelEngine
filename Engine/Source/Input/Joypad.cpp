@@ -330,10 +330,26 @@ Joypad::Joypad()
    zero();
 
    // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
-   Int device=index(); if(device>=0 && device<Joypads.elms()-1)REPA(Inputs) // if it's in 'Joypads' and it's not the last one, then it means we've just moved some existing joypads to the right
+   if(Joypads._data.contains(this)) // in 'Joypads'
    {
-      Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD && input.device>=device)input.device++;
-   }
+      REPAO(Joypads)._joypad_index=i; // recalculate indexes for all joypads
+      if(_joypad_index<Joypads.elms()-1) // this is not the last one, then it means we've just moved some existing joypads to the right
+      {
+         AddingJoypad(      Inputs, _joypad_index);
+      #if JOYPAD_THREAD
+         AddingJoypad(ThreadInputs, _joypad_index); // lock not needed because this is called only under lock
+      #endif
+      }
+   #if JOYPAD_THREAD
+      if((App.flag&APP_JOYPAD_THREAD) && !JoypadThread.active())
+      {
+      #if WINDOWS_OLD
+         TIMECAPS tc; if(timeGetDevCaps(&tc, SIZE(tc))==MMSYSERR_NOERROR)timeBeginPeriod(TimerRes=Mid(JOYPAD_THREAD_SLEEP, tc.wPeriodMin, tc.wPeriodMax)); // need to enable high precision timers because default accuracy is around 16 ms
+      #endif
+         JoypadThread.create(JoypadThreadFunc, null, 2, false, "EE.Joypad");
+      }
+   #endif
+   }else _joypad_index=255;
 }
 CChar8* Joypad::buttonName(Int b)C {return InRange(b, _button_name) ? _button_name[b] : null;}
 CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_name[b] : null;}
@@ -558,146 +574,156 @@ static VecSB2 DirToDirI(C Vec2 &d)
    Flt v=Abs(d).max(); if(v>dead)return SignEpsB(d/v, tan);
    return 0;
 }
-inline void Joypad::updateOK()
+#if JOYPAD_THREAD
+#if WINDOWS_NEW
+static inline Bool FlagOn(Windows::Gaming::Input::GamepadButtons flags, Windows::Gaming::Input::GamepadButtons f) {return (flags&f)!=Windows::Gaming::Input::GamepadButtons::None;}
+#endif
+static inline void Test(Bool old, Bool cur, Byte button, Byte device)
 {
-   UpdateDirRep(diri_r    ,           diri     , _dir_t    , FirstRepeatPressTime,       RepeatPressTime);
-   UpdateDirRep(diri_ar[0], DirToDirI(dir_a[0]), _dir_at[0], FirstRepeatPressTime, AnalogRepeatPressTime);
-   UpdateDirRep(diri_ar[1], DirToDirI(dir_a[1]), _dir_at[1], FirstRepeatPressTime, AnalogRepeatPressTime);
+   if(old!=cur)ThreadInputs.New().set(cur, INPUT_JOYPAD, button, device);
 }
-void Joypad::update()
+T2(TYPE, TYPE1) static inline void Test(TYPE changed, TYPE cur, TYPE1 test, Byte button, Byte device)
 {
-#if WINDOWS
-#if JP_X_INPUT
-   if(_xinput!=255)
+   if(FlagOn(changed, test))ThreadInputs.New().set(FlagOn(cur, test), INPUT_JOYPAD, button, device);
+}
+static inline void TestDPadX(Int old, Int cur, Byte device) // have to process in a special way to make sure we release first and push next
+{
+   if(old!=cur)
    {
-      XINPUT_STATE state; if(XInputGetState(_xinput, &state)==ERROR_SUCCESS)
-      {
-         // buttons
-         Bool button[JB_NUM];
-         button[JB_A     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_A                );
-         button[JB_B     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_B                );
-         button[JB_X     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_X                );
-         button[JB_Y     ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_Y                );
-         button[JB_L1    ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_SHOULDER    );
-         button[JB_R1    ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_SHOULDER   );
-         button[JB_L2    ]=      (state.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-         button[JB_R2    ]=      (state.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-         button[JB_LTHUMB]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_LEFT_THUMB       );
-         button[JB_RTHUMB]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_RIGHT_THUMB      );
-         button[JB_BACK  ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_BACK             );
-         button[JB_START ]=FlagOn(state.Gamepad.wButtons     , XINPUT_GAMEPAD_START            );
-         ASSERT(ELMS(button)<=ELMS(T._button));
-         update(button, Elms(button));
-
-         // digital pad
-         setDiri(FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT),
-                 FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(state.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN));
-         dir=diri;
-         if(diri.x && diri.y)dir/=SQRT2; // dir.clipLength(1)
-
-         // analog pad
-         dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
-         dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
-         dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
-         dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
-
-         // triggers
-         trigger[0]=state.Gamepad. bLeftTrigger/255.0f;
-         trigger[1]=state.Gamepad.bRightTrigger/255.0f;
-
-         updateOK(); return;
-      }
+      if(old)ThreadInputs.New().set(false, INPUT_JOYPAD, (old>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // release first
+      if(cur)ThreadInputs.New().set(true , INPUT_JOYPAD, (cur>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // push
    }
-#elif JP_GAMEPAD_INPUT
+}
+static inline void TestDPadY(Int old, Int cur, Byte device) // have to process in a special way to make sure we release first and push next
+{
+   if(old!=cur)
+   {
+      if(old)ThreadInputs.New().set(false, INPUT_JOYPAD, (old>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // release first
+      if(cur)ThreadInputs.New().set(true , INPUT_JOYPAD, (cur>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // push
+   }
+}
+#if JP_DIRECT_INPUT
+static VecI2 POVToDirI(DWORD pov)
+{
+   switch(pov)
+   {
+      case UINT_MAX: return VecI2( 0,  0);
+      case        0: return VecI2( 0,  1);
+      case     4500: return VecI2( 1,  1);
+      case     9000: return VecI2( 1,  0);
+      case    13500: return VecI2( 1, -1);
+      case    18000: return VecI2( 0, -1);
+      case    22500: return VecI2(-1, -1);
+      case    27000: return VecI2(-1,  0);
+      case    31500: return VecI2(-1,  1);
+      default      : Vec2 dir; CosSin(dir.x, dir.y, PI_2-DegToRad(pov/100.0f)); return Round(dir);
+   }
+}
+#endif
+void Joypad::updateState()
+{
+   auto &olds=_state[ _state_index],
+        &curs=_state[!_state_index]; // here indexes for 'cur' have to be swapped when compared to 'update' because here after success we flip '_state_index', so later when wanting to access 'cur' we need to do "_state[_state_index]"
+#if JP_GAMEPAD_INPUT
    if(_gamepad)
    {
+      auto &old=olds.gamepad,
+           &cur=curs.gamepad;
    #if WINDOWS_OLD
-      ABI::Windows::Gaming::Input::GamepadReading state; if(OK(_gamepad->GetCurrentReading(&state)))
+      if(OK(_gamepad->GetCurrentReading(&cur)))
    #else
-      auto state=_gamepad->GetCurrentReading();
+      cur=_gamepad->GetCurrentReading();
    #endif
       {
-         // buttons
-         Bool button[JB_UWP_NUM];
-      #if WINDOWS_OLD
-         button[JB_A      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_A);
-         button[JB_B      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_B);
-         button[JB_X      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_X);
-         button[JB_Y      ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Y);
-         button[JB_L1     ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftShoulder);
-         button[JB_R1     ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightShoulder);
-         button[JB_LTHUMB ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftThumbstick);
-         button[JB_RTHUMB ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightThumbstick);
-         button[JB_BACK   ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_View);
-         button[JB_START  ]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Menu);
-         button[JB_PADDLE1]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle1);
-         button[JB_PADDLE2]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle2);
-         button[JB_PADDLE3]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle3);
-         button[JB_PADDLE4]=FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle4);
-      #else
-         button[JB_A      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::A);
-         button[JB_B      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::B);
-         button[JB_X      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::X);
-         button[JB_Y      ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Y);
-         button[JB_L1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftShoulder);
-         button[JB_R1     ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder);
-         button[JB_LTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons:: LeftThumbstick);
-         button[JB_RTHUMB ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick);
-         button[JB_BACK   ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::View);
-         button[JB_START  ]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Menu);
-         button[JB_PADDLE1]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1);
-         button[JB_PADDLE2]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2);
-         button[JB_PADDLE3]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3);
-         button[JB_PADDLE4]=FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4);
-      #endif
-         button[JB_L2]=(state. LeftTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-         button[JB_R2]=(state.RightTrigger>=30.0/255); // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-         ASSERT(ELMS(button)<=ELMS(T._button));
-         update(button, Elms(button));
+        _state_index^=1;
+         if(old.Buttons!=cur.Buttons)
+         {
+            auto changed=old.Buttons^cur.Buttons;
+         #if WINDOWS_OLD
+            // buttons
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_A              , JB_A      , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_B              , JB_B      , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_X              , JB_X      , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Y              , JB_Y      , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftShoulder   , JB_L1     , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightShoulder  , JB_R1     , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftThumbstick , JB_LTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightThumbstick, JB_RTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_View           , JB_BACK   , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Menu           , JB_START  , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle1        , JB_PADDLE1, _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle2        , JB_PADDLE2, _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle3        , JB_PADDLE3, _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle4        , JB_PADDLE4, _joypad_index);
 
-         // digital pad
-      #if WINDOWS_OLD
-         setDiri(FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft),
-                 FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(state.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown));
-      #else
-         setDiri(FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft),
-                 FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(state.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown));
-      #endif
-         dir=diri;
-         if(diri.x && diri.y)dir/=SQRT2; // dir.clipLength(1)
-
-         // analog pad
-         dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
-         dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
+            // dpad
+            if(FlagOn(changed, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp))
+            {
+               TestDPadX(FlagOn(old.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(old.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft), FlagOn(cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight)-FlagOn(cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft), _joypad_index);
+               TestDPadY(FlagOn(old.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(old.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown), FlagOn(cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp   )-FlagOn(cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown), _joypad_index);
+            }
+         #else
+            // buttons
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::A              , JB_A      , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::B              , JB_B      , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::X              , JB_X      , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Y              , JB_Y      , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::LeftShoulder   , JB_L1     , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder  , JB_R1     , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::LeftThumbstick , JB_LTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick, JB_RTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::View           , JB_BACK   , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Menu           , JB_START  , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1        , JB_PADDLE1, _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2        , JB_PADDLE2, _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3        , JB_PADDLE3, _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4        , JB_PADDLE4, _joypad_index);
+            
+            // dpad
+            if(FlagOn(changed, Windows::Gaming::Input::GamepadButtons::DPadLeft | Windows::Gaming::Input::GamepadButtons::DPadRight | Windows::Gaming::Input::GamepadButtons::DPadDown | Windows::Gaming::Input::GamepadButtons::DPadUp))
+            {
+               TestDPadX(FlagOn(old.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(old.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft), FlagOn(cur.Buttons, Windows::Gaming::Input::GamepadButtons::DPadRight)-FlagOn(cur.Buttons, Windows::Gaming::Input::GamepadButtons::DPadLeft), _joypad_index);
+               TestDPadY(FlagOn(old.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(old.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown), FlagOn(cur.Buttons, Windows::Gaming::Input::GamepadButtons::DPadUp   )-FlagOn(cur.Buttons, Windows::Gaming::Input::GamepadButtons::DPadDown), _joypad_index);
+            }
+         #endif
+         }
 
          // triggers
-         trigger[0]=state. LeftTrigger;
-         trigger[1]=state.RightTrigger;
-
-         updateOK(); return;
+         const Dbl eps=30.0/255; // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+         if(old. LeftTrigger!=cur. LeftTrigger)Test(old. LeftTrigger>=eps, cur. LeftTrigger>=eps, JB_L2, _joypad_index);
+         if(old.RightTrigger!=cur.RightTrigger)Test(old.RightTrigger>=eps, cur.RightTrigger>=eps, JB_R2, _joypad_index);
       }
    }else
    if(_raw_game_controller)
    {
    #if WINDOWS_OLD
-      boolean                                                   button[ELMS(_remap)];
-      DOUBLE                                                    axis  [MAX_AXES    ];
-      ABI::Windows::Gaming::Input::GameControllerSwitchPosition Switch[MAX_SWITCHES];
-      UINT64 timestamp;
-      if(OK(_raw_game_controller->GetCurrentReading(_buttons, button, _switches, Switch, _axes, axis, &timestamp)))
-   #else
-     _raw_game_controller->GetCurrentReading(_array_button, _array_switch, _array_axis);
-      bool   *button=_array_button->Data;
-      double *axis  =_array_axis  ->Data;
-      Windows::Gaming::Input::GameControllerSwitchPosition *Switch=_array_switch->Data;
-   #endif
+      auto &old=olds.raw_game_controller,
+           &cur=curs.raw_game_controller;
+      UINT64 timestamp; if(OK(_raw_game_controller->GetCurrentReading(_buttons, cur.button, _switches, cur.Switch, _axes, cur.axis, &timestamp)))
       {
-         REP(_buttons){Byte b=_remap[i]; if(InRange(b, _button)){if(button[i])push(b);else release(b);}}
-
-         if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
-         if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
-         if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
-
+         auto &cur_button=cur.button, &old_button=old.button;
+         auto &cur_switch=cur.Switch, &old_switch=old.Switch;
+       //auto &cur_axis  =cur.axis  , &old_axis  =old.axis  ;
+   #else
+      auto &old=olds,
+           &cur=curs;
+      ULong timestamp=_raw_game_controller->GetCurrentReading(cur.button, cur.Switch, cur.axis);
+      {
+         auto cur_button=cur.button->Data, old_button=old.button->Data;
+         auto cur_switch=cur.Switch->Data, old_switch=old.Switch->Data;
+       //auto cur_axis  =cur.axis  ->Data, old_axis  =old.axis  ->Data;
+   #endif
+        _state_index^=1;
+         REP(_buttons)
+         {
+            auto cur=cur_button[i]; if(old_button[i]!=cur)
+            {
+               Byte button=_remap[i]; if(InRange(button, _button))ThreadInputs.New().set(cur, INPUT_JOYPAD, button, _joypad_index);
+            }
+         }
+         if(_switches && old_switch[0]!=cur_switch[0])
+         {
+            // FIXME dpad
          if(_switches)switch(Switch[0])
          {
          #if WINDOWS_OLD
@@ -722,75 +748,165 @@ void Joypad::update()
             case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
          #endif
          }
-         updateOK(); return;
+         }
+      }
+   }
+#endif
+#if JP_X_INPUT
+   if(_xinput!=255)
+   {
+      auto &old=olds.xinput,
+           &cur=curs.xinput;
+      if(XInputGetState(_xinput, &cur)==ERROR_SUCCESS)
+      {
+        _state_index^=1;
+         if(old.Gamepad.wButtons!=cur.Gamepad.wButtons)
+         {
+            // buttons
+            WORD changed=old.Gamepad.wButtons^cur.Gamepad.wButtons;
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_A             , JB_A     , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_B             , JB_B     , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_X             , JB_X     , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_Y             , JB_Y     , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER , JB_L1    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER, JB_R1    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB    , JB_LTHUMB, _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB   , JB_RTHUMB, _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_BACK          , JB_BACK  , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_START         , JB_START , _joypad_index);
+
+            // dpad
+            if(FlagOn(changed, XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_DPAD_RIGHT | XINPUT_GAMEPAD_DPAD_DOWN | XINPUT_GAMEPAD_DPAD_UP))
+            {
+               TestDPadX(FlagOn(old.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(old.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT), FlagOn(cur.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT)-FlagOn(cur.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT), _joypad_index);
+               TestDPadY(FlagOn(old.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(old.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN), FlagOn(cur.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP   )-FlagOn(cur.Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN), _joypad_index);
+            }
+         }
+         // triggers
+         if(old.Gamepad. bLeftTrigger!=cur.Gamepad. bLeftTrigger)Test(old.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD, cur.Gamepad. bLeftTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD, JB_L2, _joypad_index);
+         if(old.Gamepad.bRightTrigger!=cur.Gamepad.bRightTrigger)Test(old.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD, cur.Gamepad.bRightTrigger>=XINPUT_GAMEPAD_TRIGGER_THRESHOLD, JB_R2, _joypad_index);
       }
    }
 #endif
 #if JP_DIRECT_INPUT
    if(_device)
    {
-      DIJOYSTATE state; if(OK(_device->Poll()) && OK(_device->GetDeviceState(SIZE(state), &state)))
+      auto &old=olds.dinput,
+           &cur=curs.dinput;
+      if(OK(_device->Poll()) && OK(_device->GetDeviceState(SIZE(cur), &cur)))
       {
-         // buttons
-         REP(Min(Elms(state.rgbButtons), Elms(_remap))){Byte b=_remap[i]; if(InRange(b, _button)){if(state.rgbButtons[i])push(b);else release(b);}} // here values can be 0x80
+        _state_index^=1;
 
-         // digital pad
-         switch(state.rgdwPOV[0])
+         // buttons
+         REP(Min(Elms(cur.rgbButtons), Elms(_remap)))
          {
-            case UINT_MAX: setDiri( 0,  0); dir.zero(                  ); break;
-            case        0: setDiri( 0,  1); dir.set (       0,        1); break;
-            case     4500: setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
-            case     9000: setDiri( 1,  0); dir.set (       1,        0); break;
-            case    13500: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
-            case    18000: setDiri( 0, -1); dir.set (       0,       -1); break;
-            case    22500: setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
-            case    27000: setDiri(-1,  0); dir.set (      -1,        0); break;
-            case    31500: setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
-            default      : CosSin(dir.x, dir.y, PI_2-DegToRad(state.rgdwPOV[0]/100.0f)); setDiri(Round(dir.x), Round(dir.y)); break;
+            auto cur_b=cur.rgbButtons[i]; if(old.rgbButtons[i]!=cur_b)
+            {
+               Byte button=_remap[i]; if(InRange(button, _button))ThreadInputs.New().set(cur_b!=0, INPUT_JOYPAD, button, _joypad_index); // here values can be 0x80
+            }
          }
 
+         // dpad
+         if(old.rgdwPOV[0]!=cur.rgdwPOV[0])
+         {
+            VecI2 old_diri=POVToDirI(old.rgdwPOV[0]),
+                  cur_diri=POVToDirI(cur.rgdwPOV[0]);
+            TestDPadX(old_diri.x, cur_diri.x, _joypad_index);
+            TestDPadY(old_diri.y, cur_diri.y, _joypad_index);
+         }
+      }
+   }
+#endif
+}
+#endif
+void Joypad::update()
+{
+#if JOYPAD_THREAD
+   auto &cur=_state[_state_index];
+#if JP_GAMEPAD_INPUT
+   if(_gamepad)
+   {
+      auto &state=cur.gamepad;
+      {
          // analog pad
-         const Flt mul=1.0f/32768;
-         dir_a[0].x= (state.lX-32768)*mul;
-         dir_a[0].y=-(state.lY-32768)*mul;
+         dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
+         dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
+
+         // triggers
+         trigger[0]=state. LeftTrigger;
+         trigger[1]=state.RightTrigger;
+      }
+   }else
+   if(_raw_game_controller)
+   {
+   #if WINDOWS_OLD
+    //auto &Switch=cur.raw_game_controller.Switch;
+      auto &axis  =cur.raw_game_controller.axis;
+   #else
+    //auto Switch=cur.Switch->Data;
+      auto axis  =cur.axis  ->Data;
+   #endif
+      {
+         if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
+         if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
+         if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
+      }
+   }
+#endif
+#if JP_X_INPUT
+   if(_xinput!=255)
+   {
+      auto &state=cur.xinput;
+      {
+         // analog pad
+         dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
+         dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
+         dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
+         dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
+
+         // triggers
+         trigger[0]=state.Gamepad. bLeftTrigger/255.0f;
+         trigger[1]=state.Gamepad.bRightTrigger/255.0f;
+      }
+   }
+#endif
+#if JP_DIRECT_INPUT
+   if(_device)
+   {
+      auto &state=cur.dinput;
+      {
+         // analog pad
+         dir_a[0].x= (state.lX-32768)/32768.0f;
+         dir_a[0].y=-(state.lY-32768)/32768.0f;
          if(_offset_x && _offset_y)
          {
             ASSERT(SIZE(state.lZ)==SIZE(Int));
-            dir_a[1].x= (*(Int*)(((Byte*)&state)+_offset_x)-32768)*mul;
-            dir_a[1].y=-(*(Int*)(((Byte*)&state)+_offset_y)-32768)*mul;
+            dir_a[1].x= (*(Int*)(((Byte*)&state)+_offset_x)-32768)/32768.0f;
+            dir_a[1].y=-(*(Int*)(((Byte*)&state)+_offset_y)-32768)/32768.0f;
          }
 
          // triggers
-         trigger[0]=(state.rglSlider[0]-32768)*mul;
-         trigger[1]=(state.rglSlider[1]-32768)*mul;
-
-         updateOK(); return;
+       //trigger[0]=(state.rglSlider[0]-32768)/32768.0f;
+       //trigger[1]=(state.rglSlider[1]-32768)/32768.0f;
       }
-      if(App.active())acquire(true); // if failed then try to re-acquire
    }
 #endif
-#else
-   updateOK(); return; // updated externally
 #endif
-   zero();
+   UpdateDirRep1(diri_r    ,           diri     , _dir_t    , FirstRepeatPressTime,       RepeatPressTime); // skip first add because we're already processing that in 'setDiri'
+   UpdateDirRep (diri_ar[0], DirToDirI(dir_a[0]), _dir_at[0], FirstRepeatPressTime, AnalogRepeatPressTime);
+   UpdateDirRep (diri_ar[1], DirToDirI(dir_a[1]), _dir_at[1], FirstRepeatPressTime, AnalogRepeatPressTime);
 }
 void Joypad::setDiri(Int x, Int y)
 {
-   if(diri.x!=x || diri.y!=y)
+   if(diri.x!=x)
    {
-      Int device=index();
-      if(diri.x!=x)
-      {
-         if(diri.x && device>=0)Inputs.New().set(false, INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // release
-            diri.x=x;
-         if(diri.x && device>=0)Inputs.New().set(true , INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, device); // push
-      }
-      if(diri.y!=y)
-      {
-         if(diri.y && device>=0)Inputs.New().set(false, INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // release
-            diri.y=y;
-         if(diri.y && device>=0)Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // push
-      }
+      if(diri.x    && _joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index);               // release first
+      if(diri.x=x){if(_joypad_index!=255)Inputs.New().set(true , INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index); diri_r.x+=x;} // push
+   }
+   if(diri.y!=y)
+   {
+      if(diri.y    && _joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index);               // release first
+      if(diri.y=y){if(_joypad_index!=255)Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index); diri_r.y+=y;} // push
    }
 }
 void Joypad::push(Byte b)
@@ -806,7 +922,7 @@ void Joypad::push(Byte b)
       {
         _last_t[b]=Time.appTime();
       }
-      Int device=index(); if(device>=0)Inputs.New().set(true, INPUT_JOYPAD, b, device);
+      if(_joypad_index!=255)Inputs.New().set(true, INPUT_JOYPAD, b, _joypad_index);
    }
 }
 void Joypad::release(Byte b)
@@ -815,7 +931,7 @@ void Joypad::release(Byte b)
    {
      _button[b]&=~BS_ON;
      _button[b]|= BS_RELEASED;
-      Int device=index(); if(device>=0)Inputs.New().set(false, INPUT_JOYPAD, b, device);
+      if(_joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, b, _joypad_index);
    }
 }
 void Joypad::eat(Int b)
@@ -1039,6 +1155,8 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
             joypad._device->SetProperty(DIPROP_AUTOCENTER, &dipdw.diph);
 
             joypad._device->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
+
+            if(App.active())joypad.acquire(true);
          }
          if(!joypad._device)Joypads.remove(joypad._joypad_index); // if failed to create it then remove it
          RELEASE(did);
@@ -1267,6 +1385,57 @@ void ShutJoypads()
       CFRelease(HidManager); HidManager=null;
    }
 #endif
+}
+/******************************************************************************/
+void JoypadsClass::acquire(Bool on)
+{
+#if JOYPAD_THREAD
+   SyncLocker lock(JoypadThreadLock);
+   if(on)JoypadThread.resume();
+   else  JoypadThread.pause ();
+#endif
+   REPAO(T).acquire(on);
+}
+void JoypadsClass::update()
+{
+#if JOYPAD_THREAD
+   if(elms()){SyncLockerEx lock(JoypadThreadLock, JoypadThread.active());
+#else
+   {
+#endif
+   #if JOYPAD_THREAD
+      REPAO(T).updateState();
+      if(ThreadInputs.elms())
+      {
+         FREPA(ThreadInputs) // process in order
+         {
+            Input  &input =ThreadInputs[i]; DEBUG_ASSERT(input.type==INPUT_JOYPAD, "ThreadInputs isn't INPUT_JOYPAD");
+            Joypad &joypad=T[input.device];
+            if(IsDPad(input.jb))
+            {
+               // don't call 'setDiri', instead process manually more optimized
+               if(IsDPadY(input.jb))
+               {
+                  if(input.pushed)joypad.diri_r.y+=(joypad.diri.y=(input.jb==JB_DPAD_UP ? 1 : -1));
+                  else                              joypad.diri.y=0;
+               }else
+               {
+                  if(input.pushed)joypad.diri_r.x+=(joypad.diri.x=(input.jb==JB_DPAD_RIGHT ? 1 : -1));
+                  else                              joypad.diri.x=0;
+               }
+               joypad.dir=joypad.diri; if(joypad.diri.x && joypad.diri.y)joypad.dir/=SQRT2; // dir.clipLength(1)
+               Inputs.add(input);
+            }else
+            {
+               if(input.pushed)joypad.push   (input.jb);
+               else            joypad.release(input.jb);
+            }
+         }
+         ThreadInputs.clear();
+      }
+   #endif
+      REPAO(T).update(); // have to process at the end because we need final value of 'diri'
+   }
 }
 /******************************************************************************/
 }
