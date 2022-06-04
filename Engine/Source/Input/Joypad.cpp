@@ -867,15 +867,14 @@ void Joypad::update()
    if(_gamepad)
    {
       auto &state=cur.gamepad;
-      {
-         // analog pad
-         dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
-         dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
 
-         // triggers
-         trigger[0]=state. LeftTrigger;
-         trigger[1]=state.RightTrigger;
-      }
+      // analog pad
+      dir_a[0].set(state. LeftThumbstickX, state. LeftThumbstickY);
+      dir_a[1].set(state.RightThumbstickX, state.RightThumbstickY);
+
+      // triggers
+      trigger[0]=state. LeftTrigger;
+      trigger[1]=state.RightTrigger;
    }else
    if(_raw_game_controller)
    {
@@ -886,49 +885,45 @@ void Joypad::update()
     //auto Switch=cur.Switch->Data;
       auto axis  =cur.axis  ->Data;
    #endif
-      {
-         if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
-         if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
-         if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
-      }
+      if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
+      if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
+      if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
    }
 #endif
 #if JP_X_INPUT
    if(_xinput!=255)
    {
       auto &state=cur.xinput;
-      {
-         // analog pad
-         dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
-         dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
-         dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
-         dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
 
-         // triggers
-         trigger[0]=state.Gamepad. bLeftTrigger/255.0f;
-         trigger[1]=state.Gamepad.bRightTrigger/255.0f;
-      }
+      // analog pad
+      dir_a[0].x=state.Gamepad.sThumbLX/32768.0f;
+      dir_a[0].y=state.Gamepad.sThumbLY/32768.0f;
+      dir_a[1].x=state.Gamepad.sThumbRX/32768.0f;
+      dir_a[1].y=state.Gamepad.sThumbRY/32768.0f;
+
+      // triggers
+      trigger[0]=state.Gamepad. bLeftTrigger/255.0f;
+      trigger[1]=state.Gamepad.bRightTrigger/255.0f;
    }
 #endif
 #if JP_DIRECT_INPUT
    if(_dinput)
    {
       auto &state=cur.dinput;
-      {
-         // analog pad
-         dir_a[0].x= (state.lX-32768)/32768.0f;
-         dir_a[0].y=-(state.lY-32768)/32768.0f;
-         if(_offset_x && _offset_y)
-         {
-            ASSERT(SIZE(state.lZ)==SIZE(Int));
-            dir_a[1].x= (*(Int*)(((Byte*)&state)+_offset_x)-32768)/32768.0f;
-            dir_a[1].y=-(*(Int*)(((Byte*)&state)+_offset_y)-32768)/32768.0f;
-         }
 
-         // triggers
-       //trigger[0]=(state.rglSlider[0]-32768)/32768.0f;
-       //trigger[1]=(state.rglSlider[1]-32768)/32768.0f;
+      // analog pad
+      dir_a[0].x= (state.lX-32768)/32768.0f;
+      dir_a[0].y=-(state.lY-32768)/32768.0f;
+      if(_offset_x && _offset_y)
+      {
+         ASSERT(SIZE(state.lZ)==SIZE(Int));
+         dir_a[1].x= (*(Int*)(((Byte*)&state)+_offset_x)-32768)/32768.0f;
+         dir_a[1].y=-(*(Int*)(((Byte*)&state)+_offset_y)-32768)/32768.0f;
       }
+
+      // triggers
+      //trigger[0]=(state.rglSlider[0]-32768)/32768.0f;
+      //trigger[1]=(state.rglSlider[1]-32768)/32768.0f;
    }
 #endif
 #endif
