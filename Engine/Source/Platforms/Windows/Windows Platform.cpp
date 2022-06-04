@@ -819,13 +819,15 @@ void GamePadChange::process()
             joypad._buttons =Min(raw_game_controller->ButtonCount, Elms(joypad._remap));
             joypad._switches=    raw_game_controller->SwitchCount;
             joypad._axes    =    raw_game_controller->  AxisCount;
-            REPA(joypad._state)
+
+            if(!gamepad)REPA(joypad._state) // this is needed only for 'raw_game_controller'
             {
                auto &state=joypad._state[i]; // allocations below also zero memory, which is what we need
                state.button=ref new Platform::Array<bool                        >(joypad._buttons );
                state.Switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches);
                state.axis  =ref new Platform::Array<double                      >(joypad._axes    ); REP(Min(joypad._axes, 4))state.axis->Data[i]=0.5f; // set initial state to centered
             }
+
             if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
             joypad.remap(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
          }
