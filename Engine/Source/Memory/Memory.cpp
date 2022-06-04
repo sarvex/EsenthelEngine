@@ -19,7 +19,7 @@ namespace EE{
 #if !SWITCH
 Bool MemStats::get()
 {
-#if WINDOWS_OLD
+#if WINDOWS_OLD || WINDOWS_NEW
    MEMORYSTATUSEX ms;
    ms.dwLength=SIZE(ms);
    if(GlobalMemoryStatusEx(&ms))
