@@ -11,16 +11,25 @@ static Bool    CalculateJoypadSensors;
        CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
  JoypadsClass  Joypads;
 /******************************************************************************/
-#if JP_DIRECT_INPUT
-static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
-{
-#if JP_GAMEPAD_INPUT
-   REPA(Joypads)
-   {
-      Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && (jp._gamepad || jp._raw_game_controller))return true;
-   }
+#if JOYPAD_THREAD
+static Memc<Input> ThreadInputs;
+static SyncLock    JoypadThreadLock;
+static Thread      JoypadThread;
+static SyncEvent   JoypadEvent;
+#if WINDOWS_OLD
+static Int         TimerRes;
 #endif
-   return false;
+static Bool JoypadThreadFunc(Thread &thread)
+{
+#if DEBUG && 0
+   static Flt t; Flt t1=Time.curTime(); LogName(S); LogN(t1-t); t=t1;
+#endif
+   {
+      SyncLocker lock(JoypadThreadLock);
+      REPAO(Joypads).updateState();
+   }
+   JoypadEvent.wait(JOYPAD_THREAD_SLEEP);
+   return true;
 }
 #endif
 /******************************************************************************/
@@ -298,13 +307,13 @@ Joypad::~Joypad()
 #endif
 
    // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
-   Int device=index(); if(device>=0)REPA(Inputs) // go from the end because we're removing elements
+   if(InRange(_joypad_index, Joypads))
    {
-      Input &input=Inputs[i]; if(input.type==INPUT_JOYPAD)
-      {
-         if(input.device> device)input .device--;else    // adjust the index
-         if(input.device==device)Inputs.remove(i, true); // if this input is for joypad being deleted, then delete the input and keep order
-      }
+      RemovingJoypad(      Inputs, _joypad_index);
+   #if JOYPAD_THREAD
+      RemovingJoypad(ThreadInputs, _joypad_index); // lock not needed because this is called only under lock
+   #endif
+      REPA(Joypads){Joypad &jp=Joypads[i]; if(jp._joypad_index>_joypad_index)jp._joypad_index--;} // don't modify self, only fix those that will be kept
    }
 }
 Joypad::Joypad()
