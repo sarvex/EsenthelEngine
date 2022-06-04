@@ -233,7 +233,7 @@ template<typename TYPE> T1(EXTENDED)  FixedElm<TYPE>&  FixedElm<TYPE>::replaceCl
 /******************************************************************************/
 T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::clear()
 {
-   if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE();
+   if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // destroy as the first step
    Free(_data); _elms=0;
    return T;
 }
@@ -275,7 +275,7 @@ T1(TYPE)  TYPE&  Mems<TYPE>::NewAt(Int i)
    CopyFastN(temp    , data()  ,        i);
    CopyFastN(temp+i+1, data()+i, elms()-i);
    Free(_data); _data=temp; _elms++;
-   TYPE &elm=T[i]; new(&elm)TYPE; return elm;
+   TYPE &elm=T[i]; new(&elm)TYPE; return elm; // create as the last step
 }
 
 T1(TYPE)  Int  Mems<TYPE>::index(C TYPE *elm)C
@@ -290,7 +290,7 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::remove(Int i, Bool /*keep_order*/)
 {
    if(InRange(i, T))
    {
-      T[i].~TYPE();
+      T[i].~TYPE(); // destroy as the first step
       TYPE *temp=Alloc<TYPE>(elms()-1);
       CopyFastN(temp  , data()    ,        i  );
       CopyFastN(temp+i, data()+i+1, elms()-i-1);
@@ -310,11 +310,11 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNum(Int num)
       TYPE *temp=Alloc<TYPE>(num);
       CopyFastN(temp, data(), elms());
       Free(_data); _data=temp; _elms=num;
-      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
    }else
    if(num<elms()) // remove elements
    {
-      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE();
+      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE(); // destroy as the first step
       TYPE *temp=Alloc<TYPE>(num);
       CopyFastN(temp, data(), num);
       Free(_data); _data=temp; _elms=num;
@@ -331,11 +331,11 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNumZero(Int num)
       CopyFastN(temp       , data(),     elms()); // copy old elements
       ZeroFastN(temp+elms(),         num-elms()); // zero new elements
       Free(_data); _data=temp; _elms=num;
-      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
    }else
    if(num<elms()) // remove elements
    {
-      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE();
+      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE(); // destroy as the first step
       TYPE *temp=Alloc<TYPE>(num);
       CopyFastN(temp, data(), num);
       Free(_data); _data=temp; _elms=num;
@@ -347,21 +347,21 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNum(Int num, Int keep)
 {
    MAX(num, 0);
    Clamp(keep, 0, Min(elms(), num));
-   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements
+   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements, destroy as the first step
    if(num!=elms()) // resize memory
    {
       TYPE *temp=Alloc<TYPE>(num);
       CopyFastN(temp, data(), keep); // copy kept elements
       Free(_data); _data=temp; _elms=num;
    }
-   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements
+   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements, create as the last step
    return T;
 }
 T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNumZero(Int num, Int keep)
 {
    MAX(num, 0);
    Clamp(keep, 0, Min(elms(), num));
-   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements
+   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements, destroy as the first step
    if(num!=elms()) // resize memory
    {
       TYPE *temp=Alloc<TYPE>(num);
@@ -369,7 +369,7 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNumZero(Int num, Int keep)
       Free(_data); _data=temp; _elms=num;
    }
    ZeroFastN(data()+keep, elms()-keep); // zero new elements
-   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements
+   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements, create as the last step
    return T;
 }
 
@@ -378,9 +378,9 @@ T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::setNumDiscard(Int num)
    MAX(num, 0);
    if( num!=elms())
    {
-      if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // delete all elements
+      if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // delete all elements, destroy as the first step
       Alloc(Free(_data), _elms=num);
-      if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements
+      if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements, create as the last step
    }
    return T;
 }
@@ -389,9 +389,9 @@ T1(TYPE)  void  Mems<TYPE>::minNumDiscard(Int num)
 {
    if(Greater(num, elms())) // num>elms()
    {
-      if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // delete all elements
+      if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // delete all elements, destroy as the first step
       Alloc(Free(_data), _elms=num);
-      if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements
+      if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements, create as the last step
    }
 }
 #endif
@@ -452,7 +452,7 @@ T1(TYPE)  Bool  Mems<TYPE>::_load   (File &f)  {setNum(f.getInt(      )); FREPA(
 
 T1(TYPE)  Mems<TYPE>::~Mems(            )          {del();}
 T1(TYPE)  Mems<TYPE>:: Mems(            )          {_data=null; _elms=0;}
-T1(TYPE)  Mems<TYPE>:: Mems(  Int   elms)          {MAX(elms, 0); Alloc(_data, elms); _elms=elms; if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE;} // create new elements
+T1(TYPE)  Mems<TYPE>:: Mems(  Int   elms)          {MAX(elms, 0); Alloc(_data, elms); _elms=elms; if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE;} // create new elements, create as the last step
 T1(TYPE)  Mems<TYPE>:: Mems(C Mems  &src) : Mems() {T=src;}
 T1(TYPE)  Mems<TYPE>:: Mems(  Mems &&src) : Mems() {Swap(T, src);}
 /******************************************************************************/
@@ -669,7 +669,7 @@ T1(TYPE)  MemcThreadSafe<TYPE>::MemcThreadSafe() : _MemcThreadSafe(SIZE(TYPE), C
 /******************************************************************************/
 template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::clear()
 {
-   if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE();
+   if(ClassFunc<TYPE>::HasDel())REPA(T)T[i].~TYPE(); // destroy as the first step
   _elms=0;
    return T;
 }
@@ -725,7 +725,7 @@ template<typename TYPE, Int size>  TYPE&  Memt<TYPE, size>::NewAt(Int i)
    {
       MoveFastN(&T[i+1], &T[i], old_elms-i);
    }
-   TYPE &elm=T[i]; new(&elm)TYPE; return elm;
+   TYPE &elm=T[i]; new(&elm)TYPE; return elm; // create as the last step
 }
 
 template<typename TYPE, Int size>  Int  Memt<TYPE, size>::index(C TYPE *elm)C
@@ -740,7 +740,7 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::remove(I
 {
    if(InRange(i, T))
    {
-      T[i].~TYPE();
+      T[i].~TYPE(); // destroy as the first step
       if(i<elms()-1) // if this is not the last element
       {
          if(keep_order)MoveFastN(&T[i], &T[     i+1], elms()-i-1);
@@ -772,11 +772,11 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNum(I
    {
       reserve(num);
       Int old_elms=elms(); _elms=num;
-      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
    }else
    if(num<elms()) // remove elements
    {
-      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE();
+      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE(); // destroy as the first step
      _elms=num;
    }
    return T;
@@ -789,11 +789,11 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNumZe
       reserve(num);
       Int old_elms=elms(); _elms=num;
       ZeroFastN(&T[old_elms], elms()-old_elms);
-      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+      if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
    }else
    if(num<elms()) // remove elements
    {
-      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE();
+      if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE(); // destroy as the first step
      _elms=num;
    }
    return T;
@@ -803,21 +803,21 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNum(I
 {
    MAX(num, 0);
    Clamp(keep, 0, Min(elms(), num));
-   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements
+   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements, destroy as the first step
    if(Greater(num, maxElms())) // resize memory, num>maxElms()
    {
      _elms=keep; // set '_elms' before 'reserve' to copy only 'keep' elements
       reserve(num);
    }
   _elms=num; // set '_elms' before accessing new elements to avoid range assert
-   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements
+   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements, create as the last step
    return T;
 }
 template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNumZero(Int num, Int keep)
 {
    MAX(num, 0);
    Clamp(keep, 0, Min(elms(), num));
-   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements
+   if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=keep; )T[i].~TYPE(); // delete unkept elements, destroy as the first step
    if(Greater(num, maxElms())) // resize memory, num>maxElms()
    {
      _elms=keep; // set '_elms' before 'reserve' to copy only 'keep' elements
@@ -825,7 +825,7 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNumZe
    }
   _elms=num; // set '_elms' before accessing new elements to avoid range assert
    ZeroFastN(&_element(keep), elms()-keep); // zero new elements, have to use '_element' to avoid out of range errors
-   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE;  // create new elements
+   if(ClassFunc<TYPE>::HasNew())for(Int i=keep; i<elms(); i++)new(&T[i])TYPE; // create new elements, create as the last step
    return T;
 }
 
@@ -839,16 +839,16 @@ template<typename TYPE, Int size>  Memt<TYPE, size>&  Memt<TYPE, size>::setNumDi
          clear(); // clear before 'reserve' to skip copying old elements
          reserve(num);
         _elms=num; // set '_elms' before accessing new elements to avoid range assert
-         if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements
+         if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements, create as the last step
       }else
       if(num>elms()) // add elements in existing memory
       {
          Int old_elms=elms(); _elms=num; // set '_elms' before accessing new elements to avoid range assert
-         if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+         if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
       }else
     //if(num<elms()) // remove elements, "if" not needed because we already know that "num!=elms && !(num>elms())"
       {
-         if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE();
+         if(ClassFunc<TYPE>::HasDel())for(Int i=elms(); --i>=num; )T[i].~TYPE(); // destroy as the first step
         _elms=num;
       }
    }
@@ -864,11 +864,11 @@ template<typename TYPE, Int size>  void  Memt<TYPE, size>::minNumDiscard(Int num
          clear(); // clear before 'reserve' to skip copying old elements
          reserve(num);
         _elms=num; // set '_elms' before accessing new elements to avoid range assert
-         if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements
+         if(ClassFunc<TYPE>::HasNew())FREPA(T)new(&T[i])TYPE; // create new elements, create as the last step
       }else // add elements in existing memory
       {
          Int old_elms=elms(); _elms=num; // set '_elms' before accessing new elements to avoid range assert
-         if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE;
+         if(ClassFunc<TYPE>::HasNew())for(Int i=old_elms; i<elms(); i++)new(&T[i])TYPE; // create as the last step
       }
    }
 }

@@ -40,7 +40,7 @@ void _Memx::del()
 }
 void _Memx::clear()
 {
-   if(_del)REPA(_valid)_del(validElm(i));
+   if(_del)REPA(_valid)_del(validElm(i)); // destroy as the first step
       _abs.clear();
     _valid.clear();
   _invalid.clear();
@@ -58,7 +58,7 @@ Ptr _Memx::New()
            _valid[v]=i;
    Ptr elm=absElm(i);
    ((UInt*)elm)[-1]=v; // store valid index
-   if(_new)_new(elm);else if(!elmSize())Exit("Attempting to create an object of zero size in 'Memx' container.\nThe container is not initialized or it is abstract and 'replaceClass' hasn't been called.");
+   if(_new)_new(elm);else if(!elmSize())Exit("Attempting to create an object of zero size in 'Memx' container.\nThe container is not initialized or it is abstract and 'replaceClass' hasn't been called."); // create as the last step
    return elm;
 }
 Ptr _Memx::NewAt(Int i)
@@ -86,6 +86,9 @@ void _Memx::removeValid(Int i, Bool keep_order)
       UInt abs=_valid [i  ];
       Ptr  elm= absElm(abs);
 
+      // destroy as the first step
+      if(_del)_del(elm);
+
       // put removed to invalid
       UInt inv=_invalid.addNum(1);
                _invalid[inv]=abs;
@@ -108,9 +111,6 @@ void _Memx::removeValid(Int i, Bool keep_order)
             ((UInt*)elm)[-1]=i; // set updated index of element which was placed into removed element place
          }
       }
-
-      // delete element
-      if(_del)_del(elm);
    }
 }
 void _Memx::removeData(CPtr elm, Bool keep_order)
