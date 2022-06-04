@@ -1008,6 +1008,9 @@ Joypad* JoypadsClass::find(UInt id)
 }
 Joypad& GetJoypad(UInt id, Bool &added)
 {
+#if JOYPAD_THREAD
+   DEBUG_ASSERT(JoypadLock.owned(), "'GetJoypad' must be called only under lock");
+#endif
    added=false;
 #if SORT_JOYPADS_BY_ID
    Joypad *joypad; Int index; if(Joypads.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads._data.NewAt(index); joypad->_id=id; added=true;}
