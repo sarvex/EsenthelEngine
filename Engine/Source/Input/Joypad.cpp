@@ -935,13 +935,13 @@ void Joypad::setDiri(Int x, Int y)
 {
    if(diri.x!=x)
    {
-      if(diri.x    && _joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index);               // release first
-      if(diri.x=x){if(_joypad_index!=255)Inputs.New().set(true , INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index); diri_r.x+=x;} // push
+      if(diri.x    /*&& _joypad_index!=255*/)Inputs.New().set(false, INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index);               // release first
+      if(diri.x=x){/*if(_joypad_index!=255)*/Inputs.New().set(true , INPUT_JOYPAD, (diri.x>0) ? JB_DPAD_RIGHT : JB_DPAD_LEFT, _joypad_index); diri_r.x+=x;} // push
    }
    if(diri.y!=y)
    {
-      if(diri.y    && _joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index);               // release first
-      if(diri.y=y){if(_joypad_index!=255)Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index); diri_r.y+=y;} // push
+      if(diri.y    /*&& _joypad_index!=255*/)Inputs.New().set(false, INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index);               // release first
+      if(diri.y=y){/*if(_joypad_index!=255)*/Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index); diri_r.y+=y;} // push
    }
 }
 void Joypad::push(Byte b)
@@ -957,7 +957,7 @@ void Joypad::push(Byte b)
       {
         _last_t[b]=Time.appTime();
       }
-      if(_joypad_index!=255)Inputs.New().set(true, INPUT_JOYPAD, b, _joypad_index);
+    /*if(_joypad_index!=255)*/Inputs.New().set(true, INPUT_JOYPAD, b, _joypad_index);
    }
 }
 void Joypad::release(Byte b)
@@ -966,7 +966,7 @@ void Joypad::release(Byte b)
    {
      _button[b]&=~BS_ON;
      _button[b]|= BS_RELEASED;
-      if(_joypad_index!=255)Inputs.New().set(false, INPUT_JOYPAD, b, _joypad_index);
+    /*if(_joypad_index!=255)*/Inputs.New().set(false, INPUT_JOYPAD, b, _joypad_index);
    }
 }
 void Joypad::eat(Int b)
