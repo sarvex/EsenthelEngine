@@ -55,8 +55,6 @@ struct GamePadChange
          if(gamepad            .Get() && FindJoypadI(gamepad            .Get())>=0         // make sure it's not already listed
          || raw_game_controller.Get() && FindJoypadI(raw_game_controller.Get())>=0)return; // make sure it's not already listed
 
-         U16  vendor_id=0, product_id=0;
-         UInt joypad_id=0;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGameController    >     game_controller;
@@ -79,6 +77,8 @@ struct GamePadChange
             }
          }
 
+         U16  vendor_id=0, product_id=0;
+         UInt joypad_id=0;
          if(raw_game_controller)
          {
             raw_game_controller->get_HardwareVendorId (& vendor_id);
@@ -1194,7 +1194,6 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
             joypad. _vendor_id= vendor_id;
             joypad._product_id=product_id;
          #endif
-            joypad.remap(vendor_id, product_id);
 
             REPAO(joypad._state).dinput.rgdwPOV[0]=UINT_MAX; // set initial DPAD to centered
 
@@ -1206,6 +1205,8 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
             joypad._dinput->SetProperty(DIPROP_AUTOCENTER, &dipdw.diph);
 
             joypad._dinput->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
+
+            joypad.remap(vendor_id, product_id);
 
             if(App.active())joypad.acquire(true);
          }
