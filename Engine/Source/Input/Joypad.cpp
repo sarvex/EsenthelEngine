@@ -343,7 +343,7 @@ Joypad::Joypad()
    #if JOYPAD_THREAD
       if((App.flag&APP_JOYPAD_THREAD) && !JoypadThread.active())
       {
-      #if WINDOWS_OLD
+      #if WINDOWS_OLD // there's no option to increase precision for UWP
          TIMECAPS tc; if(timeGetDevCaps(&tc, SIZE(tc))==MMSYSERR_NOERROR)timeBeginPeriod(TimerRes=Mid(JOYPAD_THREAD_SLEEP, tc.wPeriodMin, tc.wPeriodMax)); // need to enable high precision timers because default accuracy is around 16 ms
       #endif
          JoypadThread.create(JoypadThreadFunc, null, 2, false, "EE.Joypad");
