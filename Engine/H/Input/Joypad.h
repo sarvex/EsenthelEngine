@@ -185,9 +185,9 @@ private:
    Str     _name;
 #if JP_DIRECT_INPUT
 #if EE_PRIVATE
-   IDirectInputDevice8 *_device=null;
+   IDirectInputDevice8 *_dinput=null;
 #else
-   Ptr     _device=null;
+   Ptr     _dinput=null;
 #endif
 #endif
 #if JP_GAMEPAD_INPUT
@@ -235,28 +235,12 @@ private:
 
    struct State
    {
-   #if JP_GAMEPAD_INPUT && WINDOWS_NEW
-   #if EE_PRIVATE
-      Platform::Array<bool                                                > ^button;
-      Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^Switch;
-      Platform::Array<double                                              > ^axis;
-   #pragma pack(push)
-   #pragma pack() // default packing required for storing WinRT classes not as ^ pointers, without this 'gamepad' members were getting corrupt values
-      Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)==SIZE(UInt)*16); // use UInt for alignment
-   #pragma pack(pop)
-   #else
-      Ptr  button=null, Switch=null, axis=null;
-      UInt gamepad[16];
-   #endif
-   #endif
-
    #if (JP_GAMEPAD_INPUT && WINDOWS_OLD) || JP_X_INPUT || JP_DIRECT_INPUT
       union
       {
          struct Data
          {
             UInt data[(32 + 4 + 6*8)/4]; // use UInt to force alignment
-            Data() {Zero(T);}
          }data;
 
       #if EE_PRIVATE
@@ -279,7 +263,21 @@ private:
       #endif
       };
    #endif
-      State() {}
+
+   #if JP_GAMEPAD_INPUT && WINDOWS_NEW
+   #if EE_PRIVATE
+      Platform::Array<bool                                                > ^button;
+      Platform::Array<Windows::Gaming::Input::GameControllerSwitchPosition> ^Switch;
+      Platform::Array<double                                              > ^axis;
+   #pragma pack(push)
+   #pragma pack() // default packing required for storing WinRT classes not as ^ pointers, without this 'gamepad' members were getting corrupt values
+      Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)==SIZE(UInt)*16); // use UInt for alignment
+   #pragma pack(pop)
+   #else
+      Ptr  button=null, Switch=null, axis=null;
+      UInt gamepad[16];
+   #endif
+   #endif
    }_state[2];
 
    static CChar8 *_button_name[];

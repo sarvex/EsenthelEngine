@@ -86,7 +86,7 @@ struct GamePadChange
          #if JP_DIRECT_INPUT // if we use DirectInput then have to remove all DirectInput joypads with same vendor/product ID as they will be processed using this API instead
             REPA(Joypads) // go from back because we remove
             {
-               Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && jp._device)Joypads.remove(i); // remove all (not just one)
+               Joypad &jp=Joypads[i]; if(jp._vendor_id==vendor_id && jp._product_id==product_id && jp._dinput)Joypads.remove(i); // remove all (not just one)
             }
          #endif
             raw_game_controller.As(&raw_game_controller2); if(raw_game_controller2)
@@ -303,7 +303,7 @@ static void AddingJoypad(Memc<Input> &inputs, Int device)
 Joypad::~Joypad()
 {
 #if JP_DIRECT_INPUT
-   if(_device){_device->Unacquire(); _device->Release(); _device=null;}
+   if(_dinput){_dinput->Unacquire(); _dinput->Release(); _dinput=null;}
 #endif
 
    // adjust 'Inputs', because it holds a 'device' index, so have to adjust those indexes
@@ -523,6 +523,34 @@ void Joypad::zero()
    REPAO(trigger)=0;
   _sensor_left .reset();
   _sensor_right.reset();
+
+#if JOYPAD_THREAD
+   REPA(_state) // here no need for lock, because this functions is called under lock already
+   {
+      auto &state=_state[i];
+   #if (JP_GAMEPAD_INPUT && WINDOWS_OLD) || JP_X_INPUT || JP_DIRECT_INPUT
+      Zero(state.data);
+   #endif
+   #if JP_DIRECT_INPUT
+      if(_dinput)state.dinput.rgdwPOV[0]=UINT_MAX; // set initial DPAD to centered
+   #endif
+   #if JP_GAMEPAD_INPUT && WINDOWS_NEW
+      if(_gamepad)
+      {
+         state.gamepad.Buttons=Windows::Gaming::Input::GamepadButtons::None;
+         state.gamepad.LeftThumbstickX=0; state.gamepad.RightThumbstickX=0;
+         state.gamepad.LeftThumbstickY=0; state.gamepad.RightThumbstickY=0;
+         state.gamepad.LeftTrigger=state.gamepad.RightTrigger=0;
+      }else
+      if(_raw_game_controller)
+      {
+         if(state.button)REP(state.button->Length)state.button->Data[i]=false;
+         if(state.Switch)REP(state.Switch->Length)state.Switch->Data[i]=Windows::Gaming::Input::GameControllerSwitchPosition::Center;
+         if(state.axis  )REP(state.axis  ->Length)state.axis  ->Data[i]=((i<4) ? 0.5f : 0);
+      }
+   #endif
+   }
+#endif
 }
 void Joypad::clear() // called at end of frame
 {
@@ -801,11 +829,11 @@ void Joypad::updateState()
    }
 #endif
 #if JP_DIRECT_INPUT
-   if(_device)
+   if(_dinput)
    {
       auto &old=olds.dinput,
            &cur=curs.dinput;
-      if(OK(_device->Poll()) && OK(_device->GetDeviceState(SIZE(cur), &cur)))
+      if(OK(_dinput->Poll()) && OK(_dinput->GetDeviceState(SIZE(cur), &cur)))
       {
         _state_index^=1;
 
@@ -883,7 +911,7 @@ void Joypad::update()
    }
 #endif
 #if JP_DIRECT_INPUT
-   if(_device)
+   if(_dinput)
    {
       auto &state=cur.dinput;
       {
@@ -954,9 +982,16 @@ void Joypad::eat(Int b)
 void Joypad::acquire(Bool on)
 {
 #if JP_DIRECT_INPUT
-   if(_device){if(on)_device->Acquire();else _device->Unacquire();}
+   if(_dinput){if(on)_dinput->Acquire();else _dinput->Unacquire();}
 #endif
-   if(!on)zero();
+   if(!on // unacquire
+   || JOYPAD_THREAD) // zero even when wanting to acquire if processing joypad threads, in case some state changes got updated on the joypad thread
+   {
+      // trigger release 'Inputs' events
+      setDiri(0, 0);
+      REPA(_button)if(b(i))release(i);
+      zero();
+   }
 }
 #if !SWITCH
 void Joypad::sensors(Bool calculate) {}
@@ -1153,7 +1188,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          if(OK(did->SetDataFormat      (&c_dfDIJoystick)))
          if(OK(did->SetCooperativeLevel(App.window(), DISCL_EXCLUSIVE|DISCL_FOREGROUND)))
          {
-            Swap(joypad._device, did);
+            Swap(joypad._dinput, did);
             joypad.      _name=DIDevInst->tszProductName;
          #if JOYPAD_VENDOR_PRODUCT_ID
             joypad. _vendor_id= vendor_id;
@@ -1168,13 +1203,13 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
             dipdw.diph.dwSize      =SIZE(dipdw);
             dipdw.diph.dwHeaderSize=SIZE(DIPROPHEADER);
             dipdw.diph.dwHow       =DIPH_DEVICE;
-            joypad._device->SetProperty(DIPROP_AUTOCENTER, &dipdw.diph);
+            joypad._dinput->SetProperty(DIPROP_AUTOCENTER, &dipdw.diph);
 
-            joypad._device->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
+            joypad._dinput->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
 
             if(App.active())joypad.acquire(true);
          }
-         if(!joypad._device)Joypads.remove(joypad._joypad_index); // if failed to create it then remove it
+         if(!joypad._dinput)Joypads.remove(joypad._joypad_index); // if failed to create it then remove it
          RELEASE(did);
       }
    }
@@ -1195,7 +1230,7 @@ void ListJoypads()
       if(jp._xinput!=255)jp._connected=false;
    #endif
    #if JP_DIRECT_INPUT
-      if(jp._device)jp._connected=false;
+      if(jp._dinput)jp._connected=false;
    #endif
    }
 
@@ -1409,6 +1444,7 @@ void JoypadsClass::acquire(Bool on)
    SyncLocker lock(JoypadLock);
    if(on)JoypadThread.resume();
    else  JoypadThread.pause ();
+   ThreadInputs.clear();
 #endif
    REPAO(T).acquire(on);
 }
