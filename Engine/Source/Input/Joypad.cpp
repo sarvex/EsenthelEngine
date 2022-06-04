@@ -984,7 +984,7 @@ void Joypad::acquire(Bool on)
    {
       // trigger release 'Inputs' events
       setDiri(0, 0);
-      REPA(_button)if(b(i))release(i);
+      REPA(_button)release(i);
       zero();
    }
 }
