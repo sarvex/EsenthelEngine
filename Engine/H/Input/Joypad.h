@@ -317,6 +317,8 @@ void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_n
 
 inline Int Elms(C JoypadsClass &jps) {return jps.elms();}
 #if EE_PRIVATE
+extern SyncLock JoypadLock;
+
 Joypad& GetJoypad  (UInt id, Bool &added);
 UInt    NewJoypadID(UInt id); // generate a Joypad ID based on 'id' that's not yet used by any other existing Joypad
 

@@ -29,7 +29,16 @@ static EventRegistrationToken MagnetometerToken, MouseToken;
 static TypedEventHandler<Sensors::Magnetometer^, MagnetometerReadingChangedEventArgs^> ^MagnetometerHandler;
 
 #if JP_GAMEPAD_INPUT
-static Int FindJoypadI(Windows::Gaming::Input::IGameController ^gamepad) {REPA(Joypads)if(Joypads[i]._gamepad==gamepad)return i; return -1;}
+static Int FindJoypadI(Windows::Gaming::Input::Gamepad          ^ gamepad            ) {REPA(Joypads)if(Joypads[i]._gamepad            ==gamepad            )return i; return -1;}
+static Int FindJoypadI(Windows::Gaming::Input::RawGameController^ raw_game_controller) {REPA(Joypads)if(Joypads[i]._raw_game_controller==raw_game_controller)return i; return -1;}
+static Int FindJoypadI(Windows::Gaming::Input::IGameController  ^ controller         )
+{
+   REPA(Joypads)
+   {
+      Joypad &jp=Joypads[i]; if(jp._gamepad==controller || jp._raw_game_controller==controller)return i;
+   }
+   return -1;
+}
 
 struct GamePadChange
 {
@@ -795,6 +804,7 @@ void GamePadChange::process()
             joypad_id=xxHash64_32Mem(controller_id, SIZE(*controller_id)*Length(controller_id));
       }else joypad_id=0;
       joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
+      SyncLocker lock(JoypadLock);
       Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
       {
          joypad._gamepad            =gamepad;
@@ -820,7 +830,8 @@ void GamePadChange::process()
             joypad.remap(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
          }
          // set callback after everything was set, in case it's called right away
-         if(gamepad)gamepad->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         if(gamepad            )gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         if(raw_game_controller)raw_game_controller->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
       }
    }else
    {

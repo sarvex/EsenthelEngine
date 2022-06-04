@@ -13,7 +13,7 @@ static Bool    CalculateJoypadSensors;
 /******************************************************************************/
 #if JOYPAD_THREAD
 static Memc<Input> ThreadInputs;
-static SyncLock    JoypadThreadLock;
+       SyncLock    JoypadLock;
 static Thread      JoypadThread;
 static SyncEvent   JoypadEvent;
 #if WINDOWS_OLD
@@ -25,7 +25,7 @@ static Bool JoypadThreadFunc(Thread &thread)
    static Flt t; Flt t1=Time.curTime(); LogName(S); LogN(t1-t); t=t1;
 #endif
    {
-      SyncLocker lock(JoypadThreadLock);
+      SyncLocker lock(JoypadLock);
       REPAO(Joypads).updateState();
    }
    JoypadEvent.wait(JOYPAD_THREAD_SLEEP);
@@ -97,7 +97,7 @@ struct GamePadChange
 
          joypad_id=NewJoypadID(joypad_id); // make sure it's not used yet !! set this before creating new 'Joypad' !!
       #if JOYPAD_THREAD
-         SyncLocker lock(JoypadThreadLock);
+         SyncLocker lock(JoypadLock);
       #endif
          Bool added; Joypad &joypad=GetJoypad(joypad_id, added); if(added)
          {
@@ -209,7 +209,7 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
       Int   product_id=[(NSNumber*)IOHIDDeviceGetProperty(device, CFSTR(kIOHIDProductIDKey   )) intValue];
 
    #if JOYPAD_THREAD
-      SyncLocker lock(JoypadThreadLock);
+      SyncLocker lock(JoypadLock);
    #endif
       Bool added; Joypad &jp=GetJoypad(JoypadsID++, added); if(added)
       {
@@ -602,6 +602,39 @@ static inline void TestDPadY(Int old, Int cur, Byte device) // have to process i
       if(cur)ThreadInputs.New().set(true , INPUT_JOYPAD, (cur>0) ? JB_DPAD_UP : JB_DPAD_DOWN, device); // push
    }
 }
+#if JP_GAMEPAD_INPUT
+#if WINDOWS_OLD
+static VecI2 SwitchToDirI(ABI::Windows::Gaming::Input::GameControllerSwitchPosition pos)
+#else
+static VecI2 SwitchToDirI(     Windows::Gaming::Input::GameControllerSwitchPosition pos)
+#endif
+{
+   switch(pos)
+   {
+   #if WINDOWS_OLD
+      default                                                                 : return VecI2( 0,  0); // ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Center
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Up       : return VecI2( 0,  1);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpRight  : return VecI2( 1,  1);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Right    : return VecI2( 1,  0);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownRight: return VecI2( 1, -1);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Down     : return VecI2( 0, -1);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownLeft : return VecI2(-1, -1);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Left     : return VecI2(-1,  0);
+      case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpLeft   : return VecI2(-1,  1);
+   #else
+      default                                                             : return VecI2( 0,  0); // Windows::Gaming::Input::GameControllerSwitchPosition::Center
+      case Windows::Gaming::Input::GameControllerSwitchPosition::Up       : return VecI2( 0,  1);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::UpRight  : return VecI2( 1,  1);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::Right    : return VecI2( 1,  0);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::DownRight: return VecI2( 1, -1);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::Down     : return VecI2( 0, -1);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::DownLeft : return VecI2(-1, -1);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::Left     : return VecI2(-1,  0);
+      case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : return VecI2(-1,  1);
+   #endif
+   }
+}
+#endif
 #if JP_DIRECT_INPUT
 static VecI2 POVToDirI(DWORD pov)
 {
@@ -723,31 +756,10 @@ void Joypad::updateState()
          }
          if(_switches && old_switch[0]!=cur_switch[0])
          {
-            // FIXME dpad
-         if(_switches)switch(Switch[0])
-         {
-         #if WINDOWS_OLD
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Center   : setDiri( 0,  0); dir.zero(                  ); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Up       : setDiri( 0,  1); dir.set (       0,        1); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Right    : setDiri( 1,  0); dir.set (       1,        0); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
-            case ABI::Windows::Gaming::Input::GameControllerSwitchPosition_UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
-         #else
-            case Windows::Gaming::Input::GameControllerSwitchPosition::Center   : setDiri( 0,  0); dir.zero(                  ); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::Up       : setDiri( 0,  1); dir.set (       0,        1); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::UpRight  : setDiri( 1,  1); dir.set ( SQRT2_2,  SQRT2_2); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::Right    : setDiri( 1,  0); dir.set (       1,        0); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::DownRight: setDiri( 1, -1); dir.set ( SQRT2_2, -SQRT2_2); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::Down     : setDiri( 0, -1); dir.set (       0,       -1); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::DownLeft : setDiri(-1, -1); dir.set (-SQRT2_2, -SQRT2_2); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::Left     : setDiri(-1,  0); dir.set (      -1,        0); break;
-            case Windows::Gaming::Input::GameControllerSwitchPosition::UpLeft   : setDiri(-1,  1); dir.set (-SQRT2_2,  SQRT2_2); break;
-         #endif
-         }
+            VecI2 old_diri=SwitchToDirI(old_switch[0]),
+                  cur_diri=SwitchToDirI(cur_switch[0]);
+            TestDPadX(old_diri.x, cur_diri.x, _joypad_index);
+            TestDPadY(old_diri.y, cur_diri.y, _joypad_index);
          }
       }
    }
@@ -977,7 +989,7 @@ void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_n
 void JoypadsClass::remove(Int i)
 {
 #if JOYPAD_THREAD
-   if(InRange(i, T)){SyncLocker lock(JoypadThreadLock);
+   if(InRange(i, T)){SyncLocker lock(JoypadLock);
 #else
    {
 #endif
@@ -1130,6 +1142,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 #endif
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
+      // here no need for lock, because this functions is called under lock already
       Bool added; Joypad &joypad=GetJoypad(id, added); if(added)
       {
          IDirectInputDevice8 *did=null;
@@ -1170,7 +1183,7 @@ void ListJoypads()
 {
 #if JP_X_INPUT || JP_DIRECT_INPUT
 #if JOYPAD_THREAD
-   SyncLocker lock(JoypadThreadLock);
+   SyncLocker lock(JoypadLock);
 #endif
    REPA(Joypads) // assume that all are disconnected
    {
@@ -1390,7 +1403,7 @@ void ShutJoypads()
 void JoypadsClass::acquire(Bool on)
 {
 #if JOYPAD_THREAD
-   SyncLocker lock(JoypadThreadLock);
+   SyncLocker lock(JoypadLock);
    if(on)JoypadThread.resume();
    else  JoypadThread.pause ();
 #endif
@@ -1399,7 +1412,7 @@ void JoypadsClass::acquire(Bool on)
 void JoypadsClass::update()
 {
 #if JOYPAD_THREAD
-   if(elms()){SyncLockerEx lock(JoypadThreadLock, JoypadThread.active());
+   if(elms()){SyncLockerEx lock(JoypadLock, JoypadThread.active());
 #else
    {
 #endif
