@@ -133,14 +133,14 @@ struct Joypad // Joypad Input
    void acquire (Bool on);
    void update  (C Bool *on, Int elms);
    void setDiri (Int x, Int y);
-   void updateState();
+   void getState();
    void update  ();
    void clear   ();
    void zero    ();
    void push    (Byte b);
    void release (Byte b);
    void sensors (Bool calculate);
-   void remap   (U16 vendor_id, U16 product_id);
+   void setInfo (U16 vendor_id, U16 product_id);
 #endif
 
 #if !EE_PRIVATE

@@ -520,7 +520,7 @@ static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_p
                         if(JMethodID getName     =Jni.func(InputDevice, "getName"     , "()Ljava/lang/String;"))if(JString name=Jni->CallObjectMethod(device, getName))joypad._name=name.str();
       Int  vendor_id=0; if(JMethodID getVendorId =Jni.func(InputDevice, "getVendorId" , "()I"                 )) vendor_id=Jni->CallIntMethod(device, getVendorId );
       Int product_id=0; if(JMethodID getProductId=Jni.func(InputDevice, "getProductId", "()I"                 ))product_id=Jni->CallIntMethod(device, getProductId);
-      joypad.remap(vendor_id, product_id);
+      joypad.setInfo(vendor_id, product_id);
    }
 }
 /******************************************************************************/

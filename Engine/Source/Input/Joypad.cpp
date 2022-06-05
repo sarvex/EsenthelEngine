@@ -26,7 +26,7 @@ static Bool JoypadThreadFunc(Thread &thread)
 #endif
    {
       SyncLocker lock(JoypadLock);
-      REPAO(Joypads).updateState();
+      REPAO(Joypads).getState();
    }
    JoypadEvent.wait(JOYPAD_THREAD_SLEEP);
    return true;
@@ -115,20 +115,16 @@ struct GamePadChange
                   ABI::Windows::Gaming::Input::GameControllerButtonLabel label=ABI::Windows::Gaming::Input::GameControllerButtonLabel_None;
                  _raw_game_controller->GetButtonLabel(i, &label);
                }*/
-            #if JOYPAD_VENDOR_PRODUCT_ID
-               joypad. _vendor_id= vendor_id;
-               joypad._product_id=product_id;
-            #endif
                Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::ForceFeedback::ForceFeedbackMotor*>> motors; raw_game_controller->get_ForceFeedbackMotors(&motors); if(motors)
                {
                   unsigned motors_count=0; motors->get_Size(&motors_count); joypad._vibrations=(motors_count>0);
                }
-               joypad.remap(vendor_id, product_id);
             }
             if(raw_game_controller2)
             {
                HSTRING display_name=null; raw_game_controller2->get_DisplayName(&display_name); joypad._name=WindowsGetStringRawBuffer(display_name, null);
             }
+            joypad.setInfo(vendor_id, product_id);
          }
       }else
       {
@@ -215,7 +211,7 @@ static void JoypadAdded(void *inContext, IOReturn inResult, void *inSender, IOHI
       {
          jp._name  =name;
          jp._device=device;
-         jp. remap(vendor_id, product_id);
+         jp. setInfo(vendor_id, product_id);
          REPA(elms)
          {
             Joypad::Elm &elm=elms[i]; if(elm.type==Joypad::Elm::BUTTON)
@@ -412,8 +408,12 @@ Joypad& Joypad::vibration(C Vibration &left, C Vibration &right)
 }
 #endif
 /******************************************************************************/
-void Joypad::remap(U16 vendor_id, U16 product_id)
+void Joypad::setInfo(U16 vendor_id, U16 product_id)
 {
+#if JOYPAD_VENDOR_PRODUCT_ID
+   _vendor_id= vendor_id;
+  _product_id=product_id;
+#endif
 #if JOYPAD_BUTTON_REMAP
    ASSERT(ELMS(_remap)==ELMS(_button));
    switch(vendor_id)
@@ -681,7 +681,7 @@ static VecI2 POVToDirI(DWORD pov)
    }
 }
 #endif
-void Joypad::updateState()
+void Joypad::getState()
 {
    auto &olds=_state[ _state_index],
         &curs=_state[!_state_index]; // here indexes for 'cur' have to be swapped when compared to 'update' because here after success we flip '_state_index', so later when wanting to access 'cur' we need to do "_state[_state_index]"
@@ -1184,11 +1184,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
          if(OK(did->SetCooperativeLevel(App.window(), DISCL_EXCLUSIVE|DISCL_FOREGROUND)))
          {
             Swap(joypad._dinput, did);
-            joypad.      _name=DIDevInst->tszProductName;
-         #if JOYPAD_VENDOR_PRODUCT_ID
-            joypad. _vendor_id= vendor_id;
-            joypad._product_id=product_id;
-         #endif
+            joypad._name=DIDevInst->tszProductName;
 
             REPAO(joypad._state).dinput.rgdwPOV[0]=UINT_MAX; // set initial DPAD to centered
 
@@ -1201,7 +1197,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
 
             joypad._dinput->EnumObjects(EnumAxes, &joypad, DIDFT_AXIS);
 
-            joypad.remap(vendor_id, product_id);
+            joypad.setInfo(vendor_id, product_id);
 
             if(App.active())joypad.acquire(true);
          }
@@ -1452,7 +1448,7 @@ void JoypadsClass::update()
    {
 #endif
    #if JOYPAD_THREAD
-      REPAO(T).updateState();
+      REPAO(T).getState();
       if(ThreadInputs.elms())
       {
          FREPA(ThreadInputs) // process in order
