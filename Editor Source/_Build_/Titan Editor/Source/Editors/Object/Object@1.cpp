@@ -869,7 +869,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    void ObjView::MeshAlignXZ(ObjView &editor) {editor.meshAlign      (true );}
    void ObjView::MeshAlign(ObjView &editor) {editor.meshAlign      (false);}
    void ObjView::MeshWeldPos(ObjView &editor) {editor.meshWeldPos    ();}
-   void ObjView::MeshSetPos(ObjView &editor) {editor.meshSetPos     ();}
+   void ObjView::MeshSetPos(ObjView &editor) {editor.meshSetPos     (false);}
+   void ObjView::MeshSetPosKeepUV(ObjView &editor) {editor.meshSetPos     (true );}
    void ObjView::MeshReverse(ObjView &editor) {editor.meshReverse    ();}
    void ObjView::MeshReverseNrm(ObjView &editor) {editor.meshReverseNrm ();}
    void ObjView::MeshSetNormalFa(ObjView &editor) {editor.meshSetNrmFace (         );}
@@ -1519,6 +1520,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          n.New().create("Split"                         , MeshSplit        , T).kbsc(KbSc(KB_S, KBSC_CTRL_CMD                    )).desc("This option will split selected vertexes/faces into new Mesh Parts");
          n.New().create("Weld Vertex Positions"         , MeshWeldPos      , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD                    )).desc("This option will weld positions of selected vertexes making them share one position");
          n.New().create("Set Vertex Positions"          , MeshSetPos       , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD|KBSC_SHIFT         )).desc("This option will set positions of selected vertexes to the same position as the highlighted vertex.\nTo use:\n-Select vertexes\n-Highlight target vertex\n-Press Keyboard shortcut for this option");
+         n.New().create("Set Vertex Positions (Keep UV)", MeshSetPosKeepUV , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT)).desc("This option will set positions of selected vertexes to the same position as the highlighted vertex.\nTo use:\n-Select vertexes\n-Highlight target vertex\n-Press Keyboard shortcut for this option");
          n.New().create("Reverse"                       , MeshReverse      , T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD                    )).desc("This option will reverse the selected faces");
          n.New().create("Reverse Normals"               , MeshReverseNrm   , T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT         )).desc("This option will reverse normals of selected vertexes/faces");
          n.New().create("Set Normals (Normal)"          , MeshSetNormalN   , T).kbsc(KbSc(KB_N, KBSC_CTRL_CMD                    )).desc("This option will set normals of selected vertexes/faces\nNormals will be smoothened based on existing normal vertex connections");

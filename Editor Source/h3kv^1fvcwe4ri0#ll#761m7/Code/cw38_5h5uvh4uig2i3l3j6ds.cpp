@@ -978,14 +978,15 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    static void ShowCur          (ObjView &editor) {editor.show_cur_pos.push();}
    static void BoneShapeChange  (ObjView &editor) {editor.bone_shape.push();}
    static void VtxsChanged      (ObjView &editor) {editor.vtxs_front.visible(editor.vtxs()); editor.vtxs_normals.visible(editor.vtxs());}
-   static void MeshDelete       (ObjView &editor) {editor.meshDelete     ();}   void meshDelete   ();
-   static void MeshSplit        (ObjView &editor) {editor.meshSplit      ();}   void meshSplit    ();
+   static void MeshDelete       (ObjView &editor) {editor.meshDelete     ();}        void meshDelete   ();
+   static void MeshSplit        (ObjView &editor) {editor.meshSplit      ();}        void meshSplit    ();
    static void MeshAlignXZ      (ObjView &editor) {editor.meshAlign      (true );}   void meshAlign(bool xz);
    static void MeshAlign        (ObjView &editor) {editor.meshAlign      (false);}
-   static void MeshWeldPos      (ObjView &editor) {editor.meshWeldPos    ();}   void meshWeldPos   ();   void meshWeldPos(flt pos_eps);
-   static void MeshSetPos       (ObjView &editor) {editor.meshSetPos     ();}   void meshSetPos    ();
-   static void MeshReverse      (ObjView &editor) {editor.meshReverse    ();}   void meshReverse   ();
-   static void MeshReverseNrm   (ObjView &editor) {editor.meshReverseNrm ();}   void meshReverseNrm();
+   static void MeshWeldPos      (ObjView &editor) {editor.meshWeldPos    ();}        void meshWeldPos   ();   void meshWeldPos(flt pos_eps);
+   static void MeshSetPos       (ObjView &editor) {editor.meshSetPos     (false);}
+   static void MeshSetPosKeepUV (ObjView &editor) {editor.meshSetPos     (true );}   void meshSetPos    (bool keep_uv);
+   static void MeshReverse      (ObjView &editor) {editor.meshReverse    ();}        void meshReverse   ();
+   static void MeshReverseNrm   (ObjView &editor) {editor.meshReverseNrm ();}        void meshReverseNrm();
    static void MeshSetNormalFa  (ObjView &editor) {editor.meshSetNrmFace (         );}   void meshSetNrmFace();
    static void MeshSetNormalN   (ObjView &editor) {editor.meshSetNrm     (VTX_NRM  );}   void meshSetNrm    (MESH_FLAG vtx_test);
    static void MeshSetNormalP   (ObjView &editor) {editor.meshSetNrm     (VTX_POS  );}
@@ -1644,6 +1645,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          n.New().create("Split"                         , MeshSplit        , T).kbsc(KbSc(KB_S, KBSC_CTRL_CMD                    )).desc("This option will split selected vertexes/faces into new Mesh Parts");
          n.New().create("Weld Vertex Positions"         , MeshWeldPos      , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD                    )).desc("This option will weld positions of selected vertexes making them share one position");
          n.New().create("Set Vertex Positions"          , MeshSetPos       , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD|KBSC_SHIFT         )).desc("This option will set positions of selected vertexes to the same position as the highlighted vertex.\nTo use:\n-Select vertexes\n-Highlight target vertex\n-Press Keyboard shortcut for this option");
+         n.New().create("Set Vertex Positions (Keep UV)", MeshSetPosKeepUV , T).kbsc(KbSc(KB_W, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT)).desc("This option will set positions of selected vertexes to the same position as the highlighted vertex.\nTo use:\n-Select vertexes\n-Highlight target vertex\n-Press Keyboard shortcut for this option");
          n.New().create("Reverse"                       , MeshReverse      , T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD                    )).desc("This option will reverse the selected faces");
          n.New().create("Reverse Normals"               , MeshReverseNrm   , T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT         )).desc("This option will reverse normals of selected vertexes/faces");
          n.New().create("Set Normals (Normal)"          , MeshSetNormalN   , T).kbsc(KbSc(KB_N, KBSC_CTRL_CMD                    )).desc("This option will set normals of selected vertexes/faces\nNormals will be smoothened based on existing normal vertex connections");
