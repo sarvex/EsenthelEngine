@@ -734,12 +734,12 @@ ConvertToDeAtlas.drag(elms, obj, screen_pos);
          {
             if(elm->type==ELM_ANIM)
             {
-               if(set_start_frame())files[0].getParam("start_frame").value=start_frame();
-               if(set_end_frame  ())files[0].getParam(  "end_frame").value=  end_frame();
-               if(set_speed      ())files[0].getParam("speed"      ).value=speed      ();
-               if(set_optimize   ())files[0].getParam("optimize"   ).value=optimize   ();
-               if(mirror         ())files[0].getParam("mirror"     ); // uses 'TextBool1' so no need to specify =1
-               if(del_end_keys   ())files[0].getParam("delEndKeys" ); // uses 'TextBool1' so no need to specify =1
+               if(set_start_frame())files[0].getParam("startFrame").value=start_frame();
+               if(set_end_frame  ())files[0].getParam(  "endFrame").value=  end_frame();
+               if(set_speed      ())files[0].getParam("speed"     ).value=speed      ();
+               if(set_optimize   ())files[0].getParam("optimize"  ).value=optimize   ();
+               if(mirror         ())files[0].getParam("mirror"    ); // uses 'TextBool1' so no need to specify =1
+               if(del_end_keys   ())files[0].getParam("delEndKeys"); // uses 'TextBool1' so no need to specify =1
             }
             if(elm->type==ELM_ANIM || elm->type==ELM_MTRL)
             {
@@ -778,13 +778,13 @@ ConvertToDeAtlas.drag(elms, obj, screen_pos);
                T+=set_start_frame; T+=set_end_frame; T+=set_speed; T+=set_optimize; T+=mirror; T+=del_end_keys; T+=start_frame; T+=end_frame; T+=speed; T+=optimize;
                if(files.elms())
                {
-                C TextParam *start_frame =files[0].findParam("start_frame"); set_start_frame.set(start_frame!=null); T.start_frame .set(start_frame  ? start_frame ->value     : S    ); files[0].params.removeData(start_frame );
-                C TextParam *  end_frame =files[0].findParam(  "end_frame"); set_end_frame  .set(  end_frame!=null); T.  end_frame .set(  end_frame  ?   end_frame ->value     : S    ); files[0].params.removeData(  end_frame );
-                C TextParam *speed       =files[0].findParam("speed"      ); set_speed      .set(speed      !=null); T.speed       .set(speed        ? speed       ->value     : S+"1"); files[0].params.removeData(speed       );
-                C TextParam *optimize    =files[0].findParam("optimize"   ); set_optimize   .set(optimize   !=null); T.optimize    .set(optimize     ? optimize    ->value     : S+"1"); files[0].params.removeData(optimize    );
-                C TextParam *name        =files[0].findParam("name"       );                                         T.name        .set(name         ? name        ->value     : S    ); files[0].params.removeData(name        );
-                C TextParam *mirror      =files[0].findParam("mirror"     );                                         T.mirror      .set(mirror       ? mirror      ->asBool1() : false); files[0].params.removeData(mirror      );
-                C TextParam *del_end_keys=files[0].findParam("delEndKeys" );                                         T.del_end_keys.set(del_end_keys ? del_end_keys->asBool1() : false); files[0].params.removeData(del_end_keys);
+                C TextParam *start_frame =files[0].findParam("startFrame"); set_start_frame.set(start_frame!=null); T.start_frame .set(start_frame  ? start_frame ->value     : S    ); files[0].params.removeData(start_frame );
+                C TextParam *  end_frame =files[0].findParam(  "endFrame"); set_end_frame  .set(  end_frame!=null); T.  end_frame .set(  end_frame  ?   end_frame ->value     : S    ); files[0].params.removeData(  end_frame );
+                C TextParam *speed       =files[0].findParam("speed"     ); set_speed      .set(speed      !=null); T.speed       .set(speed        ? speed       ->value     : S+"1"); files[0].params.removeData(speed       );
+                C TextParam *optimize    =files[0].findParam("optimize"  ); set_optimize   .set(optimize   !=null); T.optimize    .set(optimize     ? optimize    ->value     : S+"1"); files[0].params.removeData(optimize    );
+                C TextParam *name        =files[0].findParam("name"      );                                         T.name        .set(name         ? name        ->value     : S    ); files[0].params.removeData(name        );
+                C TextParam *mirror      =files[0].findParam("mirror"    );                                         T.mirror      .set(mirror       ? mirror      ->asBool1() : false); files[0].params.removeData(mirror      );
+                C TextParam *del_end_keys=files[0].findParam("delEndKeys");                                         T.del_end_keys.set(del_end_keys ? del_end_keys->asBool1() : false); files[0].params.removeData(del_end_keys);
                }
             }break;
 

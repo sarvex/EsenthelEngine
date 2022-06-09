@@ -1164,6 +1164,7 @@ class ElmAnim : ElmData
    Vec       root_move=VecZero, root_rot=VecZero;
    flt       fps=0;
    ushort    flag=LOOP;
+   Str       imported_file_params; // used to adjust anim events when reimporting with different params
    TimeStamp loop_time, linear_time, skel_time, file_time;
 
    // get
@@ -1214,7 +1215,7 @@ class ElmAnim : ElmData
       changed|=Undo(skel_time, src.skel_time, skel_id, src.skel_id)*CHANGE_NORMAL; // SKEL ID is not stored in the ANIM file
       if(Undo(  loop_time, src.  loop_time)){changed|=CHANGE_AFFECT_FILE; loop  (src.loop  ());}
       if(Undo(linear_time, src.linear_time)){changed|=CHANGE_AFFECT_FILE; linear(src.linear());}
-      if(Undo(  file_time, src.  file_time)){changed|=CHANGE_AFFECT_FILE; transform=src.transform; root_move=src.root_move; root_rot=src.root_rot; fps=src.fps; FlagCopy(flag, src.flag, ROOT_ALL);}
+      if(Undo(  file_time, src.  file_time)){changed|=CHANGE_AFFECT_FILE; transform=src.transform; root_move=src.root_move; root_rot=src.root_rot; fps=src.fps; FlagCopy(flag, src.flag, ROOT_ALL); imported_file_params=src.imported_file_params;}
 
       if(changed)newVer();
       return changed;
@@ -1234,7 +1235,7 @@ class ElmAnim : ElmData
    {
       bool changed=false;
 
-      if(Sync(file_time, src.file_time)){changed|=true; transform=src.transform; root_move=src.root_move; root_rot=src.root_rot; fps=src.fps; FlagCopy(flag, src.flag, ROOT_ALL);}
+      if(Sync(file_time, src.file_time)){changed|=true; transform=src.transform; root_move=src.root_move; root_rot=src.root_rot; fps=src.fps; FlagCopy(flag, src.flag, ROOT_ALL); imported_file_params=src.imported_file_params;}
 
       if(equal(src))ver=src.ver;else if(changed)newVer();
       return true;
@@ -1269,50 +1270,75 @@ class ElmAnim : ElmData
       if(old&(1<<7))f|=ROOT_FROM_BODY;
       return f;
    }
+   void setImportedFileParams()
+   {
+      FileParams fps=src_file;
+      fps.name.clear(); // file name
+      fps.params.removeData(fps.findParam("name"), true); // anim name
+      imported_file_params=fps.encode();
+   }
+   void fix5()
+   {
+      FileParams fps=src_file;
+      REPA(fps.params)
+      {
+         TextParam &param=fps.params[i];
+         if(param.name=="start_frame")param.name="startFrame";else
+         if(param.name==  "end_frame")param.name=  "endFrame";
+      }
+      src_file=fps.encode();
+      setImportedFileParams();
+   }
    virtual bool save(File &f)C override
    {
       super.save(f);
-      f.cmpUIntV(5);
-      f<<skel_id<<transform<<root_move<<root_rot<<fps<<flag<<loop_time<<linear_time<<skel_time<<file_time;
+      f.cmpUIntV(6);
+      f<<skel_id<<transform<<root_move<<root_rot<<fps<<flag<<imported_file_params<<loop_time<<linear_time<<skel_time<<file_time;
       return f.ok();
    }
    virtual bool load(File &f)override
    {
       if(super.load(f))switch(f.decUIntV())
       {
+         case 6:
+         {
+            f>>skel_id>>transform>>root_move>>root_rot>>fps>>flag>>imported_file_params>>loop_time>>linear_time>>skel_time>>file_time;
+            if(f.ok())return true;
+         }break;
+
          case 5:
          {
-            f>>skel_id>>transform>>root_move>>root_rot>>fps>>flag>>loop_time>>linear_time>>skel_time>>file_time;
+            f>>skel_id>>transform>>root_move>>root_rot>>fps>>flag>>loop_time>>linear_time>>skel_time>>file_time; fix5();
             if(f.ok())return true;
          }break;
 
          case 4:
          {
-            f>>skel_id>>transform>>root_move>>root_rot>>fps; flag=OldFlag1(f.getUShort()); f>>loop_time>>linear_time>>skel_time>>file_time;
+            f>>skel_id>>transform>>root_move>>root_rot>>fps; flag=OldFlag1(f.getUShort()); f>>loop_time>>linear_time>>skel_time>>file_time; fix5();
             if(f.ok())return true;
          }break;
 
          case 3:
          {
-            f>>skel_id>>transform>>root_move>>root_rot; flag=OldFlag1(f.getUShort()); f>>loop_time>>linear_time>>skel_time>>file_time; fps=0;
+            f>>skel_id>>transform>>root_move>>root_rot; flag=OldFlag1(f.getUShort()); f>>loop_time>>linear_time>>skel_time>>file_time; fps=0; fix5();
             if(f.ok())return true;
          }break;
 
          case 2:
          {
-            f>>skel_id>>transform>>root_move>>root_rot; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; fps=0;
+            f>>skel_id>>transform>>root_move>>root_rot; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; fps=0; fix5();
             if(f.ok())return true;
          }break;
 
          case 1:
          {
-            f>>skel_id>>transform>>root_move; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; rootRotZero(); fps=0;
+            f>>skel_id>>transform>>root_move; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; rootRotZero(); fps=0; fix5();
             if(f.ok())return true;
          }break;
 
          case 0:
          {
-            f>>skel_id>>transform; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; rootMoveZero(); rootRotZero(); fps=0;
+            f>>skel_id>>transform; flag=OldFlag(f.getByte()); f>>loop_time>>linear_time>>skel_time>>file_time; rootMoveZero(); rootRotZero(); fps=0; fix5();
             if(f.ok())return true;
          }break;
       }
@@ -1321,21 +1347,22 @@ class ElmAnim : ElmData
    virtual void save(MemPtr<TextNode> nodes)C override
    {
       super.save(nodes);
-      if(skel_id.valid()     )nodes.New().setFN ("Skeleton"     , skel_id);
-                              nodes.New().setRaw("Pose"         , transform);
-                              nodes.New().set   ("Loop"         , loop());
-                              nodes.New().set   ("Linear"       , linear());
-      if(rootMove()          )nodes.New().setRaw("RootMove"     , root_move);
-      if(rootRot ()          )nodes.New().setRaw("RootRot"      , root_rot );
-      if(flag&ROOT_DEL_POS   )nodes.New().set   ("RootDelPos"   , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
-      if(flag&ROOT_DEL_ROT   )nodes.New().set   ("RootDelRot"   , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
-      if(flag&ROOT_SMOOTH_ROT)nodes.New().set   ("RootSmoothRot");
-      if(flag&ROOT_SMOOTH_POS)nodes.New().set   ("RootSmoothPos");
-      if(fps>0               )nodes.New().set   ("FPS"          , fps);
-                              nodes.New().set   ("LoopTime"     ,   loop_time.text());
-                              nodes.New().set   ("LinearTime"   , linear_time.text());
-                              nodes.New().set   ("SkeletonTime" ,   skel_time.text());
-                              nodes.New().set   ("FileTime"     ,   file_time.text());
+      if(skel_id.valid()          )nodes.New().setFN ("Skeleton"          , skel_id);
+                                   nodes.New().setRaw("Pose"              , transform);
+                                   nodes.New().set   ("Loop"              , loop());
+                                   nodes.New().set   ("Linear"            , linear());
+      if(rootMove()               )nodes.New().setRaw("RootMove"          , root_move);
+      if(rootRot ()               )nodes.New().setRaw("RootRot"           , root_rot );
+      if(flag&ROOT_DEL_POS        )nodes.New().set   ("RootDelPos"        , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_ROT        )nodes.New().set   ("RootDelRot"        , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_SMOOTH_ROT     )nodes.New().set   ("RootSmoothRot"     );
+      if(flag&ROOT_SMOOTH_POS     )nodes.New().set   ("RootSmoothPos"     );
+      if(fps>0                    )nodes.New().set   ("FPS"               , fps);
+      if(imported_file_params.is())nodes.New().set   ("ImportedFileParams", imported_file_params);
+                                   nodes.New().set   ("LoopTime"          ,   loop_time.text());
+                                   nodes.New().set   ("LinearTime"        , linear_time.text());
+                                   nodes.New().set   ("SkeletonTime"      ,   skel_time.text());
+                                   nodes.New().set   ("FileTime"          ,   file_time.text());
    }
    virtual void load(C MemPtr<TextNode> &nodes)override
    {
@@ -1343,20 +1370,21 @@ class ElmAnim : ElmData
       REPA(nodes)
       {
        C TextNode &n=nodes[i];
-         if(n.name=="Skeleton"     )n.getValue   (skel_id);else
-         if(n.name=="Pose"         )n.getValueRaw(transform);else
-         if(n.name=="RootMove"     )n.getValueRaw(root_move);else
-         if(n.name=="RootRot"      )n.getValueRaw(root_rot);else
-         if(n.name=="Loop"         )loop  (n.asBool1());else
-         if(n.name=="Linear"       )linear(n.asBool1());else
-         if(n.name=="RootSmoothRot")FlagSet(flag, ROOT_SMOOTH_ROT, n.asBool1());else
-         if(n.name=="RootSmoothPos")FlagSet(flag, ROOT_SMOOTH_POS, n.asBool1());else
-         if(n.name=="FPS"          )        fps=n.asFlt ();else
-         if(n.name=="LoopTime"     )  loop_time=n.asText();else
-         if(n.name=="LinearTime"   )linear_time=n.asText();else
-         if(n.name=="SkeletonTime" )  skel_time=n.asText();else
-         if(n.name=="FileTime"     )  file_time=n.asText();else
-         if(n.name=="RootDelPos"   )
+         if(n.name=="Skeleton"          )n.getValue   (skel_id);else
+         if(n.name=="Pose"              )n.getValueRaw(transform);else
+         if(n.name=="RootMove"          )n.getValueRaw(root_move);else
+         if(n.name=="RootRot"           )n.getValueRaw(root_rot);else
+         if(n.name=="Loop"              )loop  (n.asBool1());else
+         if(n.name=="Linear"            )linear(n.asBool1());else
+         if(n.name=="RootSmoothRot"     )FlagSet(flag, ROOT_SMOOTH_ROT, n.asBool1());else
+         if(n.name=="RootSmoothPos"     )FlagSet(flag, ROOT_SMOOTH_POS, n.asBool1());else
+         if(n.name=="FPS"               )        fps=n.asFlt ();else
+         if(n.name=="ImportedFileParams")imported_file_params=n.asText();else
+         if(n.name=="LoopTime"          )  loop_time=n.asText();else
+         if(n.name=="LinearTime"        )linear_time=n.asText();else
+         if(n.name=="SkeletonTime"      )  skel_time=n.asText();else
+         if(n.name=="FileTime"          )  file_time=n.asText();else
+         if(n.name=="RootDelPos"        )
          {
             if(        !n.value.is()         )FlagEnable(flag, ROOT_DEL_POS);else
             if(CharFlag(n.value[0])&CHARF_DIG)FlagSet   (flag, ROOT_DEL_POS, n.asBool());else

@@ -65,8 +65,8 @@ class SplitAnimation : ClosableWindow
                {
                   TimeStamp time; time.getUTC();
                                     files[0].params.clear().setNum(3+anim_name.is());
-                                    files[0].params[0].name="start_frame";
-                                    files[0].params[1].name=  "end_frame";
+                                    files[0].params[0].name="startFrame";
+                                    files[0].params[1].name=  "endFrame";
                                     files[0].params[2].name="loop";
                   if(anim_name.is())files[0].params[3].set( "name", anim_name);
                   FREPA(anims)
