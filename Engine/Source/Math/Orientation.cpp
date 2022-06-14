@@ -272,6 +272,14 @@ Orient& Orient::rotateCross(Flt angle)
    }
    return T;
 }
+Orient& Orient::rotateCross(Flt cos, Flt sin)
+{
+   Vec _dir=T.dir;
+
+   dir = dir*cos - perp*sin;
+   perp=_dir*sin + perp*cos;
+   return T;
+}
 /******************************************************************************/
 Orient& Orient::rotateX(Flt angle)
 {

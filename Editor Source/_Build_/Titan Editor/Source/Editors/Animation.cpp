@@ -427,6 +427,8 @@ AnimEditor AnimEdit;
                   if(Kb.bp(KB_INS  )                ){Kb.eat(KB_INS  ); AnimEdit.newEvent(AnimEdit.animTime());}
                   if(Kb.bp(KB_DEL  ) && Kb.ctrlCmd()){Kb.eat(KB_DEL  ); AnimEdit.delEvent(track.event_lit);}
                   if(Kb.bp(KB_SPACE)                ){Kb.eat(KB_SPACE); AnimEdit.playToggle();}
+                  if(Kb.bp(KB_HOME ) && Kb.ctrlCmd()){Kb.eat(KB_HOME ); Start(AnimEdit);}
+                  if(Kb.bp(KB_END  ) && Kb.ctrlCmd()){Kb.eat(KB_END  ); End  (AnimEdit);}
                }
             }
             if(Gui.ms   ()==&viewport)if(Ms.b(0) || Ms.b(MS_BACK)){cam_yaw-=Ms.d().x; cam_pitch+=Ms.d().y; Ms.freeze();}

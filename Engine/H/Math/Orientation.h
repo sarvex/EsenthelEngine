@@ -39,9 +39,10 @@ struct Orient // Orientation
    Orient& rightToLeft(); // convert right to left hand coordinate system
 #endif
 
-   Orient& rotateDir  (Flt angle); // rotate along 'dir'   vector, this is equal to "mul(Matrix3().setRotate(dir    , angle), true)" but faster
-   Orient& rotatePerp (Flt angle); // rotate along 'perp'  vector, this is equal to "mul(Matrix3().setRotate(perp   , angle), true)" but faster
-   Orient& rotateCross(Flt angle); // rotate along 'cross' vector, this is equal to "mul(Matrix3().setRotate(cross(), angle), true)" but faster
+   Orient& rotateDir  (Flt angle       ); // rotate along 'dir'   vector, this is equal to "mul(Matrix3().setRotate(dir    , angle), true)" but faster
+   Orient& rotatePerp (Flt angle       ); // rotate along 'perp'  vector, this is equal to "mul(Matrix3().setRotate(perp   , angle), true)" but faster
+   Orient& rotateCross(Flt angle       ); // rotate along 'cross' vector, this is equal to "mul(Matrix3().setRotate(cross(), angle), true)" but faster
+   Orient& rotateCross(Flt cos, Flt sin); // rotate along 'cross' vector, this is equal to "mul(Matrix3().setRotate(cross(), angle), true)" but faster, this method works like 'rotateCross(Flt angle)' however it accepts 'Cos' and 'Sin' of 'angle'
 
    Orient& rotateX(Flt angle); // rotate along X axis, this is equal to "mul(Matrix3().setRotateX(angle), true)" but faster
    Orient& rotateY(Flt angle); // rotate along Y axis, this is equal to "mul(Matrix3().setRotateY(angle), true)" but faster

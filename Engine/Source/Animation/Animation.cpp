@@ -1763,6 +1763,16 @@ Bool Animation::eventAfter(CChar8 *name, Flt time)C // event.name==name && event
    }
    return false;
 }
+Bool Animation::eventBefore(CChar8 *name, Flt time)C // event.name==name && event.time>time (time<event.time)
+{
+   REPA(events) // check all events from the end until 'time'
+   {
+    C AnimEvent &event=events[i];
+      if(      event.time<=time )break;
+      if(Equal(event.name, name))return true;
+   }
+   return false;
+}
 Bool Animation::eventOccurred(CChar8 *name, Flt start_time, Flt dt)C
 {
    if(loop())
