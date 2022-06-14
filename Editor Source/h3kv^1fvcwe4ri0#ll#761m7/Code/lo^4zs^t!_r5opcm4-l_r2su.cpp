@@ -403,23 +403,12 @@ class ImporterClass
                            anim.anim.clip(start_frame ? start_frame.asFlt()/anim.fps-anim.start : 0,
                                             end_frame ?   end_frame.asFlt()/anim.fps-anim.start : anim.anim.length());
                      }
-                     FREPA(fps.params) // process in order
-                     {
-                      C TextParam &p=fps.params[i]; if(p.name=="speedTime") // adjust speed for specified time range !! do this after clipping so the clip isn't affected by speed !!
-                        {
-                           Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
-                           if(speed)anim.anim.scaleTime(start, end, 1/speed);
-                        }
-                     }
                      if(C TextParam *p=fps.findParam("loop")) // set looping !! do this after clipping so the clip isn't affected by looping !!
                      {
                         has_loop=true;
                         anim.anim.loop(p.asBool());
                         fps.params.removeData(p); // remove this parameter because we've already applied this change to the animation, so when user modifies manually the looping, and then selectes reload, then looping won't be changed
                      }
-                     if(C TextParam *p=fps.findParam("speed")) // adjust speed !! do this after clipping so the clip isn't affected by speed !!
-                        if(flt speed=p.asFlt())
-                           anim.anim.length(anim.anim.length()/speed, true);
                   }
                   anim.anim.clip(0, anim.anim.length()); // remove any keyframes outside of anim range
                   T.file=FileParams.Encode(files); // 'files' could have changed, so adjust the name so the 'elm.srcFile' is set properly
@@ -898,6 +887,61 @@ class ImporterClass
                   }else anim.loop(anim_data.loop()); // otherwise keep the old setting
                   anim.linear(anim_data.linear()); // keep old linear
 
+                  // set events !! AFTER CLIP BUT BEFORE 'speedTime', 'offsetTime', 'speed'
+                  if(!anim.events.elms()) // if new animation doesn't have events, then check old anim for them
+                  {
+                     Animation old;
+                     {
+                        Animation temp; if(Animation *anim=Proj.getAnim(elm.id, temp))old.events=anim.events; // we just need events
+                     }
+                     if(old.events.elms()) // if old had events
+                     {
+                        // convert from old to absolute, have to process in reversed order
+                        if(old_fps)
+                        {
+                           if(C TextParam *p=old_fps.findParam("speed"))
+                              if(flt speed=p.asFlt())
+                                 old.length(old.length()*speed, true);
+
+                           if(C TextParam *p=old_fps.findParam("offsetTime"))old.offsetTime(-p.asFlt());
+
+                           REPA(old_fps.params) // process in reversed order
+                           {
+                            C TextParam &p=old_fps.params[i];
+                              if(p.name=="speedTime")
+                              {
+                                 Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
+                                 if(speed)old.scaleTime(start, start+(end-start)/speed, speed);
+                              }
+                           }
+                        }
+
+                        if(anim_data.fps>0)
+                        {
+                           flt offset=0;
+                           if(old_fps)if(C TextParam *start_frame=old_fps.findParam("startFrame"))offset+=start_frame.asFlt()/anim_data.fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
+                           if(    fps)if(C TextParam *start_frame=    fps.findParam("startFrame"))offset-=start_frame.asFlt()/anim_data.fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
+                           if(offset )REPAO(old.events).time+=offset;
+                        }
+
+                        Swap(anim.events, old.events);
+                        REPA(anim.events)Clamp(anim.events[i].time, 0, anim.length());
+                     }
+                  }
+
+                  if(fps) // 'speedTime' !! BEFORE ROOT !!
+                  {
+                     FREPA(fps.params) // process in order
+                     {
+                      C TextParam &p=fps.params[i];
+                        if(p.name=="speedTime") // adjust speed for specified time range !! do this after clipping so the clip isn't affected by speed !!
+                        {
+                           Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
+                           if(speed)anim.scaleTime(start, end, 1/speed);
+                        }
+                     }
+                  }
+
                   if(Elm *skel_elm=Proj.findElm(anim_data.skel_id))if(ElmSkel *skel_data=skel_elm.skelData()) // load target skeleton
                   {
                      anim_data.transform=skel_data.transform; // set desired transform to match target skeleton
@@ -945,7 +989,7 @@ class ImporterClass
                         }
                         if(fps)
                         {
-                           // transform / rotate !! before root !!
+                           // transform / rotate !! BEFORE ROOT !!
                          C Skeleton &sk=import.skel;
                            FREPA(fps.params)
                            {
@@ -972,7 +1016,11 @@ class ImporterClass
                         anim.transform(m, *skel, false);
                      }
 
-                     // optimize (after transform because scale affects position key removal, after 'adjustForSameTransformWithDifferentSkeleton' so it can operate on highest precision and to cleanup keyframes generated by it)
+                     if(fps)
+                     {  // 'offsetTime' !! AFTER ROOT !!
+                        if(C TextParam *p=fps.findParam("offsetTime"))anim.offsetTime(p.asFlt());
+                     }
+                     // optimize (after transform because scale affects position key removal, after 'adjustForSameTransformWithDifferentSkeleton' so it can operate on highest precision and to cleanup keyframes generated by it, after 'offsetTime' to cleanup keyframes generated by it)
                      {
                         flt angle_eps=EPS_ANIM_ANGLE, pos_eps=EPS_ANIM_POS, scale_eps=EPS_ANIM_SCALE;
                         if(fps)if(C TextParam *optimize=fps.findParam("optimize")){flt o=optimize.asFlt(); angle_eps*=o; pos_eps*=o; scale_eps*=o;}
@@ -980,6 +1028,11 @@ class ImporterClass
                      }
                      if(fps)
                      {
+                        // 'speed' !! AFTER clipping, 'speedTime', 'offsetTime' so they're not affected by speed !!
+                        if(C TextParam *p=fps.findParam("speed"))
+                           if(flt speed=p.asFlt())
+                              anim.length(anim.length()/speed, true);
+
                         // mirror
                         if(C TextParam *mirror=fps.findParam("mirror"))if(mirror.asBool1())anim.mirror(*skel);
 
@@ -988,65 +1041,8 @@ class ImporterClass
                      }
                   }
 
-                  // set events, save and send
+                  // save and send
                   Str path=Proj.gamePath(elm.id);
-                  if(!anim.events.elms()) // if new animation doesn't have events, then check old anim for them
-                  {
-                     Animation old; if(old.load(path))if(old.events.elms()) // if old had events
-                     {
-                        // delete useless stuff, we just need events
-                        old.bones.del();
-                        old.keys .del();
-
-                        // convert from old to absolute, have to process in reversed order
-                        if(old_fps)
-                        {
-                           if(C TextParam *p=old_fps.findParam("speed"))
-                              if(flt speed=p.asFlt())
-                                 old.length(old.length()*speed, true);
-                           REPA(old_fps.params) // process in reversed order
-                           {
-                            C TextParam &p=old_fps.params[i]; if(p.name=="speedTime")
-                              {
-                                 Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
-                                 if(speed)old.scaleTime(start, start+(end-start)/speed, speed);
-                              }
-                           }
-                        }
-
-                        if(anim_data.fps>0)
-                        {
-                           flt offset=0;
-                           if(old_fps)if(C TextParam *start_frame=old_fps.findParam("startFrame"))offset+=start_frame.asFlt()/anim_data.fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
-                           if(    fps)if(C TextParam *start_frame=    fps.findParam("startFrame"))offset-=start_frame.asFlt()/anim_data.fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
-                           if(offset)
-                           {
-                              if(offset>0)old.length(old.length()+offset, false); // make room for events to fit in anim length
-                              REPAO(old.events).time+=offset;
-                           }
-                        }
-
-                        // convert from absolute to new
-                        if(fps)
-                        {
-                           FREPA(fps.params) // process in order
-                           {
-                            C TextParam &p=fps.params[i]; if(p.name=="speedTime") // adjust speed for specified time range !! do this after clipping so the clip isn't affected by speed !!
-                              {
-                                 Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
-                                 if(speed)old.scaleTime(start, end, 1/speed);
-                              }
-                           }
-                           if(C TextParam *p=fps.findParam("speed")) // adjust speed !! do this after clipping so the clip isn't affected by speed !!
-                              if(flt speed=p.asFlt())
-                                 old.length(old.length()/speed, true);
-                        }
-
-                        anim.events=old.events;
-                        REPA(anim.events)Clamp(anim.events[i].time, 0, anim.length());
-                     }
-                  }
-
                   Proj.elmChanging(*elm);
                   Save(anim, path); Proj.savedGame(*elm, path);
                   Proj.elmChanged(*elm);

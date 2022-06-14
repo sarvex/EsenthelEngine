@@ -157,7 +157,7 @@ class AnimEditor : Viewport4Region
                         if(Kb.alt())dt=-AnimEdit.animTime();
                         if(AnimEdit.sel_bone<0) // entire animation
                         {
-                           AnimEdit.anim.slideTime(dt);
+                           AnimEdit.anim.offsetTime(dt);
                         }else
                         {
                            REPA(keys.orns  )Slide(keys.orns  [i].time, dt, anim.length());

@@ -100,16 +100,16 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
    Animation& mirror   (                  C Skeleton &source                 ); // mirror    animation in X axis  , basing on 'source' skeleton
 
    // operations
-   Animation& setTangents  (); // recalculate tangents     , this needs to be called after manually modifying the keyframes
-   Animation& setRootMatrix(); // recalculate root matrixes, this needs to be called after manually modifying the keyframes
+   Animation& setTangents  (); // recalculate tangents     , this needs to be called after manually modifying keyframes
+   Animation& setRootMatrix(); // recalculate root matrixes, this needs to be called after manually modifying keyframes
 
    Animation& optimize(Flt angle_eps=EPS_ANIM_ANGLE, Flt pos_eps=EPS_ANIM_POS, Flt scale_eps=EPS_ANIM_SCALE, Bool remove_unused_bones=true); // optimize animation by removing similar keyframes, 'angle_eps'=angular epsilon 0..PI, 'pos_eps'=position epsilon 0..Inf, 'scale_eps'=scale epsilon 0..Inf, 'remove_unused_bones'=if remove unused bones after performing key reduction
 
    Animation& clip          (Flt start_time, Flt end_time, Bool remove_unused_bones=true); // clip animation to 'start_time' .. 'end_time', this will remove all keyframes which aren't located in selected range
    Animation& clipAuto      (); // clip     animation range starting with first keyframe and ending with last keyframe
    Animation& maximizeLength(); // maximize animation length based on maximum time value out of all keyframes and events
-   Animation& slideTime     (Flt dt); // slide time positions of keyframes
-   Animation& scaleTime     (Flt start_time, Flt end_time, Flt scale); // scale time positions of keyframes that are between 'start_time' and 'end_time' by 'scale' factor
+   Animation& offsetTime    (Flt dt); // offset time values of keyframes
+   Animation&  scaleTime    (Flt start_time, Flt end_time, Flt scale); // scale time values of keyframes that are between 'start_time' and 'end_time' by 'scale' factor
 
    Animation& adjustForSameSkeletonWithDifferentPose     (C Skeleton &source, C Skeleton &target                                                                                             ); // adjust animation which was created for 'source' skeleton to be used for 'target' skeleton
    Animation& adjustForSameTransformWithDifferentSkeleton(C Skeleton &source, C Skeleton &target, Int source_bone_as_root=-1, C CMemPtr< Mems<IndexWeight> > &weights=null, UInt root_flags=0); // adjust animation which was created for 'source' skeleton to be used for 'target' skeleton, 'source_bone_as_root'=index of a bone in 'source' skeleton that is converted to root, 'root_flags'=ROOT_FLAG, it's recommended to call 'optimize' after this method, because it may generate a lot of unnecessary keyframes
@@ -123,14 +123,14 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
 
    Animation& removeUnused(); // remove unused bone animations
 
-   Animation& sortEvents(); // sort events in time order, this should be called after manually modifying the events and changing their time positions
+   Animation& sortEvents(); // sort events in time order, this should be called after manually modifying the events and changing their time values
 #if EE_PRIVATE
    void setRootMatrix2();
    void getRootMatrixExactTime(Matrix &matrix, Flt time)C; // get root 'matrix' at specified 'time'
 
    Bool timeRange(Flt &min, Flt &max)C; // get min/max time value out of all keyframes/events, false on fail (if there are no keyframes/events)
 
-   Animation& sortFrames(); // sort frames in time order, this should be called after manually modifying the keyframes and changing their time positions
+   Animation& sortFrames(); // sort frames in time order, this should be called after manually modifying keyframes and changing their time values
 
    void includeTimesForBoneAndItsParents(C Skeleton &skel, Int skel_bone, MemPtr<Flt, 16384> orn_times, MemPtr<Flt, 16384> pos_times, MemPtr<Flt, 16384> scale_times)C;
 

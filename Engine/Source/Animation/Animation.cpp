@@ -605,7 +605,7 @@ AnimKeys& AnimKeys::scaleTime(Flt scale, Flt anim_length)
 #endif
    return T;
 }
-AnimKeys& AnimKeys::slideTime(Flt dt, Flt anim_length)
+AnimKeys& AnimKeys::offsetTime(Flt dt, Flt anim_length)
 {
    REPAO(orns  ).time=Frac(orns  [i].time+dt, anim_length);
    REPAO(poss  ).time=Frac(poss  [i].time+dt, anim_length);
@@ -3089,7 +3089,7 @@ Animation& Animation::maximizeLength()
    Flt min, max; timeRange(min, max);
    return length(Max(length(), max), false);
 }
-Animation& Animation::slideTime(Flt dt)
+Animation& Animation::offsetTime(Flt dt)
 {
    if(Flt time=Frac(-dt, length()))
    {
@@ -3166,9 +3166,10 @@ Animation& Animation::slideTime(Flt dt)
          }
       #endif
          // TODO: Warning: here scale is ignored
-            keys.setTangents(loop(), length());
-      }else keys.slideTime(dt, length());
-      REPAO(bones).slideTime(dt, length());
+              keys .setTangents(loop(), length());
+      }else   keys .offsetTime(dt, length());
+      REPAO( bones).offsetTime(dt, length());
+      REPAO(events).time=Frac(events[i].time+dt, length()); sortEvents();
       setRootMatrix();
    }
    return T;
