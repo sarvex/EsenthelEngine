@@ -1753,7 +1753,6 @@ Int Animation::eventCount(CChar8 *name)C
    Int    num=0; REPA(events)if(Equal(events[i].name, name))num++;
    return num;
 }
-// FIXME: TODO: events are now sorted by 'time', functions can be optimized to make use of that
 Bool Animation::eventAfter(CChar8 *name, Flt time)C // event.name==name && event.time<=time (time>=event.time)
 {
    FREPA(events) // check all events from the start until 'time'
@@ -1798,6 +1797,42 @@ Bool Animation::eventOccurred(CChar8 *name, Flt start_time, Flt dt)C
 end:
    return false;
 }
+Int Animation::eventsOccurred(Int &first_event, Flt start_time, Flt dt)C
+{
+   Int num=0;
+   if(loop())
+   {
+      start_time=Frac(start_time, _length);
+      Flt end_time=start_time+dt;
+      Int start_event; events.binarySearchFirst(start_time, start_event, Compare); first_event=start_event;
+      for(Int i=start_event; i<events.elms(); i++)
+      {
+       C AnimEvent &event=events[i];
+         if(event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         num++;
+      }
+      for(Int i=0; i<start_event; i++) // check events before 'start_time' but treating them as if they're after animation
+      {
+       C AnimEvent &event=events[i];
+         Flt event_time =event.time+_length;
+         if( event_time>=  end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         num++;
+      }
+   }else
+   {
+      Flt end_time=start_time+dt;
+      Int   start_event; events.binarySearchFirst(start_time, start_event, Compare); first_event=start_event;
+      for(; start_event< events.elms(); start_event++)
+      {
+       C AnimEvent &event=events[start_event];
+         if(event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         num++;
+      }
+   }
+end:
+   return num;
+}
+// FIXME: TODO: events are now sorted by 'time', functions below can be optimized to make use of that
 Bool Animation::eventBetween(CChar8 *from, CChar8 *to, Flt start_time, Flt dt)C
 {
  C AnimEvent *event_from=null,

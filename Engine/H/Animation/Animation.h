@@ -77,7 +77,8 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
    Int eventCount(CChar8 *name)C; // get number of events with specified name in this animation
 
    Bool eventAfter   (CChar8 *name            , Flt       time        )C; // if after 'name' event                      ,       'time'=animation time
-   Bool eventOccurred(CChar8 *name            , Flt start_time, Flt dt)C; // if       'name' event occurred             , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
+   Bool eventOccurred(CChar8 *name            , Flt start_time, Flt dt)C; // if       'name' event       occurred       , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
+   Int eventsOccurred(Int    &first_event     , Flt start_time, Flt dt)C; // get number of   events that occurred       , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed"), returns number of events that occurred in specified time range, 'first_event'=index of the first event, event indexes should be calculated like this: "(first_event+i)%Animation.events()" where 'i' is event index "0 .. 'eventsOccurred'-1"
    Bool eventBetween (CChar8 *from, CChar8 *to, Flt start_time, Flt dt)C; // if           between events 'from' and 'to', 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
    Flt  eventProgress(CChar8 *from, CChar8 *to, Flt       time        )C; // get progress between events 'from' and 'to',       'time'=animation time, 0 on fail
 
@@ -186,10 +187,11 @@ struct SkelAnim // helper class for 'Skeleton' <-> 'Animation' relation, 'SkelAn
 
    Int eventCount(CChar8 *name)C {return _animation ? _animation->eventCount(name) : 0;} // get number of events with specified name in this animation
 
-   Bool eventAfter   (CChar8 *name            , Flt       time        )C {return _animation ? _animation->eventAfter   (name    ,       time    ) : false;} // if after 'name' event                      ,       'time'=animation time
-   Bool eventOccurred(CChar8 *name            , Flt start_time, Flt dt)C {return _animation ? _animation->eventOccurred(name    , start_time, dt) : false;} // if       'name' event occurred             , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
-   Bool eventBetween (CChar8 *from, CChar8 *to, Flt start_time, Flt dt)C {return _animation ? _animation->eventBetween (from, to, start_time, dt) : false;} // if           between events 'from' and 'to', 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
-   Flt  eventProgress(CChar8 *from, CChar8 *to, Flt       time        )C {return _animation ? _animation->eventProgress(from, to,       time    ) :     0;} // get progress between events 'from' and 'to',       'time'=animation time, 0 on fail
+   Bool eventAfter   (CChar8 *name            , Flt       time        )C {return _animation ? _animation->eventAfter    (name       ,       time    ) : false;} // if after 'name' event                      ,       'time'=animation time
+   Bool eventOccurred(CChar8 *name            , Flt start_time, Flt dt)C {return _animation ? _animation->eventOccurred (name       , start_time, dt) : false;} // if       'name' event occurred             , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
+   Int eventsOccurred(Int    &first_event     , Flt start_time, Flt dt)C {return _animation ? _animation->eventsOccurred(first_event, start_time, dt) :     0;} // get number of   events that occurred       , 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed"), returns number of events that occurred in specified time range, 'first_event'=index of the first event, event indexes should be calculated like this: "(first_event+i)%Animation.events()" where 'i' is event index "0 .. 'eventsOccurred'-1"
+   Bool eventBetween (CChar8 *from, CChar8 *to, Flt start_time, Flt dt)C {return _animation ? _animation->eventBetween  (from, to   , start_time, dt) : false;} // if           between events 'from' and 'to', 'start_time'=animation time at the start of the frame, 'dt'=animation time delta (should be set to "Time.d() * animation_speed")
+   Flt  eventProgress(CChar8 *from, CChar8 *to, Flt       time        )C {return _animation ? _animation->eventProgress (from, to   ,       time    ) :     0;} // get progress between events 'from' and 'to',       'time'=animation time, 0 on fail
 
 #if EE_PRIVATE
    Byte abonToSbon(Byte abon)C {return _bone[abon];} // convert 'AnimBone' to 'SkelBone' index, 0xFF on fail
