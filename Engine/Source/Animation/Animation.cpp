@@ -1774,15 +1774,15 @@ Bool Animation::eventOccurred(CChar8 *name, Flt start_time, Flt dt)C
       for(Int i=start_event; i<events.elms(); i++)
       {
        C AnimEvent &event=events[i];
-         if(      event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
-         if(Equal(event.name,    name))return true;
+         if(      event.time>=end_time )goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name,     name))return true;
       }
       for(Int i=0; i<start_event; i++) // check events before 'start_time' but treating them as if they're after animation
       {
        C AnimEvent &event=events[i];
-         Flt event_time =event.time+_length;
-         if( event_time>=  end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
-         if(Equal(event.name, name))return true;
+         Flt      event_time =event.time+_length;
+         if(      event_time>=  end_time )goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name,       name))return true;
       }
    }else
    {
@@ -1791,8 +1791,8 @@ Bool Animation::eventOccurred(CChar8 *name, Flt start_time, Flt dt)C
       for(; start_event< events.elms(); start_event++)
       {
        C AnimEvent &event=events[start_event];
-         if(      event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
-         if(Equal(event.name, name))return true;
+         if(      event.time>=end_time )goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name,     name))return true;
       }
    }
 end:
