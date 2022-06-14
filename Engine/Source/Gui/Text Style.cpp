@@ -433,8 +433,7 @@ static Int CompareCode(C TextCodeData &code, C CPtr &pos) {return ComparePtr(cod
 static Int    FindCode(C TextCodeData *code, Int codes, CPtr cur_pos)
 {
    Int    index;
-   Bool   found=BinarySearch(code, codes, cur_pos, index, CompareCode);
-   if(    found)for(; index>0 && code[index-1].pos==cur_pos; )index--; // in case if many codes would point to the same place
+   Bool   found=BinarySearchFirst(code, codes, cur_pos, index, CompareCode); // find first in case many codes would point to the same place
    return found ? index : index-1; // if we haven't found at exact position, then we need to grab the one before selected position like this: "<code>some tex|t here" when starting drawing of | we need to use the <code>
 }
 static inline Flt ByteToFontLum(Byte b) {return Min(b, 128)/128.0f;} // calculate text brightness 0..1, multiply by "2" (/128.0f instead of /255.0f) will give better results for grey text color (reaches 1.0 already at grey 128 byte value)

@@ -2754,27 +2754,30 @@ struct SmoothValueAccel
 {
    Flt value, velocity;
 
+   void zero() {value=0; velocity=0;}
    void update(Flt target, C SmoothValueSettings &settings);
 
-   SmoothValueAccel(                         ) : value(    0), velocity(       0) {}
+   SmoothValueAccel(                         ) {zero();}
    SmoothValueAccel(Flt value, Flt velocity=0) : value(value), velocity(velocity) {}
 };
 struct SmoothValueAccel2
 {
    Vec2 value, velocity;
 
+   void zero() {value.zero(); velocity.zero();}
    void update(C Vec2 &target, C SmoothValueSettings &settings);
 
-   SmoothValueAccel2(                                        ) : value(    0), velocity(       0) {}
+   SmoothValueAccel2(                                        ) {zero();}
    SmoothValueAccel2(C Vec2 &value, C Vec2 &velocity=Vec2Zero) : value(value), velocity(velocity) {}
 };
 struct SmoothValueAccel3
 {
    Vec value, velocity;
 
+   void zero() {value.zero(); velocity.zero();}
    void update(C Vec &target, C SmoothValueSettings &settings);
 
-   SmoothValueAccel3(                                     ) : value(    0), velocity(       0) {}
+   SmoothValueAccel3(                                     ) {zero();}
    SmoothValueAccel3(C Vec &value, C Vec &velocity=VecZero) : value(value), velocity(velocity) {}
 };
 /******************************************************************************/

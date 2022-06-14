@@ -151,9 +151,11 @@ void _Sort(Ptr data, Int elms, Int elm_size, CPtr user, Int compare(CPtr a, CPtr
 T1(TYPE) void Sort(TYPE *data, Int elms,            Int compare(C TYPE &a, C TYPE &b           )) {_Sort(Ptr(data), elms, SIZE(TYPE),       (Int(*)(CPtr, CPtr      ))compare);}
 T1(TYPE) void Sort(TYPE *data, Int elms, CPtr user, Int compare(C TYPE &a, C TYPE &b, CPtr user)) {_Sort(Ptr(data), elms, SIZE(TYPE), user, (Int(*)(CPtr, CPtr, CPtr))compare);}
 
-Bool _BinarySearch(CPtr data, Int elms, Int elm_size, CPtr value, Int &index, Int compare(CPtr a, CPtr b));
+Bool _BinarySearch     (CPtr data, Int elms, Int elm_size, CPtr value, Int &index, Int compare(CPtr a, CPtr b));
+Bool _BinarySearchFirst(CPtr data, Int elms, Int elm_size, CPtr value, Int &index, Int compare(CPtr a, CPtr b));
 
-T2(DATA, VALUE) Bool BinarySearch(C DATA *data, Int elms, C VALUE &value, Int &index, Int compare(C DATA &a, C VALUE &b)) {return _BinarySearch(data, elms, SIZE(DATA), &value, index, (Int(*)(CPtr, CPtr))compare);}
+T2(DATA, VALUE) Bool BinarySearch     (C DATA *data, Int elms, C VALUE &value, Int &index, Int compare(C DATA &a, C VALUE &b)) {return _BinarySearch     (data, elms, SIZE(DATA), &value, index, (Int(*)(CPtr, CPtr))compare);}
+T2(DATA, VALUE) Bool BinarySearchFirst(C DATA *data, Int elms, C VALUE &value, Int &index, Int compare(C DATA &a, C VALUE &b)) {return _BinarySearchFirst(data, elms, SIZE(DATA), &value, index, (Int(*)(CPtr, CPtr))compare);}
 
 #if EE_PRIVATE
 struct FloatIndex // Float + Index
@@ -398,7 +400,8 @@ T1(TYPE)  void  Mems<TYPE>::minNumDiscard(Int num)
 
 T1(TYPE)  Int  Mems<TYPE>::addNum(Int num) {Int index=elms(); Long new_elms=Long(index)+num; if(new_elms>INT_MAX)Exit("'Mems.addNum' size too big"); setNum((Int)new_elms); return index;}
 
-T1(TYPE) T1(VALUE)  Bool  Mems<TYPE>::binarySearch(C VALUE &value, Int &index, Int compare(C TYPE &a, C VALUE &b))C {return _BinarySearch(data(), elms(), elmSize(), &value, index, (Int(*)(CPtr, CPtr))compare);}
+T1(TYPE) T1(VALUE)  Bool  Mems<TYPE>::binarySearch     (C VALUE &value, Int &index, Int compare(C TYPE &a, C VALUE &b))C {return _BinarySearch     (data(), elms(), elmSize(), &value, index, (Int(*)(CPtr, CPtr))compare);}
+T1(TYPE) T1(VALUE)  Bool  Mems<TYPE>::binarySearchFirst(C VALUE &value, Int &index, Int compare(C TYPE &a, C VALUE &b))C {return _BinarySearchFirst(data(), elms(), elmSize(), &value, index, (Int(*)(CPtr, CPtr))compare);}
 
 T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::sort(           Int compare(C TYPE &a, C TYPE &b           )) {_Sort(data(), elms(), elmSize(),       (Int(*)(CPtr, CPtr      ))compare); return T;}
 T1(TYPE)  Mems<TYPE>&  Mems<TYPE>::sort(CPtr user, Int compare(C TYPE &a, C TYPE &b, CPtr user)) {_Sort(data(), elms(), elmSize(), user, (Int(*)(CPtr, CPtr, CPtr))compare); return T;}

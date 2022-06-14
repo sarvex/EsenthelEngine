@@ -1704,6 +1704,9 @@ void AnimBone::save(TextNode &node)C
 /******************************************************************************/
 // ANIMATION EVENT
 /******************************************************************************/
+static Int Compare(C AnimEvent &a, C AnimEvent &b     ) {return Compare(a.time, b.time);}
+static Int Compare(C AnimEvent &a, C Flt       &b_time) {return Compare(a.time, b_time);}
+
 Bool AnimEvent::operator==(C AnimEvent &event)C
 {
    return time==event.time && Equal(name, event.name);
@@ -1751,31 +1754,48 @@ Int Animation::eventCount(CChar8 *name)C
    return num;
 }
 // FIXME: TODO: events are now sorted by 'time', functions can be optimized to make use of that
-Bool Animation::eventAfter(CChar8 *name, Flt time)C
+Bool Animation::eventAfter(CChar8 *name, Flt time)C // event.name==name && event.time<=time (time>=event.time)
 {
-   REPA(events)
+   FREPA(events) // check all events from the start until 'time'
    {
     C AnimEvent &event=events[i];
-      if(Equal(event.name, name) && time>=event.time)return true;
+      if(      event.time> time )break;
+      if(Equal(event.name, name))return true;
    }
    return false;
 }
 Bool Animation::eventOccurred(CChar8 *name, Flt start_time, Flt dt)C
 {
-   Bool frac=false;
-   REPA(events)
+   if(loop())
    {
-    C AnimEvent &event=events[i]; if(Equal(event.name, name))
+      start_time=Frac(start_time, _length);
+      Flt end_time=start_time+dt;
+      Int start_event; events.binarySearchFirst(start_time, start_event, Compare);
+      for(Int i=start_event; i<events.elms(); i++)
       {
-         Flt event_time=event.time;
-         if(loop())
-         {
-            if(!frac){frac=true; start_time=Frac(start_time, _length);}
-            if(event_time<start_time)event_time+=_length; // make sure that 'event_time' is after 'start_time'
-         }
-         if(EventOccurred(event_time, start_time, dt))return true;
+       C AnimEvent &event=events[i];
+         if(      event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name,    name))return true;
+      }
+      for(Int i=0; i<start_event; i++) // check events before 'start_time' but treating them as if they're after animation
+      {
+       C AnimEvent &event=events[i];
+         Flt event_time =event.time+_length;
+         if( event_time>=  end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name, name))return true;
+      }
+   }else
+   {
+      Flt end_time=start_time+dt;
+      Int   start_event; events.binarySearchFirst(start_time, start_event, Compare);
+      for(; start_event< events.elms(); start_event++)
+      {
+       C AnimEvent &event=events[start_event];
+         if(      event.time>=end_time)goto end; // EventOccurred(event_time, start_time, dt) = (start_time<=event_time && end_time>event_time)
+         if(Equal(event.name, name))return true;
       }
    }
+end:
    return false;
 }
 Bool Animation::eventBetween(CChar8 *from, CChar8 *to, Flt start_time, Flt dt)C
@@ -1819,6 +1839,7 @@ found:
    }
    return LerpR(event_from->time, time_to, time);
 }
+/******************************************************************************/
 AnimBone* Animation::findBone(CChar8 *name, BONE_TYPE type, Int type_index, Int type_sub) {return bones.addr(findBoneI(name, type, type_index, type_sub));}
 AnimBone& Animation:: getBone(CChar8 *name, BONE_TYPE type, Int type_index, Int type_sub)
 {
@@ -2966,7 +2987,6 @@ Animation& Animation::reverse()
    REPAO(bones).reverse(length());
    return setRootMatrix();
 }
-static Int Compare(C AnimEvent &a, C AnimEvent &b) {return Compare(a.time, b.time);}
 Animation& Animation::sortEvents()
 {
    events.sort(Compare);
