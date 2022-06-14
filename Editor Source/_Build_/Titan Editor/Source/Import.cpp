@@ -952,8 +952,8 @@ ImporterClass Importer;
                         if(anim_data->fps>0)
                         {
                            flt offset=0;
-                           if(C TextParam *start_frame=old_fps->findParam("startFrame"))offset+=start_frame->asFlt()/anim_data->fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
-                           if(C TextParam *start_frame=    fps->findParam("startFrame"))offset-=start_frame->asFlt()/anim_data->fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
+                           if(old_fps)if(C TextParam *start_frame=old_fps->findParam("startFrame"))offset+=start_frame->asFlt()/anim_data->fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
+                           if(    fps)if(C TextParam *start_frame=    fps->findParam("startFrame"))offset-=start_frame->asFlt()/anim_data->fps-xanim.start; // currently importer will already offset keyframes by 'anim.start', so if we want custom ranges, we need to revert it back
                            if(offset)
                            {
                               if(offset>0)old.length(old.length()+offset, false); // make room for events to fit in anim length
