@@ -827,7 +827,7 @@ ImporterClass Importer;
                   {
                      Animation old;
                      {
-                        Animation temp; if(Animation *anim=Proj.getAnim(elm->id, temp))old.events=anim->events; // we just need events
+                        Animation temp; if(Animation *anim=Proj.getAnim(elm->id, temp))old.loop(anim->loop()).linear(anim->linear()).length(anim->length(), false).events=anim->events; // we just need events
                      }
                      if(old.events.elms()) // if old had events
                      {
