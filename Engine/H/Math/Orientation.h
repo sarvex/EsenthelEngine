@@ -50,8 +50,13 @@ struct Orient // Orientation
    Orient& mul(C Matrix3 &matrix, Bool normalized=false); // transform by matrix, if 'matrix' is normalized set 'normalized' to true for more performance
    Orient& div(C Matrix3 &matrix, Bool normalized=false); // divide    by matrix, if 'matrix' is normalized set 'normalized' to true for more performance
 
-   Orient& rotateToDir(C Vec &dir           ); // rotate current orientation to 'dir' vector, 'dir' must be normalized
-   Orient& rotateToDir(C Vec &dir, Flt blend); // rotate current orientation to 'dir' vector, 'dir' must be normalized, 'blend'=how much to rotate (0=no rotation, 0.5=half rotation, 1.0=full rotation)
+   Orient& rotateToDir    (C Vec &dir           ); // rotate current orientation to 'dir' vector, 'dir' must be normalized
+   Orient& rotateToDir    (C Vec &dir, Flt blend); // rotate current orientation to 'dir' vector, 'dir' must be normalized, 'blend'=how much to rotate (0=no rotation, 0.5=half rotation, 1.0=full rotation)
+   Orient& rotateToDirFast(C Vec &dir           ); // rotate current orientation to 'dir' vector, 'dir' must be normalized
+
+   Orient& rotateToPerp    (C Vec &perp           ); // rotate current orientation to 'perp' vector, 'perp' must be normalized
+   Orient& rotateToPerp    (C Vec &perp, Flt blend); // rotate current orientation to 'perp' vector, 'perp' must be normalized, 'blend'=how much to rotate (0=no rotation, 0.5=half rotation, 1.0=full rotation)
+   Orient& rotateToPerpFast(C Vec &perp           ); // rotate current orientation to 'perp' vector, 'perp' must be normalized
 
    Orient& inverse(              ) ; // inverse orientation
    void    inverse(Orient   &dest)C; // inverse orientation and store it in 'dest'
@@ -60,7 +65,8 @@ struct Orient // Orientation
 
    // operations
    Orient& normalize(); // normalize vectors
-   Orient& fixPerp  (); // fix perpendicular, use when 'dir' or 'perp' has changed, this method aligns 'perp' so it's perpendicular to 'dir' and normalized
+   Orient& fixPerp  (); // fix perpendicular, use when 'dir' or 'perp' has changed, this method aligns 'perp' so it's perpendicular to 'dir'  and normalized
+   Orient& fixDir   (); // fix direction    , use when 'dir' or 'perp' has changed, this method aligns 'dir'  so it's perpendicular to 'perp' and normalized
    Bool    fix      (); // normalize and fix perpendicular, false on fail
 
    // io
