@@ -973,7 +973,7 @@ AnimEditor AnimEdit;
       if(ElmAnim *d=data())if(d->fps>0)
       {
          frame=time*d->fps;
-         FileParams fps=d->src_file; if(C TextParam *p=fps.findParam("speed"))frame*=Abs(p->asFlt());
+         FileParams fps=d->imported_file_params; if(C TextParam *p=fps.findParam("speed"))frame*=Abs(p->asFlt());
          return true;
       }
       frame=0; return false;
@@ -1772,12 +1772,19 @@ AnimEditor AnimEdit;
 
          // adjust speed file param
          Mems<FileParams> file_params=FileParams::Decode(data->src_file);
-         if(file_params.elms()==1)
+         if(FileParams *fps=file_params.data())
          {
-            TextParam &speed=file_params[0].getParam("speed");
+            TextParam &speed=fps->getParam("speed");
             flt set_speed=anim_speed; if(flt cur_speed=speed.asFlt())set_speed*=cur_speed;
             speed.setValue(set_speed);
             data->setSrcFile(FileParams::Encode(file_params));
+         }
+         {
+            FileParams fps=data->imported_file_params;
+            TextParam &speed=fps.getParam("speed");
+            flt set_speed=anim_speed; if(flt cur_speed=speed.asFlt())set_speed*=cur_speed;
+            speed.setValue(set_speed);
+            data->imported_file_params=fps.encode();
          }
 
          anim->length(anim->length()/anim_speed, true);
