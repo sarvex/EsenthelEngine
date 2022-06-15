@@ -3030,6 +3030,10 @@ Animation& Animation::reverse()
 {
          keys  .reverse(length());
    REPAO(bones).reverse(length());
+
+   REPA(events){AnimEvent &event=events[i]; event.time=length()-event.time;}
+        events.reverseOrder();
+
    return setRootMatrix();
 }
 Animation& Animation::sortEvents()
