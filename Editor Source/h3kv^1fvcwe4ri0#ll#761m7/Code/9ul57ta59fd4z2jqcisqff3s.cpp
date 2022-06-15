@@ -104,14 +104,15 @@ Environment& CurrentEnvironment() {if(Environment *env=EnvEdit.cur())return *env
 void InitPre()
 {
    if(App.cmd_line.elms()) // if given command line param
-   {
+      if(GetExt(App.cmd_line[0])==ProjectPackageExt) // param is Project Package
+   { // check if there's already another instance of the Editor running
       Memc<uint> proc; ProcList(proc);
       REPA(proc)if(proc[i]!=App.processID())
       {
          Str proc_name=GetBase(ProcName(proc[i]));
          if( proc_name==S+APP_NAME+".exe")
             if(SysWindow window=ProcWindow(proc[i]))
-         {
+         { // send command to that instance, and exit this one
             File f; f.writeMem().putStr(App.cmd_line[0]).pos(0);
             Memt<byte> temp; temp.setNum(f.left()); f.get(temp.data(), temp.elms());
             window.sendData(temp.data(), temp.elms());
