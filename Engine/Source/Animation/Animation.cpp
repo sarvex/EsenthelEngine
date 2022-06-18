@@ -3052,14 +3052,14 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
             keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
          }
 
-         AnimKeys src=*keys; // before removal
+         AnimKeys src=*keys; // before removal TODO: it's not optimal to copy like this
 
          if(all_keys)keys->poss.del();
          else        keys->poss.remove(key_index, true);
          keys->setTangents(loop(), length());
          if(root)setRootMatrix();
 
-         AnimKeys cur=*keys; // after removal, keep as copy because 'removeData' and 'getBone' below, might change mem address
+         AnimKeys cur=*keys; // after removal, keep as copy because 'removeData' and 'getBone' below, might change mem address TODO: it's not optimal to copy like this
 
          if(abon && !abon->is())bones.removeData(abon);
          // !! CAN'T ACCESS 'keys', 'abon' ANYMORE AFTER THIS POINT !!
@@ -3143,14 +3143,14 @@ void Animation::freezeMoveKeyPos(C Skeleton &skel, Int skel_bone, Int key_index,
             keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
          }
 
-         AnimKeys src=*keys; // before operation
+         AnimKeys src=*keys; // before operation TODO: it's not optimal to copy like this
 
          if(all_keys)REPAO(keys->poss          ).pos+=delta;
          else              keys->poss[key_index].pos+=delta;
          keys->setTangents(loop(), length());
          if(root)setRootMatrix();
 
-         AnimKeys cur=*keys; // after operation, keep as copy because 'getBone' below, might change mem address
+         AnimKeys cur=*keys; // after operation, keep as copy because 'getBone' below, might change mem address TODO: it's not optimal to copy like this
 
          // !! CAN'T ACCESS 'keys', 'abon' ANYMORE AFTER THIS POINT !!
 
