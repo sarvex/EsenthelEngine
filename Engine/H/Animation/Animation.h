@@ -148,6 +148,8 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
 
    void freezeBone(C Skeleton &skel, Int skel_bone); // adjust the animation by moving root bones, so that selected bone will appear without movement
 
+   void freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index); // delete 'key_index' position key for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
+
    // io
    void operator=(C Str &name) ; // load, Exit  on fail
    void operator=(C UID &id  ) ; // load, Exit  on fail

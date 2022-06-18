@@ -210,6 +210,7 @@ public:
    static void  DelFrame      (AnimEditor &editor);
    static void  DelFrames     (AnimEditor &editor);
    static void  DelFramesAtEnd(AnimEditor &editor);
+   static void  FreezeDelFrame(AnimEditor &editor);
    static void Optimize       (AnimEditor &editor);
    static void ScalePosKey    (AnimEditor &editor);
    static void TimeRangeSp    (AnimEditor &editor);
@@ -337,14 +338,20 @@ public:
    virtual void camCenter(bool zoom)override;
    virtual void resize()override;
    void frame(int d);
+
    bool delFrameOrn(int bone);
    bool delFramePos(int bone);
    bool delFrameScale(int bone);
+
    bool delFramesOrn(int bone);
    bool delFramesPos(int bone);
    bool delFramesScale(int bone);
+
+   bool freezeDelFramePos(int bone);
+
    void delFrame();
    void delFrames(int bone);
+   void freezeDelFrame();
    void delFramesAtEnd();
    void reverseFrames();
    void freezeBone();

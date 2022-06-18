@@ -796,6 +796,7 @@ class AnimEditor : Viewport4Region
    static void  DelFrame      (AnimEditor &editor) {editor.delFrame ();}
    static void  DelFrames     (AnimEditor &editor) {editor.delFrames(editor.sel_bone);}
    static void  DelFramesAtEnd(AnimEditor &editor) {editor.delFramesAtEnd();}
+   static void  FreezeDelFrame(AnimEditor &editor) {editor.freezeDelFrame();}
    static void Optimize       (AnimEditor &editor) {editor.optimize_anim.activate();}
    static void ScalePosKey    (AnimEditor &editor) {editor.scale_pos_keys.activate();}
    static void TimeRangeSp    (AnimEditor &editor) {editor.time_range_speed.display();}
@@ -1203,6 +1204,8 @@ class AnimEditor : Viewport4Region
       n.New().create("Delete KeyFrame"                 , DelFrame      , T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD)).desc("This will delete a single keyframe for selected bone");
       n.New().create("Delete KeyFrames"                , DelFrames     , T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This will delete all keyframes for selected bone");
       n.New().create("Delete All Bone KeyFrames at End", DelFramesAtEnd, T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_WIN_CTRL)).desc("This will delete keyframes located at the end of the animation, for all bones (except root motion).");
+      n++;
+      n.New().create("Freeze Delete KeyFrame"          , FreezeDelFrame, T).kbsc(KbSc(KB_DEL, KBSC_ALT)).desc("This will delete a single keyframe for selected bone, without affecting transforms of other bones");
       n++;
       n.New().create("Reverse KeyFrames", ReverseFrames, T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT)); // avoid Ctrl+R collision with reload project element
       n.New().create("Apply Speed"      , ApplySpeed   , T).kbsc(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT)); // avoid Ctrl+R collision with reload project element
@@ -1720,6 +1723,7 @@ class AnimEditor : Viewport4Region
          }break;
       }
    }
+
    bool delFrameOrn(int bone)
    {
       if(AnimKeys *keys=findKeys(bone))if(AnimKeys.Orn *key=FindOrn(*keys, animTime()))
@@ -1750,6 +1754,7 @@ class AnimEditor : Viewport4Region
       }
       return false;
    }
+
    bool delFramesOrn(int bone)
    {
       if(AnimKeys *keys=findKeys(bone))if(keys.orns.elms()){undos.set("delAll"); keys.orns.del(); if(!keys.is())anim.bones.removeData(static_cast<AnimBone*>(keys), true); return true;}
@@ -1765,6 +1770,17 @@ class AnimEditor : Viewport4Region
       if(AnimKeys *keys=findKeys(bone))if(keys.scales.elms()){undos.set("delAll"); keys.scales.del(); if(!keys.is())anim.bones.removeData(static_cast<AnimBone*>(keys), true); return true;}
       return false;
    }
+
+   bool freezeDelFramePos(int bone)
+   {
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys.Pos *key=FindPos(*keys, animTime()))
+      {
+         undos.set("del"); anim.freezeDelKeyPos(*skel, bone, keys.poss.index(key));
+         return true;
+      }
+      return false;
+   }
+
    void delFrame()
    {
       bool changed=false;
@@ -1781,6 +1797,15 @@ class AnimEditor : Viewport4Region
       if(op()==OP_ORN2           )changed|=delFramesOrn  (bone)|delFramesOrn(boneParent(bone));
       if(op()==OP_POS   || op()<0)changed|=delFramesPos  (bone);
       if(op()==OP_SCALE || op()<0)changed|=delFramesScale(bone);
+      if(changed){setAnimSkel(); setOrnTarget(); anim.setRootMatrix(); setChanged();}
+   }
+   void freezeDelFrame()
+   {
+      bool changed=false;
+    //if(op()==OP_ORN   || op()<0)changed|=freezeDelFrameOrn  (sel_bone);
+    //if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_POS   || op()<0)changed|=freezeDelFramePos  (sel_bone);
+    //if(op()==OP_SCALE || op()<0)changed|=freezeDelFrameScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim.setRootMatrix(); setChanged();}
    }
    void delFramesAtEnd()

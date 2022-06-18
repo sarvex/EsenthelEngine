@@ -91,8 +91,13 @@ struct  AnimationKeys // Animation Keys - set of animation keyframes for a singl
 
    void includeTimes(MemPtr<Flt, 16384> orn_times, MemPtr<Flt, 16384> pos_times, MemPtr<Flt, 16384> scale_times)C;
 #if EE_PRIVATE
+   void includeTimes(MemPtr<Flt, 16384> orn_times, MemPtr<Flt, 16384> pos_times, MemPtr<Flt, 16384> scale_times, Flt start, Flt end)C;
+
    // get
    Bool timeRange(Flt &min, Flt &max)C; // get min/max time value out of all keyframes, false on fail (if there are no keyframes)
+
+   void matrixNoScale(Matrix &matrix, C AnimParams &params)C;
+   void matrix       (Matrix &matrix, C AnimParams &params)C;
 
    Bool rot  (AxisRoll &rot  , C AnimParams &params)C; // get rotation at specified time, false on fail (if there are no keyframes)
    Bool color(Vec4     &color, C AnimParams &params)C; // get    color at specified time, false on fail (if there are no keyframes)
