@@ -3031,7 +3031,7 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
        C SkelBone &sbon=skel.bones[skel_bone];
          if(abon=findBone(sbon.name, sbon.type, sbon.type_index, sbon.type_sub))
          {  keys       =abon;
-            default_orn=sbon;
+            default_orn=GetAnimOrient(sbon, skel.bones.addr(sbon.parent));
          }else return;
       }
       if(InRange(key_index, keys->poss))
