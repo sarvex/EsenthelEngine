@@ -1062,8 +1062,8 @@ AnimEditor AnimEdit;
       T+=show_grid .create(Rect_LU(axis      .rect().ld(), h)).focusable(false).desc("Draw grid\nKeyboard Shortcut: Alt+G"); show_grid.mode=BUTTON_TOGGLE; show_grid.set(false); show_grid.image="Gui/Misc/grid.img";
       cam_spherical.hide(); cam_lock.pos(cam_spherical.pos());
 
-      T+=undo  .create(Rect_LU(ctrls.rect().ru()+Vec2(h, 0), 0.05f, 0.05f)     ).func(Undo  , T).focusable(false).desc("Undo"); undo.image="Gui/Misc/undo.img";
-      T+=redo  .create(Rect_LU( undo.rect().ru()           , 0.05f, 0.05f)     ).func(Redo  , T).focusable(false).desc("Redo"); redo.image="Gui/Misc/redo.img";
+      T+=undo  .create(Rect_LU(ctrls.rect().ru()+Vec2(h, 0), 0.05f, 0.05f)     ).func(Undo  , T).focusable(false).desc("Undo\nKeyboard Shortcut: Ctrl+Z"      ); undo.image="Gui/Misc/undo.img";
+      T+=redo  .create(Rect_LU( undo.rect().ru()           , 0.05f, 0.05f)     ).func(Redo  , T).focusable(false).desc("Redo\nKeyboard Shortcut: Ctrl+Shift+Z"); redo.image="Gui/Misc/redo.img";
       T+=locate.create(Rect_LU( redo.rect().ru()           , 0.05f, 0.05f), "L").func(Locate, T).focusable(false).desc("Locate this element in the Project");
 
       T+=play.create(Rect_LU(locate.rect().ru()+Vec2(h, 0), h), true).desc(S+"Play Animation\nKeyboard Shortcut: "+Kb.ctrlCmdName()+"+P, "+Kb.ctrlCmdName()+"+D");
@@ -1076,6 +1076,10 @@ AnimEditor AnimEdit;
       op.tab(OP_POS  ).setImage("Gui/Misc/move.img"   ).desc(S+"Set Position Offset KeyFrames\n\nSelect with LeftClick\nTransform with RightClick\nHold Shift for more precision\nHold "+Kb.ctrlCmdName()+" to transform all KeyFrames\nHold Alt to use World Matrix alignment\n\nKeyboard Shortcut: F3");
       op.tab(OP_SCALE).setImage("Gui/Misc/scale.img"  ).desc(S+"Set Scale KeyFrames\n\nSelect with LeftClick\nTransform with RightClick\nHold Shift for more precision\nHold "+Kb.ctrlCmdName()+" to transform all KeyFrames\n\nKeyboard Shortcut: F4");
       Node<MenuElm> n;
+      n.New().create("Undo" , Undo, T).kbsc(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space
+      n.New().create("Redo" , Redo, T).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_REPEAT)).kbsc2(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space
+      n.New().create("Undo2", Undo, T).kbsc(KbSc(KB_BACK, KBSC_ALT           |KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space
+      n.New().create("Redo2", Redo, T).kbsc(KbSc(KB_BACK, KBSC_ALT|KBSC_SHIFT|KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space
       n.New().create("Delete KeyFrame"                 , DelFrame      , T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD)).desc("This will delete a single keyframe for selected bone");
       n.New().create("Delete KeyFrames"                , DelFrames     , T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This will delete all keyframes for selected bone");
       n.New().create("Delete All Bone KeyFrames at End", DelFramesAtEnd, T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_WIN_CTRL)).desc("This will delete keyframes located at the end of the animation, for all bones (except root motion).");
