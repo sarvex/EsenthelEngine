@@ -3865,6 +3865,7 @@ cur_skel_to_saved_skel.bones.del();
                         if(bone)
                         {
                            Vec axis;
+                           bool freeze=Kb.b(KB_F);
                            switch(bone_axis)
                            {
                               case  0: axis=bone.cross()      ; break;
@@ -3874,12 +3875,18 @@ cur_skel_to_saved_skel.bones.del();
                            }
                            Matrix m;
                            m.setTransformAtPos(bone.pos, Matrix3().setRotate(axis, angle)); bone.transform(m);
-                           if(bone_children_rot())REPA(mesh_skel.bones)if(sel_bone!=i && mesh_skel.contains(sel_bone, i))mesh_skel.bones[i].transform(m);
+                           if(bone_children_rot())REPA(mesh_skel.bones)if(sel_bone!=i && mesh_skel.contains(sel_bone, i))
+                           {
+                              SkelBone &bone=mesh_skel.bones[i]; if(freeze)bone.rotateDir(angle);else bone.transform(m);
+                           }
                            if(bone_mirror)
                            {
                               axis.chsY().chsZ();
                               m.setTransformAtPos(bone_mirror.pos, Matrix3().setRotate(axis, angle)); bone_mirror.transform(m);
-                              if(bone_children_rot())REPA(mesh_skel.bones)if(mirror_bone!=i && mesh_skel.contains(mirror_bone, i))mesh_skel.bones[i].transform(m);
+                              if(bone_children_rot())REPA(mesh_skel.bones)if(mirror_bone!=i && mesh_skel.contains(mirror_bone, i))
+                              {
+                                 SkelBone &bone=mesh_skel.bones[i]; if(freeze)bone.rotateDir(-angle);else bone.transform(m);
+                              }
                            }
                         }else
                         {
