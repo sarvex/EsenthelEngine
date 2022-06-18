@@ -283,7 +283,7 @@ void DrawProject()
 
          super::update(gpc);
 
-         if(Gui.kb()==this)
+         if(Gui.kb()==this || menu.contains(Gui.kb()))
          {
             KbSc rename(KB_F2), reload(KB_R, KBSC_CTRL_CMD), copyTo(KB_T, KBSC_CTRL_CMD), mulVol(KB_S, KBSC_CTRL_CMD|KBSC_ALT); // check manually, in case 'menu' is not created according to selection
             if(rename.pd())
