@@ -98,6 +98,7 @@ struct  AnimationKeys // Animation Keys - set of animation keyframes for a singl
 
    void matrixNoScale(Matrix &matrix, C AnimParams &params)C;
    void matrix       (Matrix &matrix, C AnimParams &params)C;
+   void matrix       (Matrix &matrix, C AnimParams &params, C Matrix3 &default_orn)C; // 'default_orn'=default orientation used when animation has no orientation keys
 
    Bool rot  (AxisRoll &rot  , C AnimParams &params)C; // get rotation at specified time, false on fail (if there are no keyframes)
    Bool color(Vec4     &color, C AnimParams &params)C; // get    color at specified time, false on fail (if there are no keyframes)

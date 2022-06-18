@@ -417,6 +417,12 @@ void AnimKeys::matrix(Matrix &matrix, C AnimParams &params)C
    matrixNoScale(matrix, params);
    Vec scale; if(T.scales.elms() && T.scale(scale, params))matrix.scaleOrnL(ScaleFactor(scale)); // most likely there won't be any scale, so do a fast check without the function call
 }
+void AnimKeys::matrix(Matrix &matrix, C AnimParams &params, C Matrix3 &default_orn)C
+{
+   Orient orn; if(                   T.orn  (       orn, params))matrix.orn()=orn;else matrix.orn()=default_orn;
+               if(                  !T.pos  (matrix.pos, params) && !SET_ON_FAIL)matrix.pos.zero();
+   Vec  scale; if(T.scales.elms() && T.scale(     scale, params))matrix.scaleOrnL(ScaleFactor(scale)); // most likely there won't be any scale, so do a fast check without the function call
+}
 /******************************************************************************/
 void AnimKeys::Orn::save(MemPtr<TextNode> nodes)C
 {
@@ -3014,14 +3020,19 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
    {
       AnimBone *abon;
       AnimKeys *keys;
+      Matrix3   default_orn;
       if(root)
       {
          abon=null;
          keys=&T.keys;
+         default_orn.identity();
       }else
       {
        C SkelBone &sbon=skel.bones[skel_bone];
-         if(abon=findBone(sbon.name, sbon.type, sbon.type_index, sbon.type_sub))keys=abon;else return;
+         if(abon=findBone(sbon.name, sbon.type, sbon.type_index, sbon.type_sub))
+         {  keys       =abon;
+            default_orn=sbon;
+         }else return;
       }
       if(InRange(key_index, keys->poss))
       {
@@ -3031,9 +3042,9 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
          Flt prev_time=(InRange(key_index-1, keys->poss) ? keys->poss[key_index-1].time :        0);
          Flt  key_time=                                    keys->poss[key_index  ].time            ;
          Flt next_time=(InRange(key_index+1, keys->poss) ? keys->poss[key_index+1].time : length());
-         times.binaryInclude(prev_time);
-         times.binaryInclude( key_time);
-         times.binaryInclude(next_time);
+         times.binaryInclude(prev_time, CompareEps);
+         times.binaryInclude( key_time, CompareEps);
+         times.binaryInclude(next_time, CompareEps);
          keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
 
          AnimKeys src=*keys; // before removal
@@ -3043,9 +3054,9 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
          if(root)setRootMatrix();
 
          AnimKeys cur=*keys; // after removal, keep as copy because 'removeData' and 'getBone' below, might change mem address
-         // !! can't access 'keys' anymore after this point !!
 
          if(abon && !abon->is())bones.removeData(abon);
+         // !! CAN'T ACCESS 'keys', 'abon' ANYMORE AFTER THIS POINT !!
 
          AnimParams anim_params(T, 0);
          REPA(skel.bones)
@@ -3072,10 +3083,9 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
                {
                   AnimKeys::Pos &pos=abon.poss[i];
                   anim_params.time=pos.time;
-                  Matrix src_matrix, cur_matrix;
-                      src.matrix(src_matrix    , anim_params);
-                  if(!cur.pos   (cur_matrix.pos, anim_params) && !SET_ON_FAIL)cur_matrix.pos.zero(); cur_matrix.orn()=src_matrix.orn(); // only position has changed, so take orientation from 'src_matrix'
-                  pos.pos+=src_matrix.pos-cur_matrix.pos; // Warning: TODO: this ignores scales and orientations
+                  Matrix src_matrix    ;     src.matrix(src_matrix    , anim_params, default_orn);
+                  Vec    cur_matrix_pos; if(!cur.pos   (cur_matrix_pos, anim_params) && !SET_ON_FAIL)cur_matrix_pos.zero(); // only position has changed
+                  pos.pos+=(src_matrix.pos-cur_matrix_pos)/src_matrix.orn();
                }
 
                abon.setTangents(loop(), length());
