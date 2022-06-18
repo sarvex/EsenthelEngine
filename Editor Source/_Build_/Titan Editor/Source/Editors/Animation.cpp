@@ -680,7 +680,8 @@ AnimEditor AnimEdit;
    void  AnimEditor::DelFrame(AnimEditor &editor) {editor.delFrame ();}
    void  AnimEditor::DelFrames(AnimEditor &editor) {editor.delFrames(editor.sel_bone);}
    void  AnimEditor::DelFramesAtEnd(AnimEditor &editor) {editor.delFramesAtEnd();}
-   void  AnimEditor::FreezeDelFrame(AnimEditor &editor) {editor.freezeDelFrame();}
+   void AnimEditor::FreezeDelFrame(AnimEditor &editor) {editor.freezeDelFrame();}
+   void AnimEditor::FreezeDelFrames(AnimEditor &editor) {editor.freezeDelFrames();}
    void AnimEditor::Optimize(AnimEditor &editor) {editor.optimize_anim.activate();}
    void AnimEditor::ScalePosKey(AnimEditor &editor) {editor.scale_pos_keys.activate();}
    void AnimEditor::TimeRangeSp(AnimEditor &editor) {editor.time_range_speed.display();}
@@ -1084,7 +1085,8 @@ AnimEditor AnimEdit;
       n.New().create("Delete KeyFrames"                , DelFrames     , T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_SHIFT)).desc("This will delete all keyframes for selected bone");
       n.New().create("Delete All Bone KeyFrames at End", DelFramesAtEnd, T).kbsc(KbSc(KB_DEL, KBSC_CTRL_CMD|KBSC_WIN_CTRL)).desc("This will delete keyframes located at the end of the animation, for all bones (except root motion).");
       n++;
-      n.New().create("Freeze Delete KeyFrame"          , FreezeDelFrame, T).kbsc(KbSc(KB_DEL, KBSC_ALT)).desc("This will delete a single keyframe for selected bone, without affecting transforms of other bones");
+      n.New().create("Freeze Delete KeyFrame"          , FreezeDelFrame , T).kbsc(KbSc(KB_DEL, KBSC_ALT           )).desc("This will delete a single keyframe for selected bone, without affecting transforms of other bones");
+      n.New().create("Freeze Delete KeyFrames"         , FreezeDelFrames, T).kbsc(KbSc(KB_DEL, KBSC_ALT|KBSC_SHIFT)).desc("This will delete all keyframes for selected bone, without affecting transforms of other bones");
       n++;
       n.New().create("Reverse KeyFrames", ReverseFrames, T).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT)); // avoid Ctrl+R collision with reload project element
       n.New().create("Apply Speed"      , ApplySpeed   , T).kbsc(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT)); // avoid Ctrl+R collision with reload project element
@@ -1454,6 +1456,10 @@ AnimEditor AnimEdit;
                         }
                         orn_target+=d;
                         d/=Matrix3(bone_parent);
+                        if(Kb.b(KB_F))
+                        {
+                           if(skel)anim->freezeMoveKeyPos(*skel, sel_bone, all ? -1 : keys->poss.index(pos), d);
+                        }else
                         if(all)
                         {
                            if(use_blend)REPA (keys->poss)keys->poss[i].pos+=d*getBlend(keys->poss[i]);
@@ -1643,11 +1649,12 @@ AnimEditor AnimEdit;
    }
    bool AnimEditor::freezeDelFramePos(int bone)
    {
-      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys::Pos *key=FindPos(*keys, animTime()))
-      {
-         undos.set("del"); anim->freezeDelKeyPos(*skel, bone, keys->poss.index(key));
-         return true;
-      }
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys::Pos *key=FindPos(*keys, animTime())){undos.set("del"); anim->freezeDelKeyPos(*skel, bone, keys->poss.index(key)); return true;}
+      return false;
+   }
+   bool AnimEditor::freezeDelFramesPos(int bone)
+   {
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys->poss.elms()){undos.set("delAll"); anim->freezeDelKeyPos(*skel, bone, -1); return true;}
       return false;
    }
    void AnimEditor::delFrame()
@@ -1675,6 +1682,15 @@ AnimEditor AnimEdit;
     //if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
       if(op()==OP_POS   || op()<0)changed|=freezeDelFramePos  (sel_bone);
     //if(op()==OP_SCALE || op()<0)changed|=freezeDelFrameScale(sel_bone);
+      if(changed){setAnimSkel(); setOrnTarget(); anim->setRootMatrix(); setChanged();}
+   }
+   void AnimEditor::freezeDelFrames()
+   {
+      bool changed=false;
+    //if(op()==OP_ORN   || op()<0)changed|=freezeDelFramesOrn  (sel_bone);
+    //if(op()==OP_ORN2           )changed|=freezeDelFramesOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_POS   || op()<0)changed|=freezeDelFramesPos  (sel_bone);
+    //if(op()==OP_SCALE || op()<0)changed|=freezeDelFramesScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim->setRootMatrix(); setChanged();}
    }
    void AnimEditor::delFramesAtEnd()

@@ -3034,22 +3034,28 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
             default_orn=GetAnimOrient(sbon, skel.bones.addr(sbon.parent));
          }else return;
       }
-      if(InRange(key_index, keys->poss))
+      Bool all_keys=(key_index<0);
+      if(  all_keys || InRange(key_index, keys->poss))
       {
          Byte bone_index=(root ? 0xFF : skel_bone);
 
          Memt<Flt, 16384> times;
-         Flt prev_time=(InRange(key_index-1, keys->poss) ? keys->poss[key_index-1].time :        0);
-         Flt  key_time=                                    keys->poss[key_index  ].time            ;
-         Flt next_time=(InRange(key_index+1, keys->poss) ? keys->poss[key_index+1].time : length());
-         times.binaryInclude(prev_time, CompareEps);
-         times.binaryInclude( key_time, CompareEps);
-         times.binaryInclude(next_time, CompareEps);
-         keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
+         Flt prev_time, next_time;
+         if(all_keys)keys->includeTimes(times, times, times);else
+         {
+               prev_time=(InRange(key_index-1, keys->poss) ? keys->poss[key_index-1].time :        0);
+            Flt key_time=                                    keys->poss[key_index  ].time            ;
+               next_time=(InRange(key_index+1, keys->poss) ? keys->poss[key_index+1].time : length());
+            times.binaryInclude(prev_time, CompareEps);
+            times.binaryInclude( key_time, CompareEps);
+            times.binaryInclude(next_time, CompareEps);
+            keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
+         }
 
          AnimKeys src=*keys; // before removal
 
-         keys->poss.remove(key_index, true);
+         if(all_keys)keys->poss.del();
+         else        keys->poss.remove(key_index, true);
          keys->setTangents(loop(), length());
          if(root)setRootMatrix();
 
@@ -3072,14 +3078,110 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
                   Int index; if(!abon.poss.binarySearch(time, index, CompareEps))
                   {
                      Vec pos; anim_params.time=time; if(!abon.pos(pos, anim_params) && !SET_ON_FAIL)pos.zero(); // calculate before adding
-                     AnimKeys::Pos &key=abon.poss.NewAt(index); key.time=time; key.pos=pos;
+                     AnimKeys::Pos &key=abon.poss.NewAt(index); key.time=time; key.pos=pos; ASSERT(!HAS_ANIM_TANGENT);
                   }
                }
 
                Int start, end;
-               if(abon.poss.binarySearch(prev_time, start, CompareEps)
-               && abon.poss.binarySearch(next_time, end  , CompareEps))
-                  for(Int i=start+1; i<end; i++) // process keys in the middle, between start and end
+               if(all_keys)
+               {
+                  start=0; end=abon.poss.elms();
+               }else
+               {
+                     abon.poss.binarySearch(prev_time, start);
+                  if(abon.poss.binarySearch(next_time, end  ))end++; // end is exclusive, so if found match, process it too, in case key is at the end
+               }
+               for(Int i=start; i<end; i++) // process keys from start to end
+               {
+                  AnimKeys::Pos &pos=abon.poss[i];
+                  anim_params.time=pos.time;
+                  Matrix src_matrix    ;     src.matrix(src_matrix    , anim_params, default_orn);
+                  Vec    cur_matrix_pos; if(!cur.pos   (cur_matrix_pos, anim_params) && !SET_ON_FAIL)cur_matrix_pos.zero(); // only position has changed
+                  pos.pos+=(src_matrix.pos-cur_matrix_pos)/src_matrix.orn();
+               }
+
+               abon.setTangents(loop(), length());
+            }
+         }
+      }
+   }
+}
+void Animation::freezeMoveKeyPos(C Skeleton &skel, Int skel_bone, Int key_index, C Vec &delta)
+{
+   Bool root=(skel_bone<0);
+   if(  root || InRange(skel_bone, skel.bones))
+   {
+      AnimKeys *keys;
+      Matrix3   default_orn;
+      if(root)
+      {
+         keys=&T.keys;
+         default_orn.identity();
+      }else
+      {
+          C SkelBone &sbon=skel.bones[skel_bone];
+         if(AnimBone *abon=findBone(sbon.name, sbon.type, sbon.type_index, sbon.type_sub))
+         {  keys       =abon;
+            default_orn=GetAnimOrient(sbon, skel.bones.addr(sbon.parent));
+         }else return;
+      }
+      Bool all_keys=(key_index<0);
+      if(  all_keys || InRange(key_index, keys->poss))
+      {
+         Byte bone_index=(root ? 0xFF : skel_bone);
+
+         Memt<Flt, 16384> times;
+         Flt prev_time, next_time;
+         if(all_keys)keys->includeTimes(times, times, times);else
+         {
+               prev_time=(InRange(key_index-1, keys->poss) ? keys->poss[key_index-1].time :        0);
+            Flt key_time=                                    keys->poss[key_index  ].time            ;
+               next_time=(InRange(key_index+1, keys->poss) ? keys->poss[key_index+1].time : length());
+            times.binaryInclude(prev_time, CompareEps);
+            times.binaryInclude( key_time, CompareEps);
+            times.binaryInclude(next_time, CompareEps);
+            keys->includeTimes(times, null, times, prev_time, next_time); // include orientation and scale keys between 'prev_time..next_time'
+         }
+
+         AnimKeys src=*keys; // before operation
+
+         if(all_keys)REPAO(keys->poss          ).pos+=delta;
+         else              keys->poss[key_index].pos+=delta;
+         keys->setTangents(loop(), length());
+         if(root)setRootMatrix();
+
+         AnimKeys cur=*keys; // after operation, keep as copy because 'getBone' below, might change mem address
+
+         // !! CAN'T ACCESS 'keys', 'abon' ANYMORE AFTER THIS POINT !!
+
+         AnimParams anim_params(T, 0);
+         REPA(skel.bones)
+         {
+          C SkelBone &sbon=skel.bones[i]; if(sbon.parent==bone_index)
+            {
+               AnimBone &abon=getBone(sbon.name, sbon.type, sbon.type_index, sbon.type_sub); // 'skel_bone' child
+
+               // add keys (Warning: TODO: this is precise only for linear interpolation, for other case we would have to copy 'abon' to temporary and calculate from it)
+               FREPA(times) // process forward because keys are sorted
+               {
+                  Flt time=times[i];
+                  Int index; if(!abon.poss.binarySearch(time, index, CompareEps))
+                  {
+                     Vec pos; anim_params.time=time; if(!abon.pos(pos, anim_params) && !SET_ON_FAIL)pos.zero(); // calculate before adding
+                     AnimKeys::Pos &key=abon.poss.NewAt(index); key.time=time; key.pos=pos; ASSERT(!HAS_ANIM_TANGENT);
+                  }
+               }
+
+               Int start, end;
+               if(all_keys)
+               {
+                  start=0; end=abon.poss.elms();
+               }else
+               {
+                     abon.poss.binarySearch(prev_time, start);
+                  if(abon.poss.binarySearch(next_time, end  ))end++; // end is exclusive, so if found match, process it too, in case key is at the end
+               }
+               for(Int i=start; i<end; i++) // process keys from start to end
                {
                   AnimKeys::Pos &pos=abon.poss[i];
                   anim_params.time=pos.time;
