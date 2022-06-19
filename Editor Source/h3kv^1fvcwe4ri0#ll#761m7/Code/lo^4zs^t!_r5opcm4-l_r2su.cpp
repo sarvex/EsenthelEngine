@@ -912,7 +912,15 @@ class ImporterClass
                               if(p.name=="speedTime")
                               {
                                  Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
-                                 if(speed)old.scaleTime(start, start+(end-start)/speed, speed);
+                                 if(speed)old.scaleTime(start, end ? start+(end-start)/speed : old.length(), speed);
+                              }else
+                              if(p.name=="speedFrame")
+                              {
+                                 if(anim_data.fps>0)
+                                 {
+                                    Vec v=p.asVec(); flt speed=v.x, start=v.y/anim_data.fps, end=v.z/anim_data.fps;
+                                    if(speed)old.scaleTime(start, end ? start+(end-start)/speed : old.length(), speed);
+                                 }
                               }
                            }
                         }
@@ -938,7 +946,15 @@ class ImporterClass
                         if(p.name=="speedTime") // adjust speed for specified time range !! do this after clipping so the clip isn't affected by speed !!
                         {
                            Vec v=p.asVec(); flt speed=v.x, start=v.y, end=v.z;
-                           if(speed)anim.scaleTime(start, end, 1/speed);
+                           if(speed)anim.scaleTime(start, end ? end : anim.length(), 1/speed); // if no end specified then use until end of anim
+                        }else
+                        if(p.name=="speedFrame")
+                        {
+                           if(anim_data.fps>0)
+                           {
+                              Vec v=p.asVec(); flt speed=v.x, start=v.y/anim_data.fps, end=v.z/anim_data.fps;
+                              if(speed)anim.scaleTime(start, end ? end : anim.length(), 1/speed); // if no end specified then use until end of anim
+                           }
                         }
                      }
                   }
