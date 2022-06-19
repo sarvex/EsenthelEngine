@@ -1952,14 +1952,14 @@ class AnimEditor : Viewport4Region
          {
             TextParam &speed=fps.getParam("speed");
             flt set_speed=anim_speed; if(flt cur_speed=speed.asFlt())set_speed*=cur_speed;
-            speed.setValue(set_speed);
+            if(Equal(set_speed, 1))fps.params.removeData(&speed, true);else speed.setValue(set_speed);
             data.setSrcFile(FileParams.Encode(file_params));
          }
          {
             FileParams fps=data.imported_file_params;
             TextParam &speed=fps.getParam("speed");
             flt set_speed=anim_speed; if(flt cur_speed=speed.asFlt())set_speed*=cur_speed;
-            speed.setValue(set_speed);
+            if(Equal(set_speed, 1))fps.params.removeData(&speed, true);else speed.setValue(set_speed);
             data.imported_file_params=fps.encode();
          }
 
