@@ -179,6 +179,9 @@ MouseClass::MouseClass()
   _button_name[5]="Mouse6";
   _button_name[6]="Mouse7";
   _button_name[7]="Mouse8";
+#if SWITCH
+  _on_client=true; // #NintendoSwitchRes
+#endif
 }
 void MouseClass::del()
 {
@@ -294,7 +297,11 @@ ok:;
    }
 #endif
 
-  _desktop_pixeli=_window_pixeli=D.res()/2; // initially set at screen center, in case mouse is unavailable
+#if SWITCH // initially set at screen center, in case mouse is unavailable
+  _desktop_pixeli=_window_pixeli.set(1280/2, 720/2); // NintendoSwitch APIs are always for 1280,720 res #NintendoSwitchRes
+#else
+  _desktop_pixeli=_window_pixeli=D.res()/2;
+#endif
    updatePos(); _delta_pixeli_clp.zero(); // always get position at the start, and clear any pixel delta. This is needed so that further readings of mouse position will properly detect if there was any change, so we can trigger '_detected'. Also initial position is needed in codes below
 
 #if WINDOWS_NEW
@@ -705,6 +712,7 @@ void MouseClass::updatePos()
      _desktop_pixeli     =desktop_pixeli;
       // '_on_client' is managed through 'EnterNotify' and 'LeaveNotify' events
    }
+#elif SWITCH  // NintendoSwitch APIs are always for 1280,720 res #NintendoSwitchRes, so can't compare with 'D.res', instead always set to true in constructor
 #else
    // desktop and window pos obtained externally in main loop
   _on_client=(InRange(_window_pixeli.x, D.resW()) && InRange(_window_pixeli.y, D.resH()));

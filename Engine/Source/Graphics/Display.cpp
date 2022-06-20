@@ -2688,8 +2688,13 @@ void DisplayClass::sizeChanged()
    Renderer.setPixelSize();
 
    // this is used by mouse/touch pointers
+#if SWITCH // NintendoSwitch APIs are always for 1280,720 res #NintendoSwitchRes
+   D._window_pixel_to_screen_mul.set( D.w2()/(1280-1),
+                                     -D.h2()/( 720-1));
+#else
    D._window_pixel_to_screen_mul.set( D.w2()/(D.resW()-1),  // div by "resW-1" so we can have full -D.w .. D.w range !! if this is changed for some reason, then adjust 'rect.max' in 'Ms.clipUpdate' !!
                                      -D.h2()/(D.resH()-1)); // div by "resH-1" so we can have full -D.h .. D.h range !! if this is changed for some reason, then adjust 'rect.max' in 'Ms.clipUpdate' !!
+#endif
    D._window_pixel_to_screen_add.set(-D.w(), D.h());
    if(VR.active()) // because VR Gui Rect may be different than Window Rect, we need to adjust scaling
    {
