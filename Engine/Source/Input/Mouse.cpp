@@ -297,10 +297,10 @@ ok:;
    }
 #endif
 
-#if SWITCH // initially set at screen center, in case mouse is unavailable
+#if SWITCH
   _desktop_pixeli=_window_pixeli.set(1280/2, 720/2); // NintendoSwitch APIs are always for 1280,720 res #NintendoSwitchRes
 #else
-  _desktop_pixeli=_window_pixeli=D.res()/2;
+  _desktop_pixeli=_window_pixeli=D.res()/2; // initially set at screen center, in case mouse is unavailable
 #endif
    updatePos(); _delta_pixeli_clp.zero(); // always get position at the start, and clear any pixel delta. This is needed so that further readings of mouse position will properly detect if there was any change, so we can trigger '_detected'. Also initial position is needed in codes below
 

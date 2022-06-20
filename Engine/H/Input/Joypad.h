@@ -178,8 +178,8 @@ private:
 #if SWITCH
    typedef UInt Buttons;
    UInt    _vibration_handle[2], _sensor_handle[2];
-   Long    _sampling_number=-1;
    Buttons _state_buttons=0;
+   Long    _sampling_number=-1;
 #endif
    Flt     _last_t[32], _dir_t, _dir_at[2];
    Color2  _color_left, _color_right;
