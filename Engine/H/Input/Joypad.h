@@ -131,7 +131,6 @@ struct Joypad // Joypad Input
 #if EE_PRIVATE
    // manage
    void acquire (Bool on);
-   void update  (C Bool *on, Int elms);
    void setDiri (Int x, Int y);
    void getState();
    void update  ();
@@ -178,6 +177,8 @@ private:
    UInt    _id=0;
 #if SWITCH
    UInt    _vibration_handle[2], _sensor_handle[2];
+   Long    _sampling_number=-1;
+   ULong   _state_buttons=0;
 #endif
    Flt     _last_t[32], _dir_t, _dir_at[2];
    Color2  _color_left, _color_right;

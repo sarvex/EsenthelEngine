@@ -524,6 +524,10 @@ void Joypad::zero()
   _sensor_left .reset();
   _sensor_right.reset();
 
+#if SWITCH
+  _state_buttons=0;
+#endif
+
 #if JOYPAD_THREAD
    REPA(_state) // here no need for lock, because this functions is called under lock already
    {
@@ -557,11 +561,6 @@ void Joypad::clear() // called at end of frame
    REPAO(_button)&=~BS_NOT_ON;
          diri_r  .zero();
    REPAO(diri_ar).zero();
-}
-void Joypad::update(C Bool *on, Int elms)
-{
-   MIN(elms, Elms(_button));
-   REP(elms){Bool o=on[i]; if(o!=ButtonOn(_button[i])){if(o)push(i);else release(i);}}
 }
 static void UpdateDirRep1(VecSB2 &diri_r, C VecSB2 &diri, Flt &time, Flt first_time, Flt repeat_time) // skips adding for first time
 {

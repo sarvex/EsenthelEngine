@@ -120,6 +120,7 @@ constexpr Int   Min(Int   x, Int   y) {return (x<y) ? x : y;}
 constexpr Int   Min(UInt  x, Int   y) {return (Long(x)<y) ? x : y;}
 constexpr Int   Min(Int   x, UInt  y) {return (x<Long(y)) ? x : y;}
 constexpr UInt  Min(UInt  x, UInt  y) {return (x<y) ? x : y;}
+constexpr UInt  Min(ULong x, UInt  y) {return (x<y) ? x : y;}
 constexpr Long  Min(Int   x, Long  y) {return (x<y) ? x : y;}
 constexpr Long  Min(UInt  x, Long  y) {return (x<y) ? x : y;}
 constexpr Long  Min(Long  x, Int   y) {return (x<y) ? x : y;}
