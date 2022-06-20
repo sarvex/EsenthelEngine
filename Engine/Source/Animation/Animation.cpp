@@ -3088,8 +3088,8 @@ void Animation::freezeDelKeyPos(C Skeleton &skel, Int skel_bone, Int key_index)
                   start=0; end=abon.poss.elms();
                }else
                {
-                     abon.poss.binarySearch(prev_time, start);
-                  if(abon.poss.binarySearch(next_time, end  ))end++; // end is exclusive, so if found match, process it too, in case key is at the end
+                     abon.poss.binarySearch(prev_time, start, Compare);
+                  if(abon.poss.binarySearch(next_time, end  , Compare))end++; // end is exclusive, so if found match, process it too, in case key is at the end
                }
                for(Int i=start; i<end; i++) // process keys from start to end
                {
@@ -3178,8 +3178,8 @@ void Animation::freezeMoveKeyPos(C Skeleton &skel, Int skel_bone, Int key_index,
                   start=0; end=abon.poss.elms();
                }else
                {
-                     abon.poss.binarySearch(prev_time, start);
-                  if(abon.poss.binarySearch(next_time, end  ))end++; // end is exclusive, so if found match, process it too, in case key is at the end
+                     abon.poss.binarySearch(prev_time, start, Compare);
+                  if(abon.poss.binarySearch(next_time, end  , Compare))end++; // end is exclusive, so if found match, process it too, in case key is at the end
                }
                for(Int i=start; i<end; i++) // process keys from start to end
                {
