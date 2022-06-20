@@ -1289,7 +1289,7 @@ void KeyboardClass::update()
    nextInQueue(); // process queue before checking for keys below, so they can be eaten
    if(b(KB_LALT) && !ctrl() && !win())
    {
-   #if !WEB
+   #if DESKTOP
       if(!(App.flag&APP_NO_CLOSE   ) && bp(KB_F4   ) && !shift()){App.close();       eat(KB_F4   );} // simulate Alt+F4    behavior on (this is also needed on Windows)
    #endif
       if( (App.flag&APP_FULL_TOGGLE) && bp(KB_ENTER)            ){D.toggle(shift()); eat(KB_ENTER);} // process  Alt+Enter to toggle full-screen
