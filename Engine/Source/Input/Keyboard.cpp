@@ -68,10 +68,16 @@ static SyncLock  InputTextLock;
 #endif
 KeyboardClass Kb;
 /******************************************************************************/
-inline static void Set(KB_KEY key, Char c, Char qwerty_shift, CChar8 *name)
+#if ANDROID || SWITCH
+static Char8 _key_char_shift[ELMS(Kb._key_char)];
+#endif
+inline static void Set(KB_KEY key, Char8 c, Char8 qwerty_shift, CChar8 *name)
 {
    Kb._key_char[key]=c;
    Kb._key_name[key]=name;
+#if ANDROID || SWITCH
+      _key_char_shift[key]=qwerty_shift;
+#endif
 }
 KeyboardClass::KeyboardClass()
 {
@@ -79,16 +85,13 @@ KeyboardClass::KeyboardClass()
   _exclusive=_visible=false;
   _device=null;
   _imc=null;
+   REPA(key_char)Set(KB_KEY(i), '\0', '\0', null);
    ..
 #endif
   _last_key_scan_code=-1;
   _imm=true;
   _cur=_last=-1; _last_t=0;
   _curh_tn=0.200f;
-
-#if 0
-   REPA(key_char)Set(KB_KEY(i), '\0', '\0', null);
-#endif
 
    // set these first in case KB_NPENTER==KB_ENTER, so that KB_ENTER can override the name of KB_NPENTER
    Set(KB_NPDIV  , '/' , '/' , "NumPad/");
@@ -296,9 +299,60 @@ ok:;
 #endif
 #endif
 }
+/******************************************************************************
+static Byte ShiftMap[3][128];
+static void Init()
+{
+   REPD(shift, 2)
+   REPD(caps , 2)if(shift || caps)
+   {
+      Int m=((shift | (caps<<1))-1);
+      REPA(ShiftMap[m])ShiftMap[m][i]=((shift==caps) ? Char8(i) : CaseUp(Char8(i)));
+      if(shift)
+      {
+         ShiftMap[m][Unsigned('`')]='~';
+         ShiftMap[m][Unsigned('1')]='!';
+         ShiftMap[m][Unsigned('2')]='@';
+         ShiftMap[m][Unsigned('3')]='#';
+         ShiftMap[m][Unsigned('4')]='$';
+         ShiftMap[m][Unsigned('5')]='%';
+         ShiftMap[m][Unsigned('6')]='^';
+         ShiftMap[m][Unsigned('7')]='&';
+         ShiftMap[m][Unsigned('8')]='*';
+         ShiftMap[m][Unsigned('9')]='(';
+         ShiftMap[m][Unsigned('0')]=')';
+         ShiftMap[m][Unsigned('-')]='_';
+         ShiftMap[m][Unsigned('=')]='+';
+         ShiftMap[m][Unsigned('[')]='{';
+         ShiftMap[m][Unsigned(']')]='}';
+         ShiftMap[m][Unsigned(';')]=':';
+         ShiftMap[m][Unsigned('\'')]='"';
+         ShiftMap[m][Unsigned('\\')]='|';
+         ShiftMap[m][Unsigned(',')]='<';
+         ShiftMap[m][Unsigned('.')]='>';
+         ShiftMap[m][Unsigned('/')]='?';
+      }
+   }
+}
+static Char AdjustByShift(Char c, Bool shift, Bool caps)
+{
+   if(shift || caps)
+   {
+      if(InRange(Unsigned(c), ShiftMap[0]))return ShiftMap[(shift | (caps<<1))-1][Unsigned(c)];
+      if(shift!=caps)return CaseUp(c);
+   }
+   return c;
+}
 /******************************************************************************/
  Char   KeyboardClass::keyChar(KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_char)); return _key_char[k];}
 CChar8* KeyboardClass::keyName(KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_name)); return _key_name[k];}
+#if ANDROID || SWITCH
+ Char   KeyboardClass::keyChar(KB_KEY k, Bool shift, Bool caps)C
+{
+   if(k>=KB_A && k<=KB_Z)shift^=caps; // caps only affects A..Z
+   return shift ? _key_char_shift[k] : _key_char[k];
+}
+#endif
 /******************************************************************************/
 #if WINDOWS_OLD
 #define KB_F13 KB_NONE

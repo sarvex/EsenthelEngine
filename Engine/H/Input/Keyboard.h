@@ -71,6 +71,9 @@ struct KeyboardClass // Keyboard Input
 
    Char   keyChar(KB_KEY key)C; // get key character, example: keyChar(KB_SPACE) -> ' '
   CChar8* keyName(KB_KEY key)C; // get key name     , example: keyName(KB_SPACE) -> "Space"
+#if EE_PRIVATE
+   Char   keyChar(KB_KEY key, Bool shift, Bool caps)C;
+#endif
 
    Bool hwAvailable(          ); // if hardware keyboard is available
    Bool rect       (Rect &rect); // get on-screen keyboard rectangle, false if no on-screen keyboard is currently displayed

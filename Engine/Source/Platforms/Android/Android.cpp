@@ -82,7 +82,7 @@ static JavaVM        *JVM;
        Str8           AndroidPackageName;
        Str            AndroidAppPath, AndroidAppDataPath, AndroidAppDataPublicPath, AndroidAppCachePath, AndroidPublicPath, AndroidSDCardPath;
 static KB_KEY         KeyMap[256];
-static Byte           ShiftMap[3][128], JoyMap[256];
+static Byte           JoyMap[256];
 static Bool           Initialized, // !! This may be set to true when app is restarted (without previous crashing) !!
                       KeyboardLoaded, PossibleTap;
 static Int            KeyboardDeviceID;
@@ -203,15 +203,6 @@ static void UpdateSize()
    }
 }
 /******************************************************************************/
-static Char AdjustByShift(Char c, Bool shift, Bool caps)
-{
-   if(shift || caps)
-   {
-      if(InRange(U16(c), ShiftMap[0]))return ShiftMap[(shift | (caps<<1))-1][U16(c)];
-      if(shift!=caps)return CaseUp(c);
-   }
-   return c;
-}
 static int32_t InputCallback(android_app *app, AInputEvent *event)
 {
    LOG2("InputCallback");
@@ -473,7 +464,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                   chr=Jni->CallIntMethod(KeyCharacterMap, KeyCharacterMapGet, jint(code), jint(meta));
                }
             }else
-            if(!Kb.b(KB_RALT))chr=AdjustByShift(Kb._key_char[key], shift, caps);
+            if(!Kb.b(KB_RALT))chr=Kb.keyChar(key, shift, caps);
 
             if(chr)KeySource=KEY_CPP; // if detected and character then set CPP source
          }
@@ -1052,37 +1043,6 @@ static void InitKeyMap()
    JoyMap[AKEYCODE_BUTTON_THUMBR]=JB_RTHUMB;
    JoyMap[AKEYCODE_BUTTON_SELECT]=JB_SELECT;
    JoyMap[AKEYCODE_BUTTON_START ]=JB_START;
-
-   REPD(shift, 2)
-   REPD(caps , 2)if(shift || caps)
-   {
-      Int m=((shift | (caps<<1))-1);
-      REPA(ShiftMap[m])ShiftMap[m][i]=((shift==caps) ? Char8(i) : CaseUp(Char8(i)));
-      if(shift)
-      {
-         ShiftMap[m][Unsigned('`')]='~';
-         ShiftMap[m][Unsigned('1')]='!';
-         ShiftMap[m][Unsigned('2')]='@';
-         ShiftMap[m][Unsigned('3')]='#';
-         ShiftMap[m][Unsigned('4')]='$';
-         ShiftMap[m][Unsigned('5')]='%';
-         ShiftMap[m][Unsigned('6')]='^';
-         ShiftMap[m][Unsigned('7')]='&';
-         ShiftMap[m][Unsigned('8')]='*';
-         ShiftMap[m][Unsigned('9')]='(';
-         ShiftMap[m][Unsigned('0')]=')';
-         ShiftMap[m][Unsigned('-')]='_';
-         ShiftMap[m][Unsigned('=')]='+';
-         ShiftMap[m][Unsigned('[')]='{';
-         ShiftMap[m][Unsigned(']')]='}';
-         ShiftMap[m][Unsigned(';')]=':';
-         ShiftMap[m][Unsigned('\'')]='"';
-         ShiftMap[m][Unsigned('\\')]='|';
-         ShiftMap[m][Unsigned(',')]='<';
-         ShiftMap[m][Unsigned('.')]='>';
-         ShiftMap[m][Unsigned('/')]='?';
-      }
-   }
 }
 /******************************************************************************/
 static Bool Loop()
