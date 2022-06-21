@@ -40,7 +40,7 @@ static Int FindJoypadI(Windows::Gaming::Input::IGameController  ^ controller    
    return -1;
 }
 
-struct GamePadChange
+struct GamepadChange
 {
    Bool               added;
    Gamepad           ^gamepad;
@@ -48,16 +48,16 @@ struct GamePadChange
 
    void process();
 };
-static MemcThreadSafe<GamePadChange> GamePadChanges;
+static MemcThreadSafe<GamepadChange> GamepadChanges;
 
-static void GamePadChanged()
+static void GamepadChanged()
 {
-   MemcThreadSafeLock lock(GamePadChanges); FREPA(GamePadChanges)GamePadChanges.lockedElm(i).process(); GamePadChanges.lockedClear(); // process in order
+   MemcThreadSafeLock lock(GamepadChanges); FREPA(GamepadChanges)GamepadChanges.lockedElm(i).process(); GamepadChanges.lockedClear(); // process in order
 }
-static void GamePadChanged(Bool added, Gamepad ^gamepad, RawGameController ^raw_game_controller)
+static void GamepadChanged(Bool added, Gamepad ^gamepad, RawGameController ^raw_game_controller)
 {
-   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
-   App.addFuncCall(GamePadChanged);
+   {MemcThreadSafeLock lock(GamepadChanges); GamepadChange &gpc=GamepadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
+   App.addFuncCall(GamepadChanged);
 }
 #endif
 /******************************************************************************/
@@ -525,10 +525,10 @@ ref struct FrameworkView sealed : IFrameworkView
          }break;
       }
    }
-   void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args) // This is called when pressing GamePad B button, and on Windows Phone onscreen back button in the nav bar. By default these actions suspend the game
+   void OnBackRequested(Object^ sender, BackRequestedEventArgs ^args) // This is called when pressing Gamepad B button, and on Windows Phone onscreen back button in the nav bar. By default these actions suspend the game
    {
       args->Handled=true; // !! THIS HAS TO BE CALLED TO DISABLE APP CLOSE !!
-    /*Don't trigger this because this function is also called due to GamePad B buttons
+    /*Don't trigger this because this function is also called due to Gamepad B buttons
       Kb.push   (KB_NAV_BACK, -1);
       Kb.release(KB_NAV_BACK); // release immediately because there's no callback for a release*/
    }
@@ -628,11 +628,11 @@ ref struct FrameworkView sealed : IFrameworkView
 
 #if JP_GAMEPAD_INPUT
    // !! THESE ARE CALLED ON SECONDARY THREADS !!
-   void OnGamepadAdded  (Object^ sender, Gamepad ^gamepad) {GamePadChanged(true , gamepad, null);}
-   void OnGamepadRemoved(Object^ sender, Gamepad ^gamepad) {GamePadChanged(false, gamepad, null);}
+   void OnGamepadAdded  (Object^ sender, Gamepad ^gamepad) {GamepadChanged(true , gamepad, null);}
+   void OnGamepadRemoved(Object^ sender, Gamepad ^gamepad) {GamepadChanged(false, gamepad, null);}
 
-   void OnRawGameControllerAdded  (Object^ sender, RawGameController ^raw_game_controller) {GamePadChanged(true , null, raw_game_controller);}
-   void OnRawGameControllerRemoved(Object^ sender, RawGameController ^raw_game_controller) {GamePadChanged(false, null, raw_game_controller);}
+   void OnRawGameControllerAdded  (Object^ sender, RawGameController ^raw_game_controller) {GamepadChanged(true , null, raw_game_controller);}
+   void OnRawGameControllerRemoved(Object^ sender, RawGameController ^raw_game_controller) {GamepadChanged(false, null, raw_game_controller);}
 
    void OnGamepadUserChanged(Windows::Gaming::Input::IGameController^ controller, Windows::System::UserChangedEventArgs^ args)
    {
@@ -782,7 +782,7 @@ ref struct FrameworkViewSource sealed : IFrameworkViewSource
    }
 };
 #if JP_GAMEPAD_INPUT
-void GamePadChange::process()
+void GamepadChange::process()
 {
    if(added)
    {

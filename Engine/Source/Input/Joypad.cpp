@@ -37,12 +37,12 @@ static Bool JoypadThreadFunc(Thread &thread)
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics          > GamepadStatics;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepadStatics2         > GamepadStatics2;
 static Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameControllerStatics> RawGameControllerStatics;
-static EventRegistrationToken GamePadAddedToken, GamePadRemovedToken, RawGameControllerAddedToken, RawGameControllerRemovedToken;
+static EventRegistrationToken GamepadAddedToken, GamepadRemovedToken, RawGameControllerAddedToken, RawGameControllerRemovedToken;
 
 static Int FindJoypadI(ABI::Windows::Gaming::Input::IGamepad          * gamepad            ) {REPA(Joypads)if(Joypads[i]._gamepad            .Get()==gamepad            )return i; return -1;}
 static Int FindJoypadI(ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller) {REPA(Joypads)if(Joypads[i]._raw_game_controller.Get()==raw_game_controller)return i; return -1;}
 
-struct GamePadChange
+struct GamepadChange
 {
    Bool                                                                    added;
    Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > gamepad;
@@ -133,24 +133,24 @@ struct GamePadChange
       }
    }
 };
-static MemcThreadSafe<GamePadChange> GamePadChanges;
+static MemcThreadSafe<GamepadChange> GamepadChanges;
 
-static void GamePadChanged()
+static void GamepadChanged()
 {
-   MemcThreadSafeLock lock(GamePadChanges); FREPA(GamePadChanges)GamePadChanges.lockedElm(i).process(); GamePadChanges.lockedClear(); // process in order
+   MemcThreadSafeLock lock(GamepadChanges); FREPA(GamepadChanges)GamepadChanges.lockedElm(i).process(); GamepadChanges.lockedClear(); // process in order
 }
-static void GamePadChanged(Bool added, ABI::Windows::Gaming::Input::IGamepad* gamepad, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)
+static void GamepadChanged(Bool added, ABI::Windows::Gaming::Input::IGamepad* gamepad, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)
 {
-   {MemcThreadSafeLock lock(GamePadChanges); GamePadChange &gpc=GamePadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
-   App.addFuncCall(GamePadChanged);
+   {MemcThreadSafeLock lock(GamepadChanges); GamepadChange &gpc=GamepadChanges.lockedNew(); gpc.added=added; gpc.gamepad=gamepad; gpc.raw_game_controller=raw_game_controller;}
+   App.addFuncCall(GamepadChanged);
 }
 
 // !! THESE ARE CALLED ON SECONDARY THREADS !!
-static struct GamePadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(true , gamepad, null); return S_OK;}}GamePadAdded;
-static struct GamePadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamePadChanged(false, gamepad, null); return S_OK;}}GamePadRemoved;
+static struct GamepadAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamepadChanged(true , gamepad, null); return S_OK;}}GamepadAdded;
+static struct GamepadRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CGamepad> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IGamepad* gamepad)override {GamepadChanged(false, gamepad, null); return S_OK;}}GamepadRemoved;
 
-static struct RawGameControllerAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamePadChanged(true , null, raw_game_controller); return S_OK;}}RawGameControllerAdded;
-static struct RawGameControllerRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamePadChanged(false, null, raw_game_controller); return S_OK;}}RawGameControllerRemoved;
+static struct RawGameControllerAddedClass   : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamepadChanged(true , null, raw_game_controller); return S_OK;}}RawGameControllerAdded;
+static struct RawGameControllerRemovedClass : Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, __FIEventHandler_1_Windows__CGaming__CInput__CRawGameController> {virtual HRESULT Invoke(IInspectable*, ABI::Windows::Gaming::Input::IRawGameController* raw_game_controller)override {GamepadChanged(false, null, raw_game_controller); return S_OK;}}RawGameControllerRemoved;
 
 #elif MAC
 ASSERT(MEMBER_SIZE(Joypad::Elm, cookie)==SIZE(UInt)); // because it's stored as UInt for EE_PRIVATE
@@ -1059,7 +1059,7 @@ UInt NewJoypadID(UInt id)
 }
 /******************************************************************************/
 #if JP_DIRECT_INPUT
-static Bool IsGamePadInput(U16 vendor_id, U16 product_id)
+static Bool IsGamepadInput(U16 vendor_id, U16 product_id)
 {
 #if JP_GAMEPAD_INPUT
    REPA(Joypads)
@@ -1170,7 +1170,7 @@ static BOOL CALLBACK EnumJoypads(const DIDEVICEINSTANCE *DIDevInst, void*)
    if(!IsXInputDevice(DIDevInst->guidProduct)) // if we're using XInput then don't list this device here, it will be processed by XInput
 #endif
 #if JP_GAMEPAD_INPUT
-   if(!IsGamePadInput(vendor_id, product_id)) // if we're using GamePadInput then don't list this device here, it will be processed by GamePadInput
+   if(!IsGamepadInput(vendor_id, product_id)) // if we're using GamepadInput then don't list this device here, it will be processed by GamepadInput
 #endif
    {
       UInt id=0; ASSERT(SIZE(DIDevInst->guidInstance)==SIZE(UID)); C UID &uid=(UID&)DIDevInst->guidInstance; REPA(uid.i)id^=uid.i[i];
@@ -1226,7 +1226,7 @@ void ListJoypads()
    }
 
    #if JP_GAMEPAD_INPUT && WINDOWS_OLD && 0
-      if(GamepadStatics) this is handled in GamePadAdded/GamePadRemoved
+      if(GamepadStatics) this is handled in GamepadAdded/GamepadRemoved
       {
          Microsoft::WRL::ComPtr<ABI::Windows::Foundation::Collections::IVectorView<ABI::Windows::Gaming::Input::Gamepad*>> gamepads; GamepadStatics->get_Gamepads(&gamepads); if(gamepads)
          {
@@ -1375,8 +1375,8 @@ void InitJoypads()
    // !! ADD CALLBACKS AFTER !!
    if(GamepadStatics)
    {
-      GamepadStatics->add_GamepadAdded  (&GamePadAdded  , &GamePadAddedToken);
-      GamepadStatics->add_GamepadRemoved(&GamePadRemoved, &GamePadRemovedToken);
+      GamepadStatics->add_GamepadAdded  (&GamepadAdded  , &GamepadAddedToken);
+      GamepadStatics->add_GamepadRemoved(&GamepadRemoved, &GamepadRemovedToken);
    }
    if(RawGameControllerStatics)
    {
@@ -1394,8 +1394,8 @@ void ShutJoypads()
    // first remove callbacks
    if(GamepadStatics)
    {
-      GamepadStatics->remove_GamepadAdded  (GamePadAddedToken);
-      GamepadStatics->remove_GamepadRemoved(GamePadRemovedToken);
+      GamepadStatics->remove_GamepadAdded  (GamepadAddedToken);
+      GamepadStatics->remove_GamepadRemoved(GamepadRemovedToken);
    }
    if(RawGameControllerStatics)
    {
