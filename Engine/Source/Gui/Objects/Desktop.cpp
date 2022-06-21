@@ -97,7 +97,7 @@ void Desktop::draw()
       // draw overlay textline
       Vec2 offset; if(TextLine *tl=Gui.overlayTextLine(offset)) // don't use "Gui._overlay_textline" because offset can change during textline's window resize
       {
-         D.clip(gpc.clip); Rect(D.rectUI().min.x, tl->rect().min.y+offset.y, D.rectUI().max.x, tl->rect().max.y+offset.y).extend(0.01f).drawShaded(Color(0, 0, 0, 128), TRANSPARENT, 0.01f);
+         D.clip(gpc.clip); Rect(D.rectUI().min.x, tl->rect().min.y+offset.y, D.rectUI().max.x, tl->rect().max.y+offset.y).extend(0.01f).drawShaded(Color(0, 0, 0, 208), TRANSPARENT, 0.01f);
          GuiPC gpc_tl=gpc; gpc_tl.offset=offset; tl->draw(gpc_tl);
       }
    }
