@@ -141,7 +141,7 @@ struct KeyboardClass // Keyboard Input
 #if !EE_PRIVATE
 private:
 #endif
-   Bool        _ctrl, _shift, _alt, _win, _cur_hidden, _swap_ctrl_cmd, _visible, _imm, _imm_candidate_hidden, _exclusive;
+   Bool        _ctrl, _shift, _alt, _win, _cur_hidden, _swap_ctrl_cmd, _visible, _imm, _imm_candidate_hidden, _exclusive, _hw_available;
    Byte        _key_buffer_pos, _key_buffer_len;
    BS_FLAG     _button[256];
    Char8       _key_char[256];

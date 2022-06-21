@@ -1464,6 +1464,8 @@ Bool   KeyboardClass::hwAvailable()
    return (AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
    // HW    connected: AConfiguration_getKeyboard->2, AConfiguration_getKeysHidden->1
    // HW disconnected: AConfiguration_getKeyboard->1, AConfiguration_getKeysHidden->3
+#elif SWITCH
+   return _hw_available;
 #else
    return false;
 #endif
@@ -1551,7 +1553,9 @@ void KeyboardClass::setVisible()
 #if WINDOWS_OLD
    imm(visible); // here ignore 'hwAvailable'
 #endif
+#if !SWITCH // on Switch always show, because hardware keyboard is limited to simple US-QWERTY without support of other languages
    visible&=!hwAvailable(); // show only if hardware unavailable
+#endif
 
 #if WINDOWS_NEW || ANDROID || IOS || SWITCH
    ScreenKeyboard sk; if(visible)sk.set();
