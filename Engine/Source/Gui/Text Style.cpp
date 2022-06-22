@@ -458,11 +458,11 @@ void DrawKeyboardCursor(C Vec2 &pos, Flt height)
    ALPHA_MODE alpha=D.alpha(ALPHA_INVERT); Rect_U(pos, height/11.0f, height).draw(WHITE);
                     D.alpha(alpha       );
 }
-void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, C TextStyleParams &text_style, Char chr)
+void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width, C TextStyleParams &text_style)
 {
    if(C Font *font=text_style.getFont())
    {
-      Flt w=((text_style.spacing==SPACING_CONST) ? text_style.colWidth() : chr ? text_style.size.x/font->height()*font->charWidth(chr) : height*0.5f),
+      Flt w=((text_style.spacing==SPACING_CONST) ? text_style.colWidth() : width),
       min_w=height/5.0f; // use min width because some characters are just too thin
       ALPHA_MODE alpha=D.alpha(ALPHA_INVERT); Rect_LU(pos, w, height).extendX(Max((min_w-w)*0.5f, 0)).draw(WHITE); // extend both left and right
                        D.alpha(alpha       );
@@ -475,8 +475,8 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
    if(ti.is() || cur>=0 || sel>=0) // we have some text to draw, or we may encounter cursor or selection ahead
       if(C Font *font=getFont())
    {
-      Int pos=0, cur_chr=-1;
-      Flt cur_x, sel_x;
+      Int pos=0;
+      Flt cur_x, cur_w=-1, sel_x;
    #if DEBUG
       cur_x=sel_x=0; // to prevent run-time check exceptions on debug mode
    #endif
@@ -585,7 +585,7 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
                            if(!max_length--)break;
 
                            // update positions
-                           if(cur==pos){cur_x=p.x; cur_chr=c;}
+                           if(cur==pos){cur_x=p.x; cur_w=xsize*font->charWidth(c);}
                            if(sel==pos){sel_x=p.x;}
                            pos++;
 
@@ -621,7 +621,7 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
             }
 
             // update positions
-            if(cur==pos){cur_x=p.x; cur_chr=c;}
+            if(cur==pos){cur_x=p.x; cur_w=xsize*font->charWidth(c);}
             if(sel==pos){sel_x=p.x;}
             p.x+=space + xsize*font->charWidth(c, n, spacing);
             c=n;
@@ -665,12 +665,12 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
       }
 
       // cursor
-      if(cur==pos){Char c=ti.c(); if(!c || c=='\n' || (SKIP_SPACE && c==' ' && spacing!=SPACING_CONST /*&& auto_line!=AUTO_LINE_NONE*/)){cur_x=p.x; cur_chr=0;}} // allow drawing cursor at the end only if it's followed by new line or null (this prevents drawing cursors 2 times for split lines - at the end of 1st line and at the beginning of 2nd line)
-      if(cur_chr>=0 && !Kb._cur_hidden)
+      if(cur==pos){Char c=ti.c(); if(!c || c=='\n' || (SKIP_SPACE && c==' ' && spacing!=SPACING_CONST /*&& auto_line!=AUTO_LINE_NONE*/)){cur_x=p.x; cur_w=total_height/2;}} // allow drawing cursor at the end only if it's followed by new line or null (this prevents drawing cursors 2 times for split lines - at the end of 1st line and at the beginning of 2nd line)
+      if(cur_w>=0 && !Kb._cur_hidden)
       {
          if(spacing==SPACING_CONST)cur_x-=space*0.5f; // revert what we've applied
-         if(!edit->overwrite)DrawKeyboardCursor         (Vec2(cur_x, p.y), total_height);
-         else                DrawKeyboardCursorOverwrite(Vec2(cur_x, p.y), total_height, T, Char(cur_chr));
+         if(edit->overwrite)DrawKeyboardCursorOverwrite(Vec2(cur_x, p.y), total_height, cur_w, T);
+         else               DrawKeyboardCursor         (Vec2(cur_x, p.y), total_height);
       }
    }
 }

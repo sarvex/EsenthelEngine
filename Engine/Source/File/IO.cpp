@@ -337,7 +337,7 @@ void BackgroundFileFind::find(C Str &path, Bool (*filter)(C Str &name))
 {
    SyncLocker locker(_lock);
   _files.clear();
-  _paths.setNum(1)[0]=path;
+  _paths.setNum(1).first()=path;
   _filter=filter;
   _find_id++;
    if(!_thread.active())_thread.create(BackgroundFileFindThreadFunc, this);

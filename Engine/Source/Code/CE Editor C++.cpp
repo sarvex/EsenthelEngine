@@ -1382,18 +1382,18 @@ Bool CodeEditor::generateVSProj(Int version)
       {
          if(XmlNode *Core=NintendoSdkMeta->findNode("Core"))
          {
-          //if(XmlNode *Name=Core->findNode("Name"))Name->data.setNum(1)[0]=cei().appName();
-            if(auto app_id=cei().appNintendoAppID())if(XmlNode *ApplicationId=Core->findNode("ApplicationId"))ApplicationId->data.setNum(1)[0]=TextHex(app_id, 16, 0, true);
+          //if(XmlNode *Name=Core->findNode("Name"))Name->data.setNum(1).first()=cei().appName();
+            if(auto app_id=cei().appNintendoAppID())if(XmlNode *ApplicationId=Core->findNode("ApplicationId"))ApplicationId->data.setNum(1).first()=TextHex(app_id, 16, 0, true);
          }
          if(XmlNode *Application=NintendoSdkMeta->findNode("Application"))
          {
             if(XmlNode *Title=Application->findNode("Title"))
             {
-               if(XmlNode *Name     =Title->findNode("Name"     ))Name     ->data.setNum(1)[0]=cei().appName();
-               if(XmlNode *Publisher=Title->findNode("Publisher"))Publisher->data.setNum(1)[0]=cei().appNintendoPublisherName();
+               if(XmlNode *Name     =Title->findNode("Name"     ))Name     ->data.setNum(1).first()=cei().appName();
+               if(XmlNode *Publisher=Title->findNode("Publisher"))Publisher->data.setNum(1).first()=cei().appNintendoPublisherName();
             }
-            if(XmlNode *ReleaseVersion=Application->findNode("ReleaseVersion"))ReleaseVersion->data.setNum(1)[0]=cei().appBuild();
-            if(XmlNode *DisplayVersion=Application->findNode("DisplayVersion"))DisplayVersion->data.setNum(1)[0]=cei().appBuild();
+            if(XmlNode *ReleaseVersion=Application->findNode("ReleaseVersion"))ReleaseVersion->data.setNum(1).first()=cei().appBuild();
+            if(XmlNode *DisplayVersion=Application->findNode("DisplayVersion"))DisplayVersion->data.setNum(1).first()=cei().appBuild();
 
             {
                Mems<LANG_TYPE> langs; cei().appLanguages(langs);
@@ -1422,10 +1422,10 @@ Bool CodeEditor::generateVSProj(Int version)
             }
 
             Str initial_code=cei().appNintendoInitialCode();
-            if( initial_code.is())Application->getNode("ApplicationErrorCodeCategory").data.setNum(1)[0]=initial_code;
+            if( initial_code.is())Application->getNode("ApplicationErrorCodeCategory").data.setNum(1).first()=initial_code;
 
             Str legal=cei().appNintendoLegalInformation();
-            if( legal.is())Application->getNode("LegalInformationFilePath").data.setNum(1)[0]=legal;
+            if( legal.is())Application->getNode("LegalInformationFilePath").data.setNum(1).first()=legal;
          }
       }
       if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Nintendo Switch/Project.nmeta"))return false;
@@ -1475,8 +1475,8 @@ Bool CodeEditor::generateVSProj(Int version)
          }
          if(XmlNode *properties=package->findNode("Properties"))
          {
-            if(XmlNode *display_name=properties->findNode("DisplayName"))display_name->data.setNum(1)[0]=cei().appName();
-            Str publisher_name=cei().appMicrosoftPublisherName(); if(publisher_name.is())if(XmlNode *publisher_display_name=properties->findNode("PublisherDisplayName"))publisher_display_name->data.setNum(1)[0]=publisher_name; // replace only if specified, because can't be empty
+            if(XmlNode *display_name=properties->findNode("DisplayName"))display_name->data.setNum(1).first()=cei().appName();
+            Str publisher_name=cei().appMicrosoftPublisherName(); if(publisher_name.is())if(XmlNode *publisher_display_name=properties->findNode("PublisherDisplayName"))publisher_display_name->data.setNum(1).first()=publisher_name; // replace only if specified, because can't be empty
          }
          if(XmlNode *applications=package->findNode("Applications"))
             if(XmlNode *application=applications->findNode("Application"))
@@ -1608,7 +1608,7 @@ Bool CodeEditor::generateVSProj(Int version)
             if(version==14)sdk="10.0.14393.795";else // latest SDK available for VS 2015
             if(version==15)sdk="10.0.17763.0"  ;     // latest SDK available for VS 2017
                                                      // VS 2019 does not require "WindowsTargetPlatformVersion" - when it's empty, then "latest SDK" is used, so don't specify it
-            if(sdk)prop->getNode("WindowsTargetPlatformVersion").data.setNum(1)[0]=sdk;
+            if(sdk)prop->getNode("WindowsTargetPlatformVersion").data.setNum(1).first()=sdk;
 
             break;
          }
@@ -1656,7 +1656,7 @@ Bool CodeEditor::generateVSProj(Int version)
                if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))libs=&libs_web    ;
             }
             if(libs)FREPA(*libs){if(dest.is() && dest.last()!=';')dest+=';'; dest+=S+'"'+(*libs)[i]+'"';}
-            Swap(dependencies->data.setNum(1)[0], dest);
+            Swap(dependencies->data.setNum(1).first(), dest);
          }
 
          // set dirs
@@ -1673,14 +1673,14 @@ Bool CodeEditor::generateVSProj(Int version)
                if(Contains(condition->value, "Emscripten", false, WHOLE_WORD_STRICT))dirs=&dirs_web    ;
             }
             if(dirs)FREPA(*dirs){if(dest.is() && dest.last()!=';')dest+=';'; dest+=S+'"'+(*dirs)[i]+'"';}
-            Swap(directories->data.setNum(1)[0], dest);
+            Swap(directories->data.setNum(1).first(), dest);
          }
 
          // set exe/dll
          if(build_exe_type==EXE_DLL)
             for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
                if(XmlNode *type=prop->findNode("ConfigurationType"))
-                  type->data.setNum(1)[0]="DynamicLibrary"; // or "Application" or "StaticLibrary"
+                  type->data.setNum(1).first()="DynamicLibrary"; // or "Application" or "StaticLibrary"
 
          // Android
          /* this will not work because if AndroidEnablePackaging is disabled then gradle is not run and 'AndroidExtraGradleArgs' is ignored, have to manually run
@@ -1690,7 +1690,7 @@ Bool CodeEditor::generateVSProj(Int version)
                if(C XmlParam *condition=prop->findParam("Condition"))
                   if(Contains(condition->value, "Android", false, WHOLE_WORD_STRICT))
          {
-            prop->getNode("AndroidEnablePackaging").data.setNum(1)[0]="false"; // disable APK generation #AndroidEnablePackaging !! AT THE MOMENT CAN'T DISABLE BECAUSE THIS IS NEEDED TO GENERATE ".agde" !!
+            prop->getNode("AndroidEnablePackaging").data.setNum(1).first()="false"; // disable APK generation #AndroidEnablePackaging !! AT THE MOMENT CAN'T DISABLE BECAUSE THIS IS NEEDED TO GENERATE ".agde" !!
             prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation !! WILL BE IGNORED IF APK IS UP TO DATE !!
          }*/
 
@@ -1714,7 +1714,7 @@ Bool CodeEditor::generateVSProj(Int version)
             {
                Bool winXP=(condition && Contains(condition->value, "Win32", false, WHOLE_WORD_STRICT) && ContainsAny(condition->value, u"GL DX9", false, WHOLE_WORD_STRICT)); // only Win32 DX9/GL is for WinXP
                XmlNode &PlatformToolset=prop->getNode("PlatformToolset");
-               PlatformToolset.data.setNum(1)[0]=(winXP ? platform_toolset_xp : platform_toolset);
+               PlatformToolset.data.setNum(1).first()=(winXP ? platform_toolset_xp : platform_toolset);
             }
          }
 
@@ -1951,12 +1951,12 @@ Bool CodeEditor::generateXcodeProj()
       if(key=="CFBundleDisplayName")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appName();
+         value.data.setNum(1).first()=cei().appName();
       }else
       if(key=="CFBundleVersion" || key=="CFBundleShortVersionString")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appBuild();
+         value.data.setNum(1).first()=cei().appBuild();
       }else
       if(key=="CFBundleLocalizations")
       {
@@ -1977,37 +1977,37 @@ Bool CodeEditor::generateXcodeProj()
       if(key=="NSLocationAlwaysUsageDescription" || key=="NSLocationWhenInUseUsageDescription")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appLocationUsageReason();
+         value.data.setNum(1).first()=cei().appLocationUsageReason();
       }else
       if(key=="NSCalendarsUsageDescription")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]="Unknown";
+         value.data.setNum(1).first()="Unknown";
       }else
       if(key=="FacebookAppID")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appFacebookAppID();
+         value.data.setNum(1).first()=cei().appFacebookAppID();
       }else
       if(key=="FacebookDisplayName")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appName();
+         value.data.setNum(1).first()=cei().appName();
       }else
       if(key=="GADApplicationIdentifier")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appAdMobAppIDiOS();
+         value.data.setNum(1).first()=cei().appAdMobAppIDiOS();
       }else
       if(key=="ChartboostAppID")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appChartboostAppIDiOS();
+         value.data.setNum(1).first()=cei().appChartboostAppIDiOS();
       }else
       if(key=="ChartboostAppSignature")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appChartboostAppSignatureiOS();
+         value.data.setNum(1).first()=cei().appChartboostAppSignatureiOS();
       }else
       if(key=="CFBundleURLTypes")
       {
@@ -2032,12 +2032,12 @@ Bool CodeEditor::generateXcodeProj()
       if(key=="CFBundleDisplayName")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appName();
+         value.data.setNum(1).first()=cei().appName();
       }else
       if(key=="CFBundleVersion")
       {
          value.setName("string").nodes.del();
-         value.data.setNum(1)[0]=cei().appBuild();
+         value.data.setNum(1).first()=cei().appBuild();
       }
    }
    if(!OverwriteOnChangeLoud(xml, build_path+"Assets/Mac.plist"))return false;

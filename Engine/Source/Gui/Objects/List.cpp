@@ -1465,7 +1465,7 @@ Bool _List::setSel(Int visible) // returns if selection has changed, this may ca
       if(sel.elms()!=1 || sel[0]!=abs)
       {
          callSelChanging();
-         sel.setNum(1)[0]=abs;
+         sel.setNum(1).first()=abs;
          return true;
       }
    }else
@@ -1503,7 +1503,7 @@ _List& _List::processSel(Int absolute, Int sel_mode) // this may call ONLY 'selC
       {
          if(absolute>=0) // set only 'absolute'
          {
-            if(sel.elms()!=1 || sel[0]!=absolute){callSelChanging(); sel.setNum(1)[0]=absolute; sel_changed=true;}
+            if(sel.elms()!=1 || sel[0]!=absolute){callSelChanging(); sel.setNum(1).first()=absolute; sel_changed=true;}
          }else
          {
             if(sel.elms()){callSelChanging(); sel.clear(); sel_changed=true;}

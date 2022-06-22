@@ -655,7 +655,7 @@ SysWindow WindowMouse()
 #if !WINDOWS_OLD
 void WindowList(MemPtr<SysWindow> windows)
 {
-   if(App.window())windows.setNum(1)[0]=App.window();else windows.clear();
+   if(App.window())windows.setNum(1).first()=App.window();else windows.clear();
 }
 #endif
 /******************************************************************************/
