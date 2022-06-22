@@ -421,7 +421,8 @@ struct TextInput
    CChar  *t16;
 
    Bool is()C {return Is(t8) || Is(t16);}
-   Char c ()C {return t8 ? Char8To16Fast(*t8) : t16 ? *t16 : 0;} // we can assume that Str was already initialized
+   Char c ()C {return t8 ? Char8To16Fast(*  t8) : t16 ? *  t16 : 0;} // we can assume that Str was already initialized
+   Char n ()  {return t8 ? Char8To16Fast(*++t8) :       *++t16;}
    CPtr p ()C {return t8 ? CPtr(t8) : CPtr(t16);}
 
    void operator++(int) {if(t8)t8++; if(t16)t16++;}
@@ -552,7 +553,7 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
             }
 
             // next character
-            Char n=(ti.t8 ? Char8To16Fast(*++ti.t8) : *++ti.t16);
+            Char n=ti.n();
 
             // draw character
             if(c!=' ') // don't draw space sign, potentially we could check it below using "fc.height" instead, however this is faster
@@ -607,7 +608,7 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
                            if(sub_pixel)VI.imagePart(rect, fc.tex);
                            else         VI.font     (rect, fc.tex);
 
-                           n=(ti.t8 ? Char8To16Fast(*++ti.t8) : *++ti.t16);
+                           n=ti.n();
                            UInt flag_next=CharFlagFast(n); if(flag_next&CHARF_COMBINING) // if next character is combining too
                            {
                               if(flag&CHARF_STACK)c_pos.y+=ysize*fc.height_padd; // if the drawn character is stacking, then move position higher, to stack combining characters on top of each other (needed for THAI)
@@ -842,7 +843,7 @@ void TextStyleParams::drawMainSoft(Image &image, Flt x, Flt y, TextInput ti, Int
             }
 
             // next character
-            Char n=(ti.t8 ? Char8To16Fast(*++ti.t8) : *++ti.t16);
+            Char n=ti.n();
 
             // draw character
             if(c!=' ') // don't draw space sign, potentially we could check it below using "fc.height" instead, however this is faster
@@ -886,7 +887,7 @@ void TextStyleParams::drawMainSoft(Image &image, Flt x, Flt y, TextInput ti, Int
 
                            draw.draw(font->_images[fc.image], fc.tex, Rect_LU(n_pos, xsize*fc.width_padd, ysize*fc.height_padd));
 
-                           n=(ti.t8 ? Char8To16Fast(*++ti.t8) : *++ti.t16);
+                           n=ti.n();
                            UInt flag_next=CharFlagFast(n); if(flag_next&CHARF_COMBINING) // if next character is combining too
                            {
                               if(flag&CHARF_STACK)c_pos.y+=ysize*fc.height_padd; // if the drawn character is stacking, then move position higher, to stack combining characters on top of each other (needed for THAI)
