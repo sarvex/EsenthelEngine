@@ -10,6 +10,143 @@ Memc<TextLineSplit8 > Tls8 ;
 Memc<TextLineSplit16> Tls16;
 DEFINE_CACHE(TextStyle, TextStyles, TextStylePtr, "Text Style");
 /******************************************************************************/
+// STR EX
+/******************************************************************************/
+Bool StrEx::Data::visible()C
+{
+   switch(type)
+   {
+      case TEXT : return text.is();
+      case IMAGE: return image!=null;
+      case PANEL: return panel!=null;
+   }
+   return false;
+}
+void StrEx::Data::del()
+{
+   switch(type)
+   {
+      case TEXT : DTOR(text ); break;
+      case IMAGE: DTOR(image); break;
+      case PANEL: DTOR(panel); break;
+      case FONT : DTOR(font ); break;
+   }
+   type=NONE;
+}
+StrEx::Data& StrEx::Data::create(TYPE type)
+{
+   if(T.type!=type)
+   {
+      del(); switch(T.type=type)
+      {
+         case TEXT : CTOR(text ); break;
+         case IMAGE: CTOR(image); break;
+         case PANEL: CTOR(panel); break;
+         case FONT : CTOR(font ); break;
+      }
+   }
+   return T;
+}
+void StrEx::Data::operator=(C Data &src)
+{
+   if(this!=&src)
+   {
+      create(src.type); switch(type)
+      {
+         case TEXT : text =src.text ; break;
+         case IMAGE: image=src.image; break;
+         case PANEL: panel=src.panel; break;
+         case FONT : font =src.font ; break;
+      }
+   }
+}
+/******************************************************************************/
+Int StrEx::length()C
+{
+   Int l=0; FREPA(data)
+   {
+    C Data &d=data[i]; switch(d.type)
+      {
+         case Data::TEXT : l+=d.text.length(); break;
+         case Data::IMAGE: l++; break;
+      }
+   }
+   return l;
+}
+Int StrEx::strLength()C
+{
+   Int l=0; FREPA(data)
+   {
+    C Data &d=data[i]; if(d.type==Data::TEXT)l+=d.text.length();
+   }
+   return l;
+}
+Str StrEx::str()C
+{
+   Str s; FREPA(data)
+   {
+    C Data &d=data[i]; if(d.type==Data::TEXT)s+=d.text;
+   }
+   return s;
+}
+void StrEx::operator=(C Str &text) {if(text.is())data.setNum(1).first().create(Data::TEXT).text=text;else clear();}
+
+StrEx& StrEx::text  (C Str           &text  ) {           data.New().create(Data::TEXT      ).text  =text  ; return T;}
+StrEx& StrEx::image (C ImagePtr      &image ) {           data.New().create(Data::IMAGE     ).image =image ; return T;}
+StrEx& StrEx::panel (C PanelImagePtr &panel ) {           data.New().create(Data::PANEL     ).panel =panel ; return T;}
+StrEx& StrEx::font  (C FontPtr       &font  ) {           data.New().create(Data::FONT      ).font  =font  ; return T;}
+StrEx& StrEx::color (C Color         &color ) {           data.New().create(Data::COLOR     ).color =color ; return T;}
+StrEx& StrEx::shadow(  Byte           shadow) {           data.New().create(Data::SHADOW    ).shadow=shadow; return T;}
+StrEx& StrEx::color (C Color         *color ) {if(!color )data.New().create(Data::COLOR_OFF );else T.color (*color ); return T;}
+StrEx& StrEx::shadow(C Byte          *shadow) {if(!shadow)data.New().create(Data::SHADOW_OFF);else T.shadow(*shadow); return T;}
+
+StrEx& StrEx::panelText (C PanelImagePtr &panel, C Str      &text ) {T.panel(panel); T+=text ; T.panel(null); return T;}
+StrEx& StrEx::panelImage(C PanelImagePtr &panel, C ImagePtr &image) {T.panel(panel); T+=image; T.panel(null); return T;}
+/******************************************************************************/
+Bool StrEx::save(File &f, CChar *path)C
+{
+   f.cmpUIntV(0); // version
+   f.cmpUIntV(data.elms());
+   FREPA(data)
+   {
+    C Data &d=data[i]; f<<d.type; switch(d.type)
+      {
+         case Data::COLOR : f<<d.color ; break;
+         case Data::SHADOW: f<<d.shadow; break;
+         case Data::TEXT  : f<<d.text  ; break;
+         case Data::IMAGE : f.putAsset(d.image.id()); break;
+         case Data::PANEL : f.putAsset(d.panel.id()); break;
+         case Data::FONT  : f.putAsset(d.font .id()); break;
+      }
+   }
+   return f.ok();
+}
+Bool StrEx::load(File &f, CChar *path)
+{
+   switch(f.decUIntV()) // version
+   {
+      case 0:
+      {
+         data.setNumDiscard(f.decUIntV()); FREPA(data)
+         {
+            Data::TYPE type; f>>type; if(!InRange(type, Data::NUM))goto error;
+            Data &d=data[i]; d.create(type); switch(d.type)
+            {
+               case Data::COLOR : f>>d.color ; break;
+               case Data::SHADOW: f>>d.shadow; break;
+               case Data::TEXT  : f>>d.text  ; break;
+               case Data::IMAGE : d.image.require(f.getAssetID(), path); break;
+               case Data::PANEL : d.panel.require(f.getAssetID(), path); break;
+               case Data::FONT  : d.font .require(f.getAssetID(), path); break;
+            }
+         }
+         if(f.ok())return true;
+      }break;
+   }
+error:
+   del(); return false;
+}
+/******************************************************************************/
 static Int Length(CChar8 *text, AUTO_LINE_MODE auto_line, Int max_length)
 {
    Int length=-1;
@@ -1356,20 +1493,6 @@ Str GetTextCode(C Str &text, C TextCodeData *code, Int codes)
        out+=text[i];
    }
    return out;
-}
-/******************************************************************************/
-TextCode& TextCode::clear(           )  {                       T._text.clear(); _codes.clear(); return T;}
-TextCode& TextCode::set  (C Str &text)  {                       T._text=text   ; _codes.clear(); return T;}
-TextCode& TextCode::code (C Str &code)  {       SetTextCode(code, _text        , _codes       ); return T;}
-Str       TextCode::code (           )C {return GetTextCode(T(), _codes.data(), _codes.elms());}
-
-void TextCode::draw(C TextStyleParams &text_style, C Rect &rect, AUTO_LINE_MODE auto_line)C
-{
-   text_style.drawCode(rect, T(), auto_line, _codes.data(), _codes.elms());
-}
-void TextCode::draw(C Rect &rect, AUTO_LINE_MODE auto_line)C
-{
-   if(Gui.skin && Gui.skin->text_style)Gui.skin->text_style->drawCode(rect, T(), auto_line, _codes.data(), _codes.elms());
 }
 /******************************************************************************/
 }

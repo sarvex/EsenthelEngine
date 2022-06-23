@@ -2,10 +2,6 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-// keep these methods so that the hidden Memc/_Memc can be initialized/deleted
-TextCode::~TextCode() {}
-TextCode:: TextCode() {}
-/******************************************************************************/
 void Text::zero()
 {
    auto_line=AUTO_LINE_NONE;

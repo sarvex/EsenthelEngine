@@ -140,10 +140,9 @@ Panel* Window::getNormalPanel()C
    if(GuiSkin *skin=getSkin())return barVisible() ? skin->window.normal() : skin->window.normal_no_bar();
    return null;
 }
-void Window::extendedRect           (Rect &rect     )C {if(Panel *panel=getNormalPanel())panel->extendedRect           (T.rect(), rect);else    rect=T.rect();}
-void Window::defaultInnerPadding    (Rect &padding  )C {if(Panel *panel=getNormalPanel())panel->defaultInnerPadding    (padding       );else padding  .zero();}
-void Window::defaultInnerPaddingSize(Vec2 &padd_size)C {if(Panel *panel=getNormalPanel())panel->defaultInnerPaddingSize(padd_size     );else padd_size.zero();}
-Vec2 Window::defaultInnerPaddingSize(               )C {Vec2 size; defaultInnerPaddingSize(size); return size;}
+void Window::extendedRect           (Rect &rect   )C {if(Panel *panel=getNormalPanel())       panel->extendedRect           (T.rect(), rect);else    rect=T.rect();}
+void Window::defaultInnerPadding    (Rect &padding)C {if(Panel *panel=getNormalPanel())       panel->defaultInnerPadding    (padding       );else padding  .zero();}
+Vec2 Window::defaultInnerPaddingSize(             )C {if(Panel *panel=getNormalPanel())return panel->defaultInnerPaddingSize(              );    return Vec2Zero  ;}
 /******************************************************************************/
 static Rect ResizedRect(C Rect &src, C Rect &dest, UInt mask)
 {

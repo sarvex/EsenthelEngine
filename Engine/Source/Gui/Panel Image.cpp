@@ -1262,6 +1262,11 @@ Bool PanelImage::getSideScale(C Rect &rect, Flt &scale)C
    if(_min_size.y>h){scale=h/_min_size.y;                                                                           return true;}
    return false;
 }
+Bool PanelImage::getSideScaleH(Flt h, Flt &scale)C
+{
+   if(_min_size.y>h){scale=h/_min_size.y; return true;}
+   return false;
+}
 Bool PanelImage::getSideScaleVertical(C Rect &rect, Flt &scale)C
 {
    Flt w=rect.h(), h=rect.w();
@@ -1294,10 +1299,7 @@ void PanelImage::innerPadding(C Rect &rect, Rect &padding)C
    padding=defaultInnerPadding(); // change 'padding' after using 'rect' in case they're the same 'Rect'
    if(scale_do)padding*=scale;
 }
-void PanelImage::defaultInnerPaddingSize(Vec2 &padd_size)C
-{
-   padd_size=_inner_padding.min+_inner_padding.max;
-}
+Vec2 PanelImage::defaultInnerPaddingSize()C {return _inner_padding.min+_inner_padding.max;}
 /******************************************************************************/
 void PanelImage::draw(                                    C Rect &rect)C {draw(WHITE, TRANSPARENT, rect);}
 void PanelImage::draw(C Color &color, C Color &color_add, C Rect &rect)C

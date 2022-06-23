@@ -234,6 +234,7 @@ namespace EE // Esenthel Engine namespace
    #include "Graphics/Image Atlas.h"
    #include "Graphics/Image RT.h"
    #include "Gui/Font.h"
+   #include "Gui/Panel Image.h"
    #include "Gui/Text Style.h"
    #include "Graphics/Material.h"
    #include "Graphics/Display Draw.h"
@@ -315,7 +316,6 @@ namespace EE // Esenthel Engine namespace
    /******************************************************************************/
    // GUI
    /******************************************************************************/
-   #include "Gui/Panel Image.h"
    #include "Gui/Panel.h"
    #include "Gui/Gui Skin.h"
    #include "Gui/Gui Object.h"

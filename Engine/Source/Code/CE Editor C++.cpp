@@ -1408,7 +1408,7 @@ Bool CodeEditor::generateVSProj(Int version)
                if(langs.has(RU)) AddNintendoLang(*Application, "Russian");
                if(langs.has(JP)) AddNintendoLang(*Application, "Japanese");
                if(langs.has(KO)) AddNintendoLang(*Application, "Korean");
-               if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); AddNintendoLang(*Application, "TraditionalChinese");}
+               if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); /*AddNintendoLang(*Application, "TraditionalChinese");*/} // Nintendo won't accept "TraditionalChinese" if only Simplified is supported
              //if(langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
                if(langs.has(EN) || nodes==Application->nodes.elms()){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");} // always add English if no language added
             }

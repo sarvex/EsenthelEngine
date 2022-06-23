@@ -3,8 +3,6 @@
    Use 'TextStyle'       to specify custom text style which can be used when drawing texts, use it      as a global/class variable for storage.
    Use 'TextStyleParams' to specify custom text style which can be used when drawing texts, use it only as a local        variable inside functions for drawing/calculation.
 
-   Use 'TextCode' to manually draw text with different settings for different parts of the text.
-
 /******************************************************************************
 
    'TextStyle' and 'TextStyleParams' are mostly the same, as 'TextStyle' is based on 'TextStyleParams'.
@@ -183,38 +181,77 @@ private:
    FontPtr _font;
 };
 /******************************************************************************/
-struct TextCode // Text with modifiers, allowing to draw text on the screen with different settings for different parts of the text
+struct StrEx // Extended String, which can hold: Text, Images, Color/Shadow/Font information, Panel background
 {
-   // get / set
-   TextCode& clear(           );                                      // clear   text value
-   TextCode& set  (C Str &text); C Str& operator()()C {return _text;} // set/get text value
-   TextCode& code (C Str &code);   Str  code      ()C;                // set/get text value in code format
-      // 1. code format accepts following keywords:   in following formats:
-      //    col, color                                RGB, RGBA, RRGGBB, RRGGBBAA (hexadecimal format)
-      //    shadow                                    X, XX                       (hexadecimal format)
-      // 2. codes should be surrounded by '[' ']' signs
-      // 3. removing the effect of a code should be handled by '/' sign followed by code name
-      // 4. sample codes:
-      //       "Text without code. [color=F00]Text with code[/color]"        - will force red color  on "Text with code"
-      //       "[shadow=0]No Shadow[/shadow] [shadow=F]Full Shadow[/shadow]" - will force no  shadow on "No Shadow" and full shadow on "Full Shadow"
+   struct Data
+   {
+      enum TYPE : Byte
+      {
+         NONE,
+         TEXT,
+         IMAGE,
+         COLOR,
+         COLOR_OFF,
+         SHADOW,
+         SHADOW_OFF,
+         PANEL,
+         FONT,
+         NUM,
+      };
+      TYPE type;
+      union
+      {
+         Color         color;
+         Byte          shadow;
+         Str           text;
+         ImagePtr      image;
+         PanelImagePtr panel;
+         FontPtr       font;
+      };
 
-   // draw
-   void draw(C TextStyleParams &text_style, C Rect &rect, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE)C;
-   void draw(                               C Rect &rect, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE)C;
+      Bool visible()C;
 
-  ~TextCode();
-   TextCode();
+      void  del   ();
+      Data& create(TYPE type);
 
-#if !EE_PRIVATE
-private:
-#endif
-   Str  _text;
-#if EE_PRIVATE
-   Memc<TextCodeData> _codes;
-#else
-  _Memc _codes;
-#endif
-   NO_COPY_CONSTRUCTOR(TextCode);
+     ~Data() {del();}
+      Data() {type=NONE;}
+      Data(C Data &src)=delete;
+      void operator=(C Data &src);
+   };
+
+   Mems<Data> data;
+
+   // get
+   Int    length()C; // get              length (where each image element has length=1)
+   Int strLength()C; // get       string length (ignoring   image elements)
+   Str str      ()C; // return as string        (ignoring   image, color, shadow, panel, font elements)
+
+   StrEx& clear() {data.clear(); return T;}
+   StrEx& del  () {data.del  (); return T;}
+
+   void operator=(C Str &text);
+
+   // add element
+   StrEx& text  (C Str           &text  );
+   StrEx& image (C ImagePtr      &image );
+   StrEx& panel (C PanelImagePtr &panel );
+   StrEx& font  (C FontPtr       &font  ); // null disables custom font   and reverts to default
+   StrEx& color (C Color         &color );
+   StrEx& color (C Color         *color ); // null disables custom color  and reverts to default
+   StrEx& shadow(  Byte           shadow);
+   StrEx& shadow(C Byte          *shadow); // null disables custom shadow and reverts to default
+
+   void   operator+=(C CChar         *text ) {T.text (text );}
+   void   operator+=(C CChar8        *text ) {T.text (text );}
+   void   operator+=(C Str           &text ) {T.text (text );}
+   void   operator+=(C ImagePtr      &image) {T.image(image);}
+   StrEx& panelText (C PanelImagePtr &panel, C Str      &text ); // add text  inside a panel, same as "T.panel(panel); T+=text ; T.panel(null);"
+   StrEx& panelImage(C PanelImagePtr &panel, C ImagePtr &image); // add image inside a panel, same as "T.panel(panel); T+=image; T.panel(null);"
+
+   // io
+   Bool save(File &f, CChar *path=null)C; // save, 'path'=path at which resource is located (this is needed so that the sub-resources can be accessed with relative path), false on fail
+   Bool load(File &f, CChar *path=null) ; // load, 'path'=path at which resource is located (this is needed so that the sub-resources can be accessed with relative path), false on fail
 };
 /******************************************************************************/
 DECLARE_CACHE(TextStyle, TextStyles, TextStylePtr); // 'TextStyles' cache storing 'TextStyle' objects which can be accessed by 'TextStylePtr' pointer

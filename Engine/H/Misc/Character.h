@@ -95,6 +95,11 @@ const Char  CharBullet    =u'•',
             CharTriDown   =u'⯆',
             CharTriUp     =u'⯅',
 
+            CharTriangleUp=u'△',
+            CharSquare    =u'□', // med=◻, large=⬜
+            CharCircle    =u'○', // med=⚪, large=◯
+            CharCross     =u'✕', // ╳❌✖⨉🗙🞪
+
             CharCopyright =u'©',
             CharRegTM     =u'®',
             CharTrademark =u'™',
