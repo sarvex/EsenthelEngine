@@ -242,10 +242,11 @@ struct StrEx // Extended String, which can hold: Text, Images, Color/Shadow/Font
    StrEx& shadow(  Byte           shadow);
    StrEx& shadow(C Byte          *shadow); // null disables custom shadow and reverts to default
 
-   void   operator+=(C CChar         *text ) {T.text (text );}
-   void   operator+=(C CChar8        *text ) {T.text (text );}
-   void   operator+=(C Str           &text ) {T.text (text );}
-   void   operator+=(C ImagePtr      &image) {T.image(image);}
+   void   operator+=(C CChar         *text  ) {T.text  (text );}
+   void   operator+=(C CChar8        *text  ) {T.text  (text );}
+   void   operator+=(C Str           &text  ) {T.text  (text );}
+   void   operator+=(C ImagePtr      &image ) {T.image (image);}
+   StrEx& shadow    (  Int            shadow) {T.shadow(Byte(shadow)); return T;}
    StrEx& panelText (C PanelImagePtr &panel, C Str      &text ); // add text  inside a panel, same as "T.panel(panel); T+=text ; T.panel(null);"
    StrEx& panelImage(C PanelImagePtr &panel, C ImagePtr &image); // add image inside a panel, same as "T.panel(panel); T+=image; T.panel(null);"
 

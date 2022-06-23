@@ -595,15 +595,11 @@ void DrawKeyboardCursor(C Vec2 &pos, Flt height)
    ALPHA_MODE alpha=D.alpha(ALPHA_INVERT); Rect_U(pos, height/11.0f, height).draw(WHITE);
                     D.alpha(alpha       );
 }
-void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width, C TextStyleParams &text_style)
+void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width)
 {
-   if(C Font *font=text_style.getFont())
-   {
-      Flt w=((text_style.spacing==SPACING_CONST) ? text_style.colWidth() : width),
-      min_w=height/5.0f; // use min width because some characters are just too thin
-      ALPHA_MODE alpha=D.alpha(ALPHA_INVERT); Rect_LU(pos, w, height).extendX(Max((min_w-w)*0.5f, 0)).draw(WHITE); // extend both left and right
-                       D.alpha(alpha       );
-   }
+   const Flt min_w=height/5.0f; // use min width because some characters are just too thin
+   ALPHA_MODE alpha=D.alpha(ALPHA_INVERT); Rect_LU r(pos, width, height); if(min_w>width)r.extendX((min_w-width)*0.5f); r.draw(WHITE); // extend both left and right
+                    D.alpha(alpha       );
 }
 void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C TextCodeData *code, Int codes, Int offset)C
 {
@@ -806,7 +802,7 @@ void TextStyleParams::drawMain(Flt x, Flt y, TextInput ti, Int max_length, C Tex
       if(cur_w>=0 && !Kb._cur_hidden)
       {
          if(spacing==SPACING_CONST)cur_x-=space*0.5f; // revert what we've applied
-         if(edit->overwrite)DrawKeyboardCursorOverwrite(Vec2(cur_x, p.y), total_height, cur_w, T);
+         if(edit->overwrite)DrawKeyboardCursorOverwrite(Vec2(cur_x, p.y), total_height, (spacing==SPACING_CONST) ? colWidth() : cur_w);
          else               DrawKeyboardCursor         (Vec2(cur_x, p.y), total_height);
       }
    }

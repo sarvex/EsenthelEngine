@@ -58,5 +58,5 @@ private:
 };
 /******************************************************************************/
 void DrawKeyboardCursor         (C Vec2 &pos, Flt height);
-void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width, C TextStyleParams &text_style);
+void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width);
 /******************************************************************************/
