@@ -541,7 +541,6 @@ TextStyleParams& TextStyleParams::reset(Bool gui)
    selection=DefaultSelectionColor;
   _font     =null; // keep as null to always use the current value of 'Gui.skin.font'
    edit     =null;
-
    return T;
 }
 /******************************************************************************/
