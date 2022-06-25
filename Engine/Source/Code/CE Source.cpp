@@ -5,7 +5,7 @@ namespace Edit{
 /******************************************************************************/
 void LineMode::setTokens(Line &line)
 {
-   C Str &s=line;
+ C Str &s=line;
    tokens.clear();
    FREPA(s)
    {

@@ -2,7 +2,7 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define SELECT_DIST_2 Sqr(0.013f)
+#define SELECT_DIST_2 Sqr(0.01f)
 #define SPEED         0.005f
 #define BUF_BUTTONS   256
 
@@ -787,8 +787,15 @@ void MouseClass::update()
    // dragging
    if(b(_cur))
    {
-      if(!selecting() && Dist2(pos(), startPos())*Sqr(D.scale())>=SELECT_DIST_2     )_selecting=true; // skip 'D.smallSize' because mouse input is independent on screen size
-      if(!dragging () && selecting() &&                   life()>=DragTime+Time.ad())_dragging =true;
+      if(!dragging()) // since dragging can be enabled only if selecting, then check this first to allow skipping check for selecting
+      {
+      #if 1 // screen units
+         if(  !selecting() && Dist2(pos(), startPos())*Sqr(D.scale()*(D.smallSize() ? 0.5f : 1.0f))>=SELECT_DIST_2     )_selecting=true;
+      #else // pixel  units
+         if(  !selecting() &&                 D.screenToWindowPixelSize(pos()-startPos()).length2()>=Sqr(3.5)          )_selecting=true;
+      #endif
+         if(/*!dragging () && already checked above*/ selecting() &&                         life()>=DragTime+Time.ad())_dragging =true;
+      }
    }else
    if(!br(_cur))_dragging=_selecting=false; // disable dragging only if button not on and not released, to allow detection inside the game for "release after dragging"
 

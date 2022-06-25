@@ -52,6 +52,12 @@ enum AUTO_LINE_MODE : Byte // Automatic Lines Mode
    AUTO_LINE_SPLIT      , // automatically sets new lines in text (new lines are not calculated on spaces, words can be  split if their length exceeds available width)
    AUTO_LINE_NUM        , // number of auto line modes
 };
+enum TEXT_POS_MODE : Byte // Text Position Mode
+{
+   TEXT_POS_DEFAULT  , // use when finding cursor position, with rounding
+   TEXT_POS_OVERWRITE, // use when finding cursor position in overwrite mode
+   TEXT_POS_FIT      , // use when finding how many elements can fit in given space
+};
 /******************************************************************************/
 #if EE_PRIVATE
 struct TextCodeData
@@ -115,18 +121,18 @@ struct TextStyleParams // Text Style Params
    void posY (Flt y, Vec2 &range)C; // get actual position which will be used for drawing (including padding)
    void posYI(Flt y, Vec2 &range)C; // get actual position which will be used for drawing (including padding)
 #endif
-   Flt   colWidth (                               )C {return size.x*space.x;}                                             // get column width  (this is valid if "spacing==SPACING_CONST")
-   Flt  lineHeight(                               )C {return size.y*space.y;}                                             // get line   height
-   Flt  textWidth (C Str  &str , Int max_length=-1)C;                                                                     // get width    of 'str'  one line text
-   Flt  textWidth (C Str8 &str , Int max_length=-1)C;                                                                     // get width    of 'str'  one line text
-   Flt  textWidth (CChar  *text, Int max_length=-1)C;                                                                     // get width    of 'text' one line text
-   Flt  textWidth (CChar8 *text, Int max_length=-1)C;                                                                     // get width    of 'text' one line text
-   Int  textPos   (CChar  *text, Flt x       , Bool round)C;                                                              // get index    of character at given 'x'     position, returns "0 .. Length(text)"
-   Int  textPos   (CChar8 *text, Flt x       , Bool round)C;                                                              // get index    of character at given 'x'     position, returns "0 .. Length(text)"
-   Int  textPos   (CChar  *text, Flt x, Flt y, Bool round, Flt width, AUTO_LINE_MODE auto_line, Bool &eol             )C; // get index    of character at given 'x,y'   position, returns "0 .. Length(text)"
-   Vec2 textIndex (CChar  *text, Int index               , Flt width, AUTO_LINE_MODE auto_line                        )C; // get position of character at given 'index' position
-   Int  textLines (CChar  *text,                           Flt width, AUTO_LINE_MODE auto_line, Flt *actual_width=null)C; // get number   of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
-   Int  textLines (CChar8 *text,                           Flt width, AUTO_LINE_MODE auto_line, Flt *actual_width=null)C; // get number   of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
+   Flt   colWidth (                               )C {return size.x*space.x;}                                                    // get column width  (this is valid if "spacing==SPACING_CONST")
+   Flt  lineHeight(                               )C {return size.y*space.y;}                                                    // get line   height
+   Flt  textWidth (C Str  &str , Int max_length=-1)C;                                                                            // get width    of 'str'  one line text
+   Flt  textWidth (C Str8 &str , Int max_length=-1)C;                                                                            // get width    of 'str'  one line text
+   Flt  textWidth (CChar  *text, Int max_length=-1)C;                                                                            // get width    of 'text' one line text
+   Flt  textWidth (CChar8 *text, Int max_length=-1)C;                                                                            // get width    of 'text' one line text
+   Int  textPos   (CChar  *text, Flt x       , TEXT_POS_MODE tpm)C;                                                              // get index    of character at given 'x'     position, returns "0 .. Length(text)"
+   Int  textPos   (CChar8 *text, Flt x       , TEXT_POS_MODE tpm)C;                                                              // get index    of character at given 'x'     position, returns "0 .. Length(text)"
+   Int  textPos   (CChar  *text, Flt x, Flt y, TEXT_POS_MODE tpm, Flt width, AUTO_LINE_MODE auto_line, Bool &eol             )C; // get index    of character at given 'x,y'   position, returns "0 .. Length(text)"
+   Vec2 textIndex (CChar  *text, Int index                      , Flt width, AUTO_LINE_MODE auto_line                        )C; // get position of character at given 'index' position
+   Int  textLines (CChar  *text,                                  Flt width, AUTO_LINE_MODE auto_line, Flt *actual_width=null)C; // get number   of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
+   Int  textLines (CChar8 *text,                                  Flt width, AUTO_LINE_MODE auto_line, Flt *actual_width=null)C; // get number   of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
 
    // operations
    TextStyleParams& reset          (Bool gui=false); // reset all   parameters to default settings, this copies settings from 'Gui.skin.text_style' when 'gui' is false, and 'Gui.skin.text.text_style' when 'gui' is true

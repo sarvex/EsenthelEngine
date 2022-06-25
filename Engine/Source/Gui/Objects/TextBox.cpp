@@ -352,9 +352,9 @@ void TextBox::moveCursor(Int lines, Int pages)
          Int page_lines=Trunc(clientHeight()/ts.lineHeight());
          lines+=pages*Max(1, page_lines); // always move at least one line
       }
-      Vec2 pos=ts.textIndex(T(), cursor(), width, auto_line);
-      pos.y+=ts.lineHeight()*(lines+0.5f); // add 0.5 to get rounding
-      Bool eol; _edit.cur=ts.textPos(T(), pos.x, pos.y, true, width, auto_line, eol);
+      Vec2 pos   =ts.textIndex (T(), cursor(), width, auto_line);
+           pos.y+=ts.lineHeight()*(lines+0.5f); // add 0.5 to get rounding
+      Bool eol; _edit.cur=ts.textPos(T(), pos.x, pos.y, TEXT_POS_DEFAULT, width, auto_line, eol); // TODO: this could be "_edit.overwrite ? TEXT_POS_OVERWRITE : TEXT_POS_DEFAULT" but for that case we would have to adjust 'pos.x' based on char width
    }
 }
 /******************************************************************************/
@@ -431,7 +431,7 @@ void TextBox::update(C GuiPC &gpc)
             Flt  offset      =ts.size.x*TEXTBOX_OFFSET;
             Vec2 relative_pos=*touch_pos-gpc.offset,
                   clipped_pos=relative_pos&_crect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor from outside, instead start smooth scrolling when mouse is outside
-            Bool eol; Int pos=ts.textPos(T(), clipped_pos.x - _crect.min.x + slidebar[0].offset() - offset, _crect.max.y - clipped_pos.y + slidebar[1].offset(), !ButtonDb(touch_state) && !_edit.overwrite, virtualWidth() - offset*2, wordWrap() ? AUTO_LINE_SPACE_SPLIT : AUTO_LINE_NONE, eol);
+            Bool eol; Int pos=ts.textPos(T(), clipped_pos.x - _crect.min.x + slidebar[0].offset() - offset, _crect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_POS_OVERWRITE : TEXT_POS_DEFAULT, virtualWidth() - offset*2, wordWrap() ? AUTO_LINE_SPACE_SPLIT : AUTO_LINE_NONE, eol);
 
             if(ButtonDb(touch_state))
             {

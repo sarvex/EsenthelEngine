@@ -763,12 +763,12 @@ void Source::update(C GuiPC &gpc)
          {
             forceCreateNextUndo(); clearSuggestions();
             if(Kb.shift() && (sel.x<0 || sel.y<0))sel=cur;
-            cur.set(Round(c.x), Trunc(c.y));
+            cur.set(Overwrite ? Trunc(c.x) : Round(c.x), Trunc(c.y));
             curClip();
             if(!Kb.shift()){sel=-1; sel_temp=cur;}
             makeCurVisible();
          }else
-         if(MT.b(i, 0) && sel_temp.x>=0)
+         if(MT.b(i, 0) && sel_temp.x>=0 && (!Overwrite || Ms.selecting())) // for Overwrite, require some mouse movement, because there initial position is calculated based on 'Trunc', but target using 'Round'
          {
             if(MT.pos(i).y>=_crect.max.y)slidebar[1].button[1].push();else
             if(MT.pos(i).y<=_crect.min.y)slidebar[1].button[2].push();

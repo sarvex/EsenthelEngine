@@ -218,7 +218,7 @@ void Set(MemPtr<TextLineSplit8> tls, CChar8 *text, C TextStyleParams &text_style
       {
          for(width+=EPS; ; ) // needed when drawing text in 'width' calculated from 'textWidth'
          {
-            Int length=Length(t, auto_line, text_style.textPos(t, width, false)); // check how many characters can we fit in this space
+            Int length=Length(t, auto_line, text_style.textPos(t, width, TEXT_POS_FIT)); // check how many characters can we fit in this space
             tls.New().set(t, length, t-text);
             t+=length;
             if(*t=='\0')break;
@@ -253,7 +253,7 @@ void Set(MemPtr<TextLineSplit16> tls, CChar *text, C TextStyleParams &text_style
       {
          for(width+=EPS; ; ) // needed when drawing text in 'width' calculated from 'textWidth'
          {
-            Int length=Length(t, auto_line, text_style.textPos(t, width, false)); // check how many characters can we fit in this space
+            Int length=Length(t, auto_line, text_style.textPos(t, width, TEXT_POS_FIT)); // check how many characters can we fit in this space
             tls.New().set(t, length, t-text);
             t+=length;
             if(*t=='\0')break;
@@ -268,7 +268,7 @@ static Bool SetLine(TextLineSplit16 &tls, CChar *text, C TextStyleParams &text_s
 {
    if(CChar *t=text)if(line>=0)for(width+=EPS; ; ) // needed when drawing text in 'width' calculated from 'textWidth'
    {
-      Int length=Length(t, auto_line, (auto_line==AUTO_LINE_NONE) ? INT_MAX-1 : text_style.textPos(t, width, false)); // check how many characters can we fit in this space, use "INT_MAX-1" so "FREP(max_length+1)" inside 'Length' can finish
+      Int length=Length(t, auto_line, (auto_line==AUTO_LINE_NONE) ? INT_MAX-1 : text_style.textPos(t, width, TEXT_POS_FIT)); // check how many characters can we fit in this space, use "INT_MAX-1" so "FREP(max_length+1)" inside 'Length' can finish
       if(!line){tls.set(t, length, t-text); return true;}
       line--;
       t+=length;
@@ -284,7 +284,7 @@ Vec2 TextStyleParams::textIndex(CChar *text, Int index, Flt width, AUTO_LINE_MOD
    if(index<=0 || !text)return 0;
    CChar *t=text; Int line=0; for(width+=EPS; ; line++) // needed when drawing text in 'width' calculated from 'textWidth'
    {
-      Int length=Length(t, auto_line, (auto_line==AUTO_LINE_NONE) ? INT_MAX-1 : textPos(t, width, false)); // check how many characters can we fit in this space, use "INT_MAX-1" so "FREP(max_length+1)" inside 'Length' can finish
+      Int length=Length(t, auto_line, (auto_line==AUTO_LINE_NONE) ? INT_MAX-1 : textPos(t, width, TEXT_POS_FIT)); // check how many characters can we fit in this space, use "INT_MAX-1" so "FREP(max_length+1)" inside 'Length' can finish
       Int offset=t-text;
       t+=length;
    #if 1 // this check will set the cursor for the next line for split lines
@@ -398,7 +398,7 @@ Flt TextStyleParams::textWidth(CChar8 *text, Int max_length)C
    return 0;
 }
 /******************************************************************************/
-Int TextStyleParams::textPos(CChar8 *text, Flt x, Bool round)C
+Int TextStyleParams::textPos(CChar8 *text, Flt x, TEXT_POS_MODE tpm)C
 {
    Int pos=0;
    if(Is(text))
@@ -407,7 +407,7 @@ Int TextStyleParams::textPos(CChar8 *text, Flt x, Bool round)C
       Flt space=size.x*T.space.x;
       if(spacing==SPACING_CONST)
       {
-         x/=space; if(round)x+=0.5f;
+         x/=space; if(tpm==TEXT_POS_DEFAULT)x+=0.5f;
          pos=Trunc(x);
       #if 0 // fast
          Clamp(pos, 0, Length(text));
@@ -421,22 +421,22 @@ Int TextStyleParams::textPos(CChar8 *text, Flt x, Bool round)C
          }
       #endif
       }else
-      for(Flt xsize=size.x/font->height(); ; )
+      for(Flt xsize=size.x/font->height(), space_2=space/2; ; )
       {
-         Char8 c=*text; if(!c)break;
+          Char8 c=*text; if(!c)break;
          CChar8 *start=text;
       skip1:
          Char8 next=*++text;
          if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
-         if(x<=(round ? w*0.5f : w))break;
+         if(x<=((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
          x-=w+space;
          pos+=text-start; // advance by how many characters were processed
       }
    }
    return pos;
 }
-Int TextStyleParams::textPos(CChar *text, Flt x, Bool round)C
+Int TextStyleParams::textPos(CChar *text, Flt x, TEXT_POS_MODE tpm)C
 {
    Int pos=0;
    if(Is(text))
@@ -445,7 +445,7 @@ Int TextStyleParams::textPos(CChar *text, Flt x, Bool round)C
       Flt space=size.x*T.space.x;
       if(spacing==SPACING_CONST)
       {
-         x/=space; if(round)x+=0.5f;
+         x/=space; if(tpm==TEXT_POS_DEFAULT)x+=0.5f;
          pos=Trunc(x);
       #if 0 // fast
          Clamp(pos, 0, Length(text));
@@ -459,26 +459,26 @@ Int TextStyleParams::textPos(CChar *text, Flt x, Bool round)C
          }
       #endif
       }else
-      for(Flt xsize=size.x/font->height(); ; )
+      for(Flt xsize=size.x/font->height(), space_2=space/2; ; )
       {
-         Char c=*text; if(!c)break;
+          Char c=*text; if(!c)break;
          CChar *start=text;
       skip1:
          Char next=*++text;
          if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
-         if(x<=(round ? w*0.5f : w))break;
+         if(x<=((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
          x-=w+space;
          pos+=text-start; // advance by how many characters were processed
       }
    }
    return pos;
 }
-Int TextStyleParams::textPos(CChar *text, Flt x, Flt y, Bool round, Flt width, AUTO_LINE_MODE auto_line, Bool &eol)C
+Int TextStyleParams::textPos(CChar *text, Flt x, Flt y, TEXT_POS_MODE tpm, Flt width, AUTO_LINE_MODE auto_line, Bool &eol)C
 {
    Int line=Trunc(y/lineHeight()); if(line<0){eol=false; return 0;}
    TextLineSplit16 tls; if(!SetLine(tls, text, T, width, auto_line, line)){eol=true; return Length(text);}
-   Int pos=textPos(text+tls.offset, x, round);
+   Int pos=textPos(text+tls.offset, x, tpm);
    if(eol=(pos>=tls.length))pos=tls.length; // yes this must check ">=" and not ">" because we need to set "eol=(pos>=tls.length)" because we need it for correct double-clicking word selection
    return tls.offset+pos;
 }
@@ -488,7 +488,7 @@ Int TextStyleParams::textLines(CChar8 *text, Flt width, AUTO_LINE_MODE auto_line
    Memt<TextLineSplit8> tls; Set(tls, text, T, width, auto_line);
    if(actual_width)
    {
-      *actual_width=0; REPA(tls){TextLineSplit8 &t=tls[i]; MAX(*actual_width, textWidth(t.text, t.length));}
+     *actual_width=0; REPA(tls){TextLineSplit8 &t=tls[i]; MAX(*actual_width, textWidth(t.text, t.length));}
    }
    return tls.elms();
 }
@@ -497,7 +497,7 @@ Int TextStyleParams::textLines(CChar *text, Flt width, AUTO_LINE_MODE auto_line,
    Memt<TextLineSplit16> tls; Set(tls, text, T, width, auto_line);
    if(actual_width)
    {
-      *actual_width=0; REPA(tls){TextLineSplit16 &t=tls[i]; MAX(*actual_width, textWidth(t.text, t.length));}
+     *actual_width=0; REPA(tls){TextLineSplit16 &t=tls[i]; MAX(*actual_width, textWidth(t.text, t.length));}
    }
    return tls.elms();
 }
