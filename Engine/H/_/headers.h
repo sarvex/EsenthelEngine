@@ -5,6 +5,7 @@
 #define JP_X_INPUT       (WINDOWS_OLD && (SUPPORT_WINDOWS_XP || SUPPORT_WINDOWS_7))
 #define JP_GAMEPAD_INPUT (WINDOWS     && !JP_X_INPUT) // always use on WINDOWS_NEW to allow 'App.joypad_user_changed'
 #define JP_DIRECT_INPUT  (WINDOWS_OLD && 0) // disable DirectInput-only Joypads because it introduces 0.25s delay to engine startup. Modern Joypads use XInput, so this is only for old Joypads.
+#define JP_RAW_INPUT     (WINDOWS_OLD && 0)
 
 #if EE_PRIVATE
    // Threads
@@ -214,6 +215,10 @@
       #if WINDOWS_OLD && DIRECT_INPUT
          #define DIRECTINPUT_VERSION 0x0800
          #include <dinput.h>
+      #endif
+      #if JP_RAW_INPUT
+         #include <hidsdi.h>
+         #include <hidpi.h>
       #endif
 
       #if DIRECT_SOUND || DIRECT_SOUND_RECORD

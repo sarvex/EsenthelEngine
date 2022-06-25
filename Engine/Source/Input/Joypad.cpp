@@ -1386,10 +1386,36 @@ void InitJoypads()
 #endif
 
    ListJoypads();
+
+#if JP_RAW_INPUT
+   RAWINPUTDEVICE rid[2];
+
+   rid[0].usUsagePage=HID_USAGE_PAGE_GENERIC;
+   rid[0].usUsage    =HID_USAGE_GENERIC_GAMEPAD;
+   rid[0].dwFlags    =RIDEV_INPUTSINK;
+   rid[0].hwndTarget =App.window();
+   rid[1]=rid[0];
+	rid[1].usUsage=HID_USAGE_GENERIC_JOYSTICK;
+
+   RegisterRawInputDevices(rid, Elms(rid), SIZE(RAWINPUTDEVICE));
+#endif
 }
 /******************************************************************************/
 void ShutJoypads()
 {
+#if JP_RAW_INPUT
+   RAWINPUTDEVICE rid[2];
+
+   rid[0].usUsagePage=HID_USAGE_PAGE_GENERIC;
+   rid[0].usUsage    =HID_USAGE_GENERIC_GAMEPAD;
+   rid[0].dwFlags    =RIDEV_REMOVE;
+   rid[0].hwndTarget =App.window();
+   rid[1]=rid[0];
+	rid[1].usUsage=HID_USAGE_GENERIC_JOYSTICK;
+
+   RegisterRawInputDevices(rid, Elms(rid), SIZE(RAWINPUTDEVICE));
+#endif
+
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
    // first remove callbacks
    if(GamepadStatics)

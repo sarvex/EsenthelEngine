@@ -1011,7 +1011,7 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
 
       // KEYBOARD
       // Order of keyboard events: 0-WM_INPUT, 1-WM_KEYDOWN, 2-WM_CHAR, 3-WM_KEYUP
-   #if KB_RAW_INPUT || MS_RAW_INPUT
+   #if KB_RAW_INPUT || MS_RAW_INPUT || JP_RAW_INPUT
       case WM_INPUT:
       {
          UINT size=0; GetRawInputData((HRAWINPUT)lParam, RID_INPUT, null, &size, sizeof(RAWINPUTHEADER));
@@ -1068,6 +1068,48 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_5_UP)Ms.release(4);
                   }
                   return 0;
+               }break;
+            #endif
+
+            #if JP_RAW_INPUT
+               case RIM_TYPEHID:
+               {
+                  /*LogName(S);
+                  GetRawInputDeviceInfo(raw.header.hDevice, RIDI_PREPARSEDDATA, 0, &size);
+		            _HIDP_PREPARSED_DATA* data = (_HIDP_PREPARSED_DATA*)malloc(size);
+		            bool gotPreparsedData = GetRawInputDeviceInfo(raw.header.hDevice, RIDI_PREPARSEDDATA, data, &size) > 0;
+		            if (gotPreparsedData)
+		            {
+			            HIDP_CAPS caps;
+			            HidP_GetCaps(data, &caps);
+
+			            LogN("Values: ");
+			            HIDP_VALUE_CAPS* valueCaps = (HIDP_VALUE_CAPS*)malloc(caps.NumberInputValueCaps * sizeof(HIDP_VALUE_CAPS));
+			            HidP_GetValueCaps(HidP_Input, valueCaps, &caps.NumberInputValueCaps, data);
+			            for (USHORT i = 0; i < caps.NumberInputValueCaps; ++i)
+			            {
+				            ULONG value;
+				            HidP_GetUsageValue(HidP_Input, valueCaps[i].UsagePage, 0, valueCaps[i].Range.UsageMin, &value, data, (PCHAR)raw.data.hid.bRawData, raw.data.hid.dwSizeHid);
+				            LogN(S+i+" "+(ULong)value);
+			            }
+			            free(valueCaps);
+
+			            LogN("Buttons: ");
+			            HIDP_BUTTON_CAPS* buttonCaps = (HIDP_BUTTON_CAPS*)malloc(caps.NumberInputButtonCaps * sizeof(HIDP_BUTTON_CAPS));
+			            HidP_GetButtonCaps(HidP_Input, buttonCaps, &caps.NumberInputButtonCaps, data);
+			            for (USHORT i = 0; i < caps.NumberInputButtonCaps; ++i)
+			            {
+				            ULONG usageCount = buttonCaps->Range.UsageMax - buttonCaps->Range.UsageMin + 1;
+				            USAGE* usages = (USAGE*)malloc(sizeof(USAGE) * usageCount);
+				            HidP_GetUsages(HidP_Input, buttonCaps[i].UsagePage, 0, usages, &usageCount, data, (PCHAR)raw.data.hid.bRawData, raw.data.hid.dwSizeHid);
+				            for (ULONG usageIndex=0; usageIndex < usageCount; ++usageIndex) {
+					            LogN(S+i+" "+usages[usageIndex]);
+				            }
+				            free(usages);
+			            }
+			            free(buttonCaps);
+		            }
+		            free(data);*/
                }break;
             #endif
             }
