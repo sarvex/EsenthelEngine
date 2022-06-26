@@ -163,6 +163,9 @@ struct TextSrc
 
    void fix() {if(!t16 && !t8)t16=u"";} // don't allow null so we can assume "t8 || t16" in 'c' 'n', prefer 't16' to avoid 'Char8To16Fast'
 
+   void operator+=(Int i) {if(t8)t8+=i;else t16+=i;} // assumes that "t8 || t16"
+   void operator-=(Int i) {if(t8)t8-=i;else t16-=i;} // assumes that "t8 || t16"
+
    TextSrc() {}
    TextSrc(CChar8 *t) {t8 =t; t16=null;}
    TextSrc(CChar  *t) {t16=t; t8 =null;}
@@ -195,6 +198,7 @@ struct TextProcessor
    ALPHA_MODE    alpha;
    Char          prev_chr;
    Color         color;
+   Int           cur, sel;
    Flt           xsize, ysize, xsize_2, space, space_2, x_align_mul, y_align_mul, panel_r, panel_padd_r;
    Vec2          pos, size, font_offset;
  C Font         *font, *default_font;
@@ -254,12 +258,13 @@ struct TextProcessor
    Int     charWidth(Char      chr)C {return font->charWidth(chr);}
    Int nextCharWidth(Char next_chr)C {return font->charWidth(prev_chr, next_chr, spacing);}
 
-   void advance    (Char next_chr) {pos.x+=space + xsize*nextCharWidth(next_chr);}
-   Bool advanceFast(Char next_chr)
+   void advance     (Char next_chr) {pos.x+=space + xsize*nextCharWidth(next_chr);}
+   void advanceSplit(Char next_chr) {pos.x-=space + xsize*nextCharWidth(next_chr);}
+   Bool advanceFast (Char next_chr)
    {
       Flt w=xsize*nextCharWidth(next_chr);
       Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? space_2 : space : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*charWidth(prev_chr)); // for TEXT_POS_FIT we have to make sure that the 'prev_chr' fully fits
-      if(pos.x<=test)return true;
+      if(pos.x<test)return true;
       pos.x-=space+w;
       return false;
    }
@@ -424,6 +429,8 @@ struct TextProcessor
    {
       sub_pixel=default_font->_sub_pixel; // 'sub_pixel' before 'setColor'
 
+      cur=-1; sel=-1; if(style.edit){cur=style.edit->cur; sel=style.edit->sel;}
+
       x_align_mul=style.align.x/2-0.5f;
       y_align_mul=style.align.y/2+0.5f;
 
@@ -517,7 +524,7 @@ struct TextProcessor
                   Flt w;
                   Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
                   Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
-                  if(pos.x<=test)goto ret;
+                  if(pos.x<test)goto ret;
                #define FAST_CHECK 1
                #if    !FAST_CHECK
                   if(insidePanelNearPos())
@@ -547,10 +554,7 @@ struct TextProcessor
                {
                   if(prev_chr){if(insidePanelNearPos() || advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
                   if(panel)pos.x=panel_r;
-                  if(panel=d->panel())
-                  {
-                     processPanelFast(text, data, datas);
-                  }
+                  if(panel=d->panel())processPanelFast(text, data, datas);
                }break;
 
                case StrEx::Data::FONT:
@@ -652,11 +656,11 @@ struct TextProcessor
             goto aln_loop;
 
          aln_end:
-            split->end(pos_i);
+            split->length=-1; // unlimited, end(pos_i);
          }else
          {
-         #if 0
-            Int chars=0;
+            split->length=-1;
+            TextSplit *next=&splits.New(); split=&splits[splits.elms()-2];
          loop:
             if(!chr)
             {
@@ -669,14 +673,16 @@ struct TextProcessor
                      text=d->text(); chr=text.c(); goto have_char;
                   }break;
 
+               #if 0
+                  // FIXME
                   case StrEx::Data::IMAGE:
                   {
-                     if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+                     if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
 
                      Flt w;
                      Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
                      Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
-                     if(pos.x<=test)goto ret;
+                     if(pos.x<test)goto ret;
                      pos.x-=(spacingConst() ? Max(w, space) : w+space);
                      if(insidePanelNearPos() && pos.x/*-w-space : already applied this above*/-panel_padd_r<=panel_r+EPS)goto ret; // if this is the last element, "image_left_pos-image_w-panel_padd_r<=panel_r+space+EPS" 'panel_r' had 'space' applied so have to revert it
                      pos_i++;
@@ -684,53 +690,87 @@ struct TextProcessor
 
                   case StrEx::Data::PANEL:
                   {
-                     if(prev_chr){if(insidePanelNearPos() || advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+                     if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
                      if(panel)pos.x=panel_r;
-                     if(panel=d->panel())
-                     {
-                        processPanelFast(text, data, datas);
-                     }
+                     if(panel=d->panel())processPanelFast(text, data, datas);
                   }break;
 
                   case StrEx::Data::FONT:
                   {
                    C Font *new_font=d->font(); if(!new_font)new_font=default_font; if(font!=new_font)
                      {
-                        if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+                        if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
                         setFontFast(new_font);
                      }
                   }break;
+               #endif
+
+                  case StrEx::Data::COLOR     : color =d   ->color ; break;
+                  case StrEx::Data::COLOR_OFF : color =style.color ; break;
+                  case StrEx::Data::SHADOW    : shadow=d   ->shadow; break;
+                  case StrEx::Data::SHADOW_OFF: shadow=style.shadow; break;
                }
                goto next_data;
             }
          have_char:
 
-            if(prev_chr){if(advanceFast(chr))goto ret; pos_i+=chars; chars=0;} prev_chr=chr;
+            Int pos_start=pos_i; // 'pos_start' is located at 'chr'
 
-            chars++;
-
+            // combining
+            Int chars=1;
          combining:
             Char n=text.n();
             if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+            pos_i+=chars;
+            // 'text' and 'pos_i' are now after 'chr' and combined
+
+            Bool new_line=(chr=='\n' // manual new line
+                       || (pos_start>split->offset // require at least length=1
+                        && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
+
+            Bool skippable=(chr==' ' || chr=='\n');
+            if(  skippable // found separator
+            ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
+            {
+               split->end(pos_start);
+
+               next->shadow=shadow;
+               next->color =color;
+               next->datas =datas;
+             //next->length=-1; this may be called several times, don't set it here, instead call it only one time later
+               next->data  =data;
+               next->panel =panel;
+               next->font  =font;
+               if(skippable)
+               {
+                  next->offset=pos_i;
+                  next->text  =text;
+               }else
+               {
+                  next->offset=pos_start;
+                  next->text  =text; next->text-=chars;
+               }
+            }
+            if(new_line)
+            {
+               next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
+               prev_chr='\0'; if(skippable)chr='\0';
+               pos.x=width;
+               // FIXME if(panel)processPanelFast, however have to check if can be closed first? (on the previous line) -> if text is finished and next visible elm is panel? careful about skippable
+            }
+            if(prev_chr)advanceSplit(chr); prev_chr=chr;
 
             chr=n; goto loop;
 
          end:
-            if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
-
-         ret:
-            prev_chr='\0'; //return pos_i;
-            // have to make sure to clear 'prev_chr'
-         #endif
+            split->length=-1; splits.removeLast(); // unlimited, end(pos_i); remove after adjusting 'split' because it might change memory address
+            prev_chr='\0'; // have to make sure to clear 'prev_chr'
          }
       }
    }
 
    void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel, Int offset=0, Int next_offset=-1) // assumes: 'text.fix'
    {
-      Int cur=SIGN_BIT, sel=SIGN_BIT; ASSERT(Int(SIGN_BIT)<0); // these must be negative
-      if(style.edit){if(style.edit->cur>=0)cur=style.edit->cur-offset; if(style.edit->sel>=0)sel=style.edit->sel-offset;} // set only if valid (so we keep SIGN_BIT otherwise)
-
       if(!start_font)start_font=default_font;
       setFont(start_font); // BEFORE 'width'
       panel=start_panel;
@@ -750,7 +790,7 @@ struct TextProcessor
          VI.shader(shader);
       }
 
-      Int pos_i=0;
+      Int pos_i=offset;
       Flt cur_w=-1, cur_x, sel_x;
    #if DEBUG
       cur_x=sel_x=0; // to prevent run-time check exceptions in debug mode
@@ -929,7 +969,7 @@ struct TextProcessor
       if(prev_chr){advance('\0'); prev_chr='\0';}
 
       // selection
-      if(sel!=SIGN_BIT && cur!=SIGN_BIT) // have some selection
+      if(sel>=0 && cur>=0) // have some selection
       {
          Int min, max; Rect rect;
          if(sel<cur)
@@ -941,10 +981,10 @@ struct TextProcessor
             min=cur; rect.min.x=cur_x;
             max=sel; rect.max.x=sel_x;
          }
-         if(max>0 && min<pos_i) // if selection intersects with this text
+         if(max>offset && min<pos_i) // if selection intersects with this text
          {
-            if(min< 0    )rect.min.x=    x; // if minimum is before the start of this text, then use starting position
-            if(max>=pos_i)rect.max.x=pos.x; // if maximum is after  the end   of this text, then use current  position
+            if(min< offset)rect.min.x=    x; // if minimum is before the start of this text, then use starting position
+            if(max>=pos_i )rect.max.x=pos.x; // if maximum is after  the end   of this text, then use current  position
             Flt h=style.lineHeight();
             rect. setY(y-h, pos.y); D.alignScreenYToPixel(rect.min.y); // use "y-h" instead of "pos.y-h" to get exact value of the next line
             rect.moveY((h-size.y)/2); // adjust rectangle so text is at selection center
@@ -954,10 +994,10 @@ struct TextProcessor
 
       // cursor
       if(cur==pos_i && cur!=next_offset){cur_x=pos.x; cur_w=size.y/2;} // allow drawing cursor at the end only if it's not going to be drawn in the next line
-      if(cur_w>=0 && !Kb._cur_hidden && App.active())
+      if(cur_w>=0 && !Kb._cur_hidden && App.active()) // it's faster to check 'App.active' here instead of adjusting 'Kb._cur_hidden' all the time based on 'App.active'
       {
-         if(style.edit->overwrite && sel==SIGN_BIT)DrawKeyboardCursorOverwrite(Vec2(cur_x, pos.y), size.y, spacingConst() ? Max(space, cur_w) : cur_w); // draw overwrite only without selection
-         else                                      DrawKeyboardCursor         (Vec2(cur_x, pos.y), size.y);
+         if(style.edit->overwrite && sel<0)DrawKeyboardCursorOverwrite(Vec2(cur_x, pos.y), size.y, spacingConst() ? Max(space, cur_w) : cur_w); // draw overwrite only without selection
+         else                              DrawKeyboardCursor         (Vec2(cur_x, pos.y), size.y);
       }
    }
    void draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
@@ -1298,7 +1338,7 @@ Int TextStyleParams::textPos(CChar8 *text, Flt x, TEXT_POS_MODE tpm)C
          Char8 next=*++text;
          if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
-         if(x<=((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
+         if(x<((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
          x-=w+space;
          pos+=text-start; // advance by how many characters were processed
       }
@@ -1336,7 +1376,7 @@ Int TextStyleParams::textPos(CChar *text, Flt x, TEXT_POS_MODE tpm)C
          Char next=*++text;
          if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
-         if(x<=((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
+         if(x<((tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_POS_FIT we have to make sure that the 'c' fully fits
          x-=w+space;
          pos+=text-start; // advance by how many characters were processed
       }
