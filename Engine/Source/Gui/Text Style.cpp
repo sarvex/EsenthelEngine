@@ -173,12 +173,14 @@ struct TextSplit
    Byte         shadow;
    Color        color;
    Int          datas;
-   Int          max_length;
+   Int          length;
    Int          offset;
    TextSrc      text;
  C StrEx::Data *data;
  C Font        *font;
  C PanelImage  *panel;
+
+   void end(Int end) {length=end-offset;}
 };
 static Memc<TextSplit> TextSplits;
 /******************************************************************************/
@@ -490,7 +492,8 @@ struct TextProcessor
          text.fix();
          pos.x=x;
          T.tpm=tpm;
-         setFontFast(start_font ? start_font : default_font);
+         if(!start_font)start_font=default_font;
+         setFontFast(start_font);
          if(panel=start_panel)processPanelFast(text, data, datas);
 
          Int  pos_i=0, chars=0;
@@ -574,10 +577,10 @@ struct TextProcessor
          chr=n; goto loop;
 
       end:
-         if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+         if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; /*chars=0; prev_chr='\0';*/}
 
       ret:
-         prev_chr='\0'; return pos_i;
+       /*prev_chr='\0';*/ return pos_i;
       }
       return 0;
    }
@@ -597,7 +600,7 @@ struct TextProcessor
          split->shadow=shadow=style.shadow;
          split->color =color =style.color;
          split->datas =datas;
-       //split->max_length=0;
+       //split->length=0;
          split->offset=0;
          split->text  =text;
          split->data  =data;
@@ -631,13 +634,13 @@ struct TextProcessor
             Char n=text.n();
             if(chr=='\n')
             {
-               split->max_length=pos_i;
+               split->end(pos_i);
 
                split=&splits.New();
                split->shadow=shadow;
                split->color =color;
                split->datas =datas;
-             //split->max_length=0;
+             //split->length=0;
                split->offset=pos_i+1;
                split->text  =text;
                split->data  =data;
@@ -649,24 +652,90 @@ struct TextProcessor
             goto aln_loop;
 
          aln_end:
-            split->max_length=pos_i;
+            split->end(pos_i);
          }else
          {
-            // FIXME make sure to clear 'prev_chr'
+         #if 0
+            Int chars=0;
+         loop:
+            if(!chr)
+            {
+            next_data:
+               if(datas<=0)goto end;
+                  datas--; C StrEx::Data *d=data++; switch(d->type)
+               {
+                  case StrEx::Data::TEXT: if(d->text.is()) // process only if have anything, if not then proceed to 'next_data'
+                  {
+                     text=d->text(); chr=text.c(); goto have_char;
+                  }break;
+
+                  case StrEx::Data::IMAGE:
+                  {
+                     if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+
+                     Flt w;
+                     Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+                     Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
+                     if(pos.x<=test)goto ret;
+                     pos.x-=(spacingConst() ? Max(w, space) : w+space);
+                     if(insidePanelNearPos() && pos.x/*-w-space : already applied this above*/-panel_padd_r<=panel_r+EPS)goto ret; // if this is the last element, "image_left_pos-image_w-panel_padd_r<=panel_r+space+EPS" 'panel_r' had 'space' applied so have to revert it
+                     pos_i++;
+                  }break;
+
+                  case StrEx::Data::PANEL:
+                  {
+                     if(prev_chr){if(insidePanelNearPos() || advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+                     if(panel)pos.x=panel_r;
+                     if(panel=d->panel())
+                     {
+                        processPanelFast(text, data, datas);
+                     }
+                  }break;
+
+                  case StrEx::Data::FONT:
+                  {
+                   C Font *new_font=d->font(); if(!new_font)new_font=default_font; if(font!=new_font)
+                     {
+                        if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+                        setFontFast(new_font);
+                     }
+                  }break;
+               }
+               goto next_data;
+            }
+         have_char:
+
+            if(prev_chr){if(advanceFast(chr))goto ret; pos_i+=chars; chars=0;} prev_chr=chr;
+
+            chars++;
+
+         combining:
+            Char n=text.n();
+            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+
+            chr=n; goto loop;
+
+         end:
+            if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
+
+         ret:
+            prev_chr='\0'; //return pos_i;
+            // have to make sure to clear 'prev_chr'
+         #endif
          }
       }
    }
 
-   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel, Int offset=0, Int next_offset=-1)
+   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel, Int offset=0, Int next_offset=-1) // assumes: 'text.fix'
    {
       Int cur=SIGN_BIT, sel=SIGN_BIT; ASSERT(Int(SIGN_BIT)<0); // these must be negative
-      if(style.edit && App.active()){if(style.edit->cur>=0)cur=style.edit->cur-offset; if(style.edit->sel>=0)sel=style.edit->sel-offset;} // set only if valid (so we keep SIGN_BIT otherwise)
+      if(style.edit){if(style.edit->cur>=0)cur=style.edit->cur-offset; if(style.edit->sel>=0)sel=style.edit->sel-offset;} // set only if valid (so we keep SIGN_BIT otherwise)
 
       if(!start_font)start_font=default_font;
       setFont(start_font); // BEFORE 'width'
       panel=start_panel;
 
-      Flt total_width=(Equal(x_align_mul, 0) ? 0 : width(text, data, datas, max_length)); // don't calculate text width when not needed, AFTER 'setFont' and 'panel'
+      Flt total_width=(Equal(x_align_mul, 0) ? 0 : width(text, data, datas, max_length)); // don't calculate 'width' when not needed, AFTER 'setFont' and 'panel'
       x+= total_width*x_align_mul;
       y+= size.y     *y_align_mul;
 
@@ -825,8 +894,8 @@ struct TextProcessor
                       //if(style.pixel_align)D.alignScreenXToPixel(n_pos.x); 'n_pos' based on 'chr_pos' which was already aligned
 
                         VI.imageConditional(&font->_images[fc.image], *shader_image);
-                        Flt n_height_padd=ysize*fc.height_padd;
-                        Rect_LU rect(n_pos, xsize*fc.width_padd, n_height_padd);
+                        Flt   n_height_padd=ysize*fc.height_padd;
+                        Rect_LU rect(n_pos, xsize*fc. width_padd, n_height_padd);
                         if(sub_pixel)VI.imagePart(rect, fc.tex);
                         else         VI.font     (rect, fc.tex);
                         if(flag&CHARF_STACK)chr_pos.y+=n_height_padd; // if the drawn character is stacking, then move position higher for next character, to stack combining characters on top of each other (needed for THAI)
@@ -885,25 +954,25 @@ struct TextProcessor
 
       // cursor
       if(cur==pos_i && cur!=next_offset){cur_x=pos.x; cur_w=size.y/2;} // allow drawing cursor at the end only if it's not going to be drawn in the next line
-      if(cur_w>=0 && !Kb._cur_hidden)
+      if(cur_w>=0 && !Kb._cur_hidden && App.active())
       {
-         if(style.edit->overwrite)DrawKeyboardCursorOverwrite(Vec2(cur_x, pos.y), size.y, spacingConst() ? Max(style.colWidth(), cur_w) : cur_w);
-         else                     DrawKeyboardCursor         (Vec2(cur_x, pos.y), size.y);
+         if(style.edit->overwrite && sel==SIGN_BIT)DrawKeyboardCursorOverwrite(Vec2(cur_x, pos.y), size.y, spacingConst() ? Max(space, cur_w) : cur_w); // draw overwrite only without selection
+         else                                      DrawKeyboardCursor         (Vec2(cur_x, pos.y), size.y);
       }
    }
    void draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
    {
-      if(text.is() || VisibleData(data, datas) || (style.edit && App.active() && (style.edit->cur>=0 || style.edit->sel>=0)))
+      if(text.is() || VisibleData(data, datas) || (style.edit && (style.edit->cur>=0 || style.edit->sel>=0)))
          if(init(style))
       {
          text.fix();
-        _draw(style, x, y, text, data, datas, max_length, style.color, style.shadow, null, null);
+        _draw(style, x, y, text, data, datas, max_length, style.color, style.shadow, default_font, null);
          shut();
       }
    }
    void draw(C TextStyleParams &style, C Rect &rect, TextSrc text, C StrEx::Data *data, Int datas, Bool auto_line)
    {
-      if(text.is() || VisibleData(data, datas) || (style.edit && App.active() && (style.edit->cur>=0 || style.edit->sel>=0)))
+      if(text.is() || VisibleData(data, datas) || (style.edit && (style.edit->cur>=0 || style.edit->sel>=0)))
       {
          auto &splits=TextSplits;
          split(splits, style, rect.w(), auto_line, text, data, datas); if(splits.elms())
@@ -935,7 +1004,7 @@ struct TextProcessor
                TextSplit *split=&splits[start];
             next:
                TextSplit *next=splits.addr(start+1);
-              _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->max_length, split->color, split->shadow, split->font, split->panel, split->offset, next ? next->offset : -1);
+              _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel, split->offset, next ? next->offset : -1);
                if(++start<end)
                {
                   split=next; goto next;
