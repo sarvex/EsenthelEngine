@@ -811,25 +811,25 @@ void GamepadChange::process()
          joypad._raw_game_controller=raw_game_controller;
          if(raw_game_controller)
          {
-            joypad._name    =raw_game_controller->DisplayName->Data();
+            joypad._name    =    raw_game_controller->DisplayName->Data();
             joypad._buttons =Min(raw_game_controller->ButtonCount, Elms(joypad._remap));
             joypad._switches=    raw_game_controller->SwitchCount;
             joypad._axes    =    raw_game_controller->  AxisCount;
 
-            if(!gamepad)REPA(joypad._state) // this is needed only for 'raw_game_controller'
+            if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
+            joypad.setInfo(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
+
+            if(!joypad._gamepad)REPA(joypad._state) // this is needed only for 'raw_game_controller', check after 'setInfo' because that might delete '_gamepad'
             {
                auto &state=joypad._state[i]; // allocations below also zero memory, which is what we need
                state.button=ref new Platform::Array<bool                        >(joypad._buttons );
                state.Switch=ref new Platform::Array<GameControllerSwitchPosition>(joypad._switches);
                state.axis  =ref new Platform::Array<double                      >(joypad._axes    ); REP(Min(joypad._axes, 4))state.axis->Data[i]=0.5f; // set initial state to centered
             }
-
-            if(auto motors=raw_game_controller->ForceFeedbackMotors)joypad._vibrations=(motors->Size>0);
-            joypad.setInfo(raw_game_controller->HardwareVendorId, raw_game_controller->HardwareProductId);
          }
          // set callback after everything was set, in case it's called right away
-         if(gamepad            )gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);else
-         if(raw_game_controller)raw_game_controller->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+         if(joypad._gamepad            )joypad._gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);else
+         if(joypad._raw_game_controller)joypad._raw_game_controller->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
       }
    }else
    {

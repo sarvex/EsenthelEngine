@@ -48,18 +48,13 @@ struct GamepadChange
    Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > gamepad;
    Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController> raw_game_controller;
 
-   #define DISABLE_GAMEPAD (DEBUG && 0) // disable Gamepad and operate only on RawGameController
    void process()
    {
       if(added)
       {
          if(gamepad             && FindJoypadI(gamepad            .Get())>=0         // make sure it's not already listed
          || raw_game_controller && FindJoypadI(raw_game_controller.Get())>=0)return; // make sure it's not already listed
-      #if DISABLE_GAMEPAD
-         if(gamepad)return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
-      #endif
 
-         Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGameController    >     game_controller;
          if(gamepad) // gamepad callback
@@ -69,16 +64,13 @@ struct GamepadChange
                if(RawGameControllerStatics)RawGameControllerStatics->FromGameController(game_controller.Get(), &raw_game_controller);
             }
          }else // raw_game_controller callback
-         if(raw_game_controller=T.raw_game_controller)
          {
             raw_game_controller->QueryInterface(IID_PPV_ARGS(&game_controller)); if(game_controller)
             {
                if(GamepadStatics2)
                {
-               #if !DISABLE_GAMEPAD
                   GamepadStatics2->FromGameController(game_controller.Get(), &gamepad);
                   if(gamepad)return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
-               #endif
                }
             }
          }
@@ -442,24 +434,25 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[11]=JB_RTHUMB;
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
-         return;
-      }break;
+      }return;
 
       case 1256: // Samsung
       {
-         if(product_id==40960) // EI-GP20
+         switch(product_id)
          {
-            SetMem(_remap, 255);
-           _remap[ 0]=JB_A;
-           _remap[ 1]=JB_B;
-           _remap[ 3]=JB_X;
-           _remap[ 4]=JB_Y;
-           _remap[ 6]=JB_L1;
-           _remap[ 7]=JB_R1;
-           _remap[10]=JB_BACK;
-           _remap[11]=JB_START;
-         //_remap[15]=JB_PLAY;
-            return;
+            case 40960: // EI-GP20
+            {
+               SetMem(_remap, 255);
+              _remap[ 0]=JB_A;
+              _remap[ 1]=JB_B;
+              _remap[ 3]=JB_X;
+              _remap[ 4]=JB_Y;
+              _remap[ 6]=JB_L1;
+              _remap[ 7]=JB_R1;
+              _remap[10]=JB_BACK;
+              _remap[11]=JB_START;
+            //_remap[15]=JB_PLAY;
+            }return;
          }
       }break;
 
@@ -479,36 +472,59 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[11]=JB_RTHUMB;
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
-         return;
-      }break;
+      }return;
 
       case 1406: // Nintendo
-         if(product_id==8198 // JoyConL
-         || product_id==8199 // JoyConR
-         )
-      {
-         SetMem(_remap, 255);
-        _remap[ 0]=JB_A;
-        _remap[ 1]=JB_B;
-        _remap[ 2]=JB_X;
-        _remap[ 3]=JB_Y;
-        _remap[ 4]=JB_L1;
-        _remap[ 5]=JB_R1;
-         if(product_id==8198) // JoyConL
+         switch(product_id)
          {
-           _remap[10]=JB_LTHUMB;
-           _remap[ 8]=JB_BACK;
-           _remap[13]=JB_START;
-         }else // JoyConR
-         {
-           _remap[11]=JB_LTHUMB;
-           _remap[12]=JB_BACK;
-           _remap[ 9]=JB_START;
+            case 8198: // JoyConL
+            case 8199: // JoyConR
+            {
+               SetMem(_remap, 255);
+              _remap[ 0]=JB_A; // this is down
+              _remap[ 1]=JB_B; // this is right
+              _remap[ 2]=JB_X; // this is left
+              _remap[ 3]=JB_Y; // this is up
+              _remap[ 4]=JB_L1;
+              _remap[ 5]=JB_R1;
+               if(product_id==8198) // JoyConL
+               {
+                 _remap[10]=JB_LTHUMB;
+                 _remap[ 8]=JB_BACK;
+                 _remap[13]=JB_START;
+               }else // JoyConR
+               {
+                 _remap[11]=JB_LTHUMB;
+                 _remap[12]=JB_BACK;
+                 _remap[ 9]=JB_START;
+               }
+              _remap[14]=JB_MINI_S1;
+              _remap[15]=JB_MINI_S2;
+            }return;
+
+            case 8201: // Switch Pro Controller
+            {
+            #if JP_GAMEPAD_INPUT // use as RawGameController and not Gamepad because driver doesn't interpret buttons correctly
+               if(_raw_game_controller)_gamepad=null;
+            #endif
+               SetMem(_remap, 255);
+              _remap[ 0]=JB_A; // label "A"-right
+              _remap[ 1]=JB_X; // label "X"-up
+              _remap[ 2]=JB_B; // label "B"-down
+              _remap[ 3]=JB_Y; // label "Y"-left
+              _remap[ 4]=JB_L1;
+              _remap[ 5]=JB_R1;
+              _remap[ 6]=JB_L2;
+              _remap[ 7]=JB_R2;
+              _remap[ 8]=JB_BACK;
+              _remap[ 9]=JB_START;
+              _remap[10]=JB_LTHUMB;
+              _remap[11]=JB_RTHUMB;
+              _remap[12]=JB_MINI_S1; // HOME
+              _remap[13]=JB_MINI_S2; // CAPTURE
+            }return;
          }
-        _remap[14]=JB_MINI_S1;
-        _remap[15]=JB_MINI_S2;
-         return;
-      }break;
+      break;
    }
    if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android mappings
    else        REPAO(_remap)=i;
