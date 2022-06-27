@@ -334,15 +334,19 @@ struct TextProcessor
             }
             goto next_data;
          }
+
       have_char:
          elements++;
          if(prev_chr)chr_pixels+=nextCharWidth(chr); prev_chr=chr;
 
-      combining:
-         if(!max_length)goto end; max_length--;
-         Char n=text.n();
-         if(CharFlagFast(n)&CHARF_COMBINING)goto combining;
-         chr=n; goto loop;
+         {
+         combining:
+            if(!max_length)goto end; max_length--;
+            Char n=text.n();
+            if(CharFlagFast(n)&CHARF_COMBINING)goto combining;
+
+            chr=n; goto loop;
+         }
 
       end:
          if(prev_chr){chr_pixels+=nextCharWidth('\0'); prev_chr='\0';}
@@ -568,17 +572,20 @@ struct TextProcessor
             }
             goto next_data;
          }
+
       have_char:
 
          if(prev_chr){if(advanceFast(chr))goto ret; pos_i+=chars; chars=0;} prev_chr=chr;
 
          chars++;
 
-      combining:
-         Char n=text.n();
-         if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+         {
+         combining:
+            Char n=text.n();
+            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
 
-         chr=n; goto loop;
+            chr=n; goto loop;
+         }
 
       end:
          if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; /*chars=0; prev_chr='\0';*/}
@@ -634,26 +641,29 @@ struct TextProcessor
                }
                goto aln_next_data;
             }
-         aln_have_char:
-            Char n=text.n();
-            if(chr=='\n')
-            {
-               split->end(pos_i);
 
-               split=&splits.New();
-               split->shadow=shadow;
-               split->color =color;
-               split->datas =datas;
-             //split->length=0;
-               split->offset=pos_i+1;
-               split->text  =text;
-               split->data  =data;
-               split->panel =panel;
-               split->font  =font;
+         aln_have_char:
+            {
+               Char n=text.n();
+               if(chr=='\n')
+               {
+                  split->end(pos_i);
+
+                  split=&splits.New();
+                  split->shadow=shadow;
+                  split->color =color;
+                  split->datas =datas;
+                //split->length=0;
+                  split->offset=pos_i+1;
+                  split->text  =text;
+                  split->data  =data;
+                  split->panel =panel;
+                  split->font  =font;
+               }
+               pos_i++;
+               chr=n;
+               goto aln_loop;
             }
-            pos_i++;
-            chr=n;
-            goto aln_loop;
 
          aln_end:
             split->length=-1; // unlimited, end(pos_i);
@@ -712,55 +722,57 @@ struct TextProcessor
                }
                goto next_data;
             }
+
          have_char:
-
-            Int pos_start=pos_i; // 'pos_start' is located at 'chr'
-
-            // combining
-            Int chars=1;
-         combining:
-            Char n=text.n();
-            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
-            pos_i+=chars;
-            // 'text' and 'pos_i' are now after 'chr' and combined
-
-            Bool new_line=(chr=='\n' // manual new line
-                       || (pos_start>split->offset // require at least length=1
-                        && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
-
-            Bool skippable=(chr==' ' || chr=='\n');
-            if(  skippable // found separator
-            ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
             {
-               split->end(pos_start);
+               Int pos_start=pos_i; // 'pos_start' is located at 'chr'
 
-               next->shadow=shadow;
-               next->color =color;
-               next->datas =datas;
-             //next->length=-1; this may be called several times, don't set it here, instead call it only one time later
-               next->data  =data;
-               next->panel =panel;
-               next->font  =font;
-               if(skippable)
+               // combining
+               Int chars=1;
+            combining:
+               Char n=text.n();
+               if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+               pos_i+=chars;
+               // 'text' and 'pos_i' are now after 'chr' and combined
+
+               Bool new_line=(chr=='\n' // manual new line
+                          || (pos_start>split->offset // require at least length=1
+                           && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
+
+               Bool skippable=(chr==' ' || chr=='\n');
+               if(  skippable // found separator
+               ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
                {
-                  next->offset=pos_i;
-                  next->text  =text;
-               }else
-               {
-                  next->offset=pos_start;
-                  next->text  =text; next->text-=chars;
+                  split->end(pos_start);
+
+                  next->shadow=shadow;
+                  next->color =color;
+                  next->datas =datas;
+                //next->length=-1; this may be called several times, don't set it here, instead call it only one time later
+                  next->data  =data;
+                  next->panel =panel;
+                  next->font  =font;
+                  if(skippable)
+                  {
+                     next->offset=pos_i;
+                     next->text  =text;
+                  }else
+                  {
+                     next->offset=pos_start;
+                     next->text  =text; next->text-=chars;
+                  }
                }
-            }
-            if(new_line)
-            {
-               next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
-               prev_chr='\0'; if(skippable)chr='\0';
-               pos.x=width;
-               // FIXME if(panel)processPanelFast, however have to check if can be closed first? (on the previous line) -> if text is finished and next visible elm is panel? careful about skippable
-            }
-            if(prev_chr)advanceSplit(chr); prev_chr=chr;
+               if(new_line)
+               {
+                  next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
+                  prev_chr='\0'; if(skippable)chr='\0';
+                  pos.x=width;
+                  // FIXME if(panel)processPanelFast, however have to check if can be closed first? (on the previous line) -> if text is finished and next visible elm is panel? careful about skippable
+               }
+               if(prev_chr)advanceSplit(chr); prev_chr=chr;
 
-            chr=n; goto loop;
+               chr=n; goto loop;
+            }
 
          end:
             split->length=-1; splits.removeLast(); // unlimited, end(pos_i); remove after adjusting 'split' because it might change memory address

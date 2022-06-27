@@ -48,12 +48,16 @@ struct GamepadChange
    Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IGamepad          > gamepad;
    Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController> raw_game_controller;
 
+   #define DISABLE_GAMEPAD (DEBUG && 0) // disable Gamepad and operate only on RawGameController
    void process()
    {
       if(added)
       {
-         if(gamepad            .Get() && FindJoypadI(gamepad            .Get())>=0         // make sure it's not already listed
-         || raw_game_controller.Get() && FindJoypadI(raw_game_controller.Get())>=0)return; // make sure it's not already listed
+         if(gamepad             && FindJoypadI(gamepad            .Get())>=0         // make sure it's not already listed
+         || raw_game_controller && FindJoypadI(raw_game_controller.Get())>=0)return; // make sure it's not already listed
+      #if DISABLE_GAMEPAD
+         if(gamepad)return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
+      #endif
 
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController > raw_game_controller;
          Microsoft::WRL::ComPtr<ABI::Windows::Gaming::Input::IRawGameController2> raw_game_controller2;
@@ -71,8 +75,10 @@ struct GamepadChange
             {
                if(GamepadStatics2)
                {
+               #if !DISABLE_GAMEPAD
                   GamepadStatics2->FromGameController(game_controller.Get(), &gamepad);
                   if(gamepad)return; // if this is a gamepad, then ignore this 'raw_game_controller' callback, as it will be processed using 'gamepad' callback, to avoid having the same gamepad listed twice
+               #endif
                }
             }
          }
@@ -128,8 +134,8 @@ struct GamepadChange
          }
       }else
       {
-         if(gamepad            .Get())Joypads.remove(FindJoypadI(gamepad            .Get()));
-         if(raw_game_controller.Get())Joypads.remove(FindJoypadI(raw_game_controller.Get()));
+         if(gamepad            )Joypads.remove(FindJoypadI(gamepad            .Get()));
+         if(raw_game_controller)Joypads.remove(FindJoypadI(raw_game_controller.Get()));
       }
    }
 };
