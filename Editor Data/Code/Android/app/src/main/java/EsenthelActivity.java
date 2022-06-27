@@ -941,6 +941,13 @@ public class EsenthelActivity extends NativeActivity
       });
    }
    /******************************************************************************/
+   // GAMEPAD
+   /******************************************************************************/
+   public static final boolean DeviceHasAxis(android.view.InputDevice device, int axis)
+   {
+      return device.getMotionRange(axis)!=null;
+   }
+   /******************************************************************************/
    // MICROPHONE
    /******************************************************************************/
    public static class EsenthelAudioRecord extends AudioRecord

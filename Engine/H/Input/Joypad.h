@@ -205,7 +205,9 @@ private:
    Ptr     _gamepad=null, _raw_game_controller=null;
 #endif
 #endif
-#if MAC
+#if ANDROID
+   Byte axis_stick_r_x=0xFF, axis_stick_r_y=0xFF, axis_trigger_l=0xFF, axis_trigger_r=0xFF;
+#elif MAC
    struct Elm
    {
       enum TYPE : Byte

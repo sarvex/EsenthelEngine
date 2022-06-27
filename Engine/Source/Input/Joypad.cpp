@@ -433,6 +433,14 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[ 7]=JB_START;
               _remap[ 8]=JB_LTHUMB;
               _remap[ 9]=JB_RTHUMB;
+            /*_remap[10]=JB_DPAD_UP;
+              _remap[11]=JB_DPAD_RIGHT;
+              _remap[12]=JB_DPAD_DOWN;
+              _remap[13]=JB_DPAD_LEFT;*/
+             //axis_stick_r_x=AMOTION_EVENT_AXIS_Z; don't set because auto-detect works fine
+             //axis_stick_r_y=AMOTION_EVENT_AXIS_RZ;
+             //axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE;
+             //axis_trigger_r=AMOTION_EVENT_AXIS_GAS;
             }return;
          }
       }break;
@@ -473,6 +481,8 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[10]=JB_BACK;
               _remap[11]=JB_START;
             //_remap[15]=JB_PLAY;
+             //axis_stick_r_x=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
+             //axis_stick_r_y=AMOTION_EVENT_AXIS_RY;
             }return;
          }
       }break;
@@ -543,6 +553,8 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[11]=JB_RTHUMB;
               _remap[12]=JB_MINI_S1; // HOME
               _remap[13]=JB_MINI_S2; // CAPTURE
+             //axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
+             //axis_stick_r_y=AMOTION_EVENT_AXIS_RZ;
             }return;
          }
       break;

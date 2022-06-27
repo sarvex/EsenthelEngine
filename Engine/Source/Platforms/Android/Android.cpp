@@ -203,6 +203,19 @@ static void UpdateSize()
    }
 }
 /******************************************************************************/
+static inline void UpdateTrigger(Joypad &jp, Flt cur, Int index)
+{
+   Flt &old=jp.trigger[index]; if(old!=cur)
+   {
+      const Flt eps=30.0f/255; // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+      Bool old_b=(old>=eps), cur_b=(cur>=eps); if(old_b!=cur_b)
+      {
+         auto button=(index ? JB_R2 : JB_L2);
+         if(cur_b)jp.push(button);else jp.release(button);
+      }
+      old=cur;
+   }
+}
 static int32_t InputCallback(android_app *app, AInputEvent *event)
 {
    LOG2("InputCallback");
@@ -221,14 +234,17 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
                if(Joypad *joypad=Joypads.find(device))
             {
-               joypad->dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X   , action_index),
-                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y   , action_index));
-               joypad->dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X       , action_index),
-                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y       , action_index));
-               joypad->dir_a[1].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RX      , action_index),
-                                   -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RY      , action_index));
-               joypad->trigger[0]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_LTRIGGER, action_index);
-               joypad->trigger[1]=  AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_RTRIGGER, action_index);
+                                                 joypad->dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X, action_index),
+                                                                     -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y, action_index));
+                                                 joypad->dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X    , action_index),
+                                                                     -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
+                                                 joypad->dir_a[1].set(AMotionEvent_getAxisValue(event, joypad->axis_stick_r_x  , action_index),  // for performance set without checking for valid axis, in worst case, 0 is reported
+                                                                     -AMotionEvent_getAxisValue(event, joypad->axis_stick_r_y  , action_index)); // for performance set without checking for valid axis, in worst case, 0 is reported
+               if(joypad->axis_trigger_l!=0xFF)UpdateTrigger(*joypad, AMotionEvent_getAxisValue(event, joypad->axis_trigger_l  , action_index), 0); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+               if(joypad->axis_trigger_r!=0xFF)UpdateTrigger(*joypad, AMotionEvent_getAxisValue(event, joypad->axis_trigger_r  , action_index), 1); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+            #if DEBUG && 0
+               REP(256){Flt v=AMotionEvent_getAxisValue(event, i, action_index); if(v!=0)LogN(S+"Joy Axis: "+i+", Value: "+v);}
+            #endif
                joypad->setDiri(Round(joypad->dir.x), Round(joypad->dir.y));
             }
          }else
@@ -511,6 +527,30 @@ static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_p
                         if(JMethodID getName     =Jni.func(InputDevice, "getName"     , "()Ljava/lang/String;"))if(JString name=Jni->CallObjectMethod(device, getName))joypad._name=name.str();
       Int  vendor_id=0; if(JMethodID getVendorId =Jni.func(InputDevice, "getVendorId" , "()I"                 )) vendor_id=Jni->CallIntMethod(device, getVendorId );
       Int product_id=0; if(JMethodID getProductId=Jni.func(InputDevice, "getProductId", "()I"                 ))product_id=Jni->CallIntMethod(device, getProductId);
+
+      if(JMethodID DeviceHasAxis=Jni.staticFunc(ActivityClass, "DeviceHasAxis", "(Landroid/view/InputDevice;I)Z"))
+      {
+      #define HAS(axis) (Jni->CallStaticBooleanMethod(ActivityClass, DeviceHasAxis, device(), jint(axis)))
+
+         // Xbox Elite Wireless Controller Series 2 has AMOTION_EVENT_AXIS_BRAKE+AMOTION_EVENT_AXIS_GAS as triggers
+         if(HAS(AMOTION_EVENT_AXIS_BRAKE))joypad.axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE;else if(HAS(AMOTION_EVENT_AXIS_LTRIGGER))joypad.axis_trigger_l=AMOTION_EVENT_AXIS_LTRIGGER;
+         if(HAS(AMOTION_EVENT_AXIS_GAS  ))joypad.axis_trigger_r=AMOTION_EVENT_AXIS_GAS  ;else if(HAS(AMOTION_EVENT_AXIS_RTRIGGER))joypad.axis_trigger_r=AMOTION_EVENT_AXIS_RTRIGGER;
+
+         // Xbox Elite Wireless Controller Series 2, Nintendo Switch Pro Controller, have X=AMOTION_EVENT_AXIS_Z, Y=AMOTION_EVENT_AXIS_RZ. Samsung EI-GP20 has AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY
+         Byte has[2], has_i=0, check[]={AMOTION_EVENT_AXIS_Z, AMOTION_EVENT_AXIS_RZ, AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY}; // order important (potential X first, Y next). Prefer AMOTION_EVENT_AXIS_Z/AMOTION_EVENT_AXIS_RZ because they're supported by popular gamepads and also they're mentioned in header for right stick
+         FREPA(check)if(HAS(check[i]))
+         {
+            has[has_i]=check[i]; if(++has_i==2) // found 2 axes
+            {
+               joypad.axis_stick_r_x=has[0];
+               joypad.axis_stick_r_y=has[1];
+               break;
+            }
+         }
+
+      #undef HAS
+      }
+
       joypad.setInfo(vendor_id, product_id);
    }
 }
