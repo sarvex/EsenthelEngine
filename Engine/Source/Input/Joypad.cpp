@@ -416,6 +416,27 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
    ASSERT(ELMS(_remap)==ELMS(_button));
    switch(vendor_id)
    {
+      case 1118: // Microsoft
+      {
+         switch(product_id)
+         {
+            case 2821: // Xbox Elite Wireless Controller Series 2
+            {
+               SetMem(_remap, 255);
+              _remap[ 0]=JB_A;
+              _remap[ 1]=JB_B;
+              _remap[ 2]=JB_X;
+              _remap[ 3]=JB_Y;
+              _remap[ 4]=JB_L1;
+              _remap[ 5]=JB_R1;
+              _remap[ 6]=JB_BACK;
+              _remap[ 7]=JB_START;
+              _remap[ 8]=JB_LTHUMB;
+              _remap[ 9]=JB_RTHUMB;
+            }return;
+         }
+      }break;
+
       case 1133: // Logitech
        /*if(product_id==49693 // F310
          || product_id==49688 // RumblePad 2
