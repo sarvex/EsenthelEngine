@@ -213,11 +213,16 @@ static Joypad* FindJoypad(GCExtendedGamepad *gamepad)
          joypad.addButton(gamepad. leftShoulder, JB_L1);
          joypad.addButton(gamepad.rightShoulder, JB_R1);
 
-         joypad.addButton(gamepad. leftThumbstickButton, JB_L3);
-         joypad.addButton(gamepad.rightThumbstickButton, JB_R3);
-
-         joypad.addButton(gamepad.buttonOptions, JB_BACK);
-         joypad.addButton(gamepad.buttonMenu   , JB_START);
+         if(@available(macOS 10.14.1, iOS 12.1, tvOS 12.1, *))
+         {
+            joypad.addButton(gamepad. leftThumbstickButton, JB_L3);
+            joypad.addButton(gamepad.rightThumbstickButton, JB_R3);
+         }
+         if(@available(macOS 10.15, iOS 13, tvOS 13, *))
+         {
+            joypad.addButton(gamepad.buttonOptions, JB_BACK);
+            joypad.addButton(gamepad.buttonMenu   , JB_START);
+         }
 
          joypad.addTrigger(gamepad. leftTrigger, 0);
          joypad.addTrigger(gamepad.rightTrigger, 1);
