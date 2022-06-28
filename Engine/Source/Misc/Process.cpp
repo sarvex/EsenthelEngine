@@ -183,7 +183,7 @@ Str ProcName(UInt id)
             mib[0]=CTL_KERN;
             mib[1]=KERN_PROCARGS2;
             mib[2]=id;
-            size  =temp.elms();
+            size  =temp.elmsMem();
             if(!sysctl(mib, 3, temp.data(), &size, null, 0))return FromUTF8(temp.data()+4);
          }
       #else // returns process window name
