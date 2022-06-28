@@ -230,6 +230,18 @@ static Joypad* FindJoypad(GCExtendedGamepad *gamepad)
          joypad.addAxis(gamepad. leftThumbstick, 0);
          joypad.addAxis(gamepad.rightThumbstick, 1);
 
+      #if 0
+         if(@available(macOS 11, iOS 14, tvOS 14, *))
+            if([gamepad isKindOfClass:[GCXboxGamepad class]])
+         {
+            GCXboxGamepad   *xbox_gamepad=(GCXboxGamepad*)gamepad;
+            joypad.addButton(xbox_gamepad.paddleButton1, JB_PADDLE1);
+            joypad.addButton(xbox_gamepad.paddleButton2, JB_PADDLE2);
+            joypad.addButton(xbox_gamepad.paddleButton3, JB_PADDLE3);
+            joypad.addButton(xbox_gamepad.paddleButton4, JB_PADDLE4);
+         }
+      #endif
+
          joypad._elms.sort(Compare);
 
          // set callback at the end
