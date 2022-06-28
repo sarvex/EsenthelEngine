@@ -1,6 +1,10 @@
 /******************************************************************************/
 #include "iOS.h"
 #undef super // Objective-C has its own 'super'
+
+@interface GCController()
+@property (nonatomic) unsigned long long deviceHash;
+@end
 /******************************************************************************/
 Bool DontRemoveThisOrEAGLViewClassWontBeLinked;
 /******************************************************************************/
@@ -177,19 +181,23 @@ EAGLView* GetUIView()
    if(visible)[self becomeFirstResponder];else [self resignFirstResponder];
 }
 /******************************************************************************/
--(void)controllerWasConnected:(NSNotification*)notification
+-(void)controllerWasConnected:(NSNotification*)notification // these are called on the main thread
 {
    GCController *controller=(GCController*)notification.object;
    if(GCExtendedGamepad *gamepad=controller.extendedGamepad)
    {
-      Bool added; Joypad &joypad=GetJoypad(NewJoypadID(0), added); if(added)
+      ULong id=0; if([controller respondsToSelector:@selector(deviceHash)])id=controller.deviceHash;
+      Bool added; Joypad &joypad=GetJoypad(NewJoypadID(id), added); if(added)
       {
          joypad._gamepad=gamepad;
-         joypad._name   =controller.vendorName;
+
+       //controller.productCategory; "Xbox One"
+         if([controller respondsToSelector:@selector(detailedProductCategory)])joypad._name=[controller detailedProductCategory]; // "Xbox Elite"
+         if(!joypad._name.is())joypad._name=controller.vendorName; // "Xbox Wireless Controller"
       }
    }
 }
--(void)controllerWasDisconnected:(NSNotification*)notification
+-(void)controllerWasDisconnected:(NSNotification*)notification // these are called on the main thread
 {
    GCController *controller=(GCController*)notification.object;
    if(GCExtendedGamepad *gamepad=controller.extendedGamepad)
