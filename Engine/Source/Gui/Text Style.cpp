@@ -198,7 +198,7 @@ struct TextProcessor
    ALPHA_MODE    alpha;
    Char          prev_chr;
    Color         color;
-   Int           cur, sel;
+   Int           cur, sel, font_offset_i_y;
    Flt           xsize, ysize, xsize_2, space, space_2, x_align_mul, y_align_mul, panel_r, panel_padd_r;
    Vec2          pos, size, font_offset;
  C Font         *font, *default_font;
@@ -243,16 +243,10 @@ struct TextProcessor
       xsize=size.x/font->height(); // width  of 1 font texel
       ysize=size.y/font->height(); // height of 1 font texel
       xsize_2=xsize/2;
-   }
-   void applyFontOffset()
-   {
+
+      font_offset_i_y=       font->paddingT();
       font_offset.set(-xsize*font->paddingL(),
-                       ysize*font->paddingT());
-      pos+=font_offset;
-   }
-   void revertFontOffset()
-   {
-      pos-=font_offset;
+                       ysize*font_offset_i_y);
    }
 
    Int     charWidth(Char      chr)C {return font->charWidth(chr);}
@@ -792,7 +786,6 @@ struct TextProcessor
       y+= size.y     *y_align_mul;
 
       pos.set(x, y);
-      applyFontOffset();
       if(style.pixel_align)D.alignScreenToPixel(pos);
 
       if(panel)
@@ -879,10 +872,8 @@ struct TextProcessor
                 C Font *new_font=d->font(); if(!new_font)new_font=default_font; if(font!=new_font)
                   {
                      if(prev_chr){advance('\0'); prev_chr='\0';}
-                     revertFontOffset();
                      // no need to 'VI.flush' because this will be done in 'VI.imageConditional'
                      setFont(new_font);
-                     applyFontOffset();
                   }
                }break;
             }
@@ -906,8 +897,9 @@ struct TextProcessor
              //if(fc.height) // potentially we could check for empty characters (full width space, half width space, nbsp, however in most cases we will have something to draw, so this check will slow down things
                {
                   Vec2 chr_pos=pos;
-                  if(spacingConst())chr_pos.x+=space_2-xsize_2*fc.width ; // move back by half of the character width
-                                    chr_pos.y-=        ysize  *fc.offset;
+                  if(spacingConst())chr_pos.x+=space_2-xsize_2*                 fc.width  ; // move back by half of the character width
+                                    chr_pos.x+=                 font_offset.x             ;
+                                    chr_pos.y+=        ysize  *(font_offset_i_y-fc.offset);
                   if(style.pixel_align)D.alignScreenXToPixel(chr_pos.x);
 
                   VI.imageConditional(&font->_images[fc.image], *shader_image);
@@ -920,8 +912,8 @@ struct TextProcessor
                   Char n=text.n();
                   UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
                   {
-                     chr_pos.x+=xsize_2*fc.width; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
-                     chr_pos.y =pos.y; // reset Y pos
+                     chr_pos.x+=xsize_2*fc.width ; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
+                     chr_pos.y+=ysize  *fc.offset; // reset Y pos
                      Bool skipped_bottom_shadow_padding=false;
 
                   draw_combining:
