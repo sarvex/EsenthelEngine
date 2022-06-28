@@ -967,6 +967,25 @@ void Joypad::getState()
 #endif
 }
 #endif
+#if IOS
+void Joypad::addPad    (GCControllerElement *element                      ) {if(element)_elms.New().set(Elm::PAD    ,      0, element);}
+void Joypad::addButton (GCControllerElement *element, JOYPAD_BUTTON button) {if(element)_elms.New().set(Elm::BUTTON , button, element);}
+void Joypad::addTrigger(GCControllerElement *element, Byte          index ) {if(element)_elms.New().set(Elm::TRIGGER, index , element);}
+void Joypad::addAxis   (GCControllerElement *element, Byte          index ) {if(element)_elms.New().set(Elm::AXIS   , index , element);}
+
+static Int Compare(C Joypad::Elm &a, GCControllerElement *C& b) {return ComparePtr(a.element, b);}
+
+void Joypad::changed(GCControllerElement *element)
+{
+   if(C Elm *elm=_elms.binaryFind(element, Compare))switch(elm->type)
+   {
+      case Elm::PAD    : {GCControllerDirectionPad *v=(GCControllerDirectionPad*)element; setDiri(v.right.pressed-v.left.pressed, v.up.pressed-v.down.pressed); dir=diri; if(diri.x && diri.y)dir/=SQRT2;} break; // dir.clipLength(1)
+      case Elm::BUTTON : {GCControllerButtonInput  *v=(GCControllerButtonInput *)element; if(v.pressed)push(elm->index);else release(elm->index);} break;
+      case Elm::TRIGGER: {GCControllerButtonInput  *v=(GCControllerButtonInput *)element; setTrigger(elm->index, v.value);} break;
+      case Elm::AXIS   : {GCControllerDirectionPad *v=(GCControllerDirectionPad*)element; dir_a[elm->index].set(v.xAxis.value, v.yAxis.value);} break;
+   }
+}
+#endif
 void Joypad::update()
 {
 #if JOYPAD_THREAD
@@ -1052,6 +1071,19 @@ void Joypad::setDiri(Int x, Int y)
       if(diri.y=y){/*if(_joypad_index!=255)*/Inputs.New().set(true , INPUT_JOYPAD, (diri.y>0) ? JB_DPAD_UP : JB_DPAD_DOWN, _joypad_index); diri_r.y+=y;} // push
    }
 }
+void Joypad::setTrigger(Int index, Flt value)
+{
+   Flt &old=trigger[index]; if(old!=value)
+   {
+      const Flt eps=30.0f/255; // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
+      Bool old_b=(old>=eps), cur_b=(value>=eps); if(old_b!=cur_b)
+      {
+         auto button=(index ? JB_R2 : JB_L2);
+         if(cur_b)push(button);else release(button);
+      }
+      old=value;
+   }
+}
 void Joypad::push(Byte b)
 {
    if(InRange(b, _button) && !(_button[b]&BS_ON))
@@ -1133,6 +1165,10 @@ void JoypadsClass::remove(Int i)
 #endif
      _data.remove(i, true);
    }
+}
+void JoypadsClass::remove(Joypad *joypad)
+{
+   if(joypad)remove(joypad->_joypad_index); // _data.index(joypad)
 }
 static Int Compare(C Joypad &a, C UInt &b) {return Compare(a.id(), b);}
 Joypad* JoypadsClass::find(UInt id)

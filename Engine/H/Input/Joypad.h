@@ -140,16 +140,20 @@ struct Joypad // Joypad Input
 
 #if EE_PRIVATE
    // manage
-   void acquire (Bool on);
-   void setDiri (Int x, Int y);
-   void getState();
-   void update  ();
-   void clear   ();
-   void zero    ();
-   void push    (Byte b);
-   void release (Byte b);
-   void sensors (Bool calculate);
-   void setInfo (U16 vendor_id, U16 product_id);
+   void acquire   (Bool on);
+   void setDiri   (Int x, Int y);
+   void setTrigger(Int index, Flt value);
+   void getState  ();
+   void update    ();
+   void clear     ();
+   void zero      ();
+   void push      (Byte b);
+   void release   (Byte b);
+   void sensors   (Bool calculate);
+   void setInfo   (U16 vendor_id, U16 product_id);
+#if IOS
+   void changed   (GCControllerElement *element);
+#endif
 #endif
 
 #if !EE_PRIVATE
@@ -226,7 +230,7 @@ private:
          AXIS  ,
       };
       TYPE               type;
-      Int                index;
+      Byte               index;
    #if EE_PRIVATE
       IOHIDElementCookie cookie;
    #else
@@ -245,7 +249,38 @@ private:
    Mems<Elm> _elms;
    Ptr       _device=null;
 #elif IOS
+   struct Elm
+   {
+      enum TYPE : Byte
+      {
+         PAD    ,
+         BUTTON ,
+         TRIGGER,
+         AXIS   ,
+      };
+      TYPE                 type;
+      Byte                 index;
+   #if EE_PRIVATE
+      GCControllerElement *element;
+   #else
+      Ptr                  element;
+   #endif
+   #if EE_PRIVATE
+      void set(TYPE type, Byte index, GCControllerElement *element) {T.type=type; T.index=index; T.element=element;}
+   #endif
+   };
+   Mems<Elm> _elms;
+#if EE_PRIVATE
+   void addPad    (GCControllerElement *element);
+   void addButton (GCControllerElement *element, JOYPAD_BUTTON button);
+   void addTrigger(GCControllerElement *element, Byte          index );
+   void addAxis   (GCControllerElement *element, Byte          index );
+#endif
+#if EE_PRIVATE
    GCExtendedGamepad *_gamepad=null;
+#else
+   Ptr     _gamepad=null
+#endif
 #endif
 
    struct State
@@ -309,7 +344,8 @@ struct JoypadsClass // Container for Joypads
    Joypad* find      (UInt id);                         // find Joypad by its ID, null on fail
 
 #if EE_PRIVATE
-   void remove (Int i); // remove i-th Joypad
+   void remove (Int     i     ); // remove i-th Joypad
+   void remove (Joypad *joypad); // remove joypad
    void update ();
    void acquire(Bool on);
    void list   ();

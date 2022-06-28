@@ -203,19 +203,6 @@ static void UpdateSize()
    }
 }
 /******************************************************************************/
-static inline void UpdateTrigger(Joypad &jp, Flt cur, Int index)
-{
-   Flt &old=jp.trigger[index]; if(old!=cur)
-   {
-      const Flt eps=30.0f/255; // matches XINPUT_GAMEPAD_TRIGGER_THRESHOLD
-      Bool old_b=(old>=eps), cur_b=(cur>=eps); if(old_b!=cur_b)
-      {
-         auto button=(index ? JB_R2 : JB_L2);
-         if(cur_b)jp.push(button);else jp.release(button);
-      }
-      old=cur;
-   }
-}
 static int32_t InputCallback(android_app *app, AInputEvent *event)
 {
    LOG2("InputCallback");
@@ -234,14 +221,14 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
             if(action_type==AMOTION_EVENT_ACTION_MOVE)
                if(Joypad *joypad=Joypads.find(device))
             {
-                                                 joypad->dir     .set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X, action_index),
-                                                                     -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y, action_index));
-                                                 joypad->dir_a[0].set(AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X    , action_index),
-                                                                     -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
-                                                 joypad->dir_a[1].set(AMotionEvent_getAxisValue(event, joypad->axis_stick_r_x  , action_index),  // for performance set without checking for valid axis, in worst case, 0 is reported
-                                                                     -AMotionEvent_getAxisValue(event, joypad->axis_stick_r_y  , action_index)); // for performance set without checking for valid axis, in worst case, 0 is reported
-               if(joypad->axis_trigger_l!=0xFF)UpdateTrigger(*joypad, AMotionEvent_getAxisValue(event, joypad->axis_trigger_l  , action_index), 0); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
-               if(joypad->axis_trigger_r!=0xFF)UpdateTrigger(*joypad, AMotionEvent_getAxisValue(event, joypad->axis_trigger_r  , action_index), 1); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+                                               joypad->dir     .set( AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_X, action_index),
+                                                                    -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_HAT_Y, action_index));
+                                               joypad->dir_a[0].set( AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_X    , action_index),
+                                                                    -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
+                                               joypad->dir_a[1].set( AMotionEvent_getAxisValue(event, joypad->axis_stick_r_x  , action_index),  // for performance set without checking for valid axis, in worst case, 0 is reported
+                                                                    -AMotionEvent_getAxisValue(event, joypad->axis_stick_r_y  , action_index)); // for performance set without checking for valid axis, in worst case, 0 is reported
+               if(joypad->axis_trigger_l!=0xFF)joypad->setTrigger(0, AMotionEvent_getAxisValue(event, joypad->axis_trigger_l  , action_index)); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+               if(joypad->axis_trigger_r!=0xFF)joypad->setTrigger(1, AMotionEvent_getAxisValue(event, joypad->axis_trigger_r  , action_index)); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
             #if DEBUG && 0
                REP(256){Flt v=AMotionEvent_getAxisValue(event, i, action_index); if(v!=0)LogN(S+"Joy Axis: "+i+", Value: "+v);}
             #endif
@@ -1079,8 +1066,8 @@ static void InitKeyMap()
    JoyMap[AKEYCODE_BUTTON_R1    ]=JB_R1;
    JoyMap[AKEYCODE_BUTTON_L2    ]=JB_L2;
    JoyMap[AKEYCODE_BUTTON_R2    ]=JB_R2;
-   JoyMap[AKEYCODE_BUTTON_THUMBL]=JB_LTHUMB;
-   JoyMap[AKEYCODE_BUTTON_THUMBR]=JB_RTHUMB;
+   JoyMap[AKEYCODE_BUTTON_THUMBL]=JB_L3;
+   JoyMap[AKEYCODE_BUTTON_THUMBR]=JB_R3;
    JoyMap[AKEYCODE_BUTTON_SELECT]=JB_SELECT;
    JoyMap[AKEYCODE_BUTTON_START ]=JB_START;
 }
