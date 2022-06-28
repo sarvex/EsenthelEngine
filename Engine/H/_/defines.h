@@ -27,8 +27,8 @@
 /******************************************************************************/
 // HELPER MACROS
 /******************************************************************************/
-#define SIZE                                    sizeof               // get raw size of C++ element in bytes
-#define SIZEL(x)                           Long(SIZE(x))             // get raw size of C++ element in bytes as 'Long' type
+#define SIZE( x)                    UIntPtr(sizeof(x))               // get raw size of C++ element in bytes
+#define SIZEL(x)                       Long(sizeof(x))               // get raw size of C++ element in bytes as 'Long' type
 #define MEMBER(     Class, member)        (((Class*)null)-> member)  // null based Class::member, this macro is used to obtain member information by many other macros/functions
 #define OFFSET(     Class, member)  UIntPtr(&MEMBER(Class,  member)) // get offset   of member in class
 #define MEMBER_SIZE(Class, member)     SIZE( MEMBER(Class,  member)) // get size     of member in class

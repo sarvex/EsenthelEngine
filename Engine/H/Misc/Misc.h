@@ -46,9 +46,6 @@ constexpr UInt   Unsigned(Int    x) {return x;}
 constexpr UInt   Unsigned(UInt   x) {return x;}
 constexpr ULong  Unsigned(Long   x) {return x;}
 constexpr ULong  Unsigned(ULong  x) {return x;}
-#if APPLE
-constexpr size_t Unsigned(size_t x) {return x;}
-#endif
 
 T2(TYPE, RET_TYPE) constexpr ENABLE_IF_ENUM(TYPE, RET_TYPE) Unsigned(TYPE x) {return Unsigned(ENUM_TYPE(TYPE)(x));}
 /******************************************************************************/
@@ -70,9 +67,6 @@ T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Bool) InRange(TYPE i, Int    elms) {retu
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Bool) InRange(TYPE i, UInt   elms) {return Unsigned(i)<Unsigned(elms);} // template specialization for enums
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Bool) InRange(TYPE i, ULong  elms) {return Unsigned(i)<Unsigned(elms);} // template specialization for enums
 T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Bool) InRange(TYPE i, TYPE   elms) {return Unsigned(i)<Unsigned(elms);} // template specialization for enums
-#if APPLE
-T1(TYPE) constexpr ENABLE_IF_ENUM(TYPE, Bool) InRange(TYPE i, size_t elms) {return Unsigned(i)<Unsigned(elms);} // template specialization for enums
-#endif
 
 T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Int   i, C TYPE &container); // if 'i' index is in range of container, 'container' can be of many types, for example a C++ array (x[]), memory container ('Memc', 'Memb', ..) or any other type for which 'Elms' function was defined
 T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(UInt  i, C TYPE &container); // if 'i' index is in range of container, 'container' can be of many types, for example a C++ array (x[]), memory container ('Memc', 'Memb', ..) or any other type for which 'Elms' function was defined

@@ -1095,6 +1095,6 @@ Bool EqualMem(CPtr a, CPtr b, IntPtr size)
 /******************************************************************************/
 }
 /******************************************************************************/
-Ptr  operator new   (size_t size)         {return Alloc(size);}
-void operator delete(Ptr    data)noexcept {       Free (data);}
+Ptr  operator new   (size_t size)         {return Alloc((UIntPtr)size);}
+void operator delete(Ptr    data)noexcept {       Free (         data);}
 /******************************************************************************/

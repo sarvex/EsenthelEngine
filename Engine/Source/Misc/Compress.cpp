@@ -91,8 +91,8 @@ static void MemFinished(File &f, Ptr mem, Long wrote, Int cipher_offset)
 {
    if(f._cipher)f._cipher->encrypt(mem, mem, wrote, cipher_offset);
 }
-static Ptr  CompressAlloc(Ptr p, size_t size) {return Alloc(size);}
-static void CompressFree (Ptr p, Ptr    data) {       Free (data);}
+static Ptr  CompressAlloc(Ptr p, size_t size) {return Alloc((UIntPtr)size);}
+static void CompressFree (Ptr p, Ptr    data) {       Free (         data);}
 /******************************************************************************/
 Int CmpUIntVSize(UInt u)
 {
@@ -243,8 +243,8 @@ NOINLINE static Bool ZLIBDecompress(File &src, File &dest, Long compressed_size,
 // LZMA
 /******************************************************************************/
 #if SUPPORT_LZMA
-static Ptr  LzmaCompressAlloc(ISzAllocPtr p, size_t size) {return Alloc(size);}
-static void LzmaCompressFree (ISzAllocPtr p, Ptr    data) {       Free (data);}
+static Ptr  LzmaCompressAlloc(ISzAllocPtr p, size_t size) {return Alloc((UIntPtr)size);}
+static void LzmaCompressFree (ISzAllocPtr p, Ptr    data) {       Free (         data);}
 static ISzAlloc LzmaMem={LzmaCompressAlloc, LzmaCompressFree};
 /******************************************************************************/
 struct StreamIn : ISeqInStream

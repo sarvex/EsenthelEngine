@@ -721,8 +721,8 @@ Bool PhysxClass::create(Bool hardware)
 /******************************************************************************/
 #else // BULLET
 /******************************************************************************/
-static Ptr  BulletAlloc(size_t size) {return Alloc(size);}
-static void BulletFree (Ptr    data) {return Free (data);}
+static Ptr  BulletAlloc(size_t size) {return Alloc((UIntPtr)size);}
+static void BulletFree (Ptr    data) {return Free (         data);}
 
 void BulletClass::del()
 {
