@@ -2130,17 +2130,6 @@ T1(TYPE)  void AngularInterpolator<TYPE>::update(C InterpolatorTemp &temp) {if(t
 T1(TYPE)  void  LinearInterpolator<TYPE>::update(C InterpolatorTemp &temp) {if(temp.op){              _prev=_cur; _cur=_next;} _value=Lerp (        _prev, _cur,                  temp.frac);}
 T1(TYPE)  void  SplineInterpolator<TYPE>::update(C InterpolatorTemp &temp) {if(temp.op){_prev2=_prev; _prev=_cur; _cur=_next;} _value=Lerp4(_prev2, _prev, _cur, _cur-_prev+_cur, temp.frac);} // predict next instead of using '_next' because we may not know it in all cases
 /******************************************************************************/
-// INPUT
-/******************************************************************************/
-inline Bool Joypad::mini()C
-{
-#if SWITCH
-   return _mini;
-#else
-   return false;
-#endif
-}
-/******************************************************************************/
 // IO
 /******************************************************************************/
 T1(TYPE)  void  FList(C Str &path, FILE_LIST_MODE func(C FileFind &ff, TYPE *user), TYPE *user) {FList(path, (FILE_LIST_MODE (*)(C FileFind &ff, Ptr user))func,  user);}

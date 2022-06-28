@@ -1,37 +1,45 @@
-/******************************************************************************
+﻿/******************************************************************************
 
    Use 'Joypads' container to access Joypads input.
 
 /******************************************************************************/
+#if EE_PRIVATE
+enum JP_NAME_TYPE : Byte
+{
+   JP_NAME         ,
+   JP_NAME_NINTENDO,
+   JP_NAME_SONY    ,
+   JP_NAMES        ,
+};
+#endif
 enum JOYPAD_BUTTON : Byte // button indexes as defined for XInput/Xbox/NintendoSwitch controllers
 {
-   JB_A     , // A
-   JB_B     , // B
-   JB_X     , // X
-   JB_Y     , // Y
-   JB_L1    , // Left  Shoulder
-   JB_R1    , // Right Shoulder
-   JB_L2    , // Left  Trigger
-   JB_R2    , // Right Trigger
-   JB_LTHUMB, // Left  Thumb
-   JB_RTHUMB, // Right Thumb
-   JB_BACK  , // Back
-   JB_START , // Start
-   JB_NUM   , // number of buttons for XInput/Xbox controllers
+   JB_A    , // A
+   JB_B    , // B
+   JB_X    , // X
+   JB_Y    , // Y
+   JB_L1   , // Left  Bumper
+   JB_R1   , // Right Bumper
+   JB_L2   , // Left  Trigger
+   JB_R2   , // Right Trigger
+   JB_L3   , // Left  Stick
+   JB_R3   , // Right Stick
+   JB_BACK , // Back
+   JB_START, // Start
 
-   JB_PADDLE1=JB_NUM, // Paddle 1
-   JB_PADDLE2       , // Paddle 2
-   JB_PADDLE3       , // Paddle 3
-   JB_PADDLE4       , // Paddle 4
-   JB_UWP_NUM       , // number of buttons for WindowsUWP controllers
-
-   JB_LSL=JB_NUM  , // Nintendo Switch Left  SL
-   JB_LSR         , // Nintendo Switch Left  SR
-   JB_RSL         , // Nintendo Switch Right SL
-   JB_RSR         , // Nintendo Switch Right SR
-   JB_NINTENDO_NUM, // number of buttons for Nintendo Switch controllers
+   JB_LSL, // Nintendo Switch Left  SL
+   JB_LSR, // Nintendo Switch Left  SR
+   JB_RSL, // Nintendo Switch Right SL
+   JB_RSR, // Nintendo Switch Right SR
 
    // alternative names
+   JB_LB=JB_L1,
+   JB_RB=JB_R1,
+   JB_LT=JB_L2,
+   JB_RT=JB_R2,
+   JB_LS=JB_L3,
+   JB_RS=JB_R3,
+
    JB_SELECT=JB_BACK , // Sony Playstation
    JB_MINUS =JB_BACK , // Nintendo Switch
    JB_PLUS  =JB_START, // Nintendo Switch
@@ -39,24 +47,24 @@ enum JOYPAD_BUTTON : Byte // button indexes as defined for XInput/Xbox/NintendoS
    JB_MINI_S1=JB_LSL, // Nintendo Switch Mini Side Button 1
    JB_MINI_S2=JB_LSR, // Nintendo Switch Mini Side Button 2
 
-   // Left/Right/Up/Down
-#if SWITCH
-   JB_L=JB_Y, // button located at the Left  side on Nintendo Switch
-   JB_R=JB_A, // button located at the Right side on Nintendo Switch
-   JB_U=JB_X, // button located at the Up    side on Nintendo Switch
-   JB_D=JB_B, // button located at the Down  side on Nintendo Switch
-#else
    JB_L=JB_X, // button located at the Left  side
    JB_R=JB_B, // button located at the Right side
    JB_U=JB_Y, // button located at the Up    side
    JB_D=JB_A, // button located at the Down  side
-#endif
+
+   JB_SQUARE  =JB_L, // button located at the Left  side
+   JB_CIRCLE  =JB_R, // button located at the Right side
+   JB_TRIANGLE=JB_U, // button located at the Up    side
+   JB_CROSS   =JB_D, // button located at the Down  side
 
    // these are valid only for 'Inputs'
    JB_DPAD_LEFT =32,
    JB_DPAD_RIGHT=33,
    JB_DPAD_DOWN =34,
    JB_DPAD_UP   =35,
+#if EE_PRIVATE
+   JB_TOTAL,
+#endif
 };
 #if EE_PRIVATE
 inline Bool IsDPad (JOYPAD_BUTTON button) {return button>=JB_DPAD_LEFT;}
@@ -109,11 +117,13 @@ struct Joypad // Joypad Input
    Bool supportsVibrations()C; // if supports vibrations
    Bool supportsSensors   ()C; // if supports sensors, available only if 'JoypadSensors' was enabled
 
-            UInt          id(     )C {return _id  ;} // get unique ID of this Joypad
-           C Str&       name(     )C {return _name;} // get Joypad name
-          CChar8* buttonName(Int b)C;                // get button name, buttonName(JB_A) -> "A", buttonName(JB_B) -> "B", ..
-   static CChar8* ButtonName(Int b);                 // get button name, ButtonName(JB_A) -> "A", ButtonName(JB_B) -> "B", ..
-            Bool        mini(     )C;                // if  this is a mini Joypad (a single Nintendo Switch Joy-Con Left or Right held horizontally)
+           UInt           id  (     )C {return _id  ;} // get unique ID of this Joypad
+          C Str&        name  (     )C {return _name;} // get Joypad name
+          CChar * buttonSymbol(Int b)C;                // get button symbol, buttonName(JB_A) -> "A", buttonName(JB_B) -> "B", .. Warning: this function might   return "⯇⯈⯆⯅△□○✕", if you want to display names on the screen be sure to include these characters in your Font
+   static CChar * ButtonSymbol(Int b);                 // get button symbol, ButtonName(JB_A) -> "A", ButtonName(JB_B) -> "B", .. Warning: this function might   return "⯇⯈⯆⯅△□○✕", if you want to display names on the screen be sure to include these characters in your Font
+          CChar8* buttonName  (Int b)C;                // get button name  , buttonName(JB_A) -> "A", buttonName(JB_B) -> "B", ..          this function doesn't return "⯇⯈⯆⯅△□○✕", instead it returns name "Left", "Cross", ..
+   static CChar8* ButtonName  (Int b);                 // get button name  , ButtonName(JB_A) -> "A", ButtonName(JB_B) -> "B", ..          this function doesn't return "⯇⯈⯆⯅△□○✕", instead it returns name "Left", "Cross", ..
+            Bool        mini  (     )C {return _mini;} // if  this is a mini Joypad (a single Nintendo Switch Joy-Con Left or Right held horizontally)
 
    Joypad& vibration(C Vec2 &vibration                    ); // set vibrations, 'vibration.x'=left motor intensity (0..1), 'vibration.y'=right motor intensity (0..1)
    Joypad& vibration(C Vibration &left, C Vibration &right); // set vibrations
@@ -146,6 +156,16 @@ struct Joypad // Joypad Input
 private:
 #endif
    BS_FLAG _button[32];
+   Bool    _mini=false;
+   Bool    _connected=false;
+#if JP_GAMEPAD_INPUT
+   Bool    _vibrations=false;
+#endif
+#if JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT
+   Bool    _state_index=false;
+#endif
+   Byte    _joypad_index;
+   Byte    _name_type=0;
 #define JOYPAD_BUTTON_REMAP (JP_DIRECT_INPUT || JP_GAMEPAD_INPUT || MAC || ANDROID)
 #if     JOYPAD_BUTTON_REMAP
    Byte    _remap[32];
@@ -156,17 +176,6 @@ private:
 #if JP_X_INPUT
    Byte    _xinput=255;
 #endif
-   Byte    _joypad_index;
-#if JP_GAMEPAD_INPUT
-   Bool    _vibrations=false;
-#endif
-#if SWITCH
-   Bool    _mini=false;
-#endif
-#if JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT
-   Bool    _state_index=false;
-#endif
-   Bool    _connected=false;
 #define JOYPAD_VENDOR_PRODUCT_ID (JP_DIRECT_INPUT && JP_GAMEPAD_INPUT) // needed only if using both JP_DIRECT_INPUT and JP_GAMEPAD_INPUT
 #if     JOYPAD_VENDOR_PRODUCT_ID
    U16     _vendor_id=0, _product_id=0;
@@ -244,7 +253,7 @@ private:
       {
          struct Data
          {
-            UInt data[(32 + 4 + 6*8)/4]; // use UInt to force alignment
+            UInt data[(ELMS(_remap) + 4 + 6*8)/4]; // use UInt to force alignment
          }data;
 
       #if EE_PRIVATE
@@ -284,8 +293,6 @@ private:
    #endif
    }_state[2];
 
-   static CChar8 *_button_name[];
-
   ~Joypad();
    Joypad();
 
@@ -322,6 +329,7 @@ void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_n
 
 inline Int Elms(C JoypadsClass &jps) {return jps.elms();}
 #if EE_PRIVATE
+extern Bool     JoypadLayoutName;
 extern SyncLock JoypadLock;
 
 Joypad& GetJoypad  (UInt id, Bool &added);

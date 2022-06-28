@@ -7,9 +7,13 @@ namespace EE{
 #define JOYPAD_THREAD (JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT)
 #define JOYPAD_THREAD_SLEEP 5
 /******************************************************************************/
-static Bool    CalculateJoypadSensors;
-       CChar8* Joypad::_button_name[32+4]; // 32 DirectInput + 4xDPad
- JoypadsClass  Joypads;
+       Bool JoypadLayoutName; // if set layout to match name, if false then direction, default=false (direction)
+static Bool CalculateJoypadSensors;
+
+static CChar8* JoypadButtonName  [JP_NAMES][JB_TOTAL];
+static CChar * JoypadButtonSymbol[JP_NAMES][JB_TOTAL];
+
+JoypadsClass Joypads;
 /******************************************************************************/
 #if JOYPAD_THREAD
 static Memc<Input> ThreadInputs;
@@ -345,8 +349,32 @@ Joypad::Joypad()
    #endif
    }else _joypad_index=255;
 }
-CChar8* Joypad::buttonName(Int b)C {return InRange(b, _button_name) ? _button_name[b] : null;}
-CChar8* Joypad::ButtonName(Int b)  {return InRange(b, _button_name) ? _button_name[b] : null;}
+CChar8* Joypad::buttonName  (Int b)C {return InRange(b, JB_TOTAL) ? JoypadButtonName  [_name_type][b] : null;}
+CChar * Joypad::buttonSymbol(Int b)C {return InRange(b, JB_TOTAL) ? JoypadButtonSymbol[_name_type][b] : null;}
+CChar8* Joypad::ButtonName  (Int b)
+{
+   if(InRange(b, JB_TOTAL))return
+   #if NINTENDO
+      JoypadButtonName[JP_NAME_NINTENDO][b];
+   #elif SONY
+      JoypadButtonName[JP_NAME_SONY    ][b];
+   #else
+      JoypadButtonName[JP_NAME         ][b];
+   #endif
+   return null;
+}
+CChar* Joypad::ButtonSymbol(Int b)
+{
+   if(InRange(b, JB_TOTAL))return
+   #if NINTENDO
+      JoypadButtonSymbol[JP_NAME_NINTENDO][b];
+   #elif SONY
+      JoypadButtonSymbol[JP_NAME_SONY    ][b];
+   #else
+      JoypadButtonSymbol[JP_NAME         ][b];
+   #endif
+   return null;
+}
 /******************************************************************************/
 Bool Joypad::supportsVibrations()C
 {
@@ -431,8 +459,8 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[ 5]=JB_R1;
               _remap[ 6]=JB_BACK;
               _remap[ 7]=JB_START;
-              _remap[ 8]=JB_LTHUMB;
-              _remap[ 9]=JB_RTHUMB;
+              _remap[ 8]=JB_L3;
+              _remap[ 9]=JB_R3;
             /*_remap[10]=JB_DPAD_UP;
               _remap[11]=JB_DPAD_RIGHT;
               _remap[12]=JB_DPAD_DOWN;
@@ -459,8 +487,8 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[ 5]=JB_R1;
         _remap[ 6]=JB_L2;
         _remap[ 7]=JB_R2;
-        _remap[10]=JB_LTHUMB;
-        _remap[11]=JB_RTHUMB;
+        _remap[10]=JB_L3;
+        _remap[11]=JB_R3;
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
       }return;
@@ -489,6 +517,7 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
 
       case 1356: // Sony
       {
+        _name_type=JP_NAME_SONY;
          // product_id 3302 DualSense
          SetMem(_remap, 255);
         _remap[ 1]=JB_A;
@@ -499,33 +528,45 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[ 5]=JB_R1;
         _remap[ 6]=JB_L2;
         _remap[ 7]=JB_R2;
-        _remap[10]=JB_LTHUMB;
-        _remap[11]=JB_RTHUMB;
+        _remap[10]=JB_L3;
+        _remap[11]=JB_R3;
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
       }return;
 
       case 1406: // Nintendo
+      {
+        _name_type=JP_NAME_NINTENDO;
          switch(product_id)
          {
             case 8198: // JoyConL
             case 8199: // JoyConR
             {
+              _mini=true;
                SetMem(_remap, 255);
-              _remap[ 0]=JB_A; // this is down
-              _remap[ 1]=JB_B; // this is right
-              _remap[ 2]=JB_X; // this is left
-              _remap[ 3]=JB_Y; // this is up
-              _remap[ 4]=JB_L1;
-              _remap[ 5]=JB_R1;
+               if(JoypadLayoutName)
+               { // here use Nintendo layout
+                 _remap[0]=JB_B; // Down
+                 _remap[1]=JB_A; // Right
+                 _remap[2]=JB_Y; // Left
+                 _remap[3]=JB_X; // Up
+               }else
+               {
+                 _remap[0]=JB_D; // Down
+                 _remap[1]=JB_R; // Right
+                 _remap[2]=JB_L; // Left
+                 _remap[3]=JB_U; // Up
+               }
+              _remap[4]=JB_L1;
+              _remap[5]=JB_R1;
                if(product_id==8198) // JoyConL
                {
-                 _remap[10]=JB_LTHUMB;
+                 _remap[10]=JB_L3;
                  _remap[ 8]=JB_BACK;
                  _remap[13]=JB_START;
                }else // JoyConR
                {
-                 _remap[11]=JB_LTHUMB;
+                 _remap[11]=JB_L3;
                  _remap[12]=JB_BACK;
                  _remap[ 9]=JB_START;
                }
@@ -539,25 +580,34 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
                if(_raw_game_controller)_gamepad=null;
             #endif
                SetMem(_remap, 255);
-              _remap[ 0]=JB_A; // label "A"-right
-              _remap[ 1]=JB_X; // label "X"-up
-              _remap[ 2]=JB_B; // label "B"-down
-              _remap[ 3]=JB_Y; // label "Y"-left
+               if(JoypadLayoutName)
+               {
+                 _remap[0]=JB_A; // A Right
+                 _remap[1]=JB_X; // X Up
+                 _remap[2]=JB_B; // B Down
+                 _remap[3]=JB_Y; // Y Left
+               }else
+               {
+                 _remap[0]=JB_R; // A Right
+                 _remap[1]=JB_U; // X Up
+                 _remap[2]=JB_D; // B Down
+                 _remap[3]=JB_L; // Y Left
+               }
               _remap[ 4]=JB_L1;
               _remap[ 5]=JB_R1;
               _remap[ 6]=JB_L2;
               _remap[ 7]=JB_R2;
               _remap[ 8]=JB_BACK;
               _remap[ 9]=JB_START;
-              _remap[10]=JB_LTHUMB;
-              _remap[11]=JB_RTHUMB;
+              _remap[10]=JB_L3;
+              _remap[11]=JB_R3;
               _remap[12]=JB_MINI_S1; // HOME
               _remap[13]=JB_MINI_S2; // CAPTURE
              //axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
              //axis_stick_r_y=AMOTION_EVENT_AXIS_RZ;
             }return;
          }
-      break;
+      }break;
    }
    if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android mappings
    else        REPAO(_remap)=i;
@@ -762,14 +812,16 @@ void Joypad::getState()
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Y              , JB_Y      , _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftShoulder   , JB_L1     , _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightShoulder  , JB_R1     , _joypad_index);
-            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftThumbstick , JB_LTHUMB , _joypad_index);
-            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightThumbstick, JB_RTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_LeftThumbstick , JB_L3     , _joypad_index);
+            Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_RightThumbstick, JB_R3     , _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_View           , JB_BACK   , _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Menu           , JB_START  , _joypad_index);
+         #if 0
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle1        , JB_PADDLE1, _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle2        , JB_PADDLE2, _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle3        , JB_PADDLE3, _joypad_index);
             Test(changed, cur.Buttons, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_Paddle4        , JB_PADDLE4, _joypad_index);
+         #endif
 
             // dpad
             if(FlagOn(changed, ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadLeft | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadRight | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadDown | ABI::Windows::Gaming::Input::GamepadButtons::GamepadButtons_DPadUp))
@@ -785,14 +837,16 @@ void Joypad::getState()
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Y              , JB_Y      , _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::LeftShoulder   , JB_L1     , _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::RightShoulder  , JB_R1     , _joypad_index);
-            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::LeftThumbstick , JB_LTHUMB , _joypad_index);
-            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick, JB_RTHUMB , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::LeftThumbstick , JB_L3     , _joypad_index);
+            Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::RightThumbstick, JB_R3     , _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::View           , JB_BACK   , _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Menu           , JB_START  , _joypad_index);
+         #if 0
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle1        , JB_PADDLE1, _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle2        , JB_PADDLE2, _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle3        , JB_PADDLE3, _joypad_index);
             Test(changed, cur.Buttons, Windows::Gaming::Input::GamepadButtons::Paddle4        , JB_PADDLE4, _joypad_index);
+         #endif
             
             // dpad
             if(FlagOn(changed, Windows::Gaming::Input::GamepadButtons::DPadLeft | Windows::Gaming::Input::GamepadButtons::DPadRight | Windows::Gaming::Input::GamepadButtons::DPadDown | Windows::Gaming::Input::GamepadButtons::DPadUp))
@@ -864,8 +918,8 @@ void Joypad::getState()
             Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_Y             , JB_Y     , _joypad_index);
             Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER , JB_L1    , _joypad_index);
             Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER, JB_R1    , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB    , JB_LTHUMB, _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB   , JB_RTHUMB, _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB    , JB_L3    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB   , JB_R3    , _joypad_index);
             Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_BACK          , JB_BACK  , _joypad_index);
             Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_START         , JB_START , _joypad_index);
 
@@ -1336,91 +1390,130 @@ void ListJoypads()
 #endif
 }
 /******************************************************************************/
+inline static void Set(JP_NAME_TYPE type, Byte button, CChar8 *name, CChar *symbol)
+{
+   JoypadButtonName  [type][button]=name;
+   JoypadButtonSymbol[type][button]=symbol;
+}
 void InitJoypads()
 {
    if(LogInit)LogN("InitJoypads");
 
-   ASSERT(JB_NUM         <=ELMS(Joypad::_button_name)
-   &&     JB_UWP_NUM     <=ELMS(Joypad::_button_name)
-   &&     JB_NINTENDO_NUM<=ELMS(Joypad::_button_name)
-   &&     JB_DPAD_LEFT   < ELMS(Joypad::_button_name)
-   &&     JB_DPAD_RIGHT  < ELMS(Joypad::_button_name)
-   &&     JB_DPAD_DOWN   < ELMS(Joypad::_button_name)
-   &&     JB_DPAD_UP     < ELMS(Joypad::_button_name)
+   ASSERT(JB_TOTAL     <=ELMS(JoypadButtonName[0])
+   &&     JB_DPAD_LEFT < ELMS(JoypadButtonName[0])
+   &&     JB_DPAD_RIGHT< ELMS(JoypadButtonName[0])
+   &&     JB_DPAD_DOWN < ELMS(JoypadButtonName[0])
+   &&     JB_DPAD_UP   < ELMS(JoypadButtonName[0])
    );
    // set this first so other codes can overwrite it
-   Joypad::_button_name[ 0]="1";
-   Joypad::_button_name[ 1]="2";
-   Joypad::_button_name[ 2]="3";
-   Joypad::_button_name[ 3]="4";
-   Joypad::_button_name[ 4]="5";
-   Joypad::_button_name[ 5]="6";
-   Joypad::_button_name[ 6]="7";
-   Joypad::_button_name[ 7]="8";
-   Joypad::_button_name[ 8]="9";
-   Joypad::_button_name[ 9]="10";
-   Joypad::_button_name[10]="11";
-   Joypad::_button_name[11]="12";
-   Joypad::_button_name[12]="13";
-   Joypad::_button_name[13]="14";
-   Joypad::_button_name[14]="15";
-   Joypad::_button_name[15]="16";
-   Joypad::_button_name[16]="17";
-   Joypad::_button_name[17]="18";
-   Joypad::_button_name[18]="19";
-   Joypad::_button_name[19]="20";
-   Joypad::_button_name[20]="21";
-   Joypad::_button_name[21]="22";
-   Joypad::_button_name[22]="23";
-   Joypad::_button_name[23]="24";
-   Joypad::_button_name[24]="25";
-   Joypad::_button_name[25]="26";
-   Joypad::_button_name[26]="27";
-   Joypad::_button_name[27]="28";
-   Joypad::_button_name[28]="29";
-   Joypad::_button_name[29]="30";
-   Joypad::_button_name[30]="31";
-   Joypad::_button_name[31]="32";
+   REPA(JoypadButtonName)
+   {
+      auto &name  =JoypadButtonName  [i];
+      auto &symbol=JoypadButtonSymbol[i];
+      name[ 0]= "1"; symbol[ 0]= u"1";
+      name[ 1]= "2"; symbol[ 1]= u"2";
+      name[ 2]= "3"; symbol[ 2]= u"3";
+      name[ 3]= "4"; symbol[ 3]= u"4";
+      name[ 4]= "5"; symbol[ 4]= u"5";
+      name[ 5]= "6"; symbol[ 5]= u"6";
+      name[ 6]= "7"; symbol[ 6]= u"7";
+      name[ 7]= "8"; symbol[ 7]= u"8";
+      name[ 8]= "9"; symbol[ 8]= u"9";
+      name[ 9]="10"; symbol[ 9]=u"10";
+      name[10]="11"; symbol[10]=u"11";
+      name[11]="12"; symbol[11]=u"12";
+      name[12]="13"; symbol[12]=u"13";
+      name[13]="14"; symbol[13]=u"14";
+      name[14]="15"; symbol[14]=u"15";
+      name[15]="16"; symbol[15]=u"16";
+      name[16]="17"; symbol[16]=u"17";
+      name[17]="18"; symbol[17]=u"18";
+      name[18]="19"; symbol[18]=u"19";
+      name[19]="20"; symbol[19]=u"20";
+      name[20]="21"; symbol[20]=u"21";
+      name[21]="22"; symbol[21]=u"22";
+      name[22]="23"; symbol[22]=u"23";
+      name[23]="24"; symbol[23]=u"24";
+      name[24]="25"; symbol[24]=u"25";
+      name[25]="26"; symbol[25]=u"26";
+      name[26]="27"; symbol[26]=u"27";
+      name[27]="28"; symbol[27]=u"28";
+      name[28]="29"; symbol[28]=u"29";
+      name[29]="30"; symbol[29]=u"30";
+      name[30]="31"; symbol[30]=u"31";
+      name[31]="32"; symbol[31]=u"32";
+      ASSERT(31<ELMS(JoypadButtonName[0]));
 
-   // set universal first
-   Joypad::_button_name[JB_A]="A";
-   Joypad::_button_name[JB_B]="B";
-   Joypad::_button_name[JB_X]="X";
-   Joypad::_button_name[JB_Y]="Y";
+   #if 0
+      name[JB_PADDLE1]="Paddle1"; symbol[JB_PADDLE1]=u"Paddle1";
+      name[JB_PADDLE2]="Paddle2"; symbol[JB_PADDLE2]=u"Paddle2";
+      name[JB_PADDLE3]="Paddle3"; symbol[JB_PADDLE3]=u"Paddle3";
+      name[JB_PADDLE4]="Paddle4"; symbol[JB_PADDLE4]=u"Paddle4";
+   #endif
 
-   Joypad::_button_name[JB_L1]=SWITCH ?  "L" : "LB";
-   Joypad::_button_name[JB_R1]=SWITCH ?  "R" : "RB";
-   Joypad::_button_name[JB_L2]=SWITCH ? "ZL" : "LT";
-   Joypad::_button_name[JB_R2]=SWITCH ? "ZR" : "RT";
+      name[JB_DPAD_LEFT ]="Left" ; symbol[JB_DPAD_LEFT ]=u"⯇";
+      name[JB_DPAD_RIGHT]="Right"; symbol[JB_DPAD_RIGHT]=u"⯈";
+      name[JB_DPAD_DOWN ]="Down" ; symbol[JB_DPAD_DOWN ]=u"⯆";
+      name[JB_DPAD_UP   ]="Up"   ; symbol[JB_DPAD_UP   ]=u"⯅";
 
-   Joypad::_button_name[JB_LTHUMB]="LThumb";
-   Joypad::_button_name[JB_RTHUMB]="RThumb";
-
-   Joypad::_button_name[JB_BACK ]="Back";
-   Joypad::_button_name[JB_START]="Start";
+      name[JB_LSL]= "Left SL"; symbol[JB_LSL]= u"LeftSL";
+      name[JB_LSR]= "Left SR"; symbol[JB_LSR]= u"LeftSR";
+      name[JB_RSL]="Right SL"; symbol[JB_RSL]=u"RightSL";
+      name[JB_RSR]="Right SR"; symbol[JB_RSR]=u"RightSR";
+   }
 
    // set platform specific
-#if WINDOWS
-   Joypad::_button_name[JB_PADDLE1]="Paddle1";
-   Joypad::_button_name[JB_PADDLE2]="Paddle2";
-   Joypad::_button_name[JB_PADDLE3]="Paddle3";
-   Joypad::_button_name[JB_PADDLE4]="Paddle4";
-#endif
+   Set(JP_NAME         , JB_L1,  "Left Bumper", u"LB");
+   Set(JP_NAME         , JB_R1, "Right Bumper", u"RB");
+   Set(JP_NAME_NINTENDO, JB_L1, "L"           , u"L");
+   Set(JP_NAME_NINTENDO, JB_R1, "R"           , u"R");
+   Set(JP_NAME_SONY    , JB_L1, "L1"          , u"L1");
+   Set(JP_NAME_SONY    , JB_R1, "R1"          , u"R1");
 
-#if SWITCH
-   Joypad::_button_name[JB_LSL]= "Left SL";
-   Joypad::_button_name[JB_LSR]= "Left SR";
-   Joypad::_button_name[JB_RSL]="Right SL";
-   Joypad::_button_name[JB_RSR]="Right SR";
+   Set(JP_NAME         , JB_L2,  "Left Trigger", u"LT");
+   Set(JP_NAME         , JB_R2, "Right Trigger", u"RT");
+   Set(JP_NAME_NINTENDO, JB_L2, "ZL"           , u"ZL");
+   Set(JP_NAME_NINTENDO, JB_R2, "ZR"           , u"ZR");
+   Set(JP_NAME_SONY    , JB_L2, "L2"           , u"L2");
+   Set(JP_NAME_SONY    , JB_R2, "R2"           , u"R2");
 
-   Joypad::_button_name[JB_MINUS]="-",
-   Joypad::_button_name[JB_PLUS ]="+",
-#endif
+   Set(JP_NAME         , JB_L3,  "Left Stick", u"LS");
+   Set(JP_NAME         , JB_R3, "Right Stick", u"RS");
+   Set(JP_NAME_NINTENDO, JB_L3,  "Left Stick", u"LS");
+   Set(JP_NAME_NINTENDO, JB_R3, "Right Stick", u"RS");
+   Set(JP_NAME_SONY    , JB_L3,  "Left Stick", u"L3");
+   Set(JP_NAME_SONY    , JB_R3, "Right Stick", u"R3");
 
-   Joypad::_button_name[JB_DPAD_LEFT ]="DPadLeft" ;
-   Joypad::_button_name[JB_DPAD_RIGHT]="DPadRight";
-   Joypad::_button_name[JB_DPAD_DOWN ]="DPadDown" ;
-   Joypad::_button_name[JB_DPAD_UP   ]="DPadUp"   ;
+   Set(JP_NAME         , JB_BACK  , "Back"  , u"Back");
+   Set(JP_NAME         , JB_START , "Start" , u"Start");
+   Set(JP_NAME_NINTENDO, JB_MINUS , "Minus" , u"-");
+   Set(JP_NAME_NINTENDO, JB_PLUS  ,  "Plus" , u"+");
+   Set(JP_NAME_SONY    , JB_SELECT, "Select", u"Select");
+   Set(JP_NAME_SONY    , JB_START , "Start" , u"Start");
+
+   Set(JP_NAME, JB_A, "A", u"A");
+   Set(JP_NAME, JB_B, "B", u"B");
+   Set(JP_NAME, JB_X, "X", u"X");
+   Set(JP_NAME, JB_Y, "Y", u"Y");
+
+   if(JoypadLayoutName)
+   {
+      Set(JP_NAME_NINTENDO, JB_A, "A", u"A");
+      Set(JP_NAME_NINTENDO, JB_B, "B", u"B");
+      Set(JP_NAME_NINTENDO, JB_X, "X", u"X");
+      Set(JP_NAME_NINTENDO, JB_Y, "Y", u"Y");
+   }else
+   {
+      Set(JP_NAME_NINTENDO, JB_R, "A", u"A");
+      Set(JP_NAME_NINTENDO, JB_D, "B", u"B");
+      Set(JP_NAME_NINTENDO, JB_U, "X", u"X");
+      Set(JP_NAME_NINTENDO, JB_L, "Y", u"Y");
+   }
+
+   Set(JP_NAME_SONY, JB_L, "Square"  , u"□");
+   Set(JP_NAME_SONY, JB_R, "Circle"  , u"○");
+   Set(JP_NAME_SONY, JB_D, "Cross"   , u"✕");
+   Set(JP_NAME_SONY, JB_U, "Triangle", u"△");
 
 #if JP_GAMEPAD_INPUT && WINDOWS_OLD
    // !! SET ALL BEFORE ADDING CALLBACKS !!
