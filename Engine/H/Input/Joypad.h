@@ -244,6 +244,8 @@ private:
 
    Mems<Elm> _elms;
    Ptr       _device=null;
+#elif IOS
+   GCExtendedGamepad *_gamepad=null;
 #endif
 
    struct State

@@ -149,6 +149,10 @@ EAGLView* GetUIView()
       // setup notifications for the keyboard
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWasShown    :) name:UIKeyboardDidShowNotification  object:nil];
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillBeHidden:) name:UIKeyboardWillHideNotification object:nil]; 
+
+      // setup notifications for gamepads
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(controllerWasConnected   :) name:GCControllerDidConnectNotification    object:nil];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(controllerWasDisconnected:) name:GCControllerDidDisconnectNotification object:nil];
    }
    return self;
 }
@@ -171,6 +175,29 @@ EAGLView* GetUIView()
 -(void)keyboardVisible:(Bool)visible
 {
    if(visible)[self becomeFirstResponder];else [self resignFirstResponder];
+}
+/******************************************************************************/
+-(void)controllerWasConnected:(NSNotification*)notification
+{
+   GCController *controller=(GCController*)notification.object;
+   if(GCExtendedGamepad *gamepad=controller.extendedGamepad)
+   {
+      Bool added; Joypad &joypad=GetJoypad(NewJoypadID(0), added); if(added)
+      {
+         joypad._gamepad=gamepad;
+         joypad._name   =controller.vendorName;
+      }
+   }
+}
+-(void)controllerWasDisconnected:(NSNotification*)notification
+{
+   GCController *controller=(GCController*)notification.object;
+   if(GCExtendedGamepad *gamepad=controller.extendedGamepad)
+      REPA(Joypads)if(Joypads[i]._gamepad==gamepad)
+   {
+      Joypads.remove(i);
+      break;
+   }
 }
 /******************************************************************************/
 -(void)layoutSubviews // this is called when the layer is initialized, resized or a sub view is added (like ads)

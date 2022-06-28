@@ -331,6 +331,8 @@
          #include <CoreHaptics/CHHapticPatternPlayer.h>
          #include <AVFoundation/AVFoundation.h>
          #include <AdSupport/ASIdentifierManager.h>
+         #include <GameController/GCController.h>
+         #include <GameController/GCExtendedGamepad.h>
          #include "../../../ThirdPartyLibs/Chartboost/Headers/Chartboost.h"
          #if GL
             #include <OpenGLES/EAGL.h>
