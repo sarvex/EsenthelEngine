@@ -172,12 +172,10 @@ Str ProcName(UInt id)
       }
    #elif APPLE
       #if 1 // returns process full path file name
-         int    mib[3], max_data=0;
-         size_t size;
-
+         int mib[3], max_data=0;
          mib[0]=CTL_KERN;
          mib[1]=KERN_ARGMAX;
-         size=SIZE(max_data);
+         size_t size=SIZE(max_data);
          if(!sysctl(mib, 2, &max_data, &size, null, 0))
          {
             Memt<Char8> temp; temp.setNum(max_data);
@@ -185,7 +183,7 @@ Str ProcName(UInt id)
             mib[0]=CTL_KERN;
             mib[1]=KERN_PROCARGS2;
             mib[2]=id;
-            size=(size_t)max_data;
+            size  =temp.elms();
             if(!sysctl(mib, 3, temp.data(), &size, null, 0))return FromUTF8(temp.data()+4);
          }
       #else // returns process window name
