@@ -191,62 +191,22 @@ static Memc<TextSplit> TextSplits;
 /******************************************************************************/
 struct TextProcessor
 {
-   Bool          sub_pixel;
    Byte          shadow;
    TEXT_POS_MODE tpm;
    SPACING_MODE  spacing;
-   ALPHA_MODE    alpha;
    Char          prev_chr;
    Color         color;
-   Int           cur, sel, font_offset_i_y;
-   Flt           xsize, ysize, xsize_2, space, space_2, x_align_mul, y_align_mul, panel_r, panel_padd_r;
-   Vec2          pos, size, font_offset;
+   Flt           xsize, ysize, xsize_2, space, space_2, panel_r, panel_padd_r;
+   Vec2          pos, size;
  C Font         *font, *default_font;
  C PanelImage   *panel;
-   ShaderImage  *shader_image;
- C Shader       *shader;
 
    inline Bool spacingConst()C {return spacing==SPACING_CONST;}
-
-   static inline Flt ByteToFontLum(Byte b) {return Min(b, 128)/128.0f;} // calculate text brightness 0..1, multiply by "2" (/128.0f instead of /255.0f) will give better results for grey text color (reaches 1.0 already at grey 128 byte value)
-   void setColor(C Color &color)
-   {
-      VI.color(T.color=color);
-      if(!sub_pixel)
-      {
-      #if LINEAR_GAMMA
-         Sh.FontLum->set(ByteToFontLum(color.lum()));
-      #endif
-      }else
-      {
-      #if LINEAR_GAMMA
-         Sh.FontLum->set(Vec(ByteToFontLum(color.r), ByteToFontLum(color.g), ByteToFontLum(color.b)));
-      #endif
-         D.alphaFactor(color); // 'MaterialClear' called at start only one time instead of here which can be called multiple times
-      }
-   }
-   void setShadow(Byte shadow)
-   {
-      Sh.FontShadow->set(ByteToFlt(T.shadow=shadow));
-   }
-   void changeColor (C Color &color ) {if(T.color !=color ){VI.flush(); setColor (color );}}
-   void changeShadow(  Byte   shadow) {if(T.shadow!=shadow){VI.flush(); setShadow(shadow);}}
 
    void setFontFast(C Font *font)
    {
       T.font=font;
       xsize=size.x/font->height(); // width of 1 font texel
-   }
-   void setFont(C Font *font)
-   {
-      T.font=font;
-      xsize=size.x/font->height(); // width  of 1 font texel
-      ysize=size.y/font->height(); // height of 1 font texel
-      xsize_2=xsize/2;
-
-      font_offset_i_y=       font->paddingT();
-      font_offset.set(-xsize*font->paddingL(),
-                       ysize*font_offset_i_y);
    }
 
    Int     charWidth(Char      chr)C {return font->charWidth(chr);}
@@ -422,69 +382,6 @@ struct TextProcessor
          return true;
       }
       return false;
-   }
-   void initDraw(C TextStyleParams &style)
-   {
-      sub_pixel=default_font->_sub_pixel; // 'sub_pixel' before 'setColor'
-
-      cur=-1; sel=-1; if(style.edit){cur=style.edit->cur; sel=style.edit->sel;}
-
-      x_align_mul=style.align.x/2-0.5f;
-      y_align_mul=style.align.y/2+0.5f;
-
-      // font params
-      Flt  contrast;
-      Byte lum=style.color.lum(); if(!lum)contrast=1;else
-      {
-         Flt pixels =Renderer.screenToPixelSize(size).min();
-         if( pixels>=32)contrast=1;else
-         {
-            contrast=32/pixels;
-            contrast=Sqrt(contrast); // or alternative: contrast=Log2(contrast+1);
-            contrast=Max(1, contrast);
-            contrast=Lerp(1.0f, contrast, ByteToFlt(lum));
-         }
-      }
-      Sh.FontContrast->set(contrast);
-      Sh.FontShade   ->set(ByteSRGBToDisplay(style.shade));
-
-      shader_image=(sub_pixel ? Sh.Img[0] : Sh.ImgXY[0]);
-
-      // alpha
-      if(sub_pixel){alpha=D.alpha(Renderer.inside() ? ALPHA_FONT_DEC : ALPHA_FONT); VI.shader(Sh.FontCurSP); MaterialClear();}else // if drawing text while rendering, then decrease the alpha channel (glow), for sub-pixel we will be changing 'D.alphaFactor' for which we have to call 'MaterialClear'
-      if(Renderer.inside())D.alpha(ALPHA_RENDER_BLEND); // if drawing text while rendering, set special alpha mode, but don't bother to restore it, as in Rendering, alpha blending is always set for each call
-
-      // font depth
-      if(D._text_depth) // apply new state
-      {
-         D .depthLock (true );
-         D .depthWrite(false); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
-         VI.shader    (Sh.Font[true][D._linear_gamma]);
-      }
-
-      shader=VI._shader;
-      VI._image=null; // clear to make sure 'VI.imageConditional' below will work properly
-   }
-   Bool init(C TextStyleParams &style)
-   {
-      if(initFast(style))
-      {
-         initDraw(style);
-         return true;
-      }
-      return false;
-   }
-   void shut()
-   {
-      // alpha
-      if(sub_pixel)D.alpha(alpha); // restore alpha
-
-      // font depth
-      if(D._text_depth) // reset old state
-      {
-         D.depthUnlock();
-         D.depthWrite (true);
-      }
    }
 
    inline Bool insidePanelNearPos()C {return (tpm==TEXT_POS_OVERWRITE) && panel && panel_r<=(spacingConst() ? 0 : -space_2);} // if we're inside a panel that's closing near the requested position, this is used to prevent from advancing to the next element if still haven't finished current panel
@@ -772,6 +669,116 @@ struct TextProcessor
             split->length=-1; splits.removeLast(); // unlimited, end(pos_i); remove after adjusting 'split' because it might change memory address
             prev_chr='\0'; // have to make sure to clear 'prev_chr'
          }
+      }
+   }
+};
+struct TextDrawer : TextProcessor
+{
+   Bool          sub_pixel;
+   ALPHA_MODE    alpha;
+   Int           cur, sel, font_offset_i_y;
+   Flt           x_align_mul, y_align_mul;
+   Vec2          font_offset;
+   ShaderImage  *shader_image;
+ C Shader       *shader;
+
+   static inline Flt ByteToFontLum(Byte b) {return Min(b, 128)/128.0f;} // calculate text brightness 0..1, multiply by "2" (/128.0f instead of /255.0f) will give better results for grey text color (reaches 1.0 already at grey 128 byte value)
+   void setColor(C Color &color)
+   {
+      VI.color(T.color=color);
+      if(!sub_pixel)
+      {
+      #if LINEAR_GAMMA
+         Sh.FontLum->set(ByteToFontLum(color.lum()));
+      #endif
+      }else
+      {
+      #if LINEAR_GAMMA
+         Sh.FontLum->set(Vec(ByteToFontLum(color.r), ByteToFontLum(color.g), ByteToFontLum(color.b)));
+      #endif
+         D.alphaFactor(color); // 'MaterialClear' called at start only one time instead of here which can be called multiple times
+      }
+   }
+   void setShadow(Byte shadow)
+   {
+      Sh.FontShadow->set(ByteToFlt(T.shadow=shadow));
+   }
+   void changeColor (C Color &color ) {if(T.color !=color ){VI.flush(); setColor (color );}}
+   void changeShadow(  Byte   shadow) {if(T.shadow!=shadow){VI.flush(); setShadow(shadow);}}
+
+   void setFont(C Font *font)
+   {
+      T.font=font;
+      xsize=size.x/font->height(); // width  of 1 font texel
+      ysize=size.y/font->height(); // height of 1 font texel
+      xsize_2=xsize/2;
+
+      font_offset_i_y=       font->paddingT();
+      font_offset.set(-xsize*font->paddingL(),
+                       ysize*font_offset_i_y);
+   }
+
+   void initDraw(C TextStyleParams &style)
+   {
+      sub_pixel=default_font->_sub_pixel; // 'sub_pixel' before 'setColor'
+
+      cur=-1; sel=-1; if(style.edit){cur=style.edit->cur; sel=style.edit->sel;}
+
+      x_align_mul=style.align.x/2-0.5f;
+      y_align_mul=style.align.y/2+0.5f;
+
+      // font params
+      Flt  contrast;
+      Byte lum=style.color.lum(); if(!lum)contrast=1;else
+      {
+         Flt pixels =Renderer.screenToPixelSize(size).min();
+         if( pixels>=32)contrast=1;else
+         {
+            contrast=32/pixels;
+            contrast=Sqrt(contrast); // or alternative: contrast=Log2(contrast+1);
+            contrast=Max(1, contrast);
+            contrast=Lerp(1.0f, contrast, ByteToFlt(lum));
+         }
+      }
+      Sh.FontContrast->set(contrast);
+      Sh.FontShade   ->set(ByteSRGBToDisplay(style.shade));
+
+      shader_image=(sub_pixel ? Sh.Img[0] : Sh.ImgXY[0]);
+
+      // alpha
+      if(sub_pixel){alpha=D.alpha(Renderer.inside() ? ALPHA_FONT_DEC : ALPHA_FONT); VI.shader(Sh.FontCurSP); MaterialClear();}else // if drawing text while rendering, then decrease the alpha channel (glow), for sub-pixel we will be changing 'D.alphaFactor' for which we have to call 'MaterialClear'
+      if(Renderer.inside())D.alpha(ALPHA_RENDER_BLEND); // if drawing text while rendering, set special alpha mode, but don't bother to restore it, as in Rendering, alpha blending is always set for each call
+
+      // font depth
+      if(D._text_depth) // apply new state
+      {
+         D .depthLock (true );
+         D .depthWrite(false); Renderer.needDepthTest(); // !! 'needDepthTest' after 'depthWrite' !!
+         VI.shader    (Sh.Font[true][D._linear_gamma]);
+      }
+
+      shader=VI._shader;
+      VI._image=null; // clear to make sure 'VI.imageConditional' below will work properly
+   }
+   Bool init(C TextStyleParams &style)
+   {
+      if(initFast(style))
+      {
+         initDraw(style);
+         return true;
+      }
+      return false;
+   }
+   void shut()
+   {
+      // alpha
+      if(sub_pixel)D.alpha(alpha); // restore alpha
+
+      // font depth
+      if(D._text_depth) // reset old state
+      {
+         D.depthUnlock();
+         D.depthWrite (true);
       }
    }
 
