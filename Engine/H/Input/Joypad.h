@@ -240,9 +240,9 @@ private:
       Flt                mul, add;
 
    #if EE_PRIVATE
-      void setPad   (C IOHIDElementCookie &cookie                    , Int max) {T.type=PAD   ; T.cookie=cookie; T.max  =max+1; T.mul=-PI2/T.max; T.add=PI_2;}
-      void setButton(C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=BUTTON; T.cookie=cookie; T.index=index; T.avg=(min+max)/2;}
-      void setAxis  (C IOHIDElementCookie &cookie, Int index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index==1 || index==3){CHS(mul); CHS(add);}} // change sign for vertical
+      void setPad   (C IOHIDElementCookie &cookie                     , Int max) {T.type=PAD   ; T.cookie=cookie; T.max  =max+1; T.mul=-PI2/T.max; T.add=PI_2;}
+      void setButton(C IOHIDElementCookie &cookie, Byte index, Int min, Int max) {T.type=BUTTON; T.cookie=cookie; T.index=index; T.avg=(min+max)/2;}
+      void setAxis  (C IOHIDElementCookie &cookie, Byte index, Int min, Int max) {T.type=AXIS  ; T.cookie=cookie; T.index=index; T.mul=2.0f/(max-min); T.add=-1-min*T.mul; if(index==1 || index==3){CHS(mul); CHS(add);}} // change sign for vertical
    #endif
    };
 
