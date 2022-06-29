@@ -189,13 +189,13 @@ struct TextSplit
 {
    Byte         shadow;
    Color        color;
-   Int          datas;
-   Int          length;
    Int          offset;
-   TextSrc      text;
+   Int          length;
+   Int          datas;
  C StrEx::Data *data;
  C Font        *font;
  C PanelImage  *panel;
+   TextSrc      text;
 
    void end(Int end) {length=end-offset;}
 };
@@ -247,7 +247,7 @@ struct TextProcessor
    Flt _width(TextSrc &text, C StrEx::Data *&data, Int &datas, Int &max_length, Bool stop_on_panel) // !! MAY CHANGE 'font' !! but doesn't change 'panel'
    {
       if(max_length)
-      {  max_length--;
+      {
        //Char prev_chr='\0';
          Char chr=text.c();
          Int  chr_pixels=0, elements=(spacingConst() ? 0 : -1); // -1 because we will count only in between
@@ -272,7 +272,7 @@ struct TextProcessor
                      if(spacingConst()){width+=Max(w, space);}
                      else              {width+=    w; elements++;}
                   }else elements++;
-                  if(!max_length)goto end; max_length--;
+                  if(!--max_length)goto end;
                   if(prev_chr){chr_pixels+=nextCharWidth('\0'); prev_chr='\0';} // can check this after 'max_length' because if it goes to 'end', it will calculate the same thing
                }break;
 
@@ -287,6 +287,7 @@ struct TextProcessor
                          w=Max(w+panel_padd_l+panel_padd_r, size.y);
                      if(spacingConst()){width+=Max(w, space);}
                      else              {width+=    w; elements++;}
+                     if(!max_length)goto end;
                   }
                }break;
 
@@ -309,8 +310,8 @@ struct TextProcessor
 
          {
          combining:
-            if(!max_length)goto end; max_length--;
             Char n=text.n();
+            if(!--max_length)goto end; // check after advancing 'text' pointer
             if(CharFlagFast(n)&CHARF_COMBINING)goto combining;
 
             chr=n; goto loop;
@@ -637,19 +638,18 @@ struct TextProcessor
                ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
                {
                   split->end(pos_start);
-                  if(skippable)separator(*next, text, data, datas, pos_i    );
-                  else        {separator(*next, text, data, datas, pos_start); next->text-=chars;}
+                  if(skippable)
+                  {
+                     if(new_line /*&& skippable already checked*/ && panel && !n && PanelClosing(data, datas))panel=null; // if we've skipped 'chr', creating new line, inside panel, and there's no visible element until panel closes, then close it already, so we don't start the new line with this panel
+                       separator(*next, text, data, datas, pos_i    );}
+                  else{separator(*next, text, data, datas, pos_start); next->text-=chars;}
                }
                if(new_line)
                {
                   if(skippable)prev_chr='\0';
                   next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
                   pos.x=width;
-                  if(panel)
-                  {
-                     if(skippable && !n && PanelClosing(data, datas))panel=null; // if we've skipped 'chr', and next is '\0' (text finished), and panel is closing
-                     else processPanelFast(split->text, data, datas);
-                  }
+                  if(panel)processPanelFast(split->text, data, datas);
                }
 
                chr=n; goto loop;
@@ -799,8 +799,7 @@ struct TextDrawer : TextProcessor
    #endif
 
       if(max_length)
-      {  max_length--;
-
+      {
          setColor (start_color ); // after 'sub_pixel'
          setShadow(start_shadow);
 
@@ -845,7 +844,7 @@ struct TextDrawer : TextProcessor
                      pos.x+=space;
                   }
                   pos_i++;
-                  if(!max_length)goto end; max_length--;
+                  if(!--max_length)goto end;
                }break;
 
                case StrEx::Data::PANEL:
@@ -861,6 +860,8 @@ struct TextDrawer : TextProcessor
 
                      VI.shader(shader);
                      VI.color (color);
+
+                     if(!max_length)goto end;
                   }
                }break;
 
@@ -905,7 +906,7 @@ struct TextDrawer : TextProcessor
                   else         VI.font     (rect, fc.tex);
 
                   // combining
-                  if(!max_length)goto end; max_length--;
+                  if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
                   Char n=text.n();
                   UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
                   {
@@ -942,8 +943,9 @@ struct TextDrawer : TextProcessor
                         if(flag&CHARF_STACK)chr_pos.y+=n_height_padd; // if the drawn character is stacking, then move position higher for next character, to stack combining characters on top of each other (needed for THAI)
                      }
 
-                     if(!max_length)goto end; max_length--;
-                     n=text.n(); flag=CharFlagFast(n); if(flag&CHARF_COMBINING)goto draw_combining; // if next character is combining too
+                     if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
+                     n=text.n();
+                     flag=CharFlagFast(n); if(flag&CHARF_COMBINING)goto draw_combining; // if next character is combining too
                   }
                   chr=n; goto loop;
                }
@@ -951,7 +953,7 @@ struct TextDrawer : TextProcessor
          }
 
       skip_combining:
-         if(!max_length)goto end; max_length--;
+         if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
          Char n=text.n();
          if(CharFlagFast(n)&CHARF_COMBINING)
          {
