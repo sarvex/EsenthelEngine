@@ -869,6 +869,7 @@ struct TextDrawerHW : TextDrawer
                      if(spacingConst()){Flt o=Max(w, space); pos.x+=o      ; x+=(o-w)/2;}
                      else              {                     pos.x+=w+space;}
                      image->draw(Rect_LU(x, pos.y, w, size.y));
+
                      VI.shader(shader);
                    //VI.color (color); not needed, 'image->draw' doesn't change it
                   }else
@@ -1192,8 +1193,35 @@ struct TextDrawerSoft : TextDrawer
       }
       rects=0;
    }
+   void drawImage(C Image &image, C Rect &rect)C
+   {
+      Rect uv(0, 0, 1, 1);
+      Vec2 s=image.size()/rect.size()*uv.size();
+      Flt  mip_map=0.5f*Log2(Sqr(s.abs().max()));
+      if(image.lockRead(Mid(Round(mip_map), 0, image.mipMaps()-1)))
+      {
+         RectI dest(Trunc(rect.min.x), Trunc(rect.min.y), Ceil(rect.max.x), Ceil(rect.max.y));
+               dest&=clip;
+         Vec2 mul_add_x((uv.max.x-uv.min.x)                       / (rect.max.x - rect.min.x)  * image.lw(),
+            (uv.min.x + (uv.max.x-uv.min.x) * (0.5f - rect.min.x) / (rect.max.x - rect.min.x)) * image.lw() - 0.5f);
+         Vec2 mul_add_y((uv.max.y-uv.min.y)                       / (rect.max.y - rect.min.y)  * image.lh(),
+            (uv.min.y + (uv.max.y-uv.min.y) * (0.5f - rect.min.y) / (rect.max.y - rect.min.y)) * image.lh() - 0.5f);
+
+         for(Int y=dest.min.y; y<dest.max.y; y++)
+         {
+            Flt ty=y*mul_add_y.x+mul_add_y.y;
+            for(Int x=dest.min.x; x<dest.max.x; x++)
+            {
+               Flt tx=x*mul_add_x.x+mul_add_x.y;
+               Vec4 c=image.colorFLinear(tx, ty, true, true);
+               T.dest->mergeF(x, y, c);
+            }
+         }
+         image.unlock();
+      }
+   }
    void unlock() {if(src){flush(); src->unlock();}}
-   Bool draw(C Image &image, C Rect &rect_src, C Rect &rect_dest)
+   Bool drawChr(C Image &image, C Rect &rect_src, C Rect &rect_dest)
    {
       if(src!=&image)
       {
@@ -1304,11 +1332,13 @@ struct TextDrawerSoft : TextDrawer
 
                 C Image *image=d->image(); if(image && image->is())
                   {
+                     flush();
+
                      Flt w=size.y*image->aspect();
                      Flt x=pos.x;
                      if(spacingConst()){Flt o=Max(w, space); pos.x+=o      ; x+=(o-w)/2;}
                      else              {                     pos.x+=w+space;}
-                   //image->draw(Rect_LU(x, pos.y, w, size.y)); FIXME #TextSoft
+                     drawImage(*image, Rect_LD(x, pos.y, w, size.y)); // #TextSoft
                   }else
                   {
                      pos.x+=space;
@@ -1357,7 +1387,7 @@ struct TextDrawerSoft : TextDrawer
                   if(style.pixel_align)chr_pos.x=Round(chr_pos.x); // #TextSoft
 
                   Rect_LU rect(chr_pos, xsize*fc.width_padd, ysize*fc.height_padd);
-                  draw(font->_images[fc.image], fc.tex, rect); // #TextSoft
+                  drawChr(font->_images[fc.image], fc.tex, rect); // #TextSoft
 
                   // combining
                   if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
@@ -1386,7 +1416,7 @@ struct TextDrawerSoft : TextDrawer
 
                         Flt   n_height_padd=ysize*fc.height_padd;
                         Rect_LU rect(n_pos, xsize*fc. width_padd, n_height_padd);
-                        draw(font->_images[fc.image], fc.tex, rect); // #TextSoft
+                        drawChr(font->_images[fc.image], fc.tex, rect); // #TextSoft
                         if(flag&CHARF_STACK)chr_pos.y+=n_height_padd; // if the drawn character is stacking, then move position higher for next character, to stack combining characters on top of each other (needed for THAI)
                      }
 
