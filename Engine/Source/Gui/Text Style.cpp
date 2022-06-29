@@ -1198,7 +1198,7 @@ struct TextDrawerSoft : TextDrawer
       Rect uv(0, 0, 1, 1);
       Vec2 s=image.size()/rect.size()*uv.size();
       Flt  mip_map=0.5f*Log2(Sqr(s.abs().max()));
-      if(image.lockRead(Mid(Round(mip_map), 0, image.mipMaps()-1)))
+      if(image.lockRead(Mid(Round(mip_map), 0, image.mipMaps()-1))) // for higher precision, this could use some bigger mip (maybe something like Floor(mip_map), Floor(mip_map)-1, Round(mip_map)-1) and 'areaColorF*' instead of 'colorF*'
       {
          RectI dest(Trunc(rect.min.x), Trunc(rect.min.y), Ceil(rect.max.x), Ceil(rect.max.y));
                dest&=clip;
@@ -1213,7 +1213,7 @@ struct TextDrawerSoft : TextDrawer
             for(Int x=dest.min.x; x<dest.max.x; x++)
             {
                Flt tx=x*mul_add_x.x+mul_add_x.y;
-               Vec4 c=image.colorFLinear(tx, ty, true, true);
+               Vec4 c=image.colorFCubicFast(tx, ty, true, true); // 'colorFCubicFastSharp' was too sharp, alternatively 'colorFLinear' can be used
                T.dest->mergeF(x, y, c);
             }
          }
