@@ -486,7 +486,7 @@ struct TextProcessor
       separator.panel =panel;
    }
 
-   void split(MemPtr<TextSplit> splits, C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas) // have to set at least one line to support drawing cursor when text is empty
+   void split(MemPtr<TextSplit> splits, C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas) // 1. Have to set at least one line to support drawing cursor when text is empty. 2. Don't set null fonts.
    {
       splits.clear();
       if(initFast(style))
@@ -516,7 +516,7 @@ struct TextProcessor
                   case StrEx::Data::TEXT      : if(d->text.is()){text=d->text(); chr=text.c(); goto aln_have_char;} break; // process only if have anything, if not then proceed to 'next_data'
                   case StrEx::Data::IMAGE     : pos_i++; break;
                   case StrEx::Data::PANEL     : panel =d   ->panel(); break;
-                  case StrEx::Data::FONT      : font  =d   ->font (); break;
+                  case StrEx::Data::FONT      : {C Font *new_font=d->font(); font=(new_font ? new_font : default_font);} break;
                   case StrEx::Data::COLOR     : color =d   ->color  ; break;
                   case StrEx::Data::COLOR_OFF : color =style.color  ; break;
                   case StrEx::Data::SHADOW    : shadow=d   ->shadow ; break;
@@ -732,9 +732,6 @@ struct TextDrawerHW : TextDrawer
    {
       super::initDraw(style);
 
-      setColor (style.color ); // after 'sub_pixel'
-      setShadow(style.shadow);
-
       cur=-1; sel=-1; if(style.edit){cur=style.edit->cur; sel=style.edit->sel;}
 
       // font params
@@ -811,10 +808,8 @@ struct TextDrawerHW : TextDrawer
       pos.x+=panel_padd_l;
    }
 
-   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel, Int offset=0, Int next_offset=-1) // assumes: 'text.fix'
+   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C PanelImage *start_panel, Int offset=0, Int next_offset=-1) // assumes: 'text.fix'
    {
-      if(!start_font)start_font=default_font;
-      setFont(start_font); // BEFORE 'width'
       panel=start_panel;
 
       Flt total_width=(Equal(x_align_mul, 0) ? 0 : width(text, data, datas, max_length)); // don't calculate 'width' when not needed, AFTER 'setFont' and 'panel'
@@ -841,9 +836,6 @@ struct TextDrawerHW : TextDrawer
 
       if(max_length)
       {
-         changeColor (start_color );
-         changeShadow(start_shadow);
-
          Char chr=text.c();
       loop:
          if(!chr)
@@ -1048,13 +1040,16 @@ struct TextDrawerHW : TextDrawer
          VI.color (color);
       }
    }
-   void draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
+   void draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas)
    {
       if(text.is() || VisibleData(data, datas) || (style.edit && (style.edit->cur>=0 || style.edit->sel>=0)))
          if(init(style))
       {
          text.fix();
-        _draw(style, x, y, text, data, datas, max_length, style.color, style.shadow, default_font, null);
+         setColor (style.color ); // after 'sub_pixel'
+         setShadow(style.shadow);
+         setFont  (default_font); // before 'width'
+        _draw(style, x, y, text, data, datas, -1, null);
          shut();
       }
    }
@@ -1062,7 +1057,7 @@ struct TextDrawerHW : TextDrawer
    {
       if(text.is() || VisibleData(data, datas) || (style.edit && (style.edit->cur>=0 || style.edit->sel>=0)))
       {
-         auto &splits=TextSplits;
+         auto &splits=TextSplits; // HW drawing functions can be called only on the main thread under 'D._lock' so we can use just 1 global
          split(splits, style, rect.w(), auto_line, text, data, datas); if(splits.elms())
          {
             Flt  h=style.lineHeight();
@@ -1086,10 +1081,20 @@ struct TextDrawerHW : TextDrawer
             {
                initDraw(style);
                TextSplit *split=&splits[start];
+               setColor (split->color ); // after 'sub_pixel'
+               setShadow(split->shadow);
+               setFont  (split->font  ); // before 'width'
             next:
                TextSplit *next=splits.addr(start+1);
-              _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel, split->offset, next ? next->offset : -1);
-               if(++start<=end){split=next; goto next;}
+              _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->length, split->panel, split->offset, next ? next->offset : -1);
+               if(++start<=end)
+               {
+                  split=next;
+                                    changeColor (split->color );
+                                    changeShadow(split->shadow);
+                  if(split->font!=font)setFont  (split->font  );
+                  goto next;
+               }
                shut();
             }
          }
@@ -1212,9 +1217,6 @@ struct TextDrawerSoft : TextDrawer
    {
       super::initDraw(style);
 
-      setColor (style.color ); // after 'sub_pixel'
-      setShadow(style.shadow);
-
       rects=0;
       T.src = null;
       T.dest=&dest;
@@ -1264,10 +1266,8 @@ struct TextDrawerSoft : TextDrawer
       pos.x+=panel_padd_l;
    }
 
-   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel) // assumes: 'text.fix'
+   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C PanelImage *start_panel) // assumes: 'text.fix'
    {
-      if(!start_font)start_font=default_font;
-      setFont(start_font); // BEFORE 'width'
       panel=start_panel;
 
       Flt total_width=(Equal(x_align_mul, 0) ? 0 : width(text, data, datas, max_length)); // don't calculate 'width' when not needed, AFTER 'setFont' and 'panel'
@@ -1281,9 +1281,6 @@ struct TextDrawerSoft : TextDrawer
 
       if(max_length)
       {
-         changeColor (start_color );
-         changeShadow(start_shadow);
-
          Char chr=text.c();
       loop:
          if(!chr)
@@ -1411,13 +1408,16 @@ struct TextDrawerSoft : TextDrawer
    end:
       if(prev_chr){advance('\0'); prev_chr='\0';}
    }
-   void draw(C TextStyleParams &style, Image &image, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
+   void draw(C TextStyleParams &style, Image &image, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas)
    {
       if(text.is() || VisibleData(data, datas))
          if(init(style, image))
       {
          text.fix();
-        _draw(style, x, y, text, data, datas, max_length, style.color, style.shadow, default_font, null);
+         setColor (style.color ); // after 'sub_pixel'
+         setShadow(style.shadow);
+         setFont  (default_font); // before 'width'
+        _draw(style, x, y, text, data, datas, -1, null);
          shut();
       }
    }
@@ -1443,10 +1443,20 @@ struct TextDrawerSoft : TextDrawer
             {
                initDraw(style, image);
                TextSplit *split=&splits[start];
+               setColor (split->color ); // after 'sub_pixel'
+               setShadow(split->shadow);
+               setFont  (split->font  ); // before 'width'
             next:
                TextSplit *next=splits.addr(start+1);
-              _draw(style, p.x, p.y+start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel); // #TextSoft
-               if(++start<=end){split=next; goto next;}
+              _draw(style, p.x, p.y+start*h, split->text, split->data, split->datas, split->length, split->panel); // #TextSoft
+               if(++start<=end)
+               {
+                  split=next;
+                                    changeColor (split->color );
+                                    changeShadow(split->shadow);
+                  if(split->font!=font)setFont  (split->font  );
+                  goto next;
+               }
                shut();
             }
          }
