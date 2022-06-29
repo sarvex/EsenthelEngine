@@ -1690,10 +1690,10 @@ void TextStyleParams::setPerPixelSize()
 }
 Flt TextStyleParams::textWidth(C Str &str, Int max_length)C
 {
-   if(Int length=str.length())
+   if(max_length && str.is())
       if(C Font *font=getFont())
    {
-      if(max_length>=0 && max_length<length){if(!max_length)return 0; length=max_length;}
+      if(max_length>=str.length())max_length=-1; // if 'max_length' specified and >= than what we have, then change to unlimited mode because that will be faster
 
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
@@ -1704,10 +1704,10 @@ Flt TextStyleParams::textWidth(C Str &str, Int max_length)C
 }
 Flt TextStyleParams::textWidth(C Str8 &str, Int max_length)C
 {
-   if(Int length=str.length())
+   if(max_length && str.is())
       if(C Font *font=getFont())
    {
-      if(max_length>=0 && max_length<length){if(!max_length)return 0; length=max_length;}
+      if(max_length>=str.length())max_length=-1; // if 'max_length' specified and >= than what we have, then change to unlimited mode because that will be faster
 
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
@@ -1718,11 +1718,9 @@ Flt TextStyleParams::textWidth(C Str8 &str, Int max_length)C
 }
 Flt TextStyleParams::textWidth(CChar *text, Int max_length)C
 {
-   if(Int length=Length(text))
+   if(max_length && Is(text))
       if(C Font *font=getFont())
    {
-      if(max_length>=0 && max_length<length){if(!max_length)return 0; length=max_length;}
-
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
       Int    base_chars, width=font->textWidth(base_chars, spacing, text, max_length);
@@ -1732,11 +1730,9 @@ Flt TextStyleParams::textWidth(CChar *text, Int max_length)C
 }
 Flt TextStyleParams::textWidth(CChar8 *text, Int max_length)C
 {
-   if(Int length=Length(text))
+   if(max_length && Is(text))
       if(C Font *font=getFont())
    {
-      if(max_length>=0 && max_length<length){if(!max_length)return 0; length=max_length;}
-
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
       Int    base_chars, width=font->textWidth(base_chars, spacing, text, max_length);
