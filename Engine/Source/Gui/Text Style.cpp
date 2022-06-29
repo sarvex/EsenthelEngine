@@ -1050,8 +1050,8 @@ struct TextDrawer : TextProcessor
 
           C Rect &clip=D._clip ? D._clip_rect : D.viewRect();
             Vec2 range; style.posY(p.y, range);
-            Int  start=Max(            0, Trunc((range.y-clip.max.y)/h)), // can use Trunc because we use Max(0,
-                 end  =Min(splits.elms(), Floor((range.x-clip.min.y)/h));
+            Int  start=Max(              0, Trunc((range.y-clip.max.y)/h)), // can use 'Trunc' instead of 'Floor' because we use "Max(0"
+                 end  =Min(splits.elms()-1, Ceil ((range.x-clip.min.y)/h));
 
          #if DEBUG && 0
             D.clip(null);
@@ -1060,14 +1060,14 @@ struct TextDrawer : TextProcessor
             D.text(0, D.h()*0.9f, S+start+' '+end);
          #endif
 
-            if(start<end)
+            if(start<=end)
             {
                initDraw(style);
                TextSplit *split=&splits[start];
             next:
                TextSplit *next=splits.addr(start+1);
               _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel, split->offset, next ? next->offset : -1);
-               if(++start<end)
+               if(++start<=end)
                {
                   split=next; goto next;
                }
