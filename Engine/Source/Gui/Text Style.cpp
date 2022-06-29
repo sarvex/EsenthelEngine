@@ -151,6 +151,19 @@ static Bool VisibleData(C StrEx::Data *data, Int datas)
    REP(datas)if(data[i].visible())return true;
    return false;
 }
+static Bool PanelClosing(C StrEx::Data *data, Int datas) // if there are no visible elements (no text, images) until the panel (or data) ends
+{
+next:
+   if(datas<=0)return true; // reached the end = close
+   switch(data->type)
+   {
+      case StrEx::Data::IMAGE:                    return false;        // there's a visible element
+      case StrEx::Data::TEXT : if(data->text.is())return false; break; // there's a visible element
+
+      case StrEx::Data::PANEL: return true; // reached panel = close
+   }
+   data++; datas--; goto next;
+}
 /******************************************************************************/
 struct TextSrc
 {
@@ -158,10 +171,11 @@ struct TextSrc
    CChar  *t16;
 
    Bool is()C {return Is(t8) || Is(t16);}
-   Char c ()C {return t8 ? Char8To16Fast(*  t8) : *  t16;} // assumes that Str was already initialized and "t8 || t16"
-   Char n ()  {return t8 ? Char8To16Fast(*++t8) : *++t16;} // assumes that Str was already initialized and "t8 || t16"
 
    void fix() {if(!t16 && !t8)t16=u"";} // don't allow null so we can assume "t8 || t16" in 'c' 'n', prefer 't16' to avoid 'Char8To16Fast'
+
+   Char c()C {return t8 ? Char8To16Fast(*  t8) : *  t16;} // assumes that Str was already initialized and "t8 || t16"
+   Char n()  {return t8 ? Char8To16Fast(*++t8) : *++t16;} // assumes that Str was already initialized and "t8 || t16"
 
    void operator+=(Int i) {if(t8)t8+=i;else t16+=i;} // assumes that "t8 || t16"
    void operator-=(Int i) {if(t8)t8-=i;else t16-=i;} // assumes that "t8 || t16"
@@ -327,8 +341,8 @@ struct TextProcessor
          width=_width(text, data, datas, max_length, true);
          Flt panel_padd_l, panel_padd_r; panelPadd(*panel, panel_padd_l, panel_padd_r);
          width=Max(width+panel_padd_l+panel_padd_r, size.y);
-         if(spacingConst())MAX(width, space);
-         else                  width+=space ; // TODO: this should add 'space' only if there's something after
+         if(spacingConst())MAX(width, space);else
+         if(max_length && (text.c() || VisibleData(data, datas)))width+=space; // have to add 'space' only if there's something after
       }
       width+=_width(text, data, datas, max_length, false);
       if(font!=start_font)setFontFast(start_font); // if font got changed, restore it
@@ -416,32 +430,13 @@ struct TextProcessor
                {
                   if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
 
-                  Flt w;
-                  Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+                  Flt w; Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
                   Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
                   if(pos.x<test)goto ret;
-               #define FAST_CHECK 1
-               #if    !FAST_CHECK
-                  if(insidePanelNearPos())
-                  { // check if there's any element before the panel is closed, if not and this image is the last one, then don't proceed to the next one
-                     Int i=0;
-                  next_elm:
-                     if(i>=datas)goto ret; // data end = panel closing
-                     switch(data[i].type)
-                     {
-                        case StrEx::Data::IMAGE:
-                        case StrEx::Data::TEXT : break; // found a visible element
-
-                        case StrEx::Data::PANEL: goto ret; // panel closing
-
-                        default: i++; goto next_elm;
-                     }
-                  }
-               #endif
+                  const Bool FAST_CHECK=true;
+                  if(!FAST_CHECK && insidePanelNearPos() && PanelClosing(data, datas))goto ret;
                   pos.x-=(spacingConst() ? Max(w, space) : w+space);
-               #if FAST_CHECK
-                  if(insidePanelNearPos() && pos.x/*-w-space : already applied this above*/-panel_padd_r<=panel_r+EPS)goto ret; // if this is the last element, "image_left_pos-image_w-panel_padd_r<=panel_r+space+EPS" 'panel_r' had 'space' applied so have to revert it
-               #endif
+                  if( FAST_CHECK && insidePanelNearPos() && pos.x/*-w-space : already applied this above*/-panel_padd_r<=panel_r+EPS)goto ret; // if this is the last element, "image_left_pos-image_w-panel_padd_r<=panel_r+space+EPS" 'panel_r' had 'space' applied so have to revert it
                   pos_i++;
                }break;
 
@@ -483,8 +478,22 @@ struct TextProcessor
 
       ret:
        /*prev_chr='\0';*/ return pos_i;
+      // no need to clear because this is a standalone function to be called outside of others
       }
       return 0;
+   }
+
+   void separator(TextSplit &separator, C TextSrc &text, C StrEx::Data *data, Int datas, Int pos_i)
+   {
+      separator.shadow=shadow;
+      separator.color =color;
+      separator.datas =datas;
+    //separator.length=-1; this may be called several times, don't set it here, instead call it only one time later
+      separator.offset=pos_i;
+      separator.text  =text;
+      separator.data  =data;
+      separator.font  =font;
+      separator.panel =panel;
    }
 
    void split(MemPtr<TextSplit> splits, C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas) // have to set at least one line to support drawing cursor when text is empty
@@ -497,17 +506,10 @@ struct TextProcessor
          T.tpm=TEXT_POS_FIT;
          setFontFast(default_font);
          panel=null;
+         shadow=style.shadow;
+         color =style.color;
 
-         TextSplit *split=&splits.New();
-         split->shadow=shadow=style.shadow;
-         split->color =color =style.color;
-         split->datas =datas;
-       //split->length=0;
-         split->offset=0;
-         split->text  =text;
-         split->data  =data;
-         split->panel =panel;
-         split->font  =font;
+         TextSplit *split=&splits.New(); separator(*split, text, data, datas, 0);
 
          Int pos_i=0;
 
@@ -535,23 +537,12 @@ struct TextProcessor
 
          aln_have_char:
             {
-               Char n=text.n();
+               Char n=text.n(); pos_i++;
                if(chr=='\n')
                {
-                  split->end(pos_i);
-
-                  split=&splits.New();
-                  split->shadow=shadow;
-                  split->color =color;
-                  split->datas =datas;
-                //split->length=0;
-                  split->offset=pos_i+1;
-                  split->text  =text;
-                  split->data  =data;
-                  split->panel =panel;
-                  split->font  =font;
+                  split->end(pos_i-1);
+                  split=&splits.New(); separator(*split, text, data, datas, pos_i);
                }
-               pos_i++;
                chr=n;
                goto aln_loop;
             }
@@ -560,8 +551,7 @@ struct TextProcessor
             split->length=-1; // unlimited, end(pos_i);
          }else
          {
-            split->length=-1;
-            TextSplit *next=&splits.New(); split=&splits[splits.elms()-2];
+            TextSplit *next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
          loop:
             if(!chr)
             {
@@ -574,25 +564,36 @@ struct TextProcessor
                      text=d->text(); chr=text.c(); goto have_char;
                   }break;
 
-               #if 0
-                  // FIXME
                   case StrEx::Data::IMAGE:
                   {
                      if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
 
-                     Flt w;
-                     Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
-                     Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
-                     if(pos.x<test)goto ret;
+                     Flt w; Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+
+                     // 'pos_i' is at image, but 'data', 'datas' after it
+                     if(pos_i>split->offset // require at least length=1
+                     && pos.x<(spacingConst() ? Max(w, space) : w)) // image doesn't fit
+                     {
+                        split->end(pos_i);
+                        separator(*next, text, data-1, datas+1, pos_i);
+
+                        next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
+                        pos.x=width;
+                        if(panel)processPanelFast(text, data, datas);
+                     }
+
                      pos.x-=(spacingConst() ? Max(w, space) : w+space);
-                     if(insidePanelNearPos() && pos.x/*-w-space : already applied this above*/-panel_padd_r<=panel_r+EPS)goto ret; // if this is the last element, "image_left_pos-image_w-panel_padd_r<=panel_r+space+EPS" 'panel_r' had 'space' applied so have to revert it
                      pos_i++;
+
+                     split->end(pos_i);
+                     separator(*next, text, data, datas, pos_i);
                   }break;
 
                   case StrEx::Data::PANEL:
                   {
                      if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
                      if(panel)pos.x=panel_r;
+                  // FIXME check if can fit? or no need?
                      if(panel=d->panel())processPanelFast(text, data, datas);
                   }break;
 
@@ -604,7 +605,6 @@ struct TextProcessor
                         setFontFast(new_font);
                      }
                   }break;
-               #endif
 
                   case StrEx::Data::COLOR     : color =d   ->color ; break;
                   case StrEx::Data::COLOR_OFF : color =style.color ; break;
@@ -616,6 +616,8 @@ struct TextProcessor
 
          have_char:
             {
+               if(prev_chr)advanceSplit(chr); prev_chr=chr;
+
                Int pos_start=pos_i; // 'pos_start' is located at 'chr'
 
                // combining
@@ -624,7 +626,7 @@ struct TextProcessor
                Char n=text.n();
                if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
                pos_i+=chars;
-               // 'text' and 'pos_i' are now after 'chr' and combined
+               // 'text' and 'pos_i' are now after ('chr' and combined)
 
                Bool new_line=(chr=='\n' // manual new line
                           || (pos_start>split->offset // require at least length=1
@@ -635,39 +637,27 @@ struct TextProcessor
                ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
                {
                   split->end(pos_start);
-
-                  next->shadow=shadow;
-                  next->color =color;
-                  next->datas =datas;
-                //next->length=-1; this may be called several times, don't set it here, instead call it only one time later
-                  next->data  =data;
-                  next->panel =panel;
-                  next->font  =font;
-                  if(skippable)
-                  {
-                     next->offset=pos_i;
-                     next->text  =text;
-                  }else
-                  {
-                     next->offset=pos_start;
-                     next->text  =text; next->text-=chars;
-                  }
+                  if(skippable)separator(*next, text, data, datas, pos_i    );
+                  else        {separator(*next, text, data, datas, pos_start); next->text-=chars;}
                }
                if(new_line)
                {
+                  if(skippable)prev_chr='\0';
                   next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
-                  prev_chr='\0'; if(skippable)chr='\0';
                   pos.x=width;
-                  // FIXME if(panel)processPanelFast, however have to check if can be closed first? (on the previous line) -> if text is finished and next visible elm is panel? careful about skippable
+                  if(panel)
+                  {
+                     if(skippable && !n && PanelClosing(data, datas))panel=null; // if we've skipped 'chr', and next is '\0' (text finished), and panel is closing
+                     else processPanelFast(split->text, data, datas);
+                  }
                }
-               if(prev_chr)advanceSplit(chr); prev_chr=chr;
 
                chr=n; goto loop;
             }
 
          end:
             split->length=-1; splits.removeLast(); // unlimited, end(pos_i); remove after adjusting 'split' because it might change memory address
-            prev_chr='\0'; // have to make sure to clear 'prev_chr'
+            prev_chr='\0'; // have to make sure to clear 'prev_chr', because this class can still be used after this function
          }
       }
    }
