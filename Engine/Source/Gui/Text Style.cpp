@@ -10,6 +10,11 @@ Memc<TextLineSplit8 > Tls8 ;
 Memc<TextLineSplit16> Tls16;
 DEFINE_CACHE(TextStyle, TextStyles, TextStylePtr, "Text Style");
 /******************************************************************************/
+static Bool Separatable(Char c)
+{
+   return Unsigned(c)>=3585; // starting from Thai, Korean=0x1100, see 'LanguageSpecific', careful this range also includes German 'ẞ'
+}
+/******************************************************************************/
 // STR EX
 /******************************************************************************/
 Bool StrEx::Data::visible()C
@@ -594,7 +599,6 @@ struct TextProcessor
                   {
                      if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
                      if(panel)pos.x=panel_r;
-                  // FIXME check if can fit? or no need?
                      if(panel=d->panel())processPanelFast(text, data, datas);
                   }break;
 
@@ -617,7 +621,7 @@ struct TextProcessor
 
          have_char:
             {
-               if(prev_chr)advanceSplit(chr); prev_chr=chr;
+               if(prev_chr)advanceSplit(chr);
 
                Int pos_start=pos_i; // 'pos_start' is located at 'chr'
 
@@ -629,13 +633,17 @@ struct TextProcessor
                pos_i+=chars;
                // 'text' and 'pos_i' are now after ('chr' and combined)
 
+               Bool min_length=(pos_start>split->offset); // require at least length=1
+
                Bool new_line=(chr=='\n' // manual new line
-                          || (pos_start>split->offset // require at least length=1
+                          || (min_length // require at least length=1
                            && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
 
                Bool skippable=(chr==' ' || chr=='\n');
                if(  skippable // found separator
-               ||   new_line && split->length<0) // or going to create a new line, but separator wasn't found yet
+               ||   new_line && split->length<0 // or going to create a new line, but separator wasn't found yet
+               ||   min_length && (Separatable(prev_chr) || Separatable(chr))
+               )
                {
                   split->end(pos_start);
                   if(skippable)
@@ -644,9 +652,24 @@ struct TextProcessor
                        separator(*next, text, data, datas, pos_i    );}
                   else{separator(*next, text, data, datas, pos_start); next->text-=chars;}
                }
+
+               prev_chr=chr;
+
                if(new_line)
                {
-                  if(skippable)prev_chr='\0';
+                  if(pos_start>next->offset) // if went too far, and separator is behind, we have to revert (this condition works well for 'skippable' on/off)
+                  { // restart from last remembered position
+                     shadow=next->shadow;
+                     color =next->color;
+                     pos_i =next->offset;
+                     text  =next->text;
+                     data  =next->data;
+                     datas =next->datas;
+                     panel =next->panel;
+                     if(next->font!=font)setFontFast(next->font);
+                     n=text.c(); prev_chr='\0';
+                  }else
+                  if(skippable)prev_chr='\0'; // if not reverting, but character is skippable, then clear it
                   next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
                   pos.x=width;
                   if(panel)processPanelFast(split->text, data, datas);
@@ -1025,22 +1048,18 @@ struct TextDrawer : TextProcessor
                    Lerp(rect.min.y+(splits.elms()-1)*h, rect.max.y, style.align.y*-0.5f+0.5f));
             if(style.pixel_align)D.alignScreenToPixel(p); // align here to prevent jittering between lines when moving the whole text
 
-          /*
-            FIXME
           C Rect &clip=D._clip ? D._clip_rect : D.viewRect();
-            Vec2 range; posY(p.y, range);
-            Int  start=Max(           0, Floor((range.y-clip.max.y)/h)),
-                 end  =Min(tls.elms()-1, Ceil ((range.x-clip.min.y)/h));
+            Vec2 range; style.posY(p.y, range);
+            Int  start=Max(            0, Trunc((range.y-clip.max.y)/h)), // can use Trunc because we use Max(0,
+                 end  =Min(splits.elms(), Floor((range.x-clip.min.y)/h));
 
          #if DEBUG && 0
             D.clip(null);
-            D.lineX(RED, range.y                 , -D.w(), D.w()); // max
-            D.lineX(RED, range.x-(tls.elms()-1)*h, -D.w(), D.w()); // min
+            D.lineX(RED, range.y                    , -D.w(), D.w()); // max
+            D.lineX(RED, range.x-(splits.elms()-1)*h, -D.w(), D.w()); // min
             D.text(0, D.h()*0.9f, S+start+' '+end);
          #endif
 
-            for(; start<=end; start++){auto &t=tls[start]; drawMain(p.x, p.y-start*h, t.text, t.length, code, codes, t.offset);}*/
-            Int start=0, end=splits.elms();
             if(start<end)
             {
                initDraw(style);
