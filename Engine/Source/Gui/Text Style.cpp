@@ -271,7 +271,7 @@ struct TextProcessor
 
                case StrEx::Data::IMAGE:
                {
-                  Image *image=d->image(); if(image && image->is())
+                C Image *image=d->image(); if(image && image->is())
                   {
                      Flt w=size.y*image->aspect();
                      if(spacingConst()){width+=Max(w, space);}
@@ -372,22 +372,6 @@ struct TextProcessor
       pos.x-=panel_padd_l;
       if(tpm==TEXT_POS_FIT)pos.x-=panel_padd_r; // in FIT mode we have to make sure we will have enough room to close the panel (display panel padding on the right side), this adjustment will be canceled out later when setting as 'panel_r'
    }
-   void processPanel(C TextSrc &text, C StrEx::Data *data, Int datas, Int max_length)
-   {
-      Flt w=panelWidth(text, data, datas, max_length);
-      Flt panel_padd_l, panel_padd_r; panelPadd(*panel, panel_padd_l, panel_padd_r);
-       w+=panel_padd_l+ panel_padd_r;
-      if(w<size.y) // require min square
-      {
-         Flt d=(size.y-w)/2; w=size.y;
-         panel_padd_l+=d;
-         panel_padd_r+=d;
-      }
-      if(spacingConst()){Flt o=Max(w, space); panel_r=pos.x+o      ; pos.x+=(o-w)/2;}
-      else              {                     panel_r=pos.x+w+space;                } // calculate panel right side, it will be used to set position after finishing drawing it, this is needed to always apply 'space' after that panel, regardless if it's empty or not
-      panel->draw(Rect_LU(pos, w, size.y));
-      pos.x+=panel_padd_l;
-   }
 
    Bool initFast(C TextStyleParams &style)
    {
@@ -436,7 +420,7 @@ struct TextProcessor
                {
                   if(prev_chr){if(advanceFast('\0'))goto ret; pos_i+=chars; chars=0; prev_chr='\0';}
 
-                  Flt w; Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+                  Flt w; C Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
                   Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? Max(w, space)/2 : Max(w, space) : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : w);
                   if(pos.x<test)goto ret;
                   const Bool FAST_CHECK=true;
@@ -574,7 +558,7 @@ struct TextProcessor
                   {
                      if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
 
-                     Flt w; Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+                     Flt w; C Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
 
                      // 'pos_i' is at image, but 'data', 'datas' after it
                      if(pos_i>split->offset // require at least length=1
@@ -685,15 +669,40 @@ struct TextProcessor
       }
    }
 };
+/******************************************************************************/
 struct TextDrawer : TextProcessor
 {
-   Bool          sub_pixel;
-   ALPHA_MODE    alpha;
-   Int           cur, sel, font_offset_i_y;
-   Flt           x_align_mul, y_align_mul;
-   Vec2          font_offset;
-   ShaderImage  *shader_image;
- C Shader       *shader;
+   Bool sub_pixel;
+   Int  font_offset_i_y;
+   Flt  x_align_mul, y_align_mul;
+   Vec2 font_offset;
+
+   void initDraw(C TextStyleParams &style)
+   {
+      sub_pixel=default_font->_sub_pixel; // 'sub_pixel' before 'setColor'
+
+      x_align_mul=style.align.x/2-0.5f;
+      y_align_mul=style.align.y/2+0.5f;
+   }
+   void setFont(C Font *font)
+   {
+      T.font=font;
+      xsize=size.x/font->height(); // width  of 1 font texel
+      ysize=size.y/font->height(); // height of 1 font texel
+      xsize_2=xsize/2;
+
+      font_offset_i_y=       font->paddingT();
+      font_offset.set(-xsize*font->paddingL(),
+                       ysize*font_offset_i_y);
+   }
+};
+/******************************************************************************/
+struct TextDrawerHW : TextDrawer
+{
+   ALPHA_MODE   alpha;
+   Int          cur, sel;
+   ShaderImage *shader_image;
+ C Shader      *shader;
 
    static inline Flt ByteToFontLum(Byte b) {return Min(b, 128)/128.0f;} // calculate text brightness 0..1, multiply by "2" (/128.0f instead of /255.0f) will give better results for grey text color (reaches 1.0 already at grey 128 byte value)
    void setColor(C Color &color)
@@ -719,26 +728,14 @@ struct TextDrawer : TextProcessor
    void changeColor (C Color &color ) {if(T.color !=color ){VI.flush(); setColor (color );}}
    void changeShadow(  Byte   shadow) {if(T.shadow!=shadow){VI.flush(); setShadow(shadow);}}
 
-   void setFont(C Font *font)
-   {
-      T.font=font;
-      xsize=size.x/font->height(); // width  of 1 font texel
-      ysize=size.y/font->height(); // height of 1 font texel
-      xsize_2=xsize/2;
-
-      font_offset_i_y=       font->paddingT();
-      font_offset.set(-xsize*font->paddingL(),
-                       ysize*font_offset_i_y);
-   }
-
    void initDraw(C TextStyleParams &style)
    {
-      sub_pixel=default_font->_sub_pixel; // 'sub_pixel' before 'setColor'
+      super::initDraw(style);
+
+      setColor (style.color ); // after 'sub_pixel'
+      setShadow(style.shadow);
 
       cur=-1; sel=-1; if(style.edit){cur=style.edit->cur; sel=style.edit->sel;}
-
-      x_align_mul=style.align.x/2-0.5f;
-      y_align_mul=style.align.y/2+0.5f;
 
       // font params
       Flt  contrast;
@@ -784,6 +781,8 @@ struct TextDrawer : TextProcessor
    }
    void shut()
    {
+      VI.end();
+
       // alpha
       if(sub_pixel)D.alpha(alpha); // restore alpha
 
@@ -793,6 +792,23 @@ struct TextDrawer : TextProcessor
          D.depthUnlock();
          D.depthWrite (true);
       }
+   }
+
+   void processPanel(C TextSrc &text, C StrEx::Data *data, Int datas, Int max_length)
+   {
+      Flt w=panelWidth(text, data, datas, max_length);
+      Flt panel_padd_l, panel_padd_r; panelPadd(*panel, panel_padd_l, panel_padd_r);
+       w+=panel_padd_l+ panel_padd_r;
+      if(w<size.y) // require min square
+      {
+         Flt d=(size.y-w)/2; w=size.y;
+         panel_padd_l+=d;
+         panel_padd_r+=d;
+      }
+      if(spacingConst()){Flt o=Max(w, space); panel_r=pos.x+o      ; pos.x+=(o-w)/2;}
+      else              {                     panel_r=pos.x+w+space;                } // calculate panel right side, it will be used to set position after finishing drawing it, this is needed to always apply 'space' after that panel, regardless if it's empty or not
+      panel->draw(Rect_LU(pos, w, size.y));
+      pos.x+=panel_padd_l;
    }
 
    void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel, Int offset=0, Int next_offset=-1) // assumes: 'text.fix'
@@ -810,9 +826,11 @@ struct TextDrawer : TextProcessor
 
       if(panel)
       {
+         VI.flush();
          VI.shader(null);
          processPanel(text, data, datas, max_length);
          VI.shader(shader);
+         VI.color (color);
       }
 
       Int pos_i=offset;
@@ -823,8 +841,8 @@ struct TextDrawer : TextProcessor
 
       if(max_length)
       {
-         setColor (start_color ); // after 'sub_pixel'
-         setShadow(start_shadow);
+         changeColor (start_color );
+         changeShadow(start_shadow);
 
          Char chr=text.c();
       loop:
@@ -848,7 +866,7 @@ struct TextDrawer : TextProcessor
                   if(prev_chr){advance('\0'); prev_chr='\0';}
                   if(sel==pos_i){sel_x=pos.x;}
 
-                  Image *image=d->image(); if(image && image->is())
+                C Image *image=d->image(); if(image && image->is())
                   {
                      VI.flush();
                      VI.shader(null);
@@ -923,8 +941,8 @@ struct TextDrawer : TextProcessor
                                     chr_pos.y+=        ysize  *(font_offset_i_y-fc.offset);
                   if(style.pixel_align)D.alignScreenXToPixel(chr_pos.x);
 
-                  VI.imageConditional(&font->_images[fc.image], *shader_image);
                   Rect_LU rect(chr_pos, xsize*fc.width_padd, ysize*fc.height_padd);
+                  VI.imageConditional(&font->_images[fc.image], *shader_image);
                   if(sub_pixel)VI.imagePart(rect, fc.tex);
                   else         VI.font     (rect, fc.tex);
 
@@ -958,9 +976,9 @@ struct TextDrawer : TextProcessor
                         n_pos.y-=ysize  *fc.offset;
                       //if(style.pixel_align)D.alignScreenXToPixel(n_pos.x); 'n_pos' based on 'chr_pos' which was already aligned
 
-                        VI.imageConditional(&font->_images[fc.image], *shader_image);
                         Flt   n_height_padd=ysize*fc.height_padd;
                         Rect_LU rect(n_pos, xsize*fc. width_padd, n_height_padd);
+                        VI.imageConditional(&font->_images[fc.image], *shader_image);
                         if(sub_pixel)VI.imagePart(rect, fc.tex);
                         else         VI.font     (rect, fc.tex);
                         if(flag&CHARF_STACK)chr_pos.y+=n_height_padd; // if the drawn character is stacking, then move position higher for next character, to stack combining characters on top of each other (needed for THAI)
@@ -990,8 +1008,6 @@ struct TextDrawer : TextProcessor
          chr=n; goto loop;
       }
    end:
-      VI.end();
-
       if(prev_chr){advance('\0'); prev_chr='\0';}
 
       // selection
@@ -1022,8 +1038,14 @@ struct TextDrawer : TextProcessor
       if(cur==pos_i && cur!=next_offset){cur_x=pos.x; cur_w=size.y/2;} // allow drawing cursor at the end only if it's not going to be drawn in the next line
       if(cur_w>=0 && !Kb._cur_hidden && App.active()) // it's faster to check 'App.active' here instead of adjusting 'Kb._cur_hidden' all the time based on 'App.active'
       {
+         VI.flush();
+         VI.shader(null);
+
          if(style.edit->overwrite && sel<0)DrawKeyboardCursorOverwrite(Vec2(cur_x, pos.y), size.y, spacingConst() ? Max(space, cur_w) : cur_w); // draw overwrite only without selection
          else                              DrawKeyboardCursor         (Vec2(cur_x, pos.y), size.y);
+
+         VI.shader(shader);
+         VI.color (color);
       }
    }
    void draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
@@ -1067,10 +1089,364 @@ struct TextDrawer : TextProcessor
             next:
                TextSplit *next=splits.addr(start+1);
               _draw(style, p.x, p.y-start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel, split->offset, next ? next->offset : -1);
-               if(++start<=end)
+               if(++start<=end){split=next; goto next;}
+               shut();
+            }
+         }
+      }
+   }
+};
+/******************************************************************************/
+struct TextDrawerSoft : TextDrawer
+{
+   struct Rect2
+   {
+      Rect src, dest;
+   };
+   Int    rects, mip_map;
+   Flt    contrast, shadow;
+   Vec4   color;
+   RectI  clip;
+   Rect2  rect[65536/SIZE(Rect2)];
+ C Image *src;
+   Image *dest;
+
+   void setFont(C Font *font)
+   {
+      super::setFont(font);
+
+      Flt max_size=Max(Abs(xsize), Abs(ysize)), mip_map=0.5f*Log2(Sqr(1/max_size));
+      T.mip_map=Max(0, Round(mip_map));
+
+      CHS(ysize); CHS(font_offset.y); // #TextSoft
+   }
+   void setColor (C Color &color ) {T.color =          super::color =color  ;}
+   void setShadow(  Byte   shadow) {T.shadow=ByteToFlt(super::shadow=shadow);}
+
+   void changeColor (C Color &color ) {if(super::color !=color ){flush(); setColor (color );}}
+   void changeShadow(  Byte   shadow) {if(super::shadow!=shadow){flush(); setShadow(shadow);}}
+
+   void flush()
+   {
+      FREP(rects)
+      {
+       C Rect2 &r=rect[i];
+         RectI dest;
+         dest.set(Trunc(r.dest.min.x), Trunc(r.dest.max.y), Ceil(r.dest.max.x), Ceil(r.dest.min.y));
+         dest&=clip;
+         Vec2 mul_add_x((r.src.max.x-r.src.min.x)                         / (r.dest.max.x - r.dest.min.x)  * src->lw(),
+         (r.src.min.x + (r.src.max.x-r.src.min.x) * (0.5f - r.dest.min.x) / (r.dest.max.x - r.dest.min.x)) * src->lw() - 0.5f);
+         Vec2 mul_add_y((r.src.min.y-r.src.max.y)                         / (r.dest.max.y - r.dest.min.y)  * src->lh(),
+         (r.src.max.y + (r.src.min.y-r.src.max.y) * (0.5f - r.dest.min.y) / (r.dest.max.y - r.dest.min.y)) * src->lh() - 0.5f);
+
+         for(Int y=dest.min.y; y<dest.max.y; y++)
+         {
+          //Flt fy=LerpR(r.dest.min.y, r.dest.max.y, y+0.5f); // fy=(y+0.5f - r.dest.min.y)/(r.dest.max.y - r.dest.min.y)
+          //Flt ty=Lerp (r.src .max.y, r.src .min.y, fy)*src->lh()-0.5f; // ty=(r.src.max.y + (r.src.min.y-r.src.max.y) * fy)*src->lh()-0.5f
+            // ty=(r.src.max.y + (r.src.min.y-r.src.max.y) * (y+0.5f - r.dest.min.y)/(r.dest.max.y - r.dest.min.y))*src->lh()-0.5f
+            // ty=y *                (r.src.min.y-r.src.max.y)                         / (r.dest.max.y - r.dest.min.y)  * src->lh()
+            //      + (r.src.max.y + (r.src.min.y-r.src.max.y) * (0.5f - r.dest.min.y) / (r.dest.max.y - r.dest.min.y)) * src->lh() - 0.5f
+            Flt ty=y*mul_add_y.x+mul_add_y.y;
+            for(Int x=dest.min.x; x<dest.max.x; x++)
+            {
+             //Flt fx=LerpR(r.dest.min.x, r.dest.max.x, x+0.5f);
+             //Flt tx=Lerp (r.src .min.x, r.src .max.x, fx)*src->lw()-0.5f;
+               Flt tx=x*mul_add_x.x+mul_add_x.y;
+
+               Vec4 c=src->colorFLinear(tx, ty);
+
+               if(sub_pixel)
                {
-                  split=next; goto next;
+                  c*=color.w;
+                  Vec4 d=T.dest->colorF(x, y), out;
+                  out.xyz=c.xyz*color.xyz + d.xyz*(1-c.xyz);
+                  out.w  =c.w             + d.w  *(1-c.w  );
+                  T.dest->colorF(x, y, out);
+               }else
+               {
+                  // #FontImageLayout
+                  Flt a=Min(c.x*contrast, 1), // font opacity, scale up by 'contrast' to improve quality when font is very small
+                      s=    c.y*shadow      ; // font shadow
+
+                  // Flt final_alpha=1-(1-s)*(1-a);
+                  // 1-(1-s)*(1-a)
+                  // 1-(1-a-s+sa)
+                  // 1-1+a+s-sa
+                  // a + s - s*a
+                  Flt final_alpha=a+s-s*a;
+
+                  // ALPHA_MERGE:
+                  Vec4 out;
+                  out.xyz=color.xyz*(a*color.w);
+                  out.w  =color.w*final_alpha;
+
+                  T.dest->mergeF(x, y, out);
                }
+            }
+         }
+      }
+      rects=0;
+   }
+   void unlock() {if(src){flush(); src->unlock();}}
+   Bool draw(C Image &image, C Rect &rect_src, C Rect &rect_dest)
+   {
+      if(src!=&image)
+      {
+         unlock();
+         if(image.lockRead(Min(mip_map, image.mipMaps()-1)))
+         {
+            src=&image;
+         }else
+         {
+            src=null; return false;
+         }
+      }
+      if(!InRange(rects, rect))flush();
+      Rect2 &r=rect[rects++];
+      r.src =rect_src;
+      r.dest=rect_dest;
+      return true;
+   }
+
+   void initDraw(C TextStyleParams &style, Image &dest)
+   {
+      super::initDraw(style);
+
+      setColor (style.color ); // after 'sub_pixel'
+      setShadow(style.shadow);
+
+      rects=0;
+      T.src = null;
+      T.dest=&dest;
+      clip.set(0, 0, dest.w(), dest.h());
+
+      // font params
+      Byte lum=style.color.lum(); if(!lum)contrast=1;else
+      {
+         Flt pixels =size.min();
+         if( pixels>=32)contrast=1;else
+         {
+            contrast=32/pixels;
+            contrast=Sqrt(contrast); // or alternative: contrast=Log2(contrast+1);
+            contrast=Max(1, contrast);
+            contrast=Lerp(1.0f, contrast, ByteToFlt(lum));
+         }
+      }
+   }
+   Bool init(C TextStyleParams &style, Image &dest)
+   {
+      if(initFast(style))
+      {
+         initDraw(style, dest);
+         return true;
+      }
+      return false;
+   }
+   void shut()
+   {
+      unlock();
+   }
+
+   void processPanel(C TextSrc &text, C StrEx::Data *data, Int datas, Int max_length)
+   {
+      Flt w=panelWidth(text, data, datas, max_length);
+      Flt panel_padd_l, panel_padd_r; panelPadd(*panel, panel_padd_l, panel_padd_r);
+       w+=panel_padd_l+ panel_padd_r;
+      if(w<size.y) // require min square
+      {
+         Flt d=(size.y-w)/2; w=size.y;
+         panel_padd_l+=d;
+         panel_padd_r+=d;
+      }
+      if(spacingConst()){Flt o=Max(w, space); panel_r=pos.x+o      ; pos.x+=(o-w)/2;}
+      else              {                     panel_r=pos.x+w+space;                } // calculate panel right side, it will be used to set position after finishing drawing it, this is needed to always apply 'space' after that panel, regardless if it's empty or not
+    //panel->draw(Rect_LU(pos, w, size.y)); FIXME #TextSoft
+      pos.x+=panel_padd_l;
+   }
+
+   void _draw(C TextStyleParams &style, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length, C Color &start_color, Byte start_shadow, C Font *start_font, C PanelImage *start_panel) // assumes: 'text.fix'
+   {
+      if(!start_font)start_font=default_font;
+      setFont(start_font); // BEFORE 'width'
+      panel=start_panel;
+
+      Flt total_width=(Equal(x_align_mul, 0) ? 0 : width(text, data, datas, max_length)); // don't calculate 'width' when not needed, AFTER 'setFont' and 'panel'
+      x+= total_width*x_align_mul;
+      y-= size.y     *y_align_mul; // #TextSoft
+
+      pos.set(x, y);
+      if(style.pixel_align)pos=Round(pos); // #TextSoft
+
+      if(panel)processPanel(text, data, datas, max_length);
+
+      if(max_length)
+      {
+         changeColor (start_color );
+         changeShadow(start_shadow);
+
+         Char chr=text.c();
+      loop:
+         if(!chr)
+         {
+         next_data:
+            if(datas<=0)goto end;
+               datas--; C StrEx::Data *d=data++; switch(d->type)
+            {
+               case StrEx::Data::COLOR     : changeColor (d   ->color ); break;
+               case StrEx::Data::COLOR_OFF : changeColor (style.color ); break;
+               case StrEx::Data::SHADOW    : changeShadow(d   ->shadow); break;
+               case StrEx::Data::SHADOW_OFF: changeShadow(style.shadow); break;
+               case StrEx::Data::TEXT      : if(d->text.is()) // process only if have anything, if not then proceed to 'next_data'
+               {
+                  text=d->text(); chr=text.c(); goto have_char;
+               }break;
+
+               case StrEx::Data::IMAGE:
+               {
+                  if(prev_chr){advance('\0'); prev_chr='\0';}
+
+                C Image *image=d->image(); if(image && image->is())
+                  {
+                     Flt w=size.y*image->aspect();
+                     Flt x=pos.x;
+                     if(spacingConst()){Flt o=Max(w, space); pos.x+=o      ; x+=(o-w)/2;}
+                     else              {                     pos.x+=w+space;}
+                   //image->draw(Rect_LU(x, pos.y, w, size.y)); FIXME #TextSoft
+                  }else
+                  {
+                     pos.x+=space;
+                  }
+                  if(!--max_length)goto end;
+               }break;
+
+               case StrEx::Data::PANEL:
+               {
+                  if(prev_chr){advance('\0'); prev_chr='\0';}
+                  if(panel)pos.x=panel_r;
+                  if(panel=d->panel())
+                  {
+                     processPanel(text, data, datas, max_length);
+                     if(!max_length)goto end;
+                  }
+               }break;
+
+               case StrEx::Data::FONT:
+               {
+                C Font *new_font=d->font(); if(!new_font)new_font=default_font; if(font!=new_font)
+                  {
+                     if(prev_chr){advance('\0'); prev_chr='\0';}
+                     setFont(new_font);
+                  }
+               }break;
+            }
+            goto next_data;
+         }
+      have_char:
+
+         if(prev_chr)advance(chr); prev_chr=chr;
+
+         // draw character
+         if(chr!=' ') // don't draw space sign, potentially we could check it below using "fc.height" instead, however this is faster
+         {
+            auto index=font->_wide_to_font[U16(chr)]; if(InRange(index, font->_chrs))
+            {
+             C Font::Chr &fc=font->_chrs[index];
+             //if(fc.height) // potentially we could check for empty characters (full width space, half width space, nbsp, however in most cases we will have something to draw, so this check will slow down things
+               {
+                  Vec2 chr_pos=pos;
+                  if(spacingConst())chr_pos.x+=space_2-xsize_2*                 fc.width  ; // move back by half of the character width
+                                    chr_pos.x+=                 font_offset.x             ;
+                                    chr_pos.y+=        ysize  *(font_offset_i_y-fc.offset);
+                  if(style.pixel_align)chr_pos.x=Round(chr_pos.x); // #TextSoft
+
+                  Rect_LU rect(chr_pos, xsize*fc.width_padd, ysize*fc.height_padd);
+                  draw(font->_images[fc.image], fc.tex, rect); // #TextSoft
+
+                  // combining
+                  if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
+                  Char n=text.n();
+                  UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
+                  {
+                     chr_pos.x+=xsize_2*fc.width ; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
+                     chr_pos.y+=ysize  *fc.offset; // reset Y pos
+                     Bool skipped_bottom_shadow_padding=false;
+
+                  draw_combining:
+                     auto index=font->_wide_to_font[U16(n)]; if(InRange(index, font->_chrs))
+                     {
+                      C Font::Chr &fc=font->_chrs[index];
+
+                        if((flag&CHARF_STACK) && !skipped_bottom_shadow_padding) // if found a first stacking character, then skip shadow padding at the bottom, because next character is drawn after base character and on top, so its bottom shadow must not overlap the base
+                        {
+                           skipped_bottom_shadow_padding=true; // do this only once
+                           chr_pos.y+=ysize*font->paddingB();
+                        }
+
+                        Vec2 n_pos=chr_pos;
+                        n_pos.x-=xsize_2*fc.width; // move back by half of the character width
+                        n_pos.y-=ysize  *fc.offset;
+                      //if(style.pixel_align)n_pos.x=Round(n_pos.x); 'n_pos' based on 'chr_pos' which was already aligned #TextSoft
+
+                        Flt   n_height_padd=ysize*fc.height_padd;
+                        Rect_LU rect(n_pos, xsize*fc. width_padd, n_height_padd);
+                        draw(font->_images[fc.image], fc.tex, rect); // #TextSoft
+                        if(flag&CHARF_STACK)chr_pos.y+=n_height_padd; // if the drawn character is stacking, then move position higher for next character, to stack combining characters on top of each other (needed for THAI)
+                     }
+
+                     if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
+                     n=text.n();
+                     flag=CharFlagFast(n); if(flag&CHARF_COMBINING)goto draw_combining; // if next character is combining too
+                  }
+                  chr=n; goto loop;
+               }
+            }
+         }
+
+      skip_combining:
+         if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
+         Char n=text.n();
+         if(CharFlagFast(n)&CHARF_COMBINING)goto skip_combining;
+         chr=n; goto loop;
+      }
+   end:
+      if(prev_chr){advance('\0'); prev_chr='\0';}
+   }
+   void draw(C TextStyleParams &style, Image &image, Flt x, Flt y, TextSrc text, C StrEx::Data *data, Int datas, Int max_length)
+   {
+      if(text.is() || VisibleData(data, datas))
+         if(init(style, image))
+      {
+         text.fix();
+        _draw(style, x, y, text, data, datas, max_length, style.color, style.shadow, default_font, null);
+         shut();
+      }
+   }
+   void draw(C TextStyleParams &style, Image &image, C Rect &rect, TextSrc text, C StrEx::Data *data, Int datas, Bool auto_line)
+   {
+      if(text.is() || VisibleData(data, datas))
+      {
+         Memt<TextSplit> splits; // use temp because this can be called outside of Draw #TextSoft
+         split(splits, style, rect.w(), auto_line, text, data, datas); if(splits.elms())
+         {
+            Flt  h=style.lineHeight();
+            Vec2 p(rect.lerpX(style.align.x*-0.5f+0.5f),
+                   Lerp(rect.max.y-(splits.elms()-1)*h, rect.min.y, style.align.y*-0.5f+0.5f)); // #TextSoft
+            if(style.pixel_align)p=Round(p); // align here to prevent jittering between lines when moving the whole text
+
+            // #TextSoft
+            Rect clip(0, image.size());
+            Vec2 range; style.posYI(p.y, range);
+            Int  start=Max(              0, Trunc((clip.min.y-range.x)/h)), // can use 'Trunc' instead of 'Floor' because we use "Max(0"
+                 end  =Min(splits.elms()-1, Ceil ((clip.max.y-range.y)/h));
+
+            if(start<=end)
+            {
+               initDraw(style, image);
+               TextSplit *split=&splits[start];
+            next:
+               TextSplit *next=splits.addr(start+1);
+              _draw(style, p.x, p.y+start*h, split->text, split->data, split->datas, split->length, split->color, split->shadow, split->font, split->panel); // #TextSoft
+               if(++start<=end){split=next; goto next;}
                shut();
             }
          }
