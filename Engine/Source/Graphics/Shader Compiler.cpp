@@ -1542,8 +1542,8 @@ static void Convert(ShaderData &shader_data, ConvertContext &cc, Int thread_inde
 /******************************************************************************/
 struct ImageBindMap : Mems<ShaderCompiler::Image>
 {
-   void operator =(C Mems<ShaderCompiler::Image> &images)  {setNum(images.elms()); FREPAO(T)=images[i];}
- //Bool operator==(C Mems<ShaderCompiler::Image> &images)C {if(elms()!=images.elms())return false; REPA(T)if(T[i]!=images[i])return false; return true;}
+   void operator=(C Mems<ShaderCompiler::Image> &images) {setNum(images.elms()); FREPAO(T)=images[i];}
+
    Bool save(File &f, C Memc<Str8> &images)C
    {
       f.cmpUIntV(elms());
@@ -1565,7 +1565,6 @@ struct BufferBindMap : Mems<ShaderCompiler::Bind>
       setNum(elms); elms=0; FREPA(buffers)   if(!buffers[i].bind_explicit)T[elms++]=buffers[i];
    }
 
- //Bool operator==(C Mems<ShaderCompiler::Buffer> &buffers)C {if(elms()!=buffers.elms())return false; REPA(T)if(T[i]!=buffers[i])return false; return true;}
    Bool operator==(C Mems<ShaderCompiler::Buffer> &buffers)C // !! we shouldn't store buffers with explicit bind slots, because they're always bound at their creation, this will avoid overhead when drawing shaders !!
    {
       Int elms=0;
