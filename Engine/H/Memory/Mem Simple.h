@@ -99,6 +99,9 @@ T1(const_mem_addr TYPE) struct Mems // Simple Continuous Memory Based Container
                       Mems& operator=(C  Meml  <TYPE      >  &src); // copy elements using assignment operator
    template<Int size> Mems& operator=(C CMemPtr<TYPE, size>  &src); // copy elements using assignment operator
                       Mems& operator=(   Mems  <TYPE      > &&src); // copy elements using assignment operator
+
+   Bool operator==(C Mems<TYPE> &x)C;
+
 #if EE_PRIVATE
    void  copyTo  (  TYPE *dest)C; // copy raw memory of all elements to   'dest'
    Mems& copyFrom(C TYPE *src ) ; // copy raw memory of all elements from 'src'
