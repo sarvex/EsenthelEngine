@@ -758,8 +758,10 @@ struct FontChar
 
    static Int Compare(C FontChar &a, C FontChar &b)
    {
-      if(Int c=::Compare(a.image.h(), b.image.h()))return c;
-      return   ::Compare(Unsigned(a.chr), Unsigned(b.chr)); // keep characters close together to minimize image changes when drawing
+      Bool unicode=HasUnicode(a.chr);
+      if(Int c=::Compare(unicode             , HasUnicode(b.chr     )))return           c     ; // keep ASCII (non-unicode) first, because they're most commonly used, to minimize image changes when drawing
+      if(Int c=::Compare(         a.image.h(),            b.image.h()))return unicode ? c : -c; // sort by height to pack as many characters as possible, reverse order for non-unicode, so when transitioning from non-unicode to unicode, heights will be similar (this makes order: big ASCII, small ASCII, small Unicode, big Unicode). Order was designed to keep small Unicode close to 1st image, as those are usually frequantly used symbols.
+      return   ::Compare(Unsigned(a.chr     ), Unsigned  (b.chr     )); // keep characters close together to minimize image changes when drawing
    }
 
    FontChar() {Zero(widths);} // Zero (for example required for spaces)
