@@ -756,7 +756,11 @@ struct FontChar
       image.del();
    }
 
-   static Int Compare(C FontChar &a, C FontChar &b) {return ::Compare(a.image.h(), b.image.h());}
+   static Int Compare(C FontChar &a, C FontChar &b)
+   {
+      if(Int c=::Compare(a.image.h(), b.image.h()))return c;
+      return   ::Compare(Unsigned(a.chr), Unsigned(b.chr)); // keep characters close together to minimize image changes when drawing
+   }
 
    FontChar() {Zero(widths);} // Zero (for example required for spaces)
 };
