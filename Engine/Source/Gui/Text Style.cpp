@@ -1132,6 +1132,33 @@ struct TextDrawerSoft : TextDrawer
    void changeColor (C Color &color ) {if(super::color !=color ){flush(); setColor (color );}}
    void changeShadow(  Byte   shadow) {if(super::shadow!=shadow){flush(); setShadow(shadow);}}
 
+   void drawImage(C Image &image, C Rect &rect)C
+   {
+      Rect uv(0, 0, 1, 1);
+      Vec2 s=image.size()/rect.size()*uv.size();
+      Flt  mip_map=0.5f*Log2(Sqr(s).max());
+      if(image.lockRead(Mid(Round(mip_map), 0, image.mipMaps()-1))) // for higher precision, this could use some bigger mip (maybe something like Floor(mip_map), Floor(mip_map)-1, Round(mip_map)-1) and 'areaColorF*' instead of 'colorF*'
+      {
+         RectI dest(Trunc(rect.min.x), Trunc(rect.min.y), Ceil(rect.max.x), Ceil(rect.max.y));
+               dest&=clip;
+         Vec2 mul_add_x((uv.max.x-uv.min.x)                       / (rect.max.x - rect.min.x)  * image.lw(),
+            (uv.min.x + (uv.max.x-uv.min.x) * (0.5f - rect.min.x) / (rect.max.x - rect.min.x)) * image.lw() - 0.5f);
+         Vec2 mul_add_y((uv.max.y-uv.min.y)                       / (rect.max.y - rect.min.y)  * image.lh(),
+            (uv.min.y + (uv.max.y-uv.min.y) * (0.5f - rect.min.y) / (rect.max.y - rect.min.y)) * image.lh() - 0.5f);
+
+         for(Int y=dest.min.y; y<dest.max.y; y++)
+         {
+            Flt ty=y*mul_add_y.x+mul_add_y.y;
+            for(Int x=dest.min.x; x<dest.max.x; x++)
+            {
+               Flt tx=x*mul_add_x.x+mul_add_x.y;
+               Vec4 c=image.colorFCubicFast(tx, ty, true, true); // 'colorFCubicFastSharp' was too sharp, alternatively 'colorFLinear' can be used
+               T.dest->mergeF(x, y, c);
+            }
+         }
+         image.unlock();
+      }
+   }
    void flush()
    {
       FREP(rects)
@@ -1192,33 +1219,6 @@ struct TextDrawerSoft : TextDrawer
          }
       }
       rects=0;
-   }
-   void drawImage(C Image &image, C Rect &rect)C
-   {
-      Rect uv(0, 0, 1, 1);
-      Vec2 s=image.size()/rect.size()*uv.size();
-      Flt  mip_map=0.5f*Log2(Sqr(s.abs().max()));
-      if(image.lockRead(Mid(Round(mip_map), 0, image.mipMaps()-1))) // for higher precision, this could use some bigger mip (maybe something like Floor(mip_map), Floor(mip_map)-1, Round(mip_map)-1) and 'areaColorF*' instead of 'colorF*'
-      {
-         RectI dest(Trunc(rect.min.x), Trunc(rect.min.y), Ceil(rect.max.x), Ceil(rect.max.y));
-               dest&=clip;
-         Vec2 mul_add_x((uv.max.x-uv.min.x)                       / (rect.max.x - rect.min.x)  * image.lw(),
-            (uv.min.x + (uv.max.x-uv.min.x) * (0.5f - rect.min.x) / (rect.max.x - rect.min.x)) * image.lw() - 0.5f);
-         Vec2 mul_add_y((uv.max.y-uv.min.y)                       / (rect.max.y - rect.min.y)  * image.lh(),
-            (uv.min.y + (uv.max.y-uv.min.y) * (0.5f - rect.min.y) / (rect.max.y - rect.min.y)) * image.lh() - 0.5f);
-
-         for(Int y=dest.min.y; y<dest.max.y; y++)
-         {
-            Flt ty=y*mul_add_y.x+mul_add_y.y;
-            for(Int x=dest.min.x; x<dest.max.x; x++)
-            {
-               Flt tx=x*mul_add_x.x+mul_add_x.y;
-               Vec4 c=image.colorFCubicFast(tx, ty, true, true); // 'colorFCubicFastSharp' was too sharp, alternatively 'colorFLinear' can be used
-               T.dest->mergeF(x, y, c);
-            }
-         }
-         image.unlock();
-      }
    }
    void unlock() {if(src){flush(); src->unlock();}}
    Bool drawChr(C Image &image, C Rect &rect_src, C Rect &rect_dest)
