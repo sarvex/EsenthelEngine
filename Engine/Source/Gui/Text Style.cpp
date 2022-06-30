@@ -3,7 +3,7 @@
 namespace EE{
 /******************************************************************************/
 #define SKIP_SPACE 1 // if skip drawing space that was at the end of the line but didn't fit
-#define CC4_TXDS CC4('T','X','D','S')
+#define CC4_TXDS CC4('T','X','D','S') // TextStyle (formerly TextDrawSettings)
 #define            DefaultShade 230
 static const Color DefaultSelectionColor(51, 153, 255, 64);
 Memc<TextLineSplit8 > Tls8 ;
@@ -96,7 +96,67 @@ Str StrEx::str()C
 }
 void StrEx::operator=(C Str &text) {if(text.is())data.setNum(1).first().create(Data::TEXT).text=text;else clear();}
 
-StrEx& StrEx::text  (C Str           &text  ) {           data.New().create(Data::TEXT      ).text  =text  ; return T;}
+StrEx& StrEx::text(Char chr)
+{
+   if(chr)
+   {
+      if(data.elms())
+      {
+         Data &last=data.last(); if(last.type==Data::TEXT){last.text+=chr; return T;}
+      }
+      data.New().create(Data::TEXT).text=chr;
+   }
+   return T;
+}
+StrEx& StrEx::text(Char8 chr)
+{
+   if(chr)
+   {
+      if(data.elms())
+      {
+         Data &last=data.last(); if(last.type==Data::TEXT){last.text+=chr; return T;}
+      }
+      data.New().create(Data::TEXT).text=chr;
+   }
+   return T;
+}
+StrEx& StrEx::text(CChar *text)
+{
+   if(Is(text))
+   {
+      if(data.elms())
+      {
+         Data &last=data.last(); if(last.type==Data::TEXT){last.text+=text; return T;}
+      }
+      data.New().create(Data::TEXT).text=text;
+   }
+   return T;
+}
+StrEx& StrEx::text(CChar8 *text)
+{
+   if(Is(text))
+   {
+      if(data.elms())
+      {
+         Data &last=data.last(); if(last.type==Data::TEXT){last.text+=text; return T;}
+      }
+      data.New().create(Data::TEXT).text=text;
+   }
+   return T;
+}
+StrEx& StrEx::text(C Str &text)
+{
+   if(text.is())
+   {
+      if(data.elms())
+      {
+         Data &last=data.last(); if(last.type==Data::TEXT){last.text+=text; return T;}
+      }
+      data.New().create(Data::TEXT).text=text;
+   }
+   return T;
+}
+
 StrEx& StrEx::image (C ImagePtr      &image ) {           data.New().create(Data::IMAGE     ).image =image ; return T;}
 StrEx& StrEx::panel (C PanelImagePtr &panel ) {           data.New().create(Data::PANEL     ).panel =panel ; return T;}
 StrEx& StrEx::font  (C FontPtr       &font  ) {           data.New().create(Data::FONT      ).font  =font  ; return T;}
@@ -251,7 +311,7 @@ struct TextProcessor
    Bool advanceFast (Char next_chr)
    {
       Flt w=xsize*nextCharWidth(next_chr);
-      Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? space_2 : space : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*charWidth(prev_chr)); // for TEXT_POS_FIT we have to make sure that the 'prev_chr' fully fits
+      Flt test=(spacingConst() ? (tpm==TEXT_POS_DEFAULT) ? space_2 : space : (tpm==TEXT_POS_DEFAULT) ? w/2 : (tpm==TEXT_POS_OVERWRITE) ? w+space_2 : xsize*charWidth(prev_chr)); // for TEXT_POS_FIT make sure that the 'prev_chr' fully fits
       if(pos.x<test)return true;
       pos.x-=space+w;
       return false;
@@ -385,7 +445,7 @@ struct TextProcessor
       if(spacingConst()){Flt o=Max(w, space); panel_r=pos.x-o      ; pos.x-=(o-w)/2;}
       else              {                     panel_r=pos.x-w-space;                } // calculate panel right side, it will be used to set position after finishing drawing it, this is needed to always apply 'space' after that panel, regardless if it's empty or not
       pos.x-=panel_padd_l;
-      if(tpm==TEXT_POS_FIT)pos.x-=panel_padd_r; // in FIT mode we have to make sure we will have enough room to close the panel (display panel padding on the right side), this adjustment will be canceled out later when setting as 'panel_r'
+      if(tpm==TEXT_POS_FIT)pos.x-=panel_padd_r; // in FIT mode make sure we will have enough room to close the panel (display panel padding on the right side), this adjustment will be canceled out later when setting as 'panel_r'
    }
 
    Bool initFast(C TextStyleParams &style)
@@ -628,9 +688,9 @@ struct TextProcessor
 
       have_char:
          {
-            if(prev_chr)advanceSplit(chr);
-
             Int pos_start=pos_i; // 'pos_start' is located at 'chr'
+
+            if(prev_chr)advanceSplit(chr);
 
             // combining
             Int chars=1;
@@ -644,7 +704,7 @@ struct TextProcessor
 
             Bool new_line=(chr=='\n' // manual new line
                        || (min_length // require at least length=1
-                        && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
+                        && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT make sure that the 'chr' fully fits
 
             Bool skippable=(chr==' ' || chr=='\n');
             if(  skippable // found separator
@@ -821,9 +881,9 @@ struct TextProcessor
 
          have_char:
             {
-               if(prev_chr)advanceSplit(chr);
-
                Int pos_start=pos_i; // 'pos_start' is located at 'chr'
+
+               if(prev_chr)advanceSplit(chr);
 
                // combining
                Int chars=1;
@@ -837,7 +897,7 @@ struct TextProcessor
 
                Bool new_line=(chr=='\n' // manual new line
                           || (min_length // require at least length=1
-                           && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
+                           && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT make sure that the 'chr' fully fits
 
                Bool skippable=(chr==' ' || chr=='\n');
                if(  skippable // found separator
@@ -869,7 +929,7 @@ struct TextProcessor
                      if(next->font!=font)setFontFast(next->font);
                      n=text.c(); prev_chr='\0';
                   }else
-                  if(skippable)prev_chr='\0'; // if not reverting, but character is skippable, then clear it
+                  if(skippable)prev_chr='\0'; // if not reverting, but character is skippable, then clear it. If not skippable then keep it for next loop iteration
                   next=&splits.New(); split=&splits[splits.elms()-2]; split->length=-1;
                   pos.x=width;
                   if(panel)processPanelFast(split->text, data, datas);
@@ -880,7 +940,7 @@ struct TextProcessor
 
          end:
             split->length=-1; splits.removeLast(); // unlimited, end(pos_i); remove after adjusting 'split' because it might change memory address
-            prev_chr='\0'; // have to make sure to clear 'prev_chr', because this class can still be used after this function
+            prev_chr='\0'; // make sure to clear 'prev_chr', because this class can still be used after this function
          }
       }
    }
