@@ -1241,12 +1241,18 @@ struct TextDrawerHW : TextDrawer
          }
          if(max>offset && min<pos_i) // if selection intersects with this text
          {
+            VI.flush();
+            VI.shader(null);
+
             if(min< offset)rect.min.x=    x; // if minimum is before the start of this text, then use starting position
             if(max>=pos_i )rect.max.x=pos.x; // if maximum is after  the end   of this text, then use current  position
             Flt h=style.lineHeight();
             rect. setY(y-h, pos.y); D.alignScreenYToPixel(rect.min.y); // use "y-h" instead of "pos.y-h" to get exact value of the next line
             rect.moveY((h-size.y)/2); // adjust rectangle so text is at selection center
             rect.draw (style.selection);
+
+            VI.shader(shader);
+            VI.color (color);
          }
       }
 
