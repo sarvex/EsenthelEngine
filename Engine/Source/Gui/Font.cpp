@@ -135,117 +135,151 @@ Int Font::charWidth(Char c0, Char c1, SPACING_MODE spacing)C
    }
 }
 /******************************************************************************/
-Int Font::textWidth(Int &base_chars, SPACING_MODE spacing, CChar8 *text, Int max_length)C
+Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_length)C
 {
-   Int width=0, bcs=0;
+   Int width=0, spcs;
    if(spacing!=SPACING_CONST)
    {
+      spcs=-1; // for !SPACING_CONST we calculate spacings between characters, so start -1 and Max(0 later
       if(max_length<0) // unlimited
       {
-         for(;;)
+         Char8 c=*text;
+      next:
+         if(c)
          {
-            Char8 c=*text; if(!c)break;
-         skip:
+            spcs++;
+         combining:
             Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip;
-            width+=charWidth(c, next, spacing); bcs++;
+            if(CharFlagFast(next)&CHARF_COMBINING)goto combining;
+            width+=charWidth(c, next, spacing);
+            c=next; goto next;
          }
       }else
       if(max_length)
       {
-         for(;;)
+         Char8 c=*text;
+      next1:
+         if(c)
          {
-            Char8 c=*text; if(!c)break;
-         skip1:
-            if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c); bcs++; break;} // for the last character we need to process only its width and ignore the spacing between the next one
-            Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
-            width+=charWidth(c, next, spacing); bcs++;
+            spcs++;
+         combining1:
+            if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c);}else // for the last character we need to process only its width and ignore the spacing between the next one
+            {
+               Char8 next=*++text;
+               if(CharFlagFast(next)&CHARF_COMBINING)goto combining1;
+               width+=charWidth(c, next, spacing);
+               c=next; goto next1;
+            }
          }
       }
-   }else // for SPACING_CONST we don't calculate 'width' but just 'bcs'
+      MAX(spcs, 0);
+   }else // for SPACING_CONST we don't calculate 'width' but just 'spacings'
    {
+      spcs=0;
       if(max_length<0) // unlimited
       {
-         for(;;)
+         Char8 c=*text;
+      next2:
+         if(c)
          {
-            Char8 c=*text; if(!c)break;
-         skip2:
+            spcs++;
+         combining2:
             Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip2;
-            bcs++;
+            if(CharFlagFast(next)&CHARF_COMBINING)goto combining2;
+            c=next; goto next2;
          }
       }else
       if(max_length)
       {
-         for(;;)
+         Char8 c=*text;
+      next3:
+         if(c)
          {
-            Char8 c=*text; if(!c)break;
-         skip3:
-            if(!--max_length){bcs++; break;} // for the last character we need to process only its width and ignore the spacing between the next one
-            Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip3;
-            bcs++;
+            spcs++;
+         combining3:
+            if(!--max_length){}else // for the last character we need to process only its width and ignore the spacing between the next one
+            {
+               Char8 next=*++text;
+               if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
+               c=next; goto next3;
+            }
          }
       }
    }
-   base_chars=bcs; return width;
+   spacings=spcs; return width;
 }
-Int Font::textWidth(Int &base_chars, SPACING_MODE spacing, CChar *text, Int max_length)C
+Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_length)C
 {
-   Int width=0, bcs=0;
+   Int width=0, spcs;
    if(spacing!=SPACING_CONST)
    {
+      spcs=-1; // for !SPACING_CONST we calculate spacings between characters, so start -1 and Max(0 later
       if(max_length<0) // unlimited
       {
-         for(;;)
+         Char c=*text;
+      next:
+         if(c)
          {
-            Char c=*text; if(!c)break;
-         skip:
+            spcs++;
+         combining:
             Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip;
-            width+=charWidth(c, next, spacing); bcs++;
+            if(CharFlagFast(next)&CHARF_COMBINING)goto combining;
+            width+=charWidth(c, next, spacing);
+            c=next; goto next;
          }
       }else
       if(max_length)
       {
-         for(;;)
+         Char c=*text;
+      next1:
+         if(c)
          {
-            Char c=*text; if(!c)break;
-         skip1:
-            if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c); bcs++; break;} // for the last character we need to process only its width and ignore the spacing between the next one
-            Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
-            width+=charWidth(c, next, spacing); bcs++;
+            spcs++;
+         combining1:
+            if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c);}else // for the last character we need to process only its width and ignore the spacing between the next one
+            {
+               Char next=*++text;
+               if(CharFlagFast(next)&CHARF_COMBINING)goto combining1;
+               width+=charWidth(c, next, spacing);
+               c=next; goto next1;
+            }
          }
       }
-   }else // for SPACING_CONST we don't calculate 'width' but just 'bcs'
+      MAX(spcs, 0);
+   }else // for SPACING_CONST we don't calculate 'width' but just 'spacings'
    {
+      spcs=0;
       if(max_length<0) // unlimited
       {
-         for(;;)
+         Char c=*text;
+      next2:
+         if(c)
          {
-            Char c=*text; if(!c)break;
-         skip2:
+            spcs++;
+         combining2:
             Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip2;
-            bcs++;
+            if(CharFlagFast(next)&CHARF_COMBINING)goto combining2;
+            c=next; goto next2;
          }
       }else
       if(max_length)
       {
-         for(;;)
+         Char c=*text;
+      next3:
+         if(c)
          {
-            Char c=*text; if(!c)break;
-         skip3:
-            if(!--max_length){bcs++; break;} // for the last character we need to process only its width and ignore the spacing between the next one
-            Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip3;
-            bcs++;
+            spcs++;
+         combining3:
+            if(!--max_length){}else // for the last character we need to process only its width and ignore the spacing between the next one
+            {
+               Char next=*++text;
+               if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
+               c=next; goto next3;
+            }
          }
       }
    }
-   base_chars=bcs; return width;
+   spacings=spcs; return width;
 }
 /******************************************************************************/
 // OPERATIONS

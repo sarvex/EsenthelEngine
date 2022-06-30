@@ -1926,8 +1926,8 @@ Flt TextStyleParams::textWidth(C Str &str, Int max_length)C
 
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
-      Int    base_chars, width=font->textWidth(base_chars, spacing, str, max_length);
-      return width*xsize + space*(base_chars-(spacing!=SPACING_CONST)); // calculate spacing only between base characters (ignoring combining), we're including spacing between the characters, so we need to set 1 less (except the case for SPACING_CONST where we need to have spacing for all characters)
+      Int    spacings, width=font->textWidth(spacings, spacing, str, max_length);
+      return width*xsize + space*spacings;
    }
    return 0;
 }
@@ -1940,8 +1940,8 @@ Flt TextStyleParams::textWidth(C Str8 &str, Int max_length)C
 
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
-      Int    base_chars, width=font->textWidth(base_chars, spacing, str, max_length);
-      return width*xsize + space*(base_chars-(spacing!=SPACING_CONST)); // calculate spacing only between base characters (ignoring combining), we're including spacing between the characters, so we need to set 1 less (except the case for SPACING_CONST where we need to have spacing for all characters)
+      Int    spacings, width=font->textWidth(spacings, spacing, str, max_length);
+      return width*xsize + space*spacings;
    }
    return 0;
 }
@@ -1952,8 +1952,8 @@ Flt TextStyleParams::textWidth(CChar *text, Int max_length)C
    {
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
-      Int    base_chars, width=font->textWidth(base_chars, spacing, text, max_length);
-      return width*xsize + space*(base_chars-(spacing!=SPACING_CONST)); // calculate spacing only between base characters (ignoring combining), we're including spacing between the characters, so we need to set 1 less (except the case for SPACING_CONST where we need to have spacing for all characters)
+      Int    spacings, width=font->textWidth(spacings, spacing, text, max_length);
+      return width*xsize + space*spacings;
    }
    return 0;
 }
@@ -1964,8 +1964,8 @@ Flt TextStyleParams::textWidth(CChar8 *text, Int max_length)C
    {
       Flt    xsize=size.x/font->height(),
              space=size.x*T.space.x;
-      Int    base_chars, width=font->textWidth(base_chars, spacing, text, max_length);
-      return width*xsize + space*(base_chars-(spacing!=SPACING_CONST)); // calculate spacing only between base characters (ignoring combining), we're including spacing between the characters, so we need to set 1 less (except the case for SPACING_CONST where we need to have spacing for all characters)
+      Int    spacings, width=font->textWidth(spacings, spacing, text, max_length);
+      return width*xsize + space*spacings;
    }
    return 0;
 }
