@@ -185,6 +185,8 @@ struct TextSrc
    void operator+=(Int i) {if(t8)t8+=i;else t16+=i;} // assumes that "t8 || t16"
    void operator-=(Int i) {if(t8)t8-=i;else t16-=i;} // assumes that "t8 || t16"
 
+   Bool operator==(C TextSrc &ts)C {return t8==ts.t8 && t16==ts.t16;}
+
    TextSrc() {}
    TextSrc(CChar8 *t) {t8 =t; t16=null;}
    TextSrc(CChar  *t) {t16=t; t8 =null;}
@@ -203,6 +205,19 @@ struct TextSplit
    TextSrc      text;
 
    void end(Int end) {length=end-offset;}
+
+   Bool operator==(C TextSplit &ts)C
+   {
+      return shadow==ts.shadow
+          && color ==ts.color 
+          && offset==ts.offset
+          && length==ts.length
+          && datas ==ts.datas
+          && data  ==ts.data
+          && font  ==ts.font
+          && panel ==ts.panel
+          && text  ==ts.text;
+   }
 };
 static Memc<TextSplit> TextSplits;
 /******************************************************************************/
@@ -486,23 +501,224 @@ struct TextProcessor
       separator.panel =panel;
    }
 
+   Bool initSplit(C TextStyleParams &style)
+   {
+      if(initFast(style))
+      {
+         T.tpm=TEXT_POS_FIT;
+         setFontFast(default_font);
+         panel =null;
+         shadow=style.shadow;
+         color =style.color;
+         return true;
+      }
+      return false;
+   }
+   #define SINGLE 0
+   Bool splitNext(TextSplit &split
+   #if !SINGLE
+      , TextSplit &next
+   #endif
+      , C TextStyleParams &style, Flt width, Bool auto_line, TextSrc &text, C StrEx::Data *&data, Int &datas, Int &pos_i) // Don't set null fonts.
+   {
+   #if SINGLE
+      separator(split, text, data, datas, pos_i);
+   #endif
+      pos.x=width;
+      if(panel)processPanelFast(text, data, datas);
+
+      Char chr=text.c();
+      if(!auto_line)
+      {
+      aln_loop:
+         if(!chr)
+         {
+         aln_next_data:
+            if(datas<=0)goto aln_end;
+               datas--; C StrEx::Data *d=data++; switch(d->type)
+            {
+               case StrEx::Data::TEXT      : if(d->text.is()){text=d->text(); chr=text.c(); goto aln_have_char;} break; // process only if have anything, if not then proceed to 'next_data'
+               case StrEx::Data::IMAGE     : pos_i++; break;
+               case StrEx::Data::PANEL     : panel =d   ->panel(); break;
+               case StrEx::Data::FONT      : {C Font *new_font=d->font(); font=(new_font ? new_font : default_font);} break;
+               case StrEx::Data::COLOR     : color =d   ->color  ; break;
+               case StrEx::Data::COLOR_OFF : color =style.color  ; break;
+               case StrEx::Data::SHADOW    : shadow=d   ->shadow ; break;
+               case StrEx::Data::SHADOW_OFF: shadow=style.shadow ; break;
+            }
+            goto aln_next_data;
+         }
+
+      aln_have_char:
+         {
+            Char n=text.n(); pos_i++;
+            if(chr=='\n')
+            {
+               split.end(pos_i-1);
+               return true;
+            }
+            chr=n;
+            goto aln_loop;
+         }
+
+      aln_end:
+         split.length=-1; // unlimited, end(pos_i);
+      }else
+      {
+      #if SINGLE
+         TextSplit next;
+      #endif
+         split.length=-1;
+      loop:
+         if(!chr)
+         {
+         next_data:
+            if(datas<=0)goto end;
+               datas--; C StrEx::Data *d=data++; switch(d->type)
+            {
+               case StrEx::Data::TEXT: if(d->text.is()) // process only if have anything, if not then proceed to 'next_data'
+               {
+                  text=d->text(); chr=text.c(); goto have_char;
+               }break;
+
+               case StrEx::Data::IMAGE:
+               {
+                  if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
+
+                  Flt w; C Image *image=d->image(); if(image && image->is())w=size.y*image->aspect();else w=0;
+
+                  // 'pos_i' is at image, but 'data', 'datas' after it
+                  if(pos_i>split.offset // require at least length=1
+                  && pos.x<(spacingConst() ? Max(w, space) : w)) // image doesn't fit
+                  {
+                     split.end(pos_i);
+                     data--; datas++; return true;
+                  }
+
+                  pos.x-=(spacingConst() ? Max(w, space) : w+space);
+                  pos_i++;
+
+                  split.end(pos_i);
+                  separator(next, text, data, datas, pos_i);
+               }break;
+
+               case StrEx::Data::PANEL:
+               {
+                  if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
+                  if(panel)pos.x=panel_r;
+                  if(panel=d->panel())processPanelFast(text, data, datas);
+               }break;
+
+               case StrEx::Data::FONT:
+               {
+                C Font *new_font=d->font(); if(!new_font)new_font=default_font; if(font!=new_font)
+                  {
+                     if(prev_chr){advanceSplit('\0'); prev_chr='\0';}
+                     setFontFast(new_font);
+                  }
+               }break;
+
+               case StrEx::Data::COLOR     : color =d   ->color ; break;
+               case StrEx::Data::COLOR_OFF : color =style.color ; break;
+               case StrEx::Data::SHADOW    : shadow=d   ->shadow; break;
+               case StrEx::Data::SHADOW_OFF: shadow=style.shadow; break;
+            }
+            goto next_data;
+         }
+
+      have_char:
+         {
+            if(prev_chr)advanceSplit(chr);
+
+            Int pos_start=pos_i; // 'pos_start' is located at 'chr'
+
+            // combining
+            Int chars=1;
+         combining:
+            Char n=text.n();
+            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+            pos_i+=chars;
+            // 'text' and 'pos_i' are now after ('chr' and combined)
+
+            Bool min_length=(pos_start>split.offset); // require at least length=1
+
+            Bool new_line=(chr=='\n' // manual new line
+                       || (min_length // require at least length=1
+                        && pos.x<(spacingConst() ? space : xsize*charWidth(chr)))); // character doesn't fit, for TEXT_POS_FIT we have to make sure that the 'chr' fully fits
+
+            Bool skippable=(chr==' ' || chr=='\n');
+            if(  skippable // found separator
+            ||   new_line && split.length<0 // or going to create a new line, but separator wasn't found yet
+            ||   min_length && (Separatable(prev_chr) || Separatable(chr))
+            )
+            {
+               split.end(pos_start);
+               if(skippable)
+               {
+                  if(new_line /*&& skippable already checked*/ && panel && !n && PanelClosing(data, datas))panel=null; // if we've skipped 'chr', creating new line, inside panel, and there's no visible element until panel closes, then close it already, so we don't start the new line with this panel
+                    separator(next, text, data, datas, pos_i    );}
+               else{separator(next, text, data, datas, pos_start); next.text-=chars;}
+            }
+
+            if(new_line)
+            {
+               if(pos_start>next.offset) // if went too far, and separator is behind, we have to revert (this condition works well for 'skippable' on/off)
+               { // restart from last remembered position
+                  shadow=next.shadow;
+                  color =next.color;
+                  pos_i =next.offset;
+                  text  =next.text;
+                  data  =next.data;
+                  datas =next.datas;
+                  panel =next.panel;
+                  if(next.font!=font)setFontFast(next.font);
+               }else
+               if(!skippable)
+               {
+                  pos_i=next.offset;
+                  text =next.text;
+               }
+               prev_chr='\0';
+               return true;
+            }
+
+            prev_chr=chr; chr=n; goto loop;
+         }
+
+      end:
+         split.length=-1; // unlimited, end(pos_i);
+         prev_chr='\0'; // have to make sure to clear 'prev_chr', because this class can still be used after this function
+      }
+      return false;
+   }
+   void splitParts(MemPtr<TextSplit> splits, C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas) // 1. Have to set at least one line to support drawing cursor when text is empty. 2. Don't set null fonts.
+   {
+      splits.clear();
+      if(initSplit(style))
+      {
+         text.fix();
+         Int pos_i=0;
+      #if SINGLE
+         for(; splitNext(splits.New(), style, width, auto_line, text, data, datas, pos_i); );
+      #else
+        {TextSplit &split=splits.New(); separator(split, text, data, datas, pos_i);}
+      next:
+         TextSplit &next=splits.New();
+         if(splitNext(splits[splits.elms()-2], next, style, width, auto_line, text, data, datas, pos_i))goto next;
+         splits.removeLast();
+      #endif
+      }
+   }
    void split(MemPtr<TextSplit> splits, C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas) // 1. Have to set at least one line to support drawing cursor when text is empty. 2. Don't set null fonts.
    {
       splits.clear();
-      if(initFast(style))
+      if(initSplit(style))
       {
          text.fix();
-         pos.x=width;
-         T.tpm=TEXT_POS_FIT;
-         setFontFast(default_font);
-         panel=null;
-         shadow=style.shadow;
-         color =style.color;
-
-         TextSplit *split=&splits.New(); separator(*split, text, data, datas, 0);
-
          Int pos_i=0;
 
+         TextSplit *split=&splits.New(); separator(*split, text, data, datas, pos_i);
+         pos.x=width;
          Char chr=text.c();
          if(!auto_line)
          {
@@ -667,6 +883,13 @@ struct TextProcessor
             prev_chr='\0'; // have to make sure to clear 'prev_chr', because this class can still be used after this function
          }
       }
+   }
+   Bool splitTest(C TextStyleParams &style, Flt width, Bool auto_line, TextSrc text, C StrEx::Data *data, Int datas)
+   {
+      Memt<TextSplit> full, parts;
+      split     (full , style, width, auto_line, text, data, datas);
+      splitParts(parts, style, width, auto_line, text, data, datas);
+      return full==parts;
    }
 };
 /******************************************************************************/
