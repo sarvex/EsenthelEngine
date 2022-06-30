@@ -411,13 +411,13 @@ void ShaderCompiler::Param::setDataFrom(C Param &src)
 }
 Bool ShaderCompiler::Param::operator==(C Param &p)C
 {
-   if(translation.elms()!=p.translation.elms())return false; REPA(translation)if(translation[i]!=p.translation[i])return false;
+   if(translation!=p.translation)return false;
    if(data.elms()!=p.data.elms() || !EqualMem(data.data(), p.data.data(), data.elms()))return false;
    return Equal(name, p.name, true) && array_elms==p.array_elms && cpu_data_size==p.cpu_data_size && gpu_data_size==p.gpu_data_size;
 }
 Bool ShaderCompiler::Buffer::operator==(C Buffer &b)C
 {
-   if(params.elms()!=b.params.elms())return false; REPA(params)if(params[i]!=b.params[i])return false;
+   if(params!=b.params)return false;
    if(bind_explicit && bind_slot!=b.bind_slot)return false; // check 'bind_slot' only if they are explicit
    return Equal(name, b.name, true) && size==b.size && bind_explicit==b.bind_explicit;
 }
@@ -1543,7 +1543,7 @@ static void Convert(ShaderData &shader_data, ConvertContext &cc, Int thread_inde
 struct ImageBindMap : Mems<ShaderCompiler::Image>
 {
    void operator =(C Mems<ShaderCompiler::Image> &images)  {setNum(images.elms()); FREPAO(T)=images[i];}
-   Bool operator==(C Mems<ShaderCompiler::Image> &images)C {if(elms()!=images.elms())return false; REPA(T)if(T[i]!=images[i])return false; return true;}
+ //Bool operator==(C Mems<ShaderCompiler::Image> &images)C {if(elms()!=images.elms())return false; REPA(T)if(T[i]!=images[i])return false; return true;}
    Bool save(File &f, C Memc<Str8> &images)C
    {
       f.cmpUIntV(elms());

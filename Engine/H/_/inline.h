@@ -413,7 +413,8 @@ T1(TYPE)                     Mems<TYPE>&  Mems<TYPE>::operator=(C  Meml  <TYPE  
 T1(TYPE) template<Int size>  Mems<TYPE>&  Mems<TYPE>::operator=(C CMemPtr<TYPE, size>  &src) {if(this!=src._mems){setNum(src.elms()); FREPAO(T)=src[i];} return T;}
 T1(TYPE)                     Mems<TYPE>&  Mems<TYPE>::operator=(   Mems  <TYPE      > &&src) {Swap(T, src); return T;}
 
-T1(TYPE)  Bool  Mems<TYPE>::operator==(C Mems<TYPE> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true;}
+T1(TYPE)  Bool  Mems<TYPE>::operator==(C Mems<TYPE> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true ;}
+T1(TYPE)  Bool  Mems<TYPE>::operator!=(C Mems<TYPE> &x)C {if(elms()!=x.elms())return true ; REPA(T)if(T[i]!=x[i])return true ; return false;}
 
 #if EE_PRIVATE
 T1(TYPE)  void         Mems<TYPE>::copyTo  (  TYPE *dest)C {if(dest)CopyFast(dest  , data(), elmsMem());          }
@@ -521,7 +522,8 @@ T1(TYPE)                     Memc<TYPE>&  Memc<TYPE>::operator=(C  Meml  <TYPE  
 T1(TYPE) template<Int size>  Memc<TYPE>&  Memc<TYPE>::operator=(C CMemPtr<TYPE, size>  &src) {if(this!=src._memc){setNum(src.elms()); FREPAO(T)=src[i];} return T;}
 T1(TYPE)                     Memc<TYPE>&  Memc<TYPE>::operator=(   Memc  <TYPE      > &&src) {Swap(T, src); return T;}
 
-T1(TYPE)  Bool  Memc<TYPE>::operator==(C Memc<TYPE> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true;}
+T1(TYPE)  Bool  Memc<TYPE>::operator==(C Memc<TYPE> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true ;}
+T1(TYPE)  Bool  Memc<TYPE>::operator!=(C Memc<TYPE> &x)C {if(elms()!=x.elms())return true ; REPA(T)if(T[i]!=x[i])return true ; return false;}
 
 T1(TYPE) T1(EXTENDED)  Memc<TYPE>&  Memc<TYPE>::replaceClass          ()  {ASSERT_BASE_EXTENDED<TYPE, EXTENDED>(); super::_reset(SIZE(EXTENDED), ClassFunc<EXTENDED>::GetNew(), ClassFunc<EXTENDED>::GetDel()); return T;}
 T1(TYPE) T1(BASE    )               Memc<TYPE>::operator   Memc<BASE>&()  {ASSERT_BASE_EXTENDED<BASE, TYPE    >(); return *(  Memc<BASE>*)this;}
@@ -904,7 +906,8 @@ template<typename TYPE, Int Memt_elms>                         MemtN<TYPE, Memt_
 template<typename TYPE, Int Memt_elms>                         MemtN<TYPE, Memt_elms>&  MemtN<TYPE, Memt_elms>::operator=(C  Meml  <TYPE           > &src) {Memt<TYPE, SIZE(TYPE)*Memt_elms>::operator=(src); return T;}
 template<typename TYPE, Int Memt_elms> template<Int src_size>  MemtN<TYPE, Memt_elms>&  MemtN<TYPE, Memt_elms>::operator=(C CMemPtr<TYPE,  src_size> &src) {Memt<TYPE, SIZE(TYPE)*Memt_elms>::operator=(src); return T;}
 
-template<typename TYPE, Int size>  Bool  Memt<TYPE, size>::operator==(C Memt<TYPE, size> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true;}
+template<typename TYPE, Int size>  Bool  Memt<TYPE, size>::operator==(C Memt<TYPE, size> &x)C {if(elms()!=x.elms())return false; REPA(T)if(T[i]!=x[i])return false; return true ;}
+template<typename TYPE, Int size>  Bool  Memt<TYPE, size>::operator!=(C Memt<TYPE, size> &x)C {if(elms()!=x.elms())return true ; REPA(T)if(T[i]!=x[i])return true ; return false;}
 
 template<typename TYPE, Int size>  Bool  Memt<TYPE, size>::save(File &f)C {       f.cmpUIntV(elms()) ; FREPA(T)if(!T[i].save(f))return false; return f.ok();}
 template<typename TYPE, Int size>  Bool  Memt<TYPE, size>::save(File &f)  {       f.cmpUIntV(elms()) ; FREPA(T)if(!T[i].save(f))return false; return f.ok();}

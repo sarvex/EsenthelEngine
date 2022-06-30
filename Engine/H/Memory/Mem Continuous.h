@@ -100,6 +100,7 @@ T1(const_mem_addr TYPE) struct Memc : _Memc // Continuous Memory Based Container
                       Memc& operator=(   Memc  <TYPE      > &&src); // copy elements using assignment operator
 
    Bool operator==(C Memc<TYPE> &x)C;
+   Bool operator!=(C Memc<TYPE> &x)C;
 
    T1(EXTENDED) Memc& replaceClass(); // replace the type of class stored in the container, all elements are automatically removed before changing the type of the class, the new type must be extended from the base 'TYPE' (if you're receiving a compilation error pointing to this method this means that the new class isn't extended from the base class)
 

@@ -101,6 +101,7 @@ T1(const_mem_addr TYPE) struct Mems // Simple Continuous Memory Based Container
                       Mems& operator=(   Mems  <TYPE      > &&src); // copy elements using assignment operator
 
    Bool operator==(C Mems<TYPE> &x)C;
+   Bool operator!=(C Mems<TYPE> &x)C;
 
 #if EE_PRIVATE
    void  copyTo  (  TYPE *dest)C; // copy raw memory of all elements to   'dest'
@@ -173,7 +174,4 @@ T1(const_mem_addr TYPE) struct FixedMems : private Mems<TYPE> // Unresizable Mem
 /******************************************************************************/
 T1(TYPE) Int Elms(C      Mems<TYPE> &mems) {return mems.elms();}
 T1(TYPE) Int Elms(C FixedMems<TYPE> &mems) {return mems.elms();}
-/******************************************************************************/
-T1(TYPE) Bool operator==(C Mems<TYPE> &a, C Mems<TYPE> &b) {if(a.elms()!=b.elms())return false; REPA(a)if(a[i]!=b[i])return false; return true ;}
-T1(TYPE) Bool operator!=(C Mems<TYPE> &a, C Mems<TYPE> &b) {if(a.elms()!=b.elms())return true ; REPA(a)if(a[i]!=b[i])return true ; return false;}
 /******************************************************************************/
