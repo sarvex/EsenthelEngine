@@ -1565,6 +1565,7 @@ struct BufferBindMap : Mems<ShaderCompiler::Bind>
       setNum(elms); elms=0; FREPA(buffers)   if(!buffers[i].bind_explicit)T[elms++]=buffers[i];
    }
 
+   Bool operator!=(C Mems<ShaderCompiler::Buffer> &buffers)C {return !(T==buffers);}
    Bool operator==(C Mems<ShaderCompiler::Buffer> &buffers)C // !! we shouldn't store buffers with explicit bind slots, because they're always bound at their creation, this will avoid overhead when drawing shaders !!
    {
       Int elms=0;
