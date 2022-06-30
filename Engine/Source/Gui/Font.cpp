@@ -197,7 +197,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_l
          {
             spcs++;
          combining3:
-            if(!--max_length){}else // for the last character we need to process only its width and ignore the spacing between the next one
+            if(--max_length)
             {
                Char8 next=*++text;
                if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
@@ -270,7 +270,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_le
          {
             spcs++;
          combining3:
-            if(!--max_length){}else // for the last character we need to process only its width and ignore the spacing between the next one
+            if(--max_length)
             {
                Char next=*++text;
                if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
