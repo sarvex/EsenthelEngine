@@ -1736,9 +1736,9 @@ _linear_gamma^=1; linearGamma(!_linear_gamma); // set after loading shaders
    {auto v=grassRange       (); _grass_range      =-1              ; grassRange       (v);}
    {auto v=sharpenIntensity (); _sharpen_intensity=-1;             ; sharpenIntensity (v);}
   _tone_map_max_lum=0; toneMapMonitorMaxLumAuto(); //SPSet("ToneMapMonitorMaxLum", D.toneMapMonitorMaxLum());
-   SPSet("ToneMapTopRange"     , D.toneMapTopRange     ());
-   SPSet("ToneMapDarkenRange"  , D.toneMapDarkenRange  ());
-   SPSet("ToneMapDarkenExp"    , D.toneMapDarkenExp    ());
+   SPSet("ToneMapTopRange"     , D.toneMapTopRange   ());
+   SPSet("ToneMapDarkenRange"  , D.toneMapDarkenRange());
+   SPSet("ToneMapDarkenExp"    , D.toneMapDarkenExp  ());
    lod            (_lod_factor, _lod_factor_mirror);
    shadowJitterSet();
    shadowRangeSet ();

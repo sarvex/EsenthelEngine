@@ -264,7 +264,7 @@ class StoreClass : ClosableWindow
             "10. These terms may change from time to time, failure to accept the new changes will result in your items being no longer available for sale to new customers (old customers can still access their purchased items according to the old terms)\n"
             "11. Esenthel Store operators offer no warranty in regards to the Store itself (for example if the Store becomes unavailable; your items disappear from the Store listing; by some technical error they would get accessible for free or at a different price that you've specified - the issues will try to be fixed ASAP, however you're not entitled to any refund/compensation and you will not take any legal action against the Esenthel Staff)\n"
             "12. Items are by default sold to Users with the Terms listed on Esenthel Store Login Screen, if you wish however to specify your own Terms of Use for the items that you submit, you need to include them in the Item Description visible on the Item Page in Esenthel Store, so the users can read the Terms before they make the purchase."
-            , &ts); terms.auto_line=AUTO_LINE_SPACE_SPLIT;
+            , &ts); terms.auto_line=true;
          T+=t_name.create("Item Name"); T+=name.create().maxLength(128);
          T+=b_create.create("Create").func(Create, T);
          return T;
@@ -360,7 +360,7 @@ class StoreClass : ClosableWindow
             super .create(Rect_C(pos, 0.9, 0.4), "Log In").hide(); button[2].show();
          T+=yes   .create(Rect_C(clientWidth()*1/4, -clientHeight()+0.08, 0.25, 0.055), "Yes"   ).func(Yes   , T);
          T+=cancel.create(Rect_C(clientWidth()*3/4, -clientHeight()+0.08, 0.25, 0.055), "Cancel").func(Cancel, T);
-         T+=text  .create(Rect(0, yes.rect().max.y, clientWidth(), 0).extend(-0.05)); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text  .create(Rect(0, yes.rect().max.y, clientWidth(), 0).extend(-0.05)); text.auto_line=true;
          return T;
       }
       Register& activate()
@@ -398,7 +398,7 @@ class StoreClass : ClosableWindow
             super  .create(Rect_LU(0, 0, 0.9, 0.22), "Edit PayPal").barVisible(false).hide(); button[2].show(); FlagDisable(flag, WIN_MOVABLE);
          T+=paypal .create(Rect_L(0.03, -clientHeight()+0.05, 0.53, 0.055));
          T+=confirm.create(Rect  (paypal.rect().max.x+0.01, paypal.rect().min.y, clientWidth()-0.03, paypal.rect().max.y), "Confirm").func(Confirm, T);
-         T+=text   .create(Rect(0, confirm.rect().max.y, clientWidth(), 0).extend(-0.03), "Please confirm your PayPal email address.\nIf you type it wrong you will not be able to receive payments !!", &ts); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text   .create(Rect(0, confirm.rect().max.y, clientWidth(), 0).extend(-0.03), "Please confirm your PayPal email address.\nIf you type it wrong you will not be able to receive payments !!", &ts); text.auto_line=true;
          return T;
       }
       void setPos()
@@ -435,7 +435,7 @@ class StoreClass : ClosableWindow
          ts.reset().size=0.04; ts.align.set(1, 0);
          super.create(Rect_C(pos, 1.32, 0.30), "Seller").barVisible(false).hide(); button[2].show();
          T+=engine_license.create(Rect_C(clientWidth()/2, -clientHeight()+0.06, 0.5, 0.055), "Buy Engine License").func(EngineLicense, T);
-         T+=text          .create(Rect(0, engine_license.rect().max.y, clientWidth(), 0).extend(-0.05), "In order to sell your own items in Esenthel Store you need to be a Licensed Developer (have an Engine License).\nOnce you're a Licensed Developer, you will be able to submit your own items to Esenthel Store and gain income from their sales.", &ts); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text          .create(Rect(0, engine_license.rect().max.y, clientWidth(), 0).extend(-0.05), "In order to sell your own items in Esenthel Store you need to be a Licensed Developer (have an Engine License).\nOnce you're a Licensed Developer, you will be able to submit your own items to Esenthel Store and gain income from their sales.", &ts); text.auto_line=true;
          return T;
       }
    }
@@ -463,7 +463,7 @@ class StoreClass : ClosableWindow
          ts.reset().size=0.045;
          T+=amount    .create(Rect_C(clientWidth()*1/4, -clientHeight()+0.05, 0.25, 0.055)).maxLength(32);
          T+=contribute.create(Rect_C(clientWidth()*3/4, -clientHeight()+0.05, 0.25, 0.055), "Contribute").func(Buy, T);
-         T+=text.create(Rect(0, amount.pos().y, clientWidth(), 0).extend(-0.05), "Please enter the amount of USD which you'd like to contribute", &ts); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text.create(Rect(0, amount.pos().y, clientWidth(), 0).extend(-0.05), "Please enter the amount of USD which you'd like to contribute", &ts); text.auto_line=true;
          return T;
       }
       virtual void update(C GuiPC &gpc)override
@@ -514,8 +514,8 @@ class StoreClass : ClosableWindow
                      rect.max+=padd.min; rect.max.y=rect.min.y-padd.min.y-padd.max.y;
                      D.clip(clip&rect);
                      rect.extendX(zoom()*-0.006);
-                                        D.text(ts      , rect, item.name      , AUTO_LINE_SPACE_SPLIT);
-                     if(!item.purchased)D.text(ts_small, rect, item.price_text, AUTO_LINE_SPACE_SPLIT);else AppStore.ok_image->drawFit(Rect_RD(rect.rd(), 0.08*zoom()));
+                                        D.text(ts      , rect, item.name      , null, 0, true);
+                     if(!item.purchased)D.text(ts_small, rect, item.price_text, null, 0, true);else AppStore.ok_image->drawFit(Rect_RD(rect.rd(), 0.08*zoom()));
                   }
                }
             }
@@ -776,7 +776,7 @@ class StoreClass : ClosableWindow
       RemoveFile& create(C Vec2 &pos)
       {
              super.create(Rect_C(pos, 0.72, 0.32), "Remove File").hide(); button[2].show();
-         T+=t_name.create(Rect_C(clientWidth()/2, -0.09, 0.7, 0.0), "Are you sure you wish to remove selected file?"); t_name.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=t_name.create(Rect_C(clientWidth()/2, -0.09, 0.7, 0.0), "Are you sure you wish to remove selected file?"); t_name.auto_line=true;
          T+=    ok.create(Rect_C(clientWidth()/2, -0.20, 0.3, 0.06), "OK").func(OK, T);
          return T;
       }
@@ -805,7 +805,7 @@ class StoreClass : ClosableWindow
       {
            super.create(Rect_C(pos, 1.00, 0.35), "Confirm Publishing").hide(); button[2].show();
          T+=ok  .create(Rect_C(clientWidth()/2, -clientHeight()+0.07, 0.3, 0.06), "OK").func(OK, T);
-         T+=text.create(Rect(0, ok.rect().max.y, clientWidth(), 0).extend(-0.05), "You haven't specified the price for your item.\nAre you sure you wish to publish it for free?"); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T+=text.create(Rect(0, ok.rect().max.y, clientWidth(), 0).extend(-0.05), "You haven't specified the price for your item.\nAre you sure you wish to publish it for free?"); text.auto_line=true;
          return T;
       }
    }
@@ -912,7 +912,7 @@ class StoreClass : ClosableWindow
             if(editable && !image)
             {
                TextStyleParams ts(true); ts.size=0.04; ts.color.a=128;
-               D.text(ts, rect()+gpc.offset, "Drag and drop an image here", AUTO_LINE_SPACE_SPLIT);
+               D.text(ts, rect()+gpc.offset, "Drag and drop an image here", null, 0, true);
             }
             if(rect_color.a)r.draw(rect_color, false);
          }
@@ -1312,7 +1312,7 @@ class StoreClass : ClosableWindow
       mode.tab(1)+=  item_cid  .create().func(ItemCID, T).desc("Toggle if users are allowed to set Computer ID for their license keys of this item");
       mode.tab(1)+=  item_publish.create("PUBLISH").func(ItemPublish, T).desc("Any changes that you've made are just temporary, and they are not yet visible publicly.\nAfter you click this button, the item will be marked as ready for publishing.\nIt will be verified by Esenthel Staff within a few days.\nIf everything will be okay, it will automatically become available for sale with all the changes that you've made."); item_publish.mode=BUTTON_TOGGLE;
       mode.tab(1)+=  item_desc_region.create();
-      item_desc_region+=t_item_desc.create(Vec2(0.01, -0.00), S, &ts_desc); t_item_desc.auto_line=AUTO_LINE_SPACE_SPLIT;
+      item_desc_region+=t_item_desc.create(Vec2(0.01, -0.00), S, &ts_desc); t_item_desc.auto_line=true;
       mode.tab(1)+=item_tabs.create(item_t, Elms(item_t)).valid(true).set(0);
       FREPA(item_images)item_tabs.tab(0)+=item_images[i].create(true);
       mode.tab(1)+=buy.create().func(Buy, T);

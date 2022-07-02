@@ -873,17 +873,16 @@ Dialog& Dialog::autoSize()
    if(Flt line_h=ts->lineHeight())
    {
       const Flt desired_aspect=2.5f, min_w=line_h*17, max_w=D.rectUI().w()-Gui.dialog_padd*2; // min_w gives some tolerable minimum width based on a single line height
-            Int lines=ts->textLines(text(), max_w, text.auto_line, &text_w);
+            Int lines=ts->textLines(text(), text.extra.data(), text.extra.elms(), max_w, text.auto_line, &text_w);
       text_h=line_h*lines;
       if(text_w>min_w)
       {
-         AUTO_LINE_MODE auto_line=text.auto_line; if(auto_line==AUTO_LINE_SPACE_SPLIT || auto_line==AUTO_LINE_SPLIT)auto_line=AUTO_LINE_SPACE; // don't split words in next attempts, attempt above can split because we've set max_w as entire screen, however next attempts will use less
          Flt aspect=text_w/text_h;
          REP(3) // 3 attempts
          {
             Flt multiplier=Sqrt(desired_aspect/aspect), // need to apply 'Sqrt' because this affects both width and height
                 test_w=Mid(text_w*multiplier, min_w, max_w);
-            Int test_lines=ts->textLines(text(), test_w, auto_line, &test_w);
+            Int test_lines=ts->textLines(text(), text.extra.data(), text.extra.elms(), test_w, text.auto_line, &test_w);
             Flt test_h=line_h*test_lines,
                 test_aspect=test_w/test_h;
             if(AbsScale(test_aspect, desired_aspect)<AbsScale(aspect, desired_aspect)) // if 'test_aspect' is closer to 'desired_aspect'
@@ -914,7 +913,7 @@ Dialog& Dialog::autoSize()
 Dialog& Dialog::set(C Str &title, C Str &text, C CMemPtr<Str> &buttons, C TextStylePtr &text_style)
 {
    super::setTitle(title).barVisible(title.is());
-   T+=T.text.create(text, text_style); T.text.auto_line=AUTO_LINE_SPACE_SPLIT;
+   T+=T.text.create(text, text_style); T.text.auto_line=true;
 
    T.buttons.setNum(buttons.elms());
    FREPA(T.buttons)T+=T.buttons[i].create(buttons[i]);

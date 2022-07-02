@@ -102,7 +102,7 @@ SplitAnimation SplitAnim;
    void SplitAnimation::create()
    {
       Gui+=super  ::create(Rect_C (0, 0, 1.3f, 1.15f)); button[2].show().func(Hide, T);
-      T+=text     .create(Rect_C (clientWidth()/2   , -0.07f, clientWidth()-0.04f, 0), "Drag and drop a file with animations list on this window,\nor use the button to detect them from clipboard."); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T+=text     .create(Rect_C (clientWidth()/2   , -0.07f, clientWidth()-0.04f, 0), "Drag and drop a file with animations list on this window,\nor use the button to detect them from clipboard."); text.auto_line=true;
       T+=clear    .create(Rect_LU(              0.04f, -0.15f, 0.2f, 0.06f), "Clear"                ).func(Clear    , T);
       T+=clipboard.create(Rect_U (clientWidth()/2   , -0.15f, 0.5f, 0.06f), "Detect from Clipboard").func(Clipboard, T);
       T+=add_new  .create(Rect_RU(clientWidth()-0.04f, -0.15f, 0.2f, 0.06f), "New"                  ).func(New      , T);

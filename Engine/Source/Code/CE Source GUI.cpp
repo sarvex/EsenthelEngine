@@ -861,7 +861,7 @@ void Line::draw(C GuiPC &gpc)
       if(rect().max.y+gpc.offset.y>=gpc.clip.min.y
       && rect().min.y+gpc.offset.y<=gpc.clip.max.y)
    {
-      if(!text_valid){text_valid=true; code(textCode());}
+      if(!text_valid){text_valid=true; setTextData();}
       GuiPC gpc2=gpc ; gpc2.offset.x+=CE. lineNumberSize();
          // if spacing between elements is a fixed number of pixels then flickering can occur if positions will be at 0.5 pixels (0.5, 1.5, 2.5, ..), to prevent that from happening align the vertical position
          gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
@@ -900,7 +900,7 @@ void Source::ViewLine::draw(C GuiPC &gpc)
       if(rect().max.y+gpc.offset.y>=gpc.clip.min.y
       && rect().min.y+gpc.offset.y<=gpc.clip.max.y)
    {
-      if(!text_valid){text_valid=true; code(textCode());}
+      if(!text_valid){text_valid=true; setTextData();}
       GuiPC gpc2=gpc;    gpc2.offset.x+=CE. lineNumberSize();
          // if spacing between elements is a fixed number of pixels then flickering can occur if positions will be at 0.5 pixels (0.5, 1.5, 2.5, ..), to prevent that from happening align the vertical position
          gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
@@ -1154,14 +1154,20 @@ void Source::draw(C GuiPC &gpc)
 
                               if(matches.elms())
                               {
-                                 Memc<Str> t;
-                               //Int       match=matches[0].average_match;
-                                 Int       match=matches.last().lowest_match; REPA(matches)MAX(match, matches[i].lowest_match);
-                                 FREPA(matches){FuncMatch &fm=matches[i]; t.New()=S+((fm.lowest_match==match) ? "[col=000F]" : "[col=888F]")+fm.func->funcDefinition(cur_param)+fm.func->commentsCode()+"[/col]";}
+                                 StrEx sx;
+                               //Int   match=matches[0].average_match;
+                                 Int   match=matches.last().lowest_match; REPA(matches)MAX(match, matches[i].lowest_match);
+                                 FREPA(matches)
+                                 {
+                                    FuncMatch &fm=matches[i];
+                                    if(i)sx+='\n';
+                                    Color col=((fm.lowest_match==match) ? BLACK : GREY);
+                                    sx.color(col);
+                                    fm.func->funcDefinition(sx, cur_param, &col);
+                                    fm.func->comments      (sx);
+                                 }
 
-                                 Str code; FREPA(t){if(i)code+='\n'; code+=t[i];}
-                                 Str text; Memt<TextCodeData> codes; SetTextCode(code, text, codes);
-                                 Flt w=0; t=Split(text, '\n'); REPA(t)MAX(w, CE.ts_small.textWidth(t[i]));
+                                 Flt w; CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), 0, false, &w);
                                  MIN(w, clientWidth()*0.9f);
 
                                  Vec2 fp  =offset+Vec2(0, CE.fontSpaceOffset())+posVisual(VecI2(func.col, cur.y)), // use cursor.y so information is displayed below cursor (needed for multi-line functions)
@@ -1170,10 +1176,10 @@ void Source::draw(C GuiPC &gpc)
 
                                  Flt     ext=0.01f;
                                  Rect_LU r(fp.x, suggestions_region.visible() ? pos.y-size.y-ext : fp.y-CE.ts.lineHeight()-ext, w, 0); if(r.max.x>=_crect.max.x)r-=Vec2(r.max.x-_crect.max.x, 0);
-                                 Int     lines=CE.ts_small.textLines(text, r.w(), AUTO_LINE_SPACE_SPLIT); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
+                                 Int     lines=CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), r.w(), true); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
                                  Rect(r).extend(ext).draw(WHITE);
                                  Rect(r).extend(ext).draw(Color(0, 0, 0, 112), false);
-                                 CE.ts_small.drawCode(r, text, AUTO_LINE_SPACE_SPLIT, codes.data(), codes.elms());
+                                 D.text(CE.ts_small, r, (CChar*)null, sx.data(), sx.elms(), true);
                               }
                               break;
                            }
@@ -1192,7 +1198,7 @@ void Source::draw(C GuiPC &gpc)
          Symbol *symbol=sugg->symbol();
          if(symbol || sugg->is_macro)
          {
-            Memc<Str> t;
+            Memc<StrEx> t;
             if(symbol)
             {
                // get list of functions
@@ -1221,16 +1227,22 @@ void Source::draw(C GuiPC &gpc)
                Str comments=symbol->comments();
                if( comments.is())
                {
-                  Memc<Str> c=Split(S+"   "+comments, '\n');
                   if(t.elms())t.New();
                   t.New()="Comments:";
-                  FREPA(c)Swap(t.New(), c[i]);
+                  t.New()=S+"   "+comments;
                }
                if(symbol->type==Symbol::FUNC_LIST)
                {
                   if(t.elms())t.New();
                   t.New()="Functions:";
-                  FREPA(funcs)t.New()=S+"   "+funcs[i]->funcDefinition(-1)+funcs[i]->commentsCode();
+                  FREPA(funcs)
+                  {
+                     StrEx &sx=t.New();
+                     sx="   ";
+                     funcs[i]->funcDefinition(sx, -1);
+                     funcs[i]->comments      (sx);
+                     sx.color(null);
+                  }
                }
             }else
             {
@@ -1241,9 +1253,8 @@ void Source::draw(C GuiPC &gpc)
                t.New()=S+"   "+sugg->macro_def;
             }
 
-            Str code; FREPA(t){if(i)code+='\n'; code+=t[i];}
-            Str text; Memt<TextCodeData> codes; SetTextCode(code, text, codes);
-            Flt w=0; t=Split(text, '\n'); REPA(t)MAX(w, CE.ts_small.textWidth(t[i]));
+            StrEx sx; FREPA(t){if(i)sx+='\n'; sx+=t[i];}
+            Flt w; CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), 0, false, &w);
             MIN(w, D.pixelToScreenSize().x*520);
 
             Vec2 size=suggestions_region.size(),
@@ -1251,7 +1262,7 @@ void Source::draw(C GuiPC &gpc)
 
             Flt     space=D.pixelToScreenSize().x*24;
             Rect_LU r(pos+Vec2(size.x+space, 0), w, 0); if(r.max.x>=D.w())r-=Vec2(r.max.x-pos.x+space, 0); if(r.min.x<rect().min.x)r+=Vec2(pos.x+size.x+space-r.min.x, 0);
-            Int     lines=CE.ts_small.textLines(text, r.w(), AUTO_LINE_SPACE_SPLIT); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
+            Int     lines=CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), r.w(), true); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
 
             if(Gui.skin)
             {
@@ -1259,7 +1270,7 @@ void Source::draw(C GuiPC &gpc)
                if(Gui.skin->region.normal)Gui.skin->region.normal->draw(Gui.skin->region.normal_color, rect);else
                if(Gui.skin->region.normal_color.a)            rect.draw(Gui.skin->region.normal_color);
             }
-            CE.ts_small.drawCode(r, text, AUTO_LINE_SPACE_SPLIT, codes.data(), codes.elms());
+            D.text(CE.ts_small, r, (CChar*)null, sx.data(), sx.elms(), true);
          }
          if(sugg->elm_id.valid()) // project element
          {
@@ -1327,20 +1338,20 @@ void Source::draw(C GuiPC &gpc)
                      break;
                   }
                }
-               Str  code =cl.textCode(), text; Memt<TextCodeData> codes; SetTextCode(code, text, codes);
+               cl.setTextData();
                Vec2 pos  =screenPos();
                Flt  min_x=pos.x+              0.1f,
                     max_x=pos.x+clientWidth()-0.1f,
                     max_y=Ms.pos().y-0.15f;
 
-               Int  lines=CE.ts.textLines(text, max_x-min_x, AUTO_LINE_SPACE_SPLIT);
+               Int  lines=CE.ts.textLines(cl.text, cl.extra.data(), cl.extra.elms(), max_x-min_x, true);
                Flt  min_y=max_y-lines*CE.ts.lineHeight();
                Rect rect (min_x, min_y, max_x, max_y);
                if(rect.min.y-0.05f<=pos.y-clientHeight())rect+=Vec2(0, rect.h() + 0.15f*2);
                Rect rect_e=rect; rect_e.extend(0.02f);
                D.drawShadow(190, rect_e, 0.0875f);
-               rect_e.draw (Theme.colors[TOKEN_NONE]);
-               CE.ts.drawCode(rect, text, AUTO_LINE_SPACE_SPLIT, codes.data(), codes.elms());
+               rect_e.draw(Theme.colors[TOKEN_NONE]);
+               D.text(CE.ts, rect, cl.text, cl.extra.data(), cl.extra.elms(), true);
             }
          }
       }

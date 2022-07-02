@@ -140,6 +140,9 @@ private:
 }extern
    Gui; // Main GUI
 /******************************************************************************/
+#if EE_PRIVATE
+void DrawPanelText(C Panel *panel, C Color &panel_color, Flt padding, C TextStyleParams &ts, C Vec2 &pos, CChar *text, Bool mouse);
+#endif
 void DrawKeyboardHighlight(GuiObj *obj, C Rect &rect, C GuiSkin *skin       ); // default Keyboard Highlight                 drawing function
 void DrawDescription      (GuiObj *obj, C Vec2 &pos, CChar *text, Bool mouse); // default Gui Object Description             drawing function
 void DrawIMM              (GuiObj *obj                                      ); // default IMM (Windows Input Method Manager) drawing function

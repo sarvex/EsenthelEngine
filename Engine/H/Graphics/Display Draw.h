@@ -23,20 +23,20 @@ struct DisplayDraw // Display Drawing Functions, this class methods can be calle
    static void lines(C Color &color, C Vec2 *point, Int points); // draw continuous lines, 'point'=point array, 'points'=number of points
 
    // draw text
-   static void text(C TextStyleParams &ts, Flt x, Flt y, CChar  *t); // draw using custom  text style
-   static void text(C TextStyleParams &ts, Flt x, Flt y, CChar8 *t); // draw using custom  text style
-   static void text(                       Flt x, Flt y, CChar  *t); // draw using default text style
-   static void text(                       Flt x, Flt y, CChar8 *t); // draw using default text style
-   static void text(C TextStyleParams &ts, C Vec2 &p   , CChar  *t) {text(ts, p.x, p.y, t);}
-   static void text(C TextStyleParams &ts, C Vec2 &p   , CChar8 *t) {text(ts, p.x, p.y, t);}
-   static void text(                       C Vec2 &p   , CChar  *t) {text(    p.x, p.y, t);}
-   static void text(                       C Vec2 &p   , CChar8 *t) {text(    p.x, p.y, t);}
+   static void text(C TextStyleParams &ts, Flt x, Flt y, CChar  *t, C StrData *data=null, Int datas=0); // draw using custom  text style
+   static void text(C TextStyleParams &ts, Flt x, Flt y, CChar8 *t, C StrData *data=null, Int datas=0); // draw using custom  text style
+   static void text(                       Flt x, Flt y, CChar  *t, C StrData *data=null, Int datas=0); // draw using default text style
+   static void text(                       Flt x, Flt y, CChar8 *t, C StrData *data=null, Int datas=0); // draw using default text style
+   static void text(C TextStyleParams &ts, C Vec2 &p   , CChar  *t, C StrData *data=null, Int datas=0) {text(ts, p.x, p.y, t, data, datas);}
+   static void text(C TextStyleParams &ts, C Vec2 &p   , CChar8 *t, C StrData *data=null, Int datas=0) {text(ts, p.x, p.y, t, data, datas);}
+   static void text(                       C Vec2 &p   , CChar  *t, C StrData *data=null, Int datas=0) {text(    p.x, p.y, t, data, datas);}
+   static void text(                       C Vec2 &p   , CChar8 *t, C StrData *data=null, Int datas=0) {text(    p.x, p.y, t, data, datas);}
 
    // draw text in rectangle area
-   static void text(C TextStyleParams &ts, C Rect &rect, CChar  *t, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE);
-   static void text(C TextStyleParams &ts, C Rect &rect, CChar8 *t, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE);
-   static void text(                       C Rect &rect, CChar  *t, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE);
-   static void text(                       C Rect &rect, CChar8 *t, AUTO_LINE_MODE auto_line=AUTO_LINE_NONE);
+   static void text(C TextStyleParams &ts, C Rect &rect, CChar  *t, C StrData *data=null, Int datas=0, Bool auto_line=false, C Flt *width=null);
+   static void text(C TextStyleParams &ts, C Rect &rect, CChar8 *t, C StrData *data=null, Int datas=0, Bool auto_line=false, C Flt *width=null);
+   static void text(                       C Rect &rect, CChar  *t, C StrData *data=null, Int datas=0, Bool auto_line=false);
+   static void text(                       C Rect &rect, CChar8 *t, C StrData *data=null, Int datas=0, Bool auto_line=false);
 
    // set text depth
    static void textDepth(Bool use, Flt depth=0); // this function can be optionally called before drawing text, to specify depth of the text (Z value for the Depth Buffer), if enabled then the text will be drawn with depth buffer test enabled and will be occluded by objects with depth smaller than 'depth'

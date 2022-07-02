@@ -254,7 +254,7 @@ void DrawCopyElms()
       void CopyElements::ReplaceElms::create()
       {
          Gui+=super ::create(Rect_C(0, 0, 1.65f, 1.1f), "Replace elements").hide(); button[2].show();
-         T  +=text  .create(Rect_LU(0, 0, clientWidth(), 0.19f).extend(-0.02f), "Following elements already exist in target project.\nPlease select which elements should be copied and replace those in target project.\nThe elements that are not selected will not be copied."); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+         T  +=text  .create(Rect_LU(0, 0, clientWidth(), 0.19f).extend(-0.02f), "Following elements already exist in target project.\nPlease select which elements should be copied and replace those in target project.\nThe elements that are not selected will not be copied."); text.auto_line=true;
          T  +=copy  .create(Rect_RD(clientWidth()-0.04f, -clientHeight()+0.04f, 0.25f, 0.06f), "Copy").func(Copy, T);
          T  +=region.create(Rect(0, copy.rect().max.y, clientWidth(), text.rect().min.y).extend(-0.04f));
          ListColumn lc[]=

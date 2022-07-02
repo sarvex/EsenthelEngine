@@ -158,7 +158,6 @@ struct  ComboBox;
 struct  Dialog;
 struct  Desktop;
 struct  GuiCustom;
-struct  TextCodeData;
 struct  Text;
 struct  Viewport;
 struct  GuiImage;

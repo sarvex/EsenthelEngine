@@ -113,7 +113,7 @@ class SplitAnimation : ClosableWindow
    void create()
    {
       Gui+=super  .create(Rect_C (0, 0, 1.3, 1.15)); button[2].show().func(Hide, T);
-      T+=text     .create(Rect_C (clientWidth()/2   , -0.07, clientWidth()-0.04, 0), "Drag and drop a file with animations list on this window,\nor use the button to detect them from clipboard."); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T+=text     .create(Rect_C (clientWidth()/2   , -0.07, clientWidth()-0.04, 0), "Drag and drop a file with animations list on this window,\nor use the button to detect them from clipboard."); text.auto_line=true;
       T+=clear    .create(Rect_LU(              0.04, -0.15, 0.2, 0.06), "Clear"                ).func(Clear    , T);
       T+=clipboard.create(Rect_U (clientWidth()/2   , -0.15, 0.5, 0.06), "Detect from Clipboard").func(Clipboard, T);
       T+=add_new  .create(Rect_RU(clientWidth()-0.04, -0.15, 0.2, 0.06), "New"                  ).func(New      , T);

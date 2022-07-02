@@ -353,26 +353,24 @@ Str Symbol::definition()
    }
    return cppName();
 }
-Str Symbol::funcDefinition(Int highlight)
+void Symbol::funcDefinition(StrEx &sx, Int highlight, C Color *col)
 {
    if(source && InRange(token_index, source->tokens) && type==FUNC)
    {
       Str s=source->getText(def_range.x, def_range.y);
       Int level=0; REPA(s)if(s[i]==')')level--;else if(s[i]=='(')if(!++level){s.clip(i); break;} // remove param list
-      s=source->getText(type_range.x, type_range.y)+' '+s;
-      s+='(';
+      sx+=source->getText(type_range.x, type_range.y)+' '+s;
+      sx+='(';
       FREPA(params)
       {
          Symbol &param=*params[i];
-         if(i)s+=", ";
-         if(i==highlight)s+="[color=F00]";
-         s+=source->getText(param.type_range.x, param.def_range.y);
-         if(i==highlight)s+="[/color]";
+         if(i)sx+=", ";
+         if(i==highlight)sx.color(RED);
+         sx+=source->getText(param.type_range.x, param.def_range.y);
+         if(i==highlight)sx.color(col);
       }
-      s+=')';
-      return s;
-   }
-   return cppName();
+      sx+=')';
+   }else sx+=cppName();
 }
 Str Symbol::comments()
 {
@@ -427,10 +425,9 @@ Str Symbol::comments()
    }
    return S;
 }
-Str Symbol::commentsCode()
+void Symbol::comments(StrEx &sx)
 {
-   Str    comm=comments(); if(comm.is())comm=S+" [color=080]// "+comm+"[/color]";
-   return comm;
+   Str comm=comments(); if(comm.is()){sx.color(Color(0, 128, 0)); sx+=" // "; sx+=comm;}
 }
 /******************************************************************************/
 Symbol* Symbol::Parent()

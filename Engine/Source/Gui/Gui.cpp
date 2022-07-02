@@ -446,33 +446,6 @@ void GUI::update()
   _update_time=Time.curTime()-t;
 }
 /******************************************************************************/
-static void DrawPanelText(C Panel *panel, C Color &panel_color, Flt padding, C TextStyleParams &ts, C Vec2 &pos, CChar *text, Bool mouse)
-{
-   if(Is(text))
-   {
-      Set(Tls16, text, ts, D.rectUI().w()-padding*2, AUTO_LINE_SPACE_SPLIT);
-
-      Flt width =0,
-          height=Tls16.elms()*ts.lineHeight();
-      REPA(Tls16){TextLineSplit16 &t=Tls16[i]; MAX(width, ts.textWidth(t.text, t.length));}
-
-      Rect_LU r(pos, width, height); r.extend(padding); if(mouse)
-      {
-         Int height=32; // default mouse cursor height
-         if(Ms._cursor && Ms._cursor->_image)height=Ms._cursor->_image->h()-Ms._cursor->_hot_spot.y;
-         Flt y=D.pixelToScreenSize().y*height;
-         r.min.y-=y;
-         r.max.y-=y;
-      }
-      if(r.max.x>D.rectUI().max.x){r.min.x-=r.max.x-D.rectUI().max.x; r.max.x=D.rectUI().max.x;} if(r.min.x<D.rectUI().min.x){r.max.x+=D.rectUI().min.x-r.min.x; r.min.x=D.rectUI().min.x;}
-      if(r.min.y<D.rectUI().min.y){r+=Vec2(0, pos.y-r.min.y+padding)                          ;} if(r.max.y>D.rectUI().max.y){r.min.y-=r.max.y-D.rectUI().max.y; r.max.y=D.rectUI().max.y;}
-
-      if(panel        )panel->draw(panel_color, r);else
-      if(panel_color.a)     r.draw(panel_color);
-
-      ts.drawSplit(r.extend(-padding), Tls16, null, 0);
-   }
-}
 static void DrawDescriptionObj(GuiObj &obj, C Vec2 &pos, Flt start_time, Bool mouse)
 {
    Bool   immediate=false;
@@ -554,8 +527,6 @@ void GUI::del()
    MsgBox::MsgBoxs.del();
   _desktops       .del();
   _callbacks      .del();
-   Tls8           .del();
-   Tls16          .del();
    GuiSkins       .del();
    Panels         .del();
    PanelImages    .del();

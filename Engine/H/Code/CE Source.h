@@ -126,8 +126,8 @@ struct Line : Str, Text, LineMode
    Int  wordEnd  (Int x               );
    Int  wordBegin(Int x               );
 
-   Str textTokens()C;
-   Str textCode  () ;
+   Str  textTokens()C;
+   void setTextData();
 
    virtual void draw(C GuiPC &gpc)override;
 
@@ -202,7 +202,7 @@ const_mem_addr struct Source : Region
 
       void setRect(Int i);
 
-      Str textCode();
+      void setTextData();
 
       virtual void draw(C GuiPC &gpc)override;
    };

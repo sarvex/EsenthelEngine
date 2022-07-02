@@ -870,7 +870,7 @@ class EraseRemovedElms : ClosableWindow
    void create()
    {
       Gui+=super .create(Rect_C(0, 0, 1.44, 1.5), "Erase Removed Elements").hide(); button[2].func(HideProjAct, SCAST(GuiObj, T)).show();
-      T  +=text  .create(Rect_C(clientWidth()/2  , -0.15, clientWidth()-0.05, 0.1), "Are you sure you wish to erase all removed elements from the project?\nWarning: This operation cannot be undone!\n\nThis will remove files only from the local computer - when connected to server it will redownload the elements."); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T  +=text  .create(Rect_C(clientWidth()/2  , -0.15, clientWidth()-0.05, 0.1), "Are you sure you wish to erase all removed elements from the project?\nWarning: This operation cannot be undone!\n\nThis will remove files only from the local computer - when connected to server it will redownload the elements."); text.auto_line=true;
       T  +=ok    .create(Rect_C(clientWidth()*1/4, -0.34, 0.27, 0.07), "OK"    ).func(OK         ,               T ).focusable(false);
       T  +=full  .create(Rect_C(clientWidth()*2/4, -0.34, 0.27, 0.07), "Full"  ).func(Full       ,               T ).focusable(false).desc("This is slower but it may remove more useless files");
       T  +=cancel.create(Rect_C(clientWidth()*3/4, -0.34, 0.27, 0.07), "Cancel").func(HideProjAct, SCAST(GuiObj, T)).focusable(false);
@@ -923,7 +923,7 @@ class ProjectLocked : ClosableWindow
    {
       T.proj_id=proj_id;
       Gui+=super .create(Rect_C(0, 0, 1.59, 0.38), "Project Already Opened"); button[2].show();
-      T  +=text  .create(Rect_C(clientWidth()/2  , -0.10, clientWidth()-0.08, 0.1), "This project appears to be already opened in another instance of the Editor.\nOpening the same project in multiple instances of the Editor may corrupt its data.\nWould you like to open it anyway?"); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T  +=text  .create(Rect_C(clientWidth()/2  , -0.10, clientWidth()-0.08, 0.1), "This project appears to be already opened in another instance of the Editor.\nOpening the same project in multiple instances of the Editor may corrupt its data.\nWould you like to open it anyway?"); text.auto_line=true;
       T  +=ok    .create(Rect_C(clientWidth()*1/3, -0.25, 0.29, 0.07), "OK"    ).func(OK  ,               T ).focusable(false);
       T  +=cancel.create(Rect_C(clientWidth()*2/3, -0.25, 0.29, 0.07), "Cancel").func(Hide, SCAST(GuiObj, T)).focusable(false);
    }
@@ -950,7 +950,7 @@ class ElmProperties : ClosableWindow
       T+=t_file .create(Vec2(0.02, -0.12), "File ID:"  , &ts); T+=file .create(Vec2(0.23, -0.10), S, &ts_small); T+=b_file.create(Rect_R(clientWidth()-0.02, -0.12, 0.15, 0.05), "Copy").func(CopyFile, T);
       T+=t_size .create(Vec2(0.02, -0.19), "Size:"     , &ts); T+=size .create(Vec2(0.23, -0.17), S, &ts_small);
       T+=t_class.create(Vec2(0.02, -0.26), "C++ Class:", &ts); T+=Class.create(Vec2(0.23, -0.24), S, &ts_small);
-      T+=t_src  .create(Vec2(0.02, -0.33), "Source:"   , &ts); T+=b_src.create(Rect_R(clientWidth()-0.02, -0.33, 0.15, 0.05), "Explore").func(Explore, T).desc("Open folder containing the source file"); T+=src.create(Rect(0.23, -0.38, b_src.rect().min.x-0.02, -0.31), S, &ts_small); src.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T+=t_src  .create(Vec2(0.02, -0.33), "Source:"   , &ts); T+=b_src.create(Rect_R(clientWidth()-0.02, -0.33, 0.15, 0.05), "Explore").func(Explore, T).desc("Open folder containing the source file"); T+=src.create(Rect(0.23, -0.38, b_src.rect().min.x-0.02, -0.31), S, &ts_small); src.auto_line=true;
    }
    void activate(Elm &elm)
    {

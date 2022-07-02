@@ -962,7 +962,7 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
    void EraseRemovedElms::create()
    {
       Gui+=super ::create(Rect_C(0, 0, 1.44f, 1.5f), "Erase Removed Elements").hide(); button[2].func(HideProjAct, SCAST(GuiObj, T)).show();
-      T  +=text  .create(Rect_C(clientWidth()/2  , -0.15f, clientWidth()-0.05f, 0.1f), "Are you sure you wish to erase all removed elements from the project?\nWarning: This operation cannot be undone!\n\nThis will remove files only from the local computer - when connected to server it will redownload the elements."); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T  +=text  .create(Rect_C(clientWidth()/2  , -0.15f, clientWidth()-0.05f, 0.1f), "Are you sure you wish to erase all removed elements from the project?\nWarning: This operation cannot be undone!\n\nThis will remove files only from the local computer - when connected to server it will redownload the elements."); text.auto_line=true;
       T  +=ok    .create(Rect_C(clientWidth()*1/4, -0.34f, 0.27f, 0.07f), "OK"    ).func(OK         ,               T ).focusable(false);
       T  +=full  .create(Rect_C(clientWidth()*2/4, -0.34f, 0.27f, 0.07f), "Full"  ).func(Full       ,               T ).focusable(false).desc("This is slower but it may remove more useless files");
       T  +=cancel.create(Rect_C(clientWidth()*3/4, -0.34f, 0.27f, 0.07f), "Cancel").func(HideProjAct, SCAST(GuiObj, T)).focusable(false);
@@ -1005,7 +1005,7 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
    {
       T.proj_id=proj_id;
       Gui+=super ::create(Rect_C(0, 0, 1.59f, 0.38f), "Project Already Opened"); button[2].show();
-      T  +=text  .create(Rect_C(clientWidth()/2  , -0.10f, clientWidth()-0.08f, 0.1f), "This project appears to be already opened in another instance of the Editor.\nOpening the same project in multiple instances of the Editor may corrupt its data.\nWould you like to open it anyway?"); text.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T  +=text  .create(Rect_C(clientWidth()/2  , -0.10f, clientWidth()-0.08f, 0.1f), "This project appears to be already opened in another instance of the Editor.\nOpening the same project in multiple instances of the Editor may corrupt its data.\nWould you like to open it anyway?"); text.auto_line=true;
       T  +=ok    .create(Rect_C(clientWidth()*1/3, -0.25f, 0.29f, 0.07f), "OK"    ).func(OK  ,               T ).focusable(false);
       T  +=cancel.create(Rect_C(clientWidth()*2/3, -0.25f, 0.29f, 0.07f), "Cancel").func(Hide, SCAST(GuiObj, T)).focusable(false);
    }
@@ -1020,7 +1020,7 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
       T+=t_file .create(Vec2(0.02f, -0.12f), "File ID:"  , &ts); T+=file .create(Vec2(0.23f, -0.10f), S, &ts_small); T+=b_file.create(Rect_R(clientWidth()-0.02f, -0.12f, 0.15f, 0.05f), "Copy").func(CopyFile, T);
       T+=t_size .create(Vec2(0.02f, -0.19f), "Size:"     , &ts); T+=size .create(Vec2(0.23f, -0.17f), S, &ts_small);
       T+=t_class.create(Vec2(0.02f, -0.26f), "C++ Class:", &ts); T+=Class.create(Vec2(0.23f, -0.24f), S, &ts_small);
-      T+=t_src  .create(Vec2(0.02f, -0.33f), "Source:"   , &ts); T+=b_src.create(Rect_R(clientWidth()-0.02f, -0.33f, 0.15f, 0.05f), "Explore").func(Explore, T).desc("Open folder containing the source file"); T+=src.create(Rect(0.23f, -0.38f, b_src.rect().min.x-0.02f, -0.31f), S, &ts_small); src.auto_line=AUTO_LINE_SPACE_SPLIT;
+      T+=t_src  .create(Vec2(0.02f, -0.33f), "Source:"   , &ts); T+=b_src.create(Rect_R(clientWidth()-0.02f, -0.33f, 0.15f, 0.05f), "Explore").func(Explore, T).desc("Open folder containing the source file"); T+=src.create(Rect(0.23f, -0.38f, b_src.rect().min.x-0.02f, -0.31f), S, &ts_small); src.auto_line=true;
    }
    void ElmProperties::activate(Elm &elm)
    {
