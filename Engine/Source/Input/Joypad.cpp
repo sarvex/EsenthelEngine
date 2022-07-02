@@ -1156,6 +1156,60 @@ void JoypadSensors(Bool calculate)
 void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_names, C CMemPtr<Color> &player_colors) {}
 #endif
 /******************************************************************************/
+#if !SORT_JOYPADS_BY_ID
+static void RemapSwap(Memc<Input> &inputs, Int a, Int b)
+{
+   REPA(inputs)
+   {
+      Input &input=inputs[i]; if(input.type==INPUT_JOYPAD)
+      {
+         if(input.device==a)input.device=b;else
+         if(input.device==b)input.device=a;
+      }
+   }
+}
+static void RemapMove(Memc<Input> &inputs, Int elm, Int new_index)
+{
+   REPA(inputs)
+   {
+      Input &input=inputs[i]; if(input.type==INPUT_JOYPAD)
+      {
+         if(input.device==elm                           )input.device=new_index;else
+         if(input.device< elm && input.device>=new_index)input.device++;else // 'elm' is moved left , so indexes between 'new_index' and 'elm' should move right
+         if(input.device> elm && input.device<=new_index)input.device--;     // 'elm' is moved right, so indexes between 'new_index' and 'elm' should move left
+      }
+   }
+}
+void JoypadsClass::swapOrder(Int i, Int j)
+{
+   if(InRange(i, T) && InRange(j, T) && i!=j)
+   {
+   #if JOYPAD_THREAD
+      SyncLocker lock(JoypadLock);
+   #endif
+      RemapSwap(      Inputs, i, j);
+   #if JOYPAD_THREAD
+      RemapSwap(ThreadInputs, i, j);
+   #endif
+     _data.swapOrder(         i, j); REPAO(_data)._joypad_index=i;
+   }
+}
+void JoypadsClass::moveElm(Int elm, Int new_index)
+{
+   if(InRange(elm, T) && InRange(new_index, T) && elm!=new_index)
+   {
+   #if JOYPAD_THREAD
+      SyncLocker lock(JoypadLock);
+   #endif
+      RemapMove(      Inputs, elm, new_index);
+   #if JOYPAD_THREAD
+      RemapMove(ThreadInputs, elm, new_index);
+   #endif
+     _data.moveElm(           elm, new_index); REPAO(_data)._joypad_index=i;
+   }
+}
+#endif
+/******************************************************************************/
 void JoypadsClass::remove(Int i)
 {
 #if JOYPAD_THREAD

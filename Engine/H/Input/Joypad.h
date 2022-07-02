@@ -343,6 +343,9 @@ struct JoypadsClass // Container for Joypads
    Joypad* addr      (Int  i )  {return _data.addr(i);} // get i-th Joypad      , null on fail
    Joypad* find      (UInt id);                         // find Joypad by its ID, null on fail
 
+   void swapOrder(Int i  , Int j        ); // swap order of 'i' and 'j' joypads
+   void moveElm  (Int elm, Int new_index); // move 'elm' joypad to new position located at 'new_index'
+
 #if EE_PRIVATE
    void remove (Int     i     ); // remove i-th Joypad
    void remove (Joypad *joypad); // remove joypad
