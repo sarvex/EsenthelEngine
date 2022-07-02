@@ -64,6 +64,19 @@ TextStyle* Text::getTextStyle()C
    if(GuiSkin *skin=getSkin())return skin->text.text_style();
    return null;
 }
+Flt Text::textWidth()C
+{
+   if(TextStyle *text_style=getTextStyle())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())if(GuiSkin *skin=getSkin())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+      return ts.textWidth(text, extra.data(), extra.elms());
+   }
+   return 0;
+}
 Vec2 Text::textSize()C
 {
    if(TextStyle *text_style=getTextStyle())
@@ -82,7 +95,7 @@ Vec2 Text::textSize()C
 /******************************************************************************/
 void Text::draw(C GuiPC &gpc)
 {
-   if(/*gpc.visible &&*/ visible() && (text.is() || extra.is()))
+   if(/*gpc.visible &&*/ visible() && hasData())
       if(TextStyle *text_style=getTextStyle())
    {
       Rect rect=T.rect()+gpc.offset;

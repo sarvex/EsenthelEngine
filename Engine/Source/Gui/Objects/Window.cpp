@@ -868,12 +868,12 @@ Dialog& Dialog::autoSize()
    FREPA(buttons)button_w+=buttons[i].textWidth(&Gui.dialog_button_height);
 
    Flt text_w=0, text_h=0;
-   if(text().is())
+   if(text.hasData())
    if(C TextStyle *ts=text.getTextStyle())
    if(Flt line_h=ts->lineHeight())
    {
       const Flt desired_aspect=2.5f, min_w=line_h*17, max_w=D.rectUI().w()-Gui.dialog_padd*2; // min_w gives some tolerable minimum width based on a single line height
-            Int lines=ts->textLines(text(), text.extra.data(), text.extra.elms(), max_w, text.auto_line, &text_w);
+            Int lines=ts->textLines(text.text, text.extra.data(), text.extra.elms(), max_w, text.auto_line, &text_w);
       text_h=line_h*lines;
       if(text_w>min_w)
       {
@@ -882,7 +882,7 @@ Dialog& Dialog::autoSize()
          {
             Flt multiplier=Sqrt(desired_aspect/aspect), // need to apply 'Sqrt' because this affects both width and height
                 test_w=Mid(text_w*multiplier, min_w, max_w);
-            Int test_lines=ts->textLines(text(), text.extra.data(), text.extra.elms(), test_w, text.auto_line, &test_w);
+            Int test_lines=ts->textLines(text.text, text.extra.data(), text.extra.elms(), test_w, text.auto_line, &test_w);
             Flt test_h=line_h*test_lines,
                 test_aspect=test_w/test_h;
             if(AbsScale(test_aspect, desired_aspect)<AbsScale(aspect, desired_aspect)) // if 'test_aspect' is closer to 'desired_aspect'

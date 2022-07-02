@@ -15,13 +15,16 @@ const_mem_addr struct Text : GuiObj // Gui Text !! must be stored in constant me
            Text& create(C Text &src                                         );                                         // create from 'src'
 
    // get / set
-   Text& clear(           );                                     // clear   text value
-   Text& set  (C Str &text); C Str& operator()()C {return text;} // set/get text value
+   Bool hasData()C {return text.is() || extra.is();}
+
+   Text& clear(           ); // clear text value
+   Text& set  (C Str &text); // set   text value
 
    GuiSkin  * getSkin     ()C {return skin ? skin() : Gui.skin();} // get actual skin
    TextStyle* getTextStyle()C;                                     // get actual text style
 
-   Vec2 textSize()C; // get visible text size
+   Flt  textWidth()C; // get visible text width, this function assumes all text is in one line
+   Vec2 textSize ()C; // get visible text size
 
    // main
    virtual void draw(C GuiPC &gpc)override; // draw object

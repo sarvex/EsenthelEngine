@@ -37,7 +37,7 @@ const_mem_addr struct Property // Class Member Gui Control !! must be stored in 
    Property& setSlider(                                             ); // set as slider type
 
    // get / set
-   Property& display(C Str &name);   C Str& display()C {return text();} // set/get property display name
+   Property& display(C Str &name);   C Str& display()C {return text.text;} // set/get property display name
 
    Property& desc(C Str &desc);   C Str& desc()C; // set/get property description
 
