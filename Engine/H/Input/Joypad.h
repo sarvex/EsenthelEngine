@@ -119,10 +119,10 @@ struct Joypad // Joypad Input
 
            UInt           id  (     )C {return _id  ;} // get unique ID of this Joypad
           C Str&        name  (     )C {return _name;} // get Joypad name
-          CChar * buttonSymbol(Int b)C;                // get button symbol, buttonName(JB_A) -> "A", buttonName(JB_B) -> "B", .. Warning: this function might   return "⯇⯈⯆⯅△□○✕", if you want to display names on the screen be sure to include these characters in your Font
-   static CChar * ButtonSymbol(Int b);                 // get button symbol, ButtonName(JB_A) -> "A", ButtonName(JB_B) -> "B", .. Warning: this function might   return "⯇⯈⯆⯅△□○✕", if you want to display names on the screen be sure to include these characters in your Font
-          CChar8* buttonName  (Int b)C;                // get button name  , buttonName(JB_A) -> "A", buttonName(JB_B) -> "B", ..          this function doesn't return "⯇⯈⯆⯅△□○✕", instead it returns name "Left", "Cross", ..
-   static CChar8* ButtonName  (Int b);                 // get button name  , ButtonName(JB_A) -> "A", ButtonName(JB_B) -> "B", ..          this function doesn't return "⯇⯈⯆⯅△□○✕", instead it returns name "Left", "Cross", ..
+          CChar8* buttonName  (Int b)C;                // get button name  , buttonName  (JB_A) -> "A", buttonName  (JB_DPAD_UP) -> "Up"
+   static CChar8* ButtonName  (Int b);                 // get button name  , ButtonName  (JB_A) -> "A", ButtonName  (JB_DPAD_UP) -> "Up"
+          CChar * buttonSymbol(Int b)C;                // get button symbol, buttonSymbol(JB_A) -> "A", buttonSymbol(JB_DPAD_UP) -> "⯅", Warning: this function might return "⯇⯈⯆⯅△□○✕", if you want to display symbols on the screen be sure to include these characters in your Font
+   static CChar * ButtonSymbol(Int b);                 // get button symbol, ButtonSymbol(JB_A) -> "A", ButtonSymbol(JB_DPAD_UP) -> "⯅", Warning: this function might return "⯇⯈⯆⯅△□○✕", if you want to display symbols on the screen be sure to include these characters in your Font
             Bool        mini  (     )C {return _mini;} // if  this is a mini Joypad (a single Nintendo Switch Joy-Con Left or Right held horizontally)
 
    Joypad& vibration(C Vec2 &vibration                    ); // set vibrations, 'vibration.x'=left motor intensity (0..1), 'vibration.y'=right motor intensity (0..1)

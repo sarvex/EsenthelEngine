@@ -24,7 +24,7 @@ void DrawKeyboardCursorOverwrite(C Vec2 &pos, Flt height, Flt width)
                     D.alpha(alpha       );
 }
 /******************************************************************************/
-// STR EX
+// STR DATA
 /******************************************************************************/
 Bool StrData::visible()C
 {
@@ -111,6 +111,8 @@ static Int Length(C StrData *data, Int datas)
    }
    return l;
 }
+/******************************************************************************/
+// STR EX
 /******************************************************************************/
 Int StrEx::   length()C {return Length(data(), elms());}
 Int StrEx::strLength()C
@@ -211,6 +213,31 @@ StrEx& StrEx::panel (C PanelImagePtr &panel ) {           New().create(StrData::
 
 StrEx& StrEx::panelText (C PanelImagePtr &panel, C Str      &text ) {T.panel(panel); T+=text ; T.panel(null); return T;}
 StrEx& StrEx::panelImage(C PanelImagePtr &panel, C ImagePtr &image) {T.panel(panel); T+=image; T.panel(null); return T;}
+
+StrEx& StrEx::space()
+{
+   REPA(T)
+   {
+      StrData &d=T[i]; switch(d.type)
+      {
+         case StrData::TEXT : if(d.text.is()){if(!WhiteChar(d.text.last()))ins: T+=' '; return T;} break; // process only if not empty
+         case StrData::IMAGE: goto ins;
+      }
+   }
+   return T;
+}
+StrEx& StrEx::line()
+{
+   REPA(T)
+   {
+      StrData &d=T[i]; switch(d.type)
+      {
+         case StrData::TEXT : if(d.text.is()){if(d.text.last()!='\n')ins: T+='\n'; return T;} break; // process only if not empty
+         case StrData::IMAGE: goto ins;
+      }
+   }
+   return T;
+}
 /******************************************************************************/
 Bool StrEx::save(File &f, CChar *path)C
 {

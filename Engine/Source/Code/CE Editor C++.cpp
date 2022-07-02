@@ -100,9 +100,9 @@ Bool CodeEditor::verifyVS()
    if(build_exe_type==EXE_NS && build_mode==BUILD_PUBLISH)
    {
       Str error;
-      if(!cei().appNintendoInitialCode  ().is())error.line(2)+="Please specify Nintendo Initial Code.";
-      if( cei().appNintendoAppID        ()  <=0)error.line(2)+="Please specify Nintendo App ID.";
-      if(!cei().appNintendoPublisherName().is())error.line(2)+="Please specify Nintendo Publisher Name.";
+      if(!cei().appNintendoInitialCode  ().is())error.line()+="Please specify Nintendo Initial Code.";
+      if( cei().appNintendoAppID        ()  <=0)error.line()+="Please specify Nintendo App ID.";
+      if(!cei().appNintendoPublisherName().is())error.line()+="Please specify Nintendo Publisher Name.";
       if(error.is())
       {
          CE.cei().appInvalidProperty(error);
@@ -126,13 +126,13 @@ Bool CodeEditor::verifyAndroid()
 {
    Str error;
 
-        if(! android_sdk  .is())error.line(2)+="The path to Android SDK has not been specified.";else
-        if(!     adbPath().is())error.line(2)+="Can't find \"adb\" tool in Android SDK.";
- /*else if(!zipalignPath().is())error.line(2)+="Can't find \"zipalign\" tool in Android SDK.";
+        if(! android_sdk  .is())error.line()+="The path to Android SDK has not been specified.";else
+        if(!     adbPath().is())error.line()+="Can't find \"adb\" tool in Android SDK.";
+ /*else if(!zipalignPath().is())error.line()+="Can't find \"zipalign\" tool in Android SDK.";
 
-   if(! android_ndk  .is()      )error.line(2)+="The path to Android NDK has not been specified.";else
-   if(Contains(android_ndk, ' '))error.line(2)+="Android NDK will not work if it's stored in a path with spaces.\nPlease move the Android NDK folder to a path without spaces and try again.";else
-   if(!ndkBuildPath().is()      )error.line(2)+="Can't find \"ndk-build\" tool in Android NDK.";*/
+   if(! android_ndk  .is()      )error.line()+="The path to Android NDK has not been specified.";else
+   if(Contains(android_ndk, ' '))error.line()+="Android NDK will not work if it's stored in a path with spaces.\nPlease move the Android NDK folder to a path without spaces and try again.";else
+   if(!ndkBuildPath().is()      )error.line()+="Can't find \"ndk-build\" tool in Android NDK.";*/
 
    if(error.is())
    {

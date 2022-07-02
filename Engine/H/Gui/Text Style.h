@@ -127,6 +127,9 @@ struct StrEx : Mems<StrData> // Extended String, which can hold: Text, Images, C
    StrEx& panelText (C PanelImagePtr &panel, C Str      &text ); // add text  inside a panel, same as "T.panel(panel); T+=text ; T.panel(null);"
    StrEx& panelImage(C PanelImagePtr &panel, C ImagePtr &image); // add image inside a panel, same as "T.panel(panel); T+=image; T.panel(null);"
 
+   StrEx& space(); // add a space if string isn't empty and does not end with a new line or space
+   StrEx& line (); // add a line  if string isn't empty and does not end with a new line
+
    // io
    Bool save(File &f, CChar *path=null)C; // save, 'path'=path at which resource is located (this is needed so that the sub-resources can be accessed with relative path), false on fail
    Bool load(File &f, CChar *path=null) ; // load, 'path'=path at which resource is located (this is needed so that the sub-resources can be accessed with relative path), false on fail

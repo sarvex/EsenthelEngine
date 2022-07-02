@@ -3001,11 +3001,11 @@ Str & Str ::del() {_d.del(); _length=0; return T;}
 Str8& Str8::clear() {if(_d.elms())_d[0]='\0'; _length=0; return T;}
 Str & Str ::clear() {if(_d.elms())_d[0]='\0'; _length=0; return T;}
 
-Str8& Str8::space(Int num) {if(is() && !WhiteChar(last()))REP(num)T+=' '; return T;}
-Str & Str ::space(Int num) {if(is() && !WhiteChar(last()))REP(num)T+=' '; return T;}
+Str8& Str8::space() {if(is() && !WhiteChar(last()))T+=' '; return T;}
+Str & Str ::space() {if(is() && !WhiteChar(last()))T+=' '; return T;}
 
-Str8& Str8::line(Int num) {if(is() && last()!='\n')REP(num)T+='\n'; return T;}
-Str & Str ::line(Int num) {if(is() && last()!='\n')REP(num)T+='\n'; return T;}
+Str8& Str8::line() {if(is() && last()!='\n')T+='\n'; return T;}
+Str & Str ::line() {if(is() && last()!='\n')T+='\n'; return T;}
 
 Str8& Str8::insert(Int i, Char8 c)
 {

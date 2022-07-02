@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
 
    Use 'Keyboard' to access Keyboard input.
 
@@ -69,10 +69,11 @@ struct KeyboardClass // Keyboard Input
    Bool anyWin  ()C {return ButtonOn(_button[KB_LWIN  ]|_button[KB_RWIN  ]);}
 #endif
 
-   Char   keyChar(KB_KEY key)C; // get key character, example: keyChar(KB_SPACE) -> ' '
-  CChar8* keyName(KB_KEY key)C; // get key name     , example: keyName(KB_SPACE) -> "Space"
+   Char   keyChar  (KB_KEY key)C; // get key character, example: keyChar  (KB_SPACE) -> ' '    , keyChar  (KB_UP) -> '\0'
+  CChar8* keyName  (KB_KEY key)C; // get key name     , example: keyName  (KB_SPACE) -> "Space", keyName  (KB_UP) -> "Up"
+  CChar * keySymbol(KB_KEY key)C; // get key symbol   , example: keySymbol(KB_SPACE) -> "Space", keySymbol(KB_UP) -> "⯅", Warning: this function might return "⯇⯈⯆⯅", if you want to display symbols on the screen be sure to include these characters in your Font
 #if EE_PRIVATE
-   Char   keyChar(KB_KEY key, Bool shift, Bool caps)C;
+   Char   keyChar  (KB_KEY key, Bool shift, Bool caps)C;
 #endif
 
    Bool hwAvailable(          ); // if hardware keyboard is available
@@ -154,7 +155,8 @@ private:
    VecI2       _imm_selection;
    Str         _imm_buffer;
    Memc<Str>   _imm_candidate, _imm_candidate_temp;
-   CChar8     *_key_name[256];
+   CChar8     *_key_name  [256];
+   CChar      *_key_symbol[256];
 #if WINDOWS_OLD
 #if EE_PRIVATE && KB_DIRECT_INPUT
    IDirectInputDevice8 *_device;

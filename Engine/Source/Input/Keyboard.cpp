@@ -71,10 +71,11 @@ KeyboardClass Kb;
 #if ANDROID || SWITCH
 static Char8 _key_char_shift[ELMS(Kb._key_char)];
 #endif
-inline static void Set(KB_KEY key, Char8 c, Char8 qwerty_shift, CChar8 *name)
+inline static void Set(KB_KEY key, Char8 c, Char8 qwerty_shift, CChar8 *name, CChar *symbol)
 {
-   Kb._key_char[key]=c;
-   Kb._key_name[key]=name;
+   Kb._key_char  [key]=c;
+   Kb._key_name  [key]=name;
+   Kb._key_symbol[key]=symbol;
 #if ANDROID || SWITCH
       _key_char_shift[key]=qwerty_shift;
 #endif
@@ -94,141 +95,145 @@ KeyboardClass::KeyboardClass()
   _curh_tn=0.200f;
 
    // set these first in case KB_NPENTER==KB_ENTER, so that KB_ENTER can override the name of KB_NPENTER
-   Set(KB_NPDIV  , '/' , '/' , "NumPad/");
-   Set(KB_NPMUL  , '*' , '*' , "NumPad*");
-   Set(KB_NPSUB  , '-' , '-' , "NumPad-");
-   Set(KB_NPADD  , '+' , '+' , "NumPad+");
-   Set(KB_NPDEL  , '\0', '\0', "NumPadDel");
-   Set(KB_NPENTER, '\n', '\n', "NumPadEnter");
+   Set(KB_NPDIV  , '/' , '/' , "Numpad /"    , u"Numpad/");
+   Set(KB_NPMUL  , '*' , '*' , "Numpad *"    , u"Numpad*");
+   Set(KB_NPSUB  , '-' , '-' , "Numpad -"    , u"Numpad-");
+   Set(KB_NPADD  , '+' , '+' , "Numpad +"    , u"Numpad+");
+   Set(KB_NPDEL  , '\0', '\0', "Numpad Del"  , u"NumpadDel");
+   Set(KB_NPENTER, '\n', '\n', "Numpad Enter", u"NumpadEnter");
 
-   Set(KB_NP0, '0', '\0', "NumPad0");
-   Set(KB_NP1, '1', '\0', "NumPad1");
-   Set(KB_NP2, '2', '\0', "NumPad2");
-   Set(KB_NP3, '3', '\0', "NumPad3");
-   Set(KB_NP4, '4', '\0', "NumPad4");
-   Set(KB_NP5, '5', '\0', "NumPad5");
-   Set(KB_NP6, '6', '\0', "NumPad6");
-   Set(KB_NP7, '7', '\0', "NumPad7");
-   Set(KB_NP8, '8', '\0', "NumPad8");
-   Set(KB_NP9, '9', '\0', "NumPad9");
+   Set(KB_NP0, '0', '\0', "Numpad 0", u"Numpad0");
+   Set(KB_NP1, '1', '\0', "Numpad 1", u"Numpad1");
+   Set(KB_NP2, '2', '\0', "Numpad 2", u"Numpad2");
+   Set(KB_NP3, '3', '\0', "Numpad 3", u"Numpad3");
+   Set(KB_NP4, '4', '\0', "Numpad 4", u"Numpad4");
+   Set(KB_NP5, '5', '\0', "Numpad 5", u"Numpad5");
+   Set(KB_NP6, '6', '\0', "Numpad 6", u"Numpad6");
+   Set(KB_NP7, '7', '\0', "Numpad 7", u"Numpad7");
+   Set(KB_NP8, '8', '\0', "Numpad 8", u"Numpad8");
+   Set(KB_NP9, '9', '\0', "Numpad 9", u"Numpad9");
 
-   Set(KB_0, '0', ')', "0");
-   Set(KB_1, '1', '!', "1");
-   Set(KB_2, '2', '@', "2");
-   Set(KB_3, '3', '#', "3");
-   Set(KB_4, '4', '$', "4");
-   Set(KB_5, '5', '%', "5");
-   Set(KB_6, '6', '^', "6");
-   Set(KB_7, '7', '&', "7");
-   Set(KB_8, '8', '*', "8");
-   Set(KB_9, '9', '(', "9");
+   Set(KB_0, '0', ')', "0", u"0");
+   Set(KB_1, '1', '!', "1", u"1");
+   Set(KB_2, '2', '@', "2", u"2");
+   Set(KB_3, '3', '#', "3", u"3");
+   Set(KB_4, '4', '$', "4", u"4");
+   Set(KB_5, '5', '%', "5", u"5");
+   Set(KB_6, '6', '^', "6", u"6");
+   Set(KB_7, '7', '&', "7", u"7");
+   Set(KB_8, '8', '*', "8", u"8");
+   Set(KB_9, '9', '(', "9", u"9");
 
-   Set(KB_A, 'a', 'A', "A");
-   Set(KB_B, 'b', 'B', "B");
-   Set(KB_C, 'c', 'C', "C");
-   Set(KB_D, 'd', 'D', "D");
-   Set(KB_E, 'e', 'E', "E");
-   Set(KB_F, 'f', 'F', "F");
-   Set(KB_G, 'g', 'G', "G");
-   Set(KB_H, 'h', 'H', "H");
-   Set(KB_I, 'i', 'I', "I");
-   Set(KB_J, 'j', 'J', "J");
-   Set(KB_K, 'k', 'K', "K");
-   Set(KB_L, 'l', 'L', "L");
-   Set(KB_M, 'm', 'M', "M");
-   Set(KB_N, 'n', 'N', "N");
-   Set(KB_O, 'o', 'O', "O");
-   Set(KB_P, 'p', 'P', "P");
-   Set(KB_Q, 'q', 'Q', "Q");
-   Set(KB_R, 'r', 'R', "R");
-   Set(KB_S, 's', 'S', "S");
-   Set(KB_T, 't', 'T', "T");
-   Set(KB_U, 'u', 'U', "U");
-   Set(KB_V, 'v', 'V', "V");
-   Set(KB_W, 'w', 'W', "W");
-   Set(KB_X, 'x', 'X', "X");
-   Set(KB_Y, 'y', 'Y', "Y");
-   Set(KB_Z, 'z', 'Z', "Z");
+   Set(KB_A, 'a', 'A', "A", u"A");
+   Set(KB_B, 'b', 'B', "B", u"B");
+   Set(KB_C, 'c', 'C', "C", u"C");
+   Set(KB_D, 'd', 'D', "D", u"D");
+   Set(KB_E, 'e', 'E', "E", u"E");
+   Set(KB_F, 'f', 'F', "F", u"F");
+   Set(KB_G, 'g', 'G', "G", u"G");
+   Set(KB_H, 'h', 'H', "H", u"H");
+   Set(KB_I, 'i', 'I', "I", u"I");
+   Set(KB_J, 'j', 'J', "J", u"J");
+   Set(KB_K, 'k', 'K', "K", u"K");
+   Set(KB_L, 'l', 'L', "L", u"L");
+   Set(KB_M, 'm', 'M', "M", u"M");
+   Set(KB_N, 'n', 'N', "N", u"N");
+   Set(KB_O, 'o', 'O', "O", u"O");
+   Set(KB_P, 'p', 'P', "P", u"P");
+   Set(KB_Q, 'q', 'Q', "Q", u"Q");
+   Set(KB_R, 'r', 'R', "R", u"R");
+   Set(KB_S, 's', 'S', "S", u"S");
+   Set(KB_T, 't', 'T', "T", u"T");
+   Set(KB_U, 'u', 'U', "U", u"U");
+   Set(KB_V, 'v', 'V', "V", u"V");
+   Set(KB_W, 'w', 'W', "W", u"W");
+   Set(KB_X, 'x', 'X', "X", u"X");
+   Set(KB_Y, 'y', 'Y', "Y", u"Y");
+   Set(KB_Z, 'z', 'Z', "Z", u"Z");
 
-   Set(KB_F1 , '\0', '\0', "F1");
-   Set(KB_F2 , '\0', '\0', "F2");
-   Set(KB_F3 , '\0', '\0', "F3");
-   Set(KB_F4 , '\0', '\0', "F4");
-   Set(KB_F5 , '\0', '\0', "F5");
-   Set(KB_F6 , '\0', '\0', "F6");
-   Set(KB_F7 , '\0', '\0', "F7");
-   Set(KB_F8 , '\0', '\0', "F8");
-   Set(KB_F9 , '\0', '\0', "F9");
-   Set(KB_F10, '\0', '\0', "F10");
-   Set(KB_F11, '\0', '\0', "F11");
-   Set(KB_F12, '\0', '\0', "F12");
+   Set(KB_F1 , '\0', '\0', "F1" , u"F1");
+   Set(KB_F2 , '\0', '\0', "F2" , u"F2");
+   Set(KB_F3 , '\0', '\0', "F3" , u"F3");
+   Set(KB_F4 , '\0', '\0', "F4" , u"F4");
+   Set(KB_F5 , '\0', '\0', "F5" , u"F5");
+   Set(KB_F6 , '\0', '\0', "F6" , u"F6");
+   Set(KB_F7 , '\0', '\0', "F7" , u"F7");
+   Set(KB_F8 , '\0', '\0', "F8" , u"F8");
+   Set(KB_F9 , '\0', '\0', "F9" , u"F9");
+   Set(KB_F10, '\0', '\0', "F10", u"F10");
+   Set(KB_F11, '\0', '\0', "F11", u"F11");
+   Set(KB_F12, '\0', '\0', "F12", u"F12");
 
-   Set(KB_ESC  , '\0', '\0', "Escape");
-   Set(KB_ENTER, '\n', '\n', "Enter");
-   Set(KB_SPACE, ' ' , ' ' , "Space");
-   Set(KB_BACK , '\0', '\0', "Backspace");
-   Set(KB_TAB  , '\t', '\t', "Tab");
+   Set(KB_ESC  , '\0', '\0', "Escape"   , u"Esc");
+   Set(KB_ENTER, '\n', '\n', "Enter"    , u"Enter");
+   Set(KB_SPACE, ' ' , ' ' , "Space"    , u"Space");
+   Set(KB_BACK , '\0', '\0', "Backspace", u"Back");
+   Set(KB_TAB  , '\t', '\t', "Tab"      , u"Tab");
 
-   Set(KB_LCTRL , '\0', '\0', "LeftControl");
-   Set(KB_RCTRL , '\0', '\0', "RightControl");
-   Set(KB_LSHIFT, '\0', '\0', "LeftShift");
-   Set(KB_RSHIFT, '\0', '\0', "RightShift");
-   Set(KB_LALT  , '\0', '\0', "LeftAlt");
-   Set(KB_RALT  , '\0', '\0', "RightAlt");
+   Set(KB_CTRL , '\0', '\0',  "Control",  u"Ctrl");
+   Set(KB_SHIFT, '\0', '\0',  "Shift"  ,  u"Shift");
+   Set(KB_ALT  , '\0', '\0',  "Alt"    ,  u"Alt");
+
+   Set(KB_LCTRL , '\0', '\0',  "Left Control",  u"LeftCtrl");
+   Set(KB_RCTRL , '\0', '\0', "Right Control", u"RightCtrl");
+   Set(KB_LSHIFT, '\0', '\0',  "Left Shift"  ,  u"LeftShift");
+   Set(KB_RSHIFT, '\0', '\0', "Right Shift"  , u"RightShift");
+   Set(KB_LALT  , '\0', '\0',  "Left Alt"    ,  u"LeftAlt");
+   Set(KB_RALT  , '\0', '\0', "Right Alt"    , u"RightAlt");
 #if APPLE
-   Set(KB_LWIN  , '\0', '\0', "LeftCmd");
-   Set(KB_RWIN  , '\0', '\0', "RightCmd");
+   Set(KB_LWIN  , '\0', '\0',  "Left Cmd",  u"LeftCmd");
+   Set(KB_RWIN  , '\0', '\0', "Right Cmd", u"RightCmd");
 #else
-   Set(KB_LWIN  , '\0', '\0', "LeftWin");
-   Set(KB_RWIN  , '\0', '\0', "RightWin");
+   Set(KB_LWIN  , '\0', '\0',  "Left Win",  u"LeftWin");
+   Set(KB_RWIN  , '\0', '\0', "Right Win", u"RightWin");
 #endif
-   Set(KB_MENU  , '\0', '\0', "Menu");
-   Set(KB_FIND  , '\0', '\0', "Find");
+   Set(KB_MENU  , '\0', '\0', "Menu", u"Menu");
+   Set(KB_FIND  , '\0', '\0', "Find", u"Find");
 
-   Set(KB_LEFT , '\0', '\0', "Left");
-   Set(KB_RIGHT, '\0', '\0', "Right");
-   Set(KB_UP   , '\0', '\0', "Up");
-   Set(KB_DOWN , '\0', '\0', "Down");
+   Set(KB_LEFT , '\0', '\0', "Left" , u"⯇");
+   Set(KB_RIGHT, '\0', '\0', "Right", u"⯈");
+   Set(KB_UP   , '\0', '\0', "Up"   , u"⯅");
+   Set(KB_DOWN , '\0', '\0', "Down" , u"⯆");
 
-   Set(KB_INS , '\0', '\0', "Insert");
-   Set(KB_DEL , '\0', '\0', "Delete");
-   Set(KB_HOME, '\0', '\0', "Home");
-   Set(KB_END , '\0', '\0', "End");
-   Set(KB_PGUP, '\0', '\0', "PageUp");
-   Set(KB_PGDN, '\0', '\0', "PageDown");
+   Set(KB_INS , '\0', '\0', "Insert"   , u"Ins");
+   Set(KB_DEL , '\0', '\0', "Delete"   , u"Del");
+   Set(KB_HOME, '\0', '\0', "Home"     , u"Home");
+   Set(KB_END , '\0', '\0', "End"      , u"End");
+   Set(KB_PGUP, '\0', '\0', "Page Up"  , u"PageUp");
+   Set(KB_PGDN, '\0', '\0', "Page Down", u"PageDn");
 
-   Set(KB_SUB       , '-' , '_', "-");
-   Set(KB_EQUAL     , '=' , '+', "=");
-   Set(KB_LBR       , '[' , '{', "[");
-   Set(KB_RBR       , ']' , '}', "]");
-   Set(KB_SEMICOLON , ';' , ':', ";");
-   Set(KB_APOSTROPHE, '\'', '"', "'");
-   Set(KB_COMMA     , ',' , '<', ",");
-   Set(KB_DOT       , '.' , '>', ".");
-   Set(KB_SLASH     , '/' , '?', "/");
-   Set(KB_BACKSLASH , '\\', '|', "\\");
-   Set(KB_TILDE     , '`' , '~', "Tilde");
+   Set(KB_SUB       , '-' , '_', "Minus"        , u"-");
+   Set(KB_EQUAL     , '=' , '+', "Equal"        , u"=");
+   Set(KB_LBR       , '[' , '{',  "Left Bracket", u"[");
+   Set(KB_RBR       , ']' , '}', "Right Bracket", u"]");
+   Set(KB_SEMICOLON , ';' , ':', "Semicolon"    , u";");
+   Set(KB_APOSTROPHE, '\'', '"', "Apostrophe"   , u"'");
+   Set(KB_COMMA     , ',' , '<', "Comma"        , u",");
+   Set(KB_DOT       , '.' , '>', "Dot"          , u".");
+   Set(KB_SLASH     , '/' , '?', "Slash"        , u"/");
+   Set(KB_BACKSLASH , '\\', '|', "Backslash"    , u"\\");
+   Set(KB_TILDE     , '`' , '~', "Tilde"        , u"Tilde");
 
-   Set(KB_CAPS  , '\0', '\0', "CapsLock");
-   Set(KB_NUM   , '\0', '\0', "NumLock");
-   Set(KB_SCROLL, '\0', '\0', "ScrollLock");
-   Set(KB_PRINT , '\0', '\0', "PrintScreen");
-   Set(KB_PAUSE , '\0', '\0', "Pause");
+   Set(KB_CAPS  , '\0', '\0',   "Caps Lock"  ,   u"CapsLock");
+   Set(KB_NUM   , '\0', '\0',    "Num Lock"  ,    u"NumLock");
+   Set(KB_SCROLL, '\0', '\0', "Scroll Lock"  , u"ScrollLock");
+   Set(KB_PRINT , '\0', '\0',  "Print Screen", u"PrintScreen");
+   Set(KB_PAUSE , '\0', '\0', "Pause"        , u"Pause");
 
-   Set(KB_VOL_DOWN, '\0', '\0', "VolumeDown");
-   Set(KB_VOL_UP  , '\0', '\0', "VolumeUp");
-   Set(KB_VOL_MUTE, '\0', '\0', "VolumeMute");
+   Set(KB_VOL_DOWN, '\0', '\0', "Volume Down", u"VolumeDown");
+   Set(KB_VOL_UP  , '\0', '\0', "Volume Up"  , u"VolumeUp");
+   Set(KB_VOL_MUTE, '\0', '\0', "Volume Mute", u"VolumeMute");
 
-   Set(KB_NAV_BACK   , '\0', '\0', "NavigateBackward");
-   Set(KB_NAV_FORWARD, '\0', '\0', "NavigateForward");
+   Set(KB_NAV_BACK   , '\0', '\0', "Navigate Backward", u"NavigateBackward");
+   Set(KB_NAV_FORWARD, '\0', '\0', "Navigate Forward" , u"NavigateForward");
 
-   Set(KB_MEDIA_PREV, '\0', '\0', "MediaPrevious");
-   Set(KB_MEDIA_NEXT, '\0', '\0', "MediaNext");
-   Set(KB_MEDIA_PLAY, '\0', '\0', "MediaPlay");
-   Set(KB_MEDIA_STOP, '\0', '\0', "MediaStop");
+   Set(KB_MEDIA_PREV, '\0', '\0', "Media Previous", u"MediaPrevious");
+   Set(KB_MEDIA_NEXT, '\0', '\0', "Media Next"    , u"MediaNext");
+   Set(KB_MEDIA_PLAY, '\0', '\0', "Media Play"    , u"MediaPlay");
+   Set(KB_MEDIA_STOP, '\0', '\0', "Media Stop"    , u"MediaStop");
 
-   Set(KB_ZOOM_IN , '\0', '\0', "ZoomIn");
-   Set(KB_ZOOM_OUT, '\0', '\0', "ZoomOut");
+   Set(KB_ZOOM_IN , '\0', '\0', "Zoom In" , u"ZoomIn");
+   Set(KB_ZOOM_OUT, '\0', '\0', "Zoom Out", u"ZoomOut");
 }
 #if MAC
 static void KeyboardChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info) {Kb.setLayout();}
@@ -344,8 +349,9 @@ static Char AdjustByShift(Char c, Bool shift, Bool caps)
    return c;
 }
 /******************************************************************************/
- Char   KeyboardClass::keyChar(KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_char)); return _key_char[k];}
-CChar8* KeyboardClass::keyName(KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_name)); return _key_name[k];}
+ Char   KeyboardClass::keyChar  (KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_char  )); return _key_char  [k];}
+CChar8* KeyboardClass::keyName  (KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_name  )); return _key_name  [k];}
+CChar * KeyboardClass::keySymbol(KB_KEY k)C {ASSERT(1<<(8*SIZE(k))==ELMS(_key_symbol)); return _key_symbol[k];}
 #if ANDROID || SWITCH
  Char   KeyboardClass::keyChar(KB_KEY k, Bool shift, Bool caps)C
 {
@@ -1671,7 +1677,7 @@ Str KbSc::asText()C
    Str s; switch(mode)
    {
       case KBSC_CHAR: {Char c=index; if(flag&KBSC_CTRL_EX)s+="Ctrl+"; if(flag&KBSC_WIN_EX)s+=WIN_TEXT; if(CharFlagFast(c)&CHARF_UP  )s+="Shift+"; if(flag&KBSC_ALT)s+="Alt+"; if(CChar8 *n=CharName(c))s+=n;else s+=CaseUp(c);} break;
-      case KBSC_KEY : {              if(flag&KBSC_CTRL_EX)s+="Ctrl+"; if(flag&KBSC_WIN_EX)s+=WIN_TEXT; if(    flag       &KBSC_SHIFT)s+="Shift+"; if(flag&KBSC_ALT)s+="Alt+"; s+=Kb.keyName(KB_KEY(index));                   } break;
+      case KBSC_KEY : {              if(flag&KBSC_CTRL_EX)s+="Ctrl+"; if(flag&KBSC_WIN_EX)s+=WIN_TEXT; if(    flag       &KBSC_SHIFT)s+="Shift+"; if(flag&KBSC_ALT)s+="Alt+"; s+=Kb.keySymbol(KB_KEY(index));                 } break;
    }
    return s;
 }
