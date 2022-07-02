@@ -296,8 +296,8 @@ class NewWorldClass : ClosableWindow
 
    static void OK(NewWorldClass &nw) {Proj.newWorld(nw.name(), nw.areaSize(), nw.heightmapRes(), nw.parent_id, true); HideProjAct(nw);}
 
-   int      areaSize() {return TextInt(     area_size.text());}
-   int heightmapRes () {return TextInt(heightmap_res .text());}
+   int      areaSize() {return TextInt(     area_size.text);}
+   int heightmapRes () {return TextInt(heightmap_res .text);}
 
    void create()
    {
@@ -938,8 +938,8 @@ class ElmProperties : ClosableWindow
    Button  b_id, b_file,                  b_src;
    UID     elm_id=UIDZero;
 
-   static void CopyID  (ElmProperties &ep) {ClipSet(ep.id  ());}
-   static void CopyFile(ElmProperties &ep) {ClipSet(ep.file());}
+   static void CopyID  (ElmProperties &ep) {ClipSet(ep.id  .str());}
+   static void CopyFile(ElmProperties &ep) {ClipSet(ep.file.str());}
    static void Explore (ElmProperties &ep) {if(Elm *elm=Proj.findElm(ep.elm_id))Proj.explore(*elm);}
 
    void create()
@@ -966,7 +966,7 @@ class ElmProperties : ClosableWindow
          Mems<FileParams> files=FileParams.Decode(elm.srcFile());
          Str src_text; FREPA(files)src_text.line()+=files[i].name; // ignore parameters
          src  .set(src_text);
-         b_src.visible(src().is());
+         b_src.visible(src.hasData());
       }
    }
 }

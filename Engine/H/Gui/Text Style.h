@@ -78,6 +78,8 @@ struct StrData
    };
 
    Bool visible()C;
+   Bool operator==(C StrData &x)C;
+   Bool operator!=(C StrData &x)C {return !(T==x);}
 
    void     del   ();
    StrData& create(TYPE type);
@@ -158,10 +160,11 @@ struct TextStyleParams // Text Style Params
    Flt  colWidth ()C {return size.x*space.x;} // get column width  (this is valid if "spacing==SPACING_CONST")
    Flt lineHeight()C {return size.y*space.y;} // get line   height
 
-   Flt textWidth(C Str  &str , Int max_length=-1)C; // get width of one line 'str'  text
-   Flt textWidth(C Str8 &str , Int max_length=-1)C; // get width of one line 'str'  text
-   Flt textWidth(CChar  *text, Int max_length=-1)C; // get width of one line 'text' text
-   Flt textWidth(CChar8 *text, Int max_length=-1)C; // get width of one line 'text' text
+   Flt textWidth(C Str  &str , Int max_length=-1         )C; // get width of one line 'str'  text
+   Flt textWidth(C Str8 &str , Int max_length=-1         )C; // get width of one line 'str'  text
+   Flt textWidth(CChar  *text, Int max_length=-1         )C; // get width of one line 'text' text
+   Flt textWidth(CChar8 *text, Int max_length=-1         )C; // get width of one line 'text' text
+   Flt textWidth(CChar  *text, C StrData *data, Int datas)C; // get width of one line 'text' text
 
    Int textIndex(CChar  *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                      )C; // get index of character at 'x'   position, returns "0 .. Length(text)"
    Int textIndex(CChar8 *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                      )C; // get index of character at 'x'   position, returns "0 .. Length(text)"

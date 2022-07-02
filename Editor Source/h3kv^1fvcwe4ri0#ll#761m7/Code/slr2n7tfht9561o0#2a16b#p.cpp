@@ -1407,11 +1407,11 @@ class StoreClass : ClosableWindow
       if(TextStyle *ts=t_item_desc.getTextStyle())
       {
          Vec2 size=item_desc_region.size()-t_item_desc.pos()*Vec2(1, -1);
-         flt  h   =ts.textLines(t_item_desc(), size.x, t_item_desc.auto_line)*ts.lineHeight();
+         flt  h   =ts.textLines(t_item_desc.text, t_item_desc.extra.data(), t_item_desc.extra.elms(), size.x, t_item_desc.auto_line)*ts.lineHeight();
          if(h>size.y)
          {
             size.x-=item_desc_region.slidebarSize();
-            size.y =ts.textLines(t_item_desc(), size.x, t_item_desc.auto_line)*ts.lineHeight();
+            size.y =ts.textLines(t_item_desc.text, t_item_desc.extra.data(), t_item_desc.extra.elms(), size.x, t_item_desc.auto_line)*ts.lineHeight();
          }else size.y=h;
          t_item_desc.size(size);
       }

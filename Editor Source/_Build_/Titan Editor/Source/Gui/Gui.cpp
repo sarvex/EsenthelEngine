@@ -502,8 +502,8 @@ ConvertToDeAtlas.drag(elms, obj, screen_pos);
       }
    }
    void NewWorldClass::OK(NewWorldClass &nw) {Proj.newWorld(nw.name(), nw.areaSize(), nw.heightmapRes(), nw.parent_id, true); HideProjAct(nw);}
-   int      NewWorldClass::areaSize() {return TextInt(     area_size.text());}
-   int NewWorldClass::heightmapRes() {return TextInt(heightmap_res .text());}
+   int      NewWorldClass::areaSize() {return TextInt(     area_size.text);}
+   int NewWorldClass::heightmapRes() {return TextInt(heightmap_res .text);}
    void NewWorldClass::create()
    {
       static cchar8 *area_siz[]=
@@ -1009,8 +1009,8 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
       T  +=ok    .create(Rect_C(clientWidth()*1/3, -0.25f, 0.29f, 0.07f), "OK"    ).func(OK  ,               T ).focusable(false);
       T  +=cancel.create(Rect_C(clientWidth()*2/3, -0.25f, 0.29f, 0.07f), "Cancel").func(Hide, SCAST(GuiObj, T)).focusable(false);
    }
-   void ElmProperties::CopyID(ElmProperties &ep) {ClipSet(ep.id  ());}
-   void ElmProperties::CopyFile(ElmProperties &ep) {ClipSet(ep.file());}
+   void ElmProperties::CopyID(ElmProperties &ep) {ClipSet(ep.id  .str());}
+   void ElmProperties::CopyFile(ElmProperties &ep) {ClipSet(ep.file.str());}
    void ElmProperties::Explore(ElmProperties &ep) {if(Elm *elm=Proj.findElm(ep.elm_id))Proj.explore(*elm);}
    void ElmProperties::create()
    {
@@ -1036,7 +1036,7 @@ set_optimize      .create(Rect_L(0.98f, -0.328f, 0.25f, 0.0475f), "Set Optimize"
          Mems<FileParams> files=FileParams::Decode(elm.srcFile());
          Str src_text; FREPA(files)src_text.line()+=files[i].name; // ignore parameters
          src  .set(src_text);
-         b_src.visible(src().is());
+         b_src.visible(src.hasData());
       }
    }
 RenameElmClass::RenameElmClass() : elm_id(UIDZero) {}

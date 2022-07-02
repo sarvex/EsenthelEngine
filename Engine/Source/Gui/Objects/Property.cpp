@@ -830,7 +830,7 @@ Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, 
    {
       Property &prop=properties[i];
       prop.text.text_style=ts;
-      MAX(text_width, prop.text.textWidth());
+      MAX(text_width, prop.text.textWidthLine());
    }
    if(parent_width)MIN(value_width, *parent_width-left_up.x-text_width-NameValueSpace);
    FREPA(properties)

@@ -36,6 +36,20 @@ Bool StrData::visible()C
    }
    return false;
 }
+Bool StrData::operator==(C StrData &x)C
+{
+   if(type!=x.type)return false;
+   switch(type)
+   {
+      case TEXT  : return Equal(text  , x.text, true);
+      case IMAGE : return       image ==x.image      ;
+      case COLOR : return       color ==x.color      ;
+      case SHADOW: return       shadow==x.shadow     ;
+      case FONT  : return       font  ==x.font       ;
+      case PANEL : return       panel ==x.panel      ;
+   }
+   return true;
+}
 void StrData::del()
 {
    switch(type)
@@ -1976,6 +1990,21 @@ Flt TextStyleParams::textWidth(CChar8 *text, Int max_length)C
              space=size.x*T.space.x;
       Int    spacings, width=font->textWidth(spacings, spacing, text, max_length);
       return width*xsize + space*spacings;
+   }
+   return 0;
+}
+Flt TextStyleParams::textWidth(CChar *text, C StrData *data, Int datas)C
+{
+   Int max_length=-1;
+   if( max_length)
+   {
+      TextProcessor tp; if(tp.initFast(T))
+      {
+         TextSrc ts=(text ? text : u""); // same as ts.fix();
+         tp.setFontFast(tp.default_font); // before 'width'
+         tp.panel=null;
+         return tp._width(ts, data, datas, max_length, false);
+      }
    }
    return 0;
 }

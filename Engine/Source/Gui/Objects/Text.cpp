@@ -64,7 +64,7 @@ TextStyle* Text::getTextStyle()C
    if(GuiSkin *skin=getSkin())return skin->text.text_style();
    return null;
 }
-Flt Text::textWidth()C
+Flt Text::textWidthLine()C
 {
    if(TextStyle *text_style=getTextStyle())
    {

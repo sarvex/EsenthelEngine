@@ -210,7 +210,7 @@ GuiView GuiEdit;
                      Str  GuiView::TabsAutoSize(C Tabs &tabs          ) {return tabs.autoSize();}
                      void GuiView::TabsAutoSize(  Tabs &tabs, C Str &t) {       tabs.rect(tabs.rect(), tabs.space(), TextBool(t));}
    void GuiView::TextText(  Text &text, C Str &t) {       text.set(t);}
-   Str  GuiView::TextText(C Text &text          ) {return text();}
+   Str  GuiView::TextText(C Text &text          ) {return text.text;}
    Str  GuiView::TextLineText(C TextLine &textline          ) {return textline();}
    void GuiView::TextLineText(  TextLine &textline, C Str &t) {       textline.set(t);}
    Str  GuiView::TextLinePassword(C TextLine &textline          ) {return textline.password();}

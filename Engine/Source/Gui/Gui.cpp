@@ -4,7 +4,8 @@ namespace EE{
 /******************************************************************************/
 struct QueuedMsgBox // queue these commands for thread-safety, this is so that 'Gui.msgBox' does not require 'Gui.cs' lock, this is important in case for example the main thread is deleting a thread inside a 'Gui.update' callback "Gui.update -> thread.del()" while that thread is "if(thread.wantStop())Gui.msgBox(failed)" calling 'Gui.msgBox' would require 'Gui.cs' lock which is already locked on the main thread
 {
-   Str          title, text; 
+   Str          title, text;
+   StrEx        extra;
    TextStylePtr text_style;
 
    void set(C Str &title, C Str &text, C TextStylePtr &text_style) {T.title=title; T.text=text; T.text_style=text_style;}
@@ -387,7 +388,10 @@ void GUI::update()
          REPA(MsgBox::MsgBoxs)
          {
           C MsgBox &mb=MsgBox::MsgBoxs[i];
-            if(Equal(mb.title, qmb.title, true) && Equal(mb.text(), qmb.text, true) && mb.text.text_style==qmb.text_style)goto skip; // if already exists then do nothing
+            if(Equal(mb.title          , qmb.title, true)
+            && Equal(mb.text.text      , qmb.text , true)
+            &&       mb.text.extra     ==qmb.extra
+            &&       mb.text.text_style==qmb.text_style)goto skip; // if already exists then do nothing
          }
          // create new one
          MsgBox::MsgBoxs.New().create(qmb.title, qmb.text, qmb.text_style, null);

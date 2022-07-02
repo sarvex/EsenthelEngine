@@ -177,7 +177,7 @@ class GuiView : Region
    template<int i>   static void TabsTabText (  Tabs &tabs, C Str &t) {    if(InRange(i, tabs))  tabs.tab(i).text(t);    }
 
    static void TextText(  Text &text, C Str &t) {       text.set(t);}
-   static Str  TextText(C Text &text          ) {return text();}
+   static Str  TextText(C Text &text          ) {return text.text;}
 
    static Str  TextLineText     (C TextLine &textline          ) {return textline();}
    static void TextLineText     (  TextLine &textline, C Str &t) {       textline.set(t);}

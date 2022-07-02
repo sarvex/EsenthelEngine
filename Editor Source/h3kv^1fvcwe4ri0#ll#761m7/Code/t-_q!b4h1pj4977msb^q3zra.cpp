@@ -156,8 +156,7 @@ class Projects
       t_editor_network_interface     .pos (editor_network_interface.rect().lu());
       t_editor_network_interface_desc.rect(Rect_LU(editor_network_interface.rect().ld(), proj_path.rect().w(), 0));
 
-      if(TextStyle *text_style=t_login_desc.getTextStyle())
-          proj_region.rect(Rect(-D.w()+0.05, -D.h()+0.06, D.w()-0.05, t_login_desc.rect().min.y-0.08-text_style.lineHeight()*text_style.textLines(t_login_desc(), t_login_desc.rect().w(), t_login_desc.auto_line)));
+      proj_region    .rect(Rect(-D.w()+0.05, -D.h()+0.06, D.w()-0.05, t_login_desc.rect().min.y-t_login_desc.textSize().y-0.08));
       t_projects     .pos (proj_region.rect().up()+Vec2(0, 0.03));
       new_proj       .rect(Rect_RD(proj_region.rect().ru(), 0.3 , h));
       import_proj    .rect(Rect_RU(new_proj   .rect().lu(), 0.55, h));
