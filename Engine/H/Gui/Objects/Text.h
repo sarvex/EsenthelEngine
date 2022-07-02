@@ -24,8 +24,10 @@ const_mem_addr struct Text : GuiObj // Gui Text !! must be stored in constant me
    GuiSkin  * getSkin     ()C {return skin ? skin() : Gui.skin();} // get actual skin
    TextStyle* getTextStyle()C;                                     // get actual text style
 
-   Flt  textWidthLine()C; // get visible text width, this function assumes all text is in one line
-   Vec2 textSize     ()C; // get visible text size
+   Flt  textWidthLine(                 )C; // get text width, this function assumes all text is in one line
+   Int  textLines    (C Flt *width=null)C; // get number of lines when using 'width' space, use null to use current width
+   Flt  textHeight   (C Flt *width=null)C; // get text heigh      when using 'width' space, use null to use current width
+   Vec2 textSize     (                 )C; // get text size
 
    // main
    virtual void draw(C GuiPC &gpc)override; // draw object

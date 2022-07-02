@@ -77,6 +77,25 @@ Flt Text::textWidthLine()C
    }
    return 0;
 }
+Int Text::textLines(C Flt *width)C
+{
+   if(TextStyle *text_style=getTextStyle())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())if(GuiSkin *skin=getSkin())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+
+      return ts.textLines(text, extra.data(), extra.elms(), width ? *width : rect().w(), auto_line);
+   }
+   return 0;
+}
+Flt Text::textHeight(C Flt *width)C
+{
+   if(TextStyle *text_style=getTextStyle())return textLines(width)*text_style->lineHeight();
+   return 0;
+}
 Vec2 Text::textSize()C
 {
    if(TextStyle *text_style=getTextStyle())
