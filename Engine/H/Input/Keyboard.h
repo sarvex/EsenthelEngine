@@ -76,8 +76,8 @@ struct KeyboardClass // Keyboard Input
    Char   keyChar  (KB_KEY key, Bool shift, Bool caps)C;
 #endif
 
-   Bool hwAvailable(          ); // if hardware keyboard is available
-   Bool rect       (Rect &rect); // get on-screen keyboard rectangle, false if no on-screen keyboard is currently displayed
+   Bool hardware(          )C; // if hardware keyboard is available
+   Bool rect    (Rect &rect)C; // get on-screen keyboard rectangle, false if no on-screen keyboard is currently displayed
 
    KB_KEY qwerty(KB_KEY qwerty)C; // convert key from QWERTY layout to layout of current keyboard
 
@@ -142,7 +142,7 @@ struct KeyboardClass // Keyboard Input
 #if !EE_PRIVATE
 private:
 #endif
-   Bool        _ctrl, _shift, _alt, _win, _cur_hidden, _swap_ctrl_cmd, _visible, _imm, _imm_candidate_hidden, _exclusive, _hw_available;
+   Bool        _ctrl, _shift, _alt, _win, _cur_hidden, _swap_ctrl_cmd, _visible, _imm, _imm_candidate_hidden, _exclusive, _hardware;
    Byte        _key_buffer_pos, _key_buffer_len;
    BS_FLAG     _button[256];
    Char8       _key_char[256];

@@ -271,6 +271,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                }
                LastMousePos=pos;
             }
+            Ms._hardware=true; // TODO: this could move to some device added/removed callback
          }else
          {
             switch(action_type)

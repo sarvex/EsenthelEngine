@@ -158,7 +158,7 @@ MouseClass::MouseClass()
 {
 #if 0 // there's only one 'MouseClass' global 'Ms' and it doesn't need clearing members to zero
    REPAO(_button)=0;
-  _selecting=_dragging=_first=_detected=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=_swapped=false;
+  _selecting=_dragging=_first=_detected=_hardware=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=_swapped=false;
   _start_time=_wheel_time=0;
   _pos=_delta_rel_sm=_delta_clp=_delta_rel=_start_pos=_move_offset=_wheel=_wheel_f=0;
   _window_pixeli=_desktop_pixeli=_delta_pixeli_clp=_wheel_i=0;
@@ -233,7 +233,7 @@ again:
       FREPA(devices)
       {
        C RAWINPUTDEVICELIST &device=devices[i];
-         if(device.dwType==RIM_TYPEMOUSE){_detected=true; break;} // don't set false in case user called 'Ms.simulate'
+         if(device.dwType==RIM_TYPEMOUSE){_detected=_hardware=true; break;} // don't set false in case user called 'Ms.simulate'
        /*UInt size=0; if(Int(GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, null, &size))>=0)
          {
             Memt<Char> name; name.setNum(size+1); Int r=GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, name.data(), &size);
@@ -261,7 +261,7 @@ again:
         _device->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 
          if(MOUSE_MODE==BACKGROUND)_device->Acquire(); // in background mode we always want the mouse to be acquired
-        _detected=true; // don't set false in case user called 'Ms.simulate'
+        _detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
          goto ok;
       }
       RELEASE(_device);
@@ -269,9 +269,9 @@ again:
 ok:;
 #endif
 #elif WINDOWS_NEW
-   if(Windows::Devices::Input::MouseCapabilities().MousePresent>0)_detected=true; // don't set false in case user called 'Ms.simulate'
+   if(Windows::Devices::Input::MouseCapabilities().MousePresent>0)_detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
 #elif DESKTOP // assume that desktops always have a mouse
-  _detected=true; // don't set false in case user called 'Ms.simulate'
+  _detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
 #endif
 #if LINUX
    // create empty cursor

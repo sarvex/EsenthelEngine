@@ -83,7 +83,7 @@ inline static void Set(KB_KEY key, Char8 c, Char8 qwerty_shift, CChar8 *name, CC
 KeyboardClass::KeyboardClass()
 {
 #if 0 // there's only one 'KeyboardClass' global 'Kb' and it doesn't need clearing members to zero
-  _exclusive=_visible=false;
+  _exclusive=_visible=_hardware=false;
   _device=null;
   _imc=null;
    REPA(key_char)Set(KB_KEY(i), '\0', '\0', null);
@@ -1460,7 +1460,7 @@ void KeyboardClass::exclusive(Bool on)
 }
 /******************************************************************************/
 KB_KEY KeyboardClass::qwerty(KB_KEY qwerty)C {ASSERT(1<<(8*SIZE(qwerty))==ELMS(_qwerty)); return _qwerty[qwerty];}
-Bool   KeyboardClass::hwAvailable()
+Bool   KeyboardClass::hardware()C
 {
 #if WINDOWS_NEW
    return Windows::Devices::Input::KeyboardCapabilities().KeyboardPresent>0;
@@ -1470,13 +1470,11 @@ Bool   KeyboardClass::hwAvailable()
    return (AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
    // HW    connected: AConfiguration_getKeyboard->2, AConfiguration_getKeysHidden->1
    // HW disconnected: AConfiguration_getKeyboard->1, AConfiguration_getKeysHidden->3
-#elif SWITCH
-   return _hw_available;
 #else
-   return false;
+   return _hardware;
 #endif
 }
-Bool KeyboardClass::rect(Rect &rect)
+Bool KeyboardClass::rect(Rect &rect)C
 {
    if(_visible)
    {
@@ -1557,10 +1555,10 @@ void KeyboardClass::setVisible()
 {
    Bool visible=(Gui.kb() && (Gui.kb()->isTextLine() || Gui.kb()->isTextBox()));
 #if WINDOWS_OLD
-   imm(visible); // here ignore 'hwAvailable'
+   imm(visible); // here ignore 'hardware'
 #endif
 #if !SWITCH // on Switch always show, because hardware keyboard is limited to simple US-QWERTY without support of other languages
-   visible&=!hwAvailable(); // show only if hardware unavailable
+   visible&=!hardware(); // show only if hardware unavailable
 #endif
 
 #if WINDOWS_NEW || ANDROID || IOS || SWITCH
