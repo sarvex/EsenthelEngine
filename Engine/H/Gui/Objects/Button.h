@@ -58,6 +58,7 @@ const_mem_addr struct Button : GuiObj // Gui Button !! must be stored in constan
            Flt     lit       (                                  )C {return _lit;} // get highlight factor (0..1)
            Button& set       (Bool on, SET_MODE mode=SET_DEFAULT);                // set button state, this method is valid only for BUTTON_TOGGLE mode
            Button& push      (                                  );                // push manually
+           Button& fitText   (                                  );                // minimize text size if text is too big
            Button& setText   (C Str      &text                  );                // set text
            Button& setImage  (C ImagePtr &image                 );                // set image
            Button& subType   (BUTTON_TYPE type                  );           BUTTON_TYPE subType()C {return                  _sub_type;} // set/get button type, default=BUTTON_TYPE_DEFAULT
