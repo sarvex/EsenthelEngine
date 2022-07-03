@@ -1748,7 +1748,8 @@ Str LanguageSpecific(LANG_TYPE lang)
       case DE        : return u"äÄëËöÖüÜßẞ";
       case FR        : return u"àÀáÁâÂãÃäÄåÅæÆçÇèÈéÉêÊëËìÌíÍîÎïÏðÐñÑòÒóÓôÔõÕöÖøØùÙúÚûÛüÜýÝ";
       case RU        : return u"аАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ";
-      case PO        : return u"áÁàÀâÂãÃăĂçÇęĘéÉêÊíÍóÓőŐõÕôÔŕŔúÚ";
+      case PO        : return u"áÁàÀâÂãÃçÇéÉêÊíÍóÓõÕôÔúÚ";
+      case SP        : return u"áÁéÉíÍóÓúÚüÜñÑ¿¡";
       case LANG_GREEK: return u"αΑβΒγΓδΔεΕζΖηΗθΘιΙκΚλΛμΜνΝξΞοΟπΠρΡσΣτΤυΥφΦχΧψΨωΩ";
       case LANG_THAI : return u"กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛"; // https://en.wikipedia.org/wiki/Thai_alphabet#Unicode
 
