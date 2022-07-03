@@ -399,6 +399,7 @@ Bool Joypad::supportsSensors()C
 #if !SWITCH
 Joypad& Joypad::vibration(C Vec2 &vibration)
 {
+   const Bool mono=true; // MS Xbox Controllers have different motors on left/right (360, Xbox One, Elite 2)
 #if JP_GAMEPAD_INPUT
    if(_gamepad)
    {
@@ -407,8 +408,15 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
    #else
       Windows::Gaming::Input::GamepadVibration v;
    #endif
-      v. LeftMotor=vibration.x;
-      v.RightMotor=vibration.y;
+      if(mono)
+      {
+         v.LeftMotor=
+         v.RightMotor=vibration.max();
+      }else
+      {
+         v. LeftMotor=vibration.x;
+         v.RightMotor=vibration.y;
+      }
       v.LeftTrigger=v.RightTrigger=0;
    #if WINDOWS_OLD
      _gamepad->put_Vibration(v);
@@ -420,8 +428,15 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
    if(_xinput!=255)
    {
       XINPUT_VIBRATION xvibration;
-      xvibration. wLeftMotorSpeed=RoundU(Sat(vibration.x)*0xFFFF);
-      xvibration.wRightMotorSpeed=RoundU(Sat(vibration.y)*0xFFFF);
+      if(mono)
+      {
+         xvibration. wLeftMotorSpeed=
+         xvibration.wRightMotorSpeed=RoundU(Sat(vibration.max())*0xFFFF);
+      }else
+      {
+         xvibration. wLeftMotorSpeed=RoundU(Sat(vibration.x)*0xFFFF);
+         xvibration.wRightMotorSpeed=RoundU(Sat(vibration.y)*0xFFFF);
+      }
       XInputSetState(_xinput, &xvibration);
    }
 #endif
