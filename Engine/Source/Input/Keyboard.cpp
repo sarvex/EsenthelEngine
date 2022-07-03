@@ -1466,16 +1466,7 @@ void KeyboardClass::exclusive(Bool on)
 }
 /******************************************************************************/
 KB_KEY KeyboardClass::qwerty(KB_KEY qwerty)C {ASSERT(1<<(8*SIZE(qwerty))==ELMS(_qwerty)); return _qwerty[qwerty];}
-Bool   KeyboardClass::hardware()C
-{
-#if ANDROID
-   return (AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
-   // HW    connected: AConfiguration_getKeyboard->2, AConfiguration_getKeysHidden->1
-   // HW disconnected: AConfiguration_getKeyboard->1, AConfiguration_getKeysHidden->3
-#else
-   return _hardware;
-#endif
-}
+
 Bool KeyboardClass::rect(Rect &rect)C
 {
    if(_visible)

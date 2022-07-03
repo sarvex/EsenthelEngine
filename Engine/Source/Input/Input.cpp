@@ -277,6 +277,8 @@ again:
    // use try/catch because exceptions can occur, something about "data is too small"
    try{Kb._hardware=(Windows::Devices::Input::KeyboardCapabilities().KeyboardPresent>0);                                   }catch(...){}
    try{Ms._hardware=(Windows::Devices::Input::   MouseCapabilities().   MousePresent>0); if(Ms._hardware)Ms._detected=true;}catch(...){} // don't set false in case user called 'Ms.simulate'
+#elif ANDROID
+   Kb._hardware=((AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false);
 #endif
 }
 /******************************************************************************/

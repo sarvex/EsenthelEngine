@@ -619,7 +619,8 @@ static void CmdCallback(android_app *app, int32_t cmd)
       case APP_CMD_CONFIG_CHANGED:
       {
          LOG("APP_CMD_CONFIG_CHANGED");
-         Kb.setVisible();
+         InputDevices.checkMouseKeyboard();
+         Kb.setVisible(); // AFTER 'checkMouseKeyboard'
        /*EGLint w=-1, h=-1;
          eglQuerySurface(display, surface, EGL_WIDTH , &w);
          eglQuerySurface(display, surface, EGL_HEIGHT, &h);
