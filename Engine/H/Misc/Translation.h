@@ -219,6 +219,7 @@ CChar* TRevived();
 CChar* TRight();
 CChar* TRing();
 CChar* TRooms();
+CChar* TScreenControls();
 CChar* TScorpions();
 CChar* TScythe();
 CChar* TSecretWall();
