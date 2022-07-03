@@ -185,6 +185,7 @@ struct InputDevicesClass // Input Devices
    void update ();
    void clear  ();
    void acquire(Bool on);
+   void checkMouseKeyboard();
 
    InputDevicesClass() {}
    NO_COPY_CONSTRUCTOR(InputDevicesClass);

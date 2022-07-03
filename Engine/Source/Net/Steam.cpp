@@ -192,7 +192,7 @@ static void  _SteamSetTime() // this is called at least once
    {
       Steam._start_time_s=i->GetSecondsSinceAppActive(); // 'GetSecondsSinceAppActive' is since Steam Client was started and not this application
    }
-   if(App._callbacks.initialized())App._callbacks.include(SteamUpdate); // include only if initialized, as this may be called before 'App' constructor and it would crash
+   if(App._callbacks.initialized())App.includeFuncCall(SteamUpdate); // include only if initialized, as this may be called before 'App' constructor and it would crash
 }
 #endif
 

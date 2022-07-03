@@ -471,7 +471,7 @@ static void ProcessZombies()
 {
       ZombiePIDs.  lock(); REPA(ZombiePIDs){int status; pid_t pid=waitpid(ZombiePIDs.lockedElm(i), &status, WNOHANG); Bool active=(pid==0); if(!active)ZombiePIDs.lockedRemove(i);}
       ZombiePIDs.unlock();
-   if(ZombiePIDs.elms())App._callbacks.include(ProcessZombies); // queue again if we still have some zombies
+   if(ZombiePIDs.elms())App.includeFuncCall(ProcessZombies); // queue again if we still have some zombies
 }
 #endif
 void ConsoleProcess::del()
@@ -492,7 +492,7 @@ void ConsoleProcess::del()
    if(_proc_id && !_proc_exited) // if we have a Process ID but it still hasn't exited
    {
       ZombiePIDs.include(_proc_id); // add to the list of zombie PID's
-      App._callbacks.include(ProcessZombies); // start callback to remove them
+      App.includeFuncCall(ProcessZombies); // start callback to remove them
    }
   _proc_exited=false;
 #endif

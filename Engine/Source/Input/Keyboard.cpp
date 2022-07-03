@@ -277,6 +277,7 @@ void KeyboardClass::create()
    rid[0].hwndTarget =App.window();
 
    RegisterRawInputDevices(rid, Elms(rid), SIZE(RAWINPUTDEVICE));
+   // detection is done in 'checkMouseKeyboard'
 #elif KB_DIRECT_INPUT
    // DISCL_EXCLUSIVE|DISCL_BACKGROUND is not possible at all
    // DISCL_NOWINKEY |DISCL_BACKGROUND is not possible at all
@@ -296,12 +297,17 @@ void KeyboardClass::create()
         _device->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 
          if(KEYBOARD_MODE==BACKGROUND)_device->Acquire(); // in background mode we always want the keyboard to be acquired
+        _hardware=true;
          goto ok;
       }
       RELEASE(_device);
    }
 ok:;
 #endif
+#elif WINDOWS_NEW
+   // detection is done in 'checkMouseKeyboard'
+#elif MAC || LINUX || WEB
+  _hardware=true; // FIXME: TODO:
 #endif
 }
 /******************************************************************************
@@ -1462,11 +1468,7 @@ void KeyboardClass::exclusive(Bool on)
 KB_KEY KeyboardClass::qwerty(KB_KEY qwerty)C {ASSERT(1<<(8*SIZE(qwerty))==ELMS(_qwerty)); return _qwerty[qwerty];}
 Bool   KeyboardClass::hardware()C
 {
-#if WINDOWS_NEW
-   return Windows::Devices::Input::KeyboardCapabilities().KeyboardPresent>0;
-#elif DESKTOP
-   return true;
-#elif ANDROID
+#if ANDROID
    return (AndroidApp && AndroidApp->config) ? FlagOn(AConfiguration_getKeyboard(AndroidApp->config), (UInt)ACONFIGURATION_KEYBOARD_QWERTY) : false;
    // HW    connected: AConfiguration_getKeyboard->2, AConfiguration_getKeysHidden->1
    // HW disconnected: AConfiguration_getKeyboard->1, AConfiguration_getKeysHidden->3

@@ -513,7 +513,7 @@ static void SetStayAwake() {App.setStayAwake();}
 void Application::setStayAwake()
 {
 #if IOS // can be called only on the main thread
-   if(!App.mainThread()){App._callbacks.include(SetStayAwake); return;}
+   if(!App.mainThread()){App.includeFuncCall(SetStayAwake); return;}
 #endif
 
    auto mode=_stay_awake;

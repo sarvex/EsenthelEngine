@@ -28,6 +28,8 @@ static Sensors:: Magnetometer ^ magnetometer;
 static EventRegistrationToken MagnetometerToken, MouseToken;
 static TypedEventHandler<Sensors::Magnetometer^, MagnetometerReadingChangedEventArgs^> ^MagnetometerHandler;
 
+static Windows::Devices::Enumeration::DeviceWatcher ^DeviceWatcher;
+
 #if JP_GAMEPAD_INPUT
 static Int FindJoypadI(Windows::Gaming::Input::Gamepad          ^ gamepad            ) {REPA(Joypads)if(Joypads[i]._gamepad            ==gamepad            )return i; return -1;}
 static Int FindJoypadI(Windows::Gaming::Input::RawGameController^ raw_game_controller) {REPA(Joypads)if(Joypads[i]._raw_game_controller==raw_game_controller)return i; return -1;}
@@ -146,6 +148,7 @@ void SetMagnetometerRefresh(Flt interval)
       }
    }
 }
+static void DeviceChanged() {InputDevices.checkMouseKeyboard();}
 
 #define KEY_EVENTS 1 // 1=better (can catch key events that occur when ALT is pressed) 0=(can't catch ALT+keys)
 
@@ -163,6 +166,12 @@ ref struct FrameworkView sealed : IFrameworkView
    virtual void SetWindow(CoreWindow^ window) // called before 'Load'
    {
       App.window().set(window);
+
+      DeviceWatcher=Windows::Devices::Enumeration::DeviceInformation::CreateWatcher();
+      DeviceWatcher->Added   += ref new TypedEventHandler<Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformation      ^>(this, &FrameworkView::OnDeviceAdded);
+      DeviceWatcher->Removed += ref new TypedEventHandler<Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformationUpdate^>(this, &FrameworkView::OnDeviceUpdate);
+      DeviceWatcher->Updated += ref new TypedEventHandler<Windows::Devices::Enumeration::DeviceWatcher^, Windows::Devices::Enumeration::DeviceInformationUpdate^>(this, &FrameworkView::OnDeviceUpdate);
+      DeviceWatcher->Start();
 
       DisplayInformation^ display_info = DisplayInformation::GetForCurrentView();
       ScreenScale=display_info->RawPixelsPerViewPixel;
@@ -724,6 +733,8 @@ ref struct FrameworkView sealed : IFrameworkView
       //This is the bounds of the whole control
       request.LayoutBounds.ControlBounds = contentRect;
    }*/
+   void OnDeviceAdded (Windows::Devices::Enumeration::DeviceWatcher ^watcher, Windows::Devices::Enumeration::DeviceInformation       ^device       ) {App.includeFuncCall(DeviceChanged);}
+   void OnDeviceUpdate(Windows::Devices::Enumeration::DeviceWatcher ^watcher, Windows::Devices::Enumeration::DeviceInformationUpdate ^device_update) {App.includeFuncCall(DeviceChanged);}
 
    // custom methods
    void setOrientation(DisplayOrientations orientation, DisplayOrientations native_orientation)

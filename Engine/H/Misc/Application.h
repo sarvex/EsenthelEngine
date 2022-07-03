@@ -129,6 +129,11 @@ struct Application // Application Settings
    T1(TYPE) void addFuncCall(void func(TYPE *user), TYPE *user) {addFuncCall((void(*)(Ptr))func,  user);} // add custom function to the Application callback list to be automatically called during Application Update on the main thread
    T1(TYPE) void addFuncCall(void func(TYPE &user), TYPE &user) {addFuncCall((void(*)(Ptr))func, &user);} // add custom function to the Application callback list to be automatically called during Application Update on the main thread
 
+            void includeFuncCall(void func(          )            ) {_callbacks.include(func      );}             // include custom function to the gui function callback list to be automatically called at the end of the 'Gui.update'
+            void includeFuncCall(void func(Ptr   user), Ptr   user) {_callbacks.include(func, user);}             // include custom function to the gui function callback list to be automatically called at the end of the 'Gui.update'
+   T1(TYPE) void includeFuncCall(void func(TYPE *user), TYPE *user) {includeFuncCall((void(*)(Ptr))func,  user);} // include custom function to the gui function callback list to be automatically called at the end of the 'Gui.update'
+   T1(TYPE) void includeFuncCall(void func(TYPE &user), TYPE &user) {includeFuncCall((void(*)(Ptr))func, &user);} // include custom function to the gui function callback list to be automatically called at the end of the 'Gui.update'
+
 #if EE_PRIVATE
    static Bool Fullscreen();
 

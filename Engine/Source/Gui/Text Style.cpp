@@ -319,6 +319,7 @@ struct TextSrc
    Int length()C {return t8 ? Length(t8) : Length(t16);}
 
    Bool operator==(C TextSrc &ts)C {return t8==ts.t8 && t16==ts.t16;}
+   Bool operator!=(C TextSrc &ts)C {return t8!=ts.t8 || t16!=ts.t16;}
 
    TextSrc() {}
    TextSrc(CChar8 *t) {t8 =t; t16=null;}
@@ -354,6 +355,7 @@ struct TextSplit
           && panel ==ts.panel
           && text  ==ts.text;
    }
+   Bool operator!=(C TextSplit &ts)C {return !(T==ts);}
 };
 static Memc<TextSplit> TextSplits;
 /******************************************************************************/

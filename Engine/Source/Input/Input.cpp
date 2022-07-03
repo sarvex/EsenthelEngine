@@ -234,6 +234,52 @@ void InputDevicesClass::del()
    VR.shut(); // !! delete as last, after the mouse, because it may try to reset the mouse cursor, so we need to make sure that mouse cursor was already deleted !!
 }
 /******************************************************************************/
+void InputDevicesClass::checkMouseKeyboard()
+{
+#if WINDOWS_OLD && (KB_RAW_INPUT || MS_RAW_INPUT)
+   if(KB_RAW_INPUT)Kb._hardware=false;
+   if(MS_RAW_INPUT)Ms._hardware=false;
+   Memt<RAWINPUTDEVICELIST> devices;
+	UINT num_devices=0; GetRawInputDeviceList(null, &num_devices, SIZE(RAWINPUTDEVICELIST));
+again:
+   devices.setNum(num_devices);
+	Int out=GetRawInputDeviceList(devices.data(), &num_devices, SIZE(RAWINPUTDEVICELIST));
+   if(out<0) // error
+   {
+      if(Int(num_devices)>devices.elms())goto again; // need more memory
+      devices.clear();
+   }else
+   {
+      if(out<devices.elms())devices.setNum(out);
+      FREPA(devices)
+      {
+       C RAWINPUTDEVICELIST &device=devices[i]; switch(device.dwType)
+         {
+         #if KB_RAW_INPUT
+            case RIM_TYPEKEYBOARD: Kb._hardware=             true; break;
+         #endif
+         #if MS_RAW_INPUT
+            case RIM_TYPEMOUSE   : Ms._hardware=Ms._detected=true; break; // don't set false in case user called 'Ms.simulate'
+         #endif
+         }
+       /*UInt size=0; if(Int(GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, null, &size))>=0)
+         {
+            Memt<Char> name; name.setNum(size+1); Int r=GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, name.data(), &size);
+            if(r>=0 && size==r && r+1==name.elms())
+            {
+               name.last()='\0'; // in case it's needed
+               Str n=name.data();
+            }
+         }*/
+      }
+   }
+#elif WINDOWS_NEW
+   // use try/catch because exceptions can occur, something about "data is too small"
+   try{Kb._hardware=(Windows::Devices::Input::KeyboardCapabilities().KeyboardPresent>0);                                   }catch(...){}
+   try{Ms._hardware=(Windows::Devices::Input::   MouseCapabilities().   MousePresent>0); if(Ms._hardware)Ms._detected=true;}catch(...){} // don't set false in case user called 'Ms.simulate'
+#endif
+}
+/******************************************************************************/
 void InputDevicesClass::create()
 {
    if(LogInit)LogN("InputDevicesClass.create");
@@ -243,6 +289,7 @@ void InputDevicesClass::create()
       DYNAMIC_ASSERT(OK(DirectInput8Create(App._hinstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (Ptr*)&DI, null)), "Can't create DirectInput");
    #endif
 #endif
+   checkMouseKeyboard();
    Kb  .create();
    Ms  .create();
    InitJoypads();

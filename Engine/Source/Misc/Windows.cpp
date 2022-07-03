@@ -821,7 +821,7 @@ static void       Pause(Bool pause)
 }
 
 static Byte ResetCursorCounter;
-static void ResetCursor() {Ms.resetCursor(); if(ResetCursorCounter){ResetCursorCounter--; App._callbacks.include(ResetCursor);}} // calling immediately may not have any effect, we have to try a few times
+static void ResetCursor() {Ms.resetCursor(); if(ResetCursorCounter){ResetCursorCounter--; App.includeFuncCall(ResetCursor);}} // calling immediately may not have any effect, we have to try a few times
 
 static void ConditionalDraw()
 {
@@ -952,7 +952,7 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
       case WM_DISPLAYCHANGE: if(D.initialized()) // needed only if device already initialized (to skip setting mouse cursor and screen size when initializing)
       {
        //VecI2 res(LOWORD(lParam), HIWORD(lParam)); // this is resolution of the primary monitor and not the one that's changing
-         ResetCursorCounter=8; App._callbacks.include(ResetCursor); // it was noticed that after changing resolution, Windows will rescale current cursor, to prevent that, we need to reset it, calling immediately may not have any effect, we have to try a few times
+         ResetCursorCounter=8; App.includeFuncCall(ResetCursor); // it was noticed that after changing resolution, Windows will rescale current cursor, to prevent that, we need to reset it, calling immediately may not have any effect, we have to try a few times
          D.getScreenInfo();
          if(auto screen_changed=D.screen_changed)screen_changed(D.w(), D.h()); // if 'D.scale' is set based on current screen resolution, then we may need to adjust it
       }break;
@@ -1381,7 +1381,11 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
       {
          if(wParam==DBT_DEVICEARRIVAL
          || wParam==DBT_DEVICEREMOVECOMPLETE
-         || wParam==DBT_DEVNODES_CHANGED)App.addFuncCall(ListJoypads); // can't call 'ListJoypads' directly here, because we're inside a Windows callback, and when using Direct Input then 'IsXInputDevice' will not function well (might not detect XInput devices correctly due to errors "An outgoing call cannot be made since the application is dispatching an input-synchronous call.", also it could trigger 'WindowMsg' again as a nested call). Also on UWP during the 'OnGamepadAdded' and 'OnGamepadRemoved' callbacks the results were outdated in tests (from previous frame) so in case the same problem would occur here (Windows could break stuff), then better recheck joypads at a later stage.
+         || wParam==DBT_DEVNODES_CHANGED)
+         {
+            InputDevices.checkMouseKeyboard();
+            App.addFuncCall(ListJoypads); // can't call 'ListJoypads' directly here, because we're inside a Windows callback, and when using Direct Input then 'IsXInputDevice' will not function well (might not detect XInput devices correctly due to errors "An outgoing call cannot be made since the application is dispatching an input-synchronous call.", also it could trigger 'WindowMsg' again as a nested call). Also on UWP during the 'OnGamepadAdded' and 'OnGamepadRemoved' callbacks the results were outdated in tests (from previous frame) so in case the same problem would occur here (Windows could break stuff), then better recheck joypads at a later stage.
+         }
       }break;
    }
 def:
@@ -1392,7 +1396,7 @@ def:
 #if WINDOWS
 static BOOL CALLBACK EnumResources(HMODULE hModule, LPCWSTR lpType, LPWSTR lpName, LONG_PTR lParam)
 {
-   *((C wchar_t**)lParam)=lpName;
+  *((C wchar_t**)lParam)=lpName;
    return false; // stop iterating
 }
 static ATOM WindowClass=0;

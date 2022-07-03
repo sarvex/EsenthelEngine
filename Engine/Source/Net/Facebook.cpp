@@ -235,7 +235,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookMe(JNIEnv *en
    Me.id   =TextULong(jni(id   ));
    Me.name =          jni(name ) ;
    Me.email=          jni(email) ;
-   App._callbacks.include(UpdateMe);
+   App.includeFuncCall(UpdateMe);
 }
 extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookFriends(JNIEnv *env, jclass clazz, jobject ids, jobject names)
 {
@@ -263,7 +263,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookFriends(JNIEn
    {
       SyncLocker locker(Lock);
       Swap(Friends, friends);
-      App._callbacks.include(UpdateFriends);
+      App.includeFuncCall(UpdateFriends);
    }
 }
 extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookPost(JNIEnv *env, jclass clazz, jint result)
@@ -271,7 +271,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookPost(JNIEnv *
    if(FB.callback)
    {
       Result=result;
-      App._callbacks.include(CallCallback);
+      App.includeFuncCall(CallCallback);
    }
 }
 #endif

@@ -158,7 +158,7 @@ MouseClass::MouseClass()
 {
 #if 0 // there's only one 'MouseClass' global 'Ms' and it doesn't need clearing members to zero
    REPAO(_button)=0;
-  _selecting=_dragging=_first=_detected=_hardware=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=_swapped=false;
+  _selecting=_dragging=_first=_hardware=_detected=_on_client=_clip_rect_on=_clip_window=_freeze=_frozen=_action=_locked=_swapped=false;
   _start_time=_wheel_time=0;
   _pos=_delta_rel_sm=_delta_clp=_delta_rel=_start_pos=_move_offset=_wheel=_wheel_f=0;
   _window_pixeli=_desktop_pixeli=_delta_pixeli_clp=_wheel_i=0;
@@ -217,34 +217,7 @@ void MouseClass::create()
    rid[0].hwndTarget =App.window();
 
    RegisterRawInputDevices(rid, Elms(rid), SIZE(RAWINPUTDEVICE));
-
-   Memt<RAWINPUTDEVICELIST> devices;
-	UINT num_devices=0; GetRawInputDeviceList(null, &num_devices, SIZE(RAWINPUTDEVICELIST));
-again:
-   devices.setNum(num_devices);
-	Int out=GetRawInputDeviceList(devices.data(), &num_devices, SIZE(RAWINPUTDEVICELIST));
-   if(out<0) // error
-   {
-      if(Int(num_devices)>devices.elms())goto again; // need more memory
-      devices.clear();
-   }else
-   {
-      if(out<devices.elms())devices.setNum(out);
-      FREPA(devices)
-      {
-       C RAWINPUTDEVICELIST &device=devices[i];
-         if(device.dwType==RIM_TYPEMOUSE){_detected=_hardware=true; break;} // don't set false in case user called 'Ms.simulate'
-       /*UInt size=0; if(Int(GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, null, &size))>=0)
-         {
-            Memt<Char> name; name.setNum(size+1); Int r=GetRawInputDeviceInfoW(device.hDevice, RIDI_DEVICENAME, name.data(), &size);
-            if(r>=0 && size==r && r+1==name.elms())
-            {
-               name.last()='\0'; // in case it's needed
-               Str n=name.data();
-            }
-         }*/
-      }
-   }
+   // detection is done in 'checkMouseKeyboard'
 #elif MS_DIRECT_INPUT
    if(InputDevices.DI) // need to use DirectInput to be able to obtain '_delta_rel'
    if(OK(InputDevices.DI->CreateDevice(GUID_SysMouse, &_device, null)))
@@ -261,7 +234,7 @@ again:
         _device->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 
          if(MOUSE_MODE==BACKGROUND)_device->Acquire(); // in background mode we always want the mouse to be acquired
-        _detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
+        _hardware=_detected=true; // don't set false in case user called 'Ms.simulate'
          goto ok;
       }
       RELEASE(_device);
@@ -269,9 +242,9 @@ again:
 ok:;
 #endif
 #elif WINDOWS_NEW
-   if(Windows::Devices::Input::MouseCapabilities().MousePresent>0)_detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
-#elif DESKTOP // assume that desktops always have a mouse
-  _detected=_hardware=true; // don't set false in case user called 'Ms.simulate'
+   // detection is done in 'checkMouseKeyboard'
+#elif MAC || LINUX || WEB // FIXME: TODO:
+  _hardware=_detected=true; // don't set false in case user called 'Ms.simulate'
 #endif
 #if LINUX
    // create empty cursor
@@ -477,7 +450,7 @@ static Bool CanUseHWCursor() {return Ms._cursor && Ms._cursor->_hw.is() && !VR.a
 void MouseClass::resetCursor()
 {
 #if WINDOWS_NEW
-   if(!App.mainThread()){App._callbacks.include(MouseResetCursor); return;} // for Windows New this can be called only on the main thread
+   if(!App.mainThread()){App.includeFuncCall(MouseResetCursor); return;} // for Windows New this can be called only on the main thread
 #endif
 
    Int cur; // -1=system default, 0=hidden, 1=custom hardware
