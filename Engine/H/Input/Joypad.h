@@ -290,11 +290,11 @@ private:
       {
          struct Data
          {
-            UInt data[(ELMS(_remap) + 4 + 6*8)/4]; // use UInt to force alignment
+            UInt data[(32 + 4 + 6*8)/4]; // use UInt to force alignment
          }data;
 
       #if EE_PRIVATE
-      #if JP_GAMEPAD_INPUT
+      #if JP_GAMEPAD_INPUT && WINDOWS_OLD
          ABI::Windows::Gaming::Input::GamepadReading gamepad;   ASSERT(SIZE(gamepad)<=SIZE(data));
 
          struct

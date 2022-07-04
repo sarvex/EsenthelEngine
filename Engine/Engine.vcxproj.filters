@@ -292,6 +292,9 @@
     <Filter Include="H\_\Libs\NintendoSwitch\Specified through Proj Properties because drag and drop doesn%27t work">
       <UniqueIdentifier>{a0d617f6-5be4-425d-a214-fcd17292abae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="H\_\Libs\64\SPIRV-Cross">
+      <UniqueIdentifier>{45ae6e2e-2c10-4e8c-a6f9-ff69016d9022}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="H\Engine.h">
@@ -2448,9 +2451,6 @@
     <Library Include="..\ThirdPartyLibs\DirectXShaderCompiler\lib\dxcompiler.lib">
       <Filter>H\_\Libs\64</Filter>
     </Library>
-    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-c-shared.lib">
-      <Filter>H\_\Libs\64</Filter>
-    </Library>
     <Library Include="..\ThirdPartyLibs\Waifu2x\Windows\x64\Release\Waifu2x.lib">
       <Filter>H\_\Libs\64</Filter>
     </Library>
@@ -2684,6 +2684,27 @@
     </Library>
     <Library Include="..\ThirdPartyLibs\BC\x64\Release Universal\ispc_texcomp.lib">
       <Filter>H\_\Libs\64\Universal</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-cpp.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-glsl.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-hlsl.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-msl.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-reflect.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-c.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-core.lib">
+      <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>

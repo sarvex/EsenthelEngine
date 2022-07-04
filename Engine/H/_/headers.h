@@ -641,8 +641,8 @@
    // SPIR-V Cross
    #define SPIRV_CROSS (WINDOWS_OLD && X64)
    #if     SPIRV_CROSS
-      #include "../../../ThirdPartyLibs/SPIRV-Cross/include/spirv_cross/spirv_cross_c.h"
-      #include "../../../ThirdPartyLibs/SPIRV-Cross/include/spirv_cross/spirv_glsl.hpp"
+      #include "../../../ThirdPartyLibs/SPIRV-Cross/include/spirv_cross_c.h"
+      #include "../../../ThirdPartyLibs/SPIRV-Cross/include/spirv_glsl.hpp"
    #endif
 
    #if GL // define required constants which may be missing on some platforms

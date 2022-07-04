@@ -1469,13 +1469,7 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       LogN(S+"/******************************************************************************/\nShader:"+shader.name+' '+ShaderTypeName[type]+'\n'+code);
    #endif
 
-      if(!code.length()) // this is also needed for null char below
-      {
-      #if DEBUG
-         ShaderCompiler::Shader &shader=cc.shader(shader_data);
-      #endif
-         Exit("Can't convert HLSL to GLSL");
-      }
+      if(!code.length())Exit("Can't convert HLSL to GLSL"); // this is also needed for null char below
       data=code();
       size=code.length()+1; // include null char
    }
@@ -1619,9 +1613,11 @@ Bool ShaderCompiler::compileTry(Threads &threads)
                {
                   Memc<ShaderDataEx> &sds=shader_datas[i];
                   FREPA(sds)if(sds[i]==sub.shader_data){sub.shader_data_index=i; goto got_shader_data;} // find same
-                  sub.shader_data_index=sds.elms(); ShaderDataEx &sd=sds.New(); // add new
-                  Swap(SCAST(ShaderData, sd), sub.shader_data); // just swap
-                  sd.sub=&sub; // link only during compilation because data use 'Memc' container which could change addresses while new data were being added, however at this stage all have already been created
+                  {
+                     sub.shader_data_index=sds.elms(); ShaderDataEx &sd=sds.New(); // add new
+                     Swap(SCAST(ShaderData, sd), sub.shader_data); // just swap
+                     sd.sub=&sub; // link only during compilation because data use 'Memc' container which could change addresses while new data were being added, however at this stage all have already been created
+                  }
                got_shader_data:
                   sub.shader_data.del(); // no longer needed
                }
