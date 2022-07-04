@@ -111,6 +111,8 @@
 
 #define APPLE (MAC || IOS)
 
+#define NINTENDO (SWITCH)
+
 #define DESKTOP (WINDOWS || MAC || LINUX )
 #define MOBILE  (ANDROID || IOS || SWITCH)
 
@@ -145,6 +147,7 @@ namespace EE // Esenthel Engine namespace
    #include "Misc/Cpu.h"
    #include "Memory/Mem Pointer.h"
    #include "Misc/Misc.h"
+   #include "Misc/Translation.h"
    #include "Memory/_Memc.h"
    #include "Memory/Mem Continuous.h"
    #include "Misc/UID.h"
@@ -195,7 +198,6 @@ namespace EE // Esenthel Engine namespace
    #include "Misc/Callback.h"
    #include "Misc/DLL.h"
    #include "Misc/Printer.h"
-   #include "Misc/Translation.h"
    /******************************************************************************/
    // MATH
    /******************************************************************************/

@@ -105,16 +105,18 @@ struct File
    Bool get( Ptr data, Int size); // read  from file to 'data' memory, false on fail, if error occurs then 'ok' will be set to false
    Bool put(CPtr data, Int size); // write from 'data' memory to file, false on fail, if error occurs then 'ok' will be set to false
 
-   T1(TYPE) Bool  put       (C TYPE &t       ) {return put(&t, SIZE(TYPE)  );} // write raw memory              of 't' object
-   T1(TYPE) Bool  get       (  TYPE &t       ) {return get(&t, SIZE(TYPE)  );} // read  raw memory              to 't' object
-   T1(TYPE) Bool  putN      (C TYPE *t, Int n) {return put( t, SIZE(TYPE)*n);} // write raw array of 'n' number of 't' objects
-   T1(TYPE) Bool  getN      (  TYPE *t, Int n) {return get( t, SIZE(TYPE)*n);} // read  raw array to 'n' number of 't' objects
-   T1(TYPE) File& operator<<(C TYPE &t       ) {       put( t);     return T;} // write raw memory              of 't' object
-   T1(TYPE) File& operator>>(  TYPE &t       ) {       get( t);     return T;} // read  raw memory              to 't' object
-            File& operator<<(C Str8 &s       ) {return putStr(s);            } // write string
-            File& operator<<(C Str  &s       ) {return putStr(s);            } // write string
-            File& operator>>(  Str8 &s       ) {return getStr(s);            } // read  string
-            File& operator>>(  Str  &s       ) {return getStr(s);            } // read  string
+   T1(TYPE) Bool  put       (C TYPE     &t       ) {return put(&t, SIZE(TYPE)  );} // write raw memory              of 't' object
+   T1(TYPE) Bool  get       (  TYPE     &t       ) {return get(&t, SIZE(TYPE)  );} // read  raw memory              to 't' object
+   T1(TYPE) Bool  putN      (C TYPE     *t, Int n) {return put( t, SIZE(TYPE)*n);} // write raw array of 'n' number of 't' objects
+   T1(TYPE) Bool  getN      (  TYPE     *t, Int n) {return get( t, SIZE(TYPE)*n);} // read  raw array to 'n' number of 't' objects
+   T1(TYPE) File& operator<<(C TYPE     &t       ) {       put( t);     return T;} // write raw memory              of 't' object
+   T1(TYPE) File& operator>>(  TYPE     &t       ) {       get( t);     return T;} // read  raw memory              to 't' object
+            File& operator<<(C Str8     &s       ) {return putStr(s);            } // write string
+            File& operator<<(C Str      &s       ) {return putStr(s);            } // write string
+            File& operator<<(C MultiStr &s       ) {       s.save(T);   return T;} // write string
+            File& operator>>(  Str8     &s       ) {return getStr(s);            } // read  string
+            File& operator>>(  Str      &s       ) {return getStr(s);            } // read  string
+            File& operator>>(  MultiStr &s       ) {       s.load(T);   return T;} // read  string
 
    File& putBool  (  Bool  b) {T<<b; return T;}    Bool  getBool  () {Bool   b; T>>b; return b;} // write/read  Bool
    File& putSByte ( SByte  b) {T<<b; return T;}   SByte  getSByte () {SByte  b; T>>b; return b;} // write/read SByte
