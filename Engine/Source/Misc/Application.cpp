@@ -63,7 +63,7 @@ Application::Application()
   _waiting=false;
 #endif
   _stay_awake=AWAKE_OFF;
-  _lang=LANG_UNKNOWN;
+  _lang=LANG_NONE;
 //_mem_leaks=0; don't set this as it could have been already modified
   _process_id=_parent_process_id=0;
   _hwnd=null;

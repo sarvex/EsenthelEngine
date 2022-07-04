@@ -1,4 +1,27 @@
 /******************************************************************************/
+struct LangStr : Str // String for a specific language
+{
+   LANG_TYPE lang=LANG_NONE;
+
+   void operator=(C Str &s) {super::operator=(s);}
+
+   Bool save(File &f)C;
+   Bool load(File &f) ;
+};
+struct MultiStr : Mems<LangStr> // Multi-Language String
+{
+   MultiStr& clear() {super::clear(); return T;}
+   MultiStr& del  () {super::del  (); return T;}
+
+   operator C Str&           (                        )C {return T();} // get    text for Application language, "" on fail
+            C Str& operator()(                        )C;              // get    text for Application language, "" on fail
+            C Str& operator()(LANG_TYPE lang          );               // get    text for 'lang'      language, "" on fail
+         MultiStr& set       (LANG_TYPE lang, C Str &s);               // set    text for 'lang'      language
+         MultiStr& remove    (LANG_TYPE lang          );               // remove text for 'lang'      language
+
+   Bool find(LANG_TYPE lang, Int &index)C;
+};
+/******************************************************************************/
 enum TRANS_FORM : Byte // Translation Form
 {
    TF_MALE   , // masculine

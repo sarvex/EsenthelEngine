@@ -6,6 +6,40 @@ CChar* T() {return MLTC(u"", DE, u"", FR, u"", IT, u"", SP, u"", PO, u"", PL, u"
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
+Bool LangStr::save(File &f)C {f<<lang<<SCAST(C Str, T); return f.ok();}
+Bool LangStr::load(File &f)  {f>>lang>>SCAST(  Str, T); return f.ok();}
+
+Int Compare(C LangStr &a, C LANG_TYPE &b) {return Compare(a.lang, b);}
+
+inline Bool MultiStr::find(LANG_TYPE lang, Int &index)C {return binarySearch(lang, index, Compare);}
+
+C Str& MultiStr::operator()()C
+{
+   Int index;
+   if(find(App.lang(), index))return T[index];
+   if(find(EN        , index))return T[index];
+   if(find(LANG_NONE , index))return T[index];
+   return S;
+}
+C Str& MultiStr::operator()(LANG_TYPE lang)
+{
+   Int index; if(find(lang, index))return T[index];
+   return S;
+}
+MultiStr& MultiStr::set(LANG_TYPE lang, C Str &s)
+{
+   if(!s.is())return remove(lang);
+   LangStr *ls;
+   Int index; if(find(lang, index))ls=&T[index];else{ls=&NewAt(index); ls->lang=lang;}
+  *ls=s;
+   return T;
+}
+MultiStr& MultiStr::remove(LANG_TYPE lang)
+{
+   Int index; if(find(lang, index))super::remove(index, true);
+   return T;
+}
+/******************************************************************************/
 CChar* TAction() {return MLTC(u"Action", DE, u"Aktion", FR, u"Action", IT, u"Azione", SP, u"Acción", PO, u"Açao", PL, u"Akcja", RU, u"Действие", JP, u"アクション", KO, u"동작", CN, u"行动", TH, u"หนังบู๊");}
 CChar* TAttack() {return MLTC(u"Attack", DE, u"Attacke", FR, u"Attaque", IT, u"Attacco", SP, u"Ataque", PO, u"Ataque", PL, u"Atak", RU, u"Атака", JP, u"攻撃", KO, u"공격", CN, u"攻击", TH, u"จู่โจม");}
 CChar* TAmbientOcclusion() {return MLTC(u"Ambient Occlusion", DE, u"Umgebungsverdeckung (AO)", FR, u"Occlusion Ambiante (AO)", IT, u"Ambient Occlusion", SP, u"Oclusión Ambiental (AO)", PO, u"Oclusão de Ambiente (AO)", PL, u"Okluzja Otoczenia (AO)", RU, u"Окружающая Окклюзия"/*(AO)*/, JP, u"アンビエントオクルージョン (AO)", KO, u"앰비언트 어클루전 (AO)", CN, u"环境光遮蔽 (AO)", TH, u"การบดเคี้ยวรอบข้าง (AO)");}

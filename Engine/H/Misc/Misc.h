@@ -754,7 +754,7 @@ enum LANG_TYPE : Byte
    LANG_YORUBA       =0x6A,
    LANG_ZULU         =0x35,
 #endif
-   LANG_UNKNOWN=LANG_NEUTRAL,
+   LANG_NONE=LANG_NEUTRAL,
 
    EN=LANG_ENGLISH   ,
    CN=LANG_CHINESE   ,

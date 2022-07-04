@@ -316,7 +316,7 @@ LANG_TYPE SteamWorks::appLanguage()C
 #if SUPPORT_STEAM
    if(ISteamApps *i=SteamApps())if(auto text=i->GetCurrentGameLanguage())REPA(SteamLanguages)if(Equal(text, SteamLanguages[i].code))return SteamLanguages[i].lang;
 #endif
-   return LANG_UNKNOWN;
+   return LANG_NONE;
 }
 COUNTRY SteamWorks::country()C
 {

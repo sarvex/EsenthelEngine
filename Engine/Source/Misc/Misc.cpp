@@ -1689,12 +1689,12 @@ struct Language
 LANG_TYPE LanguageCode(CChar8 *code)
 {
    if(Is(code))FREPA(Languages)if(Starts(code, Languages[i].code))return Languages[i].lang;
-   return LANG_UNKNOWN;
+   return LANG_NONE;
 }
 LANG_TYPE LanguageCode(C Str &code)
 {
    if(code.is())FREPA(Languages)if(Starts(code, Languages[i].code))return Languages[i].lang;
-   return LANG_UNKNOWN;
+   return LANG_NONE;
 }
 CChar8* LanguageCode(LANG_TYPE lang)
 {
@@ -1714,7 +1714,7 @@ LANG_TYPE OSLanguage()
    if(auto langs=Windows::System::UserProfile::GlobalizationPreferences::Languages)
       if(langs->Size>0)return LanguageCode(langs->GetAt(0)->Data());
 #elif APPLE
-   LANG_TYPE lang=LANG_UNKNOWN;
+   LANG_TYPE lang=LANG_NONE;
    if(CFArrayRef langs=CFLocaleCopyPreferredLanguages())
    {
       FREP(CFArrayGetCount(langs))
@@ -1737,7 +1737,7 @@ LANG_TYPE OSLanguage()
 #elif SWITCH
    return LanguageCode(NS::OSLang());
 #endif
-   return LANG_UNKNOWN;
+   return LANG_NONE;
 }
 /******************************************************************************/
 Str LanguageSpecific(LANG_TYPE lang)
