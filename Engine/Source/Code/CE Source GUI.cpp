@@ -9,8 +9,8 @@ static Bool Overwrite;
 /******************************************************************************/
 void Line::setRect(Int i)
 {
-   Flt lh=CE.ts.lineHeight();
-   super::rect(Rect_LU(0, -lh*i + CE.fontSpaceOffset(), CE.ts.textWidth(T), lh));
+   Flt h=CE.ts.lineHeight(), o=CE.fontSpaceOffset();
+   super::rect(Rect(0, h*(-i-1) + o, CE.ts.textWidth(T), h*(-i))); // operate on absolute values, instead of relative, to get the same exact values for previous/next lines
 }
 void Line::setGui(Int i, GuiObj &parent)
 {
@@ -838,7 +838,8 @@ static void ShowElmName(C UID &id, C Rect &rect, C GuiPC &gpc, C VecI2 &range, B
    if(  name.is())
    {
       TextStyleParams ts=CE.ts_small; ts.align=0; ts.color=Theme.colors[TOKEN_ELM_NAME];
-      Rect_LU r(rect.lu()+gpc.offset, Max((name.length()+0.5f)*ts.colWidth(), (range.y-range.x+1)*CE.ts.colWidth()), CE.ts.lineHeight()); r+=Vec2(range.x*CE.ts.colWidth(), 0);
+      Rect r=rect+gpc.offset; Flt x=range.x*CE.ts.colWidth(), w=Max((name.length()+0.5f)*ts.colWidth(), (range.y-range.x+1)*CE.ts.colWidth());
+      r.min.x+=x; r.max.x=r.min.x+w; // operate on absolute values, instead of relative, to get the same exact values for previous/next lines
       Color c=(valid ? Theme.colors[TOKEN_ELM_BACKGROUND] : Color(148, 0, 0));
       if(comment)c=Lerp(c, Theme.colors[TOKEN_NONE], 0.7f);
       c.a=Theme.colors[TOKEN_ELM_BACKGROUND].a;
@@ -864,7 +865,7 @@ void Line::draw(C GuiPC &gpc)
       if(!text_valid){text_valid=true; setTextData();}
       GuiPC gpc2=gpc ; gpc2.offset.x+=CE. lineNumberSize();
          // if spacing between elements is a fixed number of pixels then flickering can occur if positions will be at 0.5 pixels (0.5, 1.5, 2.5, ..), to prevent that from happening align the vertical position
-         gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
+         //gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
       GuiPC gpc3=gpc2; gpc3.offset.y-=CE.fontSpaceOffset();
 
       // highlight symbol
@@ -903,7 +904,7 @@ void Source::ViewLine::draw(C GuiPC &gpc)
       if(!text_valid){text_valid=true; setTextData();}
       GuiPC gpc2=gpc;    gpc2.offset.x+=CE. lineNumberSize();
          // if spacing between elements is a fixed number of pixels then flickering can occur if positions will be at 0.5 pixels (0.5, 1.5, 2.5, ..), to prevent that from happening align the vertical position
-         gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
+         //gpc2.offset+=D.alignScreenToPixelOffset(Vec2(gpc2.offset.x, CE.fontSpaceOffset()+CE.ts.posY(gpc2.offset.y)));
       super::draw(gpc2); gpc2.offset.y-=CE.fontSpaceOffset();
       if(CE.find.visible() && CE.find.text().is())HighlightFind(asStr(), rect(), gpc2);
       if(CE.view_elm_names                       )ShowElmNames (asStr(), rect(), gpc2, null, this);
@@ -911,11 +912,13 @@ void Source::ViewLine::draw(C GuiPC &gpc)
 }
 /******************************************************************************/
 void Source::drawSelection(C Color &color, Int y, Int min_x, Int max_x)
-{
-   Vec2 pos=rect().lu()+offset(); D.alignScreenToPixel(pos);
-   pos+=D.alignScreenToPixelOffset(Vec2(pos.x, CE.fontSpaceOffset()+CE.ts.posY(pos.y)));
-   pos+=posVisual(VecI2(min_x, y));
-   Rect_LU(pos, (max_x>=min_x) ? CE.ts.colWidth()*(max_x-min_x) : D.w()-pos.x, CE.ts.lineHeight()).draw(color);
+{  // #SourceOffset
+   Vec2 offset=rect().lu()+T.offset(); D.alignScreenToPixel(offset);
+   offset+=D.alignScreenToPixelOffset(Vec2(offset.x, CE.fontSpaceOffset()+CE.ts.posY(offset.y)));
+
+   Rect rect(offset+posVisual(VecI2(min_x, y+1)), offset+posVisual(VecI2(max_x, y))); // operate on absolute values, instead of relative, to get the same exact values for previous/next lines
+   if(max_x<min_x)rect.max.x=D.w();
+   rect.draw(color);
 }
 /******************************************************************************/
 void Source::drawSelection(C Color &color, C VecI2 &a, C VecI2 &b, Bool including)
@@ -936,7 +939,7 @@ void Source::draw(C GuiPC &gpc)
    if(/*gpc.visible &&*/ visible())
    {
       D.clip(_crect);
-
+      // #SourceOffset
       Vec2 offset=rect().lu()+T.offset(); D.alignScreenToPixel(offset);
       offset+=D.alignScreenToPixelOffset(Vec2(offset.x, CE.fontSpaceOffset()+CE.ts.posY(offset.y)));
 

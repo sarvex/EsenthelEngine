@@ -456,8 +456,8 @@ void Source::ViewLine::setTextData() // must be in sync with "Line::setTextData"
 }
 void Source::ViewLine::setRect(Int i)
 {
-   Flt lh=CE.ts.lineHeight();
-   super::rect(Rect_LU(0, -lh*i + CE.fontSpaceOffset(), CE.ts.textWidth(asStr()), lh));
+   Flt h=CE.ts.lineHeight(), o=CE.fontSpaceOffset();
+   super::rect(Rect(0, h*(-i-1) + o, CE.ts.textWidth(asStr()), h*(-i))); // operate on absolute values, instead of relative, to get the same exact values for previous/next lines
 }
 /******************************************************************************/
 // DETECT
