@@ -227,8 +227,8 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
                                                                     -AMotionEvent_getAxisValue(event, AMOTION_EVENT_AXIS_Y    , action_index));
                                                joypad->dir_a[1].set( AMotionEvent_getAxisValue(event, joypad->axis_stick_r_x  , action_index),  // for performance set without checking for valid axis, in worst case, 0 is reported
                                                                     -AMotionEvent_getAxisValue(event, joypad->axis_stick_r_y  , action_index)); // for performance set without checking for valid axis, in worst case, 0 is reported
-               if(joypad->axis_trigger_l!=0xFF)joypad->setTrigger(0, AMotionEvent_getAxisValue(event, joypad->axis_trigger_l  , action_index)); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
-               if(joypad->axis_trigger_r!=0xFF)joypad->setTrigger(1, AMotionEvent_getAxisValue(event, joypad->axis_trigger_r  , action_index)); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+               if(joypad->axis_trigger_l!=0xFF)joypad->setTrigger(0, AMotionEvent_getAxisValue(event, joypad->axis_trigger_l  , action_index) * joypad->axis_trigger_mad[0].x + joypad->axis_trigger_mad[0].y); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
+               if(joypad->axis_trigger_r!=0xFF)joypad->setTrigger(1, AMotionEvent_getAxisValue(event, joypad->axis_trigger_r  , action_index) * joypad->axis_trigger_mad[1].x + joypad->axis_trigger_mad[1].y); // update only if have axis, to avoid conflicts with digital-bit-trigger buttons
             #if DEBUG && 0
                REP(256){Flt v=AMotionEvent_getAxisValue(event, i, action_index); if(v!=0)LogN(S+"Joy Axis: "+i+", Value: "+v);}
             #endif
@@ -505,6 +505,11 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
    }
    return 0;
 }
+static void SetMAD(Vec2 &mad, Flt min, Flt max) // convert from min..max -> 0..1
+{
+   mad.x=1.0f/(max-min);
+   mad.y=-min*mad.x; // min*mad.x+mad.y=0
+}
 static void DeviceRemoved(Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); REPA(Joypads)if(Joypads[i].id()==device_id){Joypads.remove(i); break;}}
 static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_ptr); Bool added; Joypad &joypad=GetJoypad(device_id, added); if(added)
    if(Jni)
@@ -517,29 +522,61 @@ static void DeviceAdded  (Ptr device_id_ptr) {UInt device_id=UIntPtr(device_id_p
       Int product_id=0; if(JMethodID getProductId=Jni.func(InputDevice, "getProductId", "()I"                 ))product_id=Jni->CallIntMethod(device, getProductId);
 
       if(JMethodID DeviceHasAxis=Jni.staticFunc(ActivityClass, "DeviceHasAxis", "(Landroid/view/InputDevice;I)Z"))
+      if(JMethodID DeviceMinAxis=Jni.staticFunc(ActivityClass, "DeviceMinAxis", "(Landroid/view/InputDevice;I)F"))
+      if(JMethodID DeviceMaxAxis=Jni.staticFunc(ActivityClass, "DeviceMaxAxis", "(Landroid/view/InputDevice;I)F"))
       {
       #define HAS(axis) (Jni->CallStaticBooleanMethod(ActivityClass, DeviceHasAxis, device(), jint(axis)))
+      #define MIN(axis) (Jni->CallStaticFloatMethod  (ActivityClass, DeviceMinAxis, device(), jint(axis)))
+      #define MAX(axis) (Jni->CallStaticFloatMethod  (ActivityClass, DeviceMaxAxis, device(), jint(axis)))
 
-         // Xbox Elite Wireless Controller Series 2 has AMOTION_EVENT_AXIS_BRAKE+AMOTION_EVENT_AXIS_GAS as triggers
-         if(HAS(AMOTION_EVENT_AXIS_BRAKE))joypad.axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE;else if(HAS(AMOTION_EVENT_AXIS_LTRIGGER))joypad.axis_trigger_l=AMOTION_EVENT_AXIS_LTRIGGER;
-         if(HAS(AMOTION_EVENT_AXIS_GAS  ))joypad.axis_trigger_r=AMOTION_EVENT_AXIS_GAS  ;else if(HAS(AMOTION_EVENT_AXIS_RTRIGGER))joypad.axis_trigger_r=AMOTION_EVENT_AXIS_RTRIGGER;
-
-         // Xbox Elite Wireless Controller Series 2, Nintendo Switch Pro Controller, have X=AMOTION_EVENT_AXIS_Z, Y=AMOTION_EVENT_AXIS_RZ. Samsung EI-GP20 has AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY
-         Byte has[2], has_i=0, check[]={AMOTION_EVENT_AXIS_Z, AMOTION_EVENT_AXIS_RZ, AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY}; // order important (potential X first, Y next). Prefer AMOTION_EVENT_AXIS_Z/AMOTION_EVENT_AXIS_RZ because they're supported by popular gamepads and also they're mentioned in header for right stick
-         FREPA(check)if(HAS(check[i]))
-         {
-            has[has_i]=check[i]; if(++has_i==2) // found 2 axes
+         { // stick right
+            // Xbox Elite Wireless Controller Series 2, Nintendo Switch Pro Controller, have X=AMOTION_EVENT_AXIS_Z, Y=AMOTION_EVENT_AXIS_RZ. Samsung EI-GP20 has AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY
+            Byte has[2], has_i=0, check[]={AMOTION_EVENT_AXIS_Z, AMOTION_EVENT_AXIS_RZ, AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY}; // order important (potential X first, Y next). Prefer AMOTION_EVENT_AXIS_Z/AMOTION_EVENT_AXIS_RZ because they're supported by popular gamepads and also they're mentioned in header for right stick
+            FREPA(check)if(HAS(check[i]))
             {
-               joypad.axis_stick_r_x=has[0];
-               joypad.axis_stick_r_y=has[1];
-               break;
+               has[has_i]=check[i]; if(++has_i==2) // found 2 axes
+               {
+                  joypad.axis_stick_r_x=has[0];
+                  joypad.axis_stick_r_y=has[1];
+                  break;
+               }
             }
          }
 
-      #undef HAS
-      }
+         // triggers
+         {
+            // Xbox Elite Wireless Controller Series 2 uses AMOTION_EVENT_AXIS_BRAKE+AMOTION_EVENT_AXIS_GAS, Sony uses AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY
+            Byte has[2], has_i=0, check[]={AMOTION_EVENT_AXIS_BRAKE, AMOTION_EVENT_AXIS_GAS, AMOTION_EVENT_AXIS_LTRIGGER, AMOTION_EVENT_AXIS_RTRIGGER, AMOTION_EVENT_AXIS_RX, AMOTION_EVENT_AXIS_RY}; // order important (potential X first, Y next).
+            FREPA(check)
+            {
+               Byte axis=check[i]; if(axis!=joypad.axis_stick_r_x && axis!=joypad.axis_stick_r_y && HAS(axis))
+               {
+                  has[has_i]=axis; if(++has_i==2) // found 2 axes
+                  {
+                     joypad.axis_trigger_l=has[0];
+                     joypad.axis_trigger_r=has[1];
+                     break;
+                  }
+               }
+            }
+         }
 
-      joypad.setInfo(vendor_id, product_id);
+         joypad.setInfo(vendor_id, product_id);
+         if(joypad.axis_trigger_l!=0xFF) // has trigger axis
+         {
+            SetMAD(joypad.axis_trigger_mad[0], MIN(joypad.axis_trigger_l), MAX(joypad.axis_trigger_l)); // this is needed because Sony has triggers in range -1..1
+            REPA(joypad._remap)if(joypad._remap[i]==JB_L2)joypad._remap[i]=254; // use 254 as out of range to disable auto-convert
+         }
+         if(joypad.axis_trigger_r!=0xFF) // has trigger axis
+         {
+            SetMAD(joypad.axis_trigger_mad[1], MIN(joypad.axis_trigger_r), MAX(joypad.axis_trigger_r)); // this is needed because Sony has triggers in range -1..1
+            REPA(joypad._remap)if(joypad._remap[i]==JB_R2)joypad._remap[i]=254; // use 254 as out of range to disable auto-convert
+         }
+
+      #undef HAS
+      #undef MIN
+      #undef MAX
+      }
    }
 }
 /******************************************************************************/

@@ -220,6 +220,7 @@ private:
 #endif
 #if ANDROID
    Byte axis_stick_r_x=0xFF, axis_stick_r_y=0xFF, axis_trigger_l=0xFF, axis_trigger_r=0xFF;
+   Vec2 axis_trigger_mad[2]; // x=mul, y=add, [0]=l, [1]=r
 #elif MAC
    struct Elm
    {

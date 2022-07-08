@@ -943,10 +943,9 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
    // GAMEPAD
    /******************************************************************************/
-   public static final boolean DeviceHasAxis(android.view.InputDevice device, int axis)
-   {
-      return device.getMotionRange(axis)!=null;
-   }
+   public static final boolean DeviceHasAxis(android.view.InputDevice device, int axis) {return device.getMotionRange(axis)!=null;}
+   public static final float   DeviceMinAxis(android.view.InputDevice device, int axis) {android.view.InputDevice.MotionRange motion_range=device.getMotionRange(axis); return (motion_range!=null) ? motion_range.getMin() : 0;}
+   public static final float   DeviceMaxAxis(android.view.InputDevice device, int axis) {android.view.InputDevice.MotionRange motion_range=device.getMotionRange(axis); return (motion_range!=null) ? motion_range.getMax() : 0;}
    /******************************************************************************/
    // MICROPHONE
    /******************************************************************************/
