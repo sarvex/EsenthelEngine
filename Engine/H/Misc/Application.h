@@ -30,6 +30,7 @@ enum APP_FLAG // Application Flags
    APP_IGNORE_PRECOMPILED_SHADER_CACHE=1<<22, // if ignore loading shaders from Precompiled Shader Cache
    APP_SHADER_CACHE_MAX_COMPRESS      =1<<23, // if enable maximum compression for the Shader Cache, this slows down generation of the Shader Cache, but reduces its size
    APP_JOYPAD_THREAD                  =1<<24, // if create a dedicated thread for polling joypads state, enables higher precision joypad events at the cost of extra processing
+   APP_JOYPAD_DISABLE_MINI            =1<<25, // if disable support for a single Nintendo Switch Joy-Con Left or Right held horizontally [Supported Platforms: NintendoSwitch]
 
    APP_AUTO_FREE_OPEN_GL_ES_DATA=APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA|APP_AUTO_FREE_MESH_OPEN_GL_ES_DATA,
 };
