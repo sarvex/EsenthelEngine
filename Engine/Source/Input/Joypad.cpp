@@ -947,16 +947,16 @@ void Joypad::getState()
          {
             // buttons
             WORD changed=old.Gamepad.wButtons^cur.Gamepad.wButtons;
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_A             , JB_A     , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_B             , JB_B     , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_X             , JB_X     , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_Y             , JB_Y     , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER , JB_L1    , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER, JB_R1    , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB    , JB_L3    , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB   , JB_R3    , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_BACK          , JB_BACK  , _joypad_index);
-            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_START         , JB_START , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_A             , JB_A    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_B             , JB_B    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_X             , JB_X    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_Y             , JB_Y    , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER , JB_L1   , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER, JB_R1   , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB    , JB_L3   , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB   , JB_R3   , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_BACK          , JB_BACK , _joypad_index);
+            Test(changed, cur.Gamepad.wButtons, XINPUT_GAMEPAD_START         , JB_START, _joypad_index);
 
             // dpad
             if(FlagOn(changed, XINPUT_GAMEPAD_DPAD_LEFT | XINPUT_GAMEPAD_DPAD_RIGHT | XINPUT_GAMEPAD_DPAD_DOWN | XINPUT_GAMEPAD_DPAD_UP))
