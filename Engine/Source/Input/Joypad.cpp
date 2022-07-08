@@ -455,6 +455,10 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
    _vendor_id= vendor_id;
   _product_id=product_id;
 #endif
+#if JP_GAMEPAD_INPUT
+   if(_axes>=4){_axis_stick_r_x=2; _axis_stick_r_y=3;}
+   if(_axes>=6){_axis_trigger_l=4; _axis_trigger_r=5;}
+#endif
 #if JOYPAD_BUTTON_REMAP
    ASSERT(ELMS(_remap)==ELMS(_button));
    switch(vendor_id)
@@ -476,14 +480,15 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[ 7]=JB_START;
               _remap[ 8]=JB_L3;
               _remap[ 9]=JB_R3;
-            /*_remap[10]=JB_DPAD_UP;
+            /* These were reported for JP_GAMEPAD_INPUT, but not on Android
+              _remap[10]=JB_DPAD_UP;
               _remap[11]=JB_DPAD_RIGHT;
               _remap[12]=JB_DPAD_DOWN;
-              _remap[13]=JB_DPAD_LEFT;*/
-             //axis_stick_r_x=AMOTION_EVENT_AXIS_Z; don't set because auto-detect works fine
-             //axis_stick_r_y=AMOTION_EVENT_AXIS_RZ;
-             //axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE;
-             //axis_trigger_r=AMOTION_EVENT_AXIS_GAS;
+              _remap[13]=JB_DPAD_LEFT; */
+            //_axis_stick_r_x=AMOTION_EVENT_AXIS_Z; don't set because auto-detect works fine
+            //_axis_stick_r_y=AMOTION_EVENT_AXIS_RZ;
+            //_axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE;
+            //_axis_trigger_r=AMOTION_EVENT_AXIS_GAS;
             }return;
          }
       }break;
@@ -524,8 +529,9 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[10]=JB_BACK;
               _remap[11]=JB_START;
               _remap[15]=254; // JB_PLAY
-             //axis_stick_r_x=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
-             //axis_stick_r_y=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
+            //_axis_stick_r_x=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
+            //_axis_stick_r_y=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
+            // no triggers
             }return;
          }
       }break;
@@ -549,8 +555,17 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
         _remap[13]=254; // JB_TOUCHSCREEN
-       //axis_trigger_l=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
-       //axis_trigger_r=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
+      //_axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
+      //_axis_stick_r_y=AMOTION_EVENT_AXIS_RZ; don't set because auto-detect works fine
+      //_axis_trigger_l=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
+      //_axis_trigger_r=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
+      #if JP_GAMEPAD_INPUT
+         if(_axes>=6)
+         {
+           _axis_stick_r_x=2; _axis_stick_r_y=5;
+           _axis_trigger_l=3; _axis_trigger_r=4;
+         }
+      #endif
       }return;
 
       case 1406: // Nintendo
@@ -622,8 +637,9 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[11]=JB_R3;
               _remap[12]=JB_MINI_S1; // HOME
               _remap[13]=JB_MINI_S2; // CAPTURE
-             //axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
-             //axis_stick_r_y=AMOTION_EVENT_AXIS_RZ; don't set because auto-detect works fine
+            //_axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
+            //_axis_stick_r_y=AMOTION_EVENT_AXIS_RZ; don't set because auto-detect works fine
+            // no triggers
             }return;
          }
       }break;
@@ -1031,9 +1047,9 @@ void Joypad::update()
     //auto Switch=cur.Switch->Data;
       auto axis  =cur.axis  ->Data;
    #endif
-      if(_axes>=2)dir_a[0].set(axis[0]*2-1, axis[1]*-2+1);
-      if(_axes>=4)dir_a[1].set(axis[2]*2-1, axis[3]*-2+1);
-      if(_axes>=6){trigger[0]=axis[4]; trigger[1]=axis[5];}
+      if(_axes          >=   2)dir_a[0].set(axis[              0]*2-1,        axis[              1]*-2+1);
+      if(_axis_stick_r_x!=0xFF)dir_a[1].set(axis[_axis_stick_r_x]*2-1,        axis[_axis_stick_r_y]*-2+1);  // _axes>=4
+      if(_axis_trigger_l!=0xFF){trigger[0] =axis[_axis_trigger_l]; trigger[1]=axis[_axis_trigger_r]      ;} // _axes>=6
    }
 #endif
 #if JP_X_INPUT

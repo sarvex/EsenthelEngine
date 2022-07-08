@@ -174,6 +174,9 @@ private:
 #if     JOYPAD_BUTTON_REMAP
    Byte    _remap[32];
 #endif
+#if JP_GAMEPAD_INPUT || ANDROID
+   Byte    _axis_stick_r_x=0xFF, _axis_stick_r_y=0xFF, _axis_trigger_l=0xFF, _axis_trigger_r=0xFF;
+#endif
 #if JP_DIRECT_INPUT
    Byte    _offset_x=0, _offset_y=0;
 #endif
@@ -196,6 +199,9 @@ private:
 #endif
    Flt     _last_t[32], _dir_t, _dir_at[2];
    Color2  _color_left, _color_right;
+#if ANDROID
+   Vec2    _axis_trigger_mad[2]; // x=mul, y=add, [0]=l, [1]=r
+#endif
    Sensor  _sensor_left, _sensor_right;
    Str     _name;
 #if JP_DIRECT_INPUT
@@ -218,10 +224,7 @@ private:
    Ptr     _gamepad=null, _raw_game_controller=null;
 #endif
 #endif
-#if ANDROID
-   Byte axis_stick_r_x=0xFF, axis_stick_r_y=0xFF, axis_trigger_l=0xFF, axis_trigger_r=0xFF;
-   Vec2 axis_trigger_mad[2]; // x=mul, y=add, [0]=l, [1]=r
-#elif MAC
+#if MAC
    struct Elm
    {
       enum TYPE : Byte
