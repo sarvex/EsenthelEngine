@@ -523,7 +523,7 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[ 7]=JB_R1;
               _remap[10]=JB_BACK;
               _remap[11]=JB_START;
-            //_remap[15]=JB_PLAY;
+              _remap[15]=254; // JB_PLAY
              //axis_stick_r_x=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
              //axis_stick_r_y=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
             }return;
@@ -548,6 +548,7 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[11]=JB_R3;
         _remap[ 8]=JB_BACK;
         _remap[ 9]=JB_START;
+        _remap[13]=254; // JB_TOUCHSCREEN
        //axis_trigger_l=AMOTION_EVENT_AXIS_RX; don't set because auto-detect works fine
        //axis_trigger_r=AMOTION_EVENT_AXIS_RY; don't set because auto-detect works fine
       }return;
