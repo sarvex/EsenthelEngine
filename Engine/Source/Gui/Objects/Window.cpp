@@ -39,7 +39,7 @@ Window::Window() {zero();}
 Window& Window::del()
 {
   _children.del  ();
-   title   .clear();
+   title   .del  ();
   _skin    .clear();
    REPA(button)button[i].del();
    super::del(); zero(); return T;
