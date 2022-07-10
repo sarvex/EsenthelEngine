@@ -3114,7 +3114,7 @@ static void FreezePos(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
       }
    }
 }
-static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 *matrix)
+static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 *matrix, Bool pos=true)
 {
    Bool root=(skel_bone<0);
    if(  root || InRange(skel_bone, skel.bones))
@@ -3215,6 +3215,55 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
                }
 
                abon.setTangents(anim.loop(), anim.length());
+            }
+         }
+
+         if(pos)
+         {
+            if(!root)
+            {
+               abon=anim.findBone(sbon->name, sbon->type, sbon->type_index, sbon->type_sub);
+               keys=abon;
+            }
+            if(keys)
+            {  // orientation is already included in 'times'
+               if(all_keys)keys->includeTimes(null, times, times);
+               else        keys->includeTimes(null, times, times, prev_time, next_time);
+            }
+            REPA(skel.bones)
+            {
+             C SkelBone &child_sbon=skel.bones[i]; if(child_sbon.parent==bone_index) // 'skel_bone' child
+               {
+                  AnimBone &abon=anim.getBone(child_sbon.name, child_sbon.type, child_sbon.type_index, child_sbon.type_sub); // 'skel_bone' child
+
+                  // add keys (Warning: TODO: this is precise only for linear interpolation, for other case we would have to copy 'abon' to temporary and calculate from it)
+                  FREPA(times) // process forward because keys are sorted
+                  {
+                     Flt time=times[i];
+                     Int index; if(!abon.poss.binarySearch(time, index, CompareEps))
+                     {
+                        Vec pos; anim_params.time=time; if(!abon.pos(pos, anim_params) && !SET_ON_FAIL)pos.zero(); // calculate before adding
+                        AnimKeys::Pos &key=abon.poss.NewAt(index); key.time=time; key.pos=pos; ASSERT(!HAS_ANIM_TANGENT);
+                     }
+                  }
+
+                  Int start, end;
+                  if(all_keys)
+                  {
+                     start=0; end=abon.poss.elms();
+                  }else
+                  {
+                        abon.poss.binarySearch(prev_time, start, Compare);
+                     if(abon.poss.binarySearch(next_time, end  , Compare))end++; // end is exclusive, so if found match, process it too, in case key is at the end
+                  }
+                  for(Int i=start; i<end; i++) // process keys from start to end
+                  {
+                     AnimKeys::Pos &pos=abon.poss[i];
+                     anim_params.time=pos.time;
+                  }
+
+                  abon.setTangents(anim.loop(), anim.length());
+               }
             }
          }
       }
