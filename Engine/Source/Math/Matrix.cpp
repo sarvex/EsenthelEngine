@@ -7,6 +7,46 @@ namespace EE{
       -support large distances (because matrix calculations can be done in Dbl precision on the CPU side, and stored as Flt precision in view space)
       -reduce number of matrix operations in shaders
 
+/******************************************************************************
+
+   Matrix calculation rules:
+
+   ~A in Esenthel means inverse (1/A)
+
+      (A*B)*C = A*(B*C)
+
+      A*B=C
+      A*B/B=C/B
+      A=C/B
+
+      A=B, can multiply both sides on the right by same value
+      A*C=B*C
+
+      A=B, can multiply both sides on the left by same value
+      C*A=C*B
+
+      A=B, can divide both sides on the right by same value (which is multiply by inverse: *(1/C))
+      A/C=B/C
+
+      A=B, can inverse both sides
+      1/A = 1/B
+
+      1/(A*B) = (1/B)*(1/A)
+       ~(A*B) =   ~B *  ~A
+
+      A*B=C, multiply both sides on the left by ~A:
+      ~A * (A*B) = ~A * (C)
+      (~A * A) * B = ~A * C
+      B = ~A * C
+
+      A=C/B, inverse both sides:
+      ~A=~(C /  B)
+      ~A=~(C * ~B)
+      ~A=~~B * ~C
+      ~A=B * ~C
+      ~A*C=B
+      B=~A*C
+
 /******************************************************************************/
       MatrixM ObjMatrix(1),
               CamMatrix,

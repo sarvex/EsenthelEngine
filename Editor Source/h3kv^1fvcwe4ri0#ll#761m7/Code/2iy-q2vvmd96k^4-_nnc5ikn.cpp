@@ -1448,22 +1448,35 @@ class AnimEditor : Viewport4Region
                            }
                         }else
                         {
-                           if(all)
+                           bool freeze=Kb.b(KB_F);
+                           if(freeze || all)
                            {
                               // always calculate current orientation, because 'asbon.orn' can be zero
                               Vec     p=orn_target-bone.pos; p/=Matrix3(bone_parent); p.normalize();
-                              Orient  orn=asbon.orn; if(!orn.fix()){if(sbon /*&& skel - no need to check because 'sbon' already guarantees 'skel'*/)orn=GetAnimOrient(*sbon, skel.bones.addr(sbon.parent));else orn.identity();}
+                              Orient  bone_orn=asbon.orn; if(!bone_orn.fix()){if(sbon /*&& skel - no need to check because 'sbon' already guarantees 'skel'*/)bone_orn=GetAnimOrient(*sbon, skel.bones.addr(sbon.parent));else bone_orn.identity();}
                               Matrix3 transform;
-                              if(use_blend)REPA(keys.orns)
+                              if(freeze)
                               {
-                                 Orient next=orn; next.rotateToDir(p, getBlend(keys.orns[i])); next.fixPerp();
-                                 GetTransform(transform, orn, next);
-                                 keys.orns[i].orn.mul(transform, true).fix();
+                                 if(skel)
+                                 {
+                                    Orient next=bone_orn; next.rotateToDir(p); next.fixPerp();
+                                    GetTransform(transform, bone_orn, next);
+                                    anim.freezeRotate(*skel, sel_bone, all ? -1 : keys.orns.index(orn), transform);
+                                 }
                               }else
+                              if(all)
                               {
-                                 Orient next=orn; next.rotateToDir(p); next.fixPerp();
-                                 GetTransform(transform, orn, next);
-                                 REPAO(keys.orns).orn.mul(transform, true).fix();
+                                 if(use_blend)REPA(keys.orns)
+                                 {
+                                    Orient next=bone_orn; next.rotateToDir(p, getBlend(keys.orns[i])); next.fixPerp();
+                                    GetTransform(transform, bone_orn, next);
+                                    keys.orns[i].orn.mul(transform, true).fix();
+                                 }else
+                                 {
+                                    Orient next=bone_orn; next.rotateToDir(p); next.fixPerp();
+                                    GetTransform(transform, bone_orn, next);
+                                    REPAO(keys.orns).orn.mul(transform, true).fix();
+                                 }
                               }
                            }else // single
                            {
@@ -1589,7 +1602,7 @@ class AnimEditor : Viewport4Region
                         d/=Matrix3(bone_parent);
                         if(Kb.b(KB_F))
                         {
-                           if(skel)anim.freezeMoveKeyPos(*skel, sel_bone, all ? -1 : keys.poss.index(pos), d);
+                           if(skel)anim.freezeMove(*skel, sel_bone, all ? -1 : keys.poss.index(pos), d);
                         }else
                         if(all)
                         {
@@ -1783,12 +1796,22 @@ class AnimEditor : Viewport4Region
 
    bool freezeDelFramePos(int bone)
    {
-      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys.Pos *key=FindPos(*keys, animTime())){undos.set("del"); anim.freezeDelKeyPos(*skel, bone, keys.poss.index(key)); return true;}
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys.Pos *key=FindPos(*keys, animTime())){undos.set("del"); anim.freezeDelPos(*skel, bone, keys.poss.index(key)); return true;}
       return false;
    }
    bool freezeDelFramesPos(int bone)
    {
-      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys.poss.elms()){undos.set("delAll"); anim.freezeDelKeyPos(*skel, bone, -1); return true;}
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys.poss.elms()){undos.set("delAll"); anim.freezeDelPos(*skel, bone, -1); return true;}
+      return false;
+   }
+   bool freezeDelFrameOrn(int bone)
+   {
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys.Orn *key=FindOrn(*keys, animTime())){undos.set("del"); anim.freezeDelRot(*skel, bone, keys.orns.index(key)); return true;}
+      return false;
+   }
+   bool freezeDelFramesOrn(int bone)
+   {
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys.orns.elms()){undos.set("delAll"); anim.freezeDelRot(*skel, bone, -1); return true;}
       return false;
    }
 
@@ -1813,8 +1836,8 @@ class AnimEditor : Viewport4Region
    void freezeDelFrame()
    {
       bool changed=false;
-    //if(op()==OP_ORN   || op()<0)changed|=freezeDelFrameOrn  (sel_bone);
-    //if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_ORN   || op()<0)changed|=freezeDelFrameOrn  (sel_bone);
+      if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
       if(op()==OP_POS   || op()<0)changed|=freezeDelFramePos  (sel_bone);
     //if(op()==OP_SCALE || op()<0)changed|=freezeDelFrameScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim.setRootMatrix(); setChanged();}
@@ -1822,8 +1845,8 @@ class AnimEditor : Viewport4Region
    void freezeDelFrames()
    {
       bool changed=false;
-    //if(op()==OP_ORN   || op()<0)changed|=freezeDelFramesOrn  (sel_bone);
-    //if(op()==OP_ORN2           )changed|=freezeDelFramesOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_ORN   || op()<0)changed|=freezeDelFramesOrn  (sel_bone);
+      if(op()==OP_ORN2           )changed|=freezeDelFramesOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
       if(op()==OP_POS   || op()<0)changed|=freezeDelFramesPos  (sel_bone);
     //if(op()==OP_SCALE || op()<0)changed|=freezeDelFramesScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim.setRootMatrix(); setChanged();}
