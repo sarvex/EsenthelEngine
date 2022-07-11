@@ -3084,10 +3084,14 @@ static void FreezePos(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
             {
                AnimBone &abon=anim.getBone(child_sbon.name, child_sbon.type, child_sbon.type_index, child_sbon.type_sub); // 'skel_bone' child
 
+               Memt<Flt, 16384> child_times=times; // include child orientation keys for higher precision
+               if(all_keys)abon.includeTimes(child_times, null, null);
+               else        abon.includeTimes(child_times, null, null, prev_time, next_time);
+
                // add keys (Warning: TODO: this is precise only for linear interpolation, for other case we would have to copy 'abon' to temporary and calculate from it)
-               FREPA(times) // process forward because keys are sorted
+               FREPA(child_times) // process forward because keys are sorted
                {
-                  Flt time=times[i];
+                  Flt time=child_times[i];
                   Int index; if(!abon.poss.binarySearch(time, index, CompareEps))
                   {
                      Vec pos; anim_params.time=time; if(!abon.pos(pos, anim_params) && !SET_ON_FAIL)pos.zero(); // calculate before adding
