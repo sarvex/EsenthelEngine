@@ -1574,7 +1574,7 @@ UInt ShaderGL::compile(MemPtr<ShaderSubGL> vs_array, MemPtr<ShaderSubGL> ps_arra
       File f; if(f.readTry(ShaderFiles.name(shader)+ShaderSeparator+T.name, PrecompiledShaderCache.pak))
       {
          if(prog=CreateProgramFromBinary(f))return prog;
-      #if SWITCH
+      #if SWITCH // if there's Precompiled ShaderCache, but failed to create, then report this, it could happen due to updated Nintendo SDK
          static Bool msg=true; if(msg){msg=false; LogN("Precompiled ShaderCache is outdated. Please regenerate it using \"Precompile Shaders\" tool, located inside \"Editor Source\\Tools\".");}
       #endif
       }
