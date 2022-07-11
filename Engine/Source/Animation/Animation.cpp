@@ -3264,19 +3264,19 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
                         abon.poss.binarySearch(prev_time, start, Compare);
                      if(abon.poss.binarySearch(next_time, end  , Compare))end++; // end is exclusive, so if found match, process it too, in case key is at the end
                   }
+
+                  Vec rel=child_sbon.pos; if(sbon) // child position relative to parent
+                  {
+                     rel-=sbon->pos;
+                     rel.divNormalized(sbon_matrix); // convert to parent space
+                  }
+
                   for(Int i=start; i<end; i++) // process keys from start to end
                   {
                      AnimKeys::Pos &pos=abon.poss[i];
                      anim_params.time=pos.time;
                      Matrix3 src_matrix; src.matrix(src_matrix, anim_params, default_orn_m);
                      Matrix3 cur_matrix; cur.matrix(cur_matrix, anim_params, default_orn_m);
-
-                     Vec rel=child_sbon.pos;
-                     if(sbon)
-                     {
-                        rel-=sbon->pos;
-                        rel.divNormalized(sbon_matrix); // convert to parent space
-                     }
 
                      // (rel+pos)*src_matrix = (rel+pos1)*cur_matrix
                      // (rel+pos)*src_matrix/cur_matrix = rel+pos1
