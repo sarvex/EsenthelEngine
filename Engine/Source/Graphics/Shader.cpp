@@ -1571,7 +1571,13 @@ UInt ShaderGL::compile(MemPtr<ShaderSubGL> vs_array, MemPtr<ShaderSubGL> ps_arra
    // load from cache
    if(PrecompiledShaderCache.is())
    {
-      File f; if(f.readTry(ShaderFiles.name(shader)+ShaderSeparator+T.name, PrecompiledShaderCache.pak))if(prog=CreateProgramFromBinary(f))return prog;
+      File f; if(f.readTry(ShaderFiles.name(shader)+ShaderSeparator+T.name, PrecompiledShaderCache.pak))
+      {
+         if(prog=CreateProgramFromBinary(f))return prog;
+      #if SWITCH
+         static Bool msg=true; if(msg){msg=false; LogN("Precompiled ShaderCache is outdated. Please regenerate it using \"Precompile Shaders\" tool, located inside \"Editor Source\\Tools\".");}
+      #endif
+      }
    }
    Str shader_cache_name; // this name will be used for loading from cache, and if failed to load, then save to cache
    if(ShaderCache.is())
