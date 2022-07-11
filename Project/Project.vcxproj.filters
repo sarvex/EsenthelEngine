@@ -17,7 +17,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>H</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine Builder.cpp">
+    <ClCompile Include="Source\Private\Project.cpp">
       <Filter>Src</Filter>
     </ClCompile>
   </ItemGroup>

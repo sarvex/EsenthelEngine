@@ -1425,16 +1425,9 @@ class AnimEditor : Viewport4Region
                         undos.set("orn");
                      op_orn:
 
-                        if(!rotate)
-                        {
-                           mul*=CamMoveScale(v4.perspective())*MoveScale(*view);
-                           Vec d=ActiveCam.matrix.x*Ms.d().x*mul.x
-                                +ActiveCam.matrix.y*Ms.d().y*mul.y;
-                           orn_target+=d;
-                           bone.setFromTo(bone.pos, orn_target);
-                        }
-                        Orient pose=GetAnimOrient(bone, &bone_parent); pose.fix();
-                        AnimKeys.Orn *orn=((all && keys.orns.elms()) ? null : &GetOrn(*keys, animTime(), pose)); // if there are no keys then create
+                      //Orient bone_orn=GetAnimOrient(bone, &bone_parent); bone_orn.fix();
+                        Orient bone_orn=asbon.orn; if(!bone_orn.fix()){if(sbon /*&& skel - no need to check because 'sbon' already guarantees 'skel'*/)bone_orn=GetAnimOrient(*sbon, skel.bones.addr(sbon.parent));else bone_orn.identity();} // 'asbon.orn' can be zero
+                        AnimKeys.Orn *orn=((all && keys.orns.elms()) ? null : &GetOrn(*keys, animTime(), bone_orn)); // if there are no keys then create
                         if(rotate)
                         {
                            flt d=(Ms.d()*mul).sum();
@@ -1448,13 +1441,16 @@ class AnimEditor : Viewport4Region
                            }
                         }else
                         {
+                           mul*=CamMoveScale(v4.perspective())*MoveScale(*view);
+                           Vec d=ActiveCam.matrix.x*Ms.d().x*mul.x
+                                +ActiveCam.matrix.y*Ms.d().y*mul.y;
+                           orn_target+=d;
+
                            bool freeze    =Kb.b(KB_H); // hold
                            bool freeze_pos=Kb.b(KB_F);
                            if(freeze || freeze_pos || all)
                            {
-                              // always calculate current orientation, because 'asbon.orn' can be zero
                               Vec     p=orn_target-bone.pos; p/=Matrix3(bone_parent); p.normalize();
-                              Orient  bone_orn=asbon.orn; if(!bone_orn.fix()){if(sbon /*&& skel - no need to check because 'sbon' already guarantees 'skel'*/)bone_orn=GetAnimOrient(*sbon, skel.bones.addr(sbon.parent));else bone_orn.identity();}
                               Matrix3 transform;
                               if(freeze || freeze_pos)
                               {
@@ -1481,7 +1477,8 @@ class AnimEditor : Viewport4Region
                               }
                            }else // single
                            {
-                              orn.orn=pose;
+                              bone.setFromTo(bone.pos, orn_target);
+                              orn.orn=GetAnimOrient(bone, &bone_parent); orn.orn.fix();
                            }
                         }
                         keys.setTangents(anim.loop(), anim.length());
