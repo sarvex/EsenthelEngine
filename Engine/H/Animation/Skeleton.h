@@ -4,6 +4,8 @@
    Use 'AnimatedSkeleton' to animate a base static 'Skeleton', by applying 'Animation's on the 'AnimatedSkeleton'.
 
 /******************************************************************************/
+#define HAS_ANIM_SKEL_ROT 0
+/******************************************************************************/
 // STATIC SKELETON
 /******************************************************************************/
 enum BONE_TYPE : Byte
@@ -272,9 +274,11 @@ struct  AnimatedSkeletonBone // Bone of an Animated Skeleton
 {
    // these parameters may be manually changed during animation process, they are in parent space:
    Orient   orn  ; // target   orientation
-   AxisRoll rot  ; // relative rotation
    Vec      pos  , // offset   position
             scale; // scale    factor
+#if HAS_ANIM_SKEL_ROT
+   AxisRoll rot  ; // relative rotation
+#endif
 
    // the following parameters are valid only after calling 'updateMatrix'
  C MatrixM& matrix    ()C {return _matrix     ;} // this is the transformation matrix, which transforms source bone 'SkelBone' and source 'Mesh' into their final positions (source_data * matrix = final_world_space_position), it's valid after animation and matrix updates (using 'updateMatrix' method)

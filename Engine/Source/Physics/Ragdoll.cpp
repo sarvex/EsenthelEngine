@@ -307,8 +307,10 @@ Ragdoll& Ragdoll::toSkelBlend(AnimatedSkeleton &anim_skel, Flt blend)
          Byte          sparent  = skel_bone.parent;
 
                           asbon.orn*=blend1;
-                          asbon.rot*=blend1;
                           asbon.pos*=blend1;
+                       #if HAS_ANIM_SKEL_ROT
+                          asbon.rot*=blend1;
+                        #endif
          if(sparent==0xFF)asbon.orn+=blend*GetAnimOrient(skel_bone);
          else             asbon.orn+=blend*GetAnimOrient(skel_bone, &skel.bones[sparent]);
       }
@@ -325,8 +327,10 @@ Ragdoll& Ragdoll::toSkelBlend(AnimatedSkeleton &anim_skel, Flt blend)
            C SkelBone &skel_bone=     skel.bones[sbone];
 
                                 asbon.orn*=blend1;
-                                asbon.rot*=blend1;
                                 asbon.pos*=blend1;
+                             #if HAS_ANIM_SKEL_ROT
+                                asbon.rot*=blend1;
+                             #endif
          if(InRange(rparent, T))asbon.orn+=blend*GetAnimOrient(skel_bone, rbon.actor.orn(), &skel.bones[skel_bone.parent], &NoTemp(bone(rparent).actor.orn()));
          else                   asbon.orn+=blend*GetAnimOrient(skel_bone, rbon.actor.orn()*ibody);
       }

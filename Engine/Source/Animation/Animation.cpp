@@ -417,6 +417,11 @@ void AnimKeys::matrix(Matrix &matrix, C AnimParams &params)C
    matrixNoScale(matrix, params);
    Vec scale; if(T.scales.elms() && T.scale(scale, params))matrix.scaleOrnL(ScaleFactor(scale)); // most likely there won't be any scale, so do a fast check without the function call
 }
+void AnimKeys::matrix(Matrix3 &matrix, C AnimParams &params, C Matrix3 &default_orn)C
+{
+   Orient orn; if(                   T.orn  (  orn, params))matrix=orn;else matrix=default_orn;
+   Vec  scale; if(T.scales.elms() && T.scale(scale, params))matrix.scaleL(ScaleFactor(scale)); // most likely there won't be any scale, so do a fast check without the function call
+}
 void AnimKeys::matrix(Matrix &matrix, C AnimParams &params, C Matrix3 &default_orn)C
 {
    Orient orn; if(                   T.orn  (       orn, params))matrix.orn()=orn;else matrix.orn()=default_orn;
@@ -3114,7 +3119,7 @@ static void FreezePos(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
       }
    }
 }
-static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 *matrix, Bool pos=true)
+static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 *matrix, Bool pos)
 {
    Bool root=(skel_bone<0);
    if(  root || InRange(skel_bone, skel.bones))
@@ -3220,8 +3225,10 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
 
          if(pos)
          {
+            Matrix3 sbon_matrix;
             if(!root)
             {
+               sbon_matrix=*sbon;
                abon=anim.findBone(sbon->name, sbon->type, sbon->type_index, sbon->type_sub);
                keys=abon;
             }
@@ -3230,6 +3237,7 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
                if(all_keys)keys->includeTimes(null, times, times);
                else        keys->includeTimes(null, times, times, prev_time, next_time);
             }
+            Matrix3 default_orn_m=default_orn;
             REPA(skel.bones)
             {
              C SkelBone &child_sbon=skel.bones[i]; if(child_sbon.parent==bone_index) // 'skel_bone' child
@@ -3260,6 +3268,24 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
                   {
                      AnimKeys::Pos &pos=abon.poss[i];
                      anim_params.time=pos.time;
+                     Matrix3 src_matrix; src.matrix(src_matrix, anim_params, default_orn_m);
+                     Matrix3 cur_matrix; cur.matrix(cur_matrix, anim_params, default_orn_m);
+
+                     Vec rel=child_sbon.pos;
+                     if(sbon)
+                     {
+                        rel-=sbon->pos;
+                        rel.divNormalized(sbon_matrix); // convert to parent space
+                     }
+
+                     // (rel+pos)*src_matrix = (rel+pos1)*cur_matrix
+                     // (rel+pos)*src_matrix/cur_matrix = rel+pos1
+                     // (rel+pos)*src_matrix/cur_matrix - rel = pos1
+
+                     pos.pos+=rel;
+                     pos.pos.mul(src_matrix);
+                     pos.pos.div(cur_matrix);
+                     pos.pos-=rel;
                   }
 
                   abon.setTangents(anim.loop(), anim.length());
@@ -3269,10 +3295,10 @@ static void FreezeRot(Animation &anim, C Skeleton &skel, Int skel_bone, Int key_
       }
    }
 }
-void Animation::freezeDelPos(C Skeleton &skel, Int skel_bone, Int key_index                   ) {FreezePos(T, skel, skel_bone, key_index,  null  );}
-void Animation::freezeMove  (C Skeleton &skel, Int skel_bone, Int key_index, C Vec     &delta ) {FreezePos(T, skel, skel_bone, key_index, &delta );}
-void Animation::freezeDelRot(C Skeleton &skel, Int skel_bone, Int key_index                   ) {FreezeRot(T, skel, skel_bone, key_index,  null  );}
-void Animation::freezeRotate(C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 &matrix) {FreezeRot(T, skel, skel_bone, key_index, &matrix);}
+void Animation::freezeDelPos(C Skeleton &skel, Int skel_bone, Int key_index                             ) {FreezePos(T, skel, skel_bone, key_index,  null  );}
+void Animation::freezeMove  (C Skeleton &skel, Int skel_bone, Int key_index, C Vec     &delta           ) {FreezePos(T, skel, skel_bone, key_index, &delta );}
+void Animation::freezeDelRot(C Skeleton &skel, Int skel_bone, Int key_index                   , Bool pos) {FreezeRot(T, skel, skel_bone, key_index,  null  , pos);}
+void Animation::freezeRotate(C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 &matrix, Bool pos) {FreezeRot(T, skel, skel_bone, key_index, &matrix, pos);}
 /******************************************************************************/
 Animation& Animation::setBoneTypeIndexesFromSkeleton(C Skeleton &skeleton)
 {

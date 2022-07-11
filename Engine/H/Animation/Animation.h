@@ -148,10 +148,10 @@ struct Animation // set of animation keyframes used for animating 'AnimatedSkele
 
    void freezeBone(C Skeleton &skel, Int skel_bone); // adjust the animation by moving root bones, so that selected bone will appear without movement
 
-   void freezeDelPos(C Skeleton &skel, Int skel_bone, Int key_index                   ); // delete 'key_index'    position key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
-   void freezeDelRot(C Skeleton &skel, Int skel_bone, Int key_index                   ); // delete 'key_index' orientation key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
-   void freezeMove  (C Skeleton &skel, Int skel_bone, Int key_index, C Vec     &delta ); // move   'key_index'    position key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
-   void freezeRotate(C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 &matrix); // rotate 'key_index' orientation key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones, 'matrix'=must be normalized
+   void freezeDelPos(C Skeleton &skel, Int skel_bone, Int key_index                             ); // delete 'key_index'    position key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
+   void freezeDelRot(C Skeleton &skel, Int skel_bone, Int key_index                   , Bool pos); // delete 'key_index' orientation key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
+   void freezeMove  (C Skeleton &skel, Int skel_bone, Int key_index, C Vec     &delta           ); // move   'key_index'    position key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones
+   void freezeRotate(C Skeleton &skel, Int skel_bone, Int key_index, C Matrix3 &matrix, Bool pos); // rotate 'key_index' orientation key (use -1 for all keys) for 'skel_bone' (use -1 for root) in 'skel' skeleton without affecting transforms of other bones, 'matrix'=must be normalized
 
    // io
    void operator=(C Str &name) ; // load, Exit  on fail

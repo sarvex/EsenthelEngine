@@ -1317,20 +1317,21 @@ AnimEditor AnimEdit;
                            }
                         }else
                         {
-                           bool freeze=Kb.b(KB_F);
-                           if(freeze || all)
+                           bool freeze    =Kb.b(KB_H); // hold
+                           bool freeze_pos=Kb.b(KB_F);
+                           if(freeze || freeze_pos || all)
                            {
                               // always calculate current orientation, because 'asbon.orn' can be zero
                               Vec     p=orn_target-bone.pos; p/=Matrix3(bone_parent); p.normalize();
                               Orient  bone_orn=asbon.orn; if(!bone_orn.fix()){if(sbon /*&& skel - no need to check because 'sbon' already guarantees 'skel'*/)bone_orn=GetAnimOrient(*sbon, skel->bones.addr(sbon->parent));else bone_orn.identity();}
                               Matrix3 transform;
-                              if(freeze)
+                              if(freeze || freeze_pos)
                               {
                                  if(skel)
                                  {
                                     Orient next=bone_orn; next.rotateToDir(p); next.fixPerp();
                                     GetTransform(transform, bone_orn, next);
-                                    anim->freezeRotate(*skel, sel_bone, all ? -1 : keys->orns.index(orn), transform);
+                                    anim->freezeRotate(*skel, sel_bone, all ? -1 : keys->orns.index(orn), transform, freeze_pos);
                                  }
                               }else
                               if(all)
@@ -1670,14 +1671,14 @@ AnimEditor AnimEdit;
       if(skel)if(AnimKeys *keys=findKeys(bone))if(keys->poss.elms()){undos.set("delAll"); anim->freezeDelPos(*skel, bone, -1); return true;}
       return false;
    }
-   bool AnimEditor::freezeDelFrameOrn(int bone)
+   bool AnimEditor::freezeDelFrameOrn(int bone, bool pos)
    {
-      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys::Orn *key=FindOrn(*keys, animTime())){undos.set("del"); anim->freezeDelRot(*skel, bone, keys->orns.index(key)); return true;}
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(AnimKeys::Orn *key=FindOrn(*keys, animTime())){undos.set("del"); anim->freezeDelRot(*skel, bone, keys->orns.index(key), pos); return true;}
       return false;
    }
-   bool AnimEditor::freezeDelFramesOrn(int bone)
+   bool AnimEditor::freezeDelFramesOrn(int bone, bool pos)
    {
-      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys->orns.elms()){undos.set("delAll"); anim->freezeDelRot(*skel, bone, -1); return true;}
+      if(skel)if(AnimKeys *keys=findKeys(bone))if(keys->orns.elms()){undos.set("delAll"); anim->freezeDelRot(*skel, bone, -1, pos); return true;}
       return false;
    }
    void AnimEditor::delFrame()
@@ -1698,20 +1699,20 @@ AnimEditor AnimEdit;
       if(op()==OP_SCALE || op()<0)changed|=delFramesScale(bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim->setRootMatrix(); setChanged();}
    }
-   void AnimEditor::freezeDelFrame()
+   void AnimEditor::freezeDelFrame(bool pos)
    {
       bool changed=false;
-      if(op()==OP_ORN   || op()<0)changed|=freezeDelFrameOrn  (sel_bone);
-      if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_ORN   || op()<0)changed|=freezeDelFrameOrn  (sel_bone, pos);
+      if(op()==OP_ORN2           )changed|=freezeDelFrameOrn  (sel_bone, pos)|freezeDelFrameOrn(boneParent(sel_bone), pos);
       if(op()==OP_POS   || op()<0)changed|=freezeDelFramePos  (sel_bone);
     //if(op()==OP_SCALE || op()<0)changed|=freezeDelFrameScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim->setRootMatrix(); setChanged();}
    }
-   void AnimEditor::freezeDelFrames()
+   void AnimEditor::freezeDelFrames(bool pos)
    {
       bool changed=false;
-      if(op()==OP_ORN   || op()<0)changed|=freezeDelFramesOrn  (sel_bone);
-      if(op()==OP_ORN2           )changed|=freezeDelFramesOrn  (sel_bone)|freezeDelFrameOrn(boneParent(sel_bone));
+      if(op()==OP_ORN   || op()<0)changed|=freezeDelFramesOrn  (sel_bone, pos);
+      if(op()==OP_ORN2           )changed|=freezeDelFramesOrn  (sel_bone, pos)|freezeDelFrameOrn(boneParent(sel_bone), pos);
       if(op()==OP_POS   || op()<0)changed|=freezeDelFramesPos  (sel_bone);
     //if(op()==OP_SCALE || op()<0)changed|=freezeDelFramesScale(sel_bone);
       if(changed){setAnimSkel(); setOrnTarget(); anim->setRootMatrix(); setChanged();}

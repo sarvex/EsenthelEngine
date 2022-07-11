@@ -350,13 +350,13 @@ public:
 
    bool freezeDelFramePos(int bone);
    bool freezeDelFramesPos(int bone);
-   bool freezeDelFrameOrn(int bone);
-   bool freezeDelFramesOrn(int bone);
+   bool freezeDelFrameOrn(int bone, bool pos);
+   bool freezeDelFramesOrn(int bone, bool pos);
 
    void delFrame();
    void delFrames(int bone);
-   void freezeDelFrame();
-   void freezeDelFrames();
+   void freezeDelFrame(bool pos=true);
+   void freezeDelFrames(bool pos=true);
    void delFramesAtEnd();
    void reverseFrames();
    void freezeBone();
