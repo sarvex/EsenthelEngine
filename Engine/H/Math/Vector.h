@@ -2501,21 +2501,24 @@ Flt Dist2Wrap(C Vec2 &a, C Vec2 &b);
 #endif
 
 // dot product
-inline Flt Dot(C Vec2  &a, C Vec2  &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Dbl Dot(C Vec2  &a, C VecD2 &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Dbl Dot(C VecD2 &a, C Vec2  &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Dbl Dot(C VecD2 &a, C VecD2 &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Flt Dot(C Vec2  &a, C VecI2 &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Flt Dot(C VecI2 &a, C Vec2  &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Int Dot(C VecI2 &a, C VecI2 &b) {return a.x*b.x + a.y*b.y                    ;}
-inline Flt Dot(C Vec   &a, C Vec   &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
-inline Dbl Dot(C Vec   &a, C VecD  &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
-inline Dbl Dot(C VecD  &a, C Vec   &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
-inline Dbl Dot(C VecD  &a, C VecD  &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
-inline Int Dot(C VecI  &a, C VecI  &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
-inline Flt Dot(C Vec4  &a, C Vec4  &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
-inline Dbl Dot(C VecD4 &a, C VecD4 &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
-inline Int Dot(C VecI4 &a, C VecI4 &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
+inline Flt Dot(C Vec2   &a, C Vec2   &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Dbl Dot(C Vec2   &a, C VecD2  &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Dbl Dot(C VecD2  &a, C Vec2   &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Dbl Dot(C VecD2  &a, C VecD2  &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Flt Dot(C Vec2   &a, C VecI2  &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Flt Dot(C VecI2  &a, C Vec2   &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Int Dot(C VecI2  &a, C VecI2  &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Int Dot(C VecSB2 &a, C VecSB2 &b) {return a.x*b.x + a.y*b.y                    ;}
+inline Flt Dot(C Vec    &a, C Vec    &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Dbl Dot(C Vec    &a, C VecD   &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Dbl Dot(C VecD   &a, C Vec    &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Dbl Dot(C VecD   &a, C VecD   &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Int Dot(C VecI   &a, C VecI   &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Int Dot(C VecSB  &a, C VecSB  &b) {return a.x*b.x + a.y*b.y + a.z*b.z          ;}
+inline Flt Dot(C Vec4   &a, C Vec4   &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
+inline Dbl Dot(C VecD4  &a, C VecD4  &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
+inline Int Dot(C VecI4  &a, C VecI4  &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
+inline Int Dot(C VecSB4 &a, C VecSB4 &b) {return a.x*b.x + a.y*b.y + a.z*b.z + a.w*b.w;}
 
 // cross product
 Flt Cross(C Vec2  &a, C Vec2  &b);
