@@ -1275,9 +1275,10 @@ struct VecSB2 // Vector 2D (SByte)
    VecSB2& chsX        ()  {CHS(x);     return T;} // change sign of X component
    VecSB2& chsY        ()  {CHS(y);     return T;} // change sign of Y component
 
-   VecSB2() {}
-   VecSB2(SByte i         ) {set(i   );}
-   VecSB2(SByte x, SByte y) {set(x, y);}
+              VecSB2() {}
+              VecSB2(SByte i         ) {set(i   );}
+              VecSB2(SByte x, SByte y) {set(x, y);}
+   CONVERSION VecSB2(C VecI2 &v);
 };
 /******************************************************************************/
 struct VecB // Vector 3D (Byte)
@@ -1309,9 +1310,10 @@ struct VecB // Vector 3D (Byte)
    Int   find        (Int value)C;                               // get index of first component that equals 'value' (-1 if none)
    VecB& reverse     (         )  {       Swap(x, z); return T;} // reverse components order
 
-   VecB() {}
-   VecB(Byte i                ) {set(i      );}
-   VecB(Byte x, Byte y, Byte z) {set(x, y, z);}
+              VecB() {}
+              VecB(Byte i                ) {set(i      );}
+              VecB(Byte x, Byte y, Byte z) {set(x, y, z);}
+   CONVERSION VecB(C VecI &v);
 };
 /******************************************************************************/
 struct VecSB // Vector 3D (SByte)
@@ -1346,9 +1348,10 @@ struct VecSB // Vector 3D (SByte)
    VecSB& chsY        (         )  {           CHS(y); return T;} // change sign of Y component
    VecSB& chsZ        (         )  {           CHS(z); return T;} // change sign of Z component
 
-   VecSB() {}
-   VecSB(SByte i                  ) {set(i      );}
-   VecSB(SByte x, SByte y, SByte z) {set(x, y, z);}
+              VecSB() {}
+              VecSB(SByte i                  ) {set(i      );}
+              VecSB(SByte x, SByte y, SByte z) {set(x, y, z);}
+   CONVERSION VecSB(C VecI &v);
 };
 /******************************************************************************/
 struct VecB4 // Vector 4D (Byte)
@@ -1401,9 +1404,10 @@ struct VecB4 // Vector 4D (Byte)
 
    Str asTextDots()C; // return as text with components separated using dots "x.y.z.w"
 
-   VecB4() {}
-   VecB4(Byte i                        ) {set(i         );}
-   VecB4(Byte x, Byte y, Byte z, Byte w) {set(x, y, z, w);}
+              VecB4() {}
+              VecB4(Byte i                        ) {set(i         );}
+              VecB4(Byte x, Byte y, Byte z, Byte w) {set(x, y, z, w);}
+   CONVERSION VecB4(C VecI4 &v);
 };
 /******************************************************************************/
 struct VecSB4 // Vector 4D (SByte)
@@ -1441,9 +1445,10 @@ struct VecSB4 // Vector 4D (SByte)
    VecSB4& chsZ        (         )  {CHS(z); return T;}                                    // change sign of Z component
    VecSB4& chsW        (         )  {CHS(w); return T;}                                    // change sign of W component
 
-   VecSB4() {}
-   VecSB4(SByte i                           ) {set(i         );}
-   VecSB4(SByte x, SByte y, SByte z, SByte w) {set(x, y, z, w);}
+              VecSB4() {}
+              VecSB4(SByte i                           ) {set(i         );}
+              VecSB4(SByte x, SByte y, SByte z, SByte w) {set(x, y, z, w);}
+   CONVERSION VecSB4(C VecI4 &v);
 };
 /******************************************************************************/
 struct VecUS2 // Vector 2D (Unsigned Short)
@@ -2278,6 +2283,11 @@ inline    Dbl   AlignCeil (Dbl   x, Dbl   align) {return    ceil  (x/ align)*ali
 // FUNCTIONS
 /******************************************************************************/
 inline VecB2 ::VecB2 (C VecI2  &v) {set(v.x, v.y          );}
+inline VecSB2::VecSB2(C VecI2  &v) {set(v.x, v.y          );}
+inline VecB  ::VecB  (C VecI   &v) {set(v.x, v.y, v.z     );}
+inline VecSB ::VecSB (C VecI   &v) {set(v.x, v.y, v.z     );}
+inline VecB4 ::VecB4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
+inline VecSB4::VecSB4(C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecUS2::VecUS2(C VecB2  &v) {set(v.x, v.y          );}
 inline VecUS2::VecUS2(C VecI2  &v) {set(v.x, v.y          );}
 inline VecUS ::VecUS (C VecB   &v) {set(v.x, v.y, v.z     );}
