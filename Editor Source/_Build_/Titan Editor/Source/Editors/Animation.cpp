@@ -94,8 +94,20 @@ AnimEditor AnimEdit;
                flt dist=0;
                if((always_draw_events || AnimEdit.preview.event_op()>=0) && AnimEdit.preview.event_op()!=EVENT_NEW)REPA(anim->events)
                {
-                  flt d=Abs(Ms.pos().x - ElmPosX(r, anim->events[i].time));
-                  if(event_lit<0 || d<dist){event_lit=i; dist=d;}
+                  flt event_time=anim->events[i].time;
+                  flt d=Abs(Ms.pos().x - ElmPosX(r, event_time));
+                  if(event_lit<0 || d<dist)
+                  {
+                     event_lit=i; dist=d;
+                     
+                     // check how many events share the same time
+                     int j=i; for(; j>0 && Equal(anim->events[j-1].time, event_time); )j--; // same is j..i inclusive
+                     int same=i-j+1; if(same>1) // if more than 1
+                     { // calculate based on Mouse Y
+                        flt frac=LerpR(r.min.y, r.max.y, Ms.pos().y); // 0..1
+                        event_lit=Mid(Trunc(frac*same)+j, j, i);
+                     }
+                  }
                }
                if(dist>0.05f)event_lit=-1;
 
@@ -1749,7 +1761,7 @@ AnimEditor AnimEdit;
    }
    void AnimEditor::playUpdate(flt multiplier)
    {
-      bool play=(Kb.b(KB_W) && Kb.ctrlCmd() && !Kb.alt()); if(play)T.force_play.push();
+      bool play=(Kb.b(KB_W) && Kb.ctrlCmd() && !Kb.alt() && (fullscreen ? contains(Gui.kb()) : preview.contains(Gui.kb()))); if(play)T.force_play.push();
       play|=T.force_play(); if(play && Kb.shift())CHS(multiplier);
       play|=T.play();
       if(anim)
