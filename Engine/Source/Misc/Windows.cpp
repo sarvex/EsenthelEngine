@@ -1279,10 +1279,10 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
       case WM_POINTERDOWN :
       case WM_POINTERENTER:
       {
-         POINT  point={GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)}; VecI2 pixeli(point.x, point.y); ScreenToClient(App.window(), &point);
-         UInt   id=GET_POINTERID_WPARAM(wParam);
-         CPtr  pid=CPtr(id);
-         Bool   stylus=false;
+         POINT point={GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)}; VecI2 pixeli(point.x, point.y); ScreenToClient(App.window(), &point);
+         UInt  id=GET_POINTERID_WPARAM(wParam);
+         CPtr pid=CPtr(id);
+         Bool  stylus=false;
 
       #if SUPPORT_WINDOWS_XP || SUPPORT_WINDOWS_7
          if(GetPointerType)
