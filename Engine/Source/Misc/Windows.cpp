@@ -1024,28 +1024,45 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
                case RIM_TYPEKEYBOARD:
                {
                   KB_KEY key;
-               #if 1 // search by VKey (fewer checks)
+               #if DEBUG && 0
+                  LogN(S+Kb.keyName((KB_KEY)raw.data.keyboard.VKey)+"   "+TextHex((UInt)raw.data.keyboard.VKey)+"   "+raw.data.keyboard.MakeCode+"    "+raw.data.keyboard.Flags);
+               #endif
                   switch(raw.data.keyboard.VKey)
                   {
-                     case VK_CONTROL : if(raw.data.keyboard.MakeCode!=29)goto def; key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_RCTRL  : KB_LCTRL ); break; // 29=KB_LCTRL and KB_RCTRL (this must be checked because VK_CONTROL also gets triggered by AltGr)
-                     case VK_SHIFT   :                                             key=((raw.data.keyboard.MakeCode==42   ) ? KB_LSHIFT : KB_RSHIFT); break; // 42=KB_LSHIFT, 54=KB_RSHIFT
-                     case VK_SNAPSHOT: key=KB_PRINT; break; // needed for exclusive mode
-                   //case 255        : if(raw.data.keyboard.MakeCode==42 && (raw.data.keyboard.Flags&(RI_KEY_E0|RI_KEY_E1))==RI_KEY_E0){key=KB_PRINT; break;} goto def; detect KB_PRINT because in 'Kb.exclusive', WM_HOTKEY isn't called, however this is also called when pressing "Insert" when NumLock is off so it can't be used
-                     default         : goto def;
+                     case VK_CONTROL: if(raw.data.keyboard.MakeCode!=29)return 0; key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_RCTRL  : KB_LCTRL ); break; // 29=KB_LCTRL and KB_RCTRL (this must be checked because VK_CONTROL also gets triggered by AltGr)
+                     case VK_MENU   :                                             key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_RALT   : KB_LALT  ); break;
+                     case VK_SHIFT  : switch(raw.data.keyboard.MakeCode) // 42=KB_LSHIFT, 54=KB_RSHIFT, 75=triggered when pressing Shift+Numpad
+                     {
+                        case 42: key=KB_LSHIFT; break;
+                        case 54: key=KB_RSHIFT; break;
+                        default: return 0;
+                     }break;
+                     case VK_INSERT : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_INS     : KB_NP0  ); break;
+                     case VK_END    : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_END     : KB_NP1  ); break;
+                     case VK_DOWN   : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_DOWN    : KB_NP2  ); break;
+                     case VK_NEXT   : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_PGDN    : KB_NP3  ); break;
+                     case VK_LEFT   : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_LEFT    : KB_NP4  ); break;
+                     case VK_CLEAR  : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_NONE    : KB_NP5  ); break;
+                     case VK_RIGHT  : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_RIGHT   : KB_NP6  ); break;
+                     case VK_HOME   : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_HOME    : KB_NP7  ); break;
+                     case VK_UP     : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_UP      : KB_NP8  ); break;
+                     case VK_PRIOR  : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_PGUP    : KB_NP9  ); break;
+                     case VK_DELETE : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_DEL     : KB_NPDEL); break;
+                     case VK_RETURN : key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_NPENTER : KB_ENTER); break;
+                     default        : if(raw.data.keyboard.VKey>=255)return 0; key=(KB_KEY)raw.data.keyboard.VKey; break;
+                   //case 255       : if(raw.data.keyboard.MakeCode==42 && (raw.data.keyboard.Flags&(RI_KEY_E0|RI_KEY_E1))==RI_KEY_E0){key=KB_PRINT; break;} return 0; detect KB_PRINT because in 'Kb.exclusive', WM_HOTKEY isn't called, however this is also called when pressing "Insert" when NumLock is off so it can't be used
                   }
-               #else // search by MakeCode (slower)
-                  switch(raw.data.keyboard.MakeCode)
+                  if(raw.data.keyboard.Flags&RI_KEY_BREAK)Kb.release(key);else
                   {
-                     case 29: if(raw.data.keyboard.VKey!=VK_CONTROL )goto def; key=((raw.data.keyboard.Flags&RI_KEY_E0) ? KB_RCTRL : KB_LCTRL); break; // this is also called for PauseBreak
-                     case 42: if(raw.data.keyboard.VKey!=VK_SHIFT   )goto def; key=KB_LSHIFT                                                  ; break; // this is also called for Ins,Del,Home,End,PgUp,PgDn,PrintScr,Arrows
-                     case 54: if(raw.data.keyboard.VKey!=VK_SHIFT   )goto def; key=KB_RSHIFT                                                  ; break;
-                     case 55: if(raw.data.keyboard.VKey!=VK_SNAPSHOT)goto def; key=KB_PRINT                                                   ; break; // this is also called for NumPad*
-                     default: goto def;
+                     Kb.push(key, raw.data.keyboard.MakeCode);
+                     // !! queue characters after push !!
+                     if(Kb.anyCtrl() && !Kb.anyAlt()) // if Control is on, then WM_CHAR will not be called, so we must add this char here, don't do this with Alt pressed, because if Ctrl+Alt are pressed, then accented characters will get generated (even if it's left Alt)
+                     {
+                        if(key>='A' && key<='Z')Kb.queue(Char(key + (Kb.anyShift() ? 0 : 'a'-'A')), raw.data.keyboard.MakeCode);else
+                        if(key>='0' && key<='9')Kb.queue(Char(key)                                , raw.data.keyboard.MakeCode);
+                     }
                   }
-               #endif
-                  if(raw.data.keyboard.Flags&RI_KEY_BREAK)Kb.release(key);else Kb.push(key, raw.data.keyboard.MakeCode);
-                  return 0;
-               }break;
+               }return 0;
             #endif
 
             #if MS_RAW_INPUT
@@ -1067,8 +1084,7 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_4_UP)Ms.release(3);
                      if(raw.data.mouse.usButtonFlags&RI_MOUSE_BUTTON_5_UP)Ms.release(4);
                   }
-                  return 0;
-               }break;
+               }return 0;
             #endif
 
             #if JP_RAW_INPUT
@@ -1119,6 +1135,7 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
 
       case WM_KEYDOWN   :
       case WM_SYSKEYDOWN: // SYSKEYDOWN handles Alt+keys
+   #if 0
       {
       #if DEBUG
          U16  rep=lParam&0xFFFF;
@@ -1144,28 +1161,13 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
             if(key>='A' && key<='Z')Kb.queue(Char(key + (Kb.anyShift() ? 0 : 'a'-'A')), scan_code);else
             if(key>='0' && key<='9')Kb.queue(Char(key)                                , scan_code);
          }
-      }return 0;
-
-      case WM_SYSCHAR: // SYSCHAR handles Alt+chars, also disables beep on Alt+key menu sound when keyboard in non exclusive mode
-      case WM_CHAR   :
-      {
-      #if DEBUG
-         U16  rep=lParam&0xFFFF;
-         Bool ext=(lParam>>24)&1,
-              ctx_code=(lParam>>29)&1,
-              prev_state=(lParam>>30)&1,
-             trans_state=(lParam>>31)&1;
-      #endif
-         Byte scan_code=(lParam>>16)&0xFF;
-      #ifdef UNICODE
-         Kb.queue((Char)wParam, scan_code);
-      #else
-         Kb.queue(Char8To16Fast(wParam), scan_code); // we can assume that Str was already initialized
-      #endif
-      }return 0;
+      }
+   #endif
+      return 0;
 
       case WM_KEYUP   :
       case WM_SYSKEYUP: // for KB_SHIFT this will be called only if both shifts are released
+   #if 0
       {
       #if DEBUG
          Byte   scan_code=(lParam>>16)&0xFF;
@@ -1186,6 +1188,26 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
             case KB_ALT  : key=((lParam&(1<<24)) ? KB_RALT   : KB_LALT  ); break;
          }
          Kb.release(key);
+      }
+   #endif
+      return 0;
+
+      case WM_SYSCHAR: // SYSCHAR handles Alt+chars, also disables beep on Alt+key menu sound when keyboard in non exclusive mode
+      case WM_CHAR   :
+      {
+      #if DEBUG
+         U16  rep=lParam&0xFFFF;
+         Bool ext=(lParam>>24)&1,
+              ctx_code=(lParam>>29)&1,
+              prev_state=(lParam>>30)&1,
+             trans_state=(lParam>>31)&1;
+      #endif
+         Byte scan_code=(lParam>>16)&0xFF;
+      #ifdef UNICODE
+         Kb.queue((Char)wParam, scan_code);
+      #else
+         Kb.queue(Char8To16Fast(wParam), scan_code); // we can assume that Str was already initialized
+      #endif
       }return 0;
 
       case WM_HOTKEY:
@@ -1388,7 +1410,6 @@ static LRESULT CALLBACK WindowMsg(HWND window, UInt msg, WPARAM wParam, LPARAM l
          }
       }break;
    }
-def:
    return DefWindowProc(window, msg, wParam, lParam);
 }
 #endif

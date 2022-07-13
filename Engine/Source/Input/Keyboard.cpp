@@ -46,6 +46,7 @@ namespace EE{
     //{KB_RWIN  , DIK_RWIN    , 92}, processed using WM_*KEY*
       {KB_PRINT , DIK_SYSRQ   ,  0}, // VK_PRINT is not processed because it's assigned as Screen Capture
    };
+   static Byte _special;
 #endif
 #elif WINDOWS_NEW
 Windows::UI::Text::Core::CoreTextEditContext ^TextEditContext;
