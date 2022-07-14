@@ -2,7 +2,7 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define SORT_JOYPADS_BY_ID SWITCH // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder". However use on Nintendo Switch, because there IDs are taken from the User Index, it's needed when using 'ConfigureJoypads' having both standalone controller and joycons attached to the device (Handheld), selecting standalone controller for 1-1 players only, it has ID=0, and attached/Handheld have ID 32. It will get moved to the first slot. But when choosing Handheld in 'ConfigureJoypads' then all others get disconnected.
+#define SORT_JOYPADS_BY_ID SWITCH // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder". However use on Nintendo Switch, because there IDs are taken from the User Index, it's needed when using 'ConfigureJoypads' having both standalone controller and joycons attached to the device (Handheld), selecting standalone controller for 1-1 players only, it has ID=0, and attached/Handheld have ID 32. It will get moved to the first slot. But when choosing Handheld in 'ConfigureJoypads' then all others get disconnected, in case games only process input for the first Joypad when having multiple connected #JoypadSortID
 
 #define JOYPAD_THREAD (JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT)
 #define JOYPAD_THREAD_SLEEP 5
