@@ -2668,14 +2668,6 @@ void Reverse(VecI4 *v, Int num);
 void SwapXZ(VecI  *v, Int num);
 void SwapXZ(VecI4 *v, Int num);
 
-// get minimum and maximum from array of vectors
-Bool MinMax(C Vec2  *v, Int num, Vec2  &min, Vec2  &max);
-Bool MinMax(C VecD2 *v, Int num, VecD2 &min, VecD2 &max);
-Bool MinMax(C Vec   *v, Int num, Vec   &min, Vec   &max);
-Bool MinMax(C VecD  *v, Int num, VecD  &min, VecD  &max);
-Bool MinMax(C Vec4  *v, Int num, Vec4  &min, Vec4  &max);
-Bool MinMax(C VecD4 *v, Int num, VecD4 &min, VecD4 &max);
-
 #if EE_PRIVATE
 // convert from right hand to left hand coordinate system
 void RightToLeft(Vec *vec, Int num);

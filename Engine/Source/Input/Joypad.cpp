@@ -635,14 +635,39 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
               _remap[ 9]=JB_START;
               _remap[10]=JB_L3;
               _remap[11]=JB_R3;
-              _remap[12]=JB_MINI_S1; // HOME
-              _remap[13]=JB_MINI_S2; // CAPTURE
+              _remap[12]=JB_HOME;
+              _remap[13]=JB_MINI_S1; // CAPTURE
             //_axis_stick_r_x=AMOTION_EVENT_AXIS_Z ; don't set because auto-detect works fine
             //_axis_stick_r_y=AMOTION_EVENT_AXIS_RZ; don't set because auto-detect works fine
             // no triggers
             }return;
          }
       }break;
+
+      case 11720: // 8BitDo
+      {
+         // product_id 24582 Pro2
+         SetMem(_remap, 255);
+        _remap[ 0]=JB_B;
+        _remap[ 1]=JB_A;
+        _remap[ 3]=JB_Y;
+        _remap[ 4]=JB_X;
+        _remap[ 6]=JB_L1;
+        _remap[ 7]=JB_R1;
+        _remap[ 8]=JB_L2;
+        _remap[ 9]=JB_R2;
+        _remap[10]=JB_BACK;
+        _remap[11]=JB_START;
+        _remap[12]=JB_HOME;
+        _remap[13]=JB_L3;
+        _remap[14]=JB_R3;
+      #if JP_GAMEPAD_INPUT
+         if(_axes>=6)
+         {
+           _axis_trigger_l=5; _axis_trigger_r=4;
+         }
+      #endif
+      }return;
    }
    if(ANDROID)SetMem(_remap, 255); // on Android if mapping is unknown then set 255, so we can try to use Android mappings
    else        REPAO(_remap)=i;
@@ -1585,6 +1610,8 @@ void InitJoypads()
       name[JB_LSR]= "Left SR"; symbol[JB_LSR]= u"LeftSR";
       name[JB_RSL]="Right SL"; symbol[JB_RSL]=u"RightSL";
       name[JB_RSR]="Right SR"; symbol[JB_RSR]=u"RightSR";
+
+      name[JB_HOME]="Home"; symbol[JB_HOME]=u"JB_HOME";
    }
 
    // set platform specific

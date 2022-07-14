@@ -32,6 +32,8 @@ enum JOYPAD_BUTTON : Byte // button indexes as defined for XInput/Xbox/NintendoS
    JB_RSL, // Nintendo Switch Right SL
    JB_RSR, // Nintendo Switch Right SR
 
+   JB_HOME, // Home
+
    // alternative names
    JB_LB=JB_L1,
    JB_RB=JB_R1,
