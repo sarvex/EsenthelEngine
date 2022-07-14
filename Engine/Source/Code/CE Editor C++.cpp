@@ -1400,17 +1400,17 @@ Bool CodeEditor::generateVSProj(Int version)
                Int nodes=Application->nodes.elms();
                if(langs.has(DE)) AddNintendoLang(*Application, "German");
                if(langs.has(LANG_DUTCH)) AddNintendoLang(*Application, "Dutch");
-               if(langs.has(FR)){AddNintendoLang(*Application, "French"); AddNintendoLang(*Application, "CanadianFrench");}
+               if(langs.has(FR)){AddNintendoLang(*Application, "French"); /*AddNintendoLang(*Application, "CanadianFrench");*/}
                if(langs.has(IT)) AddNintendoLang(*Application, "Italian");
-               if(langs.has(SP)){AddNintendoLang(*Application, "Spanish"); AddNintendoLang(*Application, "LatinAmericanSpanish");}
-               if(langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); AddNintendoLang(*Application, "BrazilianPortuguese");}
+               if(langs.has(SP)){AddNintendoLang(*Application, "Spanish"); /*AddNintendoLang(*Application, "LatinAmericanSpanish");*/}
+               if(langs.has(PO)){AddNintendoLang(*Application, "Portuguese"); /*AddNintendoLang(*Application, "BrazilianPortuguese");*/}
              //if(langs.has(PL)) AddNintendoLang(*Application, "Polish"); unsupported by Nintendo
                if(langs.has(RU)) AddNintendoLang(*Application, "Russian");
                if(langs.has(JP)) AddNintendoLang(*Application, "Japanese");
                if(langs.has(KO)) AddNintendoLang(*Application, "Korean");
                if(langs.has(CN)){AddNintendoLang(*Application, "SimplifiedChinese"); /*AddNintendoLang(*Application, "TraditionalChinese");*/} // Nintendo won't accept "TraditionalChinese" if only Simplified is supported
              //if(langs.has(TH)) AddNintendoLang(*Application, "Thai"); unsupported by Nintendo
-               if(langs.has(EN) || nodes==Application->nodes.elms()){AddNintendoLang(*Application, "AmericanEnglish"); AddNintendoLang(*Application, "BritishEnglish");} // always add English if no language added
+               if(langs.has(EN) || nodes==Application->nodes.elms()){AddNintendoLang(*Application, "AmericanEnglish"); /*AddNintendoLang(*Application, "BritishEnglish");*/} // always add English if no language added
             }
 
             Long save_size=cei().appSaveSize(); if(save_size<0)save_size=32*1024*1024; // if save size is unspecified, then for simplicity use max possible without having to contact Nintendo for approval (32MB*2=64MB total)

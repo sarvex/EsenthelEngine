@@ -2,7 +2,7 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define SORT_JOYPADS_BY_ID 0 // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder"
+#define SORT_JOYPADS_BY_ID SWITCH // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder". However use on Nintendo Switch, because there IDs are taken from the User Index, it's needed when using 'ConfigureJoypads' having both standalone controller and joycons attached to the device (Handheld), selecting standalone controller for 1-1 players only, it has ID=0, and attached/Handheld have ID 32. It will get moved to the first slot. But when choosing Handheld in 'ConfigureJoypads' then all others get disconnected.
 
 #define JOYPAD_THREAD (JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT)
 #define JOYPAD_THREAD_SLEEP 5
@@ -1186,7 +1186,8 @@ void Joypad::acquire(Bool on)
    if(!on // unacquire
    || JOYPAD_THREAD) // zero even when wanting to acquire if processing joypad threads, in case some state changes got updated on the joypad thread
    {
-      // trigger release 'Inputs' events
+      // this will generate release 'Inputs' events
+      // zero is also needed for Nintendo Switch in case joypad changed 'mini' because not all members get updated for it
       setDiri(0, 0);
       REPA(_button)release(i);
       zero();
@@ -1274,6 +1275,16 @@ void JoypadsClass::moveElm(Int elm, Int new_index)
 }
 #endif
 /******************************************************************************/
+void JoypadsClass::clear()
+{
+#if JOYPAD_THREAD
+   if(_data.elms()){SyncLocker lock(JoypadLock);
+#else
+   {
+#endif
+     _data.clear();
+   }
+}
 void JoypadsClass::remove(Int i)
 {
 #if JOYPAD_THREAD
@@ -1292,7 +1303,7 @@ static Int Compare(C Joypad &a, C UInt &b) {return Compare(a.id(), b);}
 Joypad* JoypadsClass::find(UInt id)
 {
 #if SORT_JOYPADS_BY_ID
-   return binaryFind(id, Compare);
+   return _data.binaryFind(id, Compare);
 #else
    REPA(T){Joypad &jp=T[i]; if(jp.id()==id)return &jp;}
 #endif
@@ -1305,9 +1316,9 @@ Joypad& GetJoypad(UInt id, Bool &added)
 #endif
    added=false;
 #if SORT_JOYPADS_BY_ID
-   Joypad *joypad; Int index; if(Joypads.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads._data.NewAt(index); joypad->_id=id; added=true;}
+   Joypad *joypad; Int index; if(Joypads._data.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads._data.NewAt(index); joypad->_id=id; added=true;}
 #else
-   Joypad *joypad=Joypads.find(id);                                                       if(!joypad){joypad=&Joypads._data.New  (     ); joypad->_id=id; added=true;}
+   Joypad *joypad=Joypads.find(id);                                                             if(!joypad){joypad=&Joypads._data.New  (     ); joypad->_id=id; added=true;}
 #endif
    joypad->_connected=true;
    return *joypad;

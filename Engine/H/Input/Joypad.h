@@ -353,6 +353,7 @@ struct JoypadsClass // Container for Joypads
    void moveElm  (Int elm, Int new_index); // move 'elm' joypad to new position located at 'new_index'
 
 #if EE_PRIVATE
+   void clear  ();
    void remove (Int     i     ); // remove i-th Joypad
    void remove (Joypad *joypad); // remove joypad
    void update ();
