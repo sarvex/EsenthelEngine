@@ -661,6 +661,10 @@ void Joypad::setInfo(U16 vendor_id, U16 product_id)
         _remap[12]=JB_HOME;
         _remap[13]=JB_L3;
         _remap[14]=JB_R3;
+      //_axis_stick_r_x=AMOTION_EVENT_AXIS_Z    ; don't set because auto-detect works fine
+      //_axis_stick_r_y=AMOTION_EVENT_AXIS_RZ   ; don't set because auto-detect works fine
+      //_axis_trigger_l=AMOTION_EVENT_AXIS_BRAKE; don't set because auto-detect works fine
+      //_axis_trigger_r=AMOTION_EVENT_AXIS_GAS  ; don't set because auto-detect works fine
       #if JP_GAMEPAD_INPUT
          if(_axes>=6)
          {
