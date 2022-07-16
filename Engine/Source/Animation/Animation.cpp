@@ -3382,9 +3382,20 @@ Animation& Animation::clip(Flt start_time, Flt end_time, Bool remove_unused_bone
  //if(start_time!=0 || end_time!=length()) don't check this, because we may have keyframe data outside of this range that needs to be removed
    {
             keys  .clip(loop(), linear(), length(), start_time, end_time);
-      REPAO(bones).clip(loop(), linear(), length(), start_time, end_time);
-      if(remove_unused_bones)removeUnused();
+      REPAO(bones).clip(loop(), linear(), length(), start_time, end_time); if(remove_unused_bones)removeUnused();
+
      _length=Abs(end_time-start_time);
+
+      Flt start_eps_m=start_time-EPS, end_eps_m=end_time-EPS,
+          start_eps_p=start_time+EPS, end_eps_p=end_time+EPS;
+      REPA(events)
+      {
+         Flt &time=events[i].time;
+         if(time>   end_eps_p || time<start_eps_m)events.remove(i, true);else
+         if(time>=  end_eps_m                    )time =   _length;else
+         if(time<=start_eps_p                    )time =         0;else
+                                                  time-=start_time;
+      }
       setRootMatrix();
    }
    return T;
