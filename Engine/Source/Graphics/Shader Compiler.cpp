@@ -1324,7 +1324,7 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       Set(start, (type==ST_PS || type==ST_CS) ? "RT" : "IO"); Append(start, TextInt(loc, temp)); // OUTPUT name must match INPUT name, this solves problem when using "UV" and "UV0"
       spvc_compiler_set_name(spirv_compiler, res.id, start);
 
-      if(type!=ST_PS && type!=ST_CS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation because when mixing 300 VS with 310 PS then issues arise because 310 generates layout(location=X) for varyings, and 300 does NOT, it causes bugs on Android
+      if(type!=ST_PS && type!=ST_CS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation because when mixing 300 VS with 310 PS then issues arise because 310 generates layout(location=X) for varyings, and 300 does NOT, it causes bugs on Android. Alternative option would be to use Int glsl_ver for Shader (rember to adjust it if there's any ComputeShader), then merge shader_data only if glsl_ver matches #RemoveLayoutLocation
    }
    list=null; count=0; spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT, &list, &count); FREP(count)
    {
@@ -1617,7 +1617,7 @@ Bool ShaderCompiler::compileTry(Threads &threads)
                if(sub.shader_data.elms())
                {
                   Memc<ShaderDataEx> &sds=shader_datas[i];
-                  FREPA(sds)if(sds[i]==sub.shader_data){sub.shader_data_index=i; goto got_shader_data;} // find same
+                  FREPA(sds)if(sds[i]==sub.shader_data){sub.shader_data_index=i; goto got_shader_data;} // find same. #RemoveLayoutLocation
                   {
                      sub.shader_data_index=sds.elms(); ShaderDataEx &sd=sds.New(); // add new
                      Swap(SCAST(ShaderData, sd), sub.shader_data); // just swap
