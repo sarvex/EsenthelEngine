@@ -1240,7 +1240,10 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       spvc_compiler_set_name(spirv_compiler, res.id, instance_name);
       spvc_compiler_set_name(spirv_compiler, res.base_type_id, (compiler.api==API_GL) ? S8+'_'+buffer.name : buffer.name); // prefix all cbuffers on GL with '_' to avoid buffer/param name conflicts #UBOName
 
-      //spvc_compiler_get_decoration(spirv_compiler, res.id, SpvDecorationBinding) not needed for GL, because we obtain it in 'ShaderGL.validate'
+      spvc_compiler_set_decoration  (spirv_compiler, res.id, SpvDecorationRowMajor, true); // workaround for Arm Mali bug which will force "row_major" for all uniforms - https://community.arm.com/developer/tools-software/graphics/f/discussions/43743/serious-problems-with-handling-of-mat4x3
+    //spvc_compiler_get_decoration  (spirv_compiler, res.id, SpvDecorationBinding) not needed for GL, because we obtain it in 'ShaderGL.validate'
+      spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationBinding); // remove 'binding' because it might be invalid
+
       buffer.bind_slot    =ExpectedBufferSlot(buffer.name);
       buffer.bind_explicit=(buffer.bind_slot>=0);
       size_t size=0; spvc_compiler_get_declared_struct_size(spirv_compiler, buffer_handle, &size); buffer.size=(Int)size;
@@ -1248,8 +1251,6 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       buffer.params.setNum(spvc_type_get_num_member_types(buffer_handle));
       FREPA(buffer.params)
       {
-         spvc_compiler_set_decoration(spirv_compiler, res.id, SpvDecorationRowMajor, true); // workaround for Arm Mali bug which will force "row_major" for all uniforms - https://community.arm.com/developer/tools-software/graphics/f/discussions/43743/serious-problems-with-handling-of-mat4x3
-
          ShaderCompiler::Param &param=buffer.params[i];
          param.name=spvc_compiler_get_member_name(spirv_compiler, res.base_type_id, i);
          auto member=spvc_type_get_member_type(buffer_handle, i);
@@ -1320,8 +1321,10 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
     //CChar8 *name=spvc_compiler_get_name(spirv_compiler, res.id); name=_SkipStart(name, "out_var_");
       Int loc=spvc_compiler_get_decoration(spirv_compiler, res.id, SpvDecorationLocation); //DYNAMIC_ASSERT(loc==i, S+"location!=i "+shader.name);
     //Bool no_persp=spvc_compiler_get_decoration(spirv_compiler, res.id, SpvDecorationNoPerspective);
-      Set(start, (type==ST_PS) ? "RT" : "IO"); Append(start, TextInt(loc, temp)); // OUTPUT name must match INPUT name, this solves problem when using "UV" and "UV0"
+      Set(start, (type==ST_PS || type==ST_CS) ? "RT" : "IO"); Append(start, TextInt(loc, temp)); // OUTPUT name must match INPUT name, this solves problem when using "UV" and "UV0"
       spvc_compiler_set_name(spirv_compiler, res.id, start);
+
+      if(type!=ST_PS && type!=ST_CS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation because when mixing 300 VS with 310 PS then issues arise because 310 generates layout(location=X) for varyings, and 300 does NOT, it causes bugs on Android
    }
    list=null; count=0; spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT, &list, &count); FREP(count)
    {
@@ -1332,6 +1335,8 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       if(Starts(name, "ATTR"))DYNAMIC_ASSERT(TextInt(name+4)==loc, "ATTR index!=loc"); // verify vtx input ATTR index
       Set(start, (type==ST_VS) ? "ATTR" : "IO"); Append(start, TextInt(loc, temp)); // OUTPUT name must match INPUT name, this solves problem when using "UV" and "UV0"
       spvc_compiler_set_name(spirv_compiler, res.id, start);
+
+      if(type!=ST_VS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation
    }
 
    spvc_compiler_options options=null;
@@ -1348,8 +1353,8 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
          spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_GLSL_VERSION, 330);
       #endif
 
-         spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_FLOAT_PRECISION_HIGHP, type!=ST_PS);
-         spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_INT_PRECISION_HIGHP  , SPVC_TRUE  );
+         spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_FLOAT_PRECISION_HIGHP, type!=ST_PS && type!=ST_CS);
+         spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES_DEFAULT_INT_PRECISION_HIGHP  , SPVC_TRUE);
 
          spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_SUPPORT_NONZERO_BASE_INSTANCE, SPVC_FALSE);
 
