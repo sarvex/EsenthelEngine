@@ -1324,7 +1324,7 @@ static void Convert(ShaderData &shader_data, ShaderCompiler::SubShader &sub, Int
       Set(start, (type==ST_PS || type==ST_CS) ? "RT" : "IO"); Append(start, TextInt(loc, temp)); // OUTPUT name must match INPUT name, this solves problem when using "UV" and "UV0"
       spvc_compiler_set_name(spirv_compiler, res.id, start);
 
-      if(type!=ST_PS && type!=ST_CS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation because when mixing 300 VS with 310 PS then issues arise because 310 generates layout(location=X) for varyings, and 300 does NOT, it causes bugs on Android. Alternative option would be to use "Int glsl_ver" for 'Shader' (rember to adjust it if there's any ComputeShader), then merge shader_data only if glsl_ver matches #RemoveLayoutLocation and use that 'glsl_ver' when converting shaders.
+      if(type!=ST_PS && type!=ST_CS)spvc_compiler_unset_decoration(spirv_compiler, res.id, SpvDecorationLocation); // #RemoveLayoutLocation because when mixing 300 VS with 310 PS then issues arise because 310 generates layout(location=X) for varyings, and 300 does NOT, it causes bugs on Android ARM Mali. Alternative option would be to use "Int glsl_ver" for 'Shader' (rember to adjust it if there's any ComputeShader), then merge shader_data only if glsl_ver matches #RemoveLayoutLocation and use that 'glsl_ver' when converting shaders.
    }
    list=null; count=0; spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STAGE_INPUT, &list, &count); FREP(count)
    {
