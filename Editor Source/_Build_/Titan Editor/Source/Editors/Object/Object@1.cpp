@@ -3667,6 +3667,9 @@ cur_skel_to_saved_skel.bones.del();
                         {
                            mesh_skel->transform(Matrix3().setRotate(ActiveCam.matrix.z, angle));
                         }
+                        mesh_skel->setBoneTypes();
+                        mesh.skeleton(mesh_skel, true).skeleton(null);
+                        setChangedMesh(true, false);
                      }break;
 
                      case BONE_SCALE:
