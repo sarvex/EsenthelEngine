@@ -492,15 +492,13 @@ void AdjustValDir(Flt &value, Int dir, Flt change, Flt reset)
 /******************************************************************************/
 void AdjustValBool(Flt &value, Bool on, Flt dv)
 {
-   if(on)value+=dv; // increase
-   else  value-=dv; // decrease
-   SAT(value);      // saturate
+   if(on)MIN(value+=dv, 1); // increase
+   else  MAX(value-=dv, 0); // decrease
 }
 void AdjustValBool(Flt &value, Bool on, Flt inc, Flt dec)
 {
-   if(on)value+=inc; // increase
-   else  value-=dec; // decrease
-   SAT(value);       // saturate
+   if(on)MIN(value+=inc, 1); // increase
+   else  MAX(value-=dec, 0); // decrease
 }
 /******************************************************************************/
 void AdjustValBoolSet(Flt &value, Bool on, Bool set, Flt dv          ) {if(set)value=on;else AdjustValBool(value, on, dv      );} // immediately set or smoothly adjust
