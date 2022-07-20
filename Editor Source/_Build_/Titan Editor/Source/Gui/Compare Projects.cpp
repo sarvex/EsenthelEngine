@@ -100,20 +100,25 @@ CompareProjects CompareProjs;
       }
       list.setData(data);
    }
-   void CompareProjects::changed(C UID &proj_id)
+   void CompareProjects::changed(C UID &proj_id) // project with 'proj_id' has changed
    {
-      if(visible())REPA(projects)
+      if(visible())
       {
-         Project &proj=projects[i]; if(proj.id==proj_id)
+         bool refresh=false;
+         REPA(projects)
          {
-            if(proj_id==Proj.id)proj=Proj;else
+            Project &proj=projects[i]; if(proj.id==proj_id || proj.id==Proj.id) // refresh 'proj_id' and also current 'Proj', since this is called when copying elements from 'Proj' to 'proj_id', 'Proj' also could have changed in the meantime
             {
-               Str path=proj.path;
-               int ver; Str error; proj.load3(path, ver, error);
-               proj.setIDPath(proj_id, path);
+               refresh=true;
+               if(proj_id==Proj.id)proj=Proj;else
+               {
+                  Str path=proj.path;
+                  int ver; Str error; proj.load3(path, ver, error);
+                  proj.setIDPath(proj_id, path);
+               }
             }
-            refresh(); break;
          }
+         if(refresh)T.refresh();
       }
    }
    void CompareProjects::compare(C MemPtr<UID> &proj_ids)
