@@ -17,7 +17,7 @@ namespace EE{
 #define SOUND_API_LOCK_WEAK  //SOUND_API_LOCK_FORCE not needed
 #define OPERATION_SET        (!XAUDIO2_COMMIT_NOW) // make sure that this is not XAUDIO2_COMMIT_NOW
 
-#define FULL_VOL_AT_CENTER 1
+#define FULL_VOL_AT_CENTER 1 // play 3D sounds at full volume when they're at Listener position
 
 #if DIRECT_SOUND
 static IDirectSound           *DS;
