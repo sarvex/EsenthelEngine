@@ -13,11 +13,9 @@ namespace EE{
    #pragma message("!! Warning: Use this only for debugging !!")
 #endif
 
-#define SOUND_API_LOCK_FORCE     SyncLocker locker(SoundAPILock);
-#define SOUND_API_LOCK_WEAK      //SOUND_API_LOCK_FORCE not needed
-#define OPERATION_SET            (!XAUDIO2_COMMIT_NOW) // make sure that this is not XAUDIO2_COMMIT_NOW
-#define DIRECT_SOUND_RANGE_SCALE 1.75f // this was tested by playing sound at different positions (1,0,0), (2,0,0), (4,0,0) with range 1 and comparing recorded volume to XAudio version
-#define      OPEN_AL_RANGE_SCALE 0.75f // this was tested by playing sound at different positions (1,0,0), (2,0,0), (4,0,0) with range 1 and comparing recorded volume to XAudio version
+#define SOUND_API_LOCK_FORCE SyncLocker locker(SoundAPILock);
+#define SOUND_API_LOCK_WEAK  //SOUND_API_LOCK_FORCE not needed
+#define OPERATION_SET        (!XAUDIO2_COMMIT_NOW) // make sure that this is not XAUDIO2_COMMIT_NOW
 
 #define FULL_VOL_AT_CENTER 1
 
@@ -461,7 +459,7 @@ void SoundBuffer::volume(Flt volume) // 'volume' should be in range 0..1
 #if DIRECT_SOUND
    if(_s)
    {
-      if(_s3d && _par.channels==2)volume*=0.5f; // 3D stereo sounds will play at different volumes than 3D mono, so adjust, do this here and not in 'range' because there we can affect volumes only outside of 'range' and not inside
+      if(_s3d && _par.channels==2)volume*=0.5f; // 3D stereo sounds will play at different volumes than 3D mono, so adjust to match
       Int linear=Round(Lerp(DSBVOLUME_MIN, DSBVOLUME_MAX, Pow(volume, 0.1f)));
       SOUND_API_LOCK_WEAK; _s->SetVolume(linear);
    }
@@ -693,11 +691,11 @@ void SoundBuffer::range(Flt range)
 {
    MAX(range, 0.0f);
 #if DIRECT_SOUND
-   if(_s3d){SOUND_API_LOCK_WEAK; _s3d->SetMinDistance(range*DIRECT_SOUND_RANGE_SCALE, DS3D_DEFERRED);}
+   if(_s3d){SOUND_API_LOCK_WEAK; _s3d->SetMinDistance(range, DS3D_DEFERRED);}
 #elif XAUDIO || CUSTOM_AUDIO
    // handled in 'set3DParams'
 #elif OPEN_AL
-   if(_source){SOUND_API_LOCK_WEAK; alSourcef(_source, AL_REFERENCE_DISTANCE, range*OPEN_AL_RANGE_SCALE);}
+   if(_source){SOUND_API_LOCK_WEAK; alSourcef(_source, AL_REFERENCE_DISTANCE, range);}
 #elif OPEN_SL
    T._range=range;
    if(!emulate3D() && player_source){SOUND_API_LOCK_WEAK; (*player_source)->SetRolloffDistances(player_source, RoundPos(range/SL_POS_UNIT), SL_MILLIMETER_MAX);}
@@ -706,11 +704,11 @@ void SoundBuffer::range(Flt range)
 Flt SoundBuffer::range()C
 {
 #if DIRECT_SOUND
-   if(_s3d){Flt range=0; SOUND_API_LOCK_WEAK; if(OK(_s3d->GetMinDistance(&range)))return range/DIRECT_SOUND_RANGE_SCALE;}
+   if(_s3d){Flt range=0; SOUND_API_LOCK_WEAK; if(OK(_s3d->GetMinDistance(&range)))return range;}
 #elif XAUDIO || CUSTOM_AUDIO
    // unavailable
 #elif OPEN_AL
-   Flt range=0; if(_source){SOUND_API_LOCK_WEAK; alGetSourcef(_source, AL_REFERENCE_DISTANCE, &range);} return range/OPEN_AL_RANGE_SCALE;
+   Flt range=0; if(_source){SOUND_API_LOCK_WEAK; alGetSourcef(_source, AL_REFERENCE_DISTANCE, &range);} return range;
 #elif OPEN_SL
    #if 1 // faster
       return _range;
