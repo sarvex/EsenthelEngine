@@ -69,6 +69,12 @@ static void Get3DParams(C Vec &pos, Flt range, Flt volume, Flt &out_volume, Flt 
    out_volume=volume;
    out_pan   =Dot(delta, Listener.right())/((dist>EarRadius) ? dist : EarRadius); // normalize only if length is greater than 'EarRadius' so that we can still have pan when distance is less than 'EarRadius'
 }
+static Flt Get3DPan(C Vec &pos, Flt range) // pan will always be -1..1
+{
+   Vec delta=pos-Listener.pos();
+   Flt dist =delta.length();
+   return Dot(delta, Listener.right())/((dist>EarRadius) ? dist : EarRadius); // normalize only if length is greater than 'EarRadius' so that we can still have pan when distance is less than 'EarRadius'
+}
 /******************************************************************************/
 #if CUSTOM_AUDIO
 AudioVoice::~AudioVoice() // !! requires 'AudioLock' !!
@@ -531,8 +537,8 @@ void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
       SOUND_API_LOCK_WEAK;
       if(pos_range)
       {
-         Flt volume, pan; Get3DParams(sound.pos(), sound.range(), 1, volume, pan);
-         switch(_par.channels)
+         Flt pan=Get3DPan(sound.pos(), sound.range());
+         switch(_par.channels) // volumes have to be set to have same loudness for both mono/stereo sounds
          {
          #if FULL_VOL_AT_CENTER
             case 1:
