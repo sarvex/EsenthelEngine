@@ -19,6 +19,8 @@ namespace EE{
 #define DIRECT_SOUND_RANGE_SCALE 1.75f // this was tested by playing sound at different positions (1,0,0), (2,0,0), (4,0,0) with range 1 and comparing recorded volume to XAudio version
 #define      OPEN_AL_RANGE_SCALE 0.75f // this was tested by playing sound at different positions (1,0,0), (2,0,0), (4,0,0) with range 1 and comparing recorded volume to XAudio version
 
+#define FULL_VOL_AT_CENTER 1
+
 #if DIRECT_SOUND
 static IDirectSound           *DS;
 static IDirectSound3DListener *DSL;
@@ -466,7 +468,11 @@ void SoundBuffer::volume(Flt volume) // 'volume' should be in range 0..1
 #elif XAUDIO
    if(_sv){SOUND_API_LOCK_WEAK; _sv->SetVolume(volume, OPERATION_SET);}
 #elif OPEN_AL
-   if(_source){SOUND_API_LOCK_WEAK; alSourcef(_source, AL_GAIN, volume);}
+   if(_source)
+   {
+      if(_par.channels==2)volume*=SQRT2_2; // on OpenAL mono sounds are more quiet, we can't make them louder because AL_GAIN is limited to 0..1, so instead make stereo sounds quiet too, to match mono
+      SOUND_API_LOCK_WEAK; alSourcef(_source, AL_GAIN, volume);
+   }
 #elif OPEN_SL
    if(player_volume)
    {
@@ -500,7 +506,6 @@ void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
       X3DAUDIO_EMITTER      emitter;
       X3DAUDIO_DSP_SETTINGS dsp;
       UInt                  flag=0;
-      Flt                   pan;
       if(pos_range) // !! process this first because of "Zero(emitter)" !!
       {
          flag|=X3DAUDIO_CALCULATE_MATRIX;
@@ -511,11 +516,9 @@ void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
          emitter.InnerRadius=EarRadius;
          emitter.CurveDistanceScaler=Max(FLT_MIN, sound._range);
 
-         dsp.SrcChannelCount=_par.channels;
+         dsp.SrcChannelCount= _par.channels;
          dsp.DstChannelCount=XAudioChannels;
          dsp.pMatrixCoefficients=matrix.setNum(dsp.SrcChannelCount*dsp.DstChannelCount).data();
-
-         Flt volume; if(_par.channels==2)Get3DParams(sound.pos(), sound.range(), 1, volume, pan); // get pan for 3D stereo
       }
       if(speed)
       {
@@ -530,7 +533,31 @@ void SoundBuffer::set3DParams(C _Sound &sound, Bool pos_range, Bool speed)
       SOUND_API_LOCK_WEAK;
       if(pos_range)
       {
-         if(_par.channels==2){pan=pan*0.5f+0.5f; Flt vol[]={1-pan, pan}; _sv->SetChannelVolumes(2, vol, OPERATION_SET);} // apply pan for 3D stereo, this formula matches 3D mono volumes
+         Flt volume, pan; Get3DParams(sound.pos(), sound.range(), 1, volume, pan);
+         switch(_par.channels)
+         {
+         #if FULL_VOL_AT_CENTER
+            case 1:
+            {
+               Flt scale=2-Abs(pan); REPA(matrix)dsp.pMatrixCoefficients[i]*=scale;
+            }break;
+         #endif
+
+            case 2:
+            {
+            #if FULL_VOL_AT_CENTER
+               Flt vol[]={Min(1-pan, 1), Min(pan+1, 1)};
+            #else
+               pan=pan*0.5f+0.5f; Flt vol[]={1-pan, pan}; // this matches mono
+            #endif
+               if(dsp.DstChannelCount==2)
+               {
+                  dsp.pMatrixCoefficients[0]*=vol[0]; dsp.pMatrixCoefficients[2]*=vol[0]; // left
+                  dsp.pMatrixCoefficients[1]*=vol[1]; dsp.pMatrixCoefficients[3]*=vol[1]; // right
+               }else _sv->SetChannelVolumes(2, vol, OPERATION_SET);
+            }break;
+         }
+         
         _sv->SetOutputMatrix(XAudioMasteringVoice, _par.channels, XAudioChannels, dsp.pMatrixCoefficients, OPERATION_SET); // 'SetOutputMatrix' and 'SetVolume' can be set independently
       }
       if(speed)_sv->SetFrequencyRatio(SoundSpeed(sound._actual_speed*dsp.DopplerFactor), OPERATION_SET);
