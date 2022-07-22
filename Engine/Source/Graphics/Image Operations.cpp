@@ -380,6 +380,85 @@ void Image::crop3D(Image &dest, Int x, Int y, Int z, Int w, Int h, Int d, C Vec4
    }
 }
 /******************************************************************************/
+static Bool TransparentX(C Image &image, Int x)
+{
+   REPD(z, image.ld())
+   REPD(y, image.lh())if(image.color3D(x, y, z).a)return false;
+   return true;
+}
+static Bool TransparentY(C Image &image, Int y)
+{
+   REPD(z, image.ld())
+   REPD(x, image.lw())if(image.color3D(x, y, z).a)return false;
+   return true;
+}
+static Bool TransparentZ(C Image &image, Int z)
+{
+   REPD(y, image.lh())
+   REPD(x, image.lw())if(image.color3D(x, y, z).a)return false;
+   return true;
+}
+Image& Image::cropTransparent(Bool border)
+{
+ C Image *src=this;
+   Image  temp;
+   if(compressed())if(copyTry(temp, -1, -1, -1, ImageTypeUncompressed(type()), IMAGE_SOFT, 1))src=&temp;else return T;
+
+   if(src->lockRead())
+   { // inclusive
+      Int z=0, z1=src->d()-1;
+      Int y=0, y1=src->h()-1;
+      Int x=0, x1=src->w()-1;
+
+      // Z
+      if(src->d()>1)
+      {
+         for(; TransparentZ(*src, z); )
+         {
+            if(z>=z1){x=x1=y=y1=z=z1=0; goto finish;} // fully transparent, return as 1x1x1 pixel
+            z++;
+         }
+         for(; z1>z && TransparentZ(*src, z1); )z1--;
+
+         if(border)
+         {
+            MAX(--z ,          0);
+            MIN(++z1, src->d()-1);
+         }
+      }
+
+      // Y
+      for(; TransparentY(*src, y); )
+      {
+         if(y>=y1){x=x1=y=y1=z=z1=0; goto finish;} // fully transparent, return as 1x1x1 pixel
+         y++;
+      }
+      for(; y1>y && TransparentY(*src, y1); )y1--;
+
+      // X
+      for(; TransparentX(*src, x); )
+      {
+         if(x>=x1){x=x1=y=y1=z=z1=0; goto finish;} // fully transparent, return as 1x1x1 pixel
+         x++;
+      }
+      for(; x1>x && TransparentX(*src, x1); )x1--;
+
+      if(border)
+      {
+         MAX(--y ,          0);
+         MIN(++y1, src->h()-1);
+         MAX(--x ,          0);
+         MIN(++x1, src->w()-1);
+      }
+
+   finish:
+      src->unlock();
+      src->crop3D(T, x, y, z, x1-x+1, y1-y+1, z1-z+1);
+   }
+   
+   return T;
+}
+/******************************************************************************/
 Image& Image::resize(Int w, Int h, FILTER_TYPE filter, UInt flags)
 {
    MAX(w, 1);
