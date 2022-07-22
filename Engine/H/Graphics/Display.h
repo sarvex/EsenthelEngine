@@ -783,4 +783,5 @@ inline DisplayClass &Display=D; // 'Display' alias ('Display' can be used the sa
 #endif
 
 #endif
+void SetFov(Vec2 &fov, FOV_MODE fov_mode, Flt aspect);
 /******************************************************************************/
