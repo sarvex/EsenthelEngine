@@ -42,6 +42,7 @@ CChar* TAttack();
 CChar* TAuthor();
 CChar* TAxe();
 CChar* TBack();
+CChar* TBigSword();
 CChar* TBlock();
 CChar* TBlocked(TRANS_FORM form=TF_NEUTRAL);
 CChar* TBlue();
