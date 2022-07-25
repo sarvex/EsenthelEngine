@@ -1,9 +1,13 @@
-﻿/******************************************************************************/
+﻿/******************************************************************************
+
+   Joypads are not sorted by their ID because:
+      -we can manually change their order using "Joypads.swapOrder", "Joypads.moveElm"
+      -we want new joypads to be added to the end of the list
+
+/******************************************************************************/
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-#define SORT_JOYPADS_BY_ID SWITCH // don't use this, so user can do things like manually changing order of joypads "Joypads.swapOrder". However use on Nintendo Switch, because there IDs are taken from the User Index, it's needed when using 'ConfigureJoypads' having both standalone controller and joycons attached to the device (Handheld), selecting standalone controller for 1-1 players only, it has ID=0, and attached/Handheld have ID 32. It will get moved to the first slot. But when choosing Handheld in 'ConfigureJoypads' then all others get disconnected, in case games only process input for the first Joypad when having multiple connected #JoypadSortID
-
 #define JOYPAD_THREAD (JP_GAMEPAD_INPUT || JP_X_INPUT || JP_DIRECT_INPUT)
 #define JOYPAD_THREAD_SLEEP 5
 /******************************************************************************/
@@ -1105,11 +1109,11 @@ void Joypad::update()
       // analog pad
       dir_a[0].x= (state.lX-32768)/32768.0f;
       dir_a[0].y=-(state.lY-32768)/32768.0f;
-      if(_offset_x && _offset_y)
+      if(_axis_stick_r_x && _axis_stick_r_y)
       {
          ASSERT(SIZE(state.lZ)==SIZE(Int));
-         dir_a[1].x= (*(Int*)(((Byte*)&state)+_offset_x)-32768)/32768.0f;
-         dir_a[1].y=-(*(Int*)(((Byte*)&state)+_offset_y)-32768)/32768.0f;
+         dir_a[1].x= (*(Int*)(((Byte*)&state)+_axis_stick_r_x)-32768)/32768.0f;
+         dir_a[1].y=-(*(Int*)(((Byte*)&state)+_axis_stick_r_y)-32768)/32768.0f;
       }
 
       // triggers
@@ -1221,7 +1225,6 @@ void JoypadSensors(Bool calculate)
 void ConfigureJoypads(Int min_players, Int max_players, C CMemPtr<Str> &player_names, C CMemPtr<Color> &player_colors) {}
 #endif
 /******************************************************************************/
-#if !SORT_JOYPADS_BY_ID
 static void RemapSwap(Memc<Input> &inputs, Int a, Int b)
 {
    REPA(inputs)
@@ -1273,7 +1276,6 @@ void JoypadsClass::moveElm(Int elm, Int new_index)
      _data.moveElm(           elm, new_index); REPAO(_data)._joypad_index=i;
    }
 }
-#endif
 /******************************************************************************/
 void JoypadsClass::clear()
 {
@@ -1302,11 +1304,7 @@ void JoypadsClass::remove(Joypad *joypad)
 static Int Compare(C Joypad &a, C UInt &b) {return Compare(a.id(), b);}
 Joypad* JoypadsClass::find(UInt id)
 {
-#if SORT_JOYPADS_BY_ID
-   return _data.binaryFind(id, Compare);
-#else
    REPA(T){Joypad &jp=T[i]; if(jp.id()==id)return &jp;}
-#endif
    return null;
 }
 Joypad& GetJoypad(UInt id, Bool &added)
@@ -1315,11 +1313,7 @@ Joypad& GetJoypad(UInt id, Bool &added)
    DEBUG_ASSERT(JoypadLock.owned(), "'GetJoypad' must be called only under lock");
 #endif
    added=false;
-#if SORT_JOYPADS_BY_ID
-   Joypad *joypad; Int index; if(Joypads._data.binarySearch(id, index, Compare))joypad=&Joypads[index];else{joypad=&Joypads._data.NewAt(index); joypad->_id=id; added=true;}
-#else
-   Joypad *joypad=Joypads.find(id);                                                             if(!joypad){joypad=&Joypads._data.New  (     ); joypad->_id=id; added=true;}
-#endif
+   Joypad *joypad=Joypads.find(id); if(!joypad){joypad=&Joypads._data.New(); joypad->_id=id; added=true;}
    joypad->_connected=true;
    return *joypad;
 }
@@ -1423,14 +1417,14 @@ static BOOL CALLBACK EnumAxes(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *user)
 
    if(offset)
    {
-      if(!joypad._offset_x || offset<joypad._offset_x) // X axis is assumed to be specified before Y axis
+      if(!joypad._axis_stick_r_x || offset<joypad._axis_stick_r_x) // X axis is assumed to be specified before Y axis
       {
-         joypad._offset_y=joypad._offset_x;
-         joypad._offset_x=        offset;
+         joypad._axis_stick_r_y=joypad._axis_stick_r_x;
+         joypad._axis_stick_r_x=offset;
       }else
-      if(!joypad._offset_y || offset<joypad._offset_y)// Y axis is assumed to be specified before other axes
+      if(!joypad._axis_stick_r_y || offset<joypad._axis_stick_r_y) // Y axis is assumed to be specified before other axes
       {
-         joypad._offset_y=offset;
+         joypad._axis_stick_r_y=offset;
       }
    }
 

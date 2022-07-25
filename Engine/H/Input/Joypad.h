@@ -180,7 +180,7 @@ private:
    Byte    _axis_stick_r_x=0xFF, _axis_stick_r_y=0xFF, _axis_trigger_l=0xFF, _axis_trigger_r=0xFF;
 #endif
 #if JP_DIRECT_INPUT
-   Byte    _offset_x=0, _offset_y=0;
+   Byte    _axis_stick_r_x=0, _axis_stick_r_y=0;
 #endif
 #if JP_X_INPUT
    Byte    _xinput=255;
