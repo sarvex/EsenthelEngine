@@ -98,7 +98,15 @@ Button& Button::func(void (*func)(Ptr), Ptr user, Bool immediate)
 }
 void Button::call(Bool allow_sound)
 {
-   if(allow_sound && sound && mode!=BUTTON_CONTINUOUS && _sub_type==BUTTON_TYPE_DEFAULT)Gui.playClickSound(); // don't play sounds for 'Tab' because they're played by 'Tabs'
+   if(allow_sound && sound && mode!=BUTTON_CONTINUOUS)switch(_sub_type) // don't play sounds for 'Tab' because they're played by 'Tabs'
+   {
+      case BUTTON_TYPE_DEFAULT:
+      case BUTTON_TYPE_COMBOBOX:
+      case BUTTON_TYPE_WINDOW_MINIMIZE:
+      case BUTTON_TYPE_WINDOW_MAXIMIZE:
+      case BUTTON_TYPE_WINDOW_CLOSE:
+         Gui.playClickSound(); break;
+   }
    if(_func)
    {
       if(_func_immediate)

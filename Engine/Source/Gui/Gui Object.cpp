@@ -877,7 +877,8 @@ GuiObjChildren::Child* GuiObjChildren::add(GuiObj &child, GuiObj &parent)
       }
 
       Child &c=children.NewAt(l); c.go=&child; child._parent=&parent; child.parentClientRectChanged(old_parent ? &NoTemp(old_parent->localClientRect()) : null, &NoTemp(parent.localClientRect()));
-      if(!kb && child.kbCatch())kb=&child;
+      if(!MOBILE) // skip for Mobile platforms, because of the soft keyboard overlay, which could keep popping up annoyingly and occlude big portion of the screen
+         if(!kb && child.kbCatch())kb=&child;
       changed=true;
       return &c;
    }
