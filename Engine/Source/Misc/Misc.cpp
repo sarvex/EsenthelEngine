@@ -1014,17 +1014,17 @@ Bool ClipSet(C Str &text)
    if(OpenClipboard(null))
    {
       EmptyClipboard();
-	   Int max_length=text.length()+1;
-	   if( max_length>1)if(HGLOBAL buf=GlobalAlloc(GMEM_MOVEABLE, max_length*SIZE(Char)))
+      Int max_length=text.length()+1;
+      if( max_length>1)if(HGLOBAL buf=GlobalAlloc(GMEM_MOVEABLE, max_length*SIZE(Char)))
       {
          Set((Char*)GlobalLock(buf), text(), max_length); GlobalUnlock(buf);
          SetClipboardData(CF_UNICODETEXT, buf);
        //GlobalFree(buf); this shouldn't be called after SetClipboardData
       }
-	   CloseClipboard();
-	   return true;
-	}
-	return false;
+      CloseClipboard();
+      return true;
+   }
+   return false;
 #elif WINDOWS_NEW
    Bool ok;
    auto content=ref new Windows::ApplicationModel::DataTransfer::DataPackage;
