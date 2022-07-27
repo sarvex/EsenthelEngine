@@ -40,7 +40,7 @@ MultiStr& MultiStr::remove(LANG_TYPE lang)
    return T;
 }
 /******************************************************************************/
-CChar* T1Player () {return MLTC(u"1 Player", DE, u"1 Spieler", FR, u"1 Joueur", IT, u"1 Giocatore", SP, u"1 Jugador", PO, u"1 Jogador", PL, u"1 Gracz", RU, u"1 Игрок", JP, u"1プレイヤー", KO, u"1명의 플레이어", CN, u"1 名球员", TH, u"ผู้เล่น 1 คน");}
+CChar* T1Player () {return MLTC(u"1 Player", DE, u"1 Spieler", FR, u"1 Joueur", IT, u"1 Giocatore", SP, u"1 Jugador", PO, u"1 Jogador", PL, u"1 Gracz", RU, u"1 Игрок", JP, u"1プレイヤー", KO, u"1명의 플레이어", CN, u"1名球员", TH, u"ผู้เล่น 1 คน");}
 CChar* T2Players() {return MLTC(u"2 Players", DE, u"2 Spieler", FR, u"2 Joueurs", IT, u"2 Giocatori", SP, u"2 Jugadores", PO, u"2 Jogadores", PL, u"2 Graczy", RU, u"2 Игрока", JP, u"2人のプレイヤー", KO, u"2명의 플레이어", CN, u"2名球员", TH, u"ผู้เล่น 2 คน");}
 CChar* TAction() {return MLTC(u"Action", DE, u"Aktion", FR, u"Action", IT, u"Azione", SP, u"Acción", PO, u"Açao", PL, u"Akcja", RU, u"Действие", JP, u"アクション", KO, u"동작", CN, u"行动", TH, u"หนังบู๊");}
 CChar* TAttack() {return MLTC(u"Attack", DE, u"Attacke", FR, u"Attaque", IT, u"Attacco", SP, u"Ataque", PO, u"Ataque", PL, u"Atak", RU, u"Атака", JP, u"攻撃", KO, u"공격", CN, u"攻击", TH, u"จู่โจม");}
