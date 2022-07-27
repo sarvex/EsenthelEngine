@@ -415,11 +415,11 @@ Joypad& Joypad::vibration(C Vec2 &vibration)
       if(mono)
       {
          v.LeftMotor=
-         v.RightMotor=vibration.max();
+         v.RightMotor=Sat(vibration.max());
       }else
       {
-         v. LeftMotor=vibration.x;
-         v.RightMotor=vibration.y;
+         v. LeftMotor=Sat(vibration.x);
+         v.RightMotor=Sat(vibration.y);
       }
       v.LeftTrigger=v.RightTrigger=0;
    #if WINDOWS_OLD
