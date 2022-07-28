@@ -73,6 +73,7 @@ enum LIST_FLAG // List Flag
    LIST_TYPE_LINE        =0x040, // if elements of different "types" won't be displayed in the same line in LDM_RECTS mode, this will work only if LIST_TYPE_SORT is enabled
    LIST_MULTI_SEL        =0x080, // if list supports selection of multiple elements at one time (by using Shift, Ctrl, ..)
    LIST_RESIZABLE_COLUMNS=0x100, // if list columns can be resized using mouse
+   LIST_NEAREST_COLUMN   =0x200, // if perform "nearest" operations per column
 };
 /******************************************************************************/
 const_mem_addr struct _List : GuiObj // Gui List !! must be stored in constant memory address !!
