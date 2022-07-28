@@ -184,12 +184,26 @@ void GUI::moveMouse(C Vec2 &dir)C
       {
          list=&Gui.msLit()->asList();
       list:
-         int vis=list->nearest(Ms.pos()+list->scrollDelta().chsY(), dir); if(vis>=0)
+         Vec2 pos=Ms.pos()+list->scrollDelta().chsY();
+         if(list->flag&LIST_NEAREST_COLUMN && list->drawMode()==LDM_LIST)
          {
-            list->scrollTo(vis); if(list->scrollingMain())
+            VecI2 col_vis=list->nearest2(pos, dir); if(col_vis.y>=0)
             {
-               Ms.pos(list->visToScreenRect(vis).center()-list->scrollDelta().chsY());
-               return;
+               list->scrollToCol(col_vis.x).scrollTo(col_vis.y); if(list->scrolling())
+               {
+                  Ms.pos(list->visToScreenRect(col_vis.y).left() + Vec2(list->column(col_vis.x).rect().centerX(), 0) - list->scrollDelta().chsY());
+                  return;
+               }
+            }
+         }else
+         {
+            int vis=list->nearest(pos, dir); if(vis>=0)
+            {
+               list->scrollTo(vis); if(list->scrollingMain())
+               {
+                  Ms.pos(list->visToScreenRect(vis).center()-list->scrollDelta().chsY());
+                  return;
+               }
             }
          }
       }else

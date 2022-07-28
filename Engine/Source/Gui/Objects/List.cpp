@@ -298,6 +298,18 @@ Int _List::localToColumnX(Flt local_x)C
    }
    return -1;
 }
+Int _List::localToVirtualColumnX(Flt local_x)C
+{
+   if(_columns.elms())
+   {
+      if(local_x>_columns.last().rect().max.x)return _columns.elms();
+      REPA(_columns)
+      {
+       C ListColumn &lc=_columns[i]; if(lc.visible() && local_x>=lc.rect().min.x)return i;
+      }
+   }
+   return -1;
+}
 /******************************************************************************/
 Int _List::firstColumn(DATA_TYPE type)
 {
@@ -924,6 +936,8 @@ Int _List::localToVis(C Vec2 &local_pos)C
 Int _List::localToVisX(Flt local_x)C {Int v=localToVirtualX(local_x); return InRange(v, visibleElms()) ? v : -1;}
 Int _List::localToVisY(Flt local_y)C {Int v=localToVirtualY(local_y); return InRange(v, visibleElms()) ? v : -1;}
 
+Vec2 _List::screenToLocal(C Vec2 &pos, C GuiPC *gpc)C {return pos-(gpc ? gpc->offset : screenPos());}
+
 Int _List::screenToVisX     (  Flt   x  , C GuiPC *gpc)C {return localToVisX     (x  -(gpc ? gpc->offset.x : screenPos().x));}
 Int _List::screenToVisY     (  Flt   y  , C GuiPC *gpc)C {return localToVisY     (y  -(gpc ? gpc->offset.y : screenPos().y));}
 Int _List::screenToVis      (C Vec2 &pos, C GuiPC *gpc)C {return localToVis      (pos-(gpc ? gpc->offset   : screenPos()  ));}
@@ -1023,8 +1037,8 @@ Int _List::nearest(C Vec2 &screen_pos, C Vec2 &dir)C
       case LDM_LIST: if(dir.y)
       {
          Int v=screenToVirtualY(screen_pos.y);
-         if(dir.y>0){v--; return Mid(v, -1, visibleElms()-1);}
-                     v++; if(v>=visibleElms())return -1; return Max(v, 0);
+         if(dir.y>0)return Mid(v-1, -1, visibleElms()-1);
+                    v++; if(v>=visibleElms())return -1; return Max(v, 0);
       }break;
 
       case LDM_RECTS:
@@ -1090,6 +1104,45 @@ Int _List::nearest(C Vec2 &screen_pos, C Vec2 &dir)C
    }
    return -1;
 }
+VecI2 _List::nearest2(C Vec2 &screen_pos, C Vec2 &dir)C
+{
+   if(visibleElms())switch(drawMode())
+   {
+      case LDM_LIST: if(dir.any())
+      {
+         Vec2 local_pos=screenToLocal(screen_pos);
+         Int  v=localToVirtualY(local_pos.y);
+         if(dir.y>0)v=Min(v-1, visibleElms()-1);else // move up
+         if(dir.y<0)v=Max(v+1,               0);     // move down
+         if(InRange(v, visibleElms()))
+         {
+            Int c=localToVirtualColumnX(local_pos.x);
+            if(dir.x>0) // move right
+            {
+            right:
+               MAX(++c, 0);
+            next_col: // find next visible column
+               if(!InRange(c, columns()))return -1;
+               if(!columnVisible(c)){c++; goto next_col;}
+            }else
+            if(dir.x<0) // move left
+            {
+            left:
+               MIN(--c, visibleElms()-1);
+            prev_col: // find previous visible column
+               if(!InRange(c, columns()))return -1;
+               if(!columnVisible(c)){c--; goto prev_col;}
+            }else // if not moving, then clamp to nearest visible column
+            if(c< 0        )goto right;else
+            if(c>=columns())goto left ;
+            return VecI2(c, v);
+         }
+      }break;
+
+      case LDM_RECTS: return VecI2(0, nearest(screen_pos, dir));
+   }
+   return -1;
+}
 Int _List::pageElms(C GuiPC *gpc)C
 {
    Int page_elms=1;
@@ -1101,6 +1154,11 @@ Int _List::pageElms(C GuiPC *gpc)C
    return page_elms;
 }
 /******************************************************************************/
+Bool _List::scrolling()C
+{
+   if(_parent && _parent->isRegion())return _parent->asRegion().scrolling();
+   return false;
+}
 Bool _List::scrollingMain()C
 {
    if(_parent && _parent->isRegion())
@@ -1143,6 +1201,19 @@ _List& _List::scrollTo(Int i, Bool immediate, Flt center)
             else           {e=(             h      -rect.h())*center; region.scrollFitY(-rect.max.y-e, -rect.min.y+add+e, immediate);}
          }break;
       }
+   }
+   return T;
+}
+_List& _List::scrollToCol(Int column, Bool immediate, Flt center)
+{
+   Clamp(column, 0, columns()-1);
+   if(InRange(column, _columns) && _parent && _parent->isRegion() && drawMode()==LDM_LIST)
+   {
+      center=Sat(center)*0.5f;
+      Region &region=_parent->asRegion();
+    C Rect   &rect=T.column(column).rect();
+      Flt     w=region.clientWidth(), e=(w-rect.w())*center;
+      region.scrollFitX(rect.min.x-e, rect.max.x+e, immediate);
    }
    return T;
 }
