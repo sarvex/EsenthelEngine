@@ -1000,6 +1000,16 @@ Rect _List::visToScreenRect(Int visible, C GuiPC *gpc)C
    }
    return pos;
 }
+Rect _List::visToScreenRect(C VecI2 &col_vis, C GuiPC *gpc)C
+{
+   Vec2 pos=(gpc ? gpc->offset : screenPos()); if(columnsVisible())pos.y-=columnHeight();
+   switch(drawMode())
+   {
+      case LDM_LIST : {pos.y-=col_vis.y*_height_ez; Rect rect; rect.setY(pos.y-_height_ez, pos.y); if(InRange(col_vis.x, columns())){C Rect &col_rect=column(col_vis.x).rect(); rect.setX(col_rect.min.x+pos.x, col_rect.max.x+pos.x);}else rect.setX(pos.x, pos.x+T.rect().w()); return rect;}
+      case LDM_RECTS: if(_rects && InRange(col_vis.y, visibleElms()))return _rects[col_vis.y]+pos; break;
+   }
+   return pos;
+}
 /******************************************************************************/
 Rect _List::elmsScreenRect(C GuiPC *gpc)C
 {

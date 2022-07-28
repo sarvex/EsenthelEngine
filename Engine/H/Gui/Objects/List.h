@@ -158,23 +158,25 @@ const_mem_addr struct _List : GuiObj // Gui List !! must be stored in constant m
    Int dataToVis  (CPtr data    )C;                             // convert data           to visible  index
    Int dataToAbs  (CPtr data    )C;                             // convert data           to absolute index
 
-           Int screenToVisX      (  Flt   x      , C GuiPC *gpc=null)C; // convert screen  position X to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Int screenToVisY      (  Flt   y      , C GuiPC *gpc=null)C; // convert screen  position Y to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-   virtual Int screenToVis       (C Vec2 &pos    , C GuiPC *gpc=null)C; // convert screen  position   to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Ptr screenToData      (  Flt   y      , C GuiPC *gpc=null)C; // convert screen  position Y to data                                                 , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Ptr screenToData      (C Vec2 &pos    , C GuiPC *gpc=null)C; // convert screen  position   to data                                                 , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Int screenToColumnX   (  Flt   x      , C GuiPC *gpc=null)C; // convert screen  position X to column  index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Vec2   visToScreenPos (  Int   visible, C GuiPC *gpc=null)C; // convert visible index      to top left corner position of the element on the screen, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Rect   visToScreenRect(  Int   visible, C GuiPC *gpc=null)C; // convert visible index      to rectangle                of the element on the screen, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
-           Flt    visToLocalY    (  Int   visible                   )C; // convert visible index      to top             position of the element in local space
-           Vec2   visToLocalPos  (  Int   visible                   )C; // convert visible index      to top left corner position of the element in local space
-           Rect   visToLocalRect (  Int   visible                   )C; // convert visible index      to rectangle                of the element in local space
+           Int  screenToVisX      (  Flt    x      , C GuiPC *gpc=null)C; // convert screen  position X       to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Int  screenToVisY      (  Flt    y      , C GuiPC *gpc=null)C; // convert screen  position Y       to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+   virtual Int  screenToVis       (C Vec2  &pos    , C GuiPC *gpc=null)C; // convert screen  position         to visible index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Ptr  screenToData      (  Flt    y      , C GuiPC *gpc=null)C; // convert screen  position Y       to data                                                 , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Ptr  screenToData      (C Vec2  &pos    , C GuiPC *gpc=null)C; // convert screen  position         to data                                                 , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Int  screenToColumnX   (  Flt    x      , C GuiPC *gpc=null)C; // convert screen  position X       to column  index                                        , if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Vec2    visToScreenPos (  Int    visible, C GuiPC *gpc=null)C; // convert            visible index to top left corner position of the element on the screen, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Rect    visToScreenRect(  Int    visible, C GuiPC *gpc=null)C; // convert            visible index to rectangle                of the element on the screen, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null)
+           Rect    visToScreenRect(C VecI2 &col_vis, C GuiPC *gpc=null)C; // convert column and visible index to rectangle                of the element on the screen, if you know the 'GuiPC' then pass it to 'gpc' which will speed up calculations (otherwise leave it to null), 'col_vis.x=column', 'col_vis.y=visible index'
+           Flt     visToLocalY    (  Int    visible                   )C; // convert            visible index to top             position of the element in local space
+           Vec2    visToLocalPos  (  Int    visible                   )C; // convert            visible index to top left corner position of the element in local space
+           Rect    visToLocalRect (  Int    visible                   )C; // convert            visible index to rectangle                of the element in local space
 
    Int   nearest (C Vec2 &screen_pos, C Vec2 &dir)C; // get nearest visible index, starting from 'screen_pos' screen position towards 'dir' direction, -1 on fail
    VecI2 nearest2(C Vec2 &screen_pos, C Vec2 &dir)C; // get nearest visible index, starting from 'screen_pos' screen position towards 'dir' direction, -1 on fail, this function includes columns (x=column, y=row)
 
    Int         columns(     )C {return _columns.elms();} // number of columns
    ListColumn& column (Int i)  {return _columns[i]    ;} // get i-th  column
+ C ListColumn& column (Int i)C {return _columns[i]    ;} // get i-th  column
 
                                                  Flt  columnOffset (Int i)C; //     get i-th column horizontal offset
   _List& columnWidth  (Int i,   Flt  width  );   Flt  columnWidth  (Int i)C; // set/get i-th column width, ('width' can also be set to LCW_DATA, LCW_PARENT or LCW_MAX_DATA_PARENT)

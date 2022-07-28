@@ -191,7 +191,7 @@ void GUI::moveMouse(C Vec2 &dir)C
             {
                list->scrollToCol(col_vis.x).scrollTo(col_vis.y); if(list->scrolling())
                {
-                  Ms.pos(list->visToScreenRect(col_vis.y).left() + Vec2(list->column(col_vis.x).rect().centerX(), 0) - list->scrollDelta().chsY());
+                  Ms.pos(list->visToScreenRect(col_vis).center()-list->scrollDelta().chsY());
                   return;
                }
             }
