@@ -1444,8 +1444,23 @@ void _List::nearest(C GuiPC &gpc, GuiObjNearest &gon)
                {
                   rect.max.y=pos.y     -i*_height_ez;
                   rect.min.y=rect.max.y-  _height_ez;
-                  if(ignore_start && Cuts(gon.plane.pos, rect))continue;
-                  gon.add(rect&gpc.clip, area, T);
+                  if(flag&LIST_NEAREST_COLUMN)REP(columns())
+                  {
+                   C ListColumn &col=_columns[i]; if(col.visible())
+                     {
+                        rect.min.x=pos.x+col.rect().min.x;
+                        rect.max.x=pos.x+col.rect().max.x;
+                        if(CutsX(gpc.clip, rect))
+                        {
+                           if(ignore_start && Cuts(gon.plane.pos, rect))continue;
+                           gon.add(rect&gpc.clip, rect.area(), T);
+                        }
+                     }
+                  }else
+                  {
+                     if(ignore_start && Cuts(gon.plane.pos, rect))continue;
+                     gon.add(rect&gpc.clip, area, T);
+                  }
                }
             }break;
 
