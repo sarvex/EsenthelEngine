@@ -246,20 +246,16 @@ SlideBar& SlideBar::scroll(Flt delta, Bool immediate)
 }
 SlideBar& SlideBar::scrollTo(Flt pos, Bool immediate)
 {
-   Flt min=Max(0, Min(pos, lengthTotal()-length())),
-       max=Max(0, Min(pos, lengthTotal()         ));
-   if(min<_offset         ){_scroll=true ; _scroll_to=min         ;}else
-   if(max>_offset+length()){_scroll=true ; _scroll_to=max-length();}else
-                           {_scroll=false; _scroll_to=_offset     ;}
+   Flt min=Max(0, Min(pos, lengthTotal()-length()))         ; if(min<_offset){_scroll=true ; _scroll_to=min    ;}else
+  {Flt max=Max(0, Min(pos, lengthTotal()         ))-length(); if(max>_offset){_scroll=true ; _scroll_to=max    ;}else
+                                                                             {_scroll=false; _scroll_to=_offset;}}
    return immediate ? setOffset(_scroll_to) : T;
 }
 SlideBar& SlideBar::scrollFit(Flt min, Flt max, Bool immediate)
 {
-   min=Max(0, Min(min, lengthTotal()-length()));
-   max=Max(0, Min(max, lengthTotal()         ));
-   if(min<_offset         ){_scroll=true ; _scroll_to=min         ;}else
-   if(max>_offset+length()){_scroll=true ; _scroll_to=max-length();}else
-                           {_scroll=false; _scroll_to=   _offset  ;}
+   min=Max(0, Min(min, lengthTotal()-length()))         ; if(min<_offset){_scroll=true ; _scroll_to=min    ;}else
+  {max=Max(0, Min(max, min          +length()))-length(); if(max>_offset){_scroll=true ; _scroll_to=max    ;}else
+                                                                         {_scroll=false; _scroll_to=_offset;}}
    return immediate ? setOffset(_scroll_to) : T;
 }
 SlideBar& SlideBar::scrollEnd(Bool immediate) {return scrollTo(lengthTotal(), immediate);}
