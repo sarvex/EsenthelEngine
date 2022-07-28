@@ -211,7 +211,11 @@ Flt _List::columnDataWidth(Int i, Bool visible)C
          REP(visible ? visibleElms() : totalElms())
          {
             Ptr      data=(visible ? visToData(i) : absToData(i));
-            Flt elm_width=ts.textWidth(lc.md.asText(data, lc.precision));
+            Flt elm_width; switch(lc.md.type)
+            {
+               case DATA_STR_EX: {StrEx &sx=*(StrEx*)((Byte*)data+lc.md.offset); elm_width=ts.textWidth(null, sx.data(), sx.elms()      );} break;
+               default         :                                                 elm_width=ts.textWidth(lc.md.asText(data, lc.precision));  break;
+            }
             if(_offset_offset>=0)elm_width+=*(Flt*)((Byte*)data+_offset_offset);
             MAX(max_width, elm_width);
          }
@@ -1952,16 +1956,44 @@ void _List::draw(C GuiPC &gpc)
                   }else
                   FREPAD(c, _columns)
                   {
-                     ListColumn &lc=_columns[c];
-                     if(lc.visible() && lc.md.type)
+                     ListColumn &lc=_columns[c]; if(lc.visible())switch(lc.md.type)
                      {
-                        if(Image *image=lc.md.asImage(data))
+                        case DATA_NONE: break;
+
+                        case DATA_IMAGE    :
+                        case DATA_IMAGE_PTR:
+                        case DATA_IMAGEPTR :
+                           if(Image *image=lc.md.asImage(data))
+                           {
+                              ALPHA_MODE alpha=D.alpha(image_alpha);
+                              D.clip (elms_rect);
+                              image->drawFit(color, color_add, Rect_LU(lc.rect().min.x+x+ofs, y, lc.rect().w(), _height_ez));
+                              D.alpha(alpha);
+                           }
+                        break;
+
+                        case DATA_MENU_PTR:
+                        case DATA_CHECK:
                         {
-                           ALPHA_MODE alpha=D.alpha(image_alpha);
-                           D.clip (elms_rect);
-                           image->drawFit(color, color_add, Rect_LU(lc.rect().min.x+x+ofs, y, lc.rect().w(), _height_ez));
-                           D.alpha(alpha);
-                        }else
+                           Color color; if(C ImagePtr &image=DataGuiImage(data, lc, color))
+                           {
+                              D.clip(gpc.clip & Rect(lc.rect().min.x+wae_2+x, elms_rect.min.y, lc.rect().max.x-wae_2+x, elms_rect.max.y));
+                              image->drawFit(color, TRANSPARENT, Rect_C(Vec2(lc.rect().centerX()+x+ofs, yt), Vec2(ts.size.avg())));
+                           }
+                        }break;
+
+                        case DATA_STR_EX:
+                        {
+                           StrEx &sx=*(StrEx*)((Byte*)data+lc.md.offset); if(sx.is())
+                           {
+                              ts.align.x=lc.text_align;
+                              D.clip(gpc.clip & Rect(lc.rect().min.x+wae_2+x, elms_rect.min.y, lc.rect().max.x-wae_2+x, elms_rect.max.y));
+                              D.text(ts, Lerp(lc.rect().max.x-wae, lc.rect().min.x+wae, lc.text_align*0.5f+0.5f)+x+ofs, yt, (CChar*)null, sx.data(), sx.elms());
+                           }
+                           if(_offset_first_column)ofs=0; // reset offset for >=1 columns, this should not be done for images
+                        }break;
+
+                        default:
                         {
                          C Str &text=lc.md.asText(data, lc.precision); if(text.is())
                            {
@@ -1969,14 +2001,8 @@ void _List::draw(C GuiPC &gpc)
                               D.clip(gpc.clip & Rect(lc.rect().min.x+wae_2+x, elms_rect.min.y, lc.rect().max.x-wae_2+x, elms_rect.max.y));
                               D.text(ts, Lerp(lc.rect().max.x-wae, lc.rect().min.x+wae, lc.text_align*0.5f+0.5f)+x+ofs, yt, text);
                            }
-                        }
-                        Color color;
-                        if(C ImagePtr &image=DataGuiImage(data, lc, color))
-                        {
-                           D.clip(gpc.clip & Rect(lc.rect().min.x+wae_2+x, elms_rect.min.y, lc.rect().max.x-wae_2+x, elms_rect.max.y));
-                           image->drawFit(color, TRANSPARENT, Rect_C(Vec2(lc.rect().centerX()+x+ofs, yt), Vec2(ts.size.avg())));
-                        }
-                        if(!DataIsImage(lc.md.type) && _offset_first_column)ofs=0; // reset offset for >=1 columns
+                           if(_offset_first_column)ofs=0; // reset offset for >=1 columns, this should not be done for images
+                        }break;
                      }
                   }
                }
