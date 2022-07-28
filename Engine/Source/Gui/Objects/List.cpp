@@ -362,6 +362,7 @@ void _List::zero()
   _columns_hidden=false;
   _offset_first_column=true;
   _kb_action=false;
+  _focusable=true;
 
   _data=null;
   _memb=null;
@@ -493,6 +494,7 @@ _List& _List::create(C _List &src)
 
         _offset_first_column=src._offset_first_column;
         _horizontal         =src._horizontal;
+        _focusable          =src._focusable;
         _kb_action          =false;
 
         _data=src._data;
@@ -797,6 +799,7 @@ _List& _List::     zoomStep(  Flt   step                               ) {_zoom_
 _List& _List::     drawMode(  LIST_DRAW_MODE mode                      ) {                                              if(T._draw_mode!=mode                                                          ){T.     _draw_mode=mode      ;                                                setRects();} return T;}
 _List& _List::   horizontal(  Bool           horizontal                ) {                                              if(T._horizontal!=horizontal                                                   ){T.    _horizontal=horizontal;                                                setRects();} return T;}
 _List& _List::     vertical(  Bool           vertical                  ) {return horizontal(!vertical);}
+_List& _List::    focusable(  Bool           on                        ) {if(T._focusable!=on){_focusable=on; if(!on)kbClear();} return T;}
 /******************************************************************************/
 Ptr _List::visToData(Int visible)C
 {

@@ -135,6 +135,7 @@ const_mem_addr struct _List : GuiObj // Gui List !! must be stored in constant m
                                                                                 TextStyle * getTextStyle()C;                                       //     get actual text style
   _List&    horizontal(Bool           horizontal                           );   Bool          horizontal()C {return                  _horizontal;} // set/get if LDM_RECTS mode should be displayed horizontally, default=false
   _List&      vertical(Bool           vertical                             );   Bool            vertical()C {return                 !_horizontal;} // set/get if LDM_RECTS mode should be displayed   vertically, default=true
+  _List&     focusable(Bool           on                                   );   Bool           focusable()C {return                   _focusable;} // set/get if can catch keyboard focus, default=true
   _List&      drawMode(LIST_DRAW_MODE mode                                 );   LIST_DRAW_MODE  drawMode()C {return                   _draw_mode;} // set/get draw      mode, LIST_DRAW_MODE, default=LDM_LIST
                                                                                 LIST_SEL_MODE    selMode()C;                                       //     get selection mode affected by keyboard modifiers
 
@@ -296,7 +297,7 @@ private:
   _Map  *_map ;
   _Memx *_node;
 
-   Bool           _horizontal, _columns_hidden, _offset_first_column, _kb_action;
+   Bool           _horizontal, _columns_hidden, _offset_first_column, _kb_action, _focusable;
    Byte           _search_i;
    LIST_DRAW_MODE _draw_mode;
    Char           _search[32];

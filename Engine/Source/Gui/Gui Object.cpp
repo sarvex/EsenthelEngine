@@ -246,7 +246,7 @@ Bool GuiObj::kbCatch()C
       case GO_SLIDEBAR: return asSlideBar().focusable() && visible() && enabled();
       case GO_SLIDER  : return asSlider  ().focusable() && visible() && enabled();
       case GO_TAB     : return asTab     ().focusable() && visible() && enabled();
-      case GO_LIST    : return                             visible() && enabled();
+      case GO_LIST    : return asList    ().focusable() && visible() && enabled();
       default         : return false;
    }
 }
