@@ -200,6 +200,7 @@ CChar* TMoveBack();
 CChar* TMoveForward();
 CChar* TMoveLeft();
 CChar* TMoveRight();
+CChar* TMoves();
 CChar* TMultiSampling();
 CChar* TMusicVolume();
 CChar* TMute();
