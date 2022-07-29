@@ -175,6 +175,11 @@ void GuiObj::notifyParentOfRectChange(C Rect &old_rect, Bool old_visible)
    DEBUG_BYTE_LOCK(_used);
    if(parent())parent()->childRectChanged(old_visible ? &old_rect : null, visible() ? &rect() : null, T);
 }
+void GuiObj::notifyParentOfRectChange()
+{
+   DEBUG_BYTE_LOCK(_used);
+   if(parent())parent()->childRectChanged(&Rect(FLT_MAX, -FLT_MAX, FLT_MAX, -FLT_MAX), &Rect(-FLT_MAX, FLT_MAX, -FLT_MAX, FLT_MAX), T); // this will trigger full reset
+}
 /******************************************************************************/
 Bool GuiObj::contains(C GuiObj *child)C // !! this method is safe to work with "this==null" upon changing that, fix all calls to this !!
 {
