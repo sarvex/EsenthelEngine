@@ -136,10 +136,8 @@ inline VecSB4 SignEpsB(C Vec4 &v, Flt eps=EPS ) {return VecSB4(SignEps(v.x, eps)
 inline Int CompareEps(C Flt &a, C Flt &b) {return SignEps(a-b);}
 inline Int CompareEps(C Dbl &a, C Dbl &b) {return SignEps(a-b);}
 
-#if EE_PRIVATE
 inline Flt   PackInf(Flt x) {return 1-1/(x+1);} //   pack value from 0..Inf to 0..1
 inline Flt UnpackInf(Flt x) {return 1/(1-x)-1;} // unpack value from 0..1   to 0..Inf
-#endif
 
 inline Flt ScaleFactor (Flt x) {return (x>=0) ? (1+x) : (1/(1-x));} // get scaling factor from linear  value
 inline Dbl ScaleFactor (Dbl x) {return (x>=0) ? (1+x) : (1/(1-x));} // get scaling factor from linear  value
