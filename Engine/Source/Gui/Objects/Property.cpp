@@ -821,7 +821,7 @@ Rect Property::addTo(GuiObj &parent, C Vec2 &pos, Flt text_width, Flt height, Fl
 /******************************************************************************/
 // MAIN
 /******************************************************************************/
-Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, Flt property_height, Flt value_width, C TextStylePtr &text_style, Flt *parent_width)
+Rect AddProperties(Memx<Property> &properties, GuiObj &parent, C Vec2 &left_up, Flt property_height, Flt value_width, C TextStylePtr &text_style, C Flt *parent_width)
 {
    TextStylePtr ts=text_style; if(!ts && Gui.skin)ts=Gui.skin->text.text_style;
    Flt text_width=0,

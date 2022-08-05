@@ -41,6 +41,7 @@ CChar* TArmor();
 CChar* TArrow();
 CChar* TAttack();
 CChar* TAuthor();
+CChar* TAutoAdjust();
 CChar* TAxe();
 CChar* TBack();
 CChar* TBigAxe();
