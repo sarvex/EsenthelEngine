@@ -1645,6 +1645,7 @@ struct Language
    {(LANG_TYPE)LANG_DANISH    , "da", "Danish"},
    {(LANG_TYPE)LANG_DUTCH     , "nl", "Dutch"},
    {(LANG_TYPE)LANG_ENGLISH   , "en", "English"},
+   {(LANG_TYPE)LANG_ENGLISH_K , "ek", "English K"},
    {(LANG_TYPE)LANG_ESTONIAN  , "et", "Estonian"},
    {(LANG_TYPE)LANG_FILIPINO  , "tl", "Filipino"},
    {(LANG_TYPE)LANG_FINNISH   , "fi", "Finnish"},

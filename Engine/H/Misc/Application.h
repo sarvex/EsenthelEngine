@@ -236,6 +236,7 @@ inline Str MLT(C Str &english) {return english;}
        Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8);
        Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8, LANG_TYPE l9, C Str &t9);
        Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8, LANG_TYPE l9, C Str &t9, LANG_TYPE l10, C Str &t10);
+       Str MLT(C Str &english, LANG_TYPE l0, C Str &t0, LANG_TYPE l1, C Str &t1, LANG_TYPE l2, C Str &t2, LANG_TYPE l3, C Str &t3, LANG_TYPE l4, C Str &t4, LANG_TYPE l5, C Str &t5, LANG_TYPE l6, C Str &t6, LANG_TYPE l7, C Str &t7, LANG_TYPE l8, C Str &t8, LANG_TYPE l9, C Str &t9, LANG_TYPE l10, C Str &t10, LANG_TYPE l11, C Str &t11);
 
 // Multi Language Text Constant, returns one of the few translations provided depending on current application language
 inline CChar* MLTC(CChar* english) {return english;}
@@ -250,6 +251,7 @@ inline CChar* MLTC(CChar* english) {return english;}
        CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8);
        CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8, LANG_TYPE l9, CChar* t9);
        CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8, LANG_TYPE l9, CChar* t9, LANG_TYPE l10, CChar* t10);
+       CChar* MLTC(CChar* english, LANG_TYPE l0, CChar* t0, LANG_TYPE l1, CChar* t1, LANG_TYPE l2, CChar* t2, LANG_TYPE l3, CChar* t3, LANG_TYPE l4, CChar* t4, LANG_TYPE l5, CChar* t5, LANG_TYPE l6, CChar* t6, LANG_TYPE l7, CChar* t7, LANG_TYPE l8, CChar* t8, LANG_TYPE l9, CChar* t9, LANG_TYPE l10, CChar* t10, LANG_TYPE l11, CChar* t11);
 /******************************************************************************/
 #if EE_PRIVATE
 extern Bool LogInit;
