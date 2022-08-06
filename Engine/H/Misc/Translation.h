@@ -75,6 +75,7 @@ CChar* TCloseActiveWindow();
 CChar* TClub();
 CChar* TCollected();
 CChar* TConfigureControllers();
+CChar* TCongratulations();
 CChar* TContinue();
 CChar* TController();
 CChar* TControllerDeadZone();
