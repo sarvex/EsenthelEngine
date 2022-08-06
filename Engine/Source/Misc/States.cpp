@@ -86,11 +86,9 @@ Bool UpdateState()
    // change states
    if(StateNext!=StateActive)
    {
-      if( StateActive)    StateActive->shutDo(); StateActive=StateNext;
+      if( StateActive)    StateActive->shutDo(); StateActive=StateNext; Time._st=0; Time.skipUpdate(); // zero state time before 'StateInit'
       if(!StateActive || !StateActive->initDo())return false;
-      Time._st=0;
-      Time.skipUpdate();
-      D   .resetEyeAdaptation();
+      D.resetEyeAdaptation();
    }
 
    // update state & draw
