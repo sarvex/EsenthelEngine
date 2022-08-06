@@ -75,6 +75,7 @@ CChar* TCloseActiveWindow();
 CChar* TClub();
 CChar* TCollected();
 CChar* TConfigureControllers();
+CChar* TContinue();
 CChar* TController();
 CChar* TControllerDeadZone();
 CChar* TControllerInvert();
@@ -234,6 +235,7 @@ CChar* TOilBomb();
 inline CChar* TOK() {return u"OK";}
 CChar* TOnServer();
 CChar* TOpen();
+CChar* TOpponents();
 CChar* TOptions();
 CChar* TPainted();
 CChar* TPetHealth();
