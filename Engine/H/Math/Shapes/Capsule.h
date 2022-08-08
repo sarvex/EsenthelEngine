@@ -24,8 +24,8 @@ struct Capsule // Capsule Shape
 
    Flt innerHeightHalf()C {return h*0.5f-r;}
 
-   Vec  bottom  ()C {return pos-up*(h*0.5f  );           } // get bottom
-   Vec  top     ()C {return pos+up*(h*0.5f  );           } // get top
+   Vec  bottom  ()C {return pos-up*(h*0.5f);             } // get bottom
+   Vec  top     ()C {return pos+up*(h*0.5f);             } // get top
    Vec  ballDPos()C {return pos-up*innerHeightHalf();    } // get lower ball center
    Vec  ballUPos()C {return pos+up*innerHeightHalf();    } // get upper ball center
    Ball ballD   ()C {return Ball(r, ballDPos());         } // get lower ball
@@ -33,7 +33,8 @@ struct Capsule // Capsule Shape
    Edge fullEdge()C {return Edge(bottom  (), top     ());} // get edge between bottom and top
    Edge ballEdge()C {return Edge(ballDPos(), ballUPos());} // get edge between lower  and upper ball centers
 
-   Vec nearest(C Vec &normal)C; // get nearest point on capsule towards normal
+   Vec nearestNrm(C Vec &normal          )C; // get nearest point on capsule towards normal
+   Vec nearestPos(C Vec &pos, Bool inside)C; // get nearest point on capsule towards position, 'inside'=if allow retuning position inside capsule (false on surface only)
 
    Bool isBall   ()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
    Flt  ballR    ()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
@@ -96,8 +97,8 @@ struct CapsuleM // Capsule Shape (mixed precision)
 
    Flt innerHeightHalf()C {return h*0.5f-r;}
 
-   VecD  bottom  ()C {return pos-up*(h*0.5f  );            } // get bottom
-   VecD  top     ()C {return pos+up*(h*0.5f  );            } // get top
+   VecD  bottom  ()C {return pos-up*(h*0.5f);              } // get bottom
+   VecD  top     ()C {return pos+up*(h*0.5f);              } // get top
    VecD  ballDPos()C {return pos-up*innerHeightHalf();     } // get lower ball center
    VecD  ballUPos()C {return pos+up*innerHeightHalf();     } // get upper ball center
    BallM ballD   ()C {return BallM(r, ballDPos());         } // get lower ball
@@ -105,7 +106,8 @@ struct CapsuleM // Capsule Shape (mixed precision)
    EdgeD fullEdge()C {return EdgeD(bottom  (), top     ());} // get edge between bottom and top
    EdgeD ballEdge()C {return EdgeD(ballDPos(), ballUPos());} // get edge between lower  and upper ball centers
 
-   VecD nearest(C Vec &normal)C; // get nearest point on capsule towards normal
+   VecD nearestNrm(C Vec  &normal          )C; // get nearest point on capsule towards normal
+   VecD nearestPos(C VecD &pos, Bool inside)C; // get nearest point on capsule towards position, 'inside'=if allow retuning position inside capsule (false on surface only)
 
    Bool isBall   ()C {return h<=r*2        ;} // if this capsule is actually a ball (total height is equal or smaller than 2*radius)
    Flt  ballR    ()C {return     r         ;} // radius used for ball, can be used if you already know that 'isBall'
