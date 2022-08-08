@@ -49,6 +49,7 @@ CChar* TBigHammer();
 CChar* TBigSword();
 CChar* TBlock();
 CChar* TBlocked(TRANS_FORM form=TF_NEUTRAL);
+CChar* TBlood();
 CChar* TBlue();
 CChar* TBolt();
 CChar* TBow();

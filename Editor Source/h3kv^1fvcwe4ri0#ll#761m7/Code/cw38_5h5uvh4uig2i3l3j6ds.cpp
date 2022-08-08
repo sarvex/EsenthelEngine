@@ -2069,7 +2069,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
 
       if(mesh_data)mesh_matrix=mesh_data.transform();else mesh_matrix.identity();
       if(skel_data)saved_skel_matrix=skel_data.transform();else saved_skel_matrix=mesh_matrix;
-      if(mesh_data && mesh_data.body_id.valid() && (mode()==TRANSFORM || mode()==SLOTS /*|| mode()==BONES*/ || mode()==RAGDOLL))mode.set(-1); // disable unavailable modes if it's a cloth object
+      if(mesh_data && mesh_data.body_id.valid() && (mode()==TRANSFORM /*|| mode()==SLOTS || mode()==BONES*/ || mode()==RAGDOLL))mode.set(-1); // disable unavailable modes if it's a cloth/armor object
       setBox();
       lod.toGui();
       toGuiSkel();

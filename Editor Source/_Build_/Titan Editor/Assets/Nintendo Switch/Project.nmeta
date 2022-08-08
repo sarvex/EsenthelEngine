@@ -35,7 +35,6 @@
 		<PlayLogPolicy>Open</PlayLogPolicy>
 		<RuntimeParameterDelivery>Always</RuntimeParameterDelivery>
 		<SupportedLanguage>AmericanEnglish</SupportedLanguage>
-		<SupportedLanguage>BritishEnglish</SupportedLanguage>
 		<UserAccountSaveDataSize>0x2000000</UserAccountSaveDataSize>
 		<UserAccountSaveDataJournalSize>0x2000000</UserAccountSaveDataJournalSize>
 	</Application>
