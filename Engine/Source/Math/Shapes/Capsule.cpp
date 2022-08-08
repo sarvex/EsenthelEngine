@@ -42,6 +42,7 @@ CapsuleM& CapsuleM::operator/=(C Vec &v)
    return T;
 }
 
+/******************************************************************************/
 Capsule& Capsule::operator*=(C Matrix3 &m)
 {
    pos*=m;
@@ -83,6 +84,55 @@ Capsule& Capsule::operator*=(C MatrixM &m)
    return T;
 }
 Capsule& Capsule::operator/=(C MatrixM &m)
+{
+   pos/=m;
+   up /=m .orn();
+   h  *=up.normalize(); // 'h' should indeed be multiplied here because 'up' already got transformed in correct way
+   r  /=m .avgScale ();
+   return T;
+}
+/******************************************************************************/
+CapsuleM& CapsuleM::operator*=(C Matrix3 &m)
+{
+   pos*=m;
+   up *=m;
+   h  *=up.normalize();
+   r  *=m .avgScale ();
+   return T;
+}
+CapsuleM& CapsuleM::operator/=(C Matrix3 &m)
+{
+   pos/=m;
+   up /=m;
+   h  *=up.normalize(); // 'h' should indeed be multiplied here because 'up' already got transformed in correct way
+   r  /=m .avgScale ();
+   return T;
+}
+CapsuleM& CapsuleM::operator*=(C Matrix &m)
+{
+   pos*=m;
+   up *=m .orn();
+   h  *=up.normalize();
+   r  *=m .avgScale ();
+   return T;
+}
+CapsuleM& CapsuleM::operator/=(C Matrix &m)
+{
+   pos/=m;
+   up /=m .orn();
+   h  *=up.normalize(); // 'h' should indeed be multiplied here because 'up' already got transformed in correct way
+   r  /=m .avgScale ();
+   return T;
+}
+CapsuleM& CapsuleM::operator*=(C MatrixM &m)
+{
+   pos*=m;
+   up *=m .orn();
+   h  *=up.normalize();
+   r  *=m .avgScale ();
+   return T;
+}
+CapsuleM& CapsuleM::operator/=(C MatrixM &m)
 {
    pos/=m;
    up /=m .orn();

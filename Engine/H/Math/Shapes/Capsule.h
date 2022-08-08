@@ -122,6 +122,12 @@ struct CapsuleM // Capsule Shape (mixed precision)
    CapsuleM& operator/=(  Flt      f);
    CapsuleM& operator*=(C Vec     &v);
    CapsuleM& operator/=(C Vec     &v);
+   CapsuleM& operator*=(C Matrix3 &m);
+   CapsuleM& operator/=(C Matrix3 &m);
+   CapsuleM& operator*=(C Matrix  &m);
+   CapsuleM& operator/=(C Matrix  &m);
+   CapsuleM& operator*=(C MatrixM &m);
+   CapsuleM& operator/=(C MatrixM &m);
 
    friend CapsuleM operator+ (C CapsuleM &capsule, C VecD    &v) {return CapsuleM(capsule)+=v;}
    friend CapsuleM operator- (C CapsuleM &capsule, C VecD    &v) {return CapsuleM(capsule)-=v;}
@@ -129,11 +135,21 @@ struct CapsuleM // Capsule Shape (mixed precision)
    friend CapsuleM operator/ (C CapsuleM &capsule,   Flt      f) {return CapsuleM(capsule)/=f;}
    friend CapsuleM operator* (C CapsuleM &capsule, C Vec     &v) {return CapsuleM(capsule)*=v;}
    friend CapsuleM operator/ (C CapsuleM &capsule, C Vec     &v) {return CapsuleM(capsule)/=v;}
+   friend CapsuleM operator* (C CapsuleM &capsule, C Matrix3 &m) {return CapsuleM(capsule)*=m;}
+   friend CapsuleM operator/ (C CapsuleM &capsule, C Matrix3 &m) {return CapsuleM(capsule)/=m;}
+   friend CapsuleM operator* (C CapsuleM &capsule, C Matrix  &m) {return CapsuleM(capsule)*=m;}
+   friend CapsuleM operator/ (C CapsuleM &capsule, C Matrix  &m) {return CapsuleM(capsule)/=m;}
+   friend CapsuleM operator* (C CapsuleM &capsule, C MatrixM &m) {return CapsuleM(capsule)*=m;}
+   friend CapsuleM operator/ (C CapsuleM &capsule, C MatrixM &m) {return CapsuleM(capsule)/=m;}
 
-   CapsuleM() {}
-   CapsuleM(Flt r, Flt h, C VecD &pos=VecDZero, C Vec &up=Vec(0,1,0)) {set(r, h, pos , up);}
+              CapsuleM() {}
+              CapsuleM(Flt r, Flt h, C VecD &pos=VecDZero, C Vec &up=Vec(0,1,0)) {set(  r,   h,   pos,   up);}
+   CONVERSION CapsuleM(C Capsule &c                                            ) {set(c.r, c.h, c.pos, c.up);}
 };
 /******************************************************************************/
+inline CapsuleM operator* (C Capsule &capsule, C MatrixM &m) {return CapsuleM(capsule)*=m;}
+inline CapsuleM operator/ (C Capsule &capsule, C MatrixM &m) {return CapsuleM(capsule)/=m;}
+
 // distance
        Flt Dist            (C Vec      &point  , C Capsule &capsule             ); // distance between point    and a capsule
        Flt Dist            (C Edge     &edge   , C Capsule &capsule             ); // distance between edge     and a capsule
