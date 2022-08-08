@@ -151,20 +151,22 @@ inline CapsuleM operator* (C Capsule &capsule, C MatrixM &m) {return CapsuleM(ca
 inline CapsuleM operator/ (C Capsule &capsule, C MatrixM &m) {return CapsuleM(capsule)/=m;}
 
 // distance
-       Flt Dist            (C Vec      &point  , C Capsule &capsule             ); // distance between point    and a capsule
-       Flt Dist            (C Edge     &edge   , C Capsule &capsule             ); // distance between edge     and a capsule
-       Flt Dist            (C TriN     &tri    , C Capsule &capsule             ); // distance between triangle and a capsule
-       Flt Dist            (C Box      &box    , C Capsule &capsule             ); // distance between box      and a capsule
-       Flt Dist            (C OBox     &obox   , C Capsule &capsule             ); // distance between box      and a capsule
-       Flt Dist            (C Ball     &ball   , C Capsule &capsule             ); // distance between ball     and a capsule
-       Flt Dist            (C Capsule  &a      , C Capsule &b                   ); // distance between capsule  and a capsule
-       Flt DistFull        (C Capsule  &a      , C Capsule &b                   ); // distance between capsule  and a capsule, can return negative values if shapes intersect
-       Flt DistCapsulePlane(C Capsule  &capsule, C Vec     &plane, C Vec &normal); // distance between capsule  and a plane
-       Dbl DistCapsulePlane(C Capsule  &capsule, C VecD    &plane, C Vec &normal); // distance between capsule  and a plane
-       Dbl DistCapsulePlane(C CapsuleM &capsule, C VecD    &plane, C Vec &normal); // distance between capsule  and a plane
-inline Flt Dist            (C Capsule  &capsule, C Plane   &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
-inline Dbl Dist            (C Capsule  &capsule, C PlaneM  &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
-inline Dbl Dist            (C CapsuleM &capsule, C PlaneM  &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
+       Flt Dist            (C Vec      &point  , C Capsule  &capsule             ); // distance between point    and a capsule
+       Dbl Dist            (C VecD     &point  , C CapsuleM &capsule             ); // distance between point    and a capsule
+       Flt Dist            (C Edge     &edge   , C Capsule  &capsule             ); // distance between edge     and a capsule
+       Dbl Dist            (C EdgeD    &edge   , C CapsuleM &capsule             ); // distance between edge     and a capsule
+       Flt Dist            (C TriN     &tri    , C Capsule  &capsule             ); // distance between triangle and a capsule
+       Flt Dist            (C Box      &box    , C Capsule  &capsule             ); // distance between box      and a capsule
+       Flt Dist            (C OBox     &obox   , C Capsule  &capsule             ); // distance between box      and a capsule
+       Flt Dist            (C Ball     &ball   , C Capsule  &capsule             ); // distance between ball     and a capsule
+       Flt Dist            (C Capsule  &a      , C Capsule  &b                   ); // distance between capsule  and a capsule
+       Flt DistFull        (C Capsule  &a      , C Capsule  &b                   ); // distance between capsule  and a capsule, can return negative values if shapes intersect
+       Flt DistCapsulePlane(C Capsule  &capsule, C Vec      &plane, C Vec &normal); // distance between capsule  and a plane
+       Dbl DistCapsulePlane(C Capsule  &capsule, C VecD     &plane, C Vec &normal); // distance between capsule  and a plane
+       Dbl DistCapsulePlane(C CapsuleM &capsule, C VecD     &plane, C Vec &normal); // distance between capsule  and a plane
+inline Flt Dist            (C Capsule  &capsule, C Plane    &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
+inline Dbl Dist            (C Capsule  &capsule, C PlaneM   &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
+inline Dbl Dist            (C CapsuleM &capsule, C PlaneM   &plane               ) {return DistCapsulePlane(capsule, plane.pos, plane.normal);} // distance between capsule and a plane
 
 // cuts
 Bool Cuts(C Vec     &point, C Capsule  &capsule); // if point    cuts a capsule

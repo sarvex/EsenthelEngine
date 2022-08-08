@@ -209,7 +209,17 @@ Flt Dist(C Vec &point, C Capsule &capsule)
                             if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballR());
    Vec up=capsule.up*capsule.innerHeightHalf(); return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r      ); // 'DistPointEdge' is safe in case edge is zero length
 }
+Dbl Dist(C VecD &point, C CapsuleM &capsule)
+{
+                            if(capsule.isBall())return Max(0, Dist         (point, capsule.pos                   )-capsule.ballR());
+   Vec up=capsule.up*capsule.innerHeightHalf(); return Max(0, DistPointEdge(point, capsule.pos-up, capsule.pos+up)-capsule.r      ); // 'DistPointEdge' is safe in case edge is zero length
+}
 Flt Dist(C Edge &edge, C Capsule &capsule)
+{
+   return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballR()
+                                  : Dist(capsule.ballEdge(), edge)-capsule.r);
+}
+Dbl Dist(C EdgeD &edge, C CapsuleM &capsule)
 {
    return Max(0, capsule.isBall() ? Dist(capsule.pos       , edge)-capsule.ballR()
                                   : Dist(capsule.ballEdge(), edge)-capsule.r);
