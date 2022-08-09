@@ -649,6 +649,7 @@ bool NonMonoTransform   (C TextParam &p   ) // if can change a mono image to non
        || p.name=="lerpRGB" && values>2
        || p.name=="iLerpRGB" && values>2
        || p.name=="mulRGB" && TextVecEx(p.value).anyDifferent()
+       || p.name=="mulRGBLin" && TextVecEx(p.value).anyDifferent()
        || p.name=="addRGB" && TextVecEx(p.value).anyDifferent()
        || p.name=="setRGB" && TextVecEx(p.value).anyDifferent()
        || p.name=="mulAddRGB" && values>2
@@ -682,7 +683,7 @@ bool NonMonoTransform   (C TextParam &p   ) // if can change a mono image to non
 bool HighPrecTransform(C Str &name)
 {
    return ResizeTransform(name)
-       || name=="mulRGB" || name=="addRGB" || name=="setRGB" || name=="mulAddRGB" || name=="addMulRGB" || name=="mulA"
+       || name=="mulRGB" || name=="mulRGBLin" || name=="addRGB" || name=="setRGB" || name=="mulAddRGB" || name=="addMulRGB" || name=="mulA"
        || name=="mulRGBbyA"
        || name=="mulRGBS" || name=="mulRGBIS" || name=="mulRGBH" || name=="mulRGBHS"
        || name=="normalize"
@@ -1385,6 +1386,19 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
    if(param.name=="addMulRGB")
    {  // x=x*m+a, x=(x+A)*M
       Vec add, mul; if(TextVecVecEx(param.value, add, mul)){AdjustImage(image, true, false, false); image.mulAdd(Vec4(mul, 1), Vec4(add*mul, 0), &box);}
+   }else
+   if(param.name=="mulRGBLin")
+   {
+      Vec mul=TextVecEx(param.value);
+      if( mul!=VecOne)
+      for(int z=box.min.z; z<box.max.z; z++)
+      for(int y=box.min.y; y<box.max.y; y++)
+      for(int x=box.min.x; x<box.max.x; x++)
+      {
+         Vec4 c=image.color3DF(x, y, z);
+         c.xyz=LinearToSRGB(SRGBToLinear(c.xyz)*mul);
+         image.color3DF(x, y, z, c);
+      }
    }else
    if(param.name=="mulRGBbyA")
    {
