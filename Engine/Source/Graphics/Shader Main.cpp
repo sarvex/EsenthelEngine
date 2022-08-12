@@ -165,6 +165,8 @@ void MainShaderClass::del()
 }
 void MainShaderClass::createSamplers()
 {
+   if(!D.created())return; // don't bother with samplers for APP_ALLOW_NO_GPU/APP_ALLOW_NO_XDISPLAY
+
 #if DX11
    D3D11_SAMPLER_DESC sd; Zero(sd);
    sd.MipLODBias    =0;
