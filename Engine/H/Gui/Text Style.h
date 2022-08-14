@@ -108,6 +108,7 @@ struct StrEx : Mems<StrData> // Extended String, which can hold: Text, Images, C
    StrEx& text  (C CChar         *text  );
    StrEx& text  (C CChar8        *text  );
    StrEx& text  (C Str           &text  );
+   StrEx& text  (C Str8          &text  );
    StrEx& image (C ImagePtr      &image );
    StrEx& color (C Color         &color );
    StrEx& color (C Color         *color ); // null disables custom color  and reverts to default
@@ -122,6 +123,7 @@ struct StrEx : Mems<StrData> // Extended String, which can hold: Text, Images, C
    void   operator+=(C CChar         *text  ) {T.text  (text );}
    void   operator+=(C CChar8        *text  ) {T.text  (text );}
    void   operator+=(C Str           &text  ) {T.text  (text );}
+   void   operator+=(C Str8          &text  ) {T.text  (text );}
    void   operator+=(C ImagePtr      &image ) {T.image (image);}
    StrEx& shadow    (  Int            shadow) {T.shadow(Byte(shadow)); return T;}
    StrEx& panelText (C PanelImagePtr &panel, C Str      &text ); // add text  inside a panel, same as "T.panel(panel); T+=text ; T.panel(null);"

@@ -193,6 +193,18 @@ StrEx& StrEx::text(C Str &text)
    }
    return T;
 }
+StrEx& StrEx::text(C Str8 &text)
+{
+   if(text.is())
+   {
+      if(elms())
+      {
+         StrData &last=T.last(); if(last.type==StrData::TEXT){last.text+=text; return T;}
+      }
+      New().create(StrData::TEXT).text=text;
+   }
+   return T;
+}
 void StrEx::operator+=(C StrEx &str)
 { // Warning: 'str' might be 'this'
    Int  elms=str.elms(); // copy first in case 'str' is 'this'
