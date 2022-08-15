@@ -515,7 +515,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             return true;
          }break;
 
-         case KB_TAB: if(multi_line)
+         case KB_TAB: if(multi_line && !key.alt())
          {
             if(edit.sel>=0)changed|=TextSelRem(str, edit);
           /*if(edit.overwrite && edit.cur<str.length())str.    _d[edit.cur]='\t';
@@ -525,7 +525,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             return true;
          }break;
 
-         case KB_ENTER: if(multi_line || Kb.shift() && !Kb.ctrl() && !Kb.alt()) // allow adding new line only in multi_line 'TextBox', or 'TextLine' too but only if Shift is pressed without Ctrl/Alt
+         case KB_ENTER: if(multi_line || key.shift() && !key.ctrl() && !key.alt()) // allow adding new line only in multi_line 'TextBox', or 'TextLine' too but only if Shift is pressed without Ctrl/Alt
          {
             if(edit.sel>=0)changed|=TextSelRem(str, edit);
           /*if(edit.overwrite && edit.cur<str.length())str.    _d[edit.cur]='\n';

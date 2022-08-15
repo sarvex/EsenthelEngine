@@ -320,7 +320,7 @@ void Source::update(C GuiPC &gpc)
          }else
 
          // tab
-         if(Kb.k(KB_TAB) && !Kb.k.ctrlCmd())
+         if(Kb.k(KB_TAB) && !Kb.k.ctrlCmd() && !Kb.k.alt())
          {
             if(!Const)
             if(!CE.options.ac_on_enter() && suggestions_list())autoComplete();else
