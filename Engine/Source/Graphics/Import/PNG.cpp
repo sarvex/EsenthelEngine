@@ -35,8 +35,7 @@ Bool Image::ImportPNG(File &f)
     png_ptr=png_create_read_struct(PNG_LIBPNG_VER_STRING, null, null, null); if(! png_ptr)goto error; if(setjmp(png_jmpbuf(png_ptr)))goto error;
    info_ptr=png_create_info_struct(png_ptr                                ); if(!info_ptr)goto error;
 
-   {
-      // initialize the png structure
+   {  // initialize png structure
       png_set_read_fn  (png_ptr, (png_voidp)&f, PngReadData);
       png_set_sig_bytes(png_ptr, 8);
       png_read_info    (png_ptr, info_ptr);
@@ -47,30 +46,31 @@ Bool Image::ImportPNG(File &f)
       if(color_type==PNG_COLOR_TYPE_PALETTE || bit_depth < 8)png_set_expand  (png_ptr);
       if(png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)    )png_set_expand  (png_ptr);
 
-      Dbl gamma; if(png_get_gAMA        (png_ptr, info_ptr, &gamma))png_set_gamma(png_ptr, 2.2, gamma); // if required set gamma conversion
-                    png_read_update_info(png_ptr, info_ptr); // after the transformations have been registered update info_ptr data
-                    png_get_IHDR        (png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, null, null, null); // get again width, height and the new bit-depth and color-type
+      Bool srgb=true;
+      Dbl gamma; if(png_get_gAMA        (png_ptr, info_ptr, &gamma) && Equal((Flt)gamma, 1.0f))srgb=false; // png_set_gamma(png_ptr, 2.2, gamma); don't let PNG convert gamma, that will results in loss of precision
+                    png_read_update_info(png_ptr, info_ptr); // after transformations have been registered update info_ptr data
+                    png_get_IHDR        (png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, null, null, null); // get again width, height and new bit-depth and color-type
            channels=png_get_channels    (png_ptr, info_ptr);
 
       switch(color_type)
       {
          default                       : goto error;
-         case PNG_COLOR_TYPE_GRAY      : if(channels!=1 || (bit_depth!=8 && bit_depth!=16))goto error; createSoftTry(width, height, 1, (bit_depth==8) ? IMAGE_L8_SRGB : IMAGE_I16); break;
-         case PNG_COLOR_TYPE_GRAY_ALPHA: if(channels!=2 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  IMAGE_L8A8_SRGB          ); break;
-         case PNG_COLOR_TYPE_RGB       : if(channels!=3 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  IMAGE_R8G8B8_SRGB        ); break;
-         case PNG_COLOR_TYPE_RGB_ALPHA : if(channels!=4 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  IMAGE_R8G8B8A8_SRGB      ); break;
+         case PNG_COLOR_TYPE_GRAY      : if(channels!=1 || (bit_depth!=8 && bit_depth!=16))goto error; createSoftTry(width, height, 1, (bit_depth==8) ? srgb ? IMAGE_L8_SRGB       : IMAGE_L8 : IMAGE_I16); break;
+         case PNG_COLOR_TYPE_GRAY_ALPHA: if(channels!=2 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  srgb ? IMAGE_L8A8_SRGB     : IMAGE_L8A8          ); break;
+         case PNG_COLOR_TYPE_RGB       : if(channels!=3 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  srgb ? IMAGE_R8G8B8_SRGB   : IMAGE_R8G8B8        ); break;
+         case PNG_COLOR_TYPE_RGB_ALPHA : if(channels!=4 ||  bit_depth!=8                  )goto error; createSoftTry(width, height, 1,                  srgb ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8      ); break;
       }
       created=true;
 
-      row_ptrs.setNum(height); REPAO(row_ptrs)=data()+pitch()*i; // set the individual row-pointers to point at the correct offsets
+      row_ptrs.setNum(height); REPAO(row_ptrs)=data()+pitch()*i; // set individual row-pointers to point at correct offsets
       png_read_image(png_ptr, row_ptrs.data()); // now we can go ahead and just read the whole image
-      png_read_end  (png_ptr, null           ); // read the end marker
+      png_read_end  (png_ptr, null           ); // read end marker
       ok=f.ok();
    }
 
 error:;
    png_destroy_read_struct(&png_ptr, &info_ptr, null);
-   if(!ok && !created)del(); return ok; // if failed but the image was created, then it's possible that some data was read, keep that in case user wants to preview what was read
+   if(!ok && !created)del(); return ok; // if failed but image was created, then it's possible that some data was read, keep that in case user wants to preview what was read
 #else
    del(); return false;
 #endif
@@ -114,14 +114,15 @@ Bool Image::ExportPNG(File &f, Flt compression_level)C
 
       {
          if(compression_level>=0)png_set_compression_level(png_ptr, Mid(RoundPos(compression_level*9), 0, 9));
-         png_set_write_fn(png_ptr, (png_voidp)&f, PngWriteData, null); // initialize the png structure
+         png_set_write_fn(png_ptr, (png_voidp)&f, PngWriteData, null); // initialize png structure
          png_set_IHDR    (png_ptr, info_ptr, src->w(), src->h(), bit_depth, color_type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+         if(!src->sRGB())png_set_gAMA(png_ptr, info_ptr, 1);
          png_write_info  (png_ptr, info_ptr);
          if(color_type==PNG_COLOR_TYPE_GRAY && bit_depth==16)png_set_swap(png_ptr);
 
-         row_ptrs.setNum(src->h()); REPAO(row_ptrs)=ConstCast(src->data()+i*src->pitch()); // set the individual row-pointers to point at the correct offsets
-         png_write_image(png_ptr, row_ptrs.data()); // write out the entire image data in one call
-         png_write_end  (png_ptr, info_ptr       ); // write the end marker
+         row_ptrs.setNum(src->h()); REPAO(row_ptrs)=ConstCast(src->data()+i*src->pitch()); // set individual row-pointers to point at correct offsets
+         png_write_image(png_ptr, row_ptrs.data()); // write out entire image data in one call
+         png_write_end  (png_ptr, info_ptr       ); // write end marker
          ok=f.ok();
       }
 
