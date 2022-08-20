@@ -762,7 +762,7 @@ Int PaddedHeight(Int w, Int h, Int mip, IMAGE_TYPE type)
    UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=AlignCeil(mip_h, (UInt)ti.block_h); // 'UInt' for faster 'AlignCeil'
    return mip_h;
 }
-Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
+UInt ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
  C auto &ti=ImageTI[type];
 
@@ -779,7 +779,7 @@ Int ImagePitch(Int w, Int h, Int mip, IMAGE_TYPE type)
    UInt   mip_w=Max(1, w>>mip); if(ti.block_w>1)mip_w=DivCeil(mip_w, (UInt)ti.block_w); // 'UInt' for faster 'DivCeil'
    return mip_w*ti.block_bytes;
 }
-Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
+UInt ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
  C auto &ti=ImageTI[type];
 
@@ -797,23 +797,41 @@ Int ImageBlocksY(Int w, Int h, Int mip, IMAGE_TYPE type)
    UInt   mip_h=Max(1, h>>mip); if(ti.block_h>1)mip_h=DivCeil(mip_h, (UInt)ti.block_h); // 'UInt' for faster 'DivCeil'
    return mip_h;
 }
-Int ImagePitch2(Int w, Int h, Int mip, IMAGE_TYPE type)
+
+UInt ImagePitch2(Int w, Int h, Int mip, IMAGE_TYPE type)
 {
    return ImagePitch  (w, h, mip, type)
          *ImageBlocksY(w, h, mip, type);
 }
-Int ImageFaceSize(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
+ULong ImagePitch2L(Int w, Int h, Int mip, IMAGE_TYPE type)
+{
+   return (ULong)ImagePitch  (w, h, mip, type)
+         *(ULong)ImageBlocksY(w, h, mip, type);
+}
+
+UInt ImageFaceSize(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
 {
    return ImagePitch2(w, h, mip, type)*Max(1, d>>mip);
 }
+ULong ImageFaceSizeL(Int w, Int h, Int d, Int mip, IMAGE_TYPE type)
+{
+   return ImagePitch2L(w, h, mip, type)*Max(1, d>>mip);
+}
+
 UInt ImageMipOffset(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Int mip_map)
 {
    UInt   size=0; mip_map++; REP(mip_maps-mip_map)size+=ImageFaceSize(w, h, d, mip_map+i, type); if(IsCube(mode))size*=6; // #MipOrder
    return size;
 }
+
 UInt ImageSize(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps)
 {
    UInt   size=0; REP(mip_maps)size+=ImageFaceSize(w, h, d, i, type); if(IsCube(mode))size*=6;
+   return size;
+}
+ULong ImageSizeL(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps)
+{
+   ULong  size=0; REP(mip_maps)size+=ImageFaceSizeL(w, h, d, i, type); if(IsCube(mode))size*=6;
    return size;
 }
 /******************************************************************************/
@@ -1385,6 +1403,8 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
      _mode   =mode     ;
      _mips   =mip_maps ; _base_mip=base_mip;
      _samples=samples  ;
+
+      if(ImageSizeL(hwW(), hwH(), hwD(), hwType(), T.mode(), mipMaps())>UINT_MAX)goto error; // currently allocations and memory offsets operate on UInt
 
    #if DX11
       D3D11_SUBRESOURCE_DATA *initial_data; MemtN<D3D11_SUBRESOURCE_DATA, MAX_MIP_MAPS*6> res_data; // mip maps * faces
