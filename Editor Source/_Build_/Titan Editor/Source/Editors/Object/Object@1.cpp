@@ -86,6 +86,7 @@ ObjView ObjEdit;
       "+1",
       "Rename",
       "Set Parent",
+      "Dynamic",
    };
    cchar8 *ObjView::bone_move_desc[]=
    {
@@ -718,16 +719,28 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          D.depthLock(false);
          SetMatrix(trans.matrix);
          int  bone_tabs=boneTabs();
-         byte alpha=((mode()==SKIN && skin_tabs()==SKIN_SEL_BONE || mode()==BONES) ? 153 : 100);
+         byte mask =((mode()==BONES && bone_tabs==BONE_DYNAMIC) ? ::BONE_DYNAMIC : 0);
          bool bone =(mode()==BONES && (bone_tabs==BONE_ADD || bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)
                   || mode()==SKIN),
               slot =(mode()==SLOTS && (slot_tabs()<0 || slot_tabs()==SLOT_MOVE || slot_tabs()==SLOT_ROT || slot_tabs()==SLOT_SCALE));
+         bool bone_shape=(mode()==BONES && T.bone_shape());
+         byte alpha=(bone_shape ? 50 : (mode()==SKIN && skin_tabs()==SKIN_SEL_BONE || mode()==BONES) ? 153 : 100);
          int  lit_bone=        T.lit_bone_vis      ,
               sel_bone=(bone ? T.sel_bone_vis : -1),
               sel_slot=(slot ? T.sel_slot     : -1);
-         if(mode()==BONES && bone_shape())FREPAO(skel->bones).shape.draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha/3));else
-                                          FREPAO(skel->bones).      draw((sel_bone==i && lit_bone==i) ? LitSelColor : (sel_bone==i               ) ? SelColor : (lit_bone==i) ? LitColor : Color(0, 255, 255, alpha  ));
-         if(mode()==SLOTS                )FREPAO(skel->slots).      draw((sel_slot==i && lit_slot==i) ? LitSelColor : (sel_slot==i || lit_slot==i) ? SelColor :                            Color(255, 128, 0, 255), SkelSlotSize);
+         FREPA(skel->bones)
+         {
+          C SkelBone &bone=skel->bones[i];
+            Color col;
+            if(bone.flag&mask)col.set(255, 0, 0, (lit_bone==i) ? 255 : alpha);else
+            if(sel_bone==i && lit_bone==i)col=LitSelColor;else
+            if(sel_bone==i               )col=   SelColor;else
+            if(               lit_bone==i)col=   LitColor;else
+                                          col.set(0, 255, 255, alpha);
+            if(bone_shape)bone.shape.draw(col);
+            else          bone.      draw(col);
+         }
+         if(mode()==SLOTS)FREPAO(skel->slots).draw((sel_slot==i && lit_slot==i) ? LitSelColor : (sel_slot==i || lit_slot==i) ? SelColor : Color(255, 128, 0, 255), SkelSlotSize);
          if(InRange(sel_bone, skel->bones) && mode()==BONES && (bone_tabs==BONE_MOVE || bone_tabs==BONE_ROT || bone_tabs==BONE_SCALE)){Matrix m=skel->bones[sel_bone]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, boneAxis());}
          if(InRange(sel_slot, skel->slots)                                                                                           ){Matrix m=skel->slots[sel_slot]; m.scaleOrn(SkelSlotSize); DrawMatrix(m, slot_axis );}
          // draw parent<->children line
@@ -3430,14 +3443,15 @@ cur_skel_to_saved_skel.bones.del();
    void ObjView::createBones()
    {
       mode.tab(BONES)+=adjust_bone_orns.create();
-      mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16f, 0.01f), 0.73f, 0.06f), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
-      bone_tabs.tab(BONE_MOVE  ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F1");
-      bone_tabs.tab(BONE_ROT   ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\nHold Ctrl to also rotate mirrored bone\n\nKeyboard Shortcut: Shift+F2");
-      bone_tabs.tab(BONE_SCALE ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F3");
-      bone_tabs.tab(BONE_DEL   ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F4");
-      bone_tabs.tab(BONE_ADD   ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F5");
-      bone_tabs.tab(BONE_RENAME).desc(S+"Rename bone\nKeyboard Shortcut: Shift+F6");
-      bone_tabs.tab(BONE_PARENT).desc(S+"Set bone parent:\nClick on a child bone and drag it to a desired parent bone (or nothing) to set it as the parent.\n\nKeyboard Shortcut: Shift+F7");
+      mode.tab(BONES)+=bone_tabs.create(Rect_U(mode.tab(BONES).rect().down()-Vec2(0.16f, 0.01f), 0.9f, 0.06f), 0, bone_desc, Elms(bone_desc), true).func(BoneModeChanged, T);
+      bone_tabs.tab(BONE_MOVE   ).setText(S).setImage("Gui/Misc/move.img").desc(S+"Move bone\nSelect bone with LeftClick\nMove bone with RightClick\nHold Shift for more precision\nHold Ctrl to also move mirrored bone\n\nKeyboard Shortcut: Shift+F1");
+      bone_tabs.tab(BONE_ROT    ).setText(S).setImage("Gui/Misc/rotate.img").desc(S+"Rotate bone\nSelect bone with LeftClick\nRotate bone with RightClick\nHold Shift for more precision\nHold Ctrl to also rotate mirrored bone\n\nKeyboard Shortcut: Shift+F2");
+      bone_tabs.tab(BONE_SCALE  ).setText(S).setImage("Gui/Misc/scale.img").desc(S+"Scale bone\nSelect bone with LeftClick\nScale bone with RightClick\nHold Shift for more precision\nHold Ctrl to also scale mirrored bone\nHold Alt to always scale sides\n\nKeyboard Shortcut: Shift+F3");
+      bone_tabs.tab(BONE_DEL    ).desc(S+"Delete bone\nKeyboard Shortcut: Shift+F4");
+      bone_tabs.tab(BONE_ADD    ).desc(S+"Create new bone\nSelect bone with LeftClick\nAdd bone with RightClick\nHaving some bone selected while creating a new bone will set it as its parent.\nOptionally hold "+Kb.ctrlCmdName()+" to set Bone origin at mouse position facing forward.\n\nKeyboard Shortcut: Shift+F5");
+      bone_tabs.tab(BONE_RENAME ).desc(S+"Rename bone\nKeyboard Shortcut: Shift+F6");
+      bone_tabs.tab(BONE_PARENT ).desc(S+"Set bone parent:\nClick on a child bone and drag it to a desired parent bone (or nothing) to set it as the parent.\n\nKeyboard Shortcut: Shift+F7");
+      bone_tabs.tab(BONE_DYNAMIC).desc(S+"Select which bones should be simulated dynamically, such as cloth/hair, instead of being animated");
 
       bone_tabs.tab(BONE_MOVE)+=bone_move_tabs.create(Rect_U(bone_tabs.tab(BONE_MOVE).rect().down()-Vec2(0, 0.01f), 0.28f, 0.055f), 0, bone_move_desc, Elms(bone_move_desc)).set(BONE_MOVE_END);
       bone_move_tabs.tab(BONE_MOVE_START).desc("Move only start of the bone");
@@ -3566,6 +3580,13 @@ cur_skel_to_saved_skel.bones.del();
             case BONE_PARENT: if(MT.bp(i) && mesh_skel)
             {
                if(InRange(lit_bone, mesh_skel->bones))Gui.drag(DragBonesBone, ptr(lit_bone), MT.touch(i));
+            }break;
+
+            case BONE_DYNAMIC: if(MT.bp(i) && mesh_skel && InRange(lit_bone, mesh_skel->bones))
+            {
+               mesh_undos.set("boneDynamic", true);
+               mesh_skel->bones[lit_bone].flag^=::BONE_DYNAMIC;
+               setChangedSkel(false);
             }break;
 
             case BONE_MOVE:

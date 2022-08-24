@@ -53,6 +53,7 @@ enum BONE_TYPE : Byte
 enum BONE_FLAG
 {
    BONE_RAGDOLL=1<<0, // if this option is enabled then the bone will be used to create an actor in the Ragdoll
+   BONE_DYNAMIC=1<<1, // bone should be simulated using physics instead of being animated
 };
 
 struct BoneID
