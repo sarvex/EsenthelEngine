@@ -333,7 +333,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
    int ObjView::boneTabs()C
    {
       int v=bone_tabs();
-      if(v!=BONE_SCALE && Kb.alt())return BONE_ROT;
+      if(v!=BONE_SCALE && v!=BONE_DYNAMIC && Kb.alt())return BONE_ROT;
       if(v<0)v=BONE_MOVE;
       return v;
    }
