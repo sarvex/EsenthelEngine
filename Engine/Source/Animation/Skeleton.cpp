@@ -581,6 +581,7 @@ Int Skeleton::hierarchyDistance(Int bone_a, Int bone_b)C
 /******************************************************************************/
 void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
 {
+#if 0
    Int find[2]={-1, -1};
    Flt dist[2]={ 0,  0};
    REPA(bones)
@@ -648,6 +649,18 @@ void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
       Byte b=RoundU(Sat(DistPointPlane(pos, bone.pos, bone.dir)/(BONE_FRAC*bone.length)+0.5f)*255);
       blend.set(b, 255-b, 0, 0);
    }
+#else
+   MemtN<IndexWeight, 256> skin;
+   REPA(bones)
+   {
+    C SkelBone &bone=bones[i];
+      Flt dist=DistPointPlane(pos, bone.pos, bone.dir);
+      Flt frac=dist/bone.length;
+      Flt intensity=1.5f-Abs(frac-0.5f);
+      if(intensity>0)skin.New().set(i+VIRTUAL_ROOT_BONE, intensity);
+   }
+   SetSkin(skin, matrix, blend, this);
+#endif
 }
 /******************************************************************************/
 void Skeleton::boneRemap(C CMemPtr<Byte, 256> &old_to_new) // !! this does not modify 'children_offset' and 'children_num' !!
