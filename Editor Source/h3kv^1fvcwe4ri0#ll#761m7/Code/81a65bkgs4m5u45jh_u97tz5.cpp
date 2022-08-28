@@ -2926,8 +2926,8 @@ class ProjectEx : ProjectHierarchy
             if(new_bone_i<0)goto full_difference; // bone not found = full difference
           C SkelBone &new_bone=new_skel.bones[new_bone_i];
 
-            if( Dot  (old_bone.dir , new_bone.dir )<0.9999            // orientation was changed
-            ||  Dot  (old_bone.perp, new_bone.perp)<0.9999
+            if( Dot  (old_bone.dir , new_bone.dir )<EPS_COS           // orientation was changed
+            ||  Dot  (old_bone.perp, new_bone.perp)<EPS_COS
             || !Equal(old_bone.pos , new_bone.pos )                   // position    was changed
             ||       (old_bone.parent==0xFF)!=(new_bone.parent==0xFF) // one has parent, but the other one doesn't
             )goto full_difference; // full difference

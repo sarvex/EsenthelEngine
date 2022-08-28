@@ -2187,9 +2187,8 @@ Animation& Animation::adjustForSameSkeletonWithDifferentPose(C Skeleton &source,
                {
                   OrientD orient_source=bone_source; if(old_parent)orient_source.div(*old_parent, true); // convert to parent space
                   OrientD orient_target=bone_target; if(new_parent)orient_target.div(*new_parent, true); // convert to parent space
-                  #define EPS_ANIM_COS_PRECISE 0.9999
-                  if(Dot(orient_source.dir , orient_target.dir )<EPS_ANIM_COS_PRECISE
-                  || Dot(orient_source.perp, orient_target.perp)<EPS_ANIM_COS_PRECISE)
+                  if(Dot(orient_source.dir , orient_target.dir )<EPS_COS
+                  || Dot(orient_source.perp, orient_target.perp)<EPS_COS)
                   {
                      AnimKeys::Orn &orn=getBone(bone_target.name, bone_target.type, bone_target.type_index, bone_target.type_sub).orns.New();
                      orn.time=0;
