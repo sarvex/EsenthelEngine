@@ -19,7 +19,7 @@ T1(TYPE) static INLINE void Set(Byte *&v,        C TYPE &s) {      *(TYPE*)v=s  
 /******************************************************************************/
 static INLINE void BlendSet(Byte *&v, Int i, C VecB4 *s)
 {
-#if 1 // limit to first 3 bones (bones are already sorted in 'SetSkin')
+#if 0 // limit to first 3 bones (bones are already sorted in 'SetSkin')
    if(s)
    {
       s+=i;
