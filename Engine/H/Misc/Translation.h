@@ -358,6 +358,7 @@ CChar* TTutorial();
 CChar* TType();
 CChar* TUnequip();
 CChar* TUnlocked();
+CChar* TUnlockedCharacter();
 CChar* TUp();
 CChar* TUpdated();
 CChar* TUpload();
