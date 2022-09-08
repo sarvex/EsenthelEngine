@@ -753,6 +753,7 @@ WorldView WorldEdit;
          if(!(elm->data && elm->worldData() && elm->worldData()->valid())){Gui.msgBox(S, "World settings not available.\nPerhaps they didn't finish downloading from the server."); elm=null;}
       if(T.elm!=elm)
       {
+         obj_pos.apply();
          HeightBrush.updateChanged();
          flushSettings ();
          flushWaypoints();
