@@ -350,6 +350,8 @@ Area::Data::Data(Area &area)
    T._path_mesh=null;
    T._path2D   =null;
    T._path_node_offset=0;
+   terrain_objs_box.zero();
+   foliage_objs_box.zero();
 }
 Bool Area::Data::save(File &f)
 {
