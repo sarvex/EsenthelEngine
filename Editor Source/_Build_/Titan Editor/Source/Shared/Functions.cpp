@@ -2227,6 +2227,35 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
       // v2=v2*r-0.5*r+0.5
       if(image.typeChannels()<=1 || image.monochromatic()){flt a=r.avg(); image.mulAdd(Vec4(Vec(a), 1), Vec4(Vec(-0.5f*a+0.5f)  , 0), &box);} // if image is 1-channel or monochromatic then we need to transform all RGB together
       else                                                                image.mulAdd(Vec4(  r, 1, 1), Vec4(    -0.5f*r+0.5f, 0, 0), &box);
+   } //else TODO: FIX FOR "fatal error C1061: compiler limit: blocks nested too deeply"
+   if(param.name=="scaleAngle") // the formula is ok (for normal too), it works as if the bump was scaled vertically by 'scale' factor
+   {
+      flt scale=param.asFlt(); if(scale!=1)
+      {
+         if(image.typeChannels()<=1 || image.monochromatic())image.mulAdd(Vec4(Vec(scale), 1), Vec4(Vec(-0.5f*scale+0.5f), 0), &box);else // if image is 1-channel or monochromatic then we need to transform all RGB together
+         if(!scale                                          )image.mulAdd(Vec4(Vec(    0), 1), Vec4(        0.5f, 0.5f, 1, 0), &box);else // if zero scale then set Vec(0.5, 0.5, 1)
+         if(image.lock())
+         {
+            for(int z=box.min.z; z<box.max.z; z++)
+            for(int y=box.min.y; y<box.max.y; y++)
+            for(int x=box.min.x; x<box.max.x; x++)
+            {
+               Vec4 c=image.color3DF(x, y, z); Vec &n=c.xyz;
+               n=n*2-1;
+               n.normalize();
+               Vec2 p(n.z, n.xy.length());
+               flt angle=Angle(p);
+               angle*=scale;
+               Clamp(angle, -PI_2, PI_2);
+               CosSin(p.x, p.y, angle);
+               n.z=p.x;
+               n.xy.setLength(p.y);
+               n=n*0.5f+0.5f;
+               image.color3DF(x, y, z, c);
+            }
+            image.unlock();
+         }
+      }
    }else
    if(param.name=="fixTransparent")
    {
@@ -2371,6 +2400,8 @@ force_src_resize:
             if(p->value=="maskAdd"                                                                )mode=APPLY_MASK_ADD;else
             if(p->value=="metal"                                                                  )mode=APPLY_METAL;else
             if(p->value=="scale"                                                                  )mode=APPLY_SCALE;else
+            if(p->value=="scaleXY"                                                                )mode=APPLY_SCALE_XY;else
+            if(p->value=="scaleAngle"                                                             )mode=APPLY_SCALE_ANGLE;else
             if(p->value=="fire"                                                                   )mode=APPLY_FIRE;else
             if(p->value=="skip" || p->value=="ignore"                                              )mode=APPLY_SKIP;
          }
@@ -2413,7 +2444,10 @@ force_src_resize:
                            if(C TextParam *p=file.findParam("maskAlpha"))mask[3]=TextVecEx(p->asText());else mask[3]=1;
                         }break;
 
-                        case APPLY_SCALE: mono=(image.typeChannels()<=1 || image.monochromatic()); break;
+                        case APPLY_SCALE      :
+                        case APPLY_SCALE_XY   :
+                        case APPLY_SCALE_ANGLE:
+                           mono=(image.typeChannels()<=1 || image.monochromatic()); break;
                      }
 
                    C ImageTypeInfo &layer_ti=layer.typeInfo();
@@ -2616,6 +2650,43 @@ force_src_resize:
                                     n.normalize();
                                     n.z/=scale;
                                     n.normalize();
+                                    n=n*0.5f+0.5f;
+                                 }
+                              }break;
+
+                              case APPLY_SCALE_XY:
+                              {
+                                 flt scale=l.xyz.max();
+                                 c.w=base.w;
+                                 if( mono )c.xyz=(base.xyz-0.5f)*scale+0.5f;else
+                                 if(!scale)c.xyz.set(0.5f, 0.5f, 1);else
+                                 {
+                                    Vec &n=c.xyz;
+                                    n=base.xyz*2-1;
+                                    n.normalize();
+                                    n.xy*=scale;
+                                    n.normalize();
+                                    n=n*0.5f+0.5f;
+                                 }
+                              }break;
+
+                              case APPLY_SCALE_ANGLE:
+                              {
+                                 flt scale=l.xyz.max();
+                                 c.w=base.w;
+                                 if( mono )c.xyz=(base.xyz-0.5f)*scale+0.5f;else
+                                 if(!scale)c.xyz.set(0.5f, 0.5f, 1);else
+                                 {
+                                    Vec &n=c.xyz;
+                                    n=base.xyz*2-1;
+                                    n.normalize();
+                                    Vec2 p(n.z, n.xy.length());
+                                    flt angle=Angle(p);
+                                    angle*=scale;
+                                    Clamp(angle, -PI_2, PI_2);
+                                    CosSin(p.x, p.y, angle);
+                                    n.z=p.x;
+                                    n.xy.setLength(p.y);
                                     n=n*0.5f+0.5f;
                                  }
                               }break;
