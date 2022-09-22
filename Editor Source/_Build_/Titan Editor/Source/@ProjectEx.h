@@ -641,6 +641,7 @@ public:
    bool imageSet(C UID &elm_id, File &image, bool has_color, bool has_alpha);
    bool imageSet(C UID &elm_id, C Image &image);
    
+   bool meshGet(C UID &elm_id, Mesh &mesh);
    bool meshSet(C UID &elm_id, File &data);
    bool physSet(C UID &elm_id, File &data);
    bool skelSetSlots(C UID &elm_id, C CMemPtr<Edit::SkeletonSlot> &skel_slots);

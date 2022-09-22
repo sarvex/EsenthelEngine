@@ -30,10 +30,7 @@ class ExportWindow : WindowIO
             {
                if(C Elm *mesh_elm=Proj.findElm(elm.objData().mesh_id, ELM_MESH))
                {
-                  Mesh mesh; if(Load(mesh, Proj.editPath(mesh_elm.id), Proj.game_path))
-                  {
-                     ok=ExportOBJ(name, mesh);
-                  }
+                  Mesh mesh; if(Proj.meshGet(mesh_elm.id, mesh))ok=ExportOBJ(name, mesh);
                }else Gui.msgBox(S, "Object doesn't have any Mesh");
             }break;
             

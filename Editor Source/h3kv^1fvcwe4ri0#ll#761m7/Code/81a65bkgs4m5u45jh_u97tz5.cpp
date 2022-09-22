@@ -2812,7 +2812,7 @@ class ProjectEx : ProjectHierarchy
       Mesh edit; Memt<Vec2> vtxs;
       REPA(elm_ids)
       if(Elm *obj =findElm(elm_ids[i]      ))if(ElmObj  * obj_data=obj . objData())
-      if(Elm *mesh=findElm(obj_data.mesh_id))if(ElmMesh *mesh_data=mesh.meshData())if(mesh_data.canHaveCustomTransform() && mesh_data.box.valid() && Load(edit, editPath(*mesh), game_path))
+      if(Elm *mesh=findElm(obj_data.mesh_id))if(ElmMesh *mesh_data=mesh.meshData())if(mesh_data.canHaveCustomTransform() && mesh_data.box.valid() && meshGet(mesh.id, edit))
       {
          Matrix matrix=mesh_data.transform();
        C MeshLod &lod=edit; vtxs.reserve(lod.vtxs()); REPA(lod)
@@ -5029,6 +5029,23 @@ class ProjectEx : ProjectHierarchy
       return false;
    }
    
+   bool meshGet(C UID &elm_id, Mesh &mesh)
+   {
+      Elm *elm=findElm(elm_id);
+      if(elm)if(ElmObj  * obj_data=elm. objData())elm=getObjMeshElm(elm.id); // if this is an object then get its mesh
+      if(elm)if(ElmMesh *mesh_data=elm.meshData()) // mesh
+      {
+         if(elm==ObjEdit.mesh_elm)
+         {
+            mesh=ObjEdit.mesh;
+            return true;
+         }else
+         {
+            if(Load(mesh, editPath(elm.id), game_path))return true;
+         }
+      }
+      mesh.del(); return false;
+   }
    bool meshSet(C UID &elm_id, File &data)
    {
       Elm *elm=findElm(elm_id);
