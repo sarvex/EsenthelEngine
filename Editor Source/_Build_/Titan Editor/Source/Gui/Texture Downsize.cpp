@@ -85,7 +85,7 @@ TextureDownsize TexDownsize;
                   VecI2 lv=LodAndVariationWithMostMaterialUses(*normal_mesh, normal_mtrl);
                 C Mesh &mesh=(interval ? downsized_mesh : *normal_mesh); if(InRange(lv.x, mesh.lods()))
                   {
-                   C MeshLod &lod=mesh.lod(lv.x);
+                   C MeshLod &lod=mesh.lod(lv.x); lod.waitForStream();
                      SetVariation(lv.y); lod.draw(MatrixIdentity);
                      SetVariation();
                   }
