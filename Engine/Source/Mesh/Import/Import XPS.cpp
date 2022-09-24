@@ -2,6 +2,14 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
+static Vec2  TextVec2 (CChar  *t) {CalcValue x, y      ;                                                     TextValue(_SkipWhiteChars(TextValue(t, x)), y)          ; return Vec2  (x.asFlt(), y.asFlt()                      );}
+static Vec   TextVec  (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return Vec   (x.asFlt(), y.asFlt(), z.asFlt()           );}
+static Vec4  TextVec4 (CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Vec4  (x.asFlt(), y.asFlt(), z.asFlt(), w.asFlt());}
+static VecB4 TextVecB4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecB4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+static VecI  TextVecI (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return VecI  (x.asInt(), y.asInt(), z.asInt()           );}
+static VecI4 TextVecI4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecI4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+static Color TextColor(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+
 Bool ImportXPS(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial> materials, MemPtr<Int> part_material_index)
 {
    if(mesh    )mesh    ->del();
