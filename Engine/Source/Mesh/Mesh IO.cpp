@@ -1525,7 +1525,8 @@ Bool Import(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> anim
             }
          }
          return true;
-      }
+      }else
+      if(ext=="mesh")return ImportXPSBinary(name, mesh, skeleton, materials, part_material_index);
    }else
    if(ext=="skel"){if(skeleton)return skeleton->load(name);}else
    if(ext=="anim"){if(animations && animations.New().anim.load(name)){animations.last().name=GetBaseNoExt(name); return true;}}else
@@ -1571,11 +1572,12 @@ Bool Import(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> anim
          return true;
       }
    }else
-   if(ext=="ase"  ){return ImportASE(name, mesh,                       materials, part_material_index);}else
-   if(ext=="3ds"  ){return Import3DS(name, mesh,                       materials, part_material_index);}else
-   if(ext=="psk"  ){return ImportPSK(name, mesh, skeleton,             materials, part_material_index);}else
-   if(ext=="psa"  ){return ImportPSA(name,       skeleton, animations                                );}else
-   if(ext=="ascii"){return ImportXPS(name, mesh, skeleton,             materials, part_material_index);}
+   if(ext=="ase"  ){return ImportASE      (name, mesh,                       materials, part_material_index);}else
+   if(ext=="3ds"  ){return Import3DS      (name, mesh,                       materials, part_material_index);}else
+   if(ext=="psk"  ){return ImportPSK      (name, mesh, skeleton,             materials, part_material_index);}else
+   if(ext=="psa"  ){return ImportPSA      (name,       skeleton, animations                                );}else
+   if(ext=="xps"  ){return ImportXPSBinary(name, mesh, skeleton,             materials, part_material_index);}else
+   if(ext=="ascii"){return ImportXPSText  (name, mesh, skeleton,             materials, part_material_index);}
    return false;
 }
 /******************************************************************************
