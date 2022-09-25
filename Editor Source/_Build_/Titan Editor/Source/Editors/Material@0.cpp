@@ -1149,16 +1149,19 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
                if(multi_channel)params.New().set("channel", IndexChannel(channel[TC_AO]));
                params.New().set("mode", "mulRGB");
                params.New().set("alpha", "0.5");
+               params.New().set("resize", "full");
             }else
             if(InRange(channel[TC_GLOW], 4))
             {
                if(multi_channel)params.New().set("channel", IndexChannel(channel[TC_GLOW]));
                params.New().set("mode", "addRGB");
+               params.New().set("resize", "full");
             }else
             if(InRange(channel[TC_METAL], 4))
             {
                if(multi_channel && need_metal_channel)params.New().set("channel", IndexChannel(channel[TC_METAL]));
                params.New().set("mode", "metal");
+               params.New().set("resize", "full");
             }else
             if(Kb.shift())params.New().set("channel", "rgb"); // make shift to ignore alpha channel
          }else
@@ -1169,6 +1172,7 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
             {
                if(multi_channel)params.New().set("channel", IndexChannel(channel[TC_AO]));
                params.New().set("mode", "mulRGB");
+               params.New().set("resize", "full");
             }else // check Smooth/Rough
             {
                if(multi_channel)
@@ -1197,6 +1201,7 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
             {
                if(multi_channel)params.New().set("channel", IndexChannel(channel[TC_AO]));
                params.New().set("mode", "mulRGB");
+               params.New().set("resize", "full");
             }else // check Metal
             if(multi_channel && InRange(channel[TC_METAL], 4) && need_metal_channel)params.New().set("channel", IndexChannel(channel[TC_METAL]));
          }else

@@ -465,12 +465,13 @@ VecI ImageSize(C VecI &src, C VecI2 &custom, bool pow2)
    if(pow2)size.set(NearestPow2(size.x), NearestPow2(size.y), NearestPow2(size.z));
    return size;
 }
-VecI2 GetSize(C Str &name, C Str &value, C VecI &src)
+VecI2 GetSize(C Str &name, C Str &value, C VecI &src, C VecI &background_size)
 {
    VecI2 size;
    if(value=="quarter")size.set(Max(1, src.x/4), Max(1, src.y/4));else
    if(value=="half"   )size.set(Max(1, src.x/2), Max(1, src.y/2));else
    if(value=="double" )size=src.xy*2;else
+   if(value=="full"   )size=background_size.xy;else
    {
       Vec2 sf; if(Contains(value, ','))sf=TextVec2(value);else sf=TextFlt(value);
       UNIT_TYPE unit=GetUnitType(value);
@@ -1081,7 +1082,7 @@ void Crop(Image &image, int x, int y, int w, int h, C Color &background, bool hp
       REPD(x, w)image.colorF(x, y, clear_color);
 }
 
-void TransformImage(Image &image, TextParam param, bool clamp, C Color &background)
+void TransformImage(Image &image, TextParam param, bool clamp, C Color &background, C VecI &background_size)
 {
    BoxI box(0, image.size3());
    {
@@ -1133,7 +1134,7 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
    }else
    if(ResizeTransformAny(param.name))
    {
-      VecI2       size        =GetSize       (param.name, param.value, image.size3());
+      VecI2       size        =GetSize       (param.name, param.value, image.size3(), background_size);
       FILTER_TYPE filter      =GetFilter     (param.name);
       bool        resize_clamp=GetClampWrap  (param.name, clamp);
       bool        alpha_weight=GetAlphaWeight(param.name);
@@ -2274,11 +2275,11 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
       }
    }
 }
-void TransformImage(Image &image, C MemPtr<TextParam> &params, bool clamp, C Color &background)
+void TransformImage(Image &image, C MemPtr<TextParam> &params, bool clamp, C Color &background, C VecI &background_size)
 {
-   FREPA(params)TransformImage(image, params[i], clamp, background); // process in order
+   FREPA(params)TransformImage(image, params[i], clamp, background, background_size); // process in order
 }
-bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FileParams &fp, bool srgb, bool clamp, C Color &background, C Image *color, C TextParam *color_resize, C Image *smooth, C TextParam *smooth_resize, C Image *bump, C TextParam *bump_resize) // !! this ignores 'fp.nodes' !!
+bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FileParams &fp, bool srgb, bool clamp, C Color &background, C VecI &background_size, C Image *color, C TextParam *color_resize, C Image *smooth, C TextParam *smooth_resize, C Image *bump, C TextParam *bump_resize) // !! this ignores 'fp.nodes' !!
 {
    if(image_resize)image_resize->del();
    if(!fp.name.is()){image.del(); return true;}
@@ -2286,9 +2287,9 @@ bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FilePar
    bool lum_to_alpha=false;
 
    // check for special images
-   if(name=="|color|" ){if(color ){color ->copyTry(image); if( color_resize){if(image_resize)*image_resize=* color_resize;else TransformImage(image, * color_resize, clamp, background);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
-   if(name=="|smooth|"){if(smooth){smooth->copyTry(image); if(smooth_resize){if(image_resize)*image_resize=*smooth_resize;else TransformImage(image, *smooth_resize, clamp, background);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
-   if(name=="|bump|"  ){if(bump  ){bump  ->copyTry(image); if(  bump_resize){if(image_resize)*image_resize=*  bump_resize;else TransformImage(image, *  bump_resize, clamp, background);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|color|" ){if(color ){color ->copyTry(image); if( color_resize){if(image_resize)*image_resize=* color_resize;else TransformImage(image, * color_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|smooth|"){if(smooth){smooth->copyTry(image); if(smooth_resize){if(image_resize)*image_resize=*smooth_resize;else TransformImage(image, *smooth_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|bump|"  ){if(bump  ){bump  ->copyTry(image); if(  bump_resize){if(image_resize)*image_resize=*  bump_resize;else TransformImage(image, *  bump_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
    {
       if(proj) // check for element ID
       {
@@ -2304,7 +2305,7 @@ bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FilePar
       imported:
          image.copyTry(image, -1, -1, -1, srgb ? ImageTypeIncludeSRGB(image.type()) : ImageTypeExcludeSRGB(image.type())); // set desired sRGB
          if(lum_to_alpha)image.alphaFromBrightness().divRgbByAlpha();
-         TransformImage(image, ConstCast(fp.params), clamp, background);
+         TransformImage(image, ConstCast(fp.params), clamp, background, background_size);
          return true;
       }
    }
@@ -2411,10 +2412,10 @@ force_src_resize:
             if(file.nodes.elms())
             {
                   layer_ok=LoadImages(proj, layer, layer_resize_ptr, FileParams::Encode(file.nodes), srgb, clamp, background, color, color_resize, smooth, smooth_resize, bump, bump_resize);
-               if(layer_ok)TransformImage(layer, file.params, clamp, background);
+               if(layer_ok)TransformImage(layer, file.params, clamp, background, image.size3());
             }else
             {
-               layer_ok=LoadImage(proj, layer, layer_resize_ptr, file, srgb, clamp, background, color, color_resize, smooth, smooth_resize, bump, bump_resize);
+               layer_ok=LoadImage(proj, layer, layer_resize_ptr, file, srgb, clamp, background, image.size3(), color, color_resize, smooth, smooth_resize, bump, bump_resize);
             }
             if(layer_ok)
             {
@@ -2719,7 +2720,7 @@ force_src_resize:
                         }
                      }
                   }else
-                  if(!(file.name.is() || file.nodes.elms()))TransformImage(image, file.params, clamp, background); // if this 'layer' is empty and no file name was specified, then apply params to the entire 'image', so we can process entire atlas
+                  if(!(file.name.is() || file.nodes.elms()))TransformImage(image, file.params, clamp, background, image.size3()); // if this 'layer' is empty and no file name was specified, then apply params to the entire 'image', so we can process entire atlas
                }
                has_data=true;
             }else ok=false;
@@ -2728,7 +2729,7 @@ force_src_resize:
    }
 
    // store information about image size, if can't store then just resize it
-   if(image_resize)*image_resize=image_resize_final;else TransformImage(image, image_resize_final, clamp, background);
+   if(image_resize)*image_resize=image_resize_final;else TransformImage(image, image_resize_final, clamp, background, image.size3());
 
    return ok;
 }
