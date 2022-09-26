@@ -450,6 +450,6 @@
       hide();
       return T;
    }
-AdjustBoneOrns::AdjustBoneOrns() : zero_child(true), one_child(true), multi_child(true), force_eye_forward(true), force_nose_forward(true), force_jaw_forward(true), force_breast_forward(true), force_spine_up(false), force_neck_up(false), force_head_up(true), force_toe_forward(true), add_shoulder(false), reset_perp(true), refresh_needed(true), hand_mode(HAND_AVG), foot_mode(FOOT_DOWN), rotate_shoulder(ROT_SHOULDER_NO) {}
+AdjustBoneOrns::AdjustBoneOrns() : zero_child(true), one_child(true), multi_child(true), force_eye_forward(true), force_nose_forward(true), force_jaw_forward(true), force_breast_forward(true), force_spine_up(true), force_neck_up(true), force_head_up(true), force_toe_forward(true), add_shoulder(false), reset_perp(true), refresh_needed(true), hand_mode(HAND_AVG), foot_mode(FOOT_DOWN), rotate_shoulder(ROT_SHOULDER_NO) {}
 
 /******************************************************************************/
