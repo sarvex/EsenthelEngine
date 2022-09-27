@@ -22,11 +22,11 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
    File f; if(f.readTry(name))
    {
       Char8 str[256];
-      Bool variable_weights=false;
+      Bool variable_weights=false, tangent=true;
       UInt u=f.getUInt(); if(u==323232)
       {
          U16 major=f.getUShort(); variable_weights=(major>=3);
-         U16 minor=f.getUShort();
+         U16 minor=f.getUShort(); tangent=(major<=2 && minor<=12);
          Char8 author[256]; Get(f, author);
          UInt settings_len=f.getUInt();
          Get(f, str); // MachineName 
@@ -34,15 +34,15 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
          Get(f, str); // FileName
          f.skip(SIZE(UInt)*settings_len);
          u=f.getUInt();
-      }else goto error;
+      }//else goto error;
       UInt bones=u;
-      if(InRange(bones, 256))
+      if(InRange(bones, 1024))
       {
          Skeleton temp, *skel=(skeleton ? skeleton : mesh ? &temp : null); // if skel not specified, but we want mesh, then we have to process it
-         if(skel)skel->bones.setNum(bones);
+         if(skel)skel->bones.setNum(Min(255, bones));
          FREP(bones)
          {
-            SkelBone *bone=(skel ? &skel->bones[i] : null);
+            SkelBone *bone=(skel ? skel->bones.addr(i) : null);
             if(bone)Get(f, bone->name);else Get(f, str);
             U16 parent=f.getUShort(); if(bone)bone->parent=(InRange(parent, skel->bones) ? parent : 0xFF);
             if(bone)f>>bone->pos;else f.skip(SIZE(Vec));
@@ -56,6 +56,7 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
          UInt parts=f.getUInt();
          if(InRange(parts, 256))
          {
+            UInt tan_size=(tangent ? SIZE(Vec4) : 0), uv_tan_size=SIZE(Vec2)+tan_size;
             if(part_material_index){part_material_index.setNum(parts); REPAO(part_material_index)=i;}
             if(materials          ){          materials.setNum(parts); REPAO(materials          ).name=i;} // name is needed so Editor can create multiple materials instead of trying to reuse just one
             if(mesh               )         mesh->parts.setNum(parts);
@@ -88,11 +89,11 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
                   FREP(vtxs)
                   {
                                  f>>base.vtx.pos  (i);
-                                 f>>base.vtx.nrm  (i);
+                           Vec &nrm=base.vtx.nrm  (i); f>>nrm; nrm.normalize();
                                  f>>base.vtx.color(i);
-                     if( uvs>=1){f>>base.vtx.tex0(i);
-                     if( uvs>=2){f>>base.vtx.tex1(i);
-                                 f.skip(SIZE(Vec2)*(uvs-2));}} // skip unprocessed
+                     if( uvs>=1){f>>base.vtx.tex0 (i); if(tangent)f.skip(SIZE(Vec4));
+                     if( uvs>=2){f>>base.vtx.tex1 (i); if(tangent)f.skip(SIZE(Vec4));
+                                 f.skip(uv_tan_size*(uvs-2));}} // skip unprocessed
                      if(bones>0)
                      {
                         U16 weights=(variable_weights ? f.getUShort() : 4);
@@ -108,7 +109,7 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
                   }
                }else REP(vtxs)
                {
-                  f.skip(SIZE(Vec)+SIZE(Vec)+SIZE(VecB4) + SIZE(Vec2)*uvs);
+                  f.skip(SIZE(Vec)+SIZE(Vec)+SIZE(VecB4) + uv_tan_size*uvs);
                   if(bones>0)
                   {
                      U16 weights=(variable_weights ? f.getUShort() : 4);
