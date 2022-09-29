@@ -1208,6 +1208,7 @@ struct VecD4 // Vector 4D (double precision)
    CONVERSION VecD4(C VecI4  &v);
    CONVERSION VecD4(C VecB4  &v);
    CONVERSION VecD4(C VecSB4 &v);
+   CONVERSION VecD4(C VecUS4 &v);
 };extern VecD4
    const VecD4Zero; // VecD4(0, 0, 0, 0)
 /******************************************************************************/
@@ -2395,6 +2396,7 @@ inline VecD4 ::VecD4 (C Vec4   &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C VecSB4 &v) {set(v.x, v.y, v.z, v.w);}
+inline VecD4 ::VecD4 (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
 
 inline Vec  Vec2 :: xy0()C {return Vec (x, y, 0);}
 inline Vec  Vec2 :: x0y()C {return Vec (x, 0, y);}
