@@ -2848,6 +2848,8 @@ VecB4  TextVecB4 (CChar8 *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsCom
 VecB4  TextVecB4 (CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return VecB4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 VecSB4 TextVecSB4(CChar8 *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return VecSB4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 VecSB4 TextVecSB4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return VecSB4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+VecUS4 TextVecUS4(CChar8 *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return VecUS4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+VecUS4 TextVecUS4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return VecUS4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 Color  TextColor (CChar8 *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 Color  TextColor (CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t, x)), y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 #else // if only one value is provided, then use it for all components, similar to constructors
@@ -2885,6 +2887,8 @@ VecB4  TextVecB4 (CChar8 *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhite
 VecB4  TextVecB4 (CChar  *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return VecB4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 VecSB4 TextVecSB4(CChar8 *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return VecSB4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 VecSB4 TextVecSB4(CChar  *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return VecSB4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+VecUS4 TextVecUS4(CChar8 *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return VecUS4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+VecUS4 TextVecUS4(CChar  *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return VecUS4(x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 Color  TextColor (CChar8 *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 Color  TextColor (CChar  *t) {if(!t)return 0; CalcValue x, y, z, w; t=_SkipWhiteChars(TextValue(t, x)); if(*t!=',')return x.asInt(); TextValue(_SkipWhiteCharsComma(TextValue(_SkipWhiteCharsComma(TextValue(t+1, y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 #endif
@@ -2991,6 +2995,8 @@ Str8::Str8(C VecB4  &v) : Str8() {T=v;}
 Str ::Str (C VecB4  &v) : Str () {T=v;}
 Str8::Str8(C VecSB4 &v) : Str8() {T=v;}
 Str ::Str (C VecSB4 &v) : Str () {T=v;}
+Str8::Str8(C VecUS4 &v) : Str8() {T=v;}
+Str ::Str (C VecUS4 &v) : Str () {T=v;}
 /******************************************************************************/
 Char8 Str8::operator[](Int i)C {return InRange(i, T) ? _d[i] : '\0';}
 Char  Str ::operator[](Int i)C {return InRange(i, T) ? _d[i] : '\0';}
@@ -3707,6 +3713,8 @@ Str8& Str8::operator =(C VecB4  &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=
 Str8& Str8::operator+=(C VecB4  &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 Str8& Str8::operator =(C VecSB4 &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 Str8& Str8::operator+=(C VecSB4 &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
+Str8& Str8::operator =(C VecUS4 &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
+Str8& Str8::operator+=(C VecUS4 &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 
 Str& Str::operator =(C Vec2   &v) {Char8 temp[256]; T =TextFlt(v.x, temp); T+=", "; T+=TextFlt(v.y, temp); return T;}
 Str& Str::operator+=(C Vec2   &v) {Char8 temp[256]; T+=TextFlt(v.x, temp); T+=", "; T+=TextFlt(v.y, temp); return T;}
@@ -3742,6 +3750,8 @@ Str& Str::operator =(C VecB4  &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=",
 Str& Str::operator+=(C VecB4  &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 Str& Str::operator =(C VecSB4 &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 Str& Str::operator+=(C VecSB4 &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
+Str& Str::operator =(C VecUS4 &v) {Char8 temp[256]; T =TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
+Str& Str::operator+=(C VecUS4 &v) {Char8 temp[256]; T+=TextInt(v.x, temp); T+=", "; T+=TextInt(v.y, temp); T+=", "; T+=TextInt(v.z, temp); T+=", "; T+=TextInt(v.w, temp); return T;}
 /******************************************************************************/
 Str8 Str8::operator+(CChar8 *t)C
 {
@@ -3856,6 +3866,8 @@ Str8 Str8::operator+(C VecB4  &v)C {return RValue(Str8(T, 4*  BYTEC + 3*COMMA)+=
 Str  Str ::operator+(C VecB4  &v)C {return RValue(Str (T, 4*  BYTEC + 3*COMMA)+=v);}
 Str8 Str8::operator+(C VecSB4 &v)C {return RValue(Str8(T, 4* SBYTEC + 3*COMMA)+=v);}
 Str  Str ::operator+(C VecSB4 &v)C {return RValue(Str (T, 4* SBYTEC + 3*COMMA)+=v);}
+Str8 Str8::operator+(C VecUS4 &v)C {return RValue(Str8(T, 4*USHORTC + 3*COMMA)+=v);}
+Str  Str ::operator+(C VecUS4 &v)C {return RValue(Str (T, 4*USHORTC + 3*COMMA)+=v);}
 /******************************************************************************/
 // STRING LIBRARY
 /******************************************************************************/

@@ -107,6 +107,7 @@ struct Str // Text String (16-bit per character)
    Str(C VecI4  &v);   Str& operator=(C VecI4  &v);   Str& operator+=(C VecI4  &v);   Str operator+(C VecI4  &v)C;
    Str(C VecB4  &v);   Str& operator=(C VecB4  &v);   Str& operator+=(C VecB4  &v);   Str operator+(C VecB4  &v)C;
    Str(C VecSB4 &v);   Str& operator=(C VecSB4 &v);   Str& operator+=(C VecSB4 &v);   Str operator+(C VecSB4 &v)C;
+   Str(C VecUS4 &v);   Str& operator=(C VecUS4 &v);   Str& operator+=(C VecUS4 &v);   Str operator+(C VecUS4 &v)C;
    Str(C BStr   &s);   Str& operator=(C BStr   &s);   Str& operator+=(C BStr   &s);   Str operator+(C BStr   &s)C;
 
    T1(TYPE) Str(TYPE i, ENABLE_IF_ENUM(TYPE, Ptr ) dummy=null)       : Str(ENUM_TYPE(TYPE)(i)) {}
@@ -202,6 +203,7 @@ inline Str&& operator+(Str &&a, C VecD4  &b) {return RValue(a+=b);}
 inline Str&& operator+(Str &&a, C VecI4  &b) {return RValue(a+=b);}
 inline Str&& operator+(Str &&a, C VecB4  &b) {return RValue(a+=b);}
 inline Str&& operator+(Str &&a, C VecSB4 &b) {return RValue(a+=b);}
+inline Str&& operator+(Str &&a, C VecUS4 &b) {return RValue(a+=b);}
 inline Str&& operator+(Str &&a, C BStr   &b) {return RValue(a+=b);}
 T1(TYPE) ENABLE_IF_ENUM(TYPE, Str&&) operator+(Str &&a, TYPE b) {return RValue(a+=ENUM_TYPE(TYPE)(b));}
 /******************************************************************************/

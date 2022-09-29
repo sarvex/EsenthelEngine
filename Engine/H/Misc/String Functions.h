@@ -257,6 +257,7 @@ VecD4  TextVecD4 (CChar *t);   VecD4  TextVecD4 (CChar8 *t); // (0,0,0,0) on fai
 VecI4  TextVecI4 (CChar *t);   VecI4  TextVecI4 (CChar8 *t); // (0,0,0,0) on fail
 VecB4  TextVecB4 (CChar *t);   VecB4  TextVecB4 (CChar8 *t); // (0,0,0,0) on fail
 VecSB4 TextVecSB4(CChar *t);   VecSB4 TextVecSB4(CChar8 *t); // (0,0,0,0) on fail
+VecUS4 TextVecUS4(CChar *t);   VecUS4 TextVecUS4(CChar8 *t); // (0,0,0,0) on fail
 Color  TextColor (CChar *t);   Color  TextColor (CChar8 *t); // (0,0,0,0) on fail
 UID    TextUID   (CChar *t);   UID    TextUID   (CChar8 *t); // 'UIDZero' on fail
 VecI4  TextVer   (CChar *t);   VecI4  TextVer   (CChar8 *t); // (0,0,0,0) on fail

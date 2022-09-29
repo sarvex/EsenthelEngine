@@ -22,6 +22,7 @@ struct VecD4;
 struct VecI4;
 struct VecB4;
 struct VecSB4;
+struct VecUS4;
 
 struct Plane2;
 struct Plane;
