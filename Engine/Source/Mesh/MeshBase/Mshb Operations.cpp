@@ -2045,7 +2045,7 @@ MeshBase& MeshBase::extr(Flt length)
 /******************************************************************************/
 static void BoneRemap(VecB4 &matrix, C CMemPtrN<BoneType, 256> &old_to_new, VecB4 *blend=null)
 {
-   REPA(matrix.c)
+   REPA(matrix)
    {
       Byte &m=matrix.c[i];
    #if VIRTUAL_ROOT_BONE
@@ -2104,8 +2104,9 @@ void MeshBase::includeUsedBones(Bool (&bones)[256])C
     C VecB4 *blend=vtx.blend(); // this is optional
       REP(vtxs())
       {
-         VecB4 m=matrix[i], b; if(blend)b=blend[i];
-         REPA(m.c)
+       C auto &m=matrix[i];
+         VecB4 b; if(blend)b=blend[i];
+         REPA(m)
          {
             auto bone=m.c[i];
          #if VIRTUAL_ROOT_BONE
