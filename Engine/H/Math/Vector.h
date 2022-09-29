@@ -20,6 +20,10 @@
    Use 'VecSB'  to handle 3D vectors, SByte type
    Use 'VecSB4' to handle 4D vectors, SByte type
 
+   Use 'VecUS2' to handle 2D vectors, UShort type
+   Use 'VecUS'  to handle 3D vectors, UShort type
+   Use 'VecUS4' to handle 4D vectors, UShort type
+
 /******************************************************************************/
 #define SIGN_BIT 0x80000000 // Float Sign Bit
 
