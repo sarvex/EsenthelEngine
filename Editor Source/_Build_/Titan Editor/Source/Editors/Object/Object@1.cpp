@@ -3217,11 +3217,8 @@ cur_skel_to_saved_skel.removeBone(bone->name);
       if(editor.mesh_skel && InRange(bone_index, editor.mesh_skel->bones) && editor.mesh_skel->bones[bone_index].parent!=BONE_NULL)bone_index=-1; // don't ask to delete if has a parent
       if(bone_index>=0)
       {
-         bool used_bones[256]; if(InRange(bone_index, used_bones))
-         {
-            editor.mesh.setUsedBones(used_bones);
-            if(used_bones[bone_index])bone_index=-1; // don't ask to delete if used by mesh
-         }
+         MemtN<bool, 256> used_bones; editor.mesh.setUsedBones(used_bones);
+         if(InRange(bone_index, used_bones) && used_bones[bone_index])bone_index=-1; // don't ask to delete if used by mesh
       }
       if(bone_index>=0)
       {
@@ -3413,9 +3410,9 @@ cur_skel_to_saved_skel.bones.del();
          bool changed=false;
 
          MemtN<BoneType, 256> remap;
-         bool used_bones[256]; mesh.setUsedBones(used_bones);
+         MemtN<bool    , 256> used_bones; mesh.setUsedBones(used_bones);
          REPA(mesh_skel->bones) // go from the end, so if bone is removed, then we can process later its parent, without having that child anymore
-            if(InRange(i, used_bones) && !used_bones[i] && !mesh_skel->bones[i].children_num) // not used and don't have children
+            if((!InRange(i, used_bones) || !used_bones[i]) && !mesh_skel->bones[i].children_num) // not used and don't have children
          {
             if(MeshChange *change=mesh_undos.getNextUndo())change->removeBone(mesh_skel->bones[i].name);
   cur_skel_to_saved_skel.removeBone(mesh_skel->bones[i].name);
@@ -3424,7 +3421,9 @@ cur_skel_to_saved_skel.bones.del();
             {
                changed=true;
              //mesh.boneRemap(remap); not needed since we have to do full assignment anyway
-               bool used_bones2[256]; REP(Min(remap.elms(), Elms(used_bones)))used_bones2[remap[i]]=used_bones[i]; Swap(used_bones, used_bones2);
+               MemtN<bool, 256> used_bones1;
+               REP(Min(remap.elms(), used_bones.elms()))if(used_bones[i])used_bones1(remap[i])=true;
+               Swap(used_bones, used_bones1);
             }
          }
          if(changed)
