@@ -1079,6 +1079,7 @@ struct Vec4 // Vector 4D
    CONVERSION Vec4(C VecI4  &v);
    CONVERSION Vec4(C VecB4  &v);
    CONVERSION Vec4(C VecSB4 &v);
+   CONVERSION Vec4(C VecUS4 &v);
 };extern Vec4
    const Vec4Zero; // Vec4(0, 0, 0, 0)
 /******************************************************************************/
@@ -2388,6 +2389,7 @@ inline Vec4  ::Vec4  (C VecD4  &v) {set(v.x, v.y, v.z, v.w);}
 inline Vec4  ::Vec4  (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
 inline Vec4  ::Vec4  (C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
 inline Vec4  ::Vec4  (C VecSB4 &v) {set(v.x, v.y, v.z, v.w);}
+inline Vec4  ::Vec4  (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C VecH4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C Vec4   &v) {set(v.x, v.y, v.z, v.w);}
 inline VecD4 ::VecD4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
