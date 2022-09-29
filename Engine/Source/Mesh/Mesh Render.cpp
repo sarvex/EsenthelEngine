@@ -868,11 +868,11 @@ void MeshRender::setNormalHeightmap(Image &height,Image *l,Image *r,Image *b,Ima
 /******************************************************************************/
 // TEXTURIZE
 /******************************************************************************/
-void MeshRender::texMove(C Vec2 &move, Byte tex_index)
+void MeshRender::texMove(C Vec2 &move, Byte uv_index)
 {
-   if(InRange(tex_index, 4) && move.any())
+   if(InRange(uv_index, 4) && move.any())
    {
-      Int ofs =vtxOfs((tex_index==0) ? VTX_TEX0 : (tex_index==1) ? VTX_TEX1 : (tex_index==2) ? VTX_TEX2 : VTX_TEX3);
+      Int ofs =vtxOfs((uv_index==0) ? VTX_TEX0 : (uv_index==1) ? VTX_TEX1 : (uv_index==2) ? VTX_TEX2 : VTX_TEX3);
       if( ofs>=0)if(Byte *vtx=vtxLock())
       {
          vtx+=ofs; REP(vtxs()){*(Vec2*)vtx+=move; vtx+=vtxSize();}
@@ -880,11 +880,11 @@ void MeshRender::texMove(C Vec2 &move, Byte tex_index)
       }
    }
 }
-void MeshRender::texScale(C Vec2 &scale, Byte tex_index)
+void MeshRender::texScale(C Vec2 &scale, Byte uv_index)
 {
-   if(InRange(tex_index, 4) && scale!=1)
+   if(InRange(uv_index, 4) && scale!=1)
    {
-      Int ofs =vtxOfs((tex_index==0) ? VTX_TEX0 : (tex_index==1) ? VTX_TEX1 : (tex_index==2) ? VTX_TEX2 : VTX_TEX3);
+      Int ofs =vtxOfs((uv_index==0) ? VTX_TEX0 : (uv_index==1) ? VTX_TEX1 : (uv_index==2) ? VTX_TEX2 : VTX_TEX3);
       if( ofs>=0)if(Byte *vtx=vtxLock())
       {
          vtx+=ofs; REP(vtxs()){*(Vec2*)vtx*=scale; vtx+=vtxSize();}
@@ -892,11 +892,11 @@ void MeshRender::texScale(C Vec2 &scale, Byte tex_index)
       }
    }
 }
-void MeshRender::texRotate(Flt angle, Byte tex_index)
+void MeshRender::texRotate(Flt angle, Byte uv_index)
 {
-   if(InRange(tex_index, 4) && angle)
+   if(InRange(uv_index, 4) && angle)
    {
-      Int ofs =vtxOfs((tex_index==0) ? VTX_TEX0 : (tex_index==1) ? VTX_TEX1 : (tex_index==2) ? VTX_TEX2 : VTX_TEX3);
+      Int ofs =vtxOfs((uv_index==0) ? VTX_TEX0 : (uv_index==1) ? VTX_TEX1 : (uv_index==2) ? VTX_TEX2 : VTX_TEX3);
       if( ofs>=0)if(Byte *vtx=vtxLock())
       {
          Flt cos, sin; CosSin(cos, sin, angle);

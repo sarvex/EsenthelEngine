@@ -50,9 +50,9 @@ struct MeshRender // Mesh Renderable (Hardware: contains Vertexes + Triangles)
    void scaleMove(C Vec &scale, C Vec &move=VecZero);
 
    // texture transform
-   void texMove  (C Vec2 &move , Byte tex_index=0);
-   void texScale (C Vec2 &scale, Byte tex_index=0);
-   void texRotate(  Flt   angle, Byte tex_index=0);
+   void texMove  (C Vec2 &move , Byte uv_index=0);
+   void texScale (C Vec2 &scale, Byte uv_index=0);
+   void texRotate(  Flt   angle, Byte uv_index=0);
 
    // operations
  C Byte* vtxLockedData(                              )C {return _vb.lockedData(    );} //    get vertex data if it's already locked, null on fail

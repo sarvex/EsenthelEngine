@@ -378,14 +378,14 @@ Mesh& Mesh::joinAll(Bool test_material, Bool test_draw_group, Bool test_name, ME
 /******************************************************************************/
 // TEXTURIZE
 /******************************************************************************/
-Mesh& Mesh::texMap   (  Flt     scale , Byte tex_index) {REP(lods())lod(i).texMap   (scale , tex_index); return T;}
-Mesh& Mesh::texMap   (C Matrix &matrix, Byte tex_index) {REP(lods())lod(i).texMap   (matrix, tex_index); return T;}
-Mesh& Mesh::texMap   (C Plane  &plane , Byte tex_index) {REP(lods())lod(i).texMap   (plane , tex_index); return T;}
-Mesh& Mesh::texMap   (C Ball   &ball  , Byte tex_index) {REP(lods())lod(i).texMap   (ball  , tex_index); return T;}
-Mesh& Mesh::texMap   (C Tube   &tube  , Byte tex_index) {REP(lods())lod(i).texMap   (tube  , tex_index); return T;}
-Mesh& Mesh::texMove  (C Vec2   &move  , Byte tex_index) {REP(lods())lod(i).texMove  (move  , tex_index); return T;}
-Mesh& Mesh::texScale (C Vec2   &scale , Byte tex_index) {REP(lods())lod(i).texScale (scale , tex_index); return T;}
-Mesh& Mesh::texRotate(  Flt     angle , Byte tex_index) {REP(lods())lod(i).texRotate(angle , tex_index); return T;}
+Mesh& Mesh::texMap   (  Flt     scale , Byte uv_index) {REP(lods())lod(i).texMap   (scale , uv_index); return T;}
+Mesh& Mesh::texMap   (C Matrix &matrix, Byte uv_index) {REP(lods())lod(i).texMap   (matrix, uv_index); return T;}
+Mesh& Mesh::texMap   (C Plane  &plane , Byte uv_index) {REP(lods())lod(i).texMap   (plane , uv_index); return T;}
+Mesh& Mesh::texMap   (C Ball   &ball  , Byte uv_index) {REP(lods())lod(i).texMap   (ball  , uv_index); return T;}
+Mesh& Mesh::texMap   (C Tube   &tube  , Byte uv_index) {REP(lods())lod(i).texMap   (tube  , uv_index); return T;}
+Mesh& Mesh::texMove  (C Vec2   &move  , Byte uv_index) {REP(lods())lod(i).texMove  (move  , uv_index); return T;}
+Mesh& Mesh::texScale (C Vec2   &scale , Byte uv_index) {REP(lods())lod(i).texScale (scale , uv_index); return T;}
+Mesh& Mesh::texRotate(  Flt     angle , Byte uv_index) {REP(lods())lod(i).texRotate(angle , uv_index); return T;}
 /******************************************************************************/
 // TRANSFORM
 /******************************************************************************/
@@ -447,8 +447,8 @@ Bool Mesh::waitForStream()C {Bool ok=true; REP(lods())ok&=lod(i).waitForStream()
 /******************************************************************************/
 // FIX
 /******************************************************************************/
-Mesh& Mesh::fixTexWrapping(Byte tex_index) {REP(lods())lod(i).fixTexWrapping(tex_index); return T;}
-Mesh& Mesh::fixTexOffset  (Byte tex_index) {REP(lods())lod(i).fixTexOffset  (tex_index); return T;}
+Mesh& Mesh::fixTexWrapping(Byte uv_index) {REP(lods())lod(i).fixTexWrapping(uv_index); return T;}
+Mesh& Mesh::fixTexOffset  (Byte uv_index) {REP(lods())lod(i).fixTexOffset  (uv_index); return T;}
 /******************************************************************************/
 // CONVERT
 /******************************************************************************/

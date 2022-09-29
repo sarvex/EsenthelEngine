@@ -711,9 +711,9 @@ MeshPart& MeshPart::heightmap(Bool heightmap, Int lod_index)
 /******************************************************************************/
 // TEXTURIZE
 /******************************************************************************/
-MeshPart& MeshPart::texMove  (C Vec2 &move , Byte tex_index) {base.texMove  (move , tex_index); render.texMove  (move , tex_index); return T;}
-MeshPart& MeshPart::texScale (C Vec2 &scale, Byte tex_index) {base.texScale (scale, tex_index); render.texScale (scale, tex_index); return T;}
-MeshPart& MeshPart::texRotate(  Flt   angle, Byte tex_index) {base.texRotate(angle, tex_index); render.texRotate(angle, tex_index); return T;}
+MeshPart& MeshPart::texMove  (C Vec2 &move , Byte uv_index) {base.texMove  (move , uv_index); render.texMove  (move , uv_index); return T;}
+MeshPart& MeshPart::texScale (C Vec2 &scale, Byte uv_index) {base.texScale (scale, uv_index); render.texScale (scale, uv_index); return T;}
+MeshPart& MeshPart::texRotate(  Flt   angle, Byte uv_index) {base.texRotate(angle, uv_index); render.texRotate(angle, uv_index); return T;}
 /******************************************************************************/
 // TRANSFORM
 /******************************************************************************/

@@ -122,14 +122,14 @@ MeshGroup& MeshGroup::joinAll(Bool test_material, Bool test_draw_group, Bool tes
 /******************************************************************************/
 // TEXTURIZE
 /******************************************************************************/
-MeshGroup& MeshGroup::texMap   (  Flt     scale , Byte tex_index) {REPAO(meshes).texMap   (scale , tex_index); return T;}
-MeshGroup& MeshGroup::texMap   (C Matrix &matrix, Byte tex_index) {REPAO(meshes).texMap   (matrix, tex_index); return T;}
-MeshGroup& MeshGroup::texMap   (C Plane  &plane , Byte tex_index) {REPAO(meshes).texMap   (plane , tex_index); return T;}
-MeshGroup& MeshGroup::texMap   (C Ball   &ball  , Byte tex_index) {REPAO(meshes).texMap   (ball  , tex_index); return T;}
-MeshGroup& MeshGroup::texMap   (C Tube   &tube  , Byte tex_index) {REPAO(meshes).texMap   (tube  , tex_index); return T;}
-MeshGroup& MeshGroup::texMove  (C Vec2   &move  , Byte tex_index) {REPAO(meshes).texMove  (move  , tex_index); return T;}
-MeshGroup& MeshGroup::texScale (C Vec2   &scale , Byte tex_index) {REPAO(meshes).texScale (scale , tex_index); return T;}
-MeshGroup& MeshGroup::texRotate(  Flt     angle , Byte tex_index) {REPAO(meshes).texRotate(angle , tex_index); return T;}
+MeshGroup& MeshGroup::texMap   (  Flt     scale , Byte uv_index) {REPAO(meshes).texMap   (scale , uv_index); return T;}
+MeshGroup& MeshGroup::texMap   (C Matrix &matrix, Byte uv_index) {REPAO(meshes).texMap   (matrix, uv_index); return T;}
+MeshGroup& MeshGroup::texMap   (C Plane  &plane , Byte uv_index) {REPAO(meshes).texMap   (plane , uv_index); return T;}
+MeshGroup& MeshGroup::texMap   (C Ball   &ball  , Byte uv_index) {REPAO(meshes).texMap   (ball  , uv_index); return T;}
+MeshGroup& MeshGroup::texMap   (C Tube   &tube  , Byte uv_index) {REPAO(meshes).texMap   (tube  , uv_index); return T;}
+MeshGroup& MeshGroup::texMove  (C Vec2   &move  , Byte uv_index) {REPAO(meshes).texMove  (move  , uv_index); return T;}
+MeshGroup& MeshGroup::texScale (C Vec2   &scale , Byte uv_index) {REPAO(meshes).texScale (scale , uv_index); return T;}
+MeshGroup& MeshGroup::texRotate(  Flt     angle , Byte uv_index) {REPAO(meshes).texRotate(angle , uv_index); return T;}
 /******************************************************************************/
 // TRANSFORM
 /******************************************************************************/
@@ -330,8 +330,8 @@ MeshGroup& MeshGroup::quadToTri(Flt cos) {REPAO(meshes).quadToTri(cos); return T
 /******************************************************************************/
 // FIX
 /******************************************************************************/
-MeshGroup& MeshGroup::fixTexWrapping(Byte tex_index) {REPAO(meshes).fixTexWrapping(tex_index); return T;}
-MeshGroup& MeshGroup::fixTexOffset  (Byte tex_index) {REPAO(meshes).fixTexOffset  (tex_index); return T;}
+MeshGroup& MeshGroup::fixTexWrapping(Byte uv_index) {REPAO(meshes).fixTexWrapping(uv_index); return T;}
+MeshGroup& MeshGroup::fixTexOffset  (Byte uv_index) {REPAO(meshes).fixTexOffset  (uv_index); return T;}
 /******************************************************************************/
 // ADD/REMOVE
 /******************************************************************************/

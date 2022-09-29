@@ -102,9 +102,9 @@ struct MeshPart // Mesh Base + Mesh Render
    MeshPart& animate      (C AnimatedSkeleton      &anim_skel                      ); // animate   by skeleton
 
    // texture transform
-   MeshPart& texMove  (C Vec2 &move , Byte tex_index=0); // move   texture UV's
-   MeshPart& texScale (C Vec2 &scale, Byte tex_index=0); // scale  texture UV's
-   MeshPart& texRotate(  Flt   angle, Byte tex_index=0); // rotate texture UV's
+   MeshPart& texMove  (C Vec2 &move , Byte uv_index=0); // move   texture UV's
+   MeshPart& texScale (C Vec2 &scale, Byte uv_index=0); // scale  texture UV's
+   MeshPart& texRotate(  Flt   angle, Byte uv_index=0); // rotate texture UV's
 
    // operations
    MeshPart&   boneRemap(C CMemPtrN<BoneType, 256> &old_to_new); // remap vertex bone/matrix indexes according to bone 'old_to_new' remap

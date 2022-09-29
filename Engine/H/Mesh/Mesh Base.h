@@ -392,17 +392,17 @@ struct MeshBase // Mesh Base (the most low level software mesh, contains : Verte
 #endif
 
    // texture transform
-   MeshBase& texMove  (C Vec2 &move , Byte tex_index=0); // move   texture UV's
-   MeshBase& texScale (C Vec2 &scale, Byte tex_index=0); // scale  texture UV's
-   MeshBase& texRotate(  Flt   angle, Byte tex_index=0); // rotate texture UV's
+   MeshBase& texMove  (C Vec2 &move , Byte uv_index=0); // move   texture UV's
+   MeshBase& texScale (C Vec2 &scale, Byte uv_index=0); // scale  texture UV's
+   MeshBase& texRotate(  Flt   angle, Byte uv_index=0); // rotate texture UV's
 
    // texturize
-   MeshBase& texMap  (  Flt     scale=1, Byte tex_index=0); // map texture UV's according to vertex XY position and scale
-   MeshBase& texMapXZ(  Flt     scale=1, Byte tex_index=0); // map texture UV's according to vertex XZ position and scale
-   MeshBase& texMap  (C Matrix &matrix , Byte tex_index=0); // map texture UV's according to matrix
-   MeshBase& texMap  (C Plane  &plane  , Byte tex_index=0); // map texture UV's according to plane
-   MeshBase& texMap  (C Ball   &ball   , Byte tex_index=0); // map texture UV's according to ball
-   MeshBase& texMap  (C Tube   &tube   , Byte tex_index=0); // map texture UV's according to tube
+   MeshBase& texMap  (  Flt     scale=1, Byte uv_index=0); // map texture UV's according to vertex XY position and scale
+   MeshBase& texMapXZ(  Flt     scale=1, Byte uv_index=0); // map texture UV's according to vertex XZ position and scale
+   MeshBase& texMap  (C Matrix &matrix , Byte uv_index=0); // map texture UV's according to matrix
+   MeshBase& texMap  (C Plane  &plane  , Byte uv_index=0); // map texture UV's according to plane
+   MeshBase& texMap  (C Ball   &ball   , Byte uv_index=0); // map texture UV's according to ball
+   MeshBase& texMap  (C Tube   &tube   , Byte uv_index=0); // map texture UV's according to tube
 
    // operations
 #if EE_PRIVATE
@@ -441,8 +441,8 @@ struct MeshBase // Mesh Base (the most low level software mesh, contains : Verte
 #endif
 
    // fix
-   MeshBase& fixTexOffset  (Byte tex_index=0); // fix texture offset  , this reduces big texture coordinates to small ones increasing texturing quality on low precision video cards
-   MeshBase& fixTexWrapping(Byte tex_index=0); // fix texture wrapping, fixes texture coordinates created by spherical/tube mapping (this can add new vertexes to the mesh)
+   MeshBase& fixTexOffset  (Byte uv_index=0); // fix texture offset  , this reduces big texture coordinates to small ones increasing texturing quality on low precision video cards
+   MeshBase& fixTexWrapping(Byte uv_index=0); // fix texture wrapping, fixes texture coordinates created by spherical/tube mapping (this can add new vertexes to the mesh)
 
    // link
 #if EE_PRIVATE

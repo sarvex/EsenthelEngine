@@ -399,17 +399,17 @@ MeshLod& MeshLod::splitFloor(Flt y, Int i)
 /******************************************************************************/
 // TEXTURE TRANSFORM
 /******************************************************************************/
-MeshLod& MeshLod::texMove  (C Vec2 &move , Byte tex_index) {REPAO(parts).texMove  (move , tex_index); return T;}
-MeshLod& MeshLod::texScale (C Vec2 &scale, Byte tex_index) {REPAO(parts).texScale (scale, tex_index); return T;}
-MeshLod& MeshLod::texRotate(  Flt   angle, Byte tex_index) {REPAO(parts).texRotate(angle, tex_index); return T;}
+MeshLod& MeshLod::texMove  (C Vec2 &move , Byte uv_index) {REPAO(parts).texMove  (move , uv_index); return T;}
+MeshLod& MeshLod::texScale (C Vec2 &scale, Byte uv_index) {REPAO(parts).texScale (scale, uv_index); return T;}
+MeshLod& MeshLod::texRotate(  Flt   angle, Byte uv_index) {REPAO(parts).texRotate(angle, uv_index); return T;}
 /******************************************************************************/
 // TEXTURIZE
 /******************************************************************************/
-MeshLod& MeshLod::texMap(  Flt     scale , Byte tex_index) {REPAO(parts).base.texMap(scale , tex_index); return T;}
-MeshLod& MeshLod::texMap(C Matrix &matrix, Byte tex_index) {REPAO(parts).base.texMap(matrix, tex_index); return T;}
-MeshLod& MeshLod::texMap(C Plane  &plane , Byte tex_index) {REPAO(parts).base.texMap(plane , tex_index); return T;}
-MeshLod& MeshLod::texMap(C Ball   &ball  , Byte tex_index) {REPAO(parts).base.texMap(ball  , tex_index); return T;}
-MeshLod& MeshLod::texMap(C Tube   &tube  , Byte tex_index) {REPAO(parts).base.texMap(tube  , tex_index); return T;}
+MeshLod& MeshLod::texMap(  Flt     scale , Byte uv_index) {REPAO(parts).base.texMap(scale , uv_index); return T;}
+MeshLod& MeshLod::texMap(C Matrix &matrix, Byte uv_index) {REPAO(parts).base.texMap(matrix, uv_index); return T;}
+MeshLod& MeshLod::texMap(C Plane  &plane , Byte uv_index) {REPAO(parts).base.texMap(plane , uv_index); return T;}
+MeshLod& MeshLod::texMap(C Ball   &ball  , Byte uv_index) {REPAO(parts).base.texMap(ball  , uv_index); return T;}
+MeshLod& MeshLod::texMap(C Tube   &tube  , Byte uv_index) {REPAO(parts).base.texMap(tube  , uv_index); return T;}
 /******************************************************************************/
 // TRANSFORM
 /******************************************************************************/
@@ -608,8 +608,8 @@ Bool MeshLod::waitForStream()C {Bool ok=true; REPA(parts)ok&=parts[i].waitForStr
 /******************************************************************************/
 // FIX
 /******************************************************************************/
-MeshLod& MeshLod::fixTexOffset  (Byte tex_index) {REPA(T)parts[i].base.fixTexOffset  (tex_index); return T;}
-MeshLod& MeshLod::fixTexWrapping(Byte tex_index) {REPA(T)parts[i].base.fixTexWrapping(tex_index); return T;}
+MeshLod& MeshLod::fixTexOffset  (Byte uv_index) {REPA(T)parts[i].base.fixTexOffset  (uv_index); return T;}
+MeshLod& MeshLod::fixTexWrapping(Byte uv_index) {REPA(T)parts[i].base.fixTexWrapping(uv_index); return T;}
 /******************************************************************************/
 // CONVERT
 /******************************************************************************/
