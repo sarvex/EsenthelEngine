@@ -85,13 +85,13 @@ struct MESH_BONE
 struct MESH
 {
    Bool            has_nrm, has_color;
-   Byte            tex_coords;
+   Byte            uvs;
    Int             brush;
    Memc<VRT      > vrt  ;
    Memc<TRIS     > tris ;
    Memc<MESH_BONE> bones;
 
-   MESH() {has_nrm=has_color=false; tex_coords=0;}
+   MESH() {has_nrm=has_color=false; uvs=0;}
 };
 struct KEYS
 {
@@ -163,9 +163,9 @@ static void ImportB3DNode(File &f, Chunk &c, Memx<NODE> &nodes, NODE *parent, Te
             {
                c.size+=f.pos();
                Int flags, tex_coord_sets, tex_coord_set_size; f>>flags>>tex_coord_sets>>tex_coord_set_size;
-               mesh.has_nrm   =FlagOn(flags, 1);
-               mesh.has_color =FlagOn(flags, 2);
-               mesh.tex_coords=tex_coord_sets;
+               mesh.has_nrm  =FlagOn(flags, 1);
+               mesh.has_color=FlagOn(flags, 2);
+               mesh.uvs      =tex_coord_sets;
                for(; !f.end() && c.size>f.pos(); )
                {
                   VRT &v=mesh.vrt.New();
@@ -256,13 +256,13 @@ static void ProcessNodes(Memx<NODE> &nodes, Memc<MeshPart> &parts, MemPtr<Int> p
             {
                MeshPart &part=parts.New(); Set(part.name, node.name); if(part_material_index)part_material_index.add(tris.brush);
                MeshBase &mshb=part .base;
-               mshb.create(mesh.vrt.elms(), 0, tris.ind.elms(), 0, (mesh.has_nrm?VTX_NRM:MESH_NONE) | ((mesh.tex_coords>=1)?VTX_TEX0:MESH_NONE) | ((mesh.tex_coords>=2)?VTX_TEX1:MESH_NONE) | (mesh.bones.elms()?VTX_SKIN:MESH_NONE));
+               mshb.create(mesh.vrt.elms(), 0, tris.ind.elms(), 0, (mesh.has_nrm?VTX_NRM:MESH_NONE) | ((mesh.uvs>=1)?VTX_TEX0:MESH_NONE) | ((mesh.uvs>=2)?VTX_TEX1:MESH_NONE) | (mesh.bones.elms()?VTX_SKIN:MESH_NONE));
 
                // vertexes
-                                     REPA(mesh.vrt)mshb.vtx.pos (i)=mesh.vrt[i].pos*node.global_matrix ;
-               if(mesh.has_nrm      )REPA(mesh.vrt)mshb.vtx.nrm (i)=mesh.vrt[i].nrm*            matrix3;
-               if(mesh.tex_coords>=1)REPA(mesh.vrt)mshb.vtx.tex0(i)=mesh.vrt[i].tex[0];
-               if(mesh.tex_coords>=2)REPA(mesh.vrt)mshb.vtx.tex1(i)=mesh.vrt[i].tex[1];
+                               REPA(mesh.vrt)mshb.vtx.pos (i)=mesh.vrt[i].pos*node.global_matrix ;
+               if(mesh.has_nrm)REPA(mesh.vrt)mshb.vtx.nrm (i)=mesh.vrt[i].nrm*            matrix3;
+               if(mesh.uvs>=1 )REPA(mesh.vrt)mshb.vtx.tex0(i)=mesh.vrt[i].tex[0];
+               if(mesh.uvs>=2 )REPA(mesh.vrt)mshb.vtx.tex1(i)=mesh.vrt[i].tex[1];
                if(mesh.bones.elms() )
                {
                   REPA(mesh.bones)

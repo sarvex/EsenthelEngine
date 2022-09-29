@@ -2107,7 +2107,7 @@ void MeshBase::includeUsedBones(Bool (&bones)[256])C
          VecB4 m=matrix[i], b; if(blend)b=blend[i];
          REPA(m.c)
          {
-            Byte bone=m.c[i];
+            auto bone=m.c[i];
          #if VIRTUAL_ROOT_BONE
             if(bone)
             {
@@ -2150,7 +2150,7 @@ void MeshRender::includeUsedBones(Bool (&bones)[256])C
       {
          REP(4) // 4 bytes in VecB4
          {
-            Byte bone=vtx_matrix[i];
+            auto bone=vtx_matrix[i];
          #if VIRTUAL_ROOT_BONE
             if(bone)
             {
