@@ -218,7 +218,7 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
                REP(uv_layers- 2) f.skipLine( ); // skip unprocessed
                if(bones>0)
                {
-                  f.getLine(s); VecB4 m=TextVecB4(s);
+                  f.getLine(s); VecI4 m=TextVecI4(s);
                   f.getLine(s); Vec4  b=TextVec4 (s);
                   FREPA(m)if(b.c[i] && InRange(m.c[i], old_to_new))skin.New().set(old_to_new[m.c[i]], b.c[i]/* /255.0f not needed because weight is normalized in 'SetSkin' */);
                   SetSkin(skin, base.vtx.matrix(i), base.vtx.blend(i), skel); skin.clear();
