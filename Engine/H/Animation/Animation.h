@@ -201,8 +201,8 @@ struct SkelAnim // helper class for 'Skeleton' <-> 'Animation' relation, 'SkelAn
    Flt  eventProgress(CChar8 *from, CChar8 *to, Flt       time        )C {return _animation ? _animation->eventProgress (from, to   ,       time    ) :     0;} // get progress between events 'from' and 'to',       'time'=animation time, 0 on fail
 
 #if EE_PRIVATE
-   BoneType abonToSbon(BoneType abon)C {return _bone[abon];} // convert 'AnimBone' to 'SkelBone' index, BONE_NULL on fail
-   Int      sbonToAbon(Int      sbon)C;                      // convert 'SkelBone' to 'AnimBone' index, -1        on fail
+   Byte abonToSbon(Byte abon)C {return _bone[abon];} // convert 'AnimBone' to 'SkelBone' index, BONE_NULL on fail
+   Int  sbonToAbon(Int  sbon)C;                      // convert 'SkelBone' to 'AnimBone' index, -1        on fail
 
    Bool load(C Str &name          ) {return false;} // this is unused, 'load' with 'user' is used instead
    Bool load(C Str &name, Ptr user);
@@ -218,7 +218,7 @@ struct SkelAnim // helper class for 'Skeleton' <-> 'Animation' relation, 'SkelAn
       void operator=(C SkelAnim &src);
 
 private:
-   BoneType  *_bone;
+   Byte      *_bone;
  C Animation *_animation;
 };
 /******************************************************************************/

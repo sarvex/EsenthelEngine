@@ -111,7 +111,7 @@ struct FBX
       }*/
       void adjustBoneIndex(Int bone_index)
       {
-         if(bone_index>=0xFF)bone_index=-1;
+         if(bone_index>=BONE_NULL)bone_index=-1;
           T.bone_index=bone_index;
          if(bone_index<0)bone=false; // if we're clearing bone index, then it means we don't want this as a bone
       }
@@ -209,7 +209,7 @@ struct FBX
                   node.ee_name=node.full_name=FromUTF8(node.node->GetName());
 
                   // type
-                  if(i || node.full_name!="RootNode") // all FBX have a dummy "RootNode" at 0 index, always ignore it because there's a limit of 255 bones
+                  if(i || node.full_name!="RootNode") // all FBX have a dummy "RootNode" at 0 index, always ignore it because there's a limited number of bones
                   {
                      if(FbxNodeAttribute *attrib=node.node->GetNodeAttribute()) // this will be null for the identity "RootNode", but can also be null for some animations
                         switch(attrib->GetAttributeType())
@@ -525,18 +525,18 @@ struct FBX
          REPA(duplicate_name)if(duplicate_name[i])materials[i].name+=S+'\\'+(ULong)engine_mtrl_to_fbx_mtrl[i]->GetUniqueID(); // append the name with materials Unique ID
       }
    }
-   void boneRemap(C MemPtrN<Byte, 256> &old_to_new)
+   void boneRemap(C CMemPtrN<BoneType, 256> &old_to_new)
    {
       REPA(nodes)
       {
-         Node &node=nodes[i]; node.adjustBoneIndex(InRange(node.bone_index, old_to_new) ? old_to_new[node.bone_index] : 0xFF);
+         Node &node=nodes[i]; node.adjustBoneIndex(InRange(node.bone_index, old_to_new) ? old_to_new[node.bone_index] : BONE_NULL);
       }
    }
    void set(Skeleton *skeleton, XSkeleton *xskeleton)
    {
       if(skeleton)
       {
-         MemtN<Byte, 256> old_to_new;
+         MemtN<BoneType, 256> old_to_new;
 
          // create bones
          FREPA(nodes)
@@ -1122,17 +1122,17 @@ struct FBX
                         #endif
                            SkelBone &sbon=skeleton->bones[node.bone_index];
                            AnimBone &abon=xanim.anim.bones.New(); abon.set(sbon.name);
-                           MatrixD3  parent_matrix_inv; if(sbon.parent!=0xFF)skeleton->bones[sbon.parent].inverse(parent_matrix_inv);
+                           MatrixD3  parent_matrix_inv; if(sbon.parent!=BONE_NULL)skeleton->bones[sbon.parent].inverse(parent_matrix_inv);
 
                            // orientation
                            MatrixD3 local_to_world; animated_node_ancestor->local.orn().inverseNonOrthogonal(local_to_world); local_to_world*=animated_node_ancestor->global.orn(); // GetTransform(animated_node_ancestor->local.orn(), animated_node_ancestor->global.orn());
-                           MatrixD3 local_node_to_local_bone; if(sbon.parent!=0xFF)local_to_world.mul(parent_matrix_inv, local_node_to_local_bone);else local_node_to_local_bone=local_to_world; // after we convert to world space with 'local_to_world', we then convert it to bone in its parent space
+                           MatrixD3 local_node_to_local_bone; if(sbon.parent!=BONE_NULL)local_to_world.mul(parent_matrix_inv, local_node_to_local_bone);else local_node_to_local_bone=local_to_world; // after we convert to world space with 'local_to_world', we then convert it to bone in its parent space
 
                            // position
                            MatrixD pos_matrix;
                            if(Node *parent=animated_node_ancestor->parent)pos_matrix=parent->global;else pos_matrix.identity();
                                                                           pos_matrix.moveBack(sbon.pos);
-                           if(sbon.parent!=0xFF                          )pos_matrix*=parent_matrix_inv;
+                           if(sbon.parent!=BONE_NULL                     )pos_matrix*=parent_matrix_inv;
 
                            abon.orns  .setNum(  rot_times.elms());
                            abon.poss  .setNum(  pos_times.elms());
@@ -1168,7 +1168,7 @@ struct FBX
                                  anim.z=anim_matrix.x;
                               #if 0
                                  anim*=local_to_world; // convert to world space
-                                 if(sbon.parent!=0xFF)anim*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
+                                 if(sbon.parent!=BONE_NULL)anim*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
                               #else // optimized
                                  anim*=local_node_to_local_bone; // convert from local node to local bone space
                               #endif
@@ -1184,7 +1184,7 @@ struct FBX
                               #if 0
                                  if(Node *parent=animated_node_ancestor->parent)p*=parent->global; // convert to world space (here we don't use 'local_to_world' because that includes this node orientation, but node position is independent on its orientation)
                                                                                 p-=sbon.pos; // set as world space delta from bone
-                                 if(sbon.parent!=0xFF                          )p*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
+                                 if(sbon.parent!=BONE_NULL                     )p*=parent_matrix_inv; // convert to local space (relative to skeleton parent bone)
                               #else // optimized
                                  p*=pos_matrix;
                               #endif
