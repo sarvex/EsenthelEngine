@@ -230,13 +230,13 @@ struct DAE
    };
    struct Skin // exists as 1 element in 'Controller'
    {
-      Geometry    *geometry;
-      Str          geometry_name;
-      Matrix       bind_shape_matrix;
-      Source      *name, *matrix;
-      Memb<Source> source;
-      Memb<Joint > joint ;
-      Memc<Byte  > bone_remap; // remap from local 'joint' set to global index of bones in target skeleton
+      Geometry      *geometry;
+      Str            geometry_name;
+      Matrix         bind_shape_matrix;
+      Source        *name, *matrix;
+      Memb<Source  > source;
+      Memb<Joint   > joint ;
+      Memc<BoneType> bone_remap; // remap from local 'joint' set to global index of bones in target skeleton
       Memb<VertexWeights> vtx_wgt;
 
       void import(XmlNode &node, DAE &dae);
@@ -316,7 +316,7 @@ struct DAE
 
       void adjustBoneIndex(Int bone_index)
       {
-         if(bone_index>=0xFF)bone_index=-1;
+         if(bone_index>=BONE_NULL)bone_index=-1;
           T.bone_index=bone_index;
          if(bone_index<0)bone=false; // if we're clearing bone index, then it means we don't want this as a bone
       }
@@ -1122,7 +1122,7 @@ void DAE::create(::Mesh &mesh, MemPtr<Int> part_material_index, ::Skeleton &skel
          VertexWeights &vtx_wgt=geometry.skin->vtx_wgt.first();
          if(vtx_wgt.joint && vtx_wgt.weight)
          {
-            Memc<Byte> &bone_remap=geometry.skin->bone_remap;
+            Memc<BoneType> &bone_remap=geometry.skin->bone_remap;
             Int v_offset=0;
             skinning.setNum(vtx_wgt.vcount.elms()); // this is the number of vertexes
             FREPA(          vtx_wgt.vcount)
@@ -1588,7 +1588,7 @@ void DAE::create(::Skeleton &skeleton, XAnimation *animation)
           sbon.perp=node.world_matrix.y  ;
           sbon.fix();
 
-      Byte parent=0xFF; for(Node *cur=node.parent; cur; cur=cur->parent)if(cur->bone_index>=0){parent=cur->bone_index; break;} // find first parent which is a bone
+      BoneType parent=BONE_NULL; for(Node *cur=node.parent; cur; cur=cur->parent)if(cur->bone_index>=0){parent=cur->bone_index; break;} // find first parent which is a bone
       sbon.parent=parent;
    #if !CONVERT_BIND_POSE
       Int bone_index=i;
@@ -1615,12 +1615,12 @@ void DAE::create(::Skeleton &skeleton, XAnimation *animation)
    }
 
    // sort and remap
-   MemtN<Byte, 256> old_to_new; skeleton.sortBones(old_to_new);
-   Memc<Node*>    sorted_bones; sorted_bones.setNumZero(skeleton.bones.elms());
+   MemtN<BoneType, 256> old_to_new; skeleton.sortBones(old_to_new);
+   Memc<Node*>        sorted_bones; sorted_bones.setNumZero(skeleton.bones.elms());
    FREPA(bones)
    {
       Node &node=*bones[i];
-      node.adjustBoneIndex(InRange(node.bone_index, old_to_new) ? old_to_new[node.bone_index] : 0xFF);
+      node.adjustBoneIndex(InRange(node.bone_index, old_to_new) ? old_to_new[node.bone_index] : BONE_NULL);
       if(InRange(node.bone_index, sorted_bones))sorted_bones[node.bone_index]=&node;else node.bone_index=-1;
    }
    Swap(bones, sorted_bones);
@@ -1643,7 +1643,7 @@ void DAE::create(XAnimation &animation, ::Skeleton &skeleton)
       {
          SkelBone &sbon=skeleton .     bones[i];
          AnimBone &abon=animation.anim.bones.New(); abon.set(sbon.name);
-         Matrix3   parent_matrix_inv; if(sbon.parent!=0xFF)skeleton.bones[sbon.parent].inverse(parent_matrix_inv);
+         Matrix3   parent_matrix_inv; if(sbon.parent!=BONE_NULL)skeleton.bones[sbon.parent].inverse(parent_matrix_inv);
          Matrix3      local_to_world; node.local_matrix.orn().inverseNonOrthogonal(local_to_world); local_to_world*=node.world_matrix.orn(); // GetTransform(node.local_matrix.orn(), node.world_matrix.orn());
 
          // gather keyframe time values
@@ -1683,16 +1683,16 @@ void DAE::create(XAnimation &animation, ::Skeleton &skeleton)
                anim.y=node.anim_matrix.y;
                anim.z=node.anim_matrix.x;
                anim*=local_to_world;
-               if(sbon.parent!=0xFF)anim*=parent_matrix_inv;
+               if(sbon.parent!=BONE_NULL)anim*=parent_matrix_inv;
                orn.orn=anim;
-               orn.orn.fix(); // orn.orn=Orient(!node.anim_matrix.x, !node.anim_matrix.y)*local_to_world; if(sbon.parent!=0xFF)orn.orn*=parent_matrix_inv; orn.orn.fix();
+               orn.orn.fix(); // orn.orn=Orient(!node.anim_matrix.x, !node.anim_matrix.y)*local_to_world; if(sbon.parent!=BONE_NULL)orn.orn*=parent_matrix_inv; orn.orn.fix();
             }
 
             // position
             {
                pos.pos=node.anim_matrix.pos-node.local_matrix.pos;
-               if(node.parent      )pos.pos*=node.parent->world_matrix.orn();
-               if(sbon.parent!=0xFF)pos.pos*=parent_matrix_inv;
+               if(node.parent           )pos.pos*=node.parent->world_matrix.orn();
+               if(sbon.parent!=BONE_NULL)pos.pos*=parent_matrix_inv;
             }
 
             // scale

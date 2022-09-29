@@ -790,7 +790,7 @@ MeshPart& MeshPart::animate(C AnimatedSkeleton &skel)
 /******************************************************************************/
 // OPERATIONS
 /******************************************************************************/
-MeshPart& MeshPart::boneRemap(C CMemPtr<Byte, 256> &old_to_new)
+MeshPart& MeshPart::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new)
 {
    base  .boneRemap(old_to_new);
    render.boneRemap(old_to_new);

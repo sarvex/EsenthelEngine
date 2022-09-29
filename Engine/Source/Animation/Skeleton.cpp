@@ -73,7 +73,7 @@ SkelSlot::SkeletonSlot()
    pos .zero(       );
 
    name[0]=0;
-   setParent(0xFF);
+   setParent(BONE_NULL);
 }
 SkelSlot& SkelSlot::operator*=(Flt f)
 {
@@ -113,7 +113,7 @@ SkelBone::SkeletonBone()
    perp.set (0, 1, 0);
    pos .zero(       );
 
-   parent=0xFF;
+   parent=BONE_NULL;
    children_offset=children_num=0;
    flag  =0;
    length=0.3f;
@@ -450,8 +450,8 @@ SkelSlot& Skeleton:: getSlot (CChar8 *name                                )  {re
 /******************************************************************************/
 Bool Skeleton::contains(Int parent, Int child)C
 {
-   if(parent<0)parent=0xFF;
-   if(child <0)child =0xFF;
+   if(parent<0)parent=BONE_NULL;
+   if(child <0)child =BONE_NULL;
    if(parent==child)return true; // if contains self ('parent' contains 'child' where both are the same)
    for(; InRange(child, bones); )
    {
@@ -520,9 +520,9 @@ Int Skeleton::findRagdollParent(Int bone_index)C
 }
 struct BoneParents
 {
-   Byte bone, parents;
+   BoneType bone, parents;
 };
-Int Skeleton::bonesSharedParent(MemPtr<Byte, 256> bones)C
+Int Skeleton::bonesSharedParent(MemPtrN<BoneType, 256> bones)C
 {
    MemtN<BoneParents, 256> bone_parents;
    bone_parents.setNum(bones.elms());
@@ -553,7 +553,7 @@ Int Skeleton::bonesSharedParent(MemPtr<Byte, 256> bones)C
          REPA(bone_parents)bone_parents[i].bone=T.bones[bone_parents[i].bone].parent;
       }
    }
-   return 0xFF;
+   return BONE_NULL;
 }
 Int Skeleton::hierarchyDistance(Int bone_a, Int bone_b)C
 {
@@ -613,8 +613,8 @@ void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
    if(find[1]<0)
    {
     C SkelBone &bone=bones[find[0]];
-      matrix.c[0]=(                          1+find[0]    );
-      matrix.c[1]=((bone.parent==0xFF) ? 0 : 1+bone.parent);
+      matrix.c[0]=(                               1+find[0]    );
+      matrix.c[1]=((bone.parent==BONE_NULL) ? 0 : 1+bone.parent);
       matrix.c[2]=0;
       matrix.c[3]=0;
       Byte b=RoundU(Sat(DistPointPlane(pos, bone.pos, bone.dir)/(BONE_FRAC*bone.length)+0.5f)*255);
@@ -642,8 +642,8 @@ void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
    }else*/
    {
     C SkelBone &bone=bones[find[0]];
-      matrix.c[0]=(                          1+find[0]    );
-      matrix.c[1]=((bone.parent==0xFF) ? 0 : 1+bone.parent);
+      matrix.c[0]=(                               1+find[0]    );
+      matrix.c[1]=((bone.parent==BONE_NULL) ? 0 : 1+bone.parent);
       matrix.c[2]=0;
       matrix.c[3]=0;
       Byte b=RoundU(Sat(DistPointPlane(pos, bone.pos, bone.dir)/(BONE_FRAC*bone.length)+0.5f)*255);
@@ -663,22 +663,22 @@ void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
 #endif
 }
 /******************************************************************************/
-void Skeleton::boneRemap(C CMemPtr<Byte, 256> &old_to_new) // !! this does not modify 'children_offset' and 'children_num' !!
+void Skeleton::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new) // !! this does not modify 'children_offset' and 'children_num' !!
 {
 #if 1 // clear out of range
-   REPA(bones){Byte &b =bones[i].parent; b =(InRange(b , old_to_new) ? old_to_new[b ] : 0xFF);}
-   REPA(slots){Byte &b =slots[i].bone  ; b =(InRange(b , old_to_new) ? old_to_new[b ] : 0xFF);
-               Byte &b1=slots[i].bone1 ; b1=(InRange(b1, old_to_new) ? old_to_new[b1] : 0xFF);}
+   REPA(bones){BoneType &b =bones[i].parent; b =(InRange(b , old_to_new) ? old_to_new[b ] : BONE_NULL);}
+   REPA(slots){BoneType &b =slots[i].bone  ; b =(InRange(b , old_to_new) ? old_to_new[b ] : BONE_NULL);
+               BoneType &b1=slots[i].bone1 ; b1=(InRange(b1, old_to_new) ? old_to_new[b1] : BONE_NULL);}
 #else // keep out of range
    if(old_to_new.elms())
    {
-      REPA(bones){Byte &b =bones[i].parent; if(InRange(b , old_to_new))b =old_to_new[b ];}
-      REPA(slots){Byte &b =slots[i].bone  ; if(InRange(b , old_to_new))b =old_to_new[b ];
-                  Byte &b1=slots[i].bone1 ; if(InRange(b1, old_to_new))b1=old_to_new[b1];}
+      REPA(bones){BoneType &b =bones[i].parent; if(InRange(b , old_to_new))b =old_to_new[b ];}
+      REPA(slots){BoneType &b =slots[i].bone  ; if(InRange(b , old_to_new))b =old_to_new[b ];
+                  BoneType &b1=slots[i].bone1 ; if(InRange(b1, old_to_new))b1=old_to_new[b1];}
    }
 #endif
 }
-Bool Skeleton::removeBone(Int i, MemPtr<Byte, 256> old_to_new)
+Bool Skeleton::removeBone(Int i, MemPtrN<BoneType, 256> old_to_new)
 {
    if(InRange(i, bones))
    {
@@ -693,7 +693,7 @@ Bool Skeleton::removeBone(Int i, MemPtr<Byte, 256> old_to_new)
       }
    #endif
 
-      Memt<Byte, 256> otn_rem; otn_rem.setNum(bones.elms());
+      MemtN<BoneType, 256> otn_rem; otn_rem.setNum(bones.elms());
       FREPD(j, i)                        otn_rem[j]=j          ; // all before 'i' are not changed
                                          otn_rem[i]=bone.parent; // 'i' is changed to parent of removed bone (parent index is always smaller than that bone)
       for(Int j=i+1; j<bones.elms(); j++)otn_rem[j]=j-1        ; // all after 'i' are set to index-1
@@ -702,7 +702,7 @@ Bool Skeleton::removeBone(Int i, MemPtr<Byte, 256> old_to_new)
       boneRemap(otn_rem);
 
       // since we're assigning children of 'bone' to its parent, we need to sort the bones
-      Memt<Byte, 256> otn_sort; sortBones(otn_sort);
+      MemtN<BoneType, 256> otn_sort; sortBones(otn_sort);
 
       setBoneTypes(); // call this because 'type_index' and 'type_sub' could have changed
 
@@ -711,8 +711,8 @@ Bool Skeleton::removeBone(Int i, MemPtr<Byte, 256> old_to_new)
          old_to_new.setNum(otn_rem.elms());
          REPA(old_to_new)
          {
-            Byte otn=otn_rem[i];
-            old_to_new[i]=(InRange(otn, otn_sort) ? otn_sort[otn] : 0xFF);
+            BoneType otn=otn_rem[i];
+            old_to_new[i]=(InRange(otn, otn_sort) ? otn_sort[otn] : BONE_NULL);
          }
       }
       return true;
@@ -720,7 +720,7 @@ Bool Skeleton::removeBone(Int i, MemPtr<Byte, 256> old_to_new)
    old_to_new.clear();
    return false;
 }
-Skeleton& Skeleton::add(C Skeleton &src, MemPtr<Byte, 256> old_to_new) // !! assumes that skeletons have different bone names !!
+Skeleton& Skeleton::add(C Skeleton &src, MemPtrN<BoneType, 256> old_to_new) // !! assumes that skeletons have different bone names !!
 {
    if(&src==this)return T;
    Int offset=bones.elms();
@@ -728,15 +728,15 @@ Skeleton& Skeleton::add(C Skeleton &src, MemPtr<Byte, 256> old_to_new) // !! ass
    {
     C SkelBone &s=src.bones[i];
       SkelBone &d=    bones.New();
-      d=s; if(d.parent!=0xFF)d.parent+=offset;
+      d=s; if(d.parent!=BONE_NULL)d.parent+=offset;
    }
    FREPA(src.slots) // copy in the same order
    {
     C SkelSlot &s=src.slots[i];
       SkelSlot &d=    slots.New();
       d=s;
-      if(d.bone !=0xFF)d.bone +=offset;
-      if(d.bone1!=0xFF)d.bone1+=offset;
+      if(d.bone !=BONE_NULL)d.bone +=offset;
+      if(d.bone1!=BONE_NULL)d.bone1+=offset;
    }
    return sortBones(old_to_new).setBoneTypes();
 }
@@ -749,14 +749,14 @@ Skeleton& Skeleton::addSlots(C Skeleton &src)
       SkelSlot &d=    slots.New();
       d=s;
 
-      d.bone=0xFF;
+      d.bone=BONE_NULL;
       if(C SkelBone *bone=src.bones.addr(s.bone)) // get bone in 'src' skeleton that 's' slot is attached to
       {
          Int i=findBoneI(bone->name, bone->type, bone->type_index, bone->type_sub); // find that bone in this skeleton
          if(i>=0)d.bone=i;
       }
 
-      d.bone1=0xFF;
+      d.bone1=BONE_NULL;
       if(C SkelBone *bone=src.bones.addr(s.bone1)) // get bone in 'src' skeleton that 's' slot is attached to
       {
          Int i=findBoneI(bone->name, bone->type, bone->type_index, bone->type_sub); // find that bone in this skeleton
@@ -766,10 +766,10 @@ Skeleton& Skeleton::addSlots(C Skeleton &src)
    return T;
 }
 /******************************************************************************/
-static void AddChildren(Skeleton &skeleton, MemtN<Int, 256> &order, Byte parent)
+static void AddChildren(Skeleton &skeleton, MemtN<Int, 256> &order, BoneType parent)
 {
    Int start=order.elms(), // number of bones added at this point
-       elms =Min(skeleton.bones.elms(), 0xFF); // don't process bone with index 0xFF because this is assumed to be <null> and would trigger adding bones from the start (never ending loop)
+       elms =Min(skeleton.bones.elms(), BONE_NULL); // don't process bone with index BONE_NULL because this is assumed to be <null> and would trigger adding bones from the start (never ending loop)
    SkelBone *parent_bone=skeleton.bones.addr(parent); // get parent bone (if any) for further processing
    if(       parent_bone)parent_bone->children_offset=order.elms(); // set parent children offset
    FREP(elms) // process forward, to try preserving existing order, this is very important as some codes may need this
@@ -782,13 +782,13 @@ static void AddChildren(Skeleton &skeleton, MemtN<Int, 256> &order, Byte parent)
    for(Int i=start; i<end; i++) // process forward, to try preserving existing order
       AddChildren(skeleton, order, order[i]); // add children of bones that were added in above step
 }
-Skeleton& Skeleton::sortBones(MemPtr<Byte, 256> old_to_new)
+Skeleton& Skeleton::sortBones(MemPtrN<BoneType, 256> old_to_new)
 {
    REPA(bones){SkelBone &bone=bones[i]; bone.children_offset=bone.children_num=0;} // reset data first
 
-   MemtN<Int , 256> order; AddChildren(T, order, 0xFF);
-   Memt <Byte, 256> otn  ; otn .setNum(bones.elms()); REPAO(otn)=0xFF;
-   Mems <SkelBone > temp ; temp.setNum(order.elms());
+   MemtN<Int     , 256> order; AddChildren(T, order, BONE_NULL);
+   MemtN<BoneType, 256> otn  ; otn .setNum(bones.elms()); REPAO(otn)=BONE_NULL;
+   Mems <SkelBone     > temp ; temp.setNum(order.elms());
 
    REPA(order)
    {
@@ -1008,8 +1008,8 @@ Skeleton& Skeleton::setBoneTypes()
    // STEP 2 - set 'type_sub', needed for assigning 'type_index'
    struct Link
    {
-      Byte top_parent, // index of the top parent that has the same type
-           total_subs; // this is used only for top parents, counter of how many children bones with same type were encountered so far
+      BoneType top_parent, // index of the top parent that has the same type
+               total_subs; // this is used only for top parents, counter of how many children bones with same type were encountered so far
    };
    MemtN<Link, 256> links; links.setNum(bones.elms());
    FREPA(bones) // go from the start to assign parents first
@@ -1205,13 +1205,13 @@ Skeleton& Skeleton::setBoneShapes()
    }
    return T;
 }
-Bool Skeleton::setBoneParent(Int child, Int parent, MemPtr<Byte, 256> old_to_new)
+Bool Skeleton::setBoneParent(Int child, Int parent, MemPtrN<BoneType, 256> old_to_new)
 {
    if(InRange(child, bones) && child!=parent) // can't be a child of itself
    {
-      if(!InRange(parent, bones))parent=0xFF; // set <null> if parent is invalid
-      Byte &bone_parent =bones[child].parent;
-      if(   bone_parent!=parent) // if different
+      if(!InRange(parent, bones))parent=BONE_NULL; // set <null> if parent is invalid
+      BoneType &bone_parent =bones[child].parent;
+      if(       bone_parent!=parent) // if different
       {
          bone_parent=parent; // set new parent
          sortBones(old_to_new).setBoneTypes(); // sort because we need to rebuild 'children_offset' and 'children_num', and in case child has an index smaller than parent
@@ -1477,7 +1477,7 @@ Bool BoneMap::rename(C Str8 &src, C Str8 &dest)
    return false;
 }*/
 
-void BoneMap::remap(C CMemPtr<Byte, 256> &old_to_new)
+void BoneMap::remap(C CMemPtrN<BoneType, 256> &old_to_new)
 {
    if(_bones) // process only if this already has some bones, this is important so we don't set a new map from empty data
    {
@@ -1486,7 +1486,7 @@ void BoneMap::remap(C CMemPtr<Byte, 256> &old_to_new)
       REPAD(old, old_to_new) // order is important! process from end to start as noted above
       {
          Int _new=old_to_new[old];
-         if( _new!=0xFF)new_to_old(_new)=old+1; // for the moment use +1 values because 0 are created when using () operator, which below will be converted to -1
+         if( _new!=BONE_NULL)new_to_old(_new)=old+1; // for the moment use +1 values because 0 are created when using () operator, which below will be converted to -1
       }
       REPAO(new_to_old)--; // now correct the "+1" indexes, invalid indexes will now be set to "-1"
 
@@ -1501,17 +1501,17 @@ void BoneMap::remap(C CMemPtr<Byte, 256> &old_to_new)
          Int    old=new_to_old[i];
          if(InRange(old, _bones))
          {
-          C Bone &old_bone=_bone[old]; Byte old_parent=old_bone.parent;
+          C Bone &old_bone=_bone[old]; BoneType old_parent=old_bone.parent;
             bone.type      =old_bone.type      ;
             bone.type_index=old_bone.type_index;
             bone.type_sub  =old_bone.type_sub  ;
-            bone.parent    =(InRange(old_parent, old_to_new) ? old_to_new[old_parent] : 0xFF);
+            bone.parent    =(InRange(old_parent, old_to_new) ? old_to_new[old_parent] : BONE_NULL);
          }else
          {
             bone.type      =BONE_UNKNOWN;
             bone.type_index=0;
             bone.type_sub  =0;
-            bone.parent    =0xFF;
+            bone.parent    =BONE_NULL;
          }
          CChar8 *name=T.name(old);
          Int     length_1=Length(name)+1;
@@ -1523,7 +1523,7 @@ void BoneMap::remap(C CMemPtr<Byte, 256> &old_to_new)
       Swap(temp, T);
    }
 }
-void BoneMap::setRemap(C Skeleton &skeleton, MemPtr<Byte, 256> old_to_new, Bool by_name)C
+void BoneMap::setRemap(C Skeleton &skeleton, MemPtrN<BoneType, 256> old_to_new, Bool by_name)C
 {
    old_to_new.clear();
    FREP(_bones) // process in order
@@ -1532,8 +1532,8 @@ void BoneMap::setRemap(C Skeleton &skeleton, MemPtr<Byte, 256> old_to_new, Bool 
       Int skel_bone=(by_name ? skeleton.findBoneI(bone_name) : skeleton.findBoneI(bone_name, bone.type, bone.type_index, bone.type_sub)); // find i-th bone in skeleton
       if( skel_bone<0) // not found
       {
-         Byte parent_index=_bone[i].parent;
-         skel_bone=(InRange(parent_index, old_to_new) ? old_to_new[parent_index] : 0xFF); // set "new bone" as the same as "old parents new bone"
+         BoneType parent_index=_bone[i].parent;
+         skel_bone=(InRange(parent_index, old_to_new) ? old_to_new[parent_index] : BONE_NULL); // set "new bone" as the same as "old parents new bone"
       }
       old_to_new.add(skel_bone);
    }

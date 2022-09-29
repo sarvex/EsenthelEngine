@@ -39,15 +39,15 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
       if(InRange(bones, 1024))
       {
          Skeleton temp, *skel=(skeleton ? skeleton : mesh ? &temp : null); // if skel not specified, but we want mesh, then we have to process it
-         if(skel)skel->bones.setNum(Min(255, bones));
+         if(skel)skel->bones.setNum(Min(BONE_NULL, bones));
          FREP(bones)
          {
             SkelBone *bone=(skel ? skel->bones.addr(i) : null);
             if(bone)Get(f, bone->name);else Get(f, str);
-            U16 parent=f.getUShort(); if(bone)bone->parent=(InRange(parent, skel->bones) ? parent : 0xFF);
+            U16 parent=f.getUShort(); if(bone)bone->parent=(InRange(parent, skel->bones) ? parent : BONE_NULL);
             if(bone)f>>bone->pos;else f.skip(SIZE(Vec));
          }
-         MemtN<Byte, 256> old_to_new;
+         MemtN<BoneType, 256> old_to_new;
          if(skel)
          {
             skel->mirrorX().sortBones(old_to_new).setBoneTypes(); if(VIRTUAL_ROOT_BONE)REPAO(old_to_new)++; // 'mirrorX' must be called before 'setBoneTypes', 'sortBones' must be called before 'setBoneTypes' and 'SetSkin'
@@ -169,10 +169,10 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
       {
          SkelBone *bone=(skel ? &skel->bones[i] : null);
          f.fullLine(s); if(bone)Set(bone->name, s);
-         f. getLine(s); if(bone){Int parent=TextInt(s); bone->parent=(InRange(parent, skel->bones) ? parent : 0xFF);}
+         f. getLine(s); if(bone){Int parent=TextInt(s); bone->parent=(InRange(parent, skel->bones) ? parent : BONE_NULL);}
          f. getLine(s); if(bone)bone->pos=TextVec(s);
       }
-      MemtN<Byte, 256> old_to_new;
+      MemtN<BoneType, 256> old_to_new;
       if(skel)
       {
          skel->mirrorX().sortBones(old_to_new).setBoneTypes(); if(VIRTUAL_ROOT_BONE)REPAO(old_to_new)++; // 'mirrorX' must be called before 'setBoneTypes', 'sortBones' must be called before 'setBoneTypes' and 'SetSkin'

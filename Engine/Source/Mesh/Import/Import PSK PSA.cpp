@@ -95,7 +95,7 @@ static void CreateSkeleton(Skeleton &skeleton, Memc<VBone> &bones)
       SkelBone &sbon=skeleton.bones[i];
       VBone    &ubon=bones[i];
 
-      sbon.parent=((i && InRange(ubon.ParentIndex, skeleton.bones)) ? ubon.ParentIndex : 0xFF);
+      sbon.parent=((i && InRange(ubon.ParentIndex, skeleton.bones)) ? ubon.ParentIndex : BONE_NULL);
 
       if(i)CHS(ubon.BonePos.Orientation.w); Matrix3 orient=ubon.BonePos.Orientation;
       if(i)CHS(ubon.BonePos.Orientation.w);
@@ -138,7 +138,7 @@ Bool ImportPSK(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial> ma
       if(!f.ok())return false;
 
       // skeleton
-      MemtN<Byte, 256> old_to_new;
+      MemtN<BoneType, 256> old_to_new;
       Skeleton temp, *skel=(skeleton ? skeleton : mesh ? &temp : null); // if skel not specified, but we want mesh, then we have to process it
       if(skel){CreateSkeleton(*skel, bones); skel->sortBones(old_to_new); if(VIRTUAL_ROOT_BONE)REPAO(old_to_new)++;} // 'sortBones' must be called before 'SetSkin'
 
@@ -281,7 +281,7 @@ Bool ImportPSA(C Str &name, Skeleton *skeleton, MemPtr<XAnimation> animations)
                   VBone    &ubon=          bones[i];
                   SkelBone &sbon=skel    ->bones[i];
                   AnimBone &abon=animation.bones[i]; abon.set(sbon.name);
-                  Bool      parent      =(sbon.parent!=0xFF);
+                  Bool      parent      =(sbon.parent!=BONE_NULL);
                   Matrix3   parent_matrix     , parent_matrix_inv,
                             parent_matrix_temp, parent_matrix_temp_inv; // this is skel.bone(sbon.parent) before changing the xz
                   if(parent)

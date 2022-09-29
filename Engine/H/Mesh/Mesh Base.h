@@ -420,7 +420,7 @@ struct MeshBase // Mesh Base (the most low level software mesh, contains : Verte
    MeshBase& subdivide    (                                              ); // smooth subdivide faces,  smoothing original vertexes
    MeshBase& subdivideEdge(Bool freeze_z=false, C CMemPtr<Bool> &is=null ); // smooth subdivide edges, 'is'=only selected edges
 
-   MeshBase&   boneRemap(C CMemPtr<Byte, 256> &old_to_new); // remap vertex bone/matrix indexes according to bone 'old_to_new' remap
+   MeshBase&   boneRemap(C CMemPtrN<BoneType, 256> &old_to_new); // remap vertex bone/matrix indexes according to bone 'old_to_new' remap
    void     setUsedBones(Bool (&bones)[256])C;
    void includeUsedBones(Bool (&bones)[256])C;
 

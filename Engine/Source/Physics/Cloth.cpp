@@ -191,7 +191,7 @@ ClothMesh& ClothMesh::skeleton(Skeleton *skeleton)
 //Bool boneRename(C Str8 &src, C Str8 &dest                             ); // rename 'src' bone to 'dest' bone, returns true if a bone was renamed
 //Bool ClothMesh::boneRename(C Str8 &src, C Str8 &dest) {return _bone_map.rename(src, dest);}
 
-void ClothMesh::boneRemap(C CMemPtr<Byte, 256> &old_to_new, Bool remap_names)
+void ClothMesh::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new, Bool remap_names)
 {
   _phys.boneRemap(old_to_new);
   _skin.boneRemap(old_to_new);

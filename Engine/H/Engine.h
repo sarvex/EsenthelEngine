@@ -213,6 +213,7 @@ namespace EE // Esenthel Engine namespace
    #include "Math/Shapes/Cone.h"
    #include "Math/Shapes/Pyramid.h"
    #include "Math/Shapes/Torus.h"
+   #include "Animation/Skeleton.h"
    #include "Mesh/Mesh Base.h"
    #include "Math/Shapes/Polygon.h"
    #include "Math/Shape.h"
@@ -224,7 +225,6 @@ namespace EE // Esenthel Engine namespace
    /******************************************************************************/
    // ANIMATION
    /******************************************************************************/
-   #include "Animation/Skeleton.h"
    #include "Animation/Animation Keys.h"
    #include "Animation/Animation.h"
    #include "Animation/Motion.h"

@@ -77,14 +77,15 @@ struct TRIS
 };
 struct MESH_BONE
 {
-   Byte  parent;
-   NODE *node;
+   BoneType parent;
+   NODE    *node;
 
-   MESH_BONE() {parent=0xFF; node=null;}
+   MESH_BONE() {parent=BONE_NULL; node=null;}
 };
 struct MESH
 {
-   Byte            has_nrm, has_color, tex_coords;
+   Bool            has_nrm, has_color;
+   Byte            tex_coords;
    Int             brush;
    Memc<VRT      > vrt  ;
    Memc<TRIS     > tris ;
@@ -103,7 +104,7 @@ struct NODE
 {
    Str        name;
    Bool       bone;
-   Byte       bone_index;
+   BoneType   bone_index;
    Matrix     local_matrix, global_matrix;
    NODE      *parent;
    Memc<MESH> meshes;
@@ -112,7 +113,7 @@ struct NODE
    Memc<ANIM> anims ;
    Memx<NODE> nodes ; // use 'Memx' because nodes are referencing each other using 'parent'
 
-   NODE() {bone=false; bone_index=0xFF; local_matrix.identity(); global_matrix.identity(); parent=null;}
+   NODE() {bone=false; bone_index=BONE_NULL; local_matrix.identity(); global_matrix.identity(); parent=null;}
 };
 /******************************************************************************/
 static Str8 GetStr(File &f)
@@ -223,7 +224,7 @@ static void ImportB3DNode(File &f, Chunk &c, Memx<NODE> &nodes, NODE *parent, Te
    }
 }
 /******************************************************************************/
-static void ProcessBones(Memx<NODE> &nodes, Byte parent_index, MESH *last_mesh)
+static void ProcessBones(Memx<NODE> &nodes, BoneType parent_index, MESH *last_mesh)
 {
    FREPA(nodes)
    {
@@ -241,7 +242,7 @@ static void ProcessBones(Memx<NODE> &nodes, Byte parent_index, MESH *last_mesh)
    }
 }
 /******************************************************************************/
-static void ProcessNodes(Memx<NODE> &nodes, Memc<MeshPart> &parts, MemPtr<Int> part_material_index, Memc<TEXS> &texs, Memc<BRUS> &brus, Skeleton &skeleton, MemtN<Byte, 256> &old_to_new)
+static void ProcessNodes(Memx<NODE> &nodes, Memc<MeshPart> &parts, MemPtr<Int> part_material_index, Memc<TEXS> &texs, Memc<BRUS> &brus, Skeleton &skeleton, MemtN<BoneType, 256> &old_to_new)
 {
    FREPA(nodes)
    {
@@ -324,7 +325,7 @@ static void CreateAnimation(C Memc<MESH_BONE> &mesh_bone, Skeleton &skeleton, XA
       AnimBone &abon=    anim.bones[i];
       SkelBone &sbon=skeleton.bones[i];
       
-      Bool    parent=(sbon.parent!=0xFF);
+      Bool    parent=(sbon.parent!=BONE_NULL);
       Matrix3 parent_matrix_inv; if(parent)skeleton.bones[sbon.parent].inverse(parent_matrix_inv);
 
       abon.set(sbon.name);
@@ -502,8 +503,8 @@ Bool ImportB3D(C Str &name, Mesh *mesh, Skeleton *skeleton, XAnimation *animatio
          Skeleton temp, *skel=(skeleton ? skeleton : (mesh || animation) ? &temp : null); // if skel not specified, but we want mesh or animation, then we have to process it
          if(skel)
          {
-            MemtN<Byte, 256> old_to_new;
-            ProcessBones  (node, 0xFF, null);
+            MemtN<BoneType, 256> old_to_new;
+            ProcessBones  (node, BONE_NULL, null);
             CreateSkeleton(node, *skel, animation);
             skel->sortBones(old_to_new).setBoneTypes(); if(VIRTUAL_ROOT_BONE)REPAO(old_to_new)++;
             if(animation)animation->anim.setBoneTypeIndexesFromSkeleton(*skel);

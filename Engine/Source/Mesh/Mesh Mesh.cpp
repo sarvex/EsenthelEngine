@@ -430,7 +430,7 @@ Int Mesh::boneFind(CChar8 *bone_name)C {return _bone_map.find(bone_name);}
 //Bool boneRename(C Str8 &src, C Str8 &dest                             ) ; // rename 'src' bone to 'dest' bone, returns true if a bone was renamed
 //Bool Mesh::boneRename(C Str8 &src, C Str8 &dest) {return _bone_map.rename(src, dest);}
 
-Mesh& Mesh::boneRemap(C CMemPtr<Byte, 256> &old_to_new, Bool remap_names)
+Mesh& Mesh::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new, Bool remap_names)
 {
    REP(lods())lod(i).boneRemap(old_to_new);
    if(remap_names)_bone_map.remap(old_to_new);

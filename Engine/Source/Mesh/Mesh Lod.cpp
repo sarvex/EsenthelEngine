@@ -598,9 +598,9 @@ MeshLod& MeshLod::explodeVtxs(                ) {REPAO(parts).base.explodeVtxs( 
 MeshLod& MeshLod::tesselate  (Flt weld_pos_eps) {REPAO(parts).base.tesselate  (weld_pos_eps); return T;}
 MeshLod& MeshLod::subdivide  (                ) {REPAO(parts).base.subdivide  (            ); return T;}
 
-MeshLod& MeshLod::boneRemap(C CMemPtr<Byte, 256> &old_to_new)  {REPAO(parts).boneRemap  (old_to_new); return T;}
-void     MeshLod::includeUsedBones(Bool (&bones)[256]       )C {REPAO(parts).includeUsedBones(bones);}
-void     MeshLod::    setUsedBones(Bool (&bones)[256]       )C {Zero(bones); includeUsedBones(bones);}
+MeshLod& MeshLod::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new)  {REPAO(parts).boneRemap  (old_to_new); return T;}
+void     MeshLod::includeUsedBones(Bool (&bones)[256]            )C {REPAO(parts).includeUsedBones(bones);}
+void     MeshLod::    setUsedBones(Bool (&bones)[256]            )C {Zero(bones); includeUsedBones(bones);}
 
 MeshLod& MeshLod::freeOpenGLESData() {REPAO(parts).freeOpenGLESData(); return T;}
 
