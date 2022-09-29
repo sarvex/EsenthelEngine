@@ -592,7 +592,7 @@ Mesh& Mesh::skeleton(Skeleton *skeleton, Bool by_name)
    {
       if(_bone_map.is()) // remap vertexes only if the mesh already had a bone map (otherwise the vertex bone could be set, but the bone map doesn't exist yet, and in that case the vertex bone data could be lost if we've performed remapping)
       {
-         Memt<Byte, 256> old_to_new;
+         MemtN<BoneType, 256> old_to_new;
         _bone_map.setRemap(*skeleton, old_to_new, by_name);
          boneRemap(old_to_new, false); // set false to not waste time on adjusting the '_bone_map' itself, because we're going to recreate it anyway below
       }

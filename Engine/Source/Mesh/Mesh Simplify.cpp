@@ -581,7 +581,7 @@ struct Simplify // must be used for a single 'simplify', after that it cannot be
    {
       return m0==m1 && w0==w1; // Warning: normally we should check every matrix index separately, in case for example m0.x==m1.y (different order, and that would be much slower), however 'SetSkin' was designed to sort matrix/weight so they can be compared in this fast way
    }
-   static inline Int GetBlend(Byte index, VecB4 matrix, VecB4 blend) // find blend value for 'index' in 'matrix' 'blend' skinning
+   static inline Int GetBlend(BoneType index, VecB4 matrix, VecB4 blend) // find blend value for 'index' in 'matrix' 'blend' skinning
    {
       Int    b=0; REPA(matrix)if(matrix.c[i]==index)b+=blend.c[i];
       return b;

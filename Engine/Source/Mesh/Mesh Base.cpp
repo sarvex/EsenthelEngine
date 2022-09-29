@@ -210,7 +210,7 @@ void SetSkin(C MemPtrN<IndexWeight, 256> &skin, VecB4 &matrix, VecB4 &blend, C S
       for(Int i=temp.elms()-1; i>=max_bone_influence; i--) // iterate all weights that would get removed
    {
       Int bone=temp[i].index-VIRTUAL_ROOT_BONE,
-          min_distance=0xFF+1,
+          min_distance=BONE_NULL+1,
           closest=0;
       REPD(j, i) // get all closest bones
       {

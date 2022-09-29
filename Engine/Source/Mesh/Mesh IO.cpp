@@ -1584,7 +1584,7 @@ Bool Import(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> anim
 void RemoveNubBones(Mesh *mesh, Skeleton &skeleton, C CMemPtr<Animation*> &animations); // !! does not change mesh bone names !!
 void RemoveNubBones(Mesh *mesh, Skeleton &skeleton, C CMemPtr<Animation*> &animations)
 {
-   Memt<Byte, 256> old_to_new;
+   MemtN<BoneType, 256> old_to_new;
    REPA(skeleton.bones)
    {
       SkelBone &bone=skeleton.bones[i]; if(Ends(bone.name, "Nub") && !bone.children_num)
