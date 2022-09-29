@@ -71,8 +71,8 @@ struct MeshRender // Mesh Renderable (Hardware: contains Vertexes + Triangles)
    Bool storageCompress()C {return FlagOn(_storage, MSHR_COMPRESS);}
 
    void        boneRemap(C CMemPtrN<BoneType, 256> &old_to_new); // remap vertex bone/matrix indexes according to bone 'old_to_new' remap
-   void     setUsedBones(Bool (&bones)[256])C;
-   void includeUsedBones(Bool (&bones)[256])C;
+   void     setUsedBones(   MemPtrN<Bool    , 256>  bones)C;
+   void includeUsedBones(   MemPtrN<Bool    , 256>  bones)C;
 
    // draw
 #if DX11

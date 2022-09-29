@@ -436,8 +436,8 @@ Mesh& Mesh::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new, Bool remap_names)
    if(remap_names)_bone_map.remap(old_to_new);
    return T;
 }
-void Mesh::includeUsedBones(Bool (&bones)[256])C {REP(lods())lod(i).includeUsedBones(bones);}
-void Mesh::    setUsedBones(Bool (&bones)[256])C {Zero(bones); includeUsedBones(bones);}
+void Mesh::includeUsedBones(MemPtrN<Bool, 256> bones)C {REP(lods())lod(i).includeUsedBones(bones);}
+void Mesh::    setUsedBones(MemPtrN<Bool, 256> bones)C {bones.clear();    includeUsedBones(bones);}
 
 Mesh& Mesh::setVtxAO(Flt strength, Flt bias, Flt max, Flt ray_length, Flt pos_eps, Int rays, MESH_AO_FUNC func, Threads *threads) {REP(lods())lod(i).setVtxAO(strength, bias, max, ray_length, pos_eps, rays, func, threads); return T;}
 

@@ -2094,10 +2094,7 @@ void MeshRender::boneRemap(C CMemPtrN<BoneType, 256> &old_to_new)
       vtxUnlock();
    }
 }
-void MeshBase  ::setUsedBones(Bool (&bones)[256])C {Zero(bones); includeUsedBones(bones);}
-void MeshRender::setUsedBones(Bool (&bones)[256])C {Zero(bones); includeUsedBones(bones);}
-
-void MeshBase::includeUsedBones(Bool (&bones)[256])C
+void MeshBase::includeUsedBones(MemPtrN<Bool, 256> bones)C
 {
    if(C VecB4 *matrix=vtx.matrix())
    {
@@ -2113,16 +2110,16 @@ void MeshBase::includeUsedBones(Bool (&bones)[256])C
             if(bone)
             {
                bone--;
-               if(blend ? b.c[i] : true)bones[bone]=true;
+               if(blend ? b.c[i] : true)bones(bone)=true;
             }
          #else
-            if(blend ? b.c[i] : true)bones[bone]=true;
+            if(blend ? b.c[i] : true)bones(bone)=true;
          #endif
          }
       }
    }
 }
-void MeshRender::includeUsedBones(Bool (&bones)[256])C
+void MeshRender::includeUsedBones(MemPtrN<Bool, 256> bones)C
 {
    Int matrix_ofs =vtxOfs(VTX_MATRIX);
    if( matrix_ofs>=0)if(C Byte *vtx=vtxLockRead())
@@ -2140,7 +2137,7 @@ void MeshRender::includeUsedBones(Bool (&bones)[256])C
                if(  bone)
                {
                   bone--;
-                  if(vtx_blend ? vtx_blend[i] : true)bones[bone]=true;
+                  if(vtx_blend ? vtx_blend[i] : true)bones(bone)=true;
                }
             }
                          vtx_matrix+=vtxSize();
@@ -2156,10 +2153,10 @@ void MeshRender::includeUsedBones(Bool (&bones)[256])C
             if(bone)
             {
                bone--;
-               if(vtx_blend ? vtx_blend[i] : true)bones[bone]=true;
+               if(vtx_blend ? vtx_blend[i] : true)bones(bone)=true;
             }
          #else
-            if(vtx_blend ? vtx_blend[i] : true)bones[bone]=true;
+            if(vtx_blend ? vtx_blend[i] : true)bones(bone)=true;
          #endif
          }
                       vtx_matrix+=vtxSize();
@@ -2168,6 +2165,8 @@ void MeshRender::includeUsedBones(Bool (&bones)[256])C
       vtxUnlock();
    }
 }
+void MeshBase  ::setUsedBones(MemPtrN<Bool, 256> bones)C {bones.clear(); includeUsedBones(bones);}
+void MeshRender::setUsedBones(MemPtrN<Bool, 256> bones)C {bones.clear(); includeUsedBones(bones);}
 /******************************************************************************/
 }
 /******************************************************************************/

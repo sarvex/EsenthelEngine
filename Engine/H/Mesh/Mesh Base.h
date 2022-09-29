@@ -421,8 +421,8 @@ struct MeshBase // Mesh Base (the most low level software mesh, contains : Verte
    MeshBase& subdivideEdge(Bool freeze_z=false, C CMemPtr<Bool> &is=null ); // smooth subdivide edges, 'is'=only selected edges
 
    MeshBase&   boneRemap(C CMemPtrN<BoneType, 256> &old_to_new); // remap vertex bone/matrix indexes according to bone 'old_to_new' remap
-   void     setUsedBones(Bool (&bones)[256])C;
-   void includeUsedBones(Bool (&bones)[256])C;
+   void     setUsedBones(   MemPtrN<Bool    , 256>  bones)C;
+   void includeUsedBones(   MemPtrN<Bool    , 256>  bones)C;
 
    MeshBase& setVtxAO(Flt strength, Flt bias, Flt max, Flt ray_length, Flt pos_eps=EPS, Int rays=1024, MESH_AO_FUNC func=MAF_FULL, Threads *threads=null); // calculate per-vertex ambient occlusion in vertex colors, 'strength'=0..1 AO strength, 'bias'=0..1, 'max'=AO limit 0..1, 'ray_length'=max ray distance to test, 'rays'=number of rays to use for AO calculation, 'func'=falloff function
 

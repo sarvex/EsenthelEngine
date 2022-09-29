@@ -141,10 +141,10 @@ struct Mesh : MeshLod // Mesh (array of Mesh LODs)
    Mesh& tesselate(Flt weld_pos_eps=EPS); // smooth subdivide faces, preserving original vertexes, 'weld_pos_eps'=epsilon used for final vertex position welding
    Mesh& subdivide(                    ); // smooth subdivide faces,  smoothing original vertexes
 
-   Int   boneFind (CChar8 *bone_name                                           )C; // find bone by its name and return its index, -1 on fail
-   Mesh& boneRemap(C CMemPtrN<BoneType, 256> &old_to_new, Bool remap_names=true) ; // remap vertex bone/matrix indexes according to bone 'old_to_new' remap, 'remap_names'=if remap the bone names as well
-   void      setUsedBones(Bool (&bones)[256])C;
-   void  includeUsedBones(Bool (&bones)[256])C;
+   Int          boneFind (CChar8 *bone_name                                           )C; // find bone by its name and return its index, -1 on fail
+   Mesh&        boneRemap(C CMemPtrN<BoneType, 256> &old_to_new, Bool remap_names=true) ; // remap vertex bone/matrix indexes according to bone 'old_to_new' remap, 'remap_names'=if remap the bone names as well
+   void      setUsedBones(   MemPtrN<Bool    , 256>  bones)C;
+   void  includeUsedBones(   MemPtrN<Bool    , 256>  bones)C;
 
    Mesh& setVtxAO(Flt strength, Flt bias, Flt max, Flt ray_length, Flt pos_eps=EPS, Int rays=1024, MESH_AO_FUNC func=MAF_FULL, Threads *threads=null); // calculate per-vertex ambient occlusion in vertex colors, 'strength'=0..1 AO strength, 'bias'=0..1, 'max'=AO limit 0..1, 'ray_length'=max ray distance to test, 'rays'=number of rays to use for AO calculation, 'func'=falloff function
 
