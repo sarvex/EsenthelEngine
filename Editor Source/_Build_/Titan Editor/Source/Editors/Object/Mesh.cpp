@@ -952,7 +952,7 @@ void ObjView::meshDisableLQLODs()
 }
 void ObjView::meshSkinFull()
 {
-   const byte bone=sel_bone+1;
+   const BoneType bone=sel_bone+VIRTUAL_ROOT_BONE;
    bool changed=false;
    MeshLod &lod=getLod();
    mesh_undos.set("skinFull");
@@ -973,7 +973,7 @@ void ObjView::meshSkinFull()
 }
 void ObjView::meshSkinFullP()
 {
-   const byte bone=sel_bone+1, bone_parent=(mesh_skel ? mesh_skel->boneParent(sel_bone) : -1)+1;
+   const BoneType bone=sel_bone+VIRTUAL_ROOT_BONE, bone_parent=(mesh_skel ? mesh_skel->boneParent(sel_bone) : -1)+VIRTUAL_ROOT_BONE;
    bool changed=false;
    MeshLod &lod=getLod();
    mesh_undos.set("skinFull");
@@ -994,7 +994,7 @@ void ObjView::meshSkinFullP()
 }
 void ObjView::meshSkinFullU()
 {
-   const byte bone=sel_bone+1;
+   const BoneType bone=sel_bone+VIRTUAL_ROOT_BONE;
    bool changed=false;
    MeshLod &lod=getLod();
    mesh_undos.set("skinFullU");
@@ -1028,7 +1028,7 @@ void ObjView::meshSkinFullU()
 }
 void ObjView::meshSkinAuto()
 {
-   const byte bone=sel_bone+1;
+   const BoneType bone=sel_bone+VIRTUAL_ROOT_BONE;
    bool changed=false;
    MeshLod &lod=getLod();
    mesh_undos.set("skinAuto");

@@ -110,14 +110,14 @@
          {
             SkelBone &bone  =skel.bones[i];
           C SkelBone *parent=skel.bones.addr(bone.parent);
-            if(bone.type==BONE_UPPER_ARM && bone.type_sub==0 && (!parent || parent->type!=BONE_SHOULDER) && skel.bones.elms()<255)
+            if(bone.type==BONE_UPPER_ARM && bone.type_sub==0 && (!parent || parent->type!=BONE_SHOULDER) && skel.bones.elms()+VIRTUAL_ROOT_BONE<=BONE_NULL)
             {
                added_bone=true;
                int bi=skel.bones.elms();
                SkelBone &new_bone=skel.bones.New(), &bone=skel.bones[i]; // !! have to access 'bone' again because it memory address changed
                new_bone.parent=bone.parent; bone.parent=bi;
                Set(new_bone.name, UniqueName(skel, S+"Shoulder"+((bone.type_index>=0) ? 'R' : 'L')
-                                                               +(bone.type_index>0 ? TextInt(bone.type_index) : bone.type_index<-1 ? TextInt(-bone.type_index-1) : S)));
+                                                               +((bone.type_index> 0) ? TextInt(bone.type_index) : bone.type_index<-1 ? TextInt(-bone.type_index-1) : S)));
                new_bone.type=BONE_SHOULDER;
                Vec from=bone.pos; from.x*=shoulder_frac;
                new_bone.setFromTo(from, bone.pos);

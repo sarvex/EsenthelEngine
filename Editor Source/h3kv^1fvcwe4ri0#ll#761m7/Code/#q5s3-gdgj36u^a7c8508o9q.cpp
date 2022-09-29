@@ -120,7 +120,7 @@ class EditSkeleton
          SkelBone &bone=skel.bones[i];
          SCAST(OrientP, bone)=node.orient_pos;
          Set(bone.name, TextInt(i));
-             bone.parent=(InRange(node.parent, skel.bones) ? node.parent : 0xFF);
+             bone.parent=(InRange(node.parent, skel.bones) ? node.parent : BONE_NULL);
       }
       skel.sortBones();
    }

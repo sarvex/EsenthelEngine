@@ -641,9 +641,9 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       if(vtxs() && !customDrawMatrix())
       {
          // points
-         const bool draw_skin=(mode()==SKIN || mode()==BONES && lit_bone>=0);
-         const byte bone=((lit_bone>=0) ? lit_bone : sel_bone)+VIRTUAL_ROOT_BONE;
-         const flt  r=0.0045;
+         const bool     draw_skin=(mode()==SKIN || mode()==BONES && lit_bone>=0);
+         const BoneType bone=((lit_bone>=0) ? lit_bone : sel_bone)+VIRTUAL_ROOT_BONE;
+         const flt      r=0.0045;
          D.depthLock(false);
        C MeshLod &lod=getDrawLod(); REPAD(p, lod)
          {
@@ -2960,10 +2960,10 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
          {
             edit_time=Time.appTime();
             if(Ms.bp(0) || Ms.bp(1))time=min_time; // on first click don't change more than minimum
-            const byte   bone=sel_bone+1, parent=(mesh_skel ? mesh_skel.boneParent(sel_bone)+1 : 0);
-            const bool    add=Ms.b(1), // if adding weight
-                      instant=Kb.alt();
-            const byte adelta=(instant ? 255 : Min(Round(time*Lerp(32, 640-32, skin_brush.sspeed())), 255)); // 0..255
+            const BoneType bone=sel_bone+VIRTUAL_ROOT_BONE, parent=(mesh_skel ? mesh_skel.boneParent(sel_bone)+VIRTUAL_ROOT_BONE : 0);
+            const bool      add=Ms.b(1), // if adding weight
+                        instant=Kb.alt();
+            const byte   adelta=(instant ? 255 : Min(Round(time*Lerp(32, 640-32, skin_brush.sspeed())), 255)); // 0..255
             if(adelta)
             {
                int         delta=adelta*SignBool(add), // -255 .. 255
@@ -3199,7 +3199,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          ObjEdit.mesh_undos.set("slotBone", true);
          SkelSlot &slot=ObjEdit.mesh_skel.slots[slot_i];
-         slot.bone1=(InRange(ObjEdit.lit_bone, ObjEdit.mesh_skel.bones) ? ObjEdit.lit_bone : 0xFF);
+         slot.bone1=(InRange(ObjEdit.lit_bone, ObjEdit.mesh_skel.bones) ? ObjEdit.lit_bone : BONE_NULL);
          if(!Kb.ctrlCmd())slot.bone=slot.bone1;
          ObjEdit.setChangedSkel(false);
       }
@@ -3240,7 +3240,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                   mesh_undos.set("slotNew");
                   SkelSlot &slot=mesh_skel.slots.New();
                   SkelBone *bone=mesh_skel.bones.addr(lit_bone);
-                  slot.setParent(bone ? lit_bone : 0xFF);
+                  slot.setParent(bone ? lit_bone : BONE_NULL);
                   Str8 name; FREP(1000){name=S+"Slot "+i; if(!mesh_skel.findSlot(name))break;} Set(slot.name, bone ? bone.name : name);
                   if(!bone)
                   {
@@ -3362,7 +3362,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       if(mesh_skel)
          if(C SkelBone *bone=mesh_skel.bones.addr(bone_i))
       {
-         Memt<byte, 256> remap;
+         MemtN<BoneType, 256> remap;
          mesh_undos.set("boneDel"); if(MeshChange *change=mesh_undos.getNextUndo())change.removeBone(bone.name); // use 'getNextUndo' instead of 'set' because that may return null
 cur_skel_to_saved_skel.removeBone(bone.name);
              edit_skel.removeBone(bone.name);
@@ -3385,7 +3385,7 @@ cur_skel_to_saved_skel.removeBone(bone.name);
       editor.setChangedSkel(false);
 
       int bone_index=editor.edit_skel.nodeToBoneDirect(editor.edit_skel.root);
-      if(editor.mesh_skel && InRange(bone_index, editor.mesh_skel.bones) && editor.mesh_skel.bones[bone_index].parent!=0xFF)bone_index=-1; // don't ask to delete if has a parent
+      if(editor.mesh_skel && InRange(bone_index, editor.mesh_skel.bones) && editor.mesh_skel.bones[bone_index].parent!=BONE_NULL)bone_index=-1; // don't ask to delete if has a parent
       if(bone_index>=0)
       {
          bool used_bones[256]; if(InRange(bone_index, used_bones))
@@ -3413,7 +3413,7 @@ cur_skel_to_saved_skel.removeBone(bone.name);
        C Skeleton &src=Proj.skel_mem;
 
          // check if can paste
-         if(src.bones.elms()+dest.bones.elms()+1>=256){Gui.msgBox(S, "Can't paste skeleton bones because the total number will exceed the 256 bone limit."); return;}
+         if(src.bones.elms()+dest.bones.elms()+VIRTUAL_ROOT_BONE-1>BONE_NULL){Gui.msgBox(S, "Can't paste skeleton bones because the total number will exceed the bone limit."); return;}
          REPA(src.bones)if(dest.findBoneI(src.bones[i].name)>=0){Gui.msgBox(S, S+"Can't paste skeleton bones because both source and target contain a bone with the same name \""+src.bones[i].name+"\". Skeleton Bone names must be unique."); return;}
 
          // paste
@@ -3519,12 +3519,12 @@ cur_skel_to_saved_skel.removeBone(bone.name);
          int       bone_i=(sel_bone>=0 ? sel_bone : lit_bone);
          SkelBone *bone  =mesh_skel.bones.addr(bone_i); if(!bone){/*Gui.msgBox(S, "No Bone Selected"); */return;}
          {
-            byte    bone_b=bone_i+VIRTUAL_ROOT_BONE;
-            bool    has=false;
-            Box     box;
-            Matrix3 bone_matrix=*bone;
-            Matrix  transform=bone_matrix/mesh_matrix; // bone in mesh space
-                    transform.inverse(); // inverse because we want to convert mesh vertexes relative to bone
+            BoneType bone_b=bone_i+VIRTUAL_ROOT_BONE;
+            bool     has=false;
+            Box      box;
+            Matrix3  bone_matrix=*bone;
+            Matrix   transform=bone_matrix/mesh_matrix; // bone in mesh space
+                     transform.inverse(); // inverse because we want to convert mesh vertexes relative to bone
             REPA(mesh.parts)
             {
                MeshPart &part=mesh.parts[i];
@@ -3588,7 +3588,7 @@ cur_skel_to_saved_skel.bones.del();
          mesh_undos.set("delLeafBones");
          bool changed=false;
 
-         Memt<byte, 256> remap;
+         MemtN<BoneType, 256> remap;
          bool used_bones[256]; mesh.setUsedBones(used_bones);
          REPA(mesh_skel.bones) // go from the end, so if bone is removed, then we can process later its parent, without having that child anymore
             if(InRange(i, used_bones) && !used_bones[i] && !mesh_skel.bones[i].children_num) // not used and don't have children
@@ -3732,7 +3732,7 @@ cur_skel_to_saved_skel.bones.del();
       int bone=intptr(bone_index);
       if(ObjEdit.mesh_skel && InRange(bone, ObjEdit.mesh_skel.bones))
       {
-         Memt<byte, 256> remap;
+         MemtN<BoneType, 256> remap;
          ObjEdit.mesh_undos.set("boneParent", true);
          if(ObjEdit.mesh_skel.setBoneParent(bone, ObjEdit.lit_bone, remap))
          {

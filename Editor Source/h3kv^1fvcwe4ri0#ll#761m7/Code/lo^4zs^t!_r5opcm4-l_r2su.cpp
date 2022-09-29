@@ -1125,7 +1125,7 @@ class ImporterClass
                                  if( new_bone>=0){slot.bone=new_bone; goto found;}
                               }
                            }
-                           slot.bone=0xFF; // not found
+                           slot.bone=BONE_NULL; // not found
                         found:;
 
                            for(int old_bone_i=slot.bone1; C SkelBone *old_bone=old_skel.bones.addr(old_bone_i); old_bone_i=old_skel.boneParent(old_bone_i)) // iterate bone and its parents
@@ -1139,7 +1139,7 @@ class ImporterClass
                                  if( new_bone>=0){slot.bone1=new_bone; goto found1;}
                               }
                            }
-                           slot.bone1=0xFF; // not found
+                           slot.bone1=BONE_NULL; // not found
                         found1:;
                         }
                         // bones
@@ -1522,19 +1522,19 @@ class ImporterClass
                   {
                      EditSkeleton edit_skel; if(edit_skel.load(Proj.editPath(mesh_data.skel_id)))
                      {
-                        Memt<byte, 256> old_to_new; old_to_new.setNum(import.skel.bones.elms());
+                        MemtN<BoneType, 256> old_to_new; old_to_new.setNum(import.skel.bones.elms());
                         FREPA(old_to_new) // process from the start
                         {
                            int edit_bone=edit_skel.nodeToBone(edit_skel.findNodeI(import.nodeName(i), import.nodeUID(i))); // find imported bone/node in current edit skeleton
                            if(InRange(edit_bone, edit_skel.bones))
                            {
                               int bone=mesh_skel.findBoneI(edit_skel.bones[edit_bone].name); // find edit bone in mesh skel
-                              if(InRange(bone, 256)){old_to_new[i]=bone; goto bone_set;}
+                              if(InRange(bone, BONE_NULL+1)){old_to_new[i]=bone; goto bone_set;}
                            }
 
                            {
-                              byte parent_index=import.skel.bones[i].parent;
-                              old_to_new[i]=(InRange(parent_index, i) ? old_to_new[parent_index] : 0xFF); // set "new bone" as the same as "old parents new bone", use 'i' for range check to check for 'old_to_new' that was already set
+                              BoneType parent_index=import.skel.bones[i].parent;
+                              old_to_new[i]=(InRange(parent_index, i) ? old_to_new[parent_index] : BONE_NULL); // set "new bone" as the same as "old parents new bone", use 'i' for range check to check for 'old_to_new' that was already set
                            }
                         bone_set:;
                         }

@@ -2894,13 +2894,13 @@ void DrawProject()
             if(new_bone_i<0)goto full_difference; // bone not found = full difference
           C SkelBone &new_bone=new_skel.bones[new_bone_i];
 
-            if( Dot  (old_bone.dir , new_bone.dir )<EPS_COS           // orientation was changed
+            if( Dot  (old_bone.dir , new_bone.dir )<EPS_COS                     // orientation was changed
             ||  Dot  (old_bone.perp, new_bone.perp)<EPS_COS
-            || !Equal(old_bone.pos , new_bone.pos )                   // position    was changed
-            ||       (old_bone.parent==0xFF)!=(new_bone.parent==0xFF) // one has parent, but the other one doesn't
+            || !Equal(old_bone.pos , new_bone.pos )                             // position    was changed
+            ||       (old_bone.parent==BONE_NULL)!=(new_bone.parent==BONE_NULL) // one has parent, but the other one doesn't
             )goto full_difference; // full difference
 
-            if(old_bone.parent!=0xFF /*&& new_bone.parent!=0xFF - we've already checked if one has parent, but the other one doesn't*/) // if both have parents
+            if(old_bone.parent!=BONE_NULL /*&& new_bone.parent!=BONE_NULL - we've already checked if one has parent, but the other one doesn't*/) // if both have parents
             {
                if(!InRange(new_bone.parent, bone_weights))goto full_difference; // can't access new parent
              C Mems<IndexWeight> &new_parent=bone_weights[new_bone.parent];

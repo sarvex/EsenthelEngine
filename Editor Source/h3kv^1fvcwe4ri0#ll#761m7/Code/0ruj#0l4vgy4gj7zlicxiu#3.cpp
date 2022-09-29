@@ -3953,7 +3953,7 @@ flt VorbisBitRateToQuality(int rel_bit_rate) // relative bit rate in bits per se
 /******************************************************************************/
 int DecIntV(File &f)
 {
-   Byte v; f>>v;
+   byte v; f>>v;
    Bool positive=((v>>6)&1);
    UInt u=(v&63);
    if(v&128)
