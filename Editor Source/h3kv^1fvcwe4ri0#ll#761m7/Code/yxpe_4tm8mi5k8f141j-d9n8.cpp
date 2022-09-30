@@ -151,7 +151,7 @@ class AdjustBoneOrns : PropWin
          {
             SkelBone &bone  =skel.bones[i];
           C SkelBone *parent=skel.bones.addr(bone.parent);
-            if(bone.type==BONE_UPPER_ARM && bone.type_sub==0 && (!parent || parent.type!=BONE_SHOULDER) && skel.bones.elms()+VIRTUAL_ROOT_BONE<=BONE_NULL)
+            if(bone.type==BONE_UPPER_ARM && bone.type_sub==0 && (!parent || parent.type!=BONE_SHOULDER) && skel.bones.elms()+1<=BONE_NULL)
             {
                added_bone=true;
                int bi=skel.bones.elms();

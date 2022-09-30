@@ -2485,16 +2485,17 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
       {
          D.clip(gpc.clip);
 
-         Memt<Str> a, b, c;
+         StrEx s, bottom;
 
        C MeshLod &lod=getDrawLod();
-         if(VisibleQuads(lod))a.add(S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTris     (lod)+" tri"+CountS(VisibleTris     (lod))+", "+VisibleQuads(lod)+" quad"+CountS(VisibleQuads(lod)));
-         else                 a.add(S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTrisTotal(lod)+" tri"+CountS(VisibleTrisTotal(lod)));
-         int parts=lod.partsAfterJoinAll(true, true, false, MeshJoinAllTestVtxFlag, true); a.add(S+parts+" draw call"+CountS(parts));
-         int size=0; REP(mesh.lods())size+=VisibleSize(mesh.lod(i)); a.add(S+"Mesh size "+SizeBytes(size));
-         if(mode()==LOD)a.add(S+mesh.lods()+" LOD"+CountS(mesh.lods()));
+         if(VisibleQuads(lod))s.line()+=S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTris     (lod)+" tri"+CountS(VisibleTris     (lod))+", "+VisibleQuads(lod)+" quad"+CountS(VisibleQuads(lod));
+         else                 s.line()+=S+VisibleVtxs(lod)+" vtx"+CountS(VisibleVtxs(lod))+", "+VisibleTrisTotal(lod)+" tri"+CountS(VisibleTrisTotal(lod));
+         int parts=lod.partsAfterJoinAll(true, true, false, MeshJoinAllTestVtxFlag, true); s.line()+=S+parts+" draw call"+CountS(parts);
+         int size=0; REP(mesh.lods())size+=VisibleSize(mesh.lod(i)); s.line()+=S+"Mesh size "+SizeBytes(size);
+         if(mode()==LOD)s.line()+=S+mesh.lods()+" LOD"+CountS(mesh.lods());
          if(mesh.is())
          {
+            bottom.color(WHITE);
             Str       s="Vertex Data: ";
             MESH_FLAG flag=(visibleLodSelection() ? VisibleFlag(lod) : VisibleFlag(mesh));
             if(flag&VTX_POS     )Add(s, "Position"); if(flag&VTX_HLP )Add(s, "Helper"); if(flag&VTX_NRM)Add(s, "Normal");
@@ -2503,17 +2504,27 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
             if(flag&VTX_COLOR   )Add(s, "Color");
             if(flag&VTX_MATERIAL)Add(s, "Material");
             if(flag&VTX_SKIN    )Add(s, "Skin");
-            c.add(s);
+            bottom.line()+=s;
          }
-         if(mode()==PHYS && phys)a.add(S+phys->parts.elms()+" physical body part"+CountS(phys->parts.elms()));
+         if(mode()==PHYS && phys)s.line()+=S+phys->parts.elms()+" physical body part"+CountS(phys->parts.elms());
          if(Skeleton *skel=getVisSkel())
          {
-            if(mode()==SLOTS)a.add(S+skel->slots.elms()+" slot"+CountS(skel->slots.elms()));
-            if(mode()==BONES)a.add(S+skel->bones.elms()+" bone"+CountS(skel->bones.elms()));
+            if(mode()==SLOTS)s.line()+=S+skel->slots.elms()+" slot"+CountS(skel->slots.elms());
+            if(mode()==BONES)
+            {
+               bool error=(skel->bones.elms()>BONE_NULL);
+               if(error)s.color(RED);
+               s.line()+=S+skel->bones.elms()+" bone"+CountS(skel->bones.elms());
+               if(error)
+               {
+                  s+=" (too many bones)";
+                  s.color(null);
+               }
+            }
             if(InRange(lit_bone_vis, skel->bones))
             {
              C SkelBone &bone=skel->bones[lit_bone_vis];
-               Str s=S+"Bone \""+bone.name+"\"";
+               s.line()+=S+"Bone \""+bone.name+"\"";
                s+=S+", Parent: "+(InRange(bone.parent, skel->bones) ? S+'"'+skel->bones[bone.parent].name+'"' : S+"none");
                s+=S+", Children: "+bone.children_num;
                if(bone.type)
@@ -2530,50 +2541,49 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                   }
                   if(index || sub)
                   {
-                            s.space()+=      bone.type_index;
+                            s.space()+=S+    bone.type_index;
                      if(sub)s        +=S+':'+bone.type_sub;
                   }
                }
-               a.add(s);
             }
             if(InRange(lit_slot, skel->slots))
             {
              C SkelSlot &skel_slot=skel->slots[lit_slot];
-               Str s=S+"Slot \""+skel_slot.name+"\", Bone Parent: "+(InRange(skel_slot.bone, skel->bones) ? S+'"'+skel->bones[skel_slot.bone].name+'"' : S+"none");
+               s.line()+=S+"Slot \""+skel_slot.name+"\", Bone Parent: "+(InRange(skel_slot.bone, skel->bones) ? S+'"'+skel->bones[skel_slot.bone].name+'"' : S+"none");
                if(skel_slot.bone!=skel_slot.bone1)s+=S+", Bone Parent1: "+(InRange(skel_slot.bone1, skel->bones) ? S+'"'+skel->bones[skel_slot.bone1].name+'"' : S+"none");
                REPA(slot_meshes)if(slot_meshes[i].name==skel_slot.name){s+=S+", Scale: "+slot_meshes[i].scale; break;}
-               a.add(s);
             }
          }
-         if(show_cur_pos()){Str s="Cursor: "; if(has_cur_pos)s+=cur_pos.asText(4); a.add(s);}
+         if(show_cur_pos()){s.line()+="Cursor: "; if(has_cur_pos)s+=cur_pos.asText(4);}
          if(showMainBox())
          {
             Box box=mesh_box;
-            a.add(S+"Min     ("+box.min     +')');
-            a.add(S+"Max    ("+box.max     +')');
-            a.add(S+"Center ("+box.center()+')');
-            a.add(S+"Size    ("+box.size  ()+')');
+            s.line()+=S+"Min     ("+box.min     +')';
+            s.line()+=S+"Max    ("+box.max     +')';
+            s.line()+=S+"Center ("+box.center()+')';
+            s.line()+=S+"Size    ("+box.size  ()+')';
             if(mode()==TRANSFORM)
             {
+               s.color(YELLOW);
                box*=trans.matrix;
-               b.add(S+"Min     ("+box.min     +')');
-               b.add(S+"Max    ("+box.max     +')');
-               b.add(S+"Center ("+box.center()+')');
-               b.add(S+"Size    ("+box.size  ()+')');
+               s.line()+=S+"Min     ("+box.min     +')';
+               s.line()+=S+"Max    ("+box.max     +')';
+               s.line()+=S+"Center ("+box.center()+')';
+               s.line()+=S+"Size    ("+box.size  ()+')';
+               s.color(null);
             }
          }
-         if(a.elms() || b.elms() || c.elms())
+         if(s.is() || bottom.is())
          {
-            flt x=gpc.offset.x+0.01f, y=gpc.offset.y-0.25f;
+            Rect r=D.rectUI(); r.min.x=gpc.offset.x+0.01f; r.max.y=gpc.offset.y-0.25f; r.min.y=-rect().h()+gpc.offset.y;
             TextStyleParams ts(false); ts.size=0.045f; ts.align.set(1, -1);
             D.clip();
-                             FREPA(a){D.text(ts, x, y, a[i]); y-=ts.size.y;}
-            ts.color=YELLOW; FREPA(b){D.text(ts, x, y, b[i]); y-=ts.size.y;}
-            if(c.elms())
+            D.text(ts, r, (cchar*)null, s.data(), s.elms());
+            if(bottom.elms())
             {
-               if(!Proj.visible())x+=Misc.rect().w();
-               y=-rect().h()+gpc.offset.y+ts.size.y*c.elms();
-               ts.color=WHITE; FREPA(c){D.text(ts, x, y, c[i]); y-=ts.size.y;}
+               if(!Proj.visible())r.min.x+=Misc.rect().w();
+               ts.align.y=1;
+               D.text(ts, r, (cchar*)null, bottom.data(), bottom.elms());
             }
          }
          if(showVtxSelCircle   ())vtxSelCircle   ().draw(LitColor, false);
@@ -3238,7 +3248,7 @@ cur_skel_to_saved_skel.removeBone(bone->name);
        C Skeleton &src=Proj.skel_mem;
 
          // check if can paste
-         if(src.bones.elms()+dest->bones.elms()+VIRTUAL_ROOT_BONE-1>BONE_NULL){Gui.msgBox(S, "Can't paste skeleton bones because the total number will exceed the bone limit."); return;}
+         if(src.bones.elms()+dest->bones.elms()>BONE_NULL){Gui.msgBox(S, S+"Can't paste skeleton bones because the total number will exceed the "+BONE_NULL+" bone limit."); return;}
          REPA(src.bones)if(dest->findBoneI(src.bones[i].name)>=0){Gui.msgBox(S, S+"Can't paste skeleton bones because both source and target contain a bone with the same name \""+src.bones[i].name+"\". Skeleton Bone names must be unique."); return;}
 
          // paste

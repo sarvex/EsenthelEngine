@@ -354,11 +354,10 @@ struct DAE
    {
       VecB4 bone, blend;
    };
-   struct Vtx
+   struct Vtx : Skinning
    {
-      Vec   pos, nrm;
-      Vec2  tex[4];
-      VecB4 matrix, blend;
+      Vec  pos, nrm;
+      Vec2 tex[4];
    };
 
    Str               version;
@@ -1315,18 +1314,18 @@ void DAE::create(::Mesh &mesh, MemPtr<Int> part_material_index, ::Skeleton &skel
                   {
                      if(InRange(p, skinning)) // out of range can happen on buggy exporters
                      {
-                        vtx.matrix=skinning[p].bone ;
-                        vtx.blend =skinning[p].blend;
+                        vtx.bone =skinning[p].bone ;
+                        vtx.blend=skinning[p].blend;
                      }else
                      {
-                        vtx.matrix=node_skin.bone ;
-                        vtx.blend =node_skin.blend;
+                        vtx.bone =node_skin.bone ;
+                        vtx.blend=node_skin.blend;
                      }
                   }else
                   if(node_anim)
                   {
-                     vtx.matrix=node_skin.bone ;
-                     vtx.blend =node_skin.blend;
+                     vtx.bone =node_skin.bone ;
+                     vtx.blend=node_skin.blend;
                   }
                             vtx.pos   =position->source->getVec (p);
                   if(normal)vtx.nrm   =normal  ->source->getVec (Safe(polys.p, v+normal->offset));
@@ -1355,9 +1354,9 @@ void DAE::create(::Mesh &mesh, MemPtr<Int> part_material_index, ::Skeleton &skel
                   
                   if(skinning.elms() || node_anim)
                   {
-                     base.vtx.matrix(p0)=v0.matrix; base.vtx.blend(p0)=v0.blend;
-                     base.vtx.matrix(p1)=v1.matrix; base.vtx.blend(p1)=v1.blend;
-                     base.vtx.matrix(p2)=v2.matrix; base.vtx.blend(p2)=v2.blend;
+                     base.vtx.matrix(p0)=v0.bone; base.vtx.blend(p0)=v0.blend;
+                     base.vtx.matrix(p1)=v1.bone; base.vtx.blend(p1)=v1.blend;
+                     base.vtx.matrix(p2)=v2.bone; base.vtx.blend(p2)=v2.blend;
                   }
                   if(normal)
                   {
@@ -1458,18 +1457,18 @@ void DAE::create(::Mesh &mesh, MemPtr<Int> part_material_index, ::Skeleton &skel
                   {
                      if(InRange(p, skinning)) // out of range can happen on buggy exporters
                      {
-                        vtx.matrix=skinning[p].bone ;
-                        vtx.blend =skinning[p].blend;
+                        vtx.bone =skinning[p].bone ;
+                        vtx.blend=skinning[p].blend;
                      }else
                      {
-                        vtx.matrix=node_skin.bone ;
-                        vtx.blend =node_skin.blend;
+                        vtx.bone =node_skin.bone ;
+                        vtx.blend=node_skin.blend;
                      }
                   }else
                   if(node_anim)
                   {
-                     vtx.matrix=node_skin.bone ;
-                     vtx.blend =node_skin.blend;
+                     vtx.bone =node_skin.bone ;
+                     vtx.blend=node_skin.blend;
                   }
                             vtx.pos   =position->source->getVec (p);
                   if(normal)vtx.nrm   =normal  ->source->getVec (Safe(polys_p, v+normal->offset));
@@ -1498,9 +1497,9 @@ void DAE::create(::Mesh &mesh, MemPtr<Int> part_material_index, ::Skeleton &skel
                   
                   if(skinning.elms() || node_anim)
                   {
-                     base.vtx.matrix(p0)=v0.matrix; base.vtx.blend(p0)=v0.blend;
-                     base.vtx.matrix(p1)=v1.matrix; base.vtx.blend(p1)=v1.blend;
-                     base.vtx.matrix(p2)=v2.matrix; base.vtx.blend(p2)=v2.blend;
+                     base.vtx.matrix(p0)=v0.bone; base.vtx.blend(p0)=v0.blend;
+                     base.vtx.matrix(p1)=v1.bone; base.vtx.blend(p1)=v1.blend;
+                     base.vtx.matrix(p2)=v2.bone; base.vtx.blend(p2)=v2.blend;
                   }
                   if(normal)
                   {
