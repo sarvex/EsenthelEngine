@@ -2645,7 +2645,7 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
             if(mode()==SLOTS)s.line()+=S+skel.slots.elms()+" slot"+CountS(skel.slots.elms());
             if(mode()==BONES)
             {
-               bool error=(skel.bones.elms()>BONE_NULL);
+               bool error=(skel.bones.elms()>0xFF); // #MeshVtxBoneHW
                if(error)s.color(RED);
                s.line()+=S+skel.bones.elms()+" bone"+CountS(skel.bones.elms());
                if(error)

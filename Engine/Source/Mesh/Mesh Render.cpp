@@ -44,7 +44,7 @@ static INLINE void BoneSet(Byte *&v, Int i, C VtxBone *s)
    if(s)
    {
       VecB4 &d=*(VecB4*)v;
-      d=*s;
+      d=s[i];
       v+=SIZE(VecB4);
    }
 #else
