@@ -56,7 +56,8 @@ enum BONE_FLAG
    BONE_DYNAMIC=1<<1, // bone should be simulated using physics instead of being animated
 };
 
-typedef Byte BoneType;
+typedef UShort BoneType;
+typedef VecUS4 VtxBone;
 const BoneType BONE_NULL=0xFF;
 
 struct BoneID
@@ -212,7 +213,7 @@ struct Skeleton // Animation Skeleton - base skeleton used by 'AnimatedSkeleton'
 
    UInt memUsage()C; // get memory usage
 
-   void getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C; // get bone 'blend matrix' skinning according to 'pos' position
+   void getSkin(C Vec &pos, VecB4 &blend, VtxBone &matrix)C; // get bone 'blend matrix' skinning according to 'pos' position
 
    // transform
    Skeleton& operator+=(C Vec     &move  ) {return T.move     (move  );} // move
@@ -444,9 +445,8 @@ struct BoneMap
    Bool save(File &f)C;
    Bool load(File &f) ;
 
-   Bool saveOld1(File &f)C;
+   Bool loadOld2(File &f) ;
    Bool loadOld1(File &f) ;
-   Bool saveOld (File &f)C;
    Bool loadOld (File &f) ;
 #endif
 

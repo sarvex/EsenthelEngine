@@ -109,7 +109,7 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
                   }
                }else REP(vtxs)
                {
-                  f.skip(SIZE(Vec)+SIZE(Vec)+SIZE(VecB4) + uv_tan_size*uvs);
+                  f.skip(SIZE(Vec)+SIZE(Vec)+SIZE(Color) + uv_tan_size*uvs);
                   if(bones>0)
                   {
                      U16 weights=(variable_weights ? f.getUShort() : 4);

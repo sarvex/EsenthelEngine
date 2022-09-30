@@ -191,10 +191,15 @@ static MESH_FLAG MeshFlagOld(File &f)
    MESH_FLAG flag=MESH_NONE; UInt bit=1, u; f>>u; FREPA(old){if(u&bit)flag|=old[i]; bit<<=1;}
    return    flag;
 }
+static void LoadOldVtxMatrix(MeshBase &mesh, File &f)
+{
+   f.getN((VecB4*)mesh.vtx.matrix(), mesh.vtxs());
+   Copy8To16(mesh.vtx.matrix(), mesh.vtx.matrix(), mesh.vtxs()*4);
+}
 /******************************************************************************/
 Bool MeshBase::saveData(File &f)C
 {
-   f.cmpUIntV(4); // version
+   f.cmpUIntV(5); // version
 
    MESH_FLAG flag =T.flag (); f<<flag;
    Int       vtxs =T.vtxs (); f.cmpUIntV(vtxs );
@@ -247,7 +252,7 @@ Bool MeshBase::loadData(File &f)
 {
    switch(f.decUIntV()) // version
    {
-      case 4:
+      case 5:
       {
          MESH_FLAG flag; f>>flag; ASSERT(SIZE(flag)==8);
          Int       vtxs =f.decUIntV(),
@@ -297,6 +302,56 @@ Bool MeshBase::loadData(File &f)
          if(f.ok())return true;
       }break;
 
+      case 4:
+      {
+         MESH_FLAG flag; f>>flag; ASSERT(SIZE(flag)==8);
+         Int       vtxs =f.decUIntV(),
+                   edges=f.decUIntV(),
+                   tris =f.decUIntV(),
+                   quads=f.decUIntV();
+         create(vtxs, edges, tris, quads, flag);
+
+         if(flag&VTX_POS     )f.getN(vtx.pos     (), vtxs);
+         if(flag&VTX_NRM     )f.getN(vtx.nrm     (), vtxs);
+         if(flag&VTX_TAN     )f.getN(vtx.tan     (), vtxs);
+         if(flag&VTX_BIN     )f.getN(vtx.bin     (), vtxs);
+         if(flag&VTX_HLP     )f.getN(vtx.hlp     (), vtxs);
+         if(flag&VTX_TEX0    )f.getN(vtx.tex0    (), vtxs);
+         if(flag&VTX_TEX1    )f.getN(vtx.tex1    (), vtxs);
+         if(flag&VTX_TEX2    )f.getN(vtx.tex2    (), vtxs);
+         if(flag&VTX_TEX3    )f.getN(vtx.tex3    (), vtxs);
+         if(flag&VTX_COLOR   )f.getN(vtx.color   (), vtxs);
+         if(flag&VTX_MATERIAL)f.getN(vtx.material(), vtxs);
+         if(flag&VTX_MATRIX  )LoadOldVtxMatrix(T, f);
+         if(flag&VTX_BLEND   )f.getN(vtx.blend   (), vtxs);
+         if(flag&VTX_SIZE    )f.getN(vtx.size    (), vtxs);
+         if(flag&VTX_FLAG    )f.getN(vtx.flag    (), vtxs);
+         if(flag&VTX_DUP     )f.getN(vtx.dup     (), vtxs);
+
+         if(flag&EDGE_NRM)f.getN(edge.nrm(), edges);
+         if(flag& TRI_NRM)f.getN(tri .nrm(), tris );
+         if(flag&QUAD_NRM)f.getN(quad.nrm(), quads);
+
+         if(flag&EDGE_FLAG)f.getN(edge.flag(), edges);
+         if(flag& TRI_FLAG)f.getN(tri .flag(), tris );
+         if(flag&QUAD_FLAG)f.getN(quad.flag(), quads);
+
+         if(flag&EDGE_ID)f.getN(edge.id(), edges);
+         if(flag& TRI_ID)f.getN(tri .id(), tris );
+         if(flag&QUAD_ID)f.getN(quad.id(), quads);
+
+         if(flag&EDGE_IND     )IndLoad(f, edge.ind    (), edges);
+         if(flag& TRI_IND     )IndLoad(f, tri .ind    (), tris );
+         if(flag&QUAD_IND     )IndLoad(f, quad.ind    (), quads);
+         if(flag&EDGE_ADJ_FACE)IndLoad(f, edge.adjFace(), edges);
+         if(flag& TRI_ADJ_FACE)IndLoad(f, tri .adjFace(), tris );
+         if(flag&QUAD_ADJ_FACE)IndLoad(f, quad.adjFace(), quads);
+         if(flag& TRI_ADJ_EDGE)IndLoad(f, tri .adjEdge(), tris );
+         if(flag&QUAD_ADJ_EDGE)IndLoad(f, quad.adjEdge(), quads);
+
+         if(f.ok())return true;
+      }break;
+
       case 3:
       {
          MESH_FLAG flag =MeshFlagOld(f);
@@ -314,7 +369,7 @@ Bool MeshBase::loadData(File &f)
          if(flag&VTX_TEX0    )f.getN(vtx.tex0    (), vtxs);
          if(flag&VTX_TEX1    )f.getN(vtx.tex1    (), vtxs);
          if(flag&VTX_TEX2    )f.getN(vtx.tex2    (), vtxs);
-         if(flag&VTX_MATRIX  )f.getN(vtx.matrix  (), vtxs);
+         if(flag&VTX_MATRIX  )LoadOldVtxMatrix(T, f);
          if(flag&VTX_BLEND   )f.getN(vtx.blend   (), vtxs);
          if(flag&VTX_SIZE    )f.getN(vtx.size    (), vtxs);
          if(flag&VTX_MATERIAL)f.getN(vtx.material(), vtxs);
@@ -362,7 +417,7 @@ Bool MeshBase::loadData(File &f)
          if(flag&VTX_TEX0    )f.getN(vtx.tex0    (), vtxs);
          if(flag&VTX_TEX1    )f.getN(vtx.tex1    (), vtxs);
          if(flag&VTX_TEX2    )f.getN(vtx.tex2    (), vtxs);
-         if(flag&VTX_MATRIX  )f.getN(vtx.matrix  (), vtxs);
+         if(flag&VTX_MATRIX  )LoadOldVtxMatrix(T, f);
          if(flag&VTX_BLEND   )f.getN(vtx.blend   (), vtxs);
          if(flag&VTX_SIZE    )f.getN(vtx.size    (), vtxs);
          if(flag&VTX_MATERIAL)f.getN(vtx.material(), vtxs);
@@ -410,7 +465,7 @@ Bool MeshBase::loadData(File &f)
          if(flag&VTX_TEX0    )f.getN(vtx.tex0    (), vtxs);
          if(flag&VTX_TEX1    )f.getN(vtx.tex1    (), vtxs);
          if(flag&VTX_TEX2    )f.getN(vtx.tex2    (), vtxs);
-         if(flag&VTX_MATRIX  )f.getN(vtx.matrix  (), vtxs);
+         if(flag&VTX_MATRIX  )LoadOldVtxMatrix(T, f);
          if(flag&VTX_BLEND   )f.getN(vtx.blend   (), vtxs); if(vtx.blend())REP(vtxs){Flt f=(Flt&)vtx.blend(i); Byte b=RoundPos(f*255); vtx.blend(i).set(b, 255-b, 0, 0);}
          if(flag&VTX_SIZE    )f.getN(vtx.size    (), vtxs);
          if(flag&VTX_MATERIAL)f.getN(vtx.material(), vtxs);
@@ -460,7 +515,7 @@ Bool MeshBase::loadData(File &f)
          if(flag&VTX_TEX0    )f.getN(vtx.tex0    (), vtxs);
          if(flag&VTX_TEX1    )f.getN(vtx.tex1    (), vtxs);
          if(flag&VTX_TEX2    )f.getN(vtx.tex2    (), vtxs);
-         if(flag&VTX_MATRIX  )f.getN(vtx.matrix  (), vtxs);
+         if(flag&VTX_MATRIX  )LoadOldVtxMatrix(T, f);
          if(flag&VTX_BLEND   )f.getN(vtx.blend   (), vtxs); if(vtx.blend())REP(vtxs){Flt f=(Flt&)vtx.blend(i); Byte b=RoundPos(f*255); vtx.blend(i).set(b, 255-b, 0, 0);}
          if(flag&VTX_SIZE    )f.getN(vtx.size    (), vtxs);
          if(flag&VTX_MATERIAL)f.getN(vtx.material(), vtxs);
@@ -972,7 +1027,7 @@ Bool MeshLod::load(File &f, CChar *path)  {if(f.getUInt()==CC4_MSHL)  return loa
 /******************************************************************************/
 Bool Mesh::saveData(File &f, CChar *path)C
 {
-   f.putMulti(Byte(8), ext, lod_center); // version
+   f.putMulti(Byte(9), ext, lod_center); // version
    if(_bone_map  .save(f))
    if(_variations.save(f))
    {
@@ -987,7 +1042,7 @@ Bool Mesh::loadData(File &f, CChar *path)
 {
    Box box; del(); switch(f.decUIntV()) // version
    {
-      case 8:
+      case 9:
       {
          f.getMulti(ext, lod_center);
 
@@ -999,13 +1054,25 @@ Bool Mesh::loadData(File &f, CChar *path)
          skeleton     (Skeletons(f.getAssetID(), path));
       }break;
 
+      case 8:
+      {
+         f.getMulti(ext, lod_center);
+
+         if(!_bone_map  .loadOld2(f))goto error;
+         if(!_variations.load    (f))goto error;
+        _lods.setNum(f.decUIntV()); FREP(lods())if(!lod(i).loadData(f, path, i))goto error;
+
+         drawGroupEnum(Enums    (f.getAssetID(), path), false);
+         skeleton     (Skeletons(f.getAssetID(), path));
+      }break;
+
       case 7:
       {
          f.getMulti(box, lod_center); ext=box;
 
         _lods.setNum(f.decUIntV()); FREP(lods())if(!lod(i).loadData(f, path, i))goto error;
-         if(!_bone_map  .load(f))goto error;
-         if(!_variations.load(f))goto error;
+         if(!_bone_map  .loadOld2(f))goto error;
+         if(!_variations.load    (f))goto error;
 
          skeleton     (Skeletons(f.getAssetID(), path));
          drawGroupEnum(Enums    (f.getAssetID(), path), false);

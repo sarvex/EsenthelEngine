@@ -579,7 +579,7 @@ Int Skeleton::hierarchyDistance(Int bone_a, Int bone_b)C
    return dist;
 }
 /******************************************************************************/
-void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VecB4 &matrix)C
+void Skeleton::getSkin(C Vec &pos, VecB4 &blend, VtxBone &matrix)C
 {
 #if 0
    Int find[2]={-1, -1};
@@ -1240,7 +1240,7 @@ void Skeleton::draw(C Color &bone_color, C Color &slot_color, Flt slot_size)C
 /******************************************************************************/
 Bool Skeleton::save(File &f)C
 {
-   f.putMulti(UInt(CC4_SKEL), Byte(7)); // version
+   f.putMulti(UInt(CC4_SKEL), Byte(8)); // version
    bones.saveRaw(f); // if in the future bones are saved manually, then use 'File.putStr' for their names
    slots.saveRaw(f); // if in the future slots are saved manually, then use 'File.putStr' for their names
    return f.ok();
@@ -1252,10 +1252,17 @@ Bool Skeleton::load(File &f)
    Flt b_frac;
    if(f.getUInt()==CC4_SKEL)switch(f.decUIntV()) // version
    {
-      case 7:
+      case 8:
       {
          bones.loadRaw(f);
          slots.loadRaw(f);
+         if(f.ok())return true;
+      }break;
+
+      case 7:
+      {
+         bones.setNum(f.decUIntV()); FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>SCAST(BoneID, b); b.parent=f.getByte(); b.children_offset=f.getByte(); f>>b.children_num>>b.flag; f.skip(1); f>>b.length>>b.width>>b.offset>>b.shape;}
+         slots.setNum(f.decUIntV()); FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=f.getByte(); s.bone1=f.getByte(); f.skip(2);}
          if(f.ok())return true;
       }break;
 
@@ -1560,15 +1567,17 @@ Bool BoneMap::load(File &f)
    del();    return false;
 }
 
-Bool BoneMap::saveOld1(File &f)C
+Bool BoneMap::loadOld2(File &f)
 {
-   f.cmpUIntV(_bones); if(_bones)
+   if(Int bones=f.decUIntV())
    {
-      Int name_size=nameSize(); f.cmpUIntV(name_size);
-      FREP(_bones){Bone &bone=_bone[i]; f<<bone.parent; f.cmpUIntV(bone.name_offset);}
-      f.put(nameStart(), name_size);
-   }
-   return f.ok();
+      Int name_size=f.decUIntV();
+      alloc(bones, name_size);
+      FREP( bones){Bone &bone=_bone[i]; f>>bone.type; f>>bone.type_index; f>>bone.type_sub; bone.parent=f.getByte(); f>>bone.name_offset;}
+      f.getFast(nameStart(), name_size);
+   }else del();
+   if(f.ok())return true;
+   del();    return false;
 }
 Bool BoneMap::loadOld1(File &f)
 {
@@ -1576,22 +1585,11 @@ Bool BoneMap::loadOld1(File &f)
    {
       Int name_size=f.decUIntV();
       alloc(bones, name_size);
-      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; f>>bone.parent; bone.name_offset=f.decUIntV();}
+      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=f.getByte(); bone.name_offset=f.decUIntV();}
       f.getFast(nameStart(), name_size);
    }else del();
    if(f.ok())return true;
    del();    return false;
-}
-
-Bool BoneMap::saveOld(File &f)C
-{
-   f<<_bones; if(_bones)
-   {
-      Int name_size=nameSize(); f<<name_size;
-      FREP(_bones){Bone &bone=_bone[i]; f<<bone.parent; f.putInt(bone.name_offset);}
-      f.put(nameStart(), name_size);
-   }
-   return f.ok();
 }
 Bool BoneMap::loadOld(File &f)
 {
@@ -1599,7 +1597,7 @@ Bool BoneMap::loadOld(File &f)
    {
       Int name_size=f.getInt();
       alloc(bones, name_size);
-      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; f>>bone.parent; bone.name_offset=f.getInt();}
+      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=f.getByte(); bone.name_offset=f.getInt();}
       f.getFast(nameStart(), name_size);
    }else del();
    if(f.ok())return true;

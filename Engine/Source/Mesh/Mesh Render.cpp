@@ -38,6 +38,19 @@ static INLINE void BlendSet(Byte *&v, Int i, C VecB4 *s)
    Set(v, i, s);
 #endif
 }
+static INLINE void BoneSet(Byte *&v, Int i, C VtxBone *s)
+{
+#if 1 // convert to VecB4 #MeshVtxBoneHW
+   if(s)
+   {
+      VecB4 &d=*(VecB4*)v;
+      d=*s;
+      v+=SIZE(VecB4);
+   }
+#else
+   Set(v, i, s);
+#endif
+}
 /******************************************************************************/
 void MeshRender::zero()
 {
@@ -65,7 +78,7 @@ Int MeshRender::vtxOfs(MESH_FLAG elm)C
       if(_flag&VTX_TEX1    ){if(elm&VTX_TEX1    )return ofs; ofs+=SIZE(Vec2 );}
       if(_flag&VTX_TEX2    ){if(elm&VTX_TEX2    )return ofs; ofs+=SIZE(Vec2 );}
       if(_flag&VTX_TEX3    ){if(elm&VTX_TEX3    )return ofs; ofs+=SIZE(Vec2 );}
-      if(_flag&VTX_MATRIX  ){if(elm&VTX_MATRIX  )return ofs; ofs+=SIZE(VecB4);}
+      if(_flag&VTX_MATRIX  ){if(elm&VTX_MATRIX  )return ofs; ofs+=SIZE(VecB4);} // #MeshVtxBoneHW
       if(_flag&VTX_BLEND   ){if(elm&VTX_BLEND   )return ofs; ofs+=SIZE(VecB4);}
       if(_flag&VTX_SIZE    ){if(elm&VTX_SIZE    )return ofs; ofs+=SIZE(Flt  );}
       if(_flag&VTX_MATERIAL){if(elm&VTX_MATERIAL)return ofs; ofs+=SIZE(VecB4);}
@@ -81,7 +94,7 @@ Int MeshRender::vtxOfs(MESH_FLAG elm)C
       if(_flag&VTX_TEX1    ){if(elm&VTX_TEX1    )return ofs; ofs+=SIZE(Vec2 );}
       if(_flag&VTX_TEX2    ){if(elm&VTX_TEX2    )return ofs; ofs+=SIZE(Vec2 );}
       if(_flag&VTX_TEX3    ){if(elm&VTX_TEX3    )return ofs; ofs+=SIZE(Vec2 );}
-      if(_flag&VTX_MATRIX  ){if(elm&VTX_MATRIX  )return ofs; ofs+=SIZE(VecB4);}
+      if(_flag&VTX_MATRIX  ){if(elm&VTX_MATRIX  )return ofs; ofs+=SIZE(VecB4);} // #MeshVtxBoneHW
       if(_flag&VTX_BLEND   ){if(elm&VTX_BLEND   )return ofs; ofs+=SIZE(VecB4);}
       if(_flag&VTX_SIZE    ){if(elm&VTX_SIZE    )return ofs; ofs+=SIZE(Flt  );}
       if(_flag&VTX_MATERIAL){if(elm&VTX_MATERIAL)return ofs; ofs+=SIZE(VecB4);}
@@ -200,20 +213,20 @@ Bool MeshRender::createRaw(C MeshBase &src, MESH_FLAG flag_and, Bool optimize, B
                }
             }else
             {
-             C Vec   *vtx_pos     =((flag()&VTX_POS     ) ? src.vtx.pos     () : null);
-             C Vec   *vtx_nrm     =((flag()&VTX_NRM     ) ? src.vtx.nrm     () : null);
-             C Vec   *vtx_tan     =((flag()&VTX_TAN_BIN ) ? src.vtx.tan     () : null);
-             C Vec   *vtx_bin     =((flag()&VTX_TAN_BIN ) ? src.vtx.bin     () : null);
-             C Vec   *vtx_hlp     =((flag()&VTX_HLP     ) ? src.vtx.hlp     () : null);
-             C Vec2  *vtx_tex0    =((flag()&VTX_TEX0    ) ? src.vtx.tex0    () : null);
-             C Vec2  *vtx_tex1    =((flag()&VTX_TEX1    ) ? src.vtx.tex1    () : null);
-             C Vec2  *vtx_tex2    =((flag()&VTX_TEX2    ) ? src.vtx.tex2    () : null);
-             C Vec2  *vtx_tex3    =((flag()&VTX_TEX3    ) ? src.vtx.tex3    () : null);
-             C VecB4 *vtx_matrix  =((flag()&VTX_MATRIX  ) ? src.vtx.matrix  () : null);
-             C VecB4 *vtx_blend   =((flag()&VTX_BLEND   ) ? src.vtx.blend   () : null);
-             C Flt   *vtx_size    =((flag()&VTX_SIZE    ) ? src.vtx.size    () : null);
-             C VecB4 *vtx_material=((flag()&VTX_MATERIAL) ? src.vtx.material() : null);
-             C Color *vtx_color   =((flag()&VTX_COLOR   ) ? src.vtx.color   () : null);
+             C Vec     *vtx_pos     =((flag()&VTX_POS     ) ? src.vtx.pos     () : null);
+             C Vec     *vtx_nrm     =((flag()&VTX_NRM     ) ? src.vtx.nrm     () : null);
+             C Vec     *vtx_tan     =((flag()&VTX_TAN_BIN ) ? src.vtx.tan     () : null);
+             C Vec     *vtx_bin     =((flag()&VTX_TAN_BIN ) ? src.vtx.bin     () : null);
+             C Vec     *vtx_hlp     =((flag()&VTX_HLP     ) ? src.vtx.hlp     () : null);
+             C Vec2    *vtx_tex0    =((flag()&VTX_TEX0    ) ? src.vtx.tex0    () : null);
+             C Vec2    *vtx_tex1    =((flag()&VTX_TEX1    ) ? src.vtx.tex1    () : null);
+             C Vec2    *vtx_tex2    =((flag()&VTX_TEX2    ) ? src.vtx.tex2    () : null);
+             C Vec2    *vtx_tex3    =((flag()&VTX_TEX3    ) ? src.vtx.tex3    () : null);
+             C VtxBone *vtx_matrix  =((flag()&VTX_MATRIX  ) ? src.vtx.matrix  () : null);
+             C VecB4   *vtx_blend   =((flag()&VTX_BLEND   ) ? src.vtx.blend   () : null);
+             C Flt     *vtx_size    =((flag()&VTX_SIZE    ) ? src.vtx.size    () : null);
+             C VecB4   *vtx_material=((flag()&VTX_MATERIAL) ? src.vtx.material() : null);
+             C Color   *vtx_color   =((flag()&VTX_COLOR   ) ? src.vtx.color   () : null);
 
                FREPA(src.vtx)
                {
@@ -225,7 +238,7 @@ Bool MeshRender::createRaw(C MeshBase &src, MESH_FLAG flag_and, Bool optimize, B
                   Set(v, i, vtx_tex1    );
                   Set(v, i, vtx_tex2    );
                   Set(v, i, vtx_tex3    );
-                  Set(v, i, vtx_matrix  );
+              BoneSet(v, i, vtx_matrix  );
              BlendSet(v, i, vtx_blend   );
                   Set(v, i, vtx_size    );
                   Set(v, i, vtx_material);
@@ -234,20 +247,20 @@ Bool MeshRender::createRaw(C MeshBase &src, MESH_FLAG flag_and, Bool optimize, B
             }
          }else
          {
-          C Vec   *vtx_pos     =((flag()&VTX_POS     ) ? src.vtx.pos     () : null);
-          C Vec   *vtx_nrm     =((flag()&VTX_NRM     ) ? src.vtx.nrm     () : null);
-          C Vec   *vtx_tan     =((flag()&VTX_TAN     ) ? src.vtx.tan     () : null);
-          C Vec   *vtx_bin     =((flag()&VTX_BIN     ) ? src.vtx.bin     () : null);
-          C Vec   *vtx_hlp     =((flag()&VTX_HLP     ) ? src.vtx.hlp     () : null);
-          C Vec2  *vtx_tex0    =((flag()&VTX_TEX0    ) ? src.vtx.tex0    () : null);
-          C Vec2  *vtx_tex1    =((flag()&VTX_TEX1    ) ? src.vtx.tex1    () : null);
-          C Vec2  *vtx_tex2    =((flag()&VTX_TEX2    ) ? src.vtx.tex2    () : null);
-          C Vec2  *vtx_tex3    =((flag()&VTX_TEX3    ) ? src.vtx.tex3    () : null);
-          C VecB4 *vtx_matrix  =((flag()&VTX_MATRIX  ) ? src.vtx.matrix  () : null);
-          C VecB4 *vtx_blend   =((flag()&VTX_BLEND   ) ? src.vtx.blend   () : null);
-          C Flt   *vtx_size    =((flag()&VTX_SIZE    ) ? src.vtx.size    () : null);
-          C VecB4 *vtx_material=((flag()&VTX_MATERIAL) ? src.vtx.material() : null);
-          C Color *vtx_color   =((flag()&VTX_COLOR   ) ? src.vtx.color   () : null);
+          C Vec     *vtx_pos     =((flag()&VTX_POS     ) ? src.vtx.pos     () : null);
+          C Vec     *vtx_nrm     =((flag()&VTX_NRM     ) ? src.vtx.nrm     () : null);
+          C Vec     *vtx_tan     =((flag()&VTX_TAN     ) ? src.vtx.tan     () : null);
+          C Vec     *vtx_bin     =((flag()&VTX_BIN     ) ? src.vtx.bin     () : null);
+          C Vec     *vtx_hlp     =((flag()&VTX_HLP     ) ? src.vtx.hlp     () : null);
+          C Vec2    *vtx_tex0    =((flag()&VTX_TEX0    ) ? src.vtx.tex0    () : null);
+          C Vec2    *vtx_tex1    =((flag()&VTX_TEX1    ) ? src.vtx.tex1    () : null);
+          C Vec2    *vtx_tex2    =((flag()&VTX_TEX2    ) ? src.vtx.tex2    () : null);
+          C Vec2    *vtx_tex3    =((flag()&VTX_TEX3    ) ? src.vtx.tex3    () : null);
+          C VtxBone *vtx_matrix  =((flag()&VTX_MATRIX  ) ? src.vtx.matrix  () : null);
+          C VecB4   *vtx_blend   =((flag()&VTX_BLEND   ) ? src.vtx.blend   () : null);
+          C Flt     *vtx_size    =((flag()&VTX_SIZE    ) ? src.vtx.size    () : null);
+          C VecB4   *vtx_material=((flag()&VTX_MATERIAL) ? src.vtx.material() : null);
+          C Color   *vtx_color   =((flag()&VTX_COLOR   ) ? src.vtx.color   () : null);
 
             FREPA(src.vtx)
             {
@@ -260,7 +273,7 @@ Bool MeshRender::createRaw(C MeshBase &src, MESH_FLAG flag_and, Bool optimize, B
                Set(v, i, vtx_tex1    );
                Set(v, i, vtx_tex2    );
                Set(v, i, vtx_tex3    );
-               Set(v, i, vtx_matrix  );
+           BoneSet(v, i, vtx_matrix  );
           BlendSet(v, i, vtx_blend   );
                Set(v, i, vtx_size    );
                Set(v, i, vtx_material);
@@ -517,7 +530,7 @@ Bool MeshRender::create(C MeshRender *src[], Int elms, MESH_FLAG flag_and, Bool 
                      if(temp.flag()&VTX_TEX1    )if(vtx_tex1    >=0)Set(v, *(Vec2 *)(src+vtx_tex1    ));else Set(v, Vec2Zero);
                      if(temp.flag()&VTX_TEX2    )if(vtx_tex2    >=0)Set(v, *(Vec2 *)(src+vtx_tex2    ));else Set(v, Vec2Zero);
                      if(temp.flag()&VTX_TEX3    )if(vtx_tex3    >=0)Set(v, *(Vec2 *)(src+vtx_tex3    ));else Set(v, Vec2Zero);
-                     if(temp.flag()&VTX_MATRIX  )if(vtx_matrix  >=0)Set(v, *(VecB4*)(src+vtx_matrix  ));else Set(v, VecB4(  0, 0, 0, 0));
+                     if(temp.flag()&VTX_MATRIX  )if(vtx_matrix  >=0)Set(v, *(VecB4*)(src+vtx_matrix  ));else Set(v, VecB4(  0, 0, 0, 0)); // #MeshVtxBoneHW
                      if(temp.flag()&VTX_BLEND   )if(vtx_blend   >=0)Set(v, *(VecB4*)(src+vtx_blend   ));else Set(v, VecB4(255, 0, 0, 0));
                      if(temp.flag()&VTX_SIZE    )if(vtx_size    >=0)Set(v, *(Flt  *)(src+vtx_size    ));else Set(v, Flt(0));
                      if(temp.flag()&VTX_MATERIAL)if(vtx_material>=0)Set(v, *(VecB4*)(src+vtx_material));else Set(v, VecB4(255, 0, 0, 0));
@@ -1013,7 +1026,7 @@ void MeshRender::adjustToPlatform(Bool compressed, Bool sign, Bool bone_split, C
             {
              C BoneSplit &split=bone_splits[i]; FREP(split.vtxs)
                {
-                  VecB4 &matrix=*(VecB4*)v;
+                  VecB4 &matrix=*(VecB4*)v; // #MeshVtxBoneHW
                   if(want_bone_split)
                   {
                      matrix.x=split.realToSplit0(matrix.x);

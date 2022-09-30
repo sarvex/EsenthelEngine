@@ -385,7 +385,7 @@ AnimatedSkeleton& AnimatedSkeleton::animate(C SkelAnim &skel_anim, Flt time, Flt
        //Animate(root, animation->keys, params); // animate root - this is no longer done here, instead, root animations need to be processed manually
          REPA(animation->bones)                  // animate bones
          {
-            BoneType sbon=skel_anim.abonToSbon(i);
+            auto sbon=skel_anim.abonToSbon(i);
             if(InRange(sbon, bones))Animate(bones[sbon], animation->bones[i], params);
          }
       }else
@@ -395,7 +395,7 @@ AnimatedSkeleton& AnimatedSkeleton::animate(C SkelAnim &skel_anim, Flt time, Flt
        //Animate(root, animation->keys, params); // animate root - this is no longer done here, instead, root animations need to be processed manually
          REPA(animation->bones)                  // animate bones
          {
-            BoneType sbon=skel_anim.abonToSbon(i);
+            auto sbon=skel_anim.abonToSbon(i);
             if(InRange(sbon, bones))Animate(bones[sbon], animation->bones[i], params);
          }
       }
@@ -419,7 +419,7 @@ AnimatedSkeleton& AnimatedSkeleton::animateEx(C SkelAnim &skel_anim, Flt time, B
       if(animate_root )Animate(root, animation->keys, params); // animate root
       if(animate_bones)REPA(animation->bones)                  // animate bones
       {
-         BoneType sbon=skel_anim.abonToSbon(i);
+         auto sbon=skel_anim.abonToSbon(i);
          if(InRange(sbon, bones))Animate(bones[sbon], animation->bones[i], params);
       }
    }
@@ -440,7 +440,7 @@ AnimatedSkeleton& AnimatedSkeleton::animateReplace(C SkelAnim &skel_anim, Flt ti
     //Animate(root, animation->keys, params); // animate root - this is no longer done here, instead, root animations need to be processed manually
       REPA(animation->bones)                  // animate bones
       {
-         BoneType sbon=skel_anim.abonToSbon(i);
+         auto sbon=skel_anim.abonToSbon(i);
          if(InRange(sbon, bones))Animate(bones[sbon], animation->bones[i], params);
       }
    }

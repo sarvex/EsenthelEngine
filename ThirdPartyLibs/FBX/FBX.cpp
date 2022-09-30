@@ -697,7 +697,7 @@ struct FBX
                   // skin
                   MemtN< Matrix, 256       > bone_matrix;
                   Memc < Memc<IndexWeight> > vtx_skin;
-                  VecB4                      vtx_matrix=0;
+                  VtxBone                    vtx_matrix=0;
                   VecB4                      vtx_blend(255, 0, 0, 0); // !! sum must be equal to 255 !! defaults used for vertexes with no skin specified
                   Bool                       force_skin=false, animate=false;
                   if(skeleton && skeleton->bones.elms())

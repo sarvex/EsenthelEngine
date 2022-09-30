@@ -500,7 +500,7 @@ MeshLod& MeshLod::weldVtxValues(MESH_FLAG flag, Flt pos_eps, Flt nrm_cos, Flt re
             Flt weight=vn.weight;
             if(flag&VTX_POS     )         parts[vn.index.y].base.vtx.pos     (vn.index.x)*=weight;
           //if(flag&VTX_MATERIAL)         parts[vn.index.y].base.vtx.material(vn.index.x)*=weight; VecB4 !! sum must be equal to 255 !!
-          //if(flag&VTX_MATRIX  )         parts[vn.index.y].base.vtx.matrix  (vn.index.x)*=weight; VecB4
+          //if(flag&VTX_MATRIX  )         parts[vn.index.y].base.vtx.matrix  (vn.index.x)*=weight; VtxBone
           //if(flag&VTX_BLEND   )         parts[vn.index.y].base.vtx.blend   (vn.index.x)*=weight; VecB4 !! sum must be equal to 255 !!
             if(flag&VTX_NRM     )         parts[vn.index.y].base.vtx.nrm     (vn.index.x)*=weight;
             if(flag&VTX_TAN     )         parts[vn.index.y].base.vtx.tan     (vn.index.x)*=weight;
@@ -525,7 +525,7 @@ MeshLod& MeshLod::weldVtxValues(MESH_FLAG flag, Flt pos_eps, Flt nrm_cos, Flt re
                                  vd.weight                                      +=weight;
             if(flag&VTX_POS     )parts[vd.index.y].base.vtx.pos     (vd.index.x)+=weight*parts[vn.index.y].base.vtx.pos     (vn.index.x);
           //if(flag&VTX_MATERIAL)parts[vd.index.y].base.vtx.material(vd.index.x)+=weight*parts[vn.index.y].base.vtx.material(vn.index.x); VecB4 !! sum must be equal to 255 !!
-          //if(flag&VTX_MATRIX  )parts[vd.index.y].base.vtx.matrix  (vd.index.x)+=weight*parts[vn.index.y].base.vtx.matrix  (vn.index.x); VecB4
+          //if(flag&VTX_MATRIX  )parts[vd.index.y].base.vtx.matrix  (vd.index.x)+=weight*parts[vn.index.y].base.vtx.matrix  (vn.index.x); VtxBone
           //if(flag&VTX_BLEND   )parts[vd.index.y].base.vtx.blend   (vd.index.x)+=weight*parts[vn.index.y].base.vtx.blend   (vn.index.x); VecB4 !! sum must be equal to 255 !!
             if(flag&VTX_NRM     )parts[vd.index.y].base.vtx.nrm     (vd.index.x)+=weight*parts[vn.index.y].base.vtx.nrm     (vn.index.x);
             if(flag&VTX_TAN     )parts[vd.index.y].base.vtx.tan     (vd.index.x)+=weight*parts[vn.index.y].base.vtx.tan     (vn.index.x);
@@ -549,7 +549,7 @@ MeshLod& MeshLod::weldVtxValues(MESH_FLAG flag, Flt pos_eps, Flt nrm_cos, Flt re
             weight=1/weight;
             if(flag&VTX_POS     )parts[vn.index.y].base.vtx.pos     (vn.index.x)*=weight;
           //if(flag&VTX_MATERIAL)parts[vn.index.y].base.vtx.material(vn.index.x)*=weight; VecB4 !! sum must be equal to 255 !!
-          //if(flag&VTX_MATRIX  )parts[vn.index.y].base.vtx.matrix  (vn.index.x)*=weight; VecB4
+          //if(flag&VTX_MATRIX  )parts[vn.index.y].base.vtx.matrix  (vn.index.x)*=weight; VtxBone
           //if(flag&VTX_BLEND   )parts[vn.index.y].base.vtx.blend   (vn.index.x)*=weight; VecB4 !! sum must be equal to 255 !!
             if(flag&VTX_NRM     )parts[vn.index.y].base.vtx.nrm     (vn.index.x).normalize();
             if(flag&VTX_TAN     )parts[vn.index.y].base.vtx.tan     (vn.index.x).normalize();

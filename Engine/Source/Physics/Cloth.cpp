@@ -210,7 +210,7 @@ Bool ClothMesh::saveData(File &f, CChar *path)C
    if(_phys    .saveData(f))
    if(_skin    .saveData(f))
    if(_ind_buf .save    (f))
-   if(_bone_map.saveOld (f))
+   if(_bone_map.saveOld (f)) here cannot use 'saveOld', need to make new ver=3 and use 'save'
    {
       f._putStr(Skeletons.name(skeleton(), path));
       // physx cooked data isn't saved, because later physx versions can't read older cloth versions (at least that's how it was in the past)

@@ -1413,7 +1413,8 @@ struct VecB4 // Vector 4D (Byte)
               VecB4() {}
               VecB4(Byte i                        ) {set(i         );}
               VecB4(Byte x, Byte y, Byte z, Byte w) {set(x, y, z, w);}
-   CONVERSION VecB4(C VecI4 &v);
+   CONVERSION VecB4(C VecI4  &v);
+   CONVERSION VecB4(C VecUS4 &v);
 };
 /******************************************************************************/
 struct VecSB4 // Vector 4D (SByte)
@@ -1639,7 +1640,7 @@ struct VecUS4 // Vector 4D (Unsigned Short)
               VecUS4() {}
               VecUS4(UShort u                              ) {set(u         );}
               VecUS4(UShort x, UShort y, UShort z, UShort w) {set(x, y, z, w);}
-   CONVERSION VecUS4(C VecB4 &v)=delete;
+   CONVERSION VecUS4(C VecB4 &v);
    CONVERSION VecUS4(C VecI4 &v);
 };
 /******************************************************************************/
@@ -2229,6 +2230,7 @@ struct VecI4 // Vector 4D (integer)
               VecI4(C VecI2  &xy , C VecI2 &zw ) {set(xy      , zw      );}
    CONVERSION VecI4(C VecB4  &v                ) {set(v.x, v.y, v.z, v.w);}
    CONVERSION VecI4(C VecSB4 &v                ) {set(v.x, v.y, v.z, v.w);}
+   CONVERSION VecI4(C VecUS4 &v                ) {set(v.x, v.y, v.z, v.w);}
 };extern VecI4
    const VecI4Zero; // VecI4(0, 0, 0, 0)
 /******************************************************************************/
@@ -2360,12 +2362,13 @@ inline VecSB2::VecSB2(C VecI2  &v) {set(v.x, v.y          );}
 inline VecB  ::VecB  (C VecI   &v) {set(v.x, v.y, v.z     );}
 inline VecSB ::VecSB (C VecI   &v) {set(v.x, v.y, v.z     );}
 inline VecB4 ::VecB4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
+inline VecB4 ::VecB4 (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
 inline VecSB4::VecSB4(C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecUS2::VecUS2(C VecB2  &v) {set(v.x, v.y          );}
 inline VecUS2::VecUS2(C VecI2  &v) {set(v.x, v.y          );}
 inline VecUS ::VecUS (C VecB   &v) {set(v.x, v.y, v.z     );}
 inline VecUS ::VecUS (C VecI   &v) {set(v.x, v.y, v.z     );}
-//inline VecUS4::VecUS4(C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
+inline VecUS4::VecUS4(C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
 inline VecUS4::VecUS4(C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
 inline Vec2  ::Vec2  (C VecH2  &v) {set(v.x, v.y          );}
 inline Vec2  ::Vec2  (C VecD2  &v) {set(v.x, v.y          );}
@@ -2428,6 +2431,13 @@ inline Bool VecUS::operator==(C VecB  &v)C {return x==v.x && y==v.y && z==v.z;}
 inline Bool VecUS::operator!=(C VecB  &v)C {return x!=v.x || y!=v.y || z!=v.z;}
 inline Bool VecUS::operator==(C VecI  &v)C {return x==v.x && y==v.y && z==v.z;}
 inline Bool VecUS::operator!=(C VecI  &v)C {return x!=v.x || y!=v.y || z!=v.z;}
+
+inline Bool VecUS4::operator==(C VecUS4 &v)C {return x==v.x && y==v.y && z==v.z && w==v.w;}
+inline Bool VecUS4::operator!=(C VecUS4 &v)C {return x!=v.x || y!=v.y || z!=v.z || w!=v.w;}
+inline Bool VecUS4::operator==(C VecB4  &v)C {return x==v.x && y==v.y && z==v.z && w==v.w;}
+inline Bool VecUS4::operator!=(C VecB4  &v)C {return x!=v.x || y!=v.y || z!=v.z || w!=v.w;}
+inline Bool VecUS4::operator==(C VecI4  &v)C {return x==v.x && y==v.y && z==v.z && w==v.w;}
+inline Bool VecUS4::operator!=(C VecI4  &v)C {return x!=v.x || y!=v.y || z!=v.z || w!=v.w;}
 
 inline Vec2& Vec2::operator+=(C VecD2 &v) {x+=v.x; y+=v.y; return T;}
 inline Vec2& Vec2::operator-=(C VecD2 &v) {x-=v.x; y-=v.y; return T;}

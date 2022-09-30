@@ -58,7 +58,7 @@
       flt dist=0;
       int bone_i=ObjEdit.mesh.boneFind(bone.name); if(bone_i>=0)
       {
-         bone_i++;
+         bone_i+=VIRTUAL_ROOT_BONE;
          // convert from world space to original mesh matrix
          Vec pos=bone.pos/ObjEdit.mesh_matrix,
              dir=bone.dir/ObjEdit.mesh_matrix.orn(); dir/=dir.length2(); // warning: this will be scaled (not normalized), we have to inverse scale, to convert back from mesh space to world space
@@ -68,8 +68,8 @@
             MeshBase &base=lod.parts[i].base;
             if(base.vtx.pos() && base.vtx.matrix() && base.vtx.blend())REPA(base.vtx)
             {
-             C VecB4 &matrix=base.vtx.matrix(i),
-                     &blend =base.vtx.blend (i);
+             C VtxBone &matrix=base.vtx.matrix(i);
+             C VecB4   &blend =base.vtx.blend (i);
                if(matrix.x==bone_i && blend.x>0
                || matrix.y==bone_i && blend.y>0
                || matrix.z==bone_i && blend.z>0

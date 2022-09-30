@@ -53,7 +53,7 @@ static void FromMatrix(Matrix &m, float a[3][4])
    a[0][2]=m.z  .x; a[1][2]=m.z  .y; a[2][2]=m.z  .z;
    a[0][3]=m.pos.x; a[1][3]=m.pos.y; a[2][3]=m.pos.z;
 }
-static void SetSkin(VecB4 &matrix, VecB4 &blend, msModel &ms3d, ms3d_vertex_t &vertex, MemtN<BoneType, 256> &old_to_new, Skeleton *skeleton)
+static void SetSkin(VtxBone &matrix, VecB4 &blend, msModel &ms3d, ms3d_vertex_t &vertex, MemtN<BoneType, 256> &old_to_new, Skeleton *skeleton)
 {
    int indices[4], weights[4]; ms3d.FillJointIndicesAndWeights(&vertex, indices, weights);
 

@@ -218,7 +218,7 @@ struct SkelAnim // helper class for 'Skeleton' <-> 'Animation' relation, 'SkelAn
       void operator=(C SkelAnim &src);
 
 private:
-   Byte      *_bone;
+   Byte      *_bone; // #MeshVtxBoneHW
  C Animation *_animation;
 };
 /******************************************************************************/

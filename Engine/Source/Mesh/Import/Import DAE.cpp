@@ -352,7 +352,8 @@ struct DAE
    };
    struct Skinning
    {
-      VecB4 bone, blend;
+      VtxBone bone;
+      VecB4   blend;
    };
    struct Vtx : Skinning
    {

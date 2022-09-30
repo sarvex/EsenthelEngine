@@ -551,8 +551,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                         int sum=0;
                         if(part.base.vtx.matrix() && part.base.vtx.blend())
                         {
-                         C VecB4 &m=part.base.vtx.matrix(i);
-                         C VecB4 &b=part.base.vtx.blend (i);
+                         C VtxBone &m=part.base.vtx.matrix(i);
+                         C VecB4   &b=part.base.vtx.blend (i);
                            REPA(m)if(m.c[i]==bone)sum+=b.c[i];
                         }
                         VI.dot(sum ? Lerp(BLUE, RED, Min(sum/255.0f, 1)) : WHITE, pos, r);
@@ -2873,8 +2873,8 @@ cur_skel_to_saved_skel= ObjEdit.cur_skel_to_saved_skel;
                            d=Round(Lerp(delta, delta_soft, dist)); // distance=0 (center) we have 'delta', distance=1 (border) we have 'delta_soft'
                         }
 
-                        VecB4 &matrix=base.vtx.matrix(vtx.y);
-                        VecB4 &blend =base.vtx.blend (vtx.y);
+                        VtxBone &matrix=base.vtx.matrix(vtx.y);
+                        VecB4   &blend =base.vtx.blend (vtx.y);
                         IndexWeight skin[4]; Int skins=0;
                         if(add)skin[skins++].set(bone, 0); // when adding, reserve room for 'bone' as it's required to be present
                         int sum=0; // actual weight of bones other than 'bone'
@@ -3363,13 +3363,13 @@ cur_skel_to_saved_skel.removeBone(bone->name);
                MeshPart &part=mesh.parts[i];
                if(!(part.part_flag&MSHP_HIDDEN))
                {
-                    MeshBase &base =part.base;
-                  if(C Vec   *pos  =base.vtx.pos   ())
-                  if(C VecB4 *mtrx =base.vtx.matrix())
-                  if(C VecB4 *blend=base.vtx.blend ())
+                       MeshBase &base =part.base;
+                  if(C Vec      *pos  =base.vtx.pos   ())
+                  if(C VtxBone  *mtrx =base.vtx.matrix())
+                  if(C VecB4    *blend=base.vtx.blend ())
                      REPA(base.vtx)
                   {
-                   //VecB4 m=mtrx[i], b=blend[i]; int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i]; if(weight>=128)
+                   //VtxBone m=mtrx[i]; VecB4 b=blend[i]; int weight=0; REPA(m)if(m.c[i]==bone_b)weight+=b.c[i]; if(weight>=128)
                      if(mtrx[i].x==bone_b) // if most significant bone is this one, check X because bones are always sorted by most significant first
                      {
                         Vec p=pos[i]*transform;
