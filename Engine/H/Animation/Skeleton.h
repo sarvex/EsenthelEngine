@@ -58,7 +58,7 @@ enum BONE_FLAG
 
 typedef UShort BoneType;
 typedef VecUS4 VtxBone;
-const BoneType BONE_NULL=0xFF;
+const BoneType BONE_NULL=~0;
 
 struct BoneID
 {
