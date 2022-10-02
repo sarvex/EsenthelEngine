@@ -153,5 +153,6 @@ Bool Import(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XAnimation> anim
 
 #if EE_PRIVATE
 void CleanMesh(Mesh &mesh);
+void ProcessBoneNames(MemPtrN<Str8, 256> names);
 #endif
 /******************************************************************************/

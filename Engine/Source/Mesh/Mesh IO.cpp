@@ -1692,6 +1692,58 @@ void CleanMesh(Mesh &mesh)
    }
 }
 /******************************************************************************/
+void UniqueBoneNames(MemPtrN<Str8, 256> names)
+{
+   FREPA(names)
+   {
+      Str8 &name=names[i];
+      if(!name.is())name="Root"; // we don't allow empty names because 'findBone' methods may skip searching if the name parameter is empty
+   again:
+      REPD(j, i)
+      {
+       C Str8 &test=names[j]; if(name==test)
+         {
+            Int  index=1;
+            Char separator='#';
+            REPA(name)if(name[i]==separator) // find if this name already has a separator
+               {index=TextInt(name()+i+1)+1; name.clip(i); break;} // get the index value, increase by one, and remove the separator
+            name+=separator;
+            name+=index;
+            goto again;
+         }
+      }
+   }
+}
+void ShortenBoneNames(MemPtrN<Str8, 256> names)
+{
+   Int max_name_length=MEMBER_ELMS(SkelBone, name)-1, name_length=0;
+   REPA(names)MAX(name_length, names[i].length());
+   if(name_length>max_name_length) // if name length exceeds allowed limit, then shorten names by removing the shared start
+   {
+      REPA(names)
+      {
+       C Str8 &name_i=names[i]; REPD(j, i)
+         {
+          C Str8 &name_j=names[j];
+            FREPA(name_i)if(name_i[i]!=name_j[i]){MIN(name_length, i); break;}
+         }
+      }
+      REPA(names)
+      {
+         Str8 &name=names[i];
+         if(name_length)name.remove(0, name_length+(name[name_length]==' ')); // if this name has a space after shared start, then remove that space too
+         // even after removing shared start, bone name can still be too long
+         if(name.length()>max_name_length)name.clip(max_name_length-1-2); // leave room for 1 char separator + 2 char index
+      }
+      UniqueBoneNames(names); // we've changed names, so we need to make sure that they are unique
+   }
+}
+void ProcessBoneNames(MemPtrN<Str8, 256> names)
+{
+    UniqueBoneNames(names);
+   ShortenBoneNames(names);
+}
+/******************************************************************************/
 void ShutMesh() {Meshes.del();}
 /******************************************************************************/
 }

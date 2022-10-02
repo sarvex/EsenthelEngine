@@ -40,13 +40,15 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
       {
          Skeleton temp, *skel=(skeleton ? skeleton : mesh ? &temp : null); // if skel not specified, but we want mesh, then we have to process it
          if(skel)skel->bones.setNum(Min(BONE_NULL, bones));
+         MemtN<Str8, 256> bone_names;
          FREP(bones)
          {
             SkelBone *bone=(skel ? skel->bones.addr(i) : null);
-            if(bone)Get(f, bone->name);else Get(f, str);
+            Get(f, str); if(bone)bone_names.add(str);
             U16 parent=f.getUShort(); if(bone)bone->parent=(InRange(parent, skel->bones) ? parent : BONE_NULL);
             if(bone)f>>bone->pos;else f.skip(SIZE(Vec));
          }
+         ProcessBoneNames(bone_names); FREPA(bone_names)Set(skel->bones[i].name, bone_names[i]);
          MemtN<BoneType, 256> old_to_new;
          if(skel)
          {
@@ -164,14 +166,16 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
       Str s;
       f.fullLine(s); Int bones=TextInt(s); if(bones<0)goto error;
       Skeleton temp, *skel=(skeleton ? skeleton : mesh ? &temp : null); // if skel not specified, but we want mesh, then we have to process it
-      if(skel)skel->bones.setNum(bones);
+      if(skel)skel->bones.setNum(Min(BONE_NULL, bones));
+      MemtN<Str8, 256> bone_names;
       FREP(bones)
       {
-         SkelBone *bone=(skel ? &skel->bones[i] : null);
-         f.fullLine(s); if(bone)Set(bone->name, s);
+         SkelBone *bone=(skel ? skel->bones.addr(i) : null);
+         f.fullLine(s); if(bone)bone_names.add(s);
          f. getLine(s); if(bone){Int parent=TextInt(s); bone->parent=(InRange(parent, skel->bones) ? parent : BONE_NULL);}
          f. getLine(s); if(bone)bone->pos=TextVec(s);
       }
+      ProcessBoneNames(bone_names); FREPA(bone_names)Set(skel->bones[i].name, bone_names[i]);
       MemtN<BoneType, 256> old_to_new;
       if(skel)
       {
