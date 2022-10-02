@@ -267,7 +267,7 @@ struct FBX
       MemtN<Str8, 256> bone_names;
       FREPA(nodes)
       {
-       C Node &node=nodes[i]; if(node.bone)Swap(bone_names.New(), node.ee_name);
+         Node &node=nodes[i]; if(node.bone)Swap(bone_names.New(), node.ee_name);
       }
       ProcessBoneNames(bone_names);
       Int j=0;
