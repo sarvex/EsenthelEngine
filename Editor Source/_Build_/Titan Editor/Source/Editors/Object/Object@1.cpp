@@ -3617,8 +3617,15 @@ cur_skel_to_saved_skel.bones.del();
                      REPA(mesh_skel->bones)if(i!=sel_bone && bone_name==BoneNeutralName(mesh_skel->bones[i].name))
                      {
                         bone_mirror=&mesh_skel->bones[mirror_bone=i];
-                        break;
+                        goto bone_mirror;
                      }
+                     if(bone->type)
+                     {
+                        int mirror_type_index=-bone->type_index-1;
+                        mirror_bone=mesh_skel->findBoneI(bone->type, mirror_type_index, bone->type_sub);
+                        bone_mirror=mesh_skel->bones.addr(mirror_bone);
+                     }
+                  bone_mirror:;
                   }
                   switch(bone_tabs)
                   {
