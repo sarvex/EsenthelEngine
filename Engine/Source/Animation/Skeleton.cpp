@@ -1245,6 +1245,7 @@ Bool Skeleton::save(File &f)C
    slots.saveRaw(f); // if in the future slots are saved manually, then use 'File.putStr' for their names
    return f.ok();
 }
+static BoneType OldBone(File &f) {Byte b; f>>b; return (b==0xFF) ? BONE_NULL : b;}
 Bool Skeleton::load(File &f)
 {
   _skel_anims.del();
@@ -1261,15 +1262,15 @@ Bool Skeleton::load(File &f)
 
       case 7:
       {
-         bones.setNum(f.decUIntV()); FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>SCAST(BoneID, b); b.parent=f.getByte(); b.children_offset=f.getByte(); f>>b.children_num>>b.flag; f.skip(1); f>>b.length>>b.width>>b.offset>>b.shape;}
-         slots.setNum(f.decUIntV()); FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=f.getByte(); s.bone1=f.getByte(); f.skip(2);}
+         bones.setNum(f.decUIntV()); FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>SCAST(BoneID, b); b.parent=OldBone(f); b.children_offset=f.getByte(); f>>b.children_num>>b.flag; f.skip(1); f>>b.length>>b.width>>b.offset>>b.shape;}
+         slots.setNum(f.decUIntV()); FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=OldBone(f); s.bone1=OldBone(f); f.skip(2);}
          if(f.ok())return true;
       }break;
 
       case 6:
       {
-         bones.setNum(f.decUIntV()); FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>SCAST(BoneID, b)>>b.parent>>b.children_offset>>b.children_num>>b.flag; f.skip(1); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
-         slots.setNum(f.decUIntV()); FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name>>s.bone; s.bone1=s.bone; f.skip(3);}
+         bones.setNum(f.decUIntV()); FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>SCAST(BoneID, b); b.parent=OldBone(f); b.children_offset=f.getByte(); f>>b.children_num>>b.flag; f.skip(1); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
+         slots.setNum(f.decUIntV()); FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())return true;
       }break;
 
@@ -1277,8 +1278,8 @@ Bool Skeleton::load(File &f)
       {
          bones.setNum(f.decUIntV());
          slots.setNum(f.decUIntV());
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name>>b.parent>>b.children_offset>>b.children_num>>b.flag>>b.type>>b.type_index>>b.type_sub; f.skip(1); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name>>s.bone; s.bone1=s.bone; f.skip(3);}
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name; b.parent=OldBone(f); b.children_offset=f.getByte(); f>>b.children_num>>b.flag>>b.type>>b.type_index>>b.type_sub; f.skip(1); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())return true;
       }break;
 
@@ -1286,8 +1287,8 @@ Bool Skeleton::load(File &f)
       {
          bones.setNum(f.decUIntV(), 0); // reset because not all params are set
          slots.setNum(f.decUIntV());
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name>>b.parent>>b.children_offset>>b.children_num>>b.flag>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name>>s.bone; s.bone1=s.bone; f.skip(3);}
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name; b.parent=OldBone(f); b.children_offset=f.getByte(); f>>b.children_num>>b.flag>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())
          {
             setBoneTypes();
@@ -1299,8 +1300,8 @@ Bool Skeleton::load(File &f)
       {
          bones.setNum(f.decUIntV(), 0); // reset because not all params are set
          slots.setNum(f.decUIntV());
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name>>b.parent>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name>>s.bone; s.bone1=s.bone; f.skip(3);}
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name; b.parent=OldBone(f); f>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac>>b.offset>>b.shape;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())
          {
             sortBones().setBoneTypes(); // sort to calculate 'children..', do this before 'setBoneTypes' because it needs that date
@@ -1312,8 +1313,8 @@ Bool Skeleton::load(File &f)
       {
          bones.setNum(f.getUShort(), 0); // reset because not all params are set
          slots.setNum(f.getUShort());
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name>>b.parent>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name>>s.bone; s.bone1=s.bone; f.skip(3);}
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b)>>b.name; b.parent=OldBone(f); f>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s)>>s.name; s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())
          {
             sortBones().setBoneTypes().setBoneShapes(); // sort to calculate 'children..', do this before 'setBoneTypes,setBoneShapes' because they need that data
@@ -1326,8 +1327,8 @@ Bool Skeleton::load(File &f)
          bones.setNum(f.getUShort(), 0); // reset because not all params are set
          slots.setNum(f.getUShort(), 0); // reset because not all params are set
          f.skip(2); // old body bones
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b); f.get(b.name, 16); f>>b.parent>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s); f.get(s.name, 16); f>>s.bone; s.bone1=s.bone; f.skip(3);                        }
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b); f.get(b.name, 16); b.parent=OldBone(f); f>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s); f.get(s.name, 16); s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())
          {
             sortBones().setBoneTypes().setBoneShapes(); // sort to calculate 'children..', do this before 'setBoneTypes,setBoneShapes' because they need that data
@@ -1340,8 +1341,8 @@ Bool Skeleton::load(File &f)
          f.skip(1); // old version byte
          bones.setNum(f.getUShort(), 0); // reset because not all params are set
          slots.setNum(f.getUShort(), 0); // reset because not all params are set
-         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b); f.get(b.name, 16); f>>b.parent>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
-         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s); f.get(s.name, 16); f>>s.bone; s.bone1=s.bone; f.skip(3);                        }
+         FREPA(bones){SkelBone &b=bones[i]; f>>SCAST(OrientP, b); f.get(b.name, 16); b.parent=OldBone(f); f>>b.flag; f.skip(2); f>>b.length>>b.width>>b_frac;}
+         FREPA(slots){SkelSlot &s=slots[i]; f>>SCAST(OrientP, s); f.get(s.name, 16); s.bone=s.bone1=OldBone(f); f.skip(3);}
          if(f.ok())
          {
             sortBones().setBoneTypes().setBoneShapes(); // sort to calculate 'children..', do this before 'setBoneTypes,setBoneShapes' because they need that data
@@ -1573,7 +1574,7 @@ Bool BoneMap::loadOld2(File &f)
    {
       Int name_size=f.decUIntV();
       alloc(bones, name_size);
-      FREP( bones){Bone &bone=_bone[i]; f>>bone.type; f>>bone.type_index; f>>bone.type_sub; bone.parent=f.getByte(); f>>bone.name_offset;}
+      FREP( bones){Bone &bone=_bone[i]; f>>bone.type; f>>bone.type_index; f>>bone.type_sub; bone.parent=OldBone(f); f>>bone.name_offset;}
       f.getFast(nameStart(), name_size);
    }else del();
    if(f.ok())return true;
@@ -1585,7 +1586,7 @@ Bool BoneMap::loadOld1(File &f)
    {
       Int name_size=f.decUIntV();
       alloc(bones, name_size);
-      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=f.getByte(); bone.name_offset=f.decUIntV();}
+      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=OldBone(f); bone.name_offset=f.decUIntV();}
       f.getFast(nameStart(), name_size);
    }else del();
    if(f.ok())return true;
@@ -1597,7 +1598,7 @@ Bool BoneMap::loadOld(File &f)
    {
       Int name_size=f.getInt();
       alloc(bones, name_size);
-      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=f.getByte(); bone.name_offset=f.getInt();}
+      FREP( bones){Bone &bone=_bone[i]; bone.type=BONE_UNKNOWN; bone.type_index=bone.type_sub=0; bone.parent=OldBone(f); bone.name_offset=f.getInt();}
       f.getFast(nameStart(), name_size);
    }else del();
    if(f.ok())return true;
