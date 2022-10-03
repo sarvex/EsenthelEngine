@@ -2713,7 +2713,7 @@ force_src_resize:
                               case APPLY_SUB                : c=base-l; break;
                               case APPLY_SUB_RGB            : c.set(base.xyz-l.xyz, base.w); break;
                               case APPLY_GAMMA              : {flt gamma=l.xyz.max(); c.set(PowMax(base.x, gamma), PowMax(base.y, gamma), PowMax(base.z, gamma), base.w);} break;
-                              case APPLY_GAMMA_LUM          : {flt gamma=l.xyz.max(); if(flt lum=base.xyz.max())c.xyz=base.xyz*(PowMax(lum, g)/lum);else c.xyz=base.xyz; c.w=base.w;} break;
+                              case APPLY_GAMMA_LUM          : {flt gamma=l.xyz.max(); if(flt lum=base.xyz.max())c.xyz=base.xyz*(PowMax(lum, gamma)/lum);else c.xyz=base.xyz; c.w=base.w;} break;
                               case APPLY_AVG                : c=Avg(base, l); break;
                               case APPLY_MIN                : c=Min(base, l); break;
                               case APPLY_MAX                : c=Max(base, l); break;
