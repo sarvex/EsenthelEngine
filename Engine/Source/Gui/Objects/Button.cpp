@@ -179,6 +179,7 @@ Button& Button::fitText()
    }
    return T;
 }
+Button& Button::fitText(Flt text_size) {T.text_size=text_size; return fitText();}
 /******************************************************************************/
 Button& Button::set(Bool on, SET_MODE mode)
 {
