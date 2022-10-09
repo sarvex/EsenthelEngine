@@ -198,6 +198,7 @@ CChar* TMedium(TRANS_FORM form=TF_NEUTRAL);
 CChar* TMenu();
 CChar* TMessage();
 CChar* TMiniMap();
+CChar* TMods();
 CChar* TMonster();
 CChar* TMonsters();
 CChar* TMoreManaNeeded();
