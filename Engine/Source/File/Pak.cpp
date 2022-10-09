@@ -984,6 +984,13 @@ PakSet::PakSet()
 {
   _root_files=0;
 }
+/******************************************************************************/
+Str PakSet::pakName(Int i)C
+{
+   {SyncLocker locker(_lock); if(InRange(i, _paks))return _paks[i].name;}
+   return S;
+}
+/******************************************************************************/
 void PakSet::rebuild()
 {
    SyncLocker locker(_lock);

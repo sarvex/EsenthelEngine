@@ -165,6 +165,9 @@ struct PakSet // set of Pak's combined together with all their PakFile's combine
    Bool    removeMem(               CPtr  data                                                                      ); // remove previously added "Pak from memory", true is returned if Pak was found and removed, false if it was not found, this method always calls 'rebuild' upon success
    void    rebuild  (                                                                                               ); // rebuild Pak files database from loaded Pak's, this needs to be called once after adding new Pak's
 
+   Int paks   (     )C {return _paks.elms();} // get number of loaded Paks
+   Str pakName(Int i)C;                       // get name   of i-th   Pak
+
    PakSet& del(); // delete manually
    PakSet();
 
