@@ -474,6 +474,7 @@ class EditObject : EditParams
    void copyTo(Edit.ObjData &obj, bool include_removed_params)C
    {
       obj.elm_obj_class_id=type;
+      obj.         base_id=base.id();
       obj.          access=access;
       obj.            path=path;
       obj.params.clear();
