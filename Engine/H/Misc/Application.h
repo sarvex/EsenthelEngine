@@ -73,7 +73,7 @@ struct Application // Application Settings
    void (*low_memory         )(                                                       ); // pointer to custom function called when the application has received low memory notification from the system, inside it you can release any unnecessary memory, default=null
    void (*notification       )(Notification &notification, Bool selected              ); // pointer to custom function called when the application notification was selected or dismissed. If the callback is specified, then this notification is not automatically removed, you should call 'notification.remove' to remove it. If no callback is specified, then 'notification.remove' is called automatically.
    void (*sleep              )(Bool sleep                                             ); // pointer to custom function called when the device is going to sleep.
-   void (*joypad_changed     )(                                                       ); // pointer to custom function called when a Joypad has been added or removed, default=null
+   void (*joypad_changed     )(                                                       ); // pointer to custom function called when a Joypad has been added, removed or changed order, default=null
    void (*joypad_user_changed)(UInt joypad_id                                         ); // pointer to custom function called when user associated with a Joypad has changed. This is called on Windows UWP only.
 
    // get / set
