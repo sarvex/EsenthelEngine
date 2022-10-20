@@ -841,6 +841,8 @@ void GamepadChange::process()
          // set callback after everything was set, in case it's called right away
          if(joypad._gamepad            )joypad._gamepad            ->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);else
          if(joypad._raw_game_controller)joypad._raw_game_controller->UserChanged += ref new Windows::Foundation::TypedEventHandler<Windows::Gaming::Input::IGameController^, Windows::System::UserChangedEventArgs^>(FrameworkViewObj, &FrameworkView::OnGamepadUserChanged);
+
+         if(auto func=App.joypad_changed)func(); // call at the end
       }
    }else
    {

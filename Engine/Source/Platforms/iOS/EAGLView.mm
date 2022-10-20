@@ -246,6 +246,8 @@ static Joypad* FindJoypad(GCExtendedGamepad *gamepad)
 
          // set callback at the end
          gamepad.valueChangedHandler=^(GCExtendedGamepad *gamepad, GCControllerElement *element) {if(Joypad *joypad=FindJoypad(gamepad))joypad->changed(element);};
+
+         if(auto func=App.joypad_changed)func(); // call at the end
       }
    }
 }
