@@ -983,11 +983,8 @@ void GetDrives(MemPtr<Drive> drives)
          case DRIVE_REMOVABLE: d.type=DRIVE_USB      ; break;
          default             : d.type=DRIVE_UNDEFINED; break;
       }
-      if(i>=2) // skip "A:" and "B:" floppy drives because querying their 'GetVolumeInformation' may be slow (even few seconds), don't remove this, as there can be computers without the floppy drives, but the drivers can still be installed
-      {
-         wchar_t name[MAX_LONG_PATH+1]; name[0]=0; GetVolumeInformation(d.path, name, Elms(name), null, null, null, null, 0);
-          d.name=name;
-      }
+      wchar_t name[MAX_LONG_PATH+1]; name[0]=0; GetVolumeInformation(d.path, name, Elms(name), null, null, null, null, 0);
+       d.name=name;
    }
 #elif WINDOWS_NEW
    // TODO: WINDOWS_NEW 'GetDrives'
