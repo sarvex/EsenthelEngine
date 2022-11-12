@@ -1249,7 +1249,7 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
             channel[TC_AO    ]=1;
             channel[TC_SMOOTH]=3;
          }else
-         if(Contains(base, "metal") && ContainsAny(base, "smooth gloss")) // Unity RGB=metal, A=smoothness
+         if(Contains(base, "metal") && ContainsAny(base, "smooth gloss") && !Contains(base, "AO", true)) // Unity RGB=metal, A=smoothness
          {
             channel[TC_METAL ]=0;
             channel[TC_SMOOTH]=3;
