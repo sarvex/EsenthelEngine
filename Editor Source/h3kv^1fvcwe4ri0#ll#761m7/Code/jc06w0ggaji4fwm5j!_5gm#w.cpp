@@ -747,7 +747,7 @@ class EditorServer : Edit.EditorServer
                      if(WorldVer *world_ver=Proj.worldVerGet(world_id))
                   {
                      ok=true;
-                     if(world_obj_instance_ids.elms()) // filter out selected objects
+                     if(limit_obj_ids) // filter out selected objects
                      {
                         REPA(world_obj_instance_ids)
                         {
