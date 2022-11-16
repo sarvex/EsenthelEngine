@@ -43,6 +43,7 @@ mutable Byte         _d_lock;
    void del           ();
    Byte mode          (Byte mode);
    void caseSensitive (Bool sensitive);
+   Flt  delayRemove   ()C {return _delay_remove_time;}
    void delayRemove   (Flt  time);
    void delayRemoveNow();
    void delayRemoveInc();
