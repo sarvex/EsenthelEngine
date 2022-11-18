@@ -1729,6 +1729,7 @@ void BendGrass(Vec local_pos, inout Vec view_pos, UInt mtrx=0, Bool prev=false)
 
       Flt len2 =Length2(delta),
           blend=Min(len2, Sqr(local_pos.y*2)); // minimize with vertical position
+        //blend=Min(Sqrt(len2), local_pos.y*2); alternative formula: looks more stiff at the bottom, but tops don't bend so much, maybe could use a mix of both formulas, but that would be slow
       Vec2 bend=GetGrassBend(prev ? ObjWorldPosPrev(mtrx) : ObjWorldPos(mtrx), prev)*blend;
 
       if(!prev)
