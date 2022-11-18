@@ -717,8 +717,9 @@ class WorldView : Viewport4Region, WorldData
       n.New().create("Align to Terrain Normal", ObjAlignNrm ).kbsc(KbSc(KB_N, KBSC_CTRL_CMD|KBSC_SHIFT));
       n.New().create("Align to Grid"          , ObjAlignGrid).kbsc(KbSc(KB_G, KBSC_CTRL_CMD|KBSC_SHIFT));
       n++;
-      n.New().create("Randomize Rotation", ObjRandomRot).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
-      n.New().create("Reset Rotation"    , ObjResetRot ).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT));
+      n.New().create("Randomize Rotation"   , ObjRandomRot  ).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
+      n.New().create("Randomize Rotation 90", ObjRandomRot90);
+      n.New().create("Reset Rotation"       , ObjResetRot   ).kbsc(KbSc(KB_R, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_ALT));
       n++;
       n.New().create("Rotate X", ObjRotX).kbsc(KbSc(KB_X, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT));
       n.New().create("Rotate Y", ObjRotY).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_ALT|KBSC_REPEAT));
