@@ -204,7 +204,7 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
 #define SUPPORT_MP3        1
 #define SUPPORT_SAMPLERATE (WINDOWS)
 
-#define OPUS_DEC_NINTENDO 1 // if use Opus Decoder from Nintendo Switch SDK ( enable because performance is the same, but when using SDK we could potentially reduce app size, to avoid extra linking of these functions, since Nintendo Switch version is available anyway through DLL's)
+#define OPUS_DEC_NINTENDO 0 // if use Opus Decoder from Nintendo Switch SDK (disable because it fails on some sounds)
 #define OPUS_ENC_NINTENDO 0 // if use Opus Encoder from Nintendo Switch SDK (disable because default is 10% faster)
 
 // Image

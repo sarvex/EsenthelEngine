@@ -146,13 +146,13 @@ error:
    return false;
 }
 /******************************************************************************/
-static Vec2  TextVec2 (CChar  *t) {CalcValue x, y      ;                                                     TextValue(_SkipWhiteChars(TextValue(t, x)), y)          ; return Vec2  (x.asFlt(), y.asFlt()                      );}
-static Vec   TextVec  (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return Vec   (x.asFlt(), y.asFlt(), z.asFlt()           );}
-static Vec4  TextVec4 (CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Vec4  (x.asFlt(), y.asFlt(), z.asFlt(), w.asFlt());}
-static VecB4 TextVecB4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecB4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
-static VecI  TextVecI (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return VecI  (x.asInt(), y.asInt(), z.asInt()           );}
-static VecI4 TextVecI4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecI4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
-static Color TextColor(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+static Vec2  _TextVec2 (CChar  *t) {CalcValue x, y      ;                                                     TextValue(_SkipWhiteChars(TextValue(t, x)), y)          ; return Vec2  (x.asFlt(), y.asFlt()                      );}
+static Vec   _TextVec  (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return Vec   (x.asFlt(), y.asFlt(), z.asFlt()           );}
+static Vec4  _TextVec4 (CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Vec4  (x.asFlt(), y.asFlt(), z.asFlt(), w.asFlt());}
+static VecB4 _TextVecB4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecB4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+static VecI  _TextVecI (CChar  *t) {CalcValue x, y, z   ;                           TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)     ; return VecI  (x.asInt(), y.asInt(), z.asInt()           );}
+static VecI4 _TextVecI4(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return VecI4 (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
+static Color _TextColor(CChar  *t) {CalcValue x, y, z, w; TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(_SkipWhiteChars(TextValue(t, x)), y)), z)), w); return Color (x.asInt(), y.asInt(), z.asInt(), w.asInt());}
 
 Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial> materials, MemPtr<Int> part_material_index)
 {
@@ -173,7 +173,7 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
          SkelBone *bone=(skel ? skel->bones.addr(i) : null);
          f.fullLine(s); if(bone)bone_names.add(s);
          f. getLine(s); if(bone){Int parent=TextInt(s); bone->parent=(InRange(parent, skel->bones) ? parent : BONE_NULL);}
-         f. getLine(s); if(bone)bone->pos=TextVec(s);
+         f. getLine(s); if(bone)bone->pos=_TextVec(s);
       }
       ProcessBoneNames(bone_names); FREPA(bone_names)Set(skel->bones[i].name, bone_names[i]);
       MemtN<BoneType, 256> old_to_new;
@@ -214,16 +214,16 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
             MeshBase &base=part->base.create(vtxs, 0, 0, 0, VTX_POS|VTX_NRM|VTX_COLOR|(bones ? VTX_SKIN : MESH_NONE)|((uv_layers>=1) ? VTX_TEX0 : MESH_NONE)|((uv_layers>=2) ? VTX_TEX1 : MESH_NONE));
             FREP(vtxs)
             {
-               f.getLine(s); base.vtx.pos  (i)= TextVec  (s);
-               f.getLine(s); base.vtx.nrm  (i)=!TextVec  (s);
-               f.getLine(s); base.vtx.color(i)= TextColor(s);
-               if( uv_layers>=1){f. getLine(s); base.vtx.tex0(i)=TextVec2(s);}
-               if( uv_layers>=2){f. getLine(s); base.vtx.tex1(i)=TextVec2(s);}
+               f.getLine(s); base.vtx.pos  (i)= _TextVec  (s);
+               f.getLine(s); base.vtx.nrm  (i)=!_TextVec  (s);
+               f.getLine(s); base.vtx.color(i)= _TextColor(s);
+               if( uv_layers>=1){f. getLine(s); base.vtx.tex0(i)=_TextVec2(s);}
+               if( uv_layers>=2){f. getLine(s); base.vtx.tex1(i)=_TextVec2(s);}
                REP(uv_layers- 2) f.skipLine( ); // skip unprocessed
                if(bones>0)
                {
-                  f.getLine(s); VecI4 m=TextVecI4(s);
-                  f.getLine(s); Vec4  b=TextVec4 (s);
+                  f.getLine(s); VecI4 m=_TextVecI4(s);
+                  f.getLine(s); Vec4  b=_TextVec4 (s);
                   FREPA(m)if(b.c[i] && InRange(m.c[i], old_to_new))skin.New().set(old_to_new[m.c[i]], b.c[i]/* /255.0f not needed because weight is normalized in 'SetSkin' */);
                   SetSkin(skin, base.vtx.matrix(i), base.vtx.blend(i), skel); skin.clear();
                }
@@ -237,7 +237,7 @@ Bool ImportXPSText(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial
             Bool invalid=false;
             FREP(tris)
             {
-               f.getLine(s); VecI &t=base.tri.ind(i); t=TextVecI(s).reverse(); REPA(t)if(!InRange(t.c[i], vtxs)){t.zero(); invalid=true; break;}
+               f.getLine(s); VecI &t=base.tri.ind(i); t=_TextVecI(s).reverse(); REPA(t)if(!InRange(t.c[i], vtxs)){t.zero(); invalid=true; break;}
             }
             if(invalid)base.removeDegenerateFaces(0);
             if(!base.vtx.nrm())base.setNormalsAuto(EPS_NRM_AUTO, EPSD); // use small pos epsilon in case mesh is scaled down, call before 'setTanBin' as it depends on normals
