@@ -1007,6 +1007,31 @@ start:
          goto loop; // process it
       }
    }
+#if WINDOWS && DEBUG && 0
+{
+   #pragma message("!! Warning: Use only for testing !!")
+   static File f;
+   static WavEncoder we;
+   static Bool init=false;
+   static Int  step=0;
+   Int ms=AudioOutputFrameSamples*1000/AudioOutputFreq;
+   if(!init)
+   {
+      init=true;
+      f.mustWrite("d:/out.wav");
+      we.create(f, 16, AudioOutputFreq, 2);
+      TIMECAPS tc; if(timeGetDevCaps(&tc, SIZE(tc))==MMSYSERR_NOERROR)timeBeginPeriod(Mid(ms, tc.wPeriodMin, tc.wPeriodMax)); // need to enable high precision timers because default accuracy is around 16 ms
+   }
+   we.encode(AudioOutputFrameData, AudioOutputFrameSize);
+   if(step++>=400)
+   {
+      we.finish();
+      f.del();
+      Exit("end");
+   }
+   Time.wait(ms);
+}
+#endif
 #if SWITCH
    NS::UpdateSound();
 #endif
@@ -1096,6 +1121,19 @@ void InitSound()
 #endif
 
 #if CUSTOM_AUDIO // create this in addition to above
+
+#if WINDOWS && DEBUG && 0
+{
+   #pragma message("!! Warning: Use only for testing !!")
+   Int channels=2;
+   Int block=SIZE(I16)*channels;
+   AudioOutputFreq=48000;
+   AudioOutputFrameSamples=AudioOutputFreq*5/1000; // 5 ms
+   AudioOutputFrameSize=AudioOutputFrameSamples*block;
+   AudioOutputFrameData=Alloc(AudioOutputFrameSize);
+}
+#endif
+
    if(AudioOutputFreq
    && AudioOutputFrameSamples
    && AudioOutputFrameSize
