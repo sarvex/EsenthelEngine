@@ -8,6 +8,13 @@ namespace EE{
       therefore SOUND_API_LOCK_WEAK is marked as an empty macro.
 
 /******************************************************************************/
+#define CUSTOM_AUDIO_SAVE (CUSTOM_AUDIO && DEBUG && 0)
+#if     CUSTOM_AUDIO_SAVE
+   #pragma message("!! Warning: Use only for testing !!")
+   static File       AudioFile;
+   static WavEncoder AudioWav;
+#endif
+
 #define XAUDIO_DEBUG 0
 #if     XAUDIO_DEBUG
    #pragma message("!! Warning: Use this only for debugging !!")
@@ -1007,30 +1014,11 @@ start:
          goto loop; // process it
       }
    }
-#if WINDOWS && DEBUG && 0
-{
-   #pragma message("!! Warning: Use only for testing !!")
-   static File f;
-   static WavEncoder we;
-   static Bool init=false;
-   static Int  step=0;
-   Int ms=AudioOutputFrameSamples*1000/AudioOutputFreq;
-   if(!init)
+#if CUSTOM_AUDIO_SAVE
    {
-      init=true;
-      f.mustWrite("d:/out.wav");
-      we.create(f, 16, AudioOutputFreq, 2);
-      TIMECAPS tc; if(timeGetDevCaps(&tc, SIZE(tc))==MMSYSERR_NOERROR)timeBeginPeriod(Mid(ms, tc.wPeriodMin, tc.wPeriodMax)); // need to enable high precision timers because default accuracy is around 16 ms
+      AudioWav.encode(AudioOutputFrameData, AudioOutputFrameSize);
+      Int ms=AudioOutputFrameSamples*1000/AudioOutputFreq; Time.wait(ms);
    }
-   we.encode(AudioOutputFrameData, AudioOutputFrameSize);
-   if(step++>=400)
-   {
-      we.finish();
-      f.del();
-      Exit("end");
-   }
-   Time.wait(ms);
-}
 #endif
 #if SWITCH
    NS::UpdateSound();
@@ -1039,12 +1027,36 @@ start:
 }
 #endif
 /******************************************************************************/
+#if CUSTOM_AUDIO
+static inline Bool AudioSave()
+{
+#if CUSTOM_AUDIO_SAVE
+   AudioFile.mustWrite("D:/out.wav");
+   AudioWav .create(AudioFile, 16, AudioOutputFreq, 2);
+   Int ms=AudioOutputFrameSamples*1000/AudioOutputFreq;
+   TIMECAPS tc; if(timeGetDevCaps(&tc, SIZE(tc))==MMSYSERR_NOERROR)timeBeginPeriod(Mid(ms, tc.wPeriodMin, tc.wPeriodMax)); // need to enable high precision timers because default accuracy is around 16 ms
+#endif
+   return true;
+}
+#endif
 void InitSound()
 {
    if(SoundFunc)return; // return if it was already created
    if(LogInit)LogN("InitSound");
    SOUND_API_LOCK_FORCE;
    SoundFunc=true;
+
+#if CUSTOM_AUDIO && WINDOWS && DEBUG && 0
+{
+   #pragma message("!! Warning: Use only for testing !!")
+   Int channels=2;
+   Int block=SIZE(I16)*channels;
+   AudioOutputFreq=48000;
+   AudioOutputFrameSamples=AudioOutputFreq*5/1000; // 5 ms
+   AudioOutputFrameSize=AudioOutputFrameSamples*block;
+   AudioOutputFrameData=Alloc(AudioOutputFrameSize);
+}
+#endif
 
 #if DIRECT_SOUND
    if(OK(DirectSoundCreate(null, &DS, null)))
@@ -1121,23 +1133,11 @@ void InitSound()
 #endif
 
 #if CUSTOM_AUDIO // create this in addition to above
-
-#if WINDOWS && DEBUG && 0
-{
-   #pragma message("!! Warning: Use only for testing !!")
-   Int channels=2;
-   Int block=SIZE(I16)*channels;
-   AudioOutputFreq=48000;
-   AudioOutputFrameSamples=AudioOutputFreq*5/1000; // 5 ms
-   AudioOutputFrameSize=AudioOutputFrameSamples*block;
-   AudioOutputFrameData=Alloc(AudioOutputFrameSize);
-}
-#endif
-
    if(AudioOutputFreq
    && AudioOutputFrameSamples
    && AudioOutputFrameSize
    && AudioOutputFrameData
+   && AudioSave()
    && AudioThread.create(AudioUpdate, null, 3/*priority*/, false, "EE.Audio"))
 #endif
 
@@ -1162,6 +1162,10 @@ void ShutSound()
    AudioBuffers.del(); // can remove all buffers first fast, so when removing voices, the individual remove buffer commands will be ignored
    AudioVoiceFirst=null;
    AudioVoices .del();
+#endif
+#if CUSTOM_AUDIO_SAVE
+   AudioWav .del();
+   AudioFile.del();
 #endif
 #if DIRECT_SOUND
    RELEASE(DSL);
