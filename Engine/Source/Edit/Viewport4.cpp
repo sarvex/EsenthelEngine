@@ -233,7 +233,7 @@ void Viewport4::DPad::update(C GuiPC &gpc)
    axis   =0;
    if(gpc.enabled)
    {
-      C Vec2 *pos=null; if(Gui.ms()==this && Ms.b(0))pos=&Ms.pos(); REPA(Touches)if(Touches[i].guiObj()==this && Touches[i].on()){pos=&Touches[i].pos(); break;}
+    C Vec2 *pos=null; if(Gui.ms()==this && Ms.b(0))pos=&Ms.pos(); REPA(Touches)if(Touches[i].guiObj()==this && Touches[i].on()){pos=&Touches[i].pos(); break;}
       if(pos)
       {
          Circle inner(rect().h()*0.5f*DPAD_INNER, rect().center()+gpc.offset);
