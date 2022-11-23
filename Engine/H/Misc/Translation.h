@@ -204,6 +204,7 @@ CChar* TMenu();
 CChar* TMessage();
 CChar* TMiniMap();
 CChar* TMods();
+CChar* TModsFolder();
 CChar* TMonster();
 CChar* TMonsters();
 CChar* TMoreManaNeeded();

@@ -241,13 +241,13 @@ void Button::update(C GuiPC &gpc)
             if(t.scrolling()) // if touch is used for scrolling, then we need to process the button differently
             {
                state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON                 : BS_NONE)  // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
-                  //| ((t.pd()                                                         ) ? BS_PUSHED             : BS_NONE)  // ignore the first push
                     | ((t.rs() &&                          Gui.objAtPos(t.pos())==this ) ? BS_RELEASED|BS_PUSHED : BS_NONE); // process touch release as both BS_RELEASED|BS_PUSHED so it can be used instead of touch pushes
+             //if(t.pd()){state|=BS_PUSHED; t.eat();} ignore the first push
             }else
             {
                state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON       : BS_NONE) // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
-                    | ((t.pd()                                                         ) ? BS_PUSHED   : BS_NONE)
                     | ((t.rs() &&                          Gui.objAtPos(t.pos())==this ) ? BS_RELEASED : BS_NONE);
+               if(t.pd()){state|=BS_PUSHED; t.eat();}
             }
          }
       }
