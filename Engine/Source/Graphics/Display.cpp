@@ -526,6 +526,7 @@ Str8 DisplayClass::apiName()C
    return "OpenGL";
 #endif
 }
+#if !SWITCH
 Bool DisplayClass::smallSize()C
 {
 #if WINDOWS_NEW
@@ -539,11 +540,10 @@ Bool DisplayClass::smallSize()C
 #elif IOS
    // UI_USER_INTERFACE_IDIOM UIUserInterfaceIdiomPhone UIUserInterfaceIdiomPad 
    return UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone;
-#elif SWITCH
-   return true;
 #endif
    return false;
 }
+#endif
 Flt DisplayClass::browserZoom()C
 {
 #if WEB
