@@ -152,6 +152,7 @@ enum INPUT_TYPE : Byte // Input Device Type
    INPUT_KEYBOARD, // Keyboard
    INPUT_MOUSE   , // Mouse
    INPUT_JOYPAD  , // Joypad
+   INPUT_TOUCH   , // Touch
 };
 struct Input
 {
