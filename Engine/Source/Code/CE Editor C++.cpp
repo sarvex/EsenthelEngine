@@ -2553,7 +2553,10 @@ Bool CodeEditor::generateAndroidProj()
       deps.add(S+"implementation files('"+UnixPath(GetRelativePath(dest_path+"app", dest_libs+"play-core-native-sdk/playcore.aar"))+"')");
       deps.add(  "implementation('com.google.android.play:integrity:1.0.0')"); // needed by "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native */
 
+      deps.add("implementation 'com.google.android.play:app-update:2.0.0'");
       deps.add("implementation 'com.google.android.play:asset-delivery:2.0.0'");
+      deps.add("implementation 'com.google.android.play:integrity:1.0.1'");
+      deps.add("implementation 'com.google.android.play:review:2.0.0'");
 	   deps.add("implementation 'com.google.android.gms:play-services-tasks:18.0.2'");
    }
    FREPA(extract) // process in order
