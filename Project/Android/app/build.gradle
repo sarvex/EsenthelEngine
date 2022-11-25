@@ -6,7 +6,7 @@ android {
 	defaultConfig {
 		applicationId "com.esenthel.project"
 		minSdkVersion MSBUILD_MIN_SDK_VERSION
-		targetSdkVersion 30
+		targetSdkVersion 31
 	}
 	signingConfigs {
 		release {
@@ -49,8 +49,7 @@ dependencies {
 	implementation fileTree(dir: "libs", include: ["*.jar"])
 
 	/** // #PlayAssetDelivery
-	implementation files("../../../Editor Data/Code/Android/libs/play-core-native-sdk/playcore.aar")
-	implementation("com.google.android.play:integrity:1.0.0") // NEEDED BY "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native
+	implementation 'com.google.android.play:asset-delivery:2.0.0'
 	/**/
 }
 

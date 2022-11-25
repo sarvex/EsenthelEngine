@@ -2547,9 +2547,13 @@ Bool CodeEditor::generateAndroidProj()
    Memc<Str> extract=modules;
    if(asset_packs>=0)
    {
-      extract.add("play-core-native-sdk");
+      // #PlayAssetDelivery - also modify "Esenthel\Project\Android\app\build.gradle"
+
+    /*extract.add("play-core-native-sdk");
       deps.add(S+"implementation files('"+UnixPath(GetRelativePath(dest_path+"app", dest_libs+"play-core-native-sdk/playcore.aar"))+"')");
-      deps.add(  "implementation('com.google.android.play:integrity:1.0.0')"); // needed by "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native
+      deps.add(  "implementation('com.google.android.play:integrity:1.0.0')"); // needed by "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native */
+
+      deps.add("implementation 'com.google.android.play:asset-delivery:2.0.0'");
    }
    FREPA(extract) // process in order
    {

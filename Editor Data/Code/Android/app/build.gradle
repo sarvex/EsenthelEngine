@@ -6,7 +6,7 @@ android {
 	defaultConfig {
 		applicationId "com.esenthel.project"
 		minSdkVersion MSBUILD_MIN_SDK_VERSION
-		targetSdkVersion 30
+		targetSdkVersion 31
 	}
 	signingConfigs {
 		release {

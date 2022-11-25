@@ -6380,12 +6380,6 @@
     <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\state_helper_impl.cc.o">
       <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
     </Object>
-    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\task_manager_impl.cc.o">
-      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
-    </Object>
-    <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\tasks.cc.o">
-      <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
-    </Object>
     <Object Include="..\ThirdPartyLibs\play-core-native-sdk\obj\app_update.cc.o">
       <Filter>H\_\Libs\Android\play-core-native-sdk</Filter>
     </Object>
