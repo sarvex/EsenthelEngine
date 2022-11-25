@@ -2554,6 +2554,7 @@ Bool CodeEditor::generateAndroidProj()
       deps.add(  "implementation('com.google.android.play:integrity:1.0.0')"); // needed by "play-core-native-sdk" - https://developer.android.com/guide/playcore/asset-delivery/integrate-native#setup-play-core-native */
 
       deps.add("implementation 'com.google.android.play:asset-delivery:2.0.0'");
+	   deps.add("implementation 'com.google.android.gms:play-services-tasks:18.0.2'");
    }
    FREPA(extract) // process in order
    {
