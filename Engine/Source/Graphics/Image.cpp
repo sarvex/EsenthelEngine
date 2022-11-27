@@ -596,7 +596,7 @@ Bool ImageSupported(IMAGE_TYPE type, IMAGE_MODE mode, Byte samples)
    if(!type                          )return true ; // empty type is OK
    if(!ImageTypeInfo::usageKnown()                  // if usage unknown then assume it's supported so we can try
    #if GL_ES
-   && mode!=IMAGE_RT && mode!=IMAGE_DS // GL_ES has IMAGE_RT and IMAGE_DS always set
+   && mode!=IMAGE_RT && mode!=IMAGE_DS // GL_ES has IMAGE_RT and IMAGE_DS always set. These checks are needed because on OpenGL Image create can succeed, but when binding to FBO 'glCheckFramebufferStatus' might fail
    #endif
                                      )return true ;
    UInt need=0, got=ImageTI[type].usage();
