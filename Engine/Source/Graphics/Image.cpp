@@ -594,7 +594,11 @@ Bool ImageSupported(IMAGE_TYPE type, IMAGE_MODE mode, Byte samples)
    if(!InRange(type, IMAGE_ALL_TYPES))return false; // invalid type
    if( IsSoft (mode)                 )return true ; // software supports all modes
    if(!type                          )return true ; // empty type is OK
-   if(!ImageTypeInfo::usageKnown()   )return true ; // if usage unknown then assume it's supported so we can try
+   if(!ImageTypeInfo::usageKnown()                  // if usage unknown then assume it's supported so we can try
+   #if GL_ES
+   && mode!=IMAGE_RT && mode!=IMAGE_DS // GL_ES has IMAGE_RT and IMAGE_DS always set
+   #endif
+                                     )return true ;
    UInt need=0, got=ImageTI[type].usage();
    switch(mode)
    {

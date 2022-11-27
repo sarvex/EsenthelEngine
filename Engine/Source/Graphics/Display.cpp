@@ -2166,7 +2166,7 @@ void DisplayClass::getCaps()
 
    REP(IMAGE_ALL_TYPES)
    {
-      UInt usage=0; UINT fs; if(OK(D3D->CheckFormatSupport(ImageTI[i].format, &fs)))
+      ImageTypeInfo &type_info=ImageTI[i]; UInt usage=0; UINT fs; if(OK(D3D->CheckFormatSupport(type_info.format, &fs)))
       {
          if(fs&D3D11_FORMAT_SUPPORT_IA_VERTEX_BUFFER           )usage|=ImageTypeInfo::USAGE_VTX;
          if(fs&D3D11_FORMAT_SUPPORT_TEXTURE2D                  )usage|=ImageTypeInfo::USAGE_IMAGE_2D;
@@ -2177,7 +2177,7 @@ void DisplayClass::getCaps()
          if(fs&D3D11_FORMAT_SUPPORT_MULTISAMPLE_RENDERTARGET   )usage|=ImageTypeInfo::USAGE_IMAGE_MS;
          if(fs&D3D11_FORMAT_SUPPORT_TYPED_UNORDERED_ACCESS_VIEW)usage|=ImageTypeInfo::USAGE_IMAGE_UAV;
       }
-      ImageTI[i]._usage=usage;
+      type_info._usage=usage;
    }
    ImageTypeInfo::_usage_known=true;
 
@@ -2231,15 +2231,17 @@ void DisplayClass::getCaps()
    GLint max_col_attach  =   1; glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS     , & max_col_attach  ); _max_rt=Mid(Min(max_draw_buffers, max_col_attach), 1, 255);
    ImageTypeInfo::_usage_known=false;
 
-   #if !GL_ES && (defined GL_INTERNALFORMAT_SUPPORTED || defined GL_COLOR_RENDERABLE || defined GL_DEPTH_RENDERABLE) // on GL_ES glGetInternalformativ works only for GL_RENDERBUFFER
-   #if WINDOWS
-      if(glGetInternalformativ) // requires GL 4.2
-   #endif
+#if WINDOWS
+   if(glGetInternalformativ) // requires GL 4.2
+#endif
+   {
+      glGetError(); // clear any previous errors
+      REP(IMAGE_ALL_TYPES)
       {
-         glGetError(); // clear any previous errors
-         REP(IMAGE_ALL_TYPES)
+         ImageTypeInfo &type_info=ImageTI[i]; UInt usage=0; if(GLenum internalformat=type_info.format)
          {
-            GLint params[1]; UInt usage=0; GLenum internalformat=ImageTI[i].format;
+            GLint params[1]; 
+         #if !GL_ES
             // no ImageTypeInfo::USAGE_VTX ?
             glGetInternalformativ(GL_TEXTURE_2D            , internalformat, GL_INTERNALFORMAT_SUPPORTED, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_2D;
             glGetInternalformativ(GL_TEXTURE_3D            , internalformat, GL_INTERNALFORMAT_SUPPORTED, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_3D;
@@ -2248,11 +2250,47 @@ void DisplayClass::getCaps()
             glGetInternalformativ(GL_TEXTURE_2D            , internalformat, GL_DEPTH_RENDERABLE        , Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_DS;
             glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, internalformat, GL_COLOR_RENDERABLE        , Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_MS;
             glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, internalformat, GL_DEPTH_RENDERABLE        , Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_MS;
-            ImageTI[i]._usage=usage;
+         #else // on GL_ES glGetInternalformativ works only for GL_RENDERBUFFER and only for GL_NUM_SAMPLE_COUNTS
+            #if 1
+               glGetInternalformativ(GL_RENDERBUFFER, internalformat, GL_NUM_SAMPLE_COUNTS, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0]>0)
+               {
+                  if(type_info.r)usage|=ImageTypeInfo::USAGE_IMAGE_RT;else
+                  if(type_info.d)usage|=ImageTypeInfo::USAGE_IMAGE_DS;
+               }
+            #else
+               if(!type_info.compressed)
+               {
+                  ImageRT temp;
+                  if(type_info.r)
+                  {
+                     if(temp.create(1, IMAGE_TYPE(i), IMAGE_RT))
+                     {
+                        Renderer.set(&temp, null, false);
+                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_RT;
+                     }
+                  }else
+                  if(type_info.d)
+                  {
+                     if(temp.create(1, IMAGE_TYPE(i), IMAGE_DS))
+                     {
+                        Renderer.set(null, &temp, false);
+                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_DS;
+                     }
+                  }
+               }
+            #endif
+         #endif
          }
-         ImageTypeInfo::_usage_known=true;
+      #if DEBUG && 0
+         if(usage & ImageTypeInfo::USAGE_IMAGE_RT)LogN(S+type_info.name+" RT");else
+         if(usage & ImageTypeInfo::USAGE_IMAGE_DS)LogN(S+type_info.name+" DS");
+      #endif
+         type_info._usage=usage;
       }
+   #if !GL_ES
+      ImageTypeInfo::_usage_known=true;
    #endif
+   }
 #endif
 
 #if IOS
