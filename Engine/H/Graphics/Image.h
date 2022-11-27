@@ -321,7 +321,7 @@ struct Image // Image (Texture)
    Bool                     sRGB()C {return IsSRGB (_hw_type)          ;} // if  this is a sRGB image
    Bool                  isSByte()C {return IsSByte(_hw_type)          ;} // if  this is a signed byte/8-bit precision
 #if EE_PRIVATE
-   constexpr Bool     filterable()C {return hwTypeInfo().  filterable();}
+   constexpr Bool     filterable()C {return hwTypeInfo().filterable() || _mode==IMAGE_SHADOW_MAP;} // even though IMAGE_SHADOW_MAP is a depth map, it can be filtered
    Byte                  baseMip()C {return _base_mip;}
 #endif
 
