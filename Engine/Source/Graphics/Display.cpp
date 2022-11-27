@@ -2254,8 +2254,8 @@ void DisplayClass::getCaps()
             #if 1
                glGetInternalformativ(GL_RENDERBUFFER, internalformat, GL_NUM_SAMPLE_COUNTS, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0]>0)
                {
-                  if(type_info.r)usage|=ImageTypeInfo::USAGE_IMAGE_RT;else
-                  if(type_info.d)usage|=ImageTypeInfo::USAGE_IMAGE_DS;
+                  if(type_info.r)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;else
+                  if(type_info.d)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
                }
             #else
                if(!type_info.compressed)
@@ -2266,7 +2266,7 @@ void DisplayClass::getCaps()
                      if(temp.create(1, IMAGE_TYPE(i), IMAGE_RT))
                      {
                         Renderer.set(&temp, null, false);
-                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_RT;
+                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;
                      }
                   }else
                   if(type_info.d)
@@ -2274,7 +2274,7 @@ void DisplayClass::getCaps()
                      if(temp.create(1, IMAGE_TYPE(i), IMAGE_DS))
                      {
                         Renderer.set(null, &temp, false);
-                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_DS;
+                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
                      }
                   }
                }
