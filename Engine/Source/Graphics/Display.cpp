@@ -2231,6 +2231,7 @@ void DisplayClass::getCaps()
    GLint max_col_attach  =   1; glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS     , & max_col_attach  ); _max_rt=Mid(Min(max_draw_buffers, max_col_attach), 1, 255);
    ImageTypeInfo::_usage_known=false;
 
+#ifdef GL_INTERNALFORMAT_SUPPORTED // needed for Mac which is limited to GL 4.1
    if(
 #if WINDOWS
    glGetInternalformativ // requires GL 4.2
@@ -2268,6 +2269,7 @@ void DisplayClass::getCaps()
       ImageTypeInfo::_usage_known=true;
    #endif
    }else
+#endif
    {
       REP(IMAGE_ALL_TYPES)
       {
