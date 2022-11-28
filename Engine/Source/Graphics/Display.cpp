@@ -2231,9 +2231,13 @@ void DisplayClass::getCaps()
    GLint max_col_attach  =   1; glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS     , & max_col_attach  ); _max_rt=Mid(Min(max_draw_buffers, max_col_attach), 1, 255);
    ImageTypeInfo::_usage_known=false;
 
+   if(
 #if WINDOWS
-   if(glGetInternalformativ) // requires GL 4.2
+   glGetInternalformativ // requires GL 4.2
+#else
+   1
 #endif
+   )
    {
       glGetError(); // clear any previous errors
       REP(IMAGE_ALL_TYPES)
@@ -2251,46 +2255,53 @@ void DisplayClass::getCaps()
             glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, internalformat, GL_COLOR_RENDERABLE        , Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_MS;
             glGetInternalformativ(GL_TEXTURE_2D_MULTISAMPLE, internalformat, GL_DEPTH_RENDERABLE        , Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0])usage|=ImageTypeInfo::USAGE_IMAGE_MS;
          #else // on GL_ES glGetInternalformativ works only for GL_RENDERBUFFER and only for GL_NUM_SAMPLE_COUNTS
-            #if 1
-               glGetInternalformativ(GL_RENDERBUFFER, internalformat, GL_NUM_SAMPLE_COUNTS, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0]>0)
-               {
-                  if(type_info.r)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;else
-                  if(type_info.d)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
-               }
-            #else
-               if(!type_info.compressed)
-               {
-                  ImageRT temp;
-                  if(type_info.r)
-                  {
-                     if(temp.create(1, IMAGE_TYPE(i), IMAGE_RT))
-                     {
-                        Renderer.set(&temp, null, false);
-                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;
-                     }
-                  }else
-                  if(type_info.d)
-                  {
-                     if(temp.create(1, IMAGE_TYPE(i), IMAGE_DS))
-                     {
-                        Renderer.set(null, &temp, false);
-                        if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
-                     }
-                  }
-               }
-            #endif
+            glGetInternalformativ(GL_RENDERBUFFER, internalformat, GL_NUM_SAMPLE_COUNTS, Elms(params), params); if(glGetError()==GL_NO_ERROR && params[0]>0)
+            {
+               if(type_info.r)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;else
+               if(type_info.d)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
+            }
          #endif
          }
-      #if DEBUG && 0
-         if(usage & ImageTypeInfo::USAGE_IMAGE_RT)LogN(S+type_info.name+" RT");else
-         if(usage & ImageTypeInfo::USAGE_IMAGE_DS)LogN(S+type_info.name+" DS");
-      #endif
          type_info._usage=usage;
       }
    #if !GL_ES
       ImageTypeInfo::_usage_known=true;
    #endif
+   }else
+   {
+      REP(IMAGE_ALL_TYPES)
+      {
+         ImageTypeInfo &type_info=ImageTI[i]; UInt usage=0; if(GLenum internalformat=type_info.format)if(!type_info.compressed)
+         {
+            ImageRT temp;
+            if(type_info.r)
+            {
+               if(temp.create(1, IMAGE_TYPE(i), IMAGE_RT))
+               {
+                  Renderer.set(&temp, null, false);
+                  if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_RT;
+               }
+            }else
+            if(type_info.d)
+            {
+               if(temp.create(1, IMAGE_TYPE(i), IMAGE_DS))
+               {
+                  Renderer.set(null, &temp, false);
+                  if(glCheckFramebufferStatus(GL_FRAMEBUFFER)==GL_FRAMEBUFFER_COMPLETE)usage|=ImageTypeInfo::USAGE_IMAGE_2D | ImageTypeInfo::USAGE_IMAGE_DS;
+               }
+            }
+         }
+         type_info._usage=usage;
+      }
    }
+#if DEBUG && 0
+   REP(IMAGE_ALL_TYPES)
+   {
+      ImageTypeInfo &type_info=ImageTI[i];
+      if(type_info.usage & ImageTypeInfo::USAGE_IMAGE_RT)LogN(S+type_info.name+" RT");else
+      if(type_info.usage & ImageTypeInfo::USAGE_IMAGE_DS)LogN(S+type_info.name+" DS");
+   }
+#endif
 #endif
 
 #if IOS
