@@ -2276,6 +2276,7 @@ void DisplayClass::getCaps()
          ImageTypeInfo &type_info=ImageTI[i]; UInt usage=0; if(GLenum internalformat=type_info.format)if(!type_info.compressed)
          {
             ImageRT temp;
+            type_info._usage=~0; // temporarily mark as full support so we can try it
             if(type_info.r)
             {
                if(temp.create(1, IMAGE_TYPE(i), IMAGE_RT))
@@ -2300,8 +2301,8 @@ void DisplayClass::getCaps()
    REP(IMAGE_ALL_TYPES)
    {
       ImageTypeInfo &type_info=ImageTI[i];
-      if(type_info.usage & ImageTypeInfo::USAGE_IMAGE_RT)LogN(S+type_info.name+" RT");else
-      if(type_info.usage & ImageTypeInfo::USAGE_IMAGE_DS)LogN(S+type_info.name+" DS");
+      if(type_info._usage & ImageTypeInfo::USAGE_IMAGE_RT)LogN(S+type_info.name+" RT");else
+      if(type_info._usage & ImageTypeInfo::USAGE_IMAGE_DS)LogN(S+type_info.name+" DS");
    }
 #endif
 #endif
