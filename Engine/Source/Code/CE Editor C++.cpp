@@ -1894,7 +1894,7 @@ Bool CodeEditor::generateXcodeProj()
             {
                auto size=sizes[i];
                Str  name=S+size.x+'x'+size.y+".png", full=build_path+"Assets/Images.xcassets/AppIcon.appiconset/"+name;
-               if(CompareFile(FileInfoSystem(full).modify_time_utc, icon_time))convert.New().set(full, icon, icon_time).resize(size.x, size.y);
+               if(CompareFile(FileInfoSystem(full).modify_time_utc, icon_time))convert.New().set(full, icon, icon_time).resize(size.x, size.y).removeAlpha();
             }
          }
 
