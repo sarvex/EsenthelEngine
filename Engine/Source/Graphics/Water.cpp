@@ -353,8 +353,13 @@ void WaterClass::begin()
          Renderer._col->copyHw(*Renderer._water_col, false, D.viewRect()); // copy
          if(_shader_soft)
          {
+         #if GL_ES // iOS (and possibly some Android devices) doesn't have IMAGERT_F32
+            Renderer._water_ds.getDS(rt_desc.size.x, rt_desc.size.y, 1, false);
+            Renderer._ds_1s->copyDepth(*Renderer._water_ds, false, D.viewRect());
+         #else
             Renderer._water_ds.get(rt_desc.type(IMAGERT_F32));
             Renderer._ds_1s->copyHw(*Renderer._water_ds, false, D.viewRect());
+         #endif
          }
          setImages(Renderer._water_col, Renderer._water_ds);
          Renderer.set(Renderer._col, Renderer._ds, true);
