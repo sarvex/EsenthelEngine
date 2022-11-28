@@ -192,14 +192,14 @@ static Joypad* FindJoypad(GCExtendedGamepad *gamepad)
    GCController *controller=(GCController*)notification.object;
    if(GCExtendedGamepad *gamepad=controller.extendedGamepad)
    {
-      ULong id=0; if([controller respondsToSelector:@selector(deviceHash)])id=controller.deviceHash;
+      ULong id=0; //if([controller respondsToSelector:@selector(deviceHash)])id=controller.deviceHash;
       Bool added; Joypad &joypad=GetJoypad(NewJoypadID(id), added); if(added)
       {
          joypad._gamepad=gamepad;
 
        //controller.productCategory; "Xbox One"
-         if([controller respondsToSelector:@selector(detailedProductCategory)])joypad._name=[controller detailedProductCategory]; // "Xbox Elite"
-         if(!joypad._name.is())joypad._name=controller.vendorName; // "Xbox Wireless Controller"
+       //if([controller respondsToSelector:@selector(detailedProductCategory)])joypad._name=[controller detailedProductCategory]; // "Xbox Elite"
+       /*if(!joypad._name.is())*/joypad._name=controller.vendorName; // "Xbox Wireless Controller"
 
 
          // add elements
