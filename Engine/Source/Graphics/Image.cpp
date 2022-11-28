@@ -3211,7 +3211,9 @@ void Image::copyHw(ImageRT &dest, Bool restore_rt, C RectI *rect_src, C RectI *r
 {
    if(this!=&dest)
    {
-      if(!rect_dest)dest.discard(); // if we set entire 'dest' then we can discard it
+      if(!rect_dest
+      ||  rect_dest->min.x<=0 && rect_dest->min.y<=0 && rect_dest->max.x>=dest.w() && rect_dest->max.y>=dest.h())dest.discard(); // if we set entire 'dest' then we can discard it
+
    #if GL
       if(this==&Renderer._main) // in OpenGL cannot directly copy from main
       {
@@ -3252,6 +3254,7 @@ void Image::copyHw(ImageRT &dest, Bool restore_rt, C RectI *rect_src, C RectI *r
          return;
       }
    #endif
+
       // remember settings
       ImageRT *rt[Elms(Renderer._cur)], *ds;
       Bool     restore_viewport;
@@ -3326,6 +3329,81 @@ void Image::copyHw(ImageRT &dest, Bool restore_rt, C RectI *rect_src, C RectI *r
       if(restore_rt)Renderer.set(rt[0], rt[1], rt[2], rt[3], ds, restore_viewport);
    }
 }
+void Image::copyDepth(ImageRT &dest, Bool restore_rt, C RectI *rect_src, C RectI *rect_dest)C
+{
+   if(this!=&dest)
+   {
+      if(!rect_dest
+      ||  rect_dest->min.x<=0 && rect_dest->min.y<=0 && rect_dest->max.x>=dest.w() && rect_dest->max.y>=dest.h())dest.discard(); // if we set entire 'dest' then we can discard it
+
+      // remember settings
+      ImageRT *rt[Elms(Renderer._cur)], *ds;
+      Bool     restore_viewport;
+      if(restore_rt)
+      {
+         REPAO(rt)=Renderer._cur[i];
+               ds =Renderer._cur_ds;
+         restore_viewport=!D._view_active.full;
+      }
+
+      Renderer.set(null, &dest, false);
+      ALPHA_MODE alpha=D.alpha(ALPHA_NONE); D.depthLock(true); D.depthFunc(FUNC_ALWAYS);
+
+      VI.image  (this);
+      VI.shader (Sh.SetDepth);
+      VI.setType(VI_2D_TEX, VI_STRIP);
+      if(Vtx2DTex *v=(Vtx2DTex*)VI.addVtx(4))
+      {
+         if(!rect_dest)
+         {
+            v[0].pos.set(-1,  1);
+            v[1].pos.set( 1,  1);
+            v[2].pos.set(-1, -1);
+            v[3].pos.set( 1, -1);
+         }else
+         {
+            Flt  xm=2.0f/dest.hwW(),
+                 ym=2.0f/dest.hwH();
+            Rect frac(rect_dest->min.x*xm-1, -rect_dest->max.y*ym+1,
+                      rect_dest->max.x*xm-1, -rect_dest->min.y*ym+1);
+            v[0].pos.set(frac.min.x, frac.max.y);
+            v[1].pos.set(frac.max.x, frac.max.y);
+            v[2].pos.set(frac.min.x, frac.min.y);
+            v[3].pos.set(frac.max.x, frac.min.y);
+         }
+
+         if(!rect_src)
+         {
+            v[0].tex.set(0, 0);
+            v[1].tex.set(1, 0);
+            v[2].tex.set(0, 1);
+            v[3].tex.set(1, 1);
+         }else
+         {
+            Rect tex(Flt(rect_src->min.x)/hwW(), Flt(rect_src->min.y)/hwH(),
+                     Flt(rect_src->max.x)/hwW(), Flt(rect_src->max.y)/hwH());
+            v[0].tex.set(tex.min.x, tex.min.y);
+            v[1].tex.set(tex.max.x, tex.min.y);
+            v[2].tex.set(tex.min.x, tex.max.y);
+            v[3].tex.set(tex.max.x, tex.max.y);
+         }
+      #if GL
+         if(!D.mainFBO()) // in OpenGL when drawing to RenderTarget the 'dest.pos.y' must be flipped
+         {
+            CHS(v[0].pos.y);
+            CHS(v[1].pos.y);
+            CHS(v[2].pos.y);
+            CHS(v[3].pos.y);
+         }
+      #endif
+      }
+      VI.end();
+
+      // restore settings
+      D.alpha(alpha); D.depthUnlock(); D.depthFunc(FUNC_DEFAULT);
+      if(restore_rt)Renderer.set(rt[0], rt[1], rt[2], rt[3], ds, restore_viewport);
+   }
+}
 static void SetRects(C Image &src, C Image &dest, RectI &rect_src, RectI &rect_dest, C Rect &rect)
 {
    Rect uv=D.screenToUV(rect);
@@ -3343,6 +3421,12 @@ void Image::copyHw(ImageRT &dest, Bool restore_rt, C Rect &rect)C
    RectI rect_src, rect_dest;
    SetRects(T, dest, rect_src, rect_dest, rect);
    copyHw(dest, restore_rt, &rect_src, &rect_dest);
+}
+void Image::copyDepth(ImageRT &dest, Bool restore_rt, C Rect &rect)C
+{
+   RectI rect_src, rect_dest;
+   SetRects(T, dest, rect_src, rect_dest, rect);
+   copyDepth(dest, restore_rt, &rect_src, &rect_dest);
 }
 /******************************************************************************/
 Bool Image::capture(C ImageRT &src)
