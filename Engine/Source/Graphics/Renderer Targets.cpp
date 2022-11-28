@@ -449,7 +449,7 @@ void RendererClass::set(ImageRT *t0, ImageRT *t1, ImageRT *t2, ImageRT *t3, Imag
       change_ds=!EqualDS(_cur_ds, set_ds, _cur_ds_id);
    }
 #if DEPTH_FLUSH
-   if(_modified_depth && depth_read_mode!=NO_DEPTH_READ && !change_ds) // if depth was modified and want to read it and we're not changing it (if we're changing then it will be auto flushed)
+   if(_modified_depth && depth_read_mode!=NO_DEPTH_READ) // if depth was modified and want to read it
    {
       _modified_depth=false;
       if(_cur_ds_id) // if actually have some depth texture
