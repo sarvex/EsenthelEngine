@@ -410,6 +410,9 @@ void WaterClass::end()
             if(FUNC_DEFAULT!=FUNC_LESS)D.depthFunc(FUNC_DEFAULT); D.depthUnlock(    );
          }
       }
+   #if DEPTH_FLUSH
+      Renderer._modified_depth=true;
+   #endif
    }
 }
 /******************************************************************************/

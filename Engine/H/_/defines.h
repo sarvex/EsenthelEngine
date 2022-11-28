@@ -227,6 +227,8 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
    #define MAX_LONG_PATH 1024
    #define MAX_UTF_PATH  2048
 
+   #define DEPTH_FLUSH (GL && TILE_BASED_GPU && !WEB) // some GPUs store RTs (including depth buffer) on fast on-chip memory and to be able to read from them, we need to flush them to the texture memory first. No need to do on WEB because there we can never read from depth while writing to it.
+
    #define SIZEI(x)  Int(SIZE(x)) // get size of element
    #define SIZEU(x) UInt(SIZE(x)) // get size of element
 
