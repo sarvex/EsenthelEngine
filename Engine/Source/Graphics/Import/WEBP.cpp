@@ -106,6 +106,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          config .lossless     =(q>=100);
          config .      quality= q;
          config .alpha_quality=aq;
+         config .method       =6;
          config .exact        =true;
          config .use_sharp_yuv=true;
          picture.width        =src->w();
