@@ -91,11 +91,11 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
       if(WebPPictureInit(&picture)
       && WebPConfigInit (&config))
       {
-         Int q=RoundPos(rgb_quality*100);
+         Flt q=rgb_quality*100;
          if( q<  0)q=100;else // default to 100=lossless
          if( q>100)q=100;
 
-         Int aq=RoundPos(alpha_quality*100);
+         Flt aq=alpha_quality*100;
          if( aq<  0)aq=  q;else // default to 'q'=rgb_quality
          if( aq>100)aq=100;
 
@@ -103,7 +103,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
        //config .method       =6; // this affects only lossy, 5 and 6 are supposed to be better quality, however they actually made image lose detail
        //config .thread_level =2; // 1=no performance difference, >=1 actually makes the compression to fail
        //config .near_lossless=; // made things much worse
-         config .lossless     =(q>=100);
+         config .lossless     =(q>=100-EPS);
          config .      quality= q;
          config .alpha_quality=aq;
          config .method       =6;
