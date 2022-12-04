@@ -771,6 +771,8 @@ Flt DeltaY(C Rect &a, C Rect &b)
 /******************************************************************************/
 Rect Fit(Flt src_aspect, C Rect &dest_rect, FIT_MODE fit)
 {
+   if(fit==FIT_NONE)return dest_rect;
+
    Rect r=dest_rect; Bool mx=(r.min.x>r.max.x); if(mx)Swap(r.min.x, r.max.x); Flt w=r.w();
                      Bool my=(r.min.y>r.max.y); if(my)Swap(r.min.y, r.max.y); Flt h=r.h(), dest_aspect=w/h;
 

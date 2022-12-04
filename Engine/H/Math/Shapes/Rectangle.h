@@ -6,6 +6,7 @@
 /******************************************************************************/
 enum FIT_MODE : Byte // Fit Mode, these modes specify fitting while preserving original proportions
 {
+   FIT_NONE  , // no  fit
    FIT_FULL  , // fit width and height to fit  the entire source
    FIT_FILL  , // fit width and height to fill the entire destination
    FIT_WIDTH , // fit width
