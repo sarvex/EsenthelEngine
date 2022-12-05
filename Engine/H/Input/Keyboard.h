@@ -76,7 +76,8 @@ struct KeyboardClass // Keyboard Input
    Char   keyChar  (KB_KEY key, Bool shift, Bool caps)C;
 #endif
 
-   Bool hardware(          )C {return _hardware;} // if hardware keyboard is available
+   Bool hardware(          )C {return _hardware;} // if  hardware  keyboard is available
+   Bool visible (          )C {return _visible ;} // if  on-screen keyboard is currently displayed
    Bool rect    (Rect &rect)C;                    // get on-screen keyboard rectangle, false if no on-screen keyboard is currently displayed
 
    KB_KEY qwerty(KB_KEY qwerty)C; // convert key from QWERTY layout to layout of current keyboard
