@@ -858,28 +858,33 @@ public class EsenthelActivity extends NativeActivity
       }
       return super.dispatchKeyEvent(event);
    }
-   public final void editTextSetDo(String text, int start, int end, boolean password)
+   public final void editTextSetDo(String text, int start, int end, int mode)
    {
       if(edit_text!=null)
       {
+         boolean password=((mode&1)!=0),
+                   number=((mode&2)!=0),
+                    email=((mode&4)!=0);
          edit_text.removeTextChangedListener(text_watcher);
          edit_text.setText(text);
          edit_text.setSelection(start, end);
-         edit_text.setInputType(password ? InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE|InputType.TYPE_TEXT_VARIATION_PASSWORD : InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE); // TYPE_TEXT_FLAG_MULTI_LINE prevents from Enter making the keyboard disappear (on Google and Samsung keyboards)
+         edit_text.setInputType(email ?             InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS|InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                             : number ? (password ? InputType.   TYPE_NUMBER_VARIATION_PASSWORD|InputType.TYPE_CLASS_NUMBER                                   : InputType.TYPE_CLASS_NUMBER                                  )
+                                      : (password ? InputType.     TYPE_TEXT_VARIATION_PASSWORD|InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE : InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE)); // TYPE_TEXT_FLAG_MULTI_LINE prevents from Enter making the keyboard disappear (on Google and Samsung keyboards)
          edit_text.addTextChangedListener(text_watcher);
       }
    }
-   public final void editTextSet(final String text, final int start, final int end, final boolean password)
+   public final void editTextSet(final String text, final int start, final int end, final int mode)
    {
       runOnUiThread(new Runnable()
       {
          @Override public final void run()
          {
-            editTextSetDo(text, start, end, password);
+            editTextSetDo(text, start, end, mode);
          }
       });
    }
-   public final void editText(final String text, final int start, final int end, final boolean password)
+   public final void editText(final String text, final int start, final int end, final int mode)
    {
       runOnUiThread(new Runnable()
       {
@@ -912,7 +917,7 @@ public class EsenthelActivity extends NativeActivity
                edit_text.setImeOptions(edit_text.getImeOptions()|EditorInfo.IME_FLAG_NO_FULLSCREEN);
                activity.addContentView(edit_text, layout);
             }
-            editTextSetDo(text, start, end, password);
+            editTextSetDo(text, start, end, mode);
             edit_text.setVisibility(View.VISIBLE);
             edit_text.bringToFront();
             edit_text.requestFocus();

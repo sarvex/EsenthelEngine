@@ -15,6 +15,7 @@ void TextLine::zero()
    show_find=false;
 
   _can_select=false;
+  _flag      = 0;
   _max_length=-1;
   _offset    = 0;
 
@@ -62,6 +63,7 @@ TextLine& TextLine::create(C TextLine &src)
          hint          =src. hint;
         _skin          =src._skin;
         _can_select    =src._can_select;
+        _flag          =src._flag;
         _max_length    =src._max_length;
         _offset        =src._offset;
         _func_immediate=src._func_immediate;
@@ -89,6 +91,12 @@ void TextLine::setTextInput()C
 /******************************************************************************/
 Bool      TextLine::password(       )C {return             _edit.password   ;                           }
 TextLine& TextLine::password(Bool on)  {if(password()!=on){_edit.password=on; setTextInput();} return T;}
+
+Bool      TextLine::number(       )C {return    FlagOn(_flag, NUMBER);}
+TextLine& TextLine::number(Bool on)  {if(number()!=on){_flag^=NUMBER ; setTextInput();} return T;}
+
+Bool      TextLine::email(       )C {return   FlagOn(_flag, EMAIL);}
+TextLine& TextLine::email(Bool on)  {if(email()!=on){_flag^=EMAIL ; setTextInput();} return T;}
 /******************************************************************************/
 TextLine& TextLine::maxLength(Int max_length)
 {

@@ -223,7 +223,7 @@ struct ScreenKeyboard
 {
  C Str *text;
    Int  start, end, max_length;
-   Bool pass, multi_line;
+   Bool multi_line, pass, number, email;
 
    void set();
 

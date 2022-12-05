@@ -1482,7 +1482,7 @@ void ScreenKeyboard::set()
    text=null;
    start=end=0;
    max_length=-1;
-   pass=multi_line=false;
+   multi_line=pass=number=email=false;
 
    if(Gui.kb())switch(Gui.kb()->type())
    {
@@ -1501,6 +1501,8 @@ void ScreenKeyboard::set()
          TextLine &tl=Gui.kb()->asTextLine();
          text =&tl();
          pass = tl.password();
+         number=tl.number  ();
+         email =tl.email   ();
          end  = tl.cursor  ();
          start=((tl._edit.sel<0) ? tl.cursor() : tl._edit.sel);
          max_length=tl.maxLength();
@@ -1545,6 +1547,9 @@ Bool ScreenKeyboard::Set(Int cur, Int sel)
    }
    return false;
 }
+#if ANDROID
+static jint SKMode(C ScreenKeyboard &sk) {return (sk.pass) | (sk.number<<1) | (sk.email<<2);}
+#endif
 void KeyboardClass::setVisible()
 {
    Bool visible=(Gui.kb() && (Gui.kb()->isTextLine() || Gui.kb()->isTextBox()));
@@ -1564,7 +1569,9 @@ void KeyboardClass::setVisible()
       {
          if(TextEditContext)
          {
-            TextEditContext->InputScope=(sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::Password : Windows::UI::Text::Core::CoreTextInputScope::Text);
+            TextEditContext->InputScope=(sk.email  ?                                                                           Windows::UI::Text::Core::CoreTextInputScope::EmailAddress
+                                       : sk.number ? (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::PasswordNumeric : Windows::UI::Text::Core::CoreTextInputScope::Number)
+                                                   : (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::Password        : Windows::UI::Text::Core::CoreTextInputScope::Text  ));
             TextEditContext->NotifyFocusEnter();
          }
          input_pane->TryShow();
@@ -1579,9 +1586,9 @@ void KeyboardClass::setVisible()
    {
       if(_visible=visible) // TODO: Warning: Android API doesn't have a notification when keyboard is visible, so always force what we want, but _visible might remain true even when keyboard got closed
       {
-         if(JMethodID editText=Jni.func(ActivityClass, "editText", "(Ljava/lang/String;IIZ)V"))
+         if(JMethodID editText=Jni.func(ActivityClass, "editText", "(Ljava/lang/String;III)V"))
          if(JString t=JString(Jni, sk.text ? *sk.text : S))
-            Jni->CallVoidMethod(Activity, editText, t(), jint(sk.start), jint(sk.end), jboolean(sk.pass));
+            Jni->CallVoidMethod(Activity, editText, t(), jint(sk.start), jint(sk.end), SKMode(sk));
       }else
       {
          if(JMethodID editTextHide=Jni.func(ActivityClass, "editTextHide", "()V"))
@@ -1604,7 +1611,9 @@ void KeyboardClass::resetTextInput()
    #if WINDOWS_NEW
       if(TextEditContext)
       {
-         TextEditContext->InputScope=(sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::Password : Windows::UI::Text::Core::CoreTextInputScope::Text);
+         TextEditContext->InputScope=(sk.email  ?                                                                           Windows::UI::Text::Core::CoreTextInputScope::EmailAddress
+                                    : sk.number ? (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::PasswordNumeric : Windows::UI::Text::Core::CoreTextInputScope::Number)
+                                                : (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::Password        : Windows::UI::Text::Core::CoreTextInputScope::Text  ));
          Windows::UI::Text::Core::CoreTextRange modify_range, selection;
          modify_range.StartCaretPosition=0;
          modify_range.  EndCaretPosition=INT_MAX;
@@ -1613,9 +1622,9 @@ void KeyboardClass::resetTextInput()
       }
    #elif ANDROID
       if(Jni && ActivityClass && Activity)
-      if(JMethodID editTextSet=Jni.func(ActivityClass, "editTextSet", "(Ljava/lang/String;IIZ)V"))
+      if(JMethodID editTextSet=Jni.func(ActivityClass, "editTextSet", "(Ljava/lang/String;III)V"))
       if(JString t=JString(Jni, sk.text ? *sk.text : S))
-         Jni->CallVoidMethod(Activity, editTextSet, t(), jint(sk.start), jint(sk.end), jboolean(sk.pass));
+         Jni->CallVoidMethod(Activity, editTextSet, t(), jint(sk.start), jint(sk.end), SKMode(sk));
    #elif SWITCH
       NS::KeyboardSet(sk);
    #endif
