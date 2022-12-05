@@ -1,5 +1,5 @@
 /******************************************************************************/
-enum BS_FLAG // Button State Flag
+enum BS_FLAG : Byte // Button State Flag
 {
    BS_NONE    =   0, // none
    BS_ON      =1<<0, // on
