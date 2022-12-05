@@ -800,9 +800,9 @@ void Source::update(C GuiPC &gpc)
          delBack();
       }
    }
-   REPA(Touches)if(Touches[i].guiObj()==&suggestions_list && Touches[i].rs())
+   REPA(Touches)
    {
-      autoComplete();
+      Touch &touch=Touches[i]; if(touch.guiObj()==&suggestions_list && touch.rs()){autoComplete(); break;}
    }
 
    if(CE.view_mode() && contains(Gui.kb()))

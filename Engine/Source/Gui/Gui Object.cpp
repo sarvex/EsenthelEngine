@@ -499,7 +499,7 @@ GuiObj& GuiObj::deactivate()
    if(contains(Gui._overlay_textline))Gui._overlay_textline=null;
    if(contains(Gui.      _desc      ))Gui.      _desc      =null;
    if(contains(Gui._touch_desc      ))Gui._touch_desc      =null;
-   REPA(Touches)if(contains(Touches[i].guiObj()))Touches[i]._gui_obj=null;
+   REPA(Touches){Touch &touch=Touches[i]; if(contains(touch.guiObj()))touch._gui_obj=null;}
    return T;
 }
 GuiObj& GuiObj::setText()

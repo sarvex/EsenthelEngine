@@ -595,8 +595,8 @@ void Menu::update(C GuiPC &gpc)
          {
             // scroll (priority: 1 - touch hold, 2 - mouse hover with previous mouse action, 3 - current element)
           C Vec2 *pos=null;
-            REPA(Touches)if(Touches[i].on() && Gui.menu()->contains(Touches[i].guiObj())                    ){pos=&Touches[i].pos(); break;}
-                                    if(!pos && Gui.menu()->contains(Gui       .ms    ()) && !list._kb_action){pos=&Ms        .pos();       }
+            REPA(Touches){Touch &touch=Touches[i]; if(touch.on() && Gui.menu()->contains(touch.guiObj())                    ){pos=&touch.pos(); break;}}
+                                                   if(!pos       && Gui.menu()->contains(Gui  .ms    ()) && !list._kb_action){pos=&Ms   .pos();       }
             if(pos) // use detection basing on the 'pos' screen position
             {
                Flt margin=Max(0.0f, D.h()-paddingT()-list.elmHeight()*1.0f); // use max 0 to don't go to lower half of the screen
@@ -628,7 +628,7 @@ void Menu::update(C GuiPC &gpc)
 
             // input
             Bool  enter_only=Kb.k(KB_RIGHT), by_touch=false;
-          C Vec2 *rs_pos    =null; if(Ms.br(0) && Gui.menu()->contains(Gui.ms()))rs_pos=&Ms.pos(); REPA(Touches)if(Touches[i].rs() && Gui.menu()->contains(Touches[i].guiObj())){rs_pos=&Touches[i].pos(); by_touch=true;} // release pos
+          C Vec2 *rs_pos    =null; if(Ms.br(0) && Gui.menu()->contains(Gui.ms()))rs_pos=&Ms.pos();else REPA(Touches){Touch &touch=Touches[i]; if(touch.rs() && Gui.menu()->contains(touch.guiObj())){rs_pos=&touch.pos(); by_touch=true; break;}} // release pos
             if(rs_pos || enter_only || ((Kb.k(KB_ENTER) || Kb.k(KB_NPENTER)) && Kb.k.first()))
             {
                Bool entered=false;

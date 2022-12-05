@@ -10,7 +10,7 @@ static void ChangedButton(ComboBox &cb)
 {
    if(cb.Button::operator()())
    {
-      Bool touch=false; REPA(Touches)if(Touches[i].pd() && Touches[i].guiObj()==&cb){touch=true; break;} cb.menu.setSize(touch);
+      Bool by_touch=false; REPA(Touches){Touch &touch=Touches[i]; if(touch.pd() && touch.guiObj()==&cb){by_touch=true; break;}} cb.menu.setSize(by_touch);
       cb.menu.list.cur=-1;
       if(0 && D.smallSize())cb.menu.posC(0);else cb.menu.posAround(cb.screenRect(), cb.menu_align);
       cb.menu.activate();

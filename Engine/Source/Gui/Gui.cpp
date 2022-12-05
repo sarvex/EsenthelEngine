@@ -377,7 +377,13 @@ void GUI::update()
    if(App.active())
    {
       if((ms_button&BS_PUSHED) && msLit())msLit()->activate();
-      REPA(Touches)if(Touches[i].pd())if(GuiObj *go=Touches[i].guiObj())go->activate();
+      REPA(Touches)
+      {
+       C Touch &touch=Touches[i]; BS_FLAG state=touch._state;
+         if(state&(BS_PUSHED|BS_TAPPED))
+            if(GuiObj *go=touch.guiObj())
+               if(state&((go->isTextLine() || go->isTextBox()) ? BS_TAPPED : BS_PUSHED))go->activate(); // activate textfields only on tap, in case we just want to Touch-Scroll, because their activation will show soft keyboard
+      }
       if(Kb.k(KB_TAB))if(Switch())Kb.eatKey();
    }
   _window_lit=&msLit()->first(GO_WINDOW)->asWindow();
