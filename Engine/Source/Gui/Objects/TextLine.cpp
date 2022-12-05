@@ -298,7 +298,7 @@ void TextLine::update(C GuiPC &gpc)
     C Vec2   *touch_pos  =null;
       BS_FLAG touch_state=BS_NONE;
       if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){touch_pos=&Ms.pos(); touch_state=Ms._button[0];}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED))){touch_pos=&touch.pos(); touch_state=touch._state; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){touch_pos=&touch.pos(); touch_state=touch._state; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
       if(_text.is() && touch_pos)
       {
          if(GuiSkin *skin=getSkin())
@@ -324,7 +324,7 @@ void TextLine::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(ButtonPd(touch_state))
+               if(touch_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
