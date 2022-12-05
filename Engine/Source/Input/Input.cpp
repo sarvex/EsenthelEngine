@@ -463,7 +463,9 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             {
                if(key.shift() && edit.sel<0)edit.sel=edit.cur; // start selection from cursor
                edit.cur--; SkipCombiningLeft(str, edit);
-               if(key.ctrlCmd())for(CHAR_TYPE ct=CharType(str[edit.cur]); edit.cur; )
+               if(key.ctrlCmd())
+                  if(edit.password)edit.cur=0;else
+                  for(CHAR_TYPE ct=CharType(str[edit.cur]); edit.cur; )
                {
                   CHAR_TYPE nt=CharType(str[edit.cur-1]);
                   if(ct==CHART_SPACE)ct=nt;
@@ -481,7 +483,9 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             {
                if(key.shift() && edit.sel<0)edit.sel=edit.cur; // start selection from cursor
                edit.cur++; SkipCombiningRight(str, edit);
-               if(key.ctrlCmd())for(CHAR_TYPE ct=CharType(str[edit.cur-1]); edit.cur<str.length(); )
+               if(key.ctrlCmd())
+                  if(edit.password)edit.cur=str.length();else
+                  for(CHAR_TYPE ct=CharType(str[edit.cur-1]); edit.cur<str.length(); )
                {
                   CHAR_TYPE nt=CharType(str[edit.cur]);
                   if(ct!=nt){for(; edit.cur<str.length() && str[edit.cur]==' '; )edit.cur++; break;}
@@ -499,11 +503,14 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
                if(key.ctrlCmd())
                {
                   edit.sel=edit.cur;
-                  edit.cur--;
-                  for(CHAR_TYPE ct=CharType(str[edit.cur]); edit.cur; edit.cur--)
+                  if(edit.password)edit.cur=0;else
                   {
-                     CHAR_TYPE nt=CharType(str[edit.cur-1]);
-                     if(ct!=nt)break;
+                     edit.cur--;
+                     for(CHAR_TYPE ct=CharType(str[edit.cur]); edit.cur; edit.cur--)
+                     {
+                        CHAR_TYPE nt=CharType(str[edit.cur-1]);
+                        if(ct!=nt)break;
+                     }
                   }
                   TextSelRem(str, edit);
                }else
@@ -576,12 +583,15 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
                   if(key.ctrlCmd())
                   {
                      edit.sel=edit.cur;
-                     edit.cur++;
-                     for(CHAR_TYPE ct=CharType(str[edit.cur-1]); edit.cur<str.length(); edit.cur++)
+                     if(edit.password)edit.cur=str.length();else
                      {
-                        CHAR_TYPE nt=CharType(str[edit.cur]);
-                        if(ct==CHART_SPACE)ct=nt;
-                        if(ct!=nt){for(; edit.cur<str.length() && str[edit.cur]==' '; )edit.cur++; break;}
+                        edit.cur++;
+                        for(CHAR_TYPE ct=CharType(str[edit.cur-1]); edit.cur<str.length(); edit.cur++)
+                        {
+                           CHAR_TYPE nt=CharType(str[edit.cur]);
+                           if(ct==CHART_SPACE)ct=nt;
+                           if(ct!=nt){for(; edit.cur<str.length() && str[edit.cur]==' '; )edit.cur++; break;}
+                        }
                      }
                      TextSelRem(str, edit);
                   }else

@@ -313,14 +313,17 @@ void TextLine::update(C GuiPC &gpc)
 
             if(ButtonDb(touch_state))
             {
-              _edit.cur=
-              _edit.sel=pos;
-               CHAR_TYPE type=CharType(_text[Min(pos, _text.length()-1)]);
-               for(; _edit.sel                && CharType(_text[_edit.sel-1])==type; _edit.sel--);
-               for(; _edit.cur<_text.length() && CharType(_text[_edit.cur  ])==type; _edit.cur++);
-               if (  _edit.sel==_edit.cur)_edit.sel=-1;
-              _can_select=false;
-               setTextInput();
+               if(password())selectAll();else
+               {
+                 _edit.cur=
+                 _edit.sel=pos;
+                  CHAR_TYPE type=CharType(_text[Min(pos, _text.length()-1)]);
+                  for(; _edit.sel                && CharType(_text[_edit.sel-1])==type; _edit.sel--);
+                  for(; _edit.cur<_text.length() && CharType(_text[_edit.cur  ])==type; _edit.cur++);
+                  if (  _edit.sel==_edit.cur)_edit.sel=-1;
+                 _can_select=false;
+                  setTextInput();
+               }
             }else
             if(_can_select)
             {
