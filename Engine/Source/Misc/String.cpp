@@ -4296,8 +4296,12 @@ static void InitStr()
       for(Int i='2'; i<='9'; i++)SET(i             ,            CHARF_DIG10|CHARF_DIG16);
       for(Int i='a'; i<='f'; i++)SET(i             ,                        CHARF_DIG16);
       for(Int i='A'; i<='F'; i++)SET(i             ,                        CHARF_DIG16);
-           REP(Elms(Combining)-1)SET(Combining[i]  , CHARF_COMBINING); // -1 to skip null char
            REP(Elms(Stack    )-1)SET(Stack    [i]  , CHARF_STACK    ); // -1 to skip null char
+           REP(Elms(Combining)-1)SET(Combining[i]  , CHARF_COMBINING); // -1 to skip null char
+   #if 1 // since we use Char 16-bit UTF we need to mark special chars as multi - https://en.wikipedia.org/wiki/UTF-16#Description
+    //for(Int i=0xD800; i<=0xDBFF; i++)SET(i       , CHARF_MULTI0   );
+    //for(Int i=0xDC00; i<=0xDFFF; i++)SET(i       , CHARF_MULTI1   );
+   #endif
    #undef  SET
 
       // set sign
