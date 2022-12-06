@@ -2027,7 +2027,7 @@ Str FromUTF8(CChar8 *text)
                b0&=0x07;
                UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
                // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
-               if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; // // ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+               if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
                if(u<=0x10FFFF)
                {
                   u-=0x10000;
