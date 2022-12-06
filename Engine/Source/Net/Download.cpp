@@ -606,6 +606,19 @@ Download& Download::del(Int milliseconds)
    if(state())state(DWNL_NONE); // call here because 'zero' does not call this
    zero(); return T;
 }
+static CChar8 BoundaryChars[]= // without space
+{
+   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+   '(', ')', '+', '_', ',', '-', '.', '/', ':', '=', '?', '\'',
+};
+/* https://www.rfc-editor.org/rfc/rfc2046#section-5.1.1
+
+boundary := 0*69<bchars> bcharsnospace
+bchars := bcharsnospace / " "
+bcharsnospace := DIGIT / ALPHA / "'" / "(" / ")" / "+" / "_" / "," / "-" / "." / "/" / ":" / "=" / "?"
+*/
 Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, File *post, Long max_post_size, Long offset, Long size, Bool paused, Bool ignore_auth_result, SyncEvent *event)
 {
 #if WEB
@@ -640,7 +653,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, File *post,
    }
 
    // set message
-   Str8 prefix, suffix, boundary, bytes,
+   Str8 prefix, suffix, bytes,
         request=((_post_file || has_post_params) ? "POST" : (_size==0) ? "HEAD" : "GET"),
         command=GetHeaders(_url_full, request);
 
@@ -656,7 +669,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, File *post,
    if(_post_file)
    {
       // sub header
-      boundary="d5ubjyl0q4rwb8j4grz5vaxgnj2l1lpuh4ku"; boundary+=Random(); // 'boundary' must not be present in the file data !! otherwise the upload will fail
+      const Int boundary_len=70; Str8 boundary; boundary.reserve(boundary_len); REP(boundary_len)boundary.alwaysAppend(Random.elm(BoundaryChars)); // 'boundary' must not be present in the file data !! otherwise the upload will fail !! up to 70 characters - https://www.rfc-editor.org/rfc/rfc2046#section-5.1
 
       FREPA(params) // params
       {
@@ -693,7 +706,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, File *post,
       suffix+=S+"--"+boundary+"--\r\n";
 
       // now when 'prefix' and 'suffix' are ready, setup the main header
-      command+=S+"Content-Type: multipart/form-data; boundary="+boundary+"\r\n";
+      command+=S+"Content-Type: multipart/form-data; boundary=\""+boundary+"\"\r\n";
       command+=S+"Content-Length: "+(prefix.length()+toSend()+suffix.length())+"\r\n";
       command+="Cache-Control: no-cache\r\n";
    }else
