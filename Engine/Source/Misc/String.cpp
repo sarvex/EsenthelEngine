@@ -2018,7 +2018,7 @@ Str FromUTF8(CChar8 *text)
       if(b0&(1<<7))
       {
          Byte b1=((*text++)&0x3F);
-         if((b0&(1<<6)) && (b0&(1<<5)))
+         if(FlagAll(b0, (1<<6)|(1<<5)))
          {
             Byte b2=((*text++)&0x3F);
             if(b0&(1<<4))
@@ -2026,7 +2026,14 @@ Str FromUTF8(CChar8 *text)
                Byte b3=((*text++)&0x3F);
                b0&=0x07;
                UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
-               c=((u<=0xFFFF) ? u : '?');
+               // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
+               if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; // // ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+               if(u<=0x10FFFF)
+               {
+                  u-=0x10000;
+                  out.alwaysAppend(0xD800+(u>>10  )); // #0
+                                 c=0xDC00+(u&0x3FF) ; // #1
+               }else c='?'; // unsupported
             }else
             {
                b0&=0x0F;
@@ -2042,7 +2049,7 @@ Str FromUTF8(CChar8 *text)
          c=b0;
       }
 
-      if(c)out+=c;else break;
+      if(c)out.alwaysAppend(c);else break;
    }
    return out;
 }
@@ -2052,16 +2059,22 @@ Str8 UTF8(C Str &text)
    FREPA(text)
    {
       Char c=text[i];
-
-      if(c<=0x7F)out+=Char8(c);else
+      if(c<=0x07F) out.alwaysAppend(c);else
+      if(c<=0x7FF){out.alwaysAppend(0xC0 | (c>>6)); out.alwaysAppend(0x80 | (c&0x3F));}else
+   #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
+      if(c>=0xD800 && c<=0xDBFF)
       {
-         if(c<=0x7FF)
-         {
-            out+=Char8(0xC0 | (c>>6)); out+=Char8(0x80 | (c&0x3F));
-         }else
-         {
-            out+=Char8(0xE0 | (c>>12)); out+=Char8(0x80 | ((c>>6)&0x3F)); out+=Char8(0x80 | (c&0x3F));
-         }
+      /* U32 -> 2x U16 formula:
+         u-=0x10000;
+         c0=0xD800+(u>>10);
+         c1=0xDC00+(u&0x3FF); */
+         U16 c1=text[++i];
+         U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
+         out.alwaysAppend(0xF0 | (u>>18)); out.alwaysAppend(0x80 | ((u>>12)&0x3F)); out.alwaysAppend(0x80 | ((u>>6)&0x3F)); out.alwaysAppend(0x80 | (u&0x3F));
+      }else
+   #endif
+      {
+         out.alwaysAppend(0xE0 | (c>>12)); out.alwaysAppend(0x80 | ((c>>6)&0x3F)); out.alwaysAppend(0x80 | (c&0x3F));
       }
    }
    return out;

@@ -197,7 +197,7 @@ FileText& FileText::putText(C Str &text)
             }
             U16 c=text()[i++]; // () avoids range checks
             if(c<=0x07F) temp[temp_pos++]=c;else
-            if(c<=0x7FF){temp[temp_pos++]=(0xC0 | (c>> 6)); temp[temp_pos++]=(0x80 | ( c     &0x3F));}else
+            if(c<=0x7FF){temp[temp_pos++]=(0xC0 | (c>>6)); temp[temp_pos++]=(0x80 | (c&0x3F));}else
          #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
             if(c>=0xD800 && c<=0xDBFF)
             {
@@ -207,10 +207,10 @@ FileText& FileText::putText(C Str &text)
                c1=0xDC00+(u&0x3FF); */
                U16 c1=text[i++];
                U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
-                        {temp[temp_pos++]=(0xF0 | (u>>18)); temp[temp_pos++]=(0x80 | ((u>>12)&0x3F)); temp[temp_pos++]=(0x80 | ((u>>6)&0x3F)); temp[temp_pos++]=(0x80 | (u&0x3F));}
+               temp[temp_pos++]=(0xF0 | (u>>18)); temp[temp_pos++]=(0x80 | ((u>>12)&0x3F)); temp[temp_pos++]=(0x80 | ((u>>6)&0x3F)); temp[temp_pos++]=(0x80 | (u&0x3F));
             }else
          #endif
-                        {temp[temp_pos++]=(0xE0 | (c>>12)); temp[temp_pos++]=(0x80 | ((c>> 6)&0x3F)); temp[temp_pos++]=(0x80 | ( c    &0x3F));}
+              {temp[temp_pos++]=(0xE0 | (c>>12)); temp[temp_pos++]=(0x80 | ((c>>6)&0x3F)); temp[temp_pos++]=(0x80 | (c&0x3F));}
          }
       #endif
       }break;
