@@ -621,7 +621,7 @@ void Shut()\n\
 {\n\
 }\n\
 /******************************************************************************/\n\
-Bool Update()\n\
+bool Update()\n\
 {\n\
    if(Kb.bp(KB_ESC))return false;\n\
    Gui.update();\n\
