@@ -29,9 +29,11 @@ static void SaveEncoding(File &f, ENCODING encoding)
    }
 }
 /******************************************************************************/
-void      FileText::zero    () {indent=INDENT_TABS; depth=0; _code=ANSI;}
+void      FileText::zero    () {indent=INDENT_TABS; depth=0; _code=ANSI; _buf=0;}
 FileText& FileText::del     () {_f.del(); zero(); return T;}
           FileText::FileText() {zero();}
+
+Bool FileText::end()C {return _f.end() && !_buf;}
 
 FileText& FileText::writeMem(ENCODING encoding, Cipher *cipher)
 {
@@ -184,7 +186,7 @@ FileText& FileText::putText(C Str &text)
          FREPA(text)putChar(text[i]);
       #else // faster
                Char8  temp[65536];
-         const Int    temp_elms=Elms(temp)-2; // use size -2 because we may be writing 3 characters in one step
+         const Int    temp_elms=Elms(temp)-3; // use size -3 because we may be writing 4 characters in one step
          for(Int i=0, temp_pos=0; ; )
          {
             Bool end=(i>=text.length());
@@ -233,11 +235,13 @@ Char FileText::getChar()
       case UTF_8      :
       case UTF_8_NAKED:
       {
+         if(_buf){Char c=_buf; _buf=0; return c;}
+
          Byte b0=_f.getByte();
          if(b0&(1<<7))
          {
             Byte b1=(_f.getByte()&0x3F);
-            if((b0&(1<<6)) && (b0&(1<<5)))
+            if(FlagAll(b0, (1<<6)|(1<<5)))
             {
                Byte b2=(_f.getByte()&0x3F);
                if(b0&(1<<4))
@@ -245,7 +249,15 @@ Char FileText::getChar()
                   Byte b3=(_f.getByte()&0x3F);
                   b0&=0x07;
                   UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
-                  return (u<=0xFFFF) ? u : '?';
+                  // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
+                  if(u<=  0xFFFF)return u; // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; // // ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+                  if(u<=0x10FFFF)
+                  {
+                        u-=0x10000;
+                      _buf= 0xDC00+(u&0x3FF); // #1
+                     return 0xD800+(u>>10  ); // #0
+                  }
+                  return '?'; // unsupported
                }else
                {
                   b0&=0x0F;
@@ -392,6 +404,7 @@ FileText& FileText::getAll(Str &s)
 FileText& FileText::rewind()
 {
    depth=0;
+  _buf=0;
   _f.pos(0);
    LoadEncoding(_f); // we already know the encoding, but we need to skip the byte order mark at start, don't set it to '_code' because 'UTF_8_NAKED' may had been used
    return T;
@@ -399,6 +412,7 @@ FileText& FileText::rewind()
 Bool FileText::copy(File &dest)
 {
    depth=0;
+  _buf=0;
    if(!_f.pos(0))return false;
    return _f.copy(dest);
 }

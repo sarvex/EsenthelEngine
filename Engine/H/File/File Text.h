@@ -35,7 +35,7 @@ struct FileText
    Bool      append  (C Str &name,       ENCODING encoding=UTF_8, const_mem_addr Cipher *cipher=null); // append     stdio file, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
 
    // get
-   Bool     end     ()C {return _f.end ();} // if  current position is at the end of the file
+   Bool     end     ()C;                    // if  current position is at the end of the file
    Long     size    ()C {return _f.size();} // get file size
    Long     pos     ()C {return _f.pos ();} // get file position
    ENCODING encoding()C {return _code    ;} // get file encoding
@@ -73,6 +73,7 @@ struct FileText
 private:
 #endif
    ENCODING _code;
+   Char     _buf;
    File     _f;
    NO_COPY_CONSTRUCTOR(FileText);
 };
