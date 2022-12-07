@@ -200,6 +200,16 @@ TextBox& TextBox::cursor(Int position)
              pos_bottom=pos.y+ts.size.y; // bottom position of the cursor (add because Y is inverted)
          if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
          if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
+
+         if(GuiObj *parent=T.parent())if(parent->isRegion()) // scroll nearest parent too, in case this TextBox is located within a Region
+         {
+            Region &region=parent->asRegion();
+            Vec2 ofs(-slidebar[0].wantedOffset(), -slidebar[1].wantedOffset());
+            ofs.x+=rect().min.x;
+            ofs.y-=rect().max.y;
+            region.scrollFitX(pos_left+ofs.x, pos_right +ofs.x, true);
+            region.scrollFitY(pos.y   +ofs.y, pos_bottom+ofs.y, true);
+         }
       }
    }
    return T;
