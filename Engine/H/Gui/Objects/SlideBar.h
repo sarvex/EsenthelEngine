@@ -39,6 +39,7 @@ const_mem_addr struct SlideBar : GuiObj // Gui SlideBar !! must be stored in con
  C GuiSkinPtr&    skin    (                                     )C {return _skin                 ;} // get skin override, default=null (if set to null then current value of 'Gui.skin' is used)
    GuiSkin*    getSkin    (                                     )C {return _skin ? _skin() : Gui.skin();} // get actual skin
 
+   Bool       atEnd(Flt eps=EPS)C {return       offset()+eps>=maxOffset();} // if slidebar is              at the end
    Bool wantedAtEnd(Flt eps=EPS)C {return wantedOffset()+eps>=maxOffset();} // if slidebar is wanted to be at the end
 
             SlideBar& func(void (*func)(Ptr   user), Ptr   user=null, Bool immediate=true);                                                       // set function called when value has changed, with 'user' as its parameter

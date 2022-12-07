@@ -383,6 +383,17 @@ void TextBox::moveCursor(Int lines, Int pages)
    }
 }
 /******************************************************************************/
+void ScrollMinus(SlideBar *sb, GuiObj *go, Bool vertical)
+{
+                                                                                       if(sb->offset()>0){sb->button[SB_LEFT_UP].push(); return;}
+   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(sb->offset()>0){sb->button[SB_LEFT_UP].push(); return;}}
+}
+void ScrollPlus(SlideBar *sb, GuiObj *go, Bool vertical)
+{
+                                                                                       if(!sb->atEnd()){sb->button[SB_RIGHT_DOWN].push(); return;}
+   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(!sb->atEnd()){sb->button[SB_RIGHT_DOWN].push(); return;}}
+}
+/******************************************************************************/
 void TextBox::update(C GuiPC &gpc)
 {
    GuiPC gpc_this(gpc, visible(), enabled());
@@ -455,10 +466,10 @@ void TextBox::update(C GuiPC &gpc)
           C TextStyle &ts=*text_style;
          #endif
 
-            Flt  offset      =ts.size.x*TEXTBOX_OFFSET;
-            Vec2 relative_pos=*touch_pos-gpc.offset,
-                  clipped_pos=relative_pos&_crect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
-            Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - _crect.min.x + slidebar[0].offset() - offset, _crect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
+            Flt   offset     =ts.size.x*TEXTBOX_OFFSET;
+            Rect  text_rect  =_crect+gpc.offset, clipped_text_rect=text_rect&gpc.clip;
+            Vec2  clipped_pos=*touch_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
+            Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
 
             if(ButtonDb(touch_state))
             {
@@ -494,10 +505,10 @@ void TextBox::update(C GuiPC &gpc)
                   setTextInput();
                }
 
-               if(relative_pos.x<_crect.min.x)slidebar[0].button[1].push();else
-               if(relative_pos.x>_crect.max.x)slidebar[0].button[2].push();
-               if(relative_pos.y<_crect.min.y)slidebar[1].button[2].push();else
-               if(relative_pos.y>_crect.max.y)slidebar[1].button[1].push();
+               if(touch_pos->x<clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
+               if(touch_pos->x>clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
+               if(touch_pos->y<clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
+               if(touch_pos->y>clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
             }
          }
       }else _can_select=true;
