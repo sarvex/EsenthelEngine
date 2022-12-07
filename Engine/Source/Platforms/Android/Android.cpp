@@ -1371,6 +1371,7 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass cl
        t_size=visible_y,
        r_size=w-(visible_x+visible_w),
        b_size=h-(visible_y+visible_h), max_size=Max(l_size, r_size, t_size, b_size);
+   Kb._visible=(max_size>0); // 'screenChanged' will be called in 'Kb.set' below
    RectI rect;
    if(b_size>=max_size)rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
    if(t_size>=max_size)rect.set(       0,        0,      w, t_size);else // top    size is the biggest

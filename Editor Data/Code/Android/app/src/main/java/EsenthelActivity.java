@@ -413,13 +413,12 @@ public class EsenthelActivity extends NativeActivity
                      int     statusBarHeight=0; if(status    ==SYSTEM_BAR_OVERLAY)    statusBarHeight=statusBarHeight();
                      int navigationBarHeight=0; if(navigation==SYSTEM_BAR_OVERLAY)navigationBarHeight=   navBarHeight();*/
 
-                     View view=getWindow().getDecorView();
-                     Rect visible=new Rect(); view.getWindowVisibleDisplayFrame(visible); // in screen coordinates
-                     int w=view.getWidth(), h=view.getHeight();
-                   //int[] screen_pos=new int[2]; view.getLocationOnScreen(screen_pos); // in screen coordinates
+                     View  view=getWindow().getDecorView();
+                     Rect  visible=new Rect(); view.getWindowVisibleDisplayFrame(visible); // in screen coordinates
+                     int   w=view.getWidth(), h=view.getHeight();
+                     int[] screen_pos=new int[2]; view.getLocationOnScreen(screen_pos); // in screen coordinates
                    //log("w:"+w+", h:"+h+", r.top:"+visible.top+", r.bottom:"+visible.bottom+", r.w:"+visible.width()+", r.h:"+visible.height()+", pos.x:"+screen_pos[0]+", pos.y:"+screen_pos[1]);
-                   //com.esenthel.Native.resized(w, h, visible.left-screen_pos[0], visible.top-screen_pos[1], visible.width(), visible.height()); this gets broken when entering many empty lines
-                     com.esenthel.Native.resized(w, h, 0, 0, visible.width(), visible.height()); // this assumes keyboard is always at the bottom but works fine when entering many empty lines
+                     com.esenthel.Native.resized(w, h, visible.left-screen_pos[0], visible.top-screen_pos[1], visible.width(), visible.height()); this gets broken when entering many empty lines
                   }
                };
                root_view.getViewTreeObserver().addOnGlobalLayoutListener(global_layout_listener);
@@ -913,7 +912,7 @@ public class EsenthelActivity extends NativeActivity
                   @Override public final void     onTextChanged(CharSequence s, int start, int before, int count) {}
                };
 
-               FrameLayout.LayoutParams layout=new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+               FrameLayout.LayoutParams layout=new FrameLayout.LayoutParams(0, 0); // force zero size instead of something like WRAP_CONTENT because if entering many lines in text, it would cause weird offsets in views and touch inputs
                edit_text=new EditText(activity);
                edit_text.setLayoutParams(layout);
                edit_text.setImeOptions(edit_text.getImeOptions()|EditorInfo.IME_FLAG_NO_FULLSCREEN);
