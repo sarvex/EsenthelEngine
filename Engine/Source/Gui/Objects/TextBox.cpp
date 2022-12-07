@@ -171,15 +171,6 @@ Bool TextBox::cursorChanged(Int position)
    if(cursor()!=position)
    {
      _edit.cur=position;
-      return true;
-   }
-   return false;
-}
-TextBox& TextBox::cursor(Int position)
-{
-   if(cursorChanged(position))
-   {
-      setTextInput();
 
       // scroll to make cursor visible
       if(GuiSkin *skin=getSkin())
@@ -211,7 +202,13 @@ TextBox& TextBox::cursor(Int position)
             region.scrollFitY(pos.y   +ofs.y, pos_bottom+ofs.y, true);
          }
       }
+      return true;
    }
+   return false;
+}
+TextBox& TextBox::cursor(Int position)
+{
+   if(cursorChanged(position))setTextInput();
    return T;
 }
 /******************************************************************************/

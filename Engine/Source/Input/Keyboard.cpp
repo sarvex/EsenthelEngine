@@ -1477,6 +1477,15 @@ Bool KeyboardClass::rect(Rect &rect)C
    }
    return false;
 }
+void KeyboardClass::screenChanged() {if(screen_changed)screen_changed();}
+void KeyboardClass::set(C RectI &rect)
+{
+   if(_recti!=rect)
+   {
+     _recti=rect;
+      screenChanged();
+   }
+}
 void ScreenKeyboard::set()
 {
    text=null;
@@ -1488,7 +1497,7 @@ void ScreenKeyboard::set()
    {
       case GO_TEXTBOX:
       {
-         TextBox &tb=Gui.kb()->asTextBox();
+       C TextBox &tb=Gui.kb()->asTextBox();
          text =&tb();
          end  = tb.cursor();
          start=((tb._edit.sel<0) ? tb.cursor() : tb._edit.sel);
@@ -1498,7 +1507,7 @@ void ScreenKeyboard::set()
 
       case GO_TEXTLINE:
       {
-         TextLine &tl=Gui.kb()->asTextLine();
+       C TextLine &tl=Gui.kb()->asTextLine();
          text =&tl();
          pass = tl.password();
          number=tl.number  ();

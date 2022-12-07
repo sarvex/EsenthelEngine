@@ -174,8 +174,9 @@ EAGLView* GetUIView()
       case DIR_RIGHT: Kb._recti.set(recti.min.y,          recti.min.x, recti.max.y,          recti.max.x); break;
       case DIR_LEFT : Kb._recti.set(recti.min.y, D.resH()-recti.max.x, recti.max.y, D.resH()-recti.min.x); break;
    }
+   Kb.screenChanged();
 }
--(void)keyboardWillBeHidden:(NSNotification*)notification {Kb._visible=false;}
+-(void)keyboardWillBeHidden:(NSNotification*)notification {Kb._visible=false; Kb.screenChanged();}
 -(void)keyboardVisible:(Bool)visible
 {
    if(visible)[self becomeFirstResponder];else [self resignFirstResponder];

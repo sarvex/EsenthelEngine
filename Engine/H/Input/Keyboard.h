@@ -42,6 +42,8 @@ struct KeyboardKey
 };
 struct KeyboardClass // Keyboard Input
 {
+   void (*screen_changed)(); // pointer to custom function (may be null) called when on-screen keyboard has changed (its visibility or rectangle)
+
    // get
 #if EE_PRIVATE
    KeyboardKey k;
@@ -79,6 +81,10 @@ struct KeyboardClass // Keyboard Input
    Bool hardware(          )C {return _hardware;} // if  hardware  keyboard is available
    Bool visible (          )C {return _visible ;} // if  on-screen keyboard is currently displayed
    Bool rect    (Rect &rect)C;                    // get on-screen keyboard rectangle, false if no on-screen keyboard is currently displayed
+#if EE_PRIVATE
+   void set(C RectI &rect);
+   void screenChanged();
+#endif
 
    KB_KEY qwerty(KB_KEY qwerty)C; // convert key from QWERTY layout to layout of current keyboard
 

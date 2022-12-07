@@ -1371,10 +1371,12 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass cl
        t_size=visible_y,
        r_size=w-(visible_x+visible_w),
        b_size=h-(visible_y+visible_h), max_size=Max(l_size, r_size, t_size, b_size);
-   if(b_size>=max_size)Kb._recti.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
-   if(t_size>=max_size)Kb._recti.set(       0,        0,      w, t_size);else // top    size is the biggest
-   if(l_size>=max_size)Kb._recti.set(       0,        0, l_size,      h);else // left   size is the biggest
-                       Kb._recti.set(w-r_size,        0,      w,      h);     // right  size is the biggest
+   RectI rect;
+   if(b_size>=max_size)rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
+   if(t_size>=max_size)rect.set(       0,        0,      w, t_size);else // top    size is the biggest
+   if(l_size>=max_size)rect.set(       0,        0, l_size,      h);else // left   size is the biggest
+                       rect.set(w-r_size,        0,      w,      h);     // right  size is the biggest
+   Kb.set(rect);
 }
 
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceAdded  , Ptr(device_id));} // may be called on a secondary thread
