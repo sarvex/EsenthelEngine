@@ -458,11 +458,12 @@ void TextBox::update(C GuiPC &gpc)
          if(Kb.k(KB_PGDN)){moveCursor(0,  1); Kb.eatKey();}
          if(cur!=_edit.cur || changed){cur=_edit.cur; _edit.cur=-1; cursor(cur);} // set -1 to force adjustment of offset and calling 'setTextInput'
       }
-    C Vec2   *touch_pos  =null;
-      BS_FLAG touch_state=BS_NONE;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){touch_pos=&Ms.pos(); touch_state=Ms._button[0];}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){touch_pos=&touch.pos(); touch_state=touch._state; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
-      if(_text.is() && touch_pos)
+    C Vec2   *mt_pos=null;
+      BS_FLAG mt_state;
+      Bool    mt_touch;
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; mt_touch=false;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; mt_touch=true; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      if(_text.is() && mt_pos)
       {
          if(GuiSkin *skin=getSkin())
             if(TextStyle *text_style=skin->textline.text_style())
@@ -475,10 +476,10 @@ void TextBox::update(C GuiPC &gpc)
 
             Flt   offset     =ts.size.x*TEXTBOX_OFFSET;
             Rect  text_rect  =_crect+gpc.offset, clipped_text_rect=text_rect&gpc.clip;
-            Vec2  clipped_pos=*touch_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
-            Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
+            Vec2  clipped_pos=*mt_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
+            Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
 
-            if(ButtonDb(touch_state))
+            if(ButtonDb(mt_state))
             {
                if(eol && pos && _text[pos-1]!='\n')pos--; // if double-clicked at the end of the line and previous character isn't a new line (have to check for this because if we don't then we would go to previous line when clicking on empty lines), then go back, have to check 'eol' and not "_text[pos]=='\n'" because this line could be split because of too long text (in this case there will be 'eol' but no '\n')
                Char c=_text[Min(pos, _text.length()-1)];
@@ -498,7 +499,7 @@ void TextBox::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(touch_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
+               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
@@ -514,10 +515,10 @@ void TextBox::update(C GuiPC &gpc)
                }
 
                // check <= instead of < in case we're at screen border
-               if(touch_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
-               if(touch_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
-               if(touch_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
-               if(touch_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
+               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
+               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
+               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
+               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
             }
          }
       }else _can_select=true;

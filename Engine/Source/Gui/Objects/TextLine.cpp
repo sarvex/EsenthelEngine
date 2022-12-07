@@ -297,11 +297,12 @@ void TextLine::update(C GuiPC &gpc)
       #endif
          ){adjustOffset(); setTextInput();}
       }
-    C Vec2   *touch_pos  =null;
-      BS_FLAG touch_state=BS_NONE;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){touch_pos=&Ms.pos(); touch_state=Ms._button[0];}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){touch_pos=&touch.pos(); touch_state=touch._state; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
-      if(_text.is() && touch_pos)
+    C Vec2   *mt_pos=null;
+      BS_FLAG mt_state;
+      Bool    mt_touch;
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; mt_touch=false;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; mt_touch=true; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      if(_text.is() && mt_pos)
       {
          if(GuiSkin *skin=getSkin())
             if(TextStyle *text_style=skin->textline.text_style())
@@ -313,9 +314,9 @@ void TextLine::update(C GuiPC &gpc)
 
           C Str &text=displayText();
             Flt gpc_offset=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x);
-            Int pos=ts.textIndex(text, touch_pos->x - rect().min.x - gpc_offset - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
+            Int pos=ts.textIndex(text, mt_pos->x - rect().min.x - gpc_offset - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
 
-            if(ButtonDb(touch_state))
+            if(ButtonDb(mt_state))
             {
                if(password())selectAll();else
                {
@@ -331,7 +332,7 @@ void TextLine::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(touch_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
+               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
@@ -351,9 +352,15 @@ void TextLine::update(C GuiPC &gpc)
                // scroll offset
                Flt w=clientWidth(), l=rect().min.x+gpc_offset, r=l+w; // text_rect
                MAX(l, gpc.clip.min.x); MIN(r, gpc.clip.max.x); // clipped_text_rect
+               if(mt_touch) // touches may not reach screen border comfortably, so turn on scrolling with margin
+               {
+                  Flt margin=ts.size.x*TEXTLINE_MARGIN;
+                  MAX(l, D.rectUI().min.x+margin);
+                  MIN(r, D.rectUI().max.x-margin);
+               }
                // check <= instead of < in case we're at screen border
-               if(touch_pos->x<=l)_offset=Min(0,     Time.d()* 2+_offset                          );else
-               if(touch_pos->x>=r)_offset=Min(0, Max(Time.d()*-2+_offset, -ts.textWidth(text)+w/2));
+               if(mt_pos->x<=l)_offset=Min(0,     Time.d()* 2+_offset                          );else
+               if(mt_pos->x>=r)_offset=Min(0, Max(Time.d()*-2+_offset, -ts.textWidth(text)+w/2));
             }
          }
       }else _can_select=true;
