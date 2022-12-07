@@ -1593,7 +1593,8 @@ void KeyboardClass::setVisible()
 #elif ANDROID
    if(Jni && ActivityClass && Activity)
    {
-      if(_visible=visible) // TODO: Warning: Android API doesn't have a notification when keyboard is visible, so always force what we want, but _visible might remain true even when keyboard got closed
+      Bool old_visible=_visible;
+      if(_visible=visible) // TODO: Warning: Android API doesn't have a notification when keyboard is visible, so always force what we want, but '_visible' might remain true even when keyboard got closed
       {
          if(JMethodID editText=Jni.func(ActivityClass, "editText", "(Ljava/lang/String;III)V"))
          if(JString t=JString(Jni, sk.text ? *sk.text : S))
@@ -1603,6 +1604,7 @@ void KeyboardClass::setVisible()
          if(JMethodID editTextHide=Jni.func(ActivityClass, "editTextHide", "()V"))
             Jni->CallVoidMethod(Activity, editTextHide);
       }
+      if(old_visible!=_visible)screenChanged(); // callback after calling Android functions, in case they set Kb.rect, so callback would be aware of the new Kb.rect
    }
 #elif IOS
    if(EAGLView *view=GetUIView())[view keyboardVisible:visible];
