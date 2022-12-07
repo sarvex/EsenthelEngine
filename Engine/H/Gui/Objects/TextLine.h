@@ -17,7 +17,7 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    Bool  number    ()C;                        TextLine& number   (  Bool on                             );    // get/set number   mode
    Bool  email     ()C;                        TextLine& email    (  Bool on                             );    // get/set email    mode
    Int   maxLength ()C {return _max_length;}   TextLine& maxLength(  Int  max_length                     );    // get/set maximum allowed text length (-1=no limit), default=-1
-   Int   cursor    ()C {return _edit.cur  ;}   TextLine& cursor   (  Int  position                       );    // get/set cursor position
+   Int   cursor    ()C {return _edit.cur  ;}   TextLine& cursor   (  Int  position, Bool margin=true     );    // get/set cursor position
  C Str&  operator()()C {return _text      ;}   TextLine& set      (C Str &text, SET_MODE mode=SET_DEFAULT);    // get/set text
                                                TextLine& clear    (             SET_MODE mode=SET_DEFAULT);    // clear   text
    Flt   offset    ()C {return _offset    ;}                                                                   // get     horizontal offset currently used for displaying text
@@ -47,7 +47,6 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    virtual void    draw  (C GuiPC &gpc)override; // draw   object
 
 #if EE_PRIVATE
-   void  adjustOffset() ;
    Bool     showClear()C;
    Flt    clientWidth()C;
  C Str&   displayText()C; // returns "***" when in password mode, Warning: this is not thread-safe
@@ -55,7 +54,8 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    void          call() ;
    void   createReset() ;
    Bool    setChanged(C Str &text, SET_MODE mode=SET_DEFAULT);
-   Bool cursorChanged(Int position);
+   void  adjustOffset(              Bool margin=true);
+   Bool cursorChanged(Int position, Bool margin=true);
    void  setTextInput()C;
 
    enum

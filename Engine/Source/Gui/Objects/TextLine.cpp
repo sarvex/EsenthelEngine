@@ -115,7 +115,7 @@ TextLine& TextLine::maxLength(Int max_length)
    return T;
 }
 /******************************************************************************/
-void TextLine::adjustOffset()
+void TextLine::adjustOffset(Bool margin)
 {
    if(GuiSkin *skin=getSkin())
       if(TextStyle *text_style=skin->textline.text_style())
@@ -125,24 +125,24 @@ void TextLine::adjustOffset()
       if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
    #endif
 
-      Flt x=ts.textWidth(displayText(), _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin=ts.size.x*TEXTLINE_MARGIN;
-      if( x<   margin)_offset =Min(_offset-x+w*0.5f, 0.0f);else
-      if( x>=w-margin)_offset-=            x-w*0.5f;
+      Flt x=ts.textWidth(displayText(), _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin_w=(margin ? ts.size.x*TEXTLINE_MARGIN : 0);
+      if( x<   margin_w)_offset =Min(_offset-x+w*0.5f, 0.0f);else
+      if( x>=w-margin_w)_offset-=            x-w*0.5f;
    }
 }
-Bool TextLine::cursorChanged(Int position)
+Bool TextLine::cursorChanged(Int position, Bool margin)
 {
    Clamp(position, 0, _text.length()); if(cursor()!=position)
    {
      _edit.cur=position;
-      adjustOffset();
+      adjustOffset(margin);
       return true;
    }
    return false;
 }
-TextLine& TextLine::cursor(Int position)
+TextLine& TextLine::cursor(Int position, Bool margin)
 {
-   if(cursorChanged(position))setTextInput();
+   if(cursorChanged(position, margin))setTextInput();
    return T;
 }
 /******************************************************************************/
@@ -309,7 +309,8 @@ void TextLine::update(C GuiPC &gpc)
             if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
          #endif
 
-            Int pos=ts.textIndex(displayText(), touch_pos->x - rect().min.x - ((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x) - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
+          C Str &text=displayText();
+            Int pos=ts.textIndex(text, touch_pos->x - rect().min.x - ((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x) - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
 
             if(ButtonDb(touch_state))
             {
@@ -344,9 +345,10 @@ void TextLine::update(C GuiPC &gpc)
                }
 
                // scroll offset
-               Flt x=ts.textWidth(displayText(), _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin=ts.size.x*TEXTLINE_MARGIN;
-               if( x<   margin)_offset =Min(Time.d()*2+_offset,     0.0f);else
-               if( x>=w-margin)_offset-=Min(Time.d()*2        , x-w*0.5f);
+               Bool margin=false;
+               Flt x=ts.textWidth(text, _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin_w=(margin ? ts.size.x*TEXTLINE_MARGIN : 0);
+               if( x<   margin_w)_offset =Min(Time.d()*2+_offset,     0.0f);else
+               if( x>=w-margin_w)_offset-=Min(Time.d()*2        , x-w*0.5f);
             }
          }
       }else _can_select=true;

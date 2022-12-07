@@ -165,7 +165,7 @@ TextBox& TextBox::maxLength(Int max_length)
    return T;
 }
 /******************************************************************************/
-Bool TextBox::cursorChanged(Int position)
+Bool TextBox::cursorChanged(Int position, Bool margin)
 {
    Clamp(position, 0, _text.length());
    if(cursor()!=position)
@@ -182,13 +182,18 @@ Bool TextBox::cursorChanged(Int position)
        C TextStyle &ts=*text_style;
       #endif
 
-         Flt offset=ts.size.x*TEXTBOX_OFFSET,
-             margin=ts.size.x*TEXTBOX_MARGIN;
+         Flt  offset=ts.size.x*TEXTBOX_OFFSET;
          Vec2 pos=ts.textPos(T(), cursor(), _text_space, wordWrap()); // here Y is 0..Inf
-         pos.x+=offset;
-         Flt pos_left  =pos.x-margin,
-             pos_right =pos.x+margin,
-             pos_bottom=pos.y+ts.size.y; // bottom position of the cursor (add because Y is inverted)
+              pos.x+=offset;
+         Flt  pos_left  =pos.x,
+              pos_right =pos.x,
+              pos_bottom=pos.y+ts.size.y; // bottom position of the cursor (add because Y is inverted)
+         if(margin)
+         {
+            Flt margin=ts.size.x*TEXTBOX_MARGIN;
+            pos_left -=margin;
+            pos_right+=margin;
+         }
          if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
          if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
 
@@ -206,9 +211,9 @@ Bool TextBox::cursorChanged(Int position)
    }
    return false;
 }
-TextBox& TextBox::cursor(Int position)
+TextBox& TextBox::cursor(Int position, Bool margin)
 {
-   if(cursorChanged(position))setTextInput();
+   if(cursorChanged(position, margin))setTextInput();
    return T;
 }
 /******************************************************************************/
@@ -495,7 +500,7 @@ void TextBox::update(C GuiPC &gpc)
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
-                    _edit.cur=_edit.sel=-1; cursor(pos); // set -1 to force adjustment of offset and calling 'setTextInput'
+                    _edit.cur=_edit.sel=-1; cursor(pos, false); // set -1 to force adjustment of offset and calling 'setTextInput'
                   }
                }else
                if(pos!=_edit.cur)

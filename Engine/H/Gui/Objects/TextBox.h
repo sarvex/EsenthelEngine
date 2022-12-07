@@ -15,7 +15,7 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
 
    // get / set
    Int   maxLength ()C {return _max_length   ;}   TextBox& maxLength   (  Int  max_length                        ); // get/set maximum allowed text length (-1=no limit), default=-1
-   Int   cursor    ()C {return _edit.cur     ;}   TextBox& cursor      (  Int  position                          ); // get/set cursor position
+   Int   cursor    ()C {return _edit.cur     ;}   TextBox& cursor      (  Int  position, Bool margin=true        ); // get/set cursor position
    Bool  wordWrap  ()C {return _word_wrap    ;}   TextBox& wordWrap    (  Bool wrap                              ); // get/set word wrapping, default=true
    Bool  autoHeight()C {return _auto_height  ;}   TextBox& autoHeight  (  Bool auto_height                       ); // get/set auto height adjustment to fit full text, default=false
  C Str&  operator()()C {return _text         ;}   TextBox& set         (C Str &text, SET_MODE mode=SET_DEFAULT   ); // get/set text
@@ -55,7 +55,7 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    void      setParent();
    void      setParams();
    Bool     setChanged(C Str &text, SET_MODE mode=SET_DEFAULT);
-   Bool  cursorChanged(Int position);
+   Bool  cursorChanged(Int position, Bool margin=true);
    void     moveCursor(Int lines, Int pages);
    void setVirtualSize();
    void setTextInput  ()C;
