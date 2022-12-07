@@ -109,10 +109,11 @@ TextBox& TextBox::slidebarSize(Flt size)
    }
    return T;
 }
-void TextBox::setVirtualSize()
+void TextBox::setVirtualSize(C Rect *set_rect)
 {
    Vec2 size=0;
-  _text_space=rect().w();
+   Rect rect=(set_rect ? *set_rect : T.rect());
+  _text_space=rect.w();
    if(GuiSkin *skin=getSkin())
       if(TextStyle *text_style=skin->textline.text_style())
    {
@@ -122,18 +123,18 @@ void TextBox::setVirtualSize()
     C TextStyle &ts=*text_style;
    #endif
 
-      Flt offset2 =ts.size.x*(TEXTBOX_OFFSET*2);
-      Int lines   =ts.textLines(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
-      Flt line_h  =ts.lineHeight();
+      Flt offset2=ts.size.x*(TEXTBOX_OFFSET*2);
+      Int lines  =ts.textLines(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
+      Flt line_h =ts.lineHeight();
       size.y=lines*line_h;
       if(_auto_height)
       {
          Flt client_height=Max(lines, min_lines)*line_h;
-         Rect r=rect(); r.min.y=r.max.y-client_height; super::rect(r);
+         rect.min.y=rect.max.y-client_height;
       }else
       if(wordWrap()) // check if in word wrap we're exceeding lines beyond client rectangle, in that case slidebar has to be made visible, which reduces client width
       {
-         Flt client_height=rect().h(); // here can't use 'clientHeight' because it may not be available yet
+         Flt client_height=rect.h(); // here can't use 'clientHeight' because it may not be available yet
          if(size.y>client_height+EPS) // exceeds client height
          { // recalculate using smaller width
             Int lines=ts.textLines(T(), _text_space-=slidebarSize(), wordWrap(), &size.x);
@@ -142,6 +143,7 @@ void TextBox::setVirtualSize()
       }
       size.x+=offset2; // we've calculated text widths with offset removed, but here we're calculating virtual size, and it needs to include it
    }
+   if(_auto_height)super::rect(rect);
    slidebar[0]._length_total=size.x;
    slidebar[1]._length_total=size.y;
    setButtons();
@@ -314,8 +316,11 @@ TextBox& TextBox::rect(C Rect &rect)
 {
    if(T.rect()!=rect)
    {
-      super::rect(rect);
-      if(wordWrap() || _auto_height)setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle. For '_auto_height' we need to adjust height in 'setVirtualSize'
+      if(_auto_height)setVirtualSize(&rect);else // for '_auto_height' need to adjust height in 'setVirtualSize', it will call 'super::rect'
+      {
+         super::rect(rect);
+         if(wordWrap())setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle
+      }
    }
    return T;
 }

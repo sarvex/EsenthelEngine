@@ -57,7 +57,7 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    Bool     setChanged(C Str &text, SET_MODE mode=SET_DEFAULT);
    Bool  cursorChanged(Int position, Bool margin=true);
    void     moveCursor(Int lines, Int pages);
-   void setVirtualSize();
+   void setVirtualSize(C Rect *rect=null);
    void setTextInput  ()C;
 
    Flt    clientWidth ()C {return      _crect.w          ()            ;} // get client  width
