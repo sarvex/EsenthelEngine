@@ -1,8 +1,7 @@
 /******************************************************************************/
 const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in constant memory address !!
 {
-   Bool     kb_lit     , // if highlight when has keyboard focus        , default=true
-            auto_height; // if auto adjust height to fit full text      , default=false
+   Bool     kb_lit     ; // if highlight when has keyboard focus        , default=true
    Int      min_lines  ; // minimum lines to show when using auto_height, default=4
    Str      hint       ; // hint displayed when there's no text entered , default=""
    Button   view       ; // view button
@@ -18,6 +17,7 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    Int   maxLength ()C {return _max_length   ;}   TextBox& maxLength   (  Int  max_length                        ); // get/set maximum allowed text length (-1=no limit), default=-1
    Int   cursor    ()C {return _edit.cur     ;}   TextBox& cursor      (  Int  position                          ); // get/set cursor position
    Bool  wordWrap  ()C {return _word_wrap    ;}   TextBox& wordWrap    (  Bool wrap                              ); // get/set word wrapping, default=true
+   Bool  autoHeight()C {return _auto_height  ;}   TextBox& autoHeight  (  Bool auto_height                       ); // get/set auto height adjustment to fit full text, default=false
  C Str&  operator()()C {return _text         ;}   TextBox& set         (C Str &text, SET_MODE mode=SET_DEFAULT   ); // get/set text
                                                   TextBox& clear       (             SET_MODE mode=SET_DEFAULT   ); // clear   text
    Flt slidebarSize()C {return _slidebar_size;}   TextBox& slidebarSize(  Flt  size                              ); // set/get slidebar size, default=0.05
@@ -75,7 +75,7 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
 #if !EE_PRIVATE
 private:
 #endif
-   Bool       _word_wrap, _can_select, _func_immediate;
+   Bool       _word_wrap, _auto_height, _can_select, _func_immediate;
    Int        _max_length;
    Flt        _slidebar_size, _text_space;
    Str        _text;

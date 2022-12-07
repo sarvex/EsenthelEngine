@@ -8,14 +8,14 @@ namespace EE{
 void TextBox::zero()
 {
    kb_lit=true;
-   auto_height=false;
    min_lines=4;
   _slidebar_size=0.05f;
   _text_space=0; // this parameter is used to make sure that all text functions use exactly the same text width. Important to keep in sync - multi-line drawing, clicking, editing, so that cursor position matches graphics.
 
-  _can_select=false;
-  _word_wrap =true;
-  _max_length=-1;
+  _can_select =false;
+  _word_wrap  =true;
+  _auto_height=false;
+  _max_length =-1;
 
   _func_immediate=false;
   _func_user     =null;
@@ -70,13 +70,13 @@ TextBox& TextBox::create(C TextBox &src)
          copyParams(src);
         _type          =GO_TEXTBOX;
          kb_lit        =src. kb_lit;
-         auto_height   =src. auto_height;
          min_lines     =src. min_lines;
          hint          =src. hint;
         _slidebar_size =src._slidebar_size;
         _text_space    =src._text_space;
         _can_select    =src._can_select;
         _word_wrap     =src._word_wrap;
+        _auto_height   =src._auto_height;
         _max_length    =src._max_length;
         _func_immediate=src._func_immediate;
         _func_user     =src._func_user;
@@ -126,7 +126,7 @@ void TextBox::setVirtualSize()
       Int lines   =ts.textLines(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
       Flt line_h  =ts.lineHeight();
       size.y=lines*line_h;
-      if(auto_height)
+      if(_auto_height)
       {
          Flt client_height=Max(lines, min_lines)*line_h;
          Rect r=rect(); r.min.y=r.max.y-client_height; super::rect(r);
@@ -290,13 +290,19 @@ TextBox& TextBox::wordWrap(Bool wrap)
    }
    return T;
 }
+TextBox& TextBox::autoHeight(Bool auto_height)
+{
+   if(_auto_height!=auto_height)
+   if(_auto_height =auto_height)setVirtualSize();
+   return T;
+}
 /******************************************************************************/
 TextBox& TextBox::rect(C Rect &rect)
 {
    if(T.rect()!=rect)
    {
       super::rect(rect);
-      if(wordWrap() || auto_height)setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle. For 'auto_height' we need to adjust height in 'setVirtualSize'
+      if(wordWrap() || _auto_height)setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle. For '_auto_height' we need to adjust height in 'setVirtualSize'
    }
    return T;
 }
