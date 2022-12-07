@@ -519,6 +519,10 @@ void TextBox::update(C GuiPC &gpc)
                   Flt margin=ts.size.x;
                   MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
                   MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
+
+                  margin=ts.size.y;
+                  MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
+                  MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                }
                // check <= instead of < in case we're at screen border
                if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
