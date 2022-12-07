@@ -8,6 +8,8 @@ namespace EE{
 void TextBox::zero()
 {
    kb_lit=true;
+   auto_height=false;
+   min_lines=4;
   _slidebar_size=0.05f;
   _text_space=0; // this parameter is used to make sure that all text functions use exactly the same text width. Important to keep in sync - multi-line drawing, clicking, editing, so that cursor position matches graphics.
 
@@ -68,6 +70,8 @@ TextBox& TextBox::create(C TextBox &src)
          copyParams(src);
         _type          =GO_TEXTBOX;
          kb_lit        =src. kb_lit;
+         auto_height   =src. auto_height;
+         min_lines     =src. min_lines;
          hint          =src. hint;
         _slidebar_size =src._slidebar_size;
         _text_space    =src._text_space;
@@ -120,7 +124,13 @@ void TextBox::setVirtualSize()
 
       Flt offset2 =ts.size.x*(TEXTBOX_OFFSET*2);
       Int lines   =ts.textLines(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
-      size.y=lines*ts.lineHeight();
+      Flt line_h  =ts.lineHeight();
+      size.y=lines*line_h;
+      if(auto_height)
+      {
+         Flt client_height=Max(lines, min_lines)*line_h;
+         Rect r=rect(); r.min.y=r.max.y-client_height; super::rect(r);
+      }else
       if(wordWrap()) // check if in word wrap we're exceeding lines beyond client rectangle, in that case slidebar has to be made visible, which reduces client width
       {
          Flt client_height=rect().h(); // here can't use 'clientHeight' because it may not be available yet
@@ -286,7 +296,7 @@ TextBox& TextBox::rect(C Rect &rect)
    if(T.rect()!=rect)
    {
       super::rect(rect);
-      if(wordWrap())setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle
+      if(wordWrap() || auto_height)setVirtualSize();else setButtons(); // in 'wordWrap' mode, virtual size is dependent on the rectangle. For 'auto_height' we need to adjust height in 'setVirtualSize'
    }
    return T;
 }
