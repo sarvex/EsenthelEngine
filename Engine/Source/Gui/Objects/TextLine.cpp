@@ -299,9 +299,9 @@ void TextLine::update(C GuiPC &gpc)
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
-      Bool    mt_touch;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; mt_touch=false;}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; mt_touch=true; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      Bool    margin;
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; margin=touch.selecting(); touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
       if(_text.is() && mt_pos)
       {
          if(GuiSkin *skin=getSkin())
@@ -352,9 +352,9 @@ void TextLine::update(C GuiPC &gpc)
                // scroll offset
                Flt w=clientWidth(), l=rect().min.x+gpc_offset, r=l+w; // text_rect
                MAX(l, gpc.clip.min.x); MIN(r, gpc.clip.max.x); // clipped_text_rect
-               if(mt_touch) // touches may not reach screen border comfortably, so turn on scrolling with margin
+               if(margin)
                {
-                  Flt margin=ts.size.x*TEXTLINE_MARGIN;
+                  Flt margin=ts.size.x;
                   MAX(l, D.rectUI().min.x+margin);
                   MIN(r, D.rectUI().max.x-margin);
                }

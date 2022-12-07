@@ -460,9 +460,9 @@ void TextBox::update(C GuiPC &gpc)
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
-      Bool    mt_touch;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; mt_touch=false;}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; mt_touch=true; touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      Bool    margin;
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; margin=touch.selecting(); touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
       if(_text.is() && mt_pos)
       {
          if(GuiSkin *skin=getSkin())
@@ -514,6 +514,12 @@ void TextBox::update(C GuiPC &gpc)
                   setTextInput();
                }
 
+               if(margin)
+               {
+                  Flt margin=ts.size.x;
+                  MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
+                  MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
+               }
                // check <= instead of < in case we're at screen border
                if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
                if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
