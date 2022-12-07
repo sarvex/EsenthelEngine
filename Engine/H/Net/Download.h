@@ -72,6 +72,7 @@ const_mem_addr struct Download // File Downloader !! must be stored in constant 
    Download& wait  (Int milliseconds=-1); // wait for the download thread to exit (<0 = infinite wait)
 
    // get
+   Bool       is              ()C {return _state!=DWNL_NONE      ;} // get if created
    DWNL_STATE state           ()C {return _state                 ;} // get download state
    UShort     code            ()C {return _code                  ;} // get HTTP status code, or 0 if unavailable
    Ptr        data            ()C {return _data                  ;} // get downloaded data            , this will be valid only in DWNL_DONE state

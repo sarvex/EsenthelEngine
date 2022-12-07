@@ -925,6 +925,10 @@ Dialog& Dialog::create(C Str &title, C Str &text, C CMemPtr<Str> &buttons, C Tex
    super::create();
    return set(title, text, buttons, text_style);
 }
+GuiObj* Dialog::test   (C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel) {return modal ? super::test   (gpc, pos, mouse_wheel) : Window::test   (gpc, pos, mouse_wheel);}
+void    Dialog::nearest(C GuiPC &gpc, GuiObjNearest &gon               ) {return modal ? super::nearest(gpc, gon             ) : Window::nearest(gpc, gon             );}
+void    Dialog::update (C GuiPC &gpc                                   ) {return modal ? super::update (gpc                  ) : Window::update (gpc                  );}
+void    Dialog::draw   (C GuiPC &gpc                                   ) {return modal ? super::draw   (gpc                  ) : Window::draw   (gpc                  );}
 /******************************************************************************/
 }
 /******************************************************************************/
