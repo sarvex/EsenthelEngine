@@ -185,8 +185,8 @@ void Source::update(C GuiPC &gpc)
 
    super::update(gpc);
 
-   if(slidebar[1].button[1]()
-   || slidebar[1].button[2]())
+   if(slidebar[1].button[SB_LEFT_UP   ]()
+   || slidebar[1].button[SB_RIGHT_DOWN]())
       if(!isCurVisible())
    {
       forceCreateNextUndo(); clearSuggestions(); sel=-1;
@@ -197,8 +197,8 @@ void Source::update(C GuiPC &gpc)
 
    if(hasKbFocus())
    {
-      if(Kb.ctrlCmd() && !Kb.alt() && Kb.b(KB_UP  ))slidebar[1].button[1].push(); // scroll up
-      if(Kb.ctrlCmd() && !Kb.alt() && Kb.b(KB_DOWN))slidebar[1].button[2].push(); // scroll down
+      if(Kb.ctrlCmd() && !Kb.alt() && Kb.b(KB_UP  ))scrollUp  ();
+      if(Kb.ctrlCmd() && !Kb.alt() && Kb.b(KB_DOWN))scrollDown();
 
       for(; Kb.k.any() && !Kb.k.winCtrl(); Kb.nextKey())
       {
@@ -702,8 +702,8 @@ void Source::update(C GuiPC &gpc)
    }else
    if(Gui.kb()==&suggestions_textline)
    {
-      if(Kb.ctrlCmd() && Kb.b(KB_UP  ))slidebar[1].button[1].push();else // scroll up
-      if(Kb.ctrlCmd() && Kb.b(KB_DOWN))slidebar[1].button[2].push();else // scroll down
+      if(Kb.ctrlCmd() && Kb.b(KB_UP  ))scrollUp  ();else // scroll up
+      if(Kb.ctrlCmd() && Kb.b(KB_DOWN))scrollDown();else // scroll down
       if(Kb.k(KB_ESC) || Kb.k(KB_NAV_BACK)){clearSuggestions(); Kb.eatKey();}else // hide suggestions
       if(Kb.k(KB_ENTER)){autoComplete(); Kb.eatKey();}else
       if(Kb.k(KB_PGUP))setSuggestion(suggestions_list.cur-Trunc(suggestions_region.slidebar[1].length()/CE.ts.lineHeight()));else
@@ -770,8 +770,8 @@ void Source::update(C GuiPC &gpc)
          }else
          if(MT.b(i, 0) && sel_temp.x>=0 && (!Overwrite || Ms.selecting())) // for Overwrite, require some mouse movement, because there initial position is calculated based on 'Trunc', but target using 'Round'
          {
-            if(MT.pos(i).y>=_crect.max.y)slidebar[1].button[1].push();else
-            if(MT.pos(i).y<=_crect.min.y)slidebar[1].button[2].push();
+            if(MT.pos(i).y>=_crect.max.y)scrollUp  ();else
+            if(MT.pos(i).y<=_crect.min.y)scrollDown();
             cur.set(Round(c.x), Trunc(c.y));
             curClip();
             sel=sel_temp;
@@ -807,10 +807,10 @@ void Source::update(C GuiPC &gpc)
 
    if(CE.view_mode() && contains(Gui.kb()))
    {
-      if(Kb.b(KB_LEFT ))slidebar[0].button[1].push();
-      if(Kb.b(KB_RIGHT))slidebar[0].button[2].push();
-      if(Kb.b(KB_UP   ))slidebar[1].button[1].push();
-      if(Kb.b(KB_DOWN ))slidebar[1].button[2].push();
+      if(Kb.b(KB_LEFT ))scrollLeft ();
+      if(Kb.b(KB_RIGHT))scrollRight();
+      if(Kb.b(KB_UP   ))scrollUp   ();
+      if(Kb.b(KB_DOWN ))scrollDown ();
       if(Kb.k(KB_PGUP ))scrollY  (-slidebar[1].length());
       if(Kb.k(KB_PGDN ))scrollY  ( slidebar[1].length());
       if(Kb.k(KB_HOME ))scrollToY (0);

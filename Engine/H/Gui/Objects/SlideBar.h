@@ -59,6 +59,9 @@ const_mem_addr struct SlideBar : GuiObj // Gui SlideBar !! must be stored in con
    SlideBar& scrollFit(Flt min, Flt max, Bool immediate=false); // scroll to fit min..max range
    SlideBar& scrollEnd(                  Bool immediate=false); // scroll to end
 
+   SlideBar& scrollLeftUp   (); // scroll left/up
+   SlideBar& scrollRightDown(); // scroll right/down
+
    SlideBar& scrollOptions(Flt relative=0.5f, Flt base=0, Bool immediate=false, Flt button_speed=1.5f); // set scrolling options, 'relative'=amount of scrolling using the mouse wheel relative to slidebar 'length' (0..Inf, default=1), 'base'=constant amount of scrolling using mouse wheel (0..Inf, default=0), 'immediate'=if mouse wheel scrolling is immediate or smooth, 'button_speed'=speed of scrolling upon pressing the left/up/right/down buttons
 
    // operations

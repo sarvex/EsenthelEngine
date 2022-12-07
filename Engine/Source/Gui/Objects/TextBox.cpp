@@ -391,13 +391,13 @@ void TextBox::moveCursor(Int lines, Int pages)
 /******************************************************************************/
 void ScrollMinus(SlideBar *sb, GuiObj *go, Bool vertical)
 {
-                                                                                       if(sb->offset()>0){sb->button[SB_LEFT_UP].push(); return;}
-   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(sb->offset()>0){sb->button[SB_LEFT_UP].push(); return;}}
+                                                                                       if(sb->offset()>0){sb->scrollLeftUp(); return;}
+   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(sb->offset()>0){sb->scrollLeftUp(); return;}}
 }
 void ScrollPlus(SlideBar *sb, GuiObj *go, Bool vertical)
 {
-                                                                                       if(!sb->atEnd()){sb->button[SB_RIGHT_DOWN].push(); return;}
-   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(!sb->atEnd()){sb->button[SB_RIGHT_DOWN].push(); return;}}
+                                                                                       if(!sb->atEnd()){sb->scrollRightDown(); return;}
+   for(; go; go=go->parent())if(go->isRegion()){sb=&go->asRegion().slidebar[vertical]; if(!sb->atEnd()){sb->scrollRightDown(); return;}}
 }
 /******************************************************************************/
 void TextBox::update(C GuiPC &gpc)

@@ -259,6 +259,8 @@ SlideBar& SlideBar::scrollFit(Flt min, Flt max, Bool immediate)
    return immediate ? setOffset(_scroll_to) : T;
 }
 SlideBar& SlideBar::scrollEnd(Bool immediate) {return scrollTo(lengthTotal(), immediate);}
+SlideBar& SlideBar::scrollLeftUp   () {if(button[SB_LEFT_UP   ].is())button[SB_LEFT_UP   ].push();else setOffset(_offset-Time.ad()*_scroll_button); return T;}
+SlideBar& SlideBar::scrollRightDown() {if(button[SB_RIGHT_DOWN].is())button[SB_RIGHT_DOWN].push();else setOffset(_offset+Time.ad()*_scroll_button); return T;}
 SlideBar& SlideBar::scrollOptions(Flt relative, Flt base, Bool immediate, Flt button_speed)
 {
    T._scroll_mul      =Max(0, relative);
@@ -346,12 +348,12 @@ void SlideBar::update(C GuiPC &gpc)
       {
          if(_vertical)
          {
-            if(Kb.b(KB_UP  ))button[SB_LEFT_UP   ].push();
-            if(Kb.b(KB_DOWN))button[SB_RIGHT_DOWN].push();
+            if(Kb.b(KB_UP  ))scrollLeftUp   ();
+            if(Kb.b(KB_DOWN))scrollRightDown();
          }else
          {
-            if(Kb.b(KB_LEFT ))button[SB_LEFT_UP   ].push();
-            if(Kb.b(KB_RIGHT))button[SB_RIGHT_DOWN].push();
+            if(Kb.b(KB_LEFT ))scrollLeftUp   ();
+            if(Kb.b(KB_RIGHT))scrollRightDown();
          }
          scroll_discrete+=Kb.k(KB_PGDN);
          scroll_discrete-=Kb.k(KB_PGUP);

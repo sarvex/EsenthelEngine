@@ -1817,10 +1817,10 @@ void _List::update(C GuiPC &gpc)
             if(Kb.ctrlCmd() && _parent && _parent->isRegion())
             {
                Region &region=_parent->asRegion();
-               if(Kb.b(KB_UP   )){Kb.eat(KB_UP   ); region.slidebar[1].button[1].push();}
-               if(Kb.b(KB_DOWN )){Kb.eat(KB_DOWN ); region.slidebar[1].button[2].push();}
-               if(Kb.b(KB_LEFT )){Kb.eat(KB_LEFT ); region.slidebar[0].button[1].push();}
-               if(Kb.b(KB_RIGHT)){Kb.eat(KB_RIGHT); region.slidebar[0].button[2].push();}
+               if(Kb.b(KB_UP   )){Kb.eat(KB_UP   ); region.scrollUp   ();}
+               if(Kb.b(KB_DOWN )){Kb.eat(KB_DOWN ); region.scrollDown ();}
+               if(Kb.b(KB_LEFT )){Kb.eat(KB_LEFT ); region.scrollLeft ();}
+               if(Kb.b(KB_RIGHT)){Kb.eat(KB_RIGHT); region.scrollRight();}
             }
 
             // quick search

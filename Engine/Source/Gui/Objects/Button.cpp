@@ -262,9 +262,7 @@ void Button::update(C GuiPC &gpc)
 
          case BUTTON_CONTINUOUS:
          {
-            if(ButtonPd(state))manual_push=true;
-           _on       =(manual_push || ButtonOn(state));
-            call_func=_on;
+           _on=call_func=(state&(BS_PUSHED|BS_ON) || manual_push);
          }break;
 
          case BUTTON_TOGGLE:
