@@ -158,6 +158,7 @@ TextBox& TextBox::maxLength(Int max_length)
         _text.clip(     max_length);
          MIN(_edit.cur, max_length);
          MIN(_edit.sel, max_length);
+         if (_edit.sel==_edit.cur)_edit.sel=-1;
          setVirtualSize();
          setTextInput();
       }
@@ -446,6 +447,7 @@ void TextBox::update(C GuiPC &gpc)
               _text.clip(     _max_length);
                MIN(_edit.cur, _max_length);
                MIN(_edit.sel, _max_length);
+               if (_edit.sel==_edit.cur)_edit.sel=-1;
             }
             setVirtualSize();
             call();
@@ -505,15 +507,17 @@ void TextBox::update(C GuiPC &gpc)
                }else
                if(pos!=_edit.cur)
                {
-                  if(_edit.sel<0)_edit.sel=_edit.cur;
-                                 _edit.cur=pos;
+                  if(_edit.sel<   0)_edit.sel=_edit.cur;else
+                  if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
+                                    _edit.cur=pos;
                   setTextInput();
                }
 
-               if(touch_pos->x<clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
-               if(touch_pos->x>clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
-               if(touch_pos->y<clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
-               if(touch_pos->y>clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
+               // check <= instead of < in case we're at screen border
+               if(touch_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
+               if(touch_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
+               if(touch_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
+               if(touch_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
             }
          }
       }else _can_select=true;

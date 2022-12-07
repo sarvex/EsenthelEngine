@@ -109,6 +109,7 @@ TextLine& TextLine::maxLength(Int max_length)
         _text.clip(     max_length);
          MIN(_edit.cur, max_length);
          MIN(_edit.sel, max_length);
+         if (_edit.sel==_edit.cur)_edit.sel=-1;
          setTextInput();
       }
    }
@@ -126,8 +127,8 @@ void TextLine::adjustOffset(Bool margin)
    #endif
 
       Flt x=ts.textWidth(displayText(), _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin_w=(margin ? ts.size.x*TEXTLINE_MARGIN : 0);
-      if( x<   margin_w)_offset =Min(_offset-x+w*0.5f, 0.0f);else
-      if( x>=w-margin_w)_offset-=            x-w*0.5f;
+      if( x<  margin_w)_offset=Min(_offset-x+w*0.5f, 0);else
+      if( x>w-margin_w)_offset=Min(_offset-x+w*0.5f, 0);
    }
 }
 Bool TextLine::cursorChanged(Int position, Bool margin)
@@ -286,6 +287,7 @@ void TextLine::update(C GuiPC &gpc)
               _text.clip(     _max_length);
                MIN(_edit.cur, _max_length);
                MIN(_edit.sel, _max_length);
+               if (_edit.sel==_edit.cur)_edit.sel=-1;
             }
             call();
          }
@@ -310,7 +312,8 @@ void TextLine::update(C GuiPC &gpc)
          #endif
 
           C Str &text=displayText();
-            Int pos=ts.textIndex(text, touch_pos->x - rect().min.x - ((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x) - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
+            Flt gpc_offset=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x);
+            Int pos=ts.textIndex(text, touch_pos->x - rect().min.x - gpc_offset - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(touch_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
 
             if(ButtonDb(touch_state))
             {
@@ -339,16 +342,18 @@ void TextLine::update(C GuiPC &gpc)
                }else
                if(pos!=_edit.cur)
                {
-                  if(_edit.sel<0)_edit.sel=_edit.cur;
-                                 _edit.cur=pos;
+                  if(_edit.sel<   0)_edit.sel=_edit.cur;else
+                  if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
+                                    _edit.cur=pos;
                   setTextInput();
                }
 
                // scroll offset
-               Bool margin=false;
-               Flt x=ts.textWidth(text, _edit.cur) + _offset + ts.size.x*TEXTLINE_OFFSET, w=clientWidth(), margin_w=(margin ? ts.size.x*TEXTLINE_MARGIN : 0);
-               if( x<   margin_w)_offset =Min(Time.d()*2+_offset,     0.0f);else
-               if( x>=w-margin_w)_offset-=Min(Time.d()*2        , x-w*0.5f);
+               Flt w=clientWidth(), l=rect().min.x+gpc_offset, r=l+w; // text_rect
+               MAX(l, gpc.clip.min.x); MIN(r, gpc.clip.max.x); // clipped_text_rect
+               // check <= instead of < in case we're at screen border
+               if(touch_pos->x<=l)_offset=Min(0,     Time.d()* 2+_offset                          );else
+               if(touch_pos->x>=r)_offset=Min(0, Max(Time.d()*-2+_offset, -ts.textWidth(text)+w/2));
             }
          }
       }else _can_select=true;
