@@ -143,8 +143,7 @@ SlideBar& SlideBar::setLengths(Flt length, Flt length_total)
       T._length      =length;
       T._length_total=length_total;
       T._usable      =(length+EPS<length_total);
-      if(!_usable)return setOffset(0, true); // if not usable then scrolling will be disabled, in that case force precise 0 offset (in case some codes do comparison against 0 value) and stop any scroll
-      if( _scroll)_scroll_to=Max(0, Min(_scroll_to, maxOffset())); // adjust current scrolling if any
+      if(_scroll)_scroll_to=Max(0, Min(_scroll_to, maxOffset())); // adjust current scrolling if any
       return setOffset(_offset, false);
    }
    return T;
@@ -221,8 +220,15 @@ Flt SlideBar::scrollDelta()C
 }
 SlideBar& SlideBar::setOffset(Flt offset, Bool stop, SET_MODE mode)
 {
-   if(stop)_scroll=false;
-   offset=Max(0, Min(offset, maxOffset()));
+   if(_usable)
+   {
+      if(stop)_scroll=false;
+      offset=Max(0, Min(offset, maxOffset()));
+   }else
+   {
+     _scroll=false;
+      offset=0; // if not usable then scrolling will be disabled and small offsets below EPS may not get cleared to 0, in that case force precise 0 in case some codes do comparison against 0 value, and stop any scroll
+   }
    if(T._offset!=offset)
    {
       T._offset=offset;
