@@ -896,7 +896,7 @@ class StoreClass : ClosableWindow
       {
          super.create();
          T.hoverable=hoverable;
-         fit=true;
+         fit=FIT_FULL;
          return T;
       }
 

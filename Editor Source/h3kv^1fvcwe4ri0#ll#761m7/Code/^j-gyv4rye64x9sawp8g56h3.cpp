@@ -664,7 +664,7 @@ class AppPropsEditor : PropWin
       {
          T.md=md;
          T.md_time=md_time;
-         parent+=super.create(rect); fit=true;
+         parent+=super.create(rect); fit=FIT_FULL;
          parent+=remove.create(Rect_RU(rect.ru(), 0.045, 0.045)).func(Remove, T); remove.image="Gui/close.img";
          return T;
       }

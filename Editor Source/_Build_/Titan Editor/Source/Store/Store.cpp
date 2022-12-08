@@ -764,7 +764,7 @@ StoreClass AppStore;
       {
          super::create();
          T.hoverable=hoverable;
-         fit=true;
+         fit=FIT_FULL;
          return T;
       }
       GuiObj* StoreClass::ItemImage::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel){return (editable || hoverable) ? super::test(gpc, pos, mouse_wheel) : null;}

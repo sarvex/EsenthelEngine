@@ -410,7 +410,7 @@ TextureDownsize TexDownsize;
       wire.del(); cam_spherical.hide(); cam_lock.pos(cam_spherical.pos()); cam_tabs.hide();
       T+=mode      .create(ModeName, Elms(ModeName)).valid(true).set(OBJECT).func(ModeChanged, T);
       T+=light_dir .create(Rect_LU(ctrls.rect().ld(), 0.05f, 0.05f)).setImage(Proj.icon_env).focusable(false).desc("Set Vertical Light Direction\nKeyboard Shortcut: Alt+L"); light_dir.mode=BUTTON_TOGGLE;
-      T+=mtrl_image.create().hide(); mtrl_image.fit=true; mtrl_image.alpha_mode=ALPHA_NONE;
+      T+=mtrl_image.create().hide(); mtrl_image.fit=FIT_FULL; mtrl_image.alpha_mode=ALPHA_NONE;
       T+=region    .create().removeSlideBars().skin(&TransparentSkin).hide(); region.kb_lit=false;
 
       prop_ts.reset(); prop_ts.align.set(1, 0); prop_ts.size=0.053f;
