@@ -1558,6 +1558,7 @@ Bool ScreenKeyboard::Set(Int cur, Int sel)
 }
 #if ANDROID
 static jint SKMode(C ScreenKeyboard &sk) {return (sk.pass) | (sk.number<<1) | (sk.email<<2);}
+static Bool KBWantVisible;
 #endif
 void KeyboardClass::setVisible()
 {
@@ -1593,7 +1594,7 @@ void KeyboardClass::setVisible()
 #elif ANDROID
    if(Jni && ActivityClass && Activity)
    {
-      if(visible)
+      if(KBWantVisible=visible)
       {
          if(JMethodID editText=Jni.func(ActivityClass, "editText", "(Ljava/lang/String;III)V"))
          if(JString t=JString(Jni, sk.text ? *sk.text : S))
@@ -1614,7 +1615,11 @@ void KeyboardClass::setVisible()
 void KeyboardClass::resetTextInput()
 {
 #if WINDOWS_NEW || ANDROID || SWITCH
+#if ANDROID
+   if(KBWantVisible) // on Android check 'KBWantVisible' because '_visible' might be changed at a later stage due to JAVA threads, so immiediately after requesting screen keyboard, '_visible' might still be false, but we already want to change it
+#else
    if(_visible)
+#endif
    {
       ScreenKeyboard sk; sk.set();
    #if WINDOWS_NEW
