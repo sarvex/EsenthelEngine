@@ -43,6 +43,8 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    TextBox& scrollToY (Flt pos         , Bool immediate=false) {slidebar[1].scrollTo (pos     , immediate); return T;} // vertical scroll to pos
    TextBox& scrollFitY(Flt min, Flt max, Bool immediate=false) {slidebar[1].scrollFit(min, max, immediate); return T;} // vertical scroll to fit min..max range
 
+   TextBox& scrollToCursor(Bool margin=true); // scroll to focus on cursor, 'margin'=if apply some margin
+
    // main
    virtual GuiObj* test  (C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)override; // test if 'pos' screen position intersects with the object, by returning pointer to object or its children upon intersection and null in case no intersection, 'mouse_wheel' may be modified upon intersection either to the object or its children or null
    virtual void    update(C GuiPC &gpc)override; // update object

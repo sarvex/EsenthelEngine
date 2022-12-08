@@ -168,48 +168,51 @@ TextBox& TextBox::maxLength(Int max_length)
    return T;
 }
 /******************************************************************************/
+TextBox& TextBox::scrollToCursor(Bool margin)
+{
+   if(GuiSkin *skin=getSkin())
+      if(TextStyle *text_style=skin->textline.text_style())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+
+      Flt  offset=ts.size.x*TEXTBOX_OFFSET;
+      Vec2 pos=ts.textPos(T(), cursor(), _text_space, wordWrap()); // here Y is 0..Inf
+           pos.x+=offset;
+      Flt  pos_left  =pos.x,
+           pos_right =pos.x,
+           pos_bottom=pos.y+ts.size.y; // bottom position of the cursor (add because Y is inverted)
+      if(margin)
+      {
+         Flt margin=ts.size.x*TEXTBOX_MARGIN;
+         pos_left -=margin;
+         pos_right+=margin;
+      }
+      if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
+      if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
+
+      if(GuiObj *parent=T.parent())if(parent->isRegion()) // scroll nearest parent too, in case this TextBox is located within a Region
+      {
+         Region &region=parent->asRegion();
+         Vec2 ofs(-slidebar[0].wantedOffset(), -slidebar[1].wantedOffset());
+         ofs.x+=rect().min.x;
+         ofs.y-=rect().max.y;
+         region.scrollFitX(pos_left+ofs.x, pos_right +ofs.x, true);
+         region.scrollFitY(pos.y   +ofs.y, pos_bottom+ofs.y, true);
+      }
+   }
+   return T;
+}
 Bool TextBox::cursorChanged(Int position, Bool margin)
 {
    Clamp(position, 0, _text.length());
    if(cursor()!=position)
    {
      _edit.cur=position;
-
-      // scroll to make cursor visible
-      if(GuiSkin *skin=getSkin())
-         if(TextStyle *text_style=skin->textline.text_style())
-      {
-      #if DEFAULT_FONT_FROM_CUSTOM_SKIN
-         TextStyleParams ts=*text_style; if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
-      #else
-       C TextStyle &ts=*text_style;
-      #endif
-
-         Flt  offset=ts.size.x*TEXTBOX_OFFSET;
-         Vec2 pos=ts.textPos(T(), cursor(), _text_space, wordWrap()); // here Y is 0..Inf
-              pos.x+=offset;
-         Flt  pos_left  =pos.x,
-              pos_right =pos.x,
-              pos_bottom=pos.y+ts.size.y; // bottom position of the cursor (add because Y is inverted)
-         if(margin)
-         {
-            Flt margin=ts.size.x*TEXTBOX_MARGIN;
-            pos_left -=margin;
-            pos_right+=margin;
-         }
-         if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
-         if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
-
-         if(GuiObj *parent=T.parent())if(parent->isRegion()) // scroll nearest parent too, in case this TextBox is located within a Region
-         {
-            Region &region=parent->asRegion();
-            Vec2 ofs(-slidebar[0].wantedOffset(), -slidebar[1].wantedOffset());
-            ofs.x+=rect().min.x;
-            ofs.y-=rect().max.y;
-            region.scrollFitX(pos_left+ofs.x, pos_right +ofs.x, true);
-            region.scrollFitY(pos.y   +ofs.y, pos_bottom+ofs.y, true);
-         }
-      }
+      scrollToCursor(margin);
       return true;
    }
    return false;
