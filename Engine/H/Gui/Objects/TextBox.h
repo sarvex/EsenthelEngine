@@ -2,7 +2,7 @@
 const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in constant memory address !!
 {
    Bool     kb_lit     ; // if highlight when has keyboard focus        , default=true
-   Int      min_lines  ; // minimum lines to show when using auto_height, default=4
+   Flt      min_height ; // minimum height when using 'autoHeight'      , default=0.3
    Str      hint       ; // hint displayed when there's no text entered , default=""
    Button   view       ; // view button
    SlideBar slidebar[2]; // 2 SlideBars (0=horizontal, 1=vertical)

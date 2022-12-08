@@ -8,7 +8,7 @@ namespace EE{
 void TextBox::zero()
 {
    kb_lit=true;
-   min_lines=4;
+   min_height=0.3f;
   _slidebar_size=0.05f;
   _text_space=0; // this parameter is used to make sure that all text functions use exactly the same text width. Important to keep in sync - multi-line drawing, clicking, editing, so that cursor position matches graphics.
 
@@ -70,7 +70,7 @@ TextBox& TextBox::create(C TextBox &src)
          copyParams(src);
         _type          =GO_TEXTBOX;
          kb_lit        =src. kb_lit;
-         min_lines     =src. min_lines;
+         min_height    =src. min_height;
          hint          =src. hint;
         _slidebar_size =src._slidebar_size;
         _text_space    =src._text_space;
@@ -129,7 +129,7 @@ void TextBox::setVirtualSize(C Rect *set_rect)
       size.y=lines*line_h;
       if(_auto_height)
       {
-         Flt client_height=Max(lines, min_lines)*line_h;
+         Flt client_height=Max(size.y, min_height);
          rect.min.y=rect.max.y-client_height;
       }else
       if(wordWrap()) // check if in word wrap we're exceeding lines beyond client rectangle, in that case slidebar has to be made visible, which reduces client width
