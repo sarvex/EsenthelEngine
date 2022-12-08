@@ -56,10 +56,11 @@ GUI::GUI() : default_skin(3649875776, 1074192063, 580730756, 799774185), _deskto
    window_fade_out_speed=6;
    window_fade_scale    =0.85f;
 
-   dialog_padd         =0.03f;
-   dialog_button_height=0.06f;
-   dialog_button_padd  =dialog_button_height*2;
-   dialog_button_margin=dialog_button_height;
+   dialog_padd           =0.03f;
+   dialog_button_height  =0.06f;
+   dialog_button_padd    =dialog_button_height*2;
+   dialog_button_margin  =dialog_button_height;
+   dialog_button_margin_y=dialog_button_height*0.3f;
 
   _window_buttons_right=!OSMac(); // check for 'OSMac' instead of 'MAC' so it can be detected on WEB too, check for Mac instead of Apple, because iOS is also Apple, but since it's touchscreen based, prefer right side because most people are right-handed and it's easier to have the buttons on the right side
   _drag_want=_dragging=false;

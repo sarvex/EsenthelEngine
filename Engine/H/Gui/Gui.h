@@ -1,18 +1,19 @@
 /******************************************************************************/
 struct GUI // Graphical User Interface
 {
-   Bool allow_window_fade    , // if allow Window fading (smooth transparency), default=true
-        window_fade          ; // if use fade when closing windows or displaying message boxes, default=false
-   Flt  window_fade_in_speed , // speed of Window fading in     , 0..Inf, default=9
-        window_fade_out_speed, // speed of Window fading out    , 0..Inf, default=6
-        window_fade_scale    , // scale of Window when faded out, 0..2  , default=0.85
-        dialog_padd          , // Dialog Window        padding  , 0..Inf, default=0.03
-        dialog_button_height , // Dialog Window Button height   , 0..Inf, default=0.06
-        dialog_button_padd   , // Dialog Window Button padding  , 0..Inf, default=dialog_button_height*2
-        dialog_button_margin , // Dialog Window Button margin   , 0..Inf, default=dialog_button_height
-        resize_radius        , // radius used for detection of resizing windows, 0..Inf, default=0.022
-        desc_delay           ; // time after which gui object descriptions should be displayed, default=0.3
-   UID  click_sound_id       ; // click sound id, default=UIDZero, if specified then it will be always played when a Button, CheckBox or a Tab is clicked
+   Bool allow_window_fade     , // if allow Window fading (smooth transparency), default=true
+        window_fade           ; // if use fade when closing windows or displaying message boxes, default=false
+   Flt  window_fade_in_speed  , // speed of Window fading in     , 0..Inf, default=9
+        window_fade_out_speed , // speed of Window fading out    , 0..Inf, default=6
+        window_fade_scale     , // scale of Window when faded out, 0..2  , default=0.85
+        dialog_padd           , // Dialog Window        padding  , 0..Inf, default=0.03
+        dialog_button_height  , // Dialog Window Button height   , 0..Inf, default=0.06
+        dialog_button_padd    , // Dialog Window Button padding  , 0..Inf, default=dialog_button_height*2
+        dialog_button_margin  , // Dialog Window Button margin   , 0..Inf, default=dialog_button_height
+        dialog_button_margin_y, // Dialog Window Button margin Y , 0..Inf, default=dialog_button_height*0.3
+        resize_radius         , // radius used for detection of resizing windows, 0..Inf, default=0.022
+        desc_delay            ; // time after which gui object descriptions should be displayed, default=0.3
+   UID  click_sound_id        ; // click sound id, default=UIDZero, if specified then it will be always played when a Button, CheckBox or a Tab is clicked
 
    ImagePtr image_shadow   , // shadow            image, default=ImagePtr().get("Gui/shadow.img"   )
             image_drag     , // drag              image, default=ImagePtr().get("Gui/drag.img"     )

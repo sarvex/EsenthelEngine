@@ -864,16 +864,16 @@ void ModalWindow::draw(C GuiPC &gpc)
 /******************************************************************************/
 Dialog& Dialog::autoSize()
 {
-   Flt button_w=Gui.dialog_button_padd*buttons.elms(); if(buttons.elms())button_w+=Gui.dialog_button_margin*(buttons.elms()-1);
-   FREPA(buttons)button_w+=buttons[i].textWidth(&Gui.dialog_button_height);
+   Flt usable_w=Min(D.rect().max.x-Gui.dialog_padd, D.rectUI().max.x)
+               -Max(D.rect().min.x+Gui.dialog_padd, D.rectUI().min.x);
 
    Flt text_w=0, text_h=0;
    if(text.hasData())
    if(C TextStyle *ts=text.getTextStyle())
    if(Flt line_h=ts->lineHeight())
    {
-      const Flt desired_aspect=2.5f, min_w=line_h*17, max_w=D.rectUI().w()-Gui.dialog_padd*2; // min_w gives some tolerable minimum width based on a single line height
-            Int lines=ts->textLines(text.text, text.extra.data(), text.extra.elms(), max_w, text.auto_line, &text_w);
+      const Flt desired_aspect=2.5f, min_w=line_h*17; // min_w gives some tolerable minimum width based on a single line height
+            Int lines=ts->textLines(text.text, text.extra.data(), text.extra.elms(), usable_w, text.auto_line, &text_w);
       text_h=line_h*lines;
       if(text_w>min_w)
       {
@@ -881,7 +881,7 @@ Dialog& Dialog::autoSize()
          REP(3) // 3 attempts
          {
             Flt multiplier=Sqrt(desired_aspect/aspect), // need to apply 'Sqrt' because this affects both width and height
-                test_w=Mid(text_w*multiplier, min_w, max_w);
+                test_w=Mid(text_w*multiplier, min_w, usable_w);
             Int test_lines=ts->textLines(text.text, text.extra.data(), text.extra.elms(), test_w, text.auto_line, &test_w);
             Flt test_h=line_h*test_lines,
                 test_aspect=test_w/test_h;
@@ -895,19 +895,30 @@ Dialog& Dialog::autoSize()
       }
    }
 
-   Flt  max_w=Max(button_w, text_w);
-   Vec2 size(Gui.dialog_padd+max_w+Gui.dialog_padd, Gui.dialog_padd+text_h+Gui.dialog_padd+Gui.dialog_button_height+Gui.dialog_padd);
-   rect(Rect_C(Vec2Zero, size+defaultInnerPaddingSize()));
-   text.rect(Rect_U(size.x/2, -Gui.dialog_padd, text_w, text_h));
-
-   Flt x=(size.x-button_w)/2, y=text.rect().min.y-Gui.dialog_padd;
+   Flt  button_w=0;
+   Rect button_rect; button_rect.min.x=0; button_rect.setY(-Gui.dialog_button_height, 0);
    FREPA(buttons)
    {
       Button &button=buttons[i];
-      Flt w=button.textWidth(&Gui.dialog_button_height)+Gui.dialog_button_padd;
-      button.rect(Rect_LU(x, y, w, Gui.dialog_button_height));
-      x+=w+Gui.dialog_button_margin;
+      Flt   w=button.textWidth(&Gui.dialog_button_height)+Gui.dialog_button_padd;
+         button_rect.max.x=button_rect.min.x+w;
+      if(button_rect.max.x>usable_w && i) // exceeds available space and not first
+      {  // go to next line
+         Flt y=button_rect.min.y-Gui.dialog_button_margin_y;
+         button_rect.set(0, y-Gui.dialog_button_height, w, y);
+      }
+      button.rect(button_rect);
+      MAX(button_w, button_rect.max.x);
+      button_rect.min.x=button_rect.max.x+Gui.dialog_button_margin;
    }
+
+   Flt  max_w=Max(button_w, text_w);
+   Vec2 size(Gui.dialog_padd+max_w+Gui.dialog_padd, Gui.dialog_padd+text_h+Gui.dialog_padd-button_rect.min.y+Gui.dialog_padd);
+   rect(Rect_C(Vec2Zero, size+defaultInnerPaddingSize()));
+   text.rect(Rect_U(size.x/2, -Gui.dialog_padd, text_w, text_h));
+
+   Vec2 move((size.x-button_w)/2, text.rect().min.y-Gui.dialog_padd);
+   REPAO(buttons).move(move);
    return T;
 }
 Dialog& Dialog::set(C Str &title, C Str &text, C CMemPtr<Str> &buttons, C TextStylePtr &text_style)
