@@ -529,11 +529,11 @@ void TextBox::update(C GuiPC &gpc)
                   MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
                   MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                }
-               // check <= instead of < in case we're at screen border
-               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], parent(), false);else
-               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], parent(), false);
-               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], parent(), true );else
-               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], parent(), true );
+               // check <= instead of < in case we're at screen border, first check if pos is outside of clipped text rect, then scroll only if the 'text_rect' is actually clipped with some margin
+               if(mt_pos->x<=clipped_text_rect.min.x){if(text_rect.min.x<gpc.clip.min.x+ts.size.x)ScrollMinus(&slidebar[0], parent(), false);}else
+               if(mt_pos->x>=clipped_text_rect.max.x){if(text_rect.max.x>gpc.clip.max.x-ts.size.x)ScrollPlus (&slidebar[0], parent(), false);}
+               if(mt_pos->y<=clipped_text_rect.min.y){if(text_rect.min.y<gpc.clip.min.y+ts.size.y)ScrollPlus (&slidebar[1], parent(), true );}else
+               if(mt_pos->y>=clipped_text_rect.max.y){if(text_rect.max.y>gpc.clip.max.y-ts.size.y)ScrollMinus(&slidebar[1], parent(), true );}
             }
          }
       }else _can_select=true;
