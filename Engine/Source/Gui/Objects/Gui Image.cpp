@@ -60,11 +60,11 @@ void GuiImage::draw(C GuiPC &gpc)
          if(image)
          {
             ALPHA_MODE alpha=D.alpha(alpha_mode);
-            switch(fit)
+            switch(fit&FIT_MASK)
             {
-               case FIT_NONE: D.clip(gpc.clip     ); image->draw   (color, color_add, rect); break;
-               case FIT_FULL: D.clip(gpc.clip     ); image->drawFit(color, color_add, rect); break;
-               default      : D.clip(gpc.clip&rect); image->draw   (color, color_add, image->fit(rect, fit)); break;
+               case FIT_NONE: D.clip(gpc.clip     ); image->draw   (color, color_add, rect     ); break;
+               case FIT_FULL: D.clip(gpc.clip     ); image->drawFit(color, color_add, rect, fit); break;
+               default      : D.clip(gpc.clip&rect); image->drawFit(color, color_add, rect, fit); break;
             }
             D.alpha(alpha);
          }

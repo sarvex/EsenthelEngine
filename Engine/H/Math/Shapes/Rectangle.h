@@ -6,12 +6,23 @@
 /******************************************************************************/
 enum FIT_MODE : Byte // Fit Mode, these modes specify fitting while preserving original proportions
 {
-   FIT_NONE  , // no  fit
-   FIT_FULL  , // fit width and height to fit  the entire source
-   FIT_FILL  , // fit width and height to fill the entire destination
-   FIT_WIDTH , // fit width
-   FIT_HEIGHT, // fit height
+   FIT_NONE   , // no  fit
+   FIT_FULL   , // fit width and height to fit  the entire source
+   FIT_FILL   , // fit width and height to fill the entire destination
+   FIT_WIDTH  , // fit width
+   FIT_HEIGHT , // fit height
+
+   FIT_LEFT = 8, // align left
+   FIT_RIGHT=16, // align right
+   FIT_DOWN =32, // align down
+   FIT_UP   =64, // align up
+
+   FIT_FULL_UP=FIT_FULL|FIT_UP,
+#if EE_PRIVATE
+   FIT_MASK=7,
+#endif
 };
+SET_ENUM_FLAGS(FIT_MODE);
 /******************************************************************************/
 struct Rect // Rectangle Shape
 {

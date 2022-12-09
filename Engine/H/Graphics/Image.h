@@ -585,9 +585,9 @@ struct Image // Image (Texture)
    void drawVertical(C Color &color, C Color &color_add, C Rect &rect)C; // draw with texture coordinates in vertical mode
 
    // draw to fit best in given space, while preserving image proportions
-   void drawFit        (                                    C Rect &rect)C {return draw        (                  fit        (rect));}
-   void drawFit        (C Color &color, C Color &color_add, C Rect &rect)C {return draw        (color, color_add, fit        (rect));}
-   void drawFitVertical(C Color &color, C Color &color_add, C Rect &rect)C {return drawVertical(color, color_add, fitVertical(rect));}
+   void drawFit        (                                    C Rect &rect, FIT_MODE fit=FIT_FULL)C {return draw        (                  T.fit        (rect, fit));}
+   void drawFit        (C Color &color, C Color &color_add, C Rect &rect, FIT_MODE fit=FIT_FULL)C {return draw        (color, color_add, T.fit        (rect, fit));}
+   void drawFitVertical(C Color &color, C Color &color_add, C Rect &rect, FIT_MODE fit=FIT_FULL)C {return drawVertical(color, color_add, T.fitVertical(rect, fit));}
 
    // draw to fullscreen
    void drawFs(                                                FIT_MODE fit=FIT_FULL, Int filter=-1)C; // draw to fullscreen, 'filter'=custom filtering (FILTER_TYPE) for this parameter you can set any of the FILTER_TYPE enums or use -1 to let the engine decide on filtering (for example linear filtering will be used on Mobile platforms and better filtering on other platforms)
