@@ -38,8 +38,8 @@ parent:
 /******************************************************************************/
 void MaterialMap::create(Int resolution)
 {
-  _m .createSoftTry(resolution, resolution, 1, IMAGE_R8G8B8A8);
-  _i .createSoftTry(resolution, resolution, 1, IMAGE_R8G8B8A8);
+  _m .createSoft(resolution, resolution, 1, IMAGE_R8G8B8A8);
+  _i .createSoft(resolution, resolution, 1, IMAGE_R8G8B8A8);
   _ip.clear();
 }
 void MaterialMap::del()

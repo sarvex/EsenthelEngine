@@ -224,17 +224,17 @@ File& File::reset()
    return T;
 }
 
-File& File::mustEdit   (C Str     &name                , Cipher  *cipher) {if(!  editTry   (name      , cipher))Exit(MLT(S+"Can't edit \""  +          name+'"', PL,S+u"Nie można edytować \""+          name+'"')); return T;}
-File& File::mustAppend (C Str     &name                , Cipher  *cipher) {if(!appendTry   (name      , cipher))Exit(MLT(S+"Can't append \""+          name+'"', PL,S+u"Nie można nadpisać \""+          name+'"')); return T;}
-File& File::mustWrite  (C Str     &name                , Cipher  *cipher) {if(! writeTry   (name      , cipher))Exit(MLT(S+"Can't create \""+          name+'"', PL,S+u"Nie można utworzyć \""+          name+'"')); return T;}
-File& File::mustReadStd(C Str     &name                , Cipher  *cipher) {if(!  readStdTry(name      , cipher))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
-File& File::mustRead   (C PakFile &file, C Pak    &pak                  ) {if(!  readTry   (file, pak         ))Exit(MLT(S+"Can't open \""  +     file.name+'"', PL,S+u"Nie można otworzyć \""+     file.name+'"')); return T;}
-File& File::mustRead   (C Str     &name, C Pak    &pak                  ) {if(!  readTry   (name, pak         ))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
-File& File::mustRead   (C UID     &id  , C Pak    &pak                  ) {if(!  readTry   (id  , pak         ))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
-File& File::mustRead   (C Str     &name, C PakSet &paks                 ) {if(!  readTry   (name, paks        ))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
-File& File::mustRead   (C UID     &id  , C PakSet &paks                 ) {if(!  readTry   (id  , paks        ))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
-File& File::mustRead   (C Str     &name                , Cipher  *cipher) {if(!  readTry   (name      , cipher))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
-File& File::mustRead   (C UID     &id                  , Cipher  *cipher) {if(!  readTry   (id        , cipher))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
+File& File::mustEdit   (C Str     &name                , Cipher  *cipher) {if(!  edit   (name      , cipher))Exit(MLT(S+"Can't edit \""  +          name+'"', PL,S+u"Nie można edytować \""+          name+'"')); return T;}
+File& File::mustAppend (C Str     &name                , Cipher  *cipher) {if(!append   (name      , cipher))Exit(MLT(S+"Can't append \""+          name+'"', PL,S+u"Nie można nadpisać \""+          name+'"')); return T;}
+File& File::mustWrite  (C Str     &name                , Cipher  *cipher) {if(! write   (name      , cipher))Exit(MLT(S+"Can't create \""+          name+'"', PL,S+u"Nie można utworzyć \""+          name+'"')); return T;}
+File& File::mustReadStd(C Str     &name                , Cipher  *cipher) {if(!  readStd(name      , cipher))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
+File& File::mustRead   (C PakFile &file, C Pak    &pak                  ) {if(!  read   (file, pak         ))Exit(MLT(S+"Can't open \""  +     file.name+'"', PL,S+u"Nie można otworzyć \""+     file.name+'"')); return T;}
+File& File::mustRead   (C Str     &name, C Pak    &pak                  ) {if(!  read   (name, pak         ))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
+File& File::mustRead   (C UID     &id  , C Pak    &pak                  ) {if(!  read   (id  , pak         ))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
+File& File::mustRead   (C Str     &name, C PakSet &paks                 ) {if(!  read   (name, paks        ))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
+File& File::mustRead   (C UID     &id  , C PakSet &paks                 ) {if(!  read   (id  , paks        ))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
+File& File::mustRead   (C Str     &name                , Cipher  *cipher) {if(!  read   (name      , cipher))Exit(MLT(S+"Can't open \""  +          name+'"', PL,S+u"Nie można otworzyć \""+          name+'"')); return T;}
+File& File::mustRead   (C UID     &id                  , Cipher  *cipher) {if(!  read   (id        , cipher))Exit(MLT(S+"Can't open \""  +id.asCString()+'"', PL,S+u"Nie można otworzyć \""+id.asCString()+'"')); return T;}
 
 Bool File::copyToAndDiscard(Mems<Byte> &dest)
 {
@@ -370,10 +370,10 @@ error:
 }
 /******************************************************************************/
 #if WINDOWS
-Bool File::  editTry     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT         , _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _size=_full_size=Max(0, _filelengthi64(_handle));                                          _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
-Bool File::appendTry     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT         , _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _size=_full_size=Max(0, _filelengthi64(_handle)); _pos=Max(0, Seek(_handle, 0, SEEK_END)); _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
-Bool File:: writeTry     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                            _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
-Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
+Bool File::  edit     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT         , _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _size=_full_size=Max(0, _filelengthi64(_handle));                                          _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
+Bool File::append     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT         , _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _size=_full_size=Max(0, _filelengthi64(_handle)); _pos=Max(0, Seek(_handle, 0, SEEK_END)); _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
+Bool File:: write     (C Str &name, Cipher *cipher) {close(); if(name.is() && !_wsopen_s(&_handle, name, _O_BINARY|_O_RDWR|_O_CREAT|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE)){SetLastError(0); _type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                            _cipher=cipher; return true;} _type=FILE_NONE; _close(_handle); _handle=0;} return false;} // clear error 183 file already exists
+Bool File::  readStdEx(C Str &name, Cipher *cipher, UInt max_buf_size)
 {
    close(); if(name.is())
    {
@@ -403,10 +403,10 @@ static void DetectSymLink(File &f, C Str8 &unix_name)
       ssize_t read=readlink(unix_name, (char*)f._buf, Min(f._buf_size, f.size())); if(read>0)f._buf_len=Int(read);
    }
 }
-Bool File::  editTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::appendTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File:: writeTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
+Bool File::  edit     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::append     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File:: write     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_EXLOCK|O_NONBLOCK|O_SYMLINK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::  readStdEx(C Str &name, Cipher *cipher, UInt max_buf_size)
 {
    close(); if(name.is())
    {
@@ -430,10 +430,10 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
    return false;
 }
 #elif LINUX || SWITCH || WEB
-Bool File::  editTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::appendTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File:: writeTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
+Bool File::  edit     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::append     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File:: write     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open64(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_NONBLOCK, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::  readStdEx(C Str &name, Cipher *cipher, UInt max_buf_size)
 {
    close(); if(name.is())
    {
@@ -457,10 +457,10 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size)
    return false;
 }
 #elif ANDROID // Android has 'open64' only on API 21 and newer, however it's the same as 'open' with O_LARGEFILE
-Bool File::  editTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::appendTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File:: writeTry     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
-Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *processed)
+Bool File::  edit     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END)); Long pos=Seek(_handle, 0, SEEK_SET); if(pos>=0)_pos=pos; _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::append     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|        O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR; _pos=_size=_full_size=Max(0, Seek(_handle, 0, SEEK_END));                                                          _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File:: write     (C Str &name, Cipher *cipher) {close(); if(name.is()){_handle=open(UnixPathUTF8(name), O_RDWR|O_CREAT|O_TRUNC|O_NONBLOCK|O_LARGEFILE, S_IRWXU|S_IRWXG|S_IRWXO); if(_handle>=0){_type=FILE_STD_WRITE; if(setBuf(BUF_SIZE)){_writable=true; _path=FILE_CUR;                                                                                                                    _cipher=cipher; return true;} _type=FILE_NONE; ::close(_handle); _handle=0;}} return false;}
+Bool File::  readStdEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *processed)
 {
    if(processed)*processed=false;
    close(); if(name.is())
@@ -541,7 +541,7 @@ Bool File::  readStdTryEx(C Str &name, Cipher *cipher, UInt max_buf_size, Bool *
 }
 #endif
 /******************************************************************************/
-Bool File::readTryRaw(C PakFile &file, C Pak &pak)
+Bool File::readRaw(C PakFile &file, C Pak &pak)
 {
    if(!(file.flag&PF_REMOVED))switch(pak._file_type)
    {
@@ -566,14 +566,14 @@ Bool File::readTryRaw(C PakFile &file, C Pak &pak)
                   clearBuf();
                   T._ok           =true;
                   T._pos          =0;
-                  T._cipher       =pak._file_cipher; // re-apply cipher because this could have been changed in 'readTryEx'
+                  T._cipher       =pak._file_cipher; // re-apply cipher because this could have been changed in 'readEx'
                   T._cipher_offset=(pak._cipher_per_file ? 0 : pak._file_cipher_offset+file.data_offset);
                   T._full_size    =_size;
                   return true;
                }
             }
          }else
-         if(readStdTryEx(pak.pakFileName(), pak._file_cipher, file.data_size_compressed))
+         if(readStdEx(pak.pakFileName(), pak._file_cipher, file.data_size_compressed))
          {
            _offset=pak._data_offset+file.data_offset;
             if(Seek(_handle, _offset, SEEK_SET)==_offset)
@@ -588,9 +588,9 @@ Bool File::readTryRaw(C PakFile &file, C Pak &pak)
    }
    close(); return false;
 }
-Bool File::readTryEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processed, Bool stream)
+Bool File::readEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processed, Bool stream)
 {
-   if(readTryRaw(file, pak))
+   if(readRaw(file, pak))
    {
       Bool p=false;
       if(file.compression) // first decompress with original cipher
@@ -609,17 +609,17 @@ Bool File::readTryEx(C PakFile &file, C Pak &pak, Cipher *cipher, Bool *processe
          T._cipher=cipher; // here we can just set '_cipher' instead of calling 'cipher' method, because in both cases (decompress+decrypt) we're writing to memory files so these operations are not needed
       }
 
-      // this method calls 'readTryRaw' which then calls 'readStdTryEx' which on Android can set 'processed' to true, however not in this case, because we're loading a 'PakFile' from 'Pak', and if the File for the 'Pak' had to be processed, then 'Pak' itself decompressed it into a memory based 'File' FILE_MEM inside 'Pak.load'
+      // this method calls 'readRaw' which then calls 'readStdEx' which on Android can set 'processed' to true, however not in this case, because we're loading a 'PakFile' from 'Pak', and if the File for the 'Pak' had to be processed, then 'Pak' itself decompressed it into a memory based 'File' FILE_MEM inside 'Pak.load'
 
       if(processed)*processed=p; return true;
 
    error:
       close();
-   }//else close(); no need to call 'close' here, because 'readTryRaw' will already call it
+   }//else close(); no need to call 'close' here, because 'readRaw' will already call it
    if(processed)*processed=false; return false;
 }
 
-Bool File::readTryEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
+Bool File::readEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
 {
  //if(name.is())) in most cases the 'name' is going to be specified
    {
@@ -630,12 +630,12 @@ Bool File::readTryEx(C Str &name, C PakSet &paks, Cipher *cipher, Bool *processe
        C PakFile &pf =*file->file;
          locker.off(); // now when references have been copied, we can unlock
 
-         return readTryEx(pf, pak, cipher, processed, stream);
+         return readEx(pf, pak, cipher, processed, stream);
       }
    }
    close(); if(processed)*processed=false; return false;
 }
-Bool File::readTryEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
+Bool File::readEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed, Bool stream)
 {
  //if(id.valid())) in most cases the 'id' is going to be specified
    {
@@ -646,46 +646,46 @@ Bool File::readTryEx(C UID &id, C PakSet &paks, Cipher *cipher, Bool *processed,
        C PakFile &pf =*file->file;
          locker.off(); // now when references have been copied, we can unlock
 
-         return readTryEx(pf, pak, cipher, processed, stream);
+         return readEx(pf, pak, cipher, processed, stream);
       }
    }
    close(); if(processed)*processed=false; return false;
 }
 
-Bool File::readTryEx(C Str &name, Cipher *cipher, Bool *processed, Bool stream)
+Bool File::readEx(C Str &name, Cipher *cipher, Bool *processed, Bool stream)
 {
-                                      if(readTryEx   (name, Paks, cipher, processed, stream))return true;
+                                      if(readEx   (name, Paks, cipher, processed, stream))return true;
 #if !ANDROID
-   if(processed)*processed=false; return readStdTryEx(name, cipher);
+   if(processed)*processed=false; return readStdEx(name, cipher);
 #else
-                                  return readStdTryEx(name, cipher, UINT_MAX, processed);
+                                  return readStdEx(name, cipher, UINT_MAX, processed);
 #endif
 }
-Bool File::readTryEx(C UID &id, Cipher *cipher, Bool *processed, Bool stream)
+Bool File::readEx(C UID &id, Cipher *cipher, Bool *processed, Bool stream)
 {
-                                      if(readTryEx   (                id , Paks, cipher, processed, stream))return true;
+                                      if(readEx   (                id , Paks, cipher, processed, stream))return true;
 #if !ANDROID
-   if(processed)*processed=false; return readStdTryEx(_EncodeFileName(id), cipher);
+   if(processed)*processed=false; return readStdEx(_EncodeFileName(id), cipher);
 #else
-                                  return readStdTryEx(_EncodeFileName(id), cipher, UINT_MAX, processed);
+                                  return readStdEx(_EncodeFileName(id), cipher, UINT_MAX, processed);
 #endif
 }
 
-Bool File::readStdTry(C Str     &name,   Cipher *cipher) {return readStdTryEx(name,       cipher);}
-Bool File::readTry   (C Str     &name,   Cipher *cipher) {return readTryEx   (name,       cipher, null);}
-Bool File::readTry   (C UID     &id  ,   Cipher *cipher) {return readTryEx   (id  ,       cipher, null);}
-Bool File::readTry   (C Str     &name, C PakSet &paks  ) {return readTryEx   (name, paks, null  , null);}
-Bool File::readTry   (C UID     &id  , C PakSet &paks  ) {return readTryEx   (id  , paks, null  , null);}
-Bool File::readTry   (C PakFile &file, C Pak    &pak   ) {return readTryEx   (file, pak , null  , null);}
+Bool File::readStd(C Str     &name,   Cipher *cipher) {return readStdEx(name,       cipher);}
+Bool File::read   (C Str     &name,   Cipher *cipher) {return readEx   (name,       cipher, null);}
+Bool File::read   (C UID     &id  ,   Cipher *cipher) {return readEx   (id  ,       cipher, null);}
+Bool File::read   (C Str     &name, C PakSet &paks  ) {return readEx   (name, paks, null  , null);}
+Bool File::read   (C UID     &id  , C PakSet &paks  ) {return readEx   (id  , paks, null  , null);}
+Bool File::read   (C PakFile &file, C Pak    &pak   ) {return readEx   (file, pak , null  , null);}
 
-Bool File::readTry(C Str &name, C Pak &pak)
+Bool File::read(C Str &name, C Pak &pak)
 {
-   if(C PakFile *file=pak.find(name, false))return readTry(*file, pak);
+   if(C PakFile *file=pak.find(name, false))return read(*file, pak);
    close(); return false;
 }
-Bool File::readTry(C UID &id, C Pak &pak)
+Bool File::read(C UID &id, C Pak &pak)
 {
-   if(C PakFile *file=pak.find(id, false))return readTry(*file, pak);
+   if(C PakFile *file=pak.find(id, false))return read(*file, pak);
    close(); return false;
 }
 /******************************************************************************/
