@@ -596,7 +596,7 @@ class Client : ConnectionServer.Client
             UID tex_id=send_tex.first(); send_tex.remove(0, true);
             if(project.texs.binaryHas(tex_id))
             {
-               File data; data.readTry(project.tex_path+EncodeFileName(tex_id)); data.pos(0);
+               File data; data.read(project.tex_path+EncodeFileName(tex_id)); data.pos(0);
                File f; ServerWriteSetTexture(f.writeMem(), tex_id, data, project.id); f.pos(0); connection.send(f, -1, false);
             }
          }
@@ -632,7 +632,7 @@ class Client : ConnectionServer.Client
                VecI2 image_xy=mms.images.last(); mms.images.removeLast();
                if(MiniMapVer *mini_map_ver=project.miniMapVerGet(mini_map_id))
                {
-                  File f; f.readTry(project.gamePath(mini_map_id).tailSlash(true)+image_xy);
+                  File f; f.read(project.gamePath(mini_map_id).tailSlash(true)+image_xy);
                   ServerSendSetMiniMapImage(connection, mini_map_id, image_xy, mini_map_ver.time, f, project.id);
                }
             }

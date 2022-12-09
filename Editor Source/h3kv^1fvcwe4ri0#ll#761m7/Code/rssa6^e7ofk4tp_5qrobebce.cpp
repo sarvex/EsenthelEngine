@@ -780,7 +780,7 @@ class EditObject : EditParams
    }
    bool load(C Str &name)
    {
-      File f; if(f.readTry(name))return load(f, GetPath(name));
+      File f; if(f.read(name))return load(f, GetPath(name));
       del(); return false;
    }
 }
