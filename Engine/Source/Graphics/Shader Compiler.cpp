@@ -97,7 +97,7 @@ struct Include11 : ID3DInclude
          if(ShaderPath *parent=(pParentData ? (ShaderPath*)pParentData-1 : &root))
             path=NormalizePath(Str(parent->path).tailSlash(true)+path);
 
-      File f; if(f.readStdTry(path.tailSlash(true)+GetBase(pFileName)))
+      File f; if(f.readStd(path.tailSlash(true)+GetBase(pFileName)))
       {
          DYNAMIC_ASSERT(LoadEncoding(f)==ANSI, "File expected to be in ANSI encoding for performance reasons");
          Int   size=f.left();
@@ -134,7 +134,7 @@ struct Include12 : IDxcIncludeHandler
    {
       if(ppIncludeSource)
       {
-         File f; if(f.readTry(pFilename))
+         File f; if(f.read(pFilename))
          {
             UInt code_page;
             switch(LoadEncoding(f))
@@ -474,7 +474,7 @@ ShaderCompiler::Source::~Source()
 }
 Bool ShaderCompiler::Source::load()
 {
-   File f; if(!f.readTry(file_name))return false;
+   File f; if(!f.read(file_name))return false;
    ENCODING encoding=LoadEncoding(f);
    if(newCompiler())
    {
@@ -1671,7 +1671,7 @@ Bool ShaderCompiler::compileTry(Threads &threads)
    }
 
    if(!dest.is())return true;
-   File f; if(f.writeTry(dest))
+   File f; if(f.write(dest))
    {
       f.putUInt (CC4_SHDR); // CC4
       f.putByte (api     ); // API

@@ -683,7 +683,7 @@ Bool RendererClass::capture(Image &image, Int w, Int h, Int type, Int mode, Int 
          image.unlock();
       }
 
-      if(image.copyTry(image, w, h, 1, type, mode, mip_maps))
+      if(image.copy(image, w, h, 1, type, mode, mip_maps))
       {
          if(alpha && image.typeInfo().a && image.lock()) // set alpha from depth
          {
@@ -735,7 +735,7 @@ Bool RendererClass::screenShot(C Str &name, Bool alpha)
    }else
    if(temp.capture(*_ptr_main)) // no alpha
    {
-      if(temp.typeInfo().a)temp.copyTry(temp, -1, -1, -1, IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1); // if captured image has alpha channel then let's remove it
+      if(temp.typeInfo().a)temp.copy(temp, -1, -1, -1, IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1); // if captured image has alpha channel then let's remove it
       return temp.Export(name);
    }
    return false;
