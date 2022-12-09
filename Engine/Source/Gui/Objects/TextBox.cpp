@@ -4,6 +4,9 @@ namespace EE{
 /******************************************************************************/
 #define TEXTBOX_OFFSET 0.16f // set >=0.06 (at this value cursor is aligned with the TextBox rect left edge) this value is applied to the left and right of the text to add some margin
 #define TEXTBOX_MARGIN 2.5f
+
+#define TEXTBOX_MARGIN_REL 0.0f
+#define TEXTBOX_MARGIN_ABS 0.01f
 /******************************************************************************/
 void TextBox::zero()
 {
@@ -190,6 +193,10 @@ TextBox& TextBox::scrollToCursor(Bool margin)
          Flt margin=ts.size.x*TEXTBOX_MARGIN;
          pos_left -=margin;
          pos_right+=margin;
+
+         margin=ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS; // use vertical to see if we're at textbox end
+         pos.y     -=margin;
+         pos_bottom+=margin;
       }
       if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
       if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
@@ -532,11 +539,11 @@ void TextBox::update(C GuiPC &gpc)
                   MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
                   MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                }
-               // check <= instead of < in case we're at screen border, first check if pos is outside of clipped text rect, then scroll only if rect is actually clipped with some margin
-               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<gpc.clip.min.x+ts.size.x) ? parent() : null, false);else
-               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>gpc.clip.max.x-ts.size.x) ? parent() : null, false);
-               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<gpc.clip.min.y+ts.size.y) ? parent() : null, true );else
-               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>gpc.clip.max.y-ts.size.y) ? parent() : null, true );
+               // if pos is outside of clipped text rect then scroll (check <= instead of < in case we're at screen border), scroll parents only if rect is actually clipped with some margin (so we can still scroll a little bit more so we can see visually the rect)
+               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<gpc.clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else
+               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>gpc.clip.max.x-(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);
+               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<gpc.clip.min.y+(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );else
+               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>gpc.clip.max.y-(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );
             }
          }
       }else _can_select=true;
