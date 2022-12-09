@@ -3456,7 +3456,7 @@ VecI4 FileVersion(C Str &name)
 {
    if(GetExt(name)=="apk")
    {
-      Memt<ZipFile> files; File f; if(f.readTry(name) && ParseZip(f, files))REPA(files)
+      Memt<ZipFile> files; File f; if(f.read(name) && ParseZip(f, files))REPA(files)
       {
        C ZipFile &file=files[i]; if(file.name=="AndroidManifest.xml")
          {
@@ -4352,7 +4352,7 @@ error:;
 }
 Bool ParseExe(C Str &name, MemPtr<ExeSection> sections)
 {
-   File f; if(f.readTry(name))return ParseExe(f, sections);
+   File f; if(f.read(name))return ParseExe(f, sections);
    sections.clear(); return false;
 }
   Int         FindSectionNameI  (C CMemPtr<ExeSection> &sections, CChar8 *name  ) {REPA(sections)if(Equal(sections[i].name, name, true))return i; return -1;}

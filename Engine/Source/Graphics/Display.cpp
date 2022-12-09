@@ -3889,8 +3889,8 @@ void DisplayClass::fadeDraw()
 static void SetPalette(Int index, C ImagePtr &palette) // !! Warning: '_color_palette_soft' must be of IMAGE_SOFT IMAGE_R8G8B8A8_SRGB type because 'Particles.draw' codes require that !!
 {
    D._color_palette[index]=palette;
-   if(palette)palette->copyTry(D._color_palette_soft[index], -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1);
-   else                        D._color_palette_soft[index].del();
+   if(palette)palette->copy(D._color_palette_soft[index], -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1);
+   else                     D._color_palette_soft[index].del();
 }
 DisplayClass& DisplayClass::colorPalette     (C ImagePtr &palette) {SetPalette(0, palette);    return T;}
 DisplayClass& DisplayClass::colorPalette1    (C ImagePtr &palette) {SetPalette(1, palette);    return T;}

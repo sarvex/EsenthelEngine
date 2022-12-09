@@ -1148,9 +1148,9 @@ struct PakCreator
       File* get(Cipher *src_cipher, File &temp) // this is called only if file has data (size!=0)
       {
          File *f=null;
-         if(processed.is()                     )f=&processed          ;else // if we've de/compressed data for storage, then we have to use it (this will be valid only if decompressed or compressed)
-         if(data                               )f= data->openRaw(temp);else // open without decompressing, because we expect files as they are, and if they're compressed, it should be speicified with 'compression'
-         if(temp.readTry(data_name, src_cipher))f=&temp               ;
+         if(processed.is()                  )f=&processed          ;else // if we've de/compressed data for storage, then we have to use it (this will be valid only if decompressed or compressed)
+         if(data                            )f= data->openRaw(temp);else // open without decompressing, because we expect files as they are, and if they're compressed, it should be speicified with 'compression'
+         if(temp.read(data_name, src_cipher))f=&temp               ;
          if(f)f->pos(0);
          return f;
       }
@@ -1590,7 +1590,7 @@ struct PakCreator
          if(FlagOff(pak_flag, PAK_NO_FILE)) // create file
          {
             if(!pak.pakFileName().is()){if(error_message)*error_message="Pak name was not specified"; goto error;}
-            if(!(in_place ? f_dest.editTry(pak.pakFileName(), cipher) : f_dest.writeTry(pak.pakFileName(), cipher))){if(error_message)*error_message=CantWrite(pak.pakFileName()); goto error;}
+            if(!(in_place ? f_dest.edit(pak.pakFileName(), cipher) : f_dest.write(pak.pakFileName(), cipher))){if(error_message)*error_message=CantWrite(pak.pakFileName()); goto error;}
             pak._data_offset       =f_dest.posAbs   ();
             pak._file_cipher_offset=f_dest.posCipher();
             if(!in_place && !pak.saveHeader(f_dest)){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}

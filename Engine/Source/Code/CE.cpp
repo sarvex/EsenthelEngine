@@ -1194,7 +1194,7 @@ Str CodeEditor::ndkBuildPath()C
 static Bool EmbedAppResource(C Str &dest, File &src, UInt type) // used only for Linux apps
 {
    const UInt CC4_CHNK=CC4('C', 'H', 'N', 'K');
-   File f; if(f.appendTry(dest))
+   File f; if(f.append(dest))
    {
       Long pos=f.pos();
       f.putUInt(CC4_CHNK);
@@ -1212,7 +1212,7 @@ static Bool EmbedAppResource(C Str &dest, File &src, UInt type) // used only for
 }
 static Bool EmbedAppResource(C Str &dest, C Str &src, UInt type)
 {
-   File f; if(f.readStdTry(src))return EmbedAppResource(dest, f, type);
+   File f; if(f.readStd(src))return EmbedAppResource(dest, f, type);
    return false;
 }
 void CodeEditor::BuildResult::setWarning() {mode=1; setColor();}
@@ -1431,7 +1431,7 @@ void CodeEditor::update(Bool active)
                   if(build_exe_type==EXE_EXE || build_exe_type==EXE_DLL)
                {
                   Str  error;
-                  File f; if(!f.readStdTry(build_exe))error="Can't open file";else
+                  File f; if(!f.readStd(build_exe))error="Can't open file";else
                   {
                      Memc<ExeSection> sections; if(!ParseExe(f, sections))error="Can't parse EXE";else
                      {
@@ -1459,7 +1459,7 @@ void CodeEditor::update(Bool active)
                            if(!f.pos(section_hash_ptr->offset))error="Seek failed";else
                            {
                               if( f.getULong()==hash)goto hash_ok; // file already has correct hash, check this in case we are building for 2nd time and file was already adjusted, perhaps that EXE is already running so we can't modify it
-                              if(!f.appendTry(build_exe))error="Can't edit EXE";else // modify hash
+                              if(!f.append(build_exe))error="Can't edit EXE";else // modify hash
                               if(!f.pos(section_hash_ptr->offset))error="Seek failed";else
                               {
                                  f.putULong(hash);

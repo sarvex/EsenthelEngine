@@ -1355,12 +1355,12 @@ Bool Skeleton::load(File &f)
 /******************************************************************************/
 Bool Skeleton::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool Skeleton::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f);
+   File f; if(f.read(name))return load(f);
    del(); return false;
 }
 Bool Skeleton::reload(C Str &name)

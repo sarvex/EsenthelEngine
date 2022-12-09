@@ -1074,7 +1074,7 @@ static void DelExcept(C Str &path, CChar8 *allowed[], Int allowed_elms)
 }
 static void Optimize(Image &image)
 {
-   Vec4 min; if(image.stats(&min))if(min.w>=1-1.5f/255)image.copyTry(image, -1, -1, -1, IMAGE_R8G8B8_SRGB); // if image has no alpha, then remove it, because it will reduce PNG size
+   Vec4 min; if(image.stats(&min))if(min.w>=1-1.5f/255)image.copy(image, -1, -1, -1, IMAGE_R8G8B8_SRGB); // if image has no alpha, then remove it, because it will reduce PNG size
    if(image.typeInfo().a) // if image has alpha, then zero pixels without alpha to further improve compression
       REPD(y, image.h())
       REPD(x, image.w())
@@ -1086,8 +1086,8 @@ static void Optimize(Image &image)
 static Bool GetIcon(Image &image, DateTime &modify_time_utc)
 {
    image.del(); modify_time_utc.zero();
-   if(C ImagePtr &app_icon=CE.cei().appIcon()){app_icon->copyTry(image, -1, -1, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT); modify_time_utc=FileInfo(app_icon.name()).modify_time_utc;}
-   if(!image.is()){image.ImportTry("Code/Icon.ico", -1, IMAGE_SOFT, 1); modify_time_utc=FileInfo("Code/Icon.ico").modify_time_utc;}
+   if(C ImagePtr &app_icon=CE.cei().appIcon()){app_icon->copy(image, -1, -1, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT); modify_time_utc=FileInfo(app_icon.name()).modify_time_utc;}
+   if(!image.is()){image.Import("Code/Icon.ico", -1, IMAGE_SOFT, 1); modify_time_utc=FileInfo("Code/Icon.ico").modify_time_utc;}
    if( image.is())
    {
       if(!modify_time_utc.valid())modify_time_utc.getUTC();
@@ -1098,8 +1098,8 @@ static Bool GetIcon(Image &image, DateTime &modify_time_utc)
 }
 static void GetImages(Image &portrait, DateTime &portrait_time, Image &landscape, DateTime &landscape_time)
 {
-    portrait_time.zero(); if(C ImagePtr &app_portrait =CE.cei().appImagePortrait ()){app_portrait ->copyTry(portrait , -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);  portrait_time=FileInfo(app_portrait .name()).modify_time_utc; Optimize( portrait);} if(! portrait_time.valid()) portrait_time.getUTC();
-   landscape_time.zero(); if(C ImagePtr &app_landscape=CE.cei().appImageLandscape()){app_landscape->copyTry(landscape, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT); landscape_time=FileInfo(app_landscape.name()).modify_time_utc; Optimize(landscape);} if(!landscape_time.valid())landscape_time.getUTC();
+    portrait_time.zero(); if(C ImagePtr &app_portrait =CE.cei().appImagePortrait ()){app_portrait ->copy(portrait , -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);  portrait_time=FileInfo(app_portrait .name()).modify_time_utc; Optimize( portrait);} if(! portrait_time.valid()) portrait_time.getUTC();
+   landscape_time.zero(); if(C ImagePtr &app_landscape=CE.cei().appImageLandscape()){app_landscape->copy(landscape, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT); landscape_time=FileInfo(app_landscape.name()).modify_time_utc; Optimize(landscape);} if(!landscape_time.valid())landscape_time.getUTC();
 }
 static void GetNotificationIcon(Image &image, DateTime &modify_time_utc, C Image &icon, DateTime &icon_time)
 {
@@ -1124,12 +1124,12 @@ static Bool ImageResize(C Image &src, Image &dest, Int x, Int y, FIT_MODE fit)
                          : size_x.y<=y) // if after scaling with size_x, height fits
       {
          Int image_type=((y>size_x.y && !src.typeInfo().a) ? ImageTypeIncludeAlpha(src.type()) : -1);
-         ok=src.copyTry(dest, size_x.x, size_x.y, -1, image_type, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
+         ok=src.copy(dest, size_x.x, size_x.y, -1, image_type, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
          Int d=size_x.y-y; dest.crop(dest, 0, d/2, dest.w(), y);
       }else
       {
          Int image_type=((x>size_y.x && !src.typeInfo().a) ? ImageTypeIncludeAlpha(src.type()) : -1);
-         ok=src.copyTry(dest, size_y.x, size_y.y, -1, image_type, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
+         ok=src.copy(dest, size_y.x, size_y.y, -1, image_type, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
          Int d=size_y.x-x; dest.crop(dest, d/2, 0, x, dest.h());
       }
    }
@@ -1173,21 +1173,21 @@ struct ImageConvert
          VecI2 size=src->size();
          if(_clamp.x>0 && size.x>_clamp.x)size.set(_clamp.x, Max(1, DivRound(size.y*_clamp.x, size.x)));
          if(_clamp.y>0 && size.y>_clamp.y)size.set(Max(1, DivRound(size.x*_clamp.y, size.y)), _clamp.y);
-         if(src->copyTry(temp, size.x, size.y, -1, -1, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT))src=&temp;else return;
+         if(src->copy(temp, size.x, size.y, -1, -1, IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT))src=&temp;else return;
       }
       if(_crop.x>0 && _crop.y>0)
       {
-         if(!src->typeInfo().a && (_crop.x>src->w() || _crop.y>src->h()))if(src->copyTry(temp, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return; // if we're cropping to a bigger size, then make sure that alpha channel is present, so pixels can be set to transparent color
+         if(!src->typeInfo().a && (_crop.x>src->w() || _crop.y>src->h()))if(src->copy(temp, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return; // if we're cropping to a bigger size, then make sure that alpha channel is present, so pixels can be set to transparent color
          src->crop(temp, (src->w()-_crop.x)/2, (src->h()-_crop.y)/2, _crop.x, _crop.y); src=&temp;
       }
       if(_square && src->size().allDifferent())
       {
-         if(!src->typeInfo().a)if(src->copyTry(temp, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return; // if we're cropping to a bigger size, then make sure that alpha channel is present, so pixels can be set to transparent color
+         if(!src->typeInfo().a)if(src->copy(temp, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return; // if we're cropping to a bigger size, then make sure that alpha channel is present, so pixels can be set to transparent color
          Int size=src->size().max(); src->crop(temp, (src->w()-size)/2, (src->h()-size)/2, size, size); src=&temp;
       }
       if(remove_alpha && src->typeInfo().a)
       {
-         Image temp1; if(temp1.createSoftTry(src->w(), src->h(), 1, IMAGE_R8G8B8_SRGB))
+         Image temp1; if(temp1.createSoft(src->w(), src->h(), 1, IMAGE_R8G8B8_SRGB))
          {
             REPD(y, src->h())
             REPD(x, src->w())
@@ -1302,7 +1302,7 @@ Bool CodeEditor::generateVSProj(Int version)
             dt=(landscape.is() ? landscape_time : portrait_time); if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, dt))convert.New().set(build_path+rel, landscape.is() ? landscape : portrait, dt).resizeFill(620, 300);
          }else // use empty
          {
-            dt.zero(); dt.day=1; dt.month=1; dt.year=2000; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, dt)){empty.createSoftTry(620, 300, 1, IMAGE_R8G8B8A8_SRGB); empty.zero(); convert.New().set(build_path+rel, empty, dt);}
+            dt.zero(); dt.day=1; dt.month=1; dt.year=2000; if(CompareFile(FileInfoSystem(build_path+rel).modify_time_utc, dt)){empty.createSoft(620, 300, 1, IMAGE_R8G8B8A8_SRGB); empty.zero(); convert.New().set(build_path+rel, empty, dt);}
          }
       }
 
