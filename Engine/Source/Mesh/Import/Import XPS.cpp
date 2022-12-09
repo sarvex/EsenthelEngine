@@ -19,7 +19,7 @@ Bool ImportXPSBinary(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMateri
    materials          .clear();
    part_material_index.clear();
 
-   File f; if(f.readTry(name))
+   File f; if(f.read(name))
    {
       Char8 str[256];
       Bool variable_weights=false, tangent=true;

@@ -4028,12 +4028,12 @@ error:
 /******************************************************************************/
 Bool Animation::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool Animation::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f);
+   File f; if(f.read(name))return load(f);
    del(); return false;
 }
 void Animation::operator=(C UID &id  ) {T=_EncodeFileName(id);}
@@ -4083,12 +4083,12 @@ Bool XAnimation::load(File &f)
 }
 Bool XAnimation::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool XAnimation::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f);
+   File f; if(f.read(name))return load(f);
    del(); return false;
 }
 /******************************************************************************/

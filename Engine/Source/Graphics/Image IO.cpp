@@ -513,7 +513,7 @@ struct Loader
       {
          Image soft;
          if(!load(file_mip, soft))return false;
-         if(!soft.copyTry(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
+         if(!soft.copy(soft, -1, -1, -1, want_hw_type, want_mode_soft, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE))return false;
          CopyImgData(soft.data(), img_data, soft.pitch(), img_pitch, soft.softBlocksY(0), img_blocks_y, soft.pitch2(), img_pitch*img_blocks_y, soft.d(), img_d, want_faces);
          return true;
       }
@@ -818,7 +818,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
             {
                want_hw_type=alt_type;
             again:
-               if(soft.copyTry(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
+               if(soft.copy(soft, -1, -1, -1, want_hw_type, -1, -1, FILTER_BEST, copy_flags|IC_NO_ALT_TYPE)) // perform conversion
                {
                   REP(soft.mipMaps())mip_data[i]=soft.softData(i);
                   if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, image_base_mip))
@@ -890,7 +890,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       if(f->skip(mips[file_base_mip].offset))
          if(load(file_base_mip, soft))
             if(can_del_f || f->pos(f_end)) // no need to seek if 'f' isn't needed later (important if 'f' is compressed)
-               return soft.copyTry(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
+               return soft.copy(image, want.size.x, want.size.y, want.size.z, want.type, want.mode, want.mip_maps, FILTER_BEST, copy_flags);
    }
    return false;
 }
@@ -1082,7 +1082,7 @@ static Bool Load(Image &image, File &f, C ImageHeader &header, C Str &name)
    }*/
 
    // create
-   if(image.createTry(want.size.x, want.size.y, want.size.z, want.type, create_from_soft ? AsSoft(want.mode) : want.mode, want.mip_maps)) // don't use 'want' after this call, instead operate on 'image' members
+   if(image.create(want.size.x, want.size.y, want.size.z, want.type, create_from_soft ? AsSoft(want.mode) : want.mode, want.mip_maps)) // don't use 'want' after this call, instead operate on 'image' members
    {
 const FILTER_TYPE filter=FILTER_BEST;
       Image       soft; // store outside the loop to avoid overhead
@@ -1149,7 +1149,7 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
                mip_count=1;
                if(temp) // if need to use a temporary image
                {
-                  if(!soft.createTry(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IMAGE_SOFT, 1, false))return false;
+                  if(!soft.create(file_mip_size.x, file_mip_size.y, file_mip_size.z, header.type, IMAGE_SOFT, 1, false))return false;
                   dest=&soft; dest_mip=0;
                   if(!image_mip) // if file is 64x64 but 'image' is 256x256 then we need to write the first file mip map into 256x256, 128x128, 64x64 'image' mip maps, this check is needed only at the start, when we still haven't written any mip-maps
                      REP(image.mipMaps()-1) // -1 because we already have 'mip_count'=1
@@ -1220,8 +1220,8 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
             for(IMAGE_TYPE alt_type=type; ; )
             {
                alt_type=ImageTypeOnFail(alt_type); if(!alt_type)return false;
-               if(ImageSupported(alt_type, want.mode, soft.samples()) // do a quick check before 'copyTry' to avoid it if we know creation will fail
-               && soft.copyTry(soft, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA)) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
+               if(ImageSupported(alt_type, want.mode, soft.samples()) // do a quick check before 'copy' to avoid it if we know creation will fail
+               && soft.copy(soft, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA)) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
                {
                   if(!CheckMipNum(soft.mipMaps()))return false; REP(soft.mipMaps())mip_data[i]=soft.softData(i);
                   if(image.createEx(soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), mip_data))break; // success
@@ -1342,7 +1342,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
          ih.mip_maps=           f.getByte();
          if(header)goto set_header;
          if(old_type==6)f.skip(SIZE(Color)*256); // palette
-         if(createTry(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
+         if(create(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
          {
             Image soft;
             FREPD(mip ,  ih.mip_maps                 ) // iterate all mip maps
@@ -1350,7 +1350,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
             {
                Image *dest=this;
                Int    dest_mip=mip, dest_face=face;
-               if(hwType()!=ih.type){if(!soft.createTry(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT, after creating the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so skip some data from file to read only created
+               if(hwType()!=ih.type){if(!soft.create(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT, after creating the mip map its Pitch and BlocksY may be different than of calculated from base (for example non-power-of-2 images) so skip some data from file to read only created
 
                if(!dest->lock(LOCK_WRITE, dest_mip, DIR_ENUM(dest_face)))return false;
                Int file_pitch   =ImagePitch  (ih.size.x, ih.size.y, mip, ih.type), dest_pitch   =Min(dest->pitch()                                                   , file_pitch   ),
@@ -1381,7 +1381,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
          ih.mip_maps=           f.getByte();
          if(header)goto set_header;
          if(old_type==6)f.skip(SIZE(Color)*256); // palette
-         if(createTry(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
+         if(create(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
          {
             Image soft;
             FREPD(mip ,  ih.mip_maps                 ) // iterate all mip maps
@@ -1389,7 +1389,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
             {
                Image *dest=this;
                Int    dest_mip=mip, dest_face=face;
-               if(hwType()!=ih.type){if(!soft.createTry(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT
+               if(hwType()!=ih.type){if(!soft.create(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT
 
                if(!dest->lock(LOCK_WRITE, dest_mip, DIR_ENUM(dest_face)))return false;
                Int file_pitch   =dest->lw(),
@@ -1422,7 +1422,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
          ih.mode      =IMAGE_MODE(f.getByte()); if(ih.mode==1)ih.mode=IMAGE_SOFT;else if(ih.mode==0)ih.mode=IMAGE_2D; if(ih.mode==IMAGE_CUBE && ih.size.z==6)ih.size.z=1;
          if(header)goto set_header;
          if(old_type==6)f.skip(SIZE(Color)*256); // palette
-         if(createTry(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
+         if(create(ih.size.x, ih.size.y, ih.size.z, ih.type, ih.mode, ih.mip_maps))
          {
             Image soft;
             FREPD(mip ,  ih.mip_maps                 ) // iterate all mip maps
@@ -1430,7 +1430,7 @@ Bool Image::_loadData(File &f, ImageHeader *header, C Str &name)
             {
                Image *dest=this;
                Int    dest_mip=mip, dest_face=face;
-               if(hwType()!=ih.type){if(!soft.createTry(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT
+               if(hwType()!=ih.type){if(!soft.create(Max(1, ih.size.x>>mip), Max(1, ih.size.y>>mip), Max(1, ih.size.z>>mip), ih.type, IMAGE_SOFT, 1, false))return false; dest=&soft; dest_mip=0; dest_face=0;} // if 'hwType' is different than of file, then load into 'file_type' IMAGE_SOFT
 
                if(!dest->lock(LOCK_WRITE, dest_mip, DIR_ENUM(dest_face)))return false;
                Int file_pitch   =dest->lw(),
@@ -1481,12 +1481,12 @@ Bool Image::load(File &f)
 
 Bool Image::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool Image::load(C Str &name)
 {
-   File f; if(f.readTryEx(name, null, null, true))switch(f.getUInt()) // allow streaming
+   File f; if(f.readEx(name, null, null, true))switch(f.getUInt()) // allow streaming
    {
       case CC4_IMG: return  loadData(f, null, name, true); // can delete 'f' because it's a temporary
       case CC4_GFX: return _loadData(f, null, name);
@@ -1519,7 +1519,7 @@ Bool Image::Export(C Str &name, Flt rgb_quality, Flt alpha_quality, Flt compress
                          return false;
 }
 /******************************************************************************/
-Bool Image::ImportTry(File &f, Int type, Int mode, Int mip_maps)
+Bool Image::Import(File &f, Int type, Int mode, Int mip_maps)
 {
    Long pos=f.pos();
                          if(load      (f))goto ok;
@@ -1536,14 +1536,14 @@ Bool Image::ImportTry(File &f, Int type, Int mode, Int mip_maps)
  //f.resetOK().pos(pos); if(ImportTGA (f, type, mode, mip_maps))goto ok; TGA format doesn't contain any special signatures, so we can't check it
    del(); return false;
 ok:
-   return copyTry(T, -1, -1, -1, type, mode, mip_maps);
+   return copy(T, -1, -1, -1, type, mode, mip_maps);
 }
-Bool Image::ImportTry(C Str &name, Int type, Int mode, Int mip_maps)
+Bool Image::Import(C Str &name, Int type, Int mode, Int mip_maps)
 {
    if(!name.is()){del(); return true;}
-   File f; if(f.readTry(name))
+   File f; if(f.read(name))
    {
-      if(ImportTry(f, type, mode, mip_maps))return true;
+      if(Import(f, type, mode, mip_maps))return true;
       CChar *ext=_GetExt(name);
       if(Equal(ext, "tga") && f.resetOK().pos(0) && ImportTGA(f, type, mode, mip_maps))return true; // TGA format doesn't contain any special signatures, so check extension instead
    }
@@ -1551,22 +1551,22 @@ Bool Image::ImportTry(C Str &name, Int type, Int mode, Int mip_maps)
 }
 Image& Image::mustImport(File &f, Int type, Int mode, Int mip_maps)
 {
-   if(!ImportTry(f, type, mode, mip_maps))Exit(MLT(S+"Can't import image", PL,S+u"Nie można zaimportować obrazka"));
+   if(!Import(f, type, mode, mip_maps))Exit(MLT(S+"Can't import image", PL,S+u"Nie można zaimportować obrazka"));
    return T;
 }
 Image& Image::mustImport(C Str &name, Int type, Int mode, Int mip_maps)
 {
-   if(!ImportTry(name, type, mode, mip_maps))Exit(MLT(S+"Can't import image \""+name+'"', PL,S+u"Nie można zaimportować obrazka \""+name+'"'));
+   if(!Import(name, type, mode, mip_maps))Exit(MLT(S+"Can't import image \""+name+'"', PL,S+u"Nie można zaimportować obrazka \""+name+'"'));
    return T;
 }
 /******************************************************************************/
-Bool Image::ImportCubeTry(C Image &right, C Image &left, C Image &up, C Image &down, C Image &forward, C Image &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
+Bool Image::ImportCube(C Image &right, C Image &left, C Image &up, C Image &down, C Image &forward, C Image &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
 {
    Int size= Max(right  .w(), right  .h(), left.w(), left.h()) ;
    MAX(size, Max(up     .w(), up     .h(), down.w(), down.h()));
    MAX(size, Max(forward.w(), forward.h(), back.w(), back.h()));
    if(resize_to_pow2)size=NearestPow2(size);
-   if(createTry(size, size, 1, IMAGE_TYPE((type<=0) ? right.type() : type), soft ? IMAGE_SOFT_CUBE : IMAGE_CUBE, mip_maps))
+   if(create(size, size, 1, IMAGE_TYPE((type<=0) ? right.type() : type), soft ? IMAGE_SOFT_CUBE : IMAGE_CUBE, mip_maps))
    {
       injectMipMap(right  , 0, DIR_RIGHT  , filter);
       injectMipMap(left   , 0, DIR_LEFT   , filter);
@@ -1578,21 +1578,21 @@ Bool Image::ImportCubeTry(C Image &right, C Image &left, C Image &up, C Image &d
    }
    del(); return false;
 }
-Bool Image::ImportCubeTry(C Str &right, C Str &left, C Str &up, C Str &down, C Str &forward, C Str &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
+Bool Image::ImportCube(C Str &right, C Str &left, C Str &up, C Str &down, C Str &forward, C Str &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
 {
    Image r, l, u, d, f, b;
-   if(r.ImportTry(right  , -1, IMAGE_SOFT, 1) // use OR to proceed if at least one was imported
-   |  l.ImportTry(left   , -1, IMAGE_SOFT, 1) // use single OR "|" to call import for all images (double OR "||" would continue on first success)
-   |  u.ImportTry(up     , -1, IMAGE_SOFT, 1)
-   |  d.ImportTry(down   , -1, IMAGE_SOFT, 1)
-   |  f.ImportTry(forward, -1, IMAGE_SOFT, 1)
-   |  b.ImportTry(back   , -1, IMAGE_SOFT, 1))return ImportCubeTry(r, l, u, d, f, b, type, soft, mip_maps, resize_to_pow2, filter);
+   if(r.Import(right  , -1, IMAGE_SOFT, 1) // use OR to proceed if at least one was imported
+   |  l.Import(left   , -1, IMAGE_SOFT, 1) // use single OR "|" to call import for all images (double OR "||" would continue on first success)
+   |  u.Import(up     , -1, IMAGE_SOFT, 1)
+   |  d.Import(down   , -1, IMAGE_SOFT, 1)
+   |  f.Import(forward, -1, IMAGE_SOFT, 1)
+   |  b.Import(back   , -1, IMAGE_SOFT, 1))return ImportCube(r, l, u, d, f, b, type, soft, mip_maps, resize_to_pow2, filter);
    del(); return false;
 }
 Image& Image::mustImportCube(C Str &right, C Str &left, C Str &up, C Str &down, C Str &forward, C Str &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
 {
-   if(!ImportCubeTry(right, left, up, down, forward, back, type, soft, mip_maps, resize_to_pow2, filter))Exit(MLT(S+"Can't import images as Cube Texture \""              +right+"\", \""+left+"\", \""+up+"\", \""+down+"\", \""+forward+"\", \""+back+'"',
-                                                                                                              PL,S+u"Nie można zaimportować obrazków jako Cube Texture \""+right+"\", \""+left+"\", \""+up+"\", \""+down+"\", \""+forward+"\", \""+back+'"'));
+   if(!ImportCube(right, left, up, down, forward, back, type, soft, mip_maps, resize_to_pow2, filter))Exit(MLT(S+"Can't import images as Cube Texture \""              +right+"\", \""+left+"\", \""+up+"\", \""+down+"\", \""+forward+"\", \""+back+'"',
+                                                                                                           PL,S+u"Nie można zaimportować obrazków jako Cube Texture \""+right+"\", \""+left+"\", \""+up+"\", \""+down+"\", \""+forward+"\", \""+back+'"'));
    return T;
 }
 /******************************************************************************/
@@ -1612,7 +1612,7 @@ Bool ImageLoadHeader(File &f, ImageHeader &header)
 }
 Bool ImageLoadHeader(C Str &name, ImageHeader &header)
 {
-   File f; if(f.readTryEx(name, null, null, true))return ImageLoadHeader(f, header); // allow streaming
+   File f; if(f.readEx(name, null, null, true))return ImageLoadHeader(f, header); // allow streaming
    header.zero(); return false;
 }
 /******************************************************************************/

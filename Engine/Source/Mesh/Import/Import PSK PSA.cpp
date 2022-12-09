@@ -126,7 +126,7 @@ Bool ImportPSK(C Str &name, Mesh *mesh, Skeleton *skeleton, MemPtr<XMaterial> ma
 
    using namespace PSK_PSA;
 
-   File f; if(f.readTry(name))
+   File f; if(f.read(name))
    {
       VChunkHeader   general_header; f>>  general_header;
       VChunkHeader    points_header; f>>   points_header; Memc<VPoint           >  points; if(   points_header.DataCount<0 ||    points_header.DataCount && SIZE(VPoint           )!=   points_header.DataSize)return false;  points.setNum(   points_header.DataCount); f.getN( points.data(),  points.elms());
@@ -246,7 +246,7 @@ Bool ImportPSA(C Str &name, Skeleton *skeleton, MemPtr<XAnimation> animations)
 
    using namespace PSK_PSA;
 
-   File f; if(f.readTry(name))
+   File f; if(f.read(name))
    {
       VChunkHeader  general_header; f>> general_header;
       VChunkHeader    bones_header; f>>   bones_header; Memc<VBone         > bones; if(   bones_header.DataCount<0 ||    bones_header.DataCount && SIZE(VBone         )!=   bones_header.DataSize)return false; bones.setNum(   bones_header.DataCount); f.getN(bones.data(), bones.elms());

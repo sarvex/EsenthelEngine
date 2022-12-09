@@ -98,7 +98,7 @@ static struct WaifuClass
       {
          SyncLocker locker(lock); if(!tried)
          {
-            File f; if(f.readTry("Waifu/scale2.0x_model.dat"))
+            File f; if(f.read("Waifu/scale2.0x_model.dat"))
             {
                data.setNum(f.size());
                if(f.getFast(data.data(), data.elms()))
@@ -161,7 +161,7 @@ Bool _ResizeWaifu(C Image &src, Image &dest, UInt flags) // assumes that image H
       Bool first=true;
       do{
          Image &dest=temp[i]; i^=1;
-         if(!dest.createSoftTry(s->lw()*2, s->lh()*2, 1, type))return false;
+         if(!dest.createSoft(s->lw()*2, s->lh()*2, 1, type))return false;
          if(first) // saturate because Waifu will not work well if values are outside of 0..1 range
          {
             first=false;
@@ -179,13 +179,13 @@ Bool _ResizeWaifu(C Image &src, Image &dest, UInt flags) // assumes that image H
       // process ALPHA
       if(dest.typeInfo().a && LockedMipHasAlpha(src)) // it's important to skip alpha when not needed because it requires a separate resize call (making resize 2x slower)
       {
-         if(!s->copyTry(temp_alpha, -1, -1, -1, dest.hwType(), IMAGE_SOFT, 1, FILTER_BEST, flags))return false; // copy to 'temp_alpha' and include alpha channel format !! THIS MUST USE 'hwType' BECAUSE 'type' CAN BE COMPRESSED !!
+         if(!s->copy(temp_alpha, -1, -1, -1, dest.hwType(), IMAGE_SOFT, 1, FILTER_BEST, flags))return false; // copy to 'temp_alpha' and include alpha channel format !! THIS MUST USE 'hwType' BECAUSE 'type' CAN BE COMPRESSED !!
 
          // copy alpha channel from 'src' into 'temp' as RGB
          s=&src;
          {
             Image &dest=temp[i]; i^=1;
-            if(!dest.createSoftTry(s->lw()*2, s->lh()*2, 1, IMAGE_F32_3))return false;
+            if(!dest.createSoft(s->lw()*2, s->lh()*2, 1, IMAGE_F32_3))return false;
             REPD(y, dest.lh())
             REPD(x, dest.lw())dest.colorF(x, y, Sat(s->colorF(x/2, y/2).w)); // saturate because Waifu will not work well if values are outside of 0..1 range
             if(!Waifu.process(dest, clamp))return false;
@@ -196,7 +196,7 @@ Bool _ResizeWaifu(C Image &src, Image &dest, UInt flags) // assumes that image H
          while(s->lw()<dest.lw() || s->lh()<dest.lh())
          {
             Image &dest=temp[i]; i^=1;
-            if(!dest.createSoftTry(s->lw()*2, s->lh()*2, 1, IMAGE_F32_3))return false;
+            if(!dest.createSoft(s->lw()*2, s->lh()*2, 1, IMAGE_F32_3))return false;
             REPD(y, dest.lh())
             REPD(x, dest.lw())dest.colorF(x, y, s->colorF(x/2, y/2));
             if(!Waifu.process(dest, clamp))return false;

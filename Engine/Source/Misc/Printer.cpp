@@ -227,7 +227,7 @@ static inline Bool SRGBToBit(C Vec4 &c)
 }
 Bool ReceiptPrinter::operator+=(C Image &img)
 {
-   Image tmp; C Image *src=&img; if(img.compressed())if(img.copyTry(tmp, -1, -1, -1, ImageTypeUncompressed(img.type()), IMAGE_SOFT, 1))src=&tmp;else return false;
+   Image tmp; C Image *src=&img; if(img.compressed())if(img.copy(tmp, -1, -1, -1, ImageTypeUncompressed(img.type()), IMAGE_SOFT, 1))src=&tmp;else return false;
    if(src->lockRead())
    {
    #if 1
@@ -395,7 +395,7 @@ void LabelPrinter::text(C VecI2 &pos, C Str &text)
 }
 Bool LabelPrinter::image(C VecI2 &pos, C Image &img)
 {
-   Image tmp; C Image *src=&img; if(img.compressed())if(img.copyTry(tmp, -1, -1, -1, ImageTypeUncompressed(img.type()), IMAGE_SOFT, 1))src=&tmp;else return false;
+   Image tmp; C Image *src=&img; if(img.compressed())if(img.copy(tmp, -1, -1, -1, ImageTypeUncompressed(img.type()), IMAGE_SOFT, 1))src=&tmp;else return false;
    if(src->lockRead())
    {
       const Int w=DivCeil8(src->lw()), h=src->lh();

@@ -314,7 +314,7 @@ Bool Font::imageType(IMAGE_TYPE type)
          mip_maps=1; // PVRTC has too low quality to enable mip-maps
       }
       if(image.type()!=type || image.w()!=w || image.h()!=h || image.mipMaps()!=mip_maps) // if change is needed
-         if(image.copyTry(image, w, h, -1, type, -1, mip_maps))changed=true;
+         if(image.copy(image, w, h, -1, type, -1, mip_maps))changed=true;
    }
    return changed;
 }
@@ -323,7 +323,7 @@ void Font::toSoft()
    REPA(_images)
    {
       Image &image=_images[i];
-      image.copyTry(image, -1, -1, -1, ImageTypeUncompressed(image.type()), IMAGE_SOFT);
+      image.copy(image, -1, -1, -1, ImageTypeUncompressed(image.type()), IMAGE_SOFT);
    }
 }
 Font& Font::replace(Char src, Char dest, Bool permanent)
@@ -452,11 +452,11 @@ static Bool Adjust(Font &font, Int layout) // #FontImageLayout
       if(font._sub_pixel)
       {
          // sub pixel have RGBA layout, just make sure we have correct sRGB
-         if(!image.copyTry(image, -1, -1, -1, (FONT_SRGB_SUB_PIXEL ? ImageTypeIncludeSRGB : ImageTypeExcludeSRGB)(image.type())))return false;
+         if(!image.copy(image, -1, -1, -1, (FONT_SRGB_SUB_PIXEL ? ImageTypeIncludeSRGB : ImageTypeExcludeSRGB)(image.type())))return false;
       }else
       {
-         Image dest; if(!dest.createTry(image.w(), image.h(), 1, FONT_IMAGE_TYPE, image.mode(), image.mipMaps()))return false;
-         Image temp; C Image *src=&image; if(image.compressed())if(image.copyTry(temp, -1, -1, -1, ImageTypeUncompressed(image.type()), IMAGE_SOFT, 1))src=&temp;else return false;
+         Image dest; if(!dest.create(image.w(), image.h(), 1, FONT_IMAGE_TYPE, image.mode(), image.mipMaps()))return false;
+         Image temp; C Image *src=&image; if(image.compressed())if(image.copy(temp, -1, -1, -1, ImageTypeUncompressed(image.type()), IMAGE_SOFT, 1))src=&temp;else return false;
          if(!src->lockRead())return false;
          if(!dest.lock(LOCK_WRITE)){src->unlock(); return false;}
          REPD(y, dest.h())
@@ -583,12 +583,12 @@ error:
 }
 Bool Font::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool Font::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f);
+   File f; if(f.read(name))return load(f);
    del(); return false;
 }
 void Font::operator=(C UID &id  ) {T=_EncodeFileName(id);}
@@ -878,7 +878,7 @@ struct SystemFontDrawContext
    }
    Bool create(Int w, Int h, FontCreateBase &base)
    {
-      if(image.createSoftTry(w, h, 1, IMAGE_R8G8B8A8))
+      if(image.createSoft(w, h, 1, IMAGE_R8G8B8A8))
       {
          T.base=&base;
       #if USE_FREE_TYPE
@@ -910,7 +910,7 @@ struct SystemFontDrawContext
             }
          }
       #elif MAC
-         if(bitmap_image.createSoftTry(w, h, 1, IMAGE_R8G8B8A8))
+         if(bitmap_image.createSoft(w, h, 1, IMAGE_R8G8B8A8))
          {
             unsigned char *image_data=bitmap_image.data();
             bitmap=[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:&image_data
@@ -1139,7 +1139,7 @@ struct FontCreate : FontCreateBase
 
       // set char image
       Image &img=fc.image;
-      if(img.createSoftTry(fc.size.x, fc.size.y, 1, imageTypeTemp()))
+      if(img.createSoft(fc.size.x, fc.size.y, 1, imageTypeTemp()))
       {
          // copy
          Bool clear_shadow=(shadow_opacity<=0);

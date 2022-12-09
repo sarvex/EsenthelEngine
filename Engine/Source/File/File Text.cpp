@@ -45,7 +45,7 @@ FileText& FileText::writeMem(ENCODING encoding, Cipher *cipher)
 Bool FileText::write(C Str &name, ENCODING encoding, Cipher *cipher)
 {
    del();
-   if(_f.writeTry(name, cipher))
+   if(_f.write(name, cipher))
    {
       SaveEncoding(_f, T._code=encoding);
       return true;
@@ -55,8 +55,8 @@ Bool FileText::write(C Str &name, ENCODING encoding, Cipher *cipher)
 Bool FileText::append(C Str &name, ENCODING encoding, Cipher *cipher)
 {
    del();
-   if(_f.readStdTry(name, cipher))if(_f.size())encoding=LoadEncoding(_f); // take encoding from the file if it has some data
-   if(_f. appendTry(name, cipher))
+   if(_f.readStd(name, cipher))if(_f.size())encoding=LoadEncoding(_f); // take encoding from the file if it has some data
+   if(_f. append(name, cipher))
    {
       SaveEncoding(_f, T._code=encoding);
       return true;
@@ -66,7 +66,7 @@ Bool FileText::append(C Str &name, ENCODING encoding, Cipher *cipher)
 Bool FileText::read(C Str &name, Cipher *cipher)
 {
    del();
-   if(_f.readTry(name, cipher))
+   if(_f.read(name, cipher))
    {
      _code=LoadEncoding(_f);
       return true;
@@ -76,7 +76,7 @@ Bool FileText::read(C Str &name, Cipher *cipher)
 Bool FileText::read(C UID &id, Cipher *cipher)
 {
    del();
-   if(_f.readTry(id, cipher))
+   if(_f.read(id, cipher))
    {
      _code=LoadEncoding(_f);
       return true;
@@ -86,7 +86,7 @@ Bool FileText::read(C UID &id, Cipher *cipher)
 Bool FileText::read(C Str &name, Pak &pak)
 {
    del();
-   if(_f.readTry(name, pak))
+   if(_f.read(name, pak))
    {
      _code=LoadEncoding(_f);
       return true;
@@ -96,7 +96,7 @@ Bool FileText::read(C Str &name, Pak &pak)
 Bool FileText::read(C UID &id, Pak &pak)
 {
    del();
-   if(_f.readTry(id, pak))
+   if(_f.read(id, pak))
    {
      _code=LoadEncoding(_f);
       return true;

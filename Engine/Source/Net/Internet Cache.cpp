@@ -23,13 +23,13 @@ static Str ShortName(Str url) // convert "http://www.esenthel.com" -> "esenthel.
 static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0)
 {
    File *src=null, temp;
-   if(ii.pf){if(temp.readTry(*ii.pf, ic._pak))src=&temp;}else 
+   if(ii.pf){if(temp.read(*ii.pf, ic._pak))src=&temp;}else 
    if(ii.ds)src=ii.ds->open(temp);
    if(src)
    {
       src->pos(0);
       ThreadMayUseGPUData();
-      ii.image_temp.ImportTry(*src, -1, IMAGE_2D, ic._image_mip_maps);
+      ii.image_temp.Import(*src, -1, IMAGE_2D, ic._image_mip_maps);
       ThreadFinishedUsingGPUData();
    }
    if(src)src->pos(0); // reset position after loading

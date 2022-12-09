@@ -22,24 +22,24 @@ File* DataSource::open(File &temp)C
 {
    switch(type)
    {
-      default      :                                                             return  null;
-      case FILE    :                                                             return  file;
-      case PAK_FILE: if(pak_file && pak && temp.readTry   (*pak_file, *pak     ))return &temp; return null; // have to return null on fail
-      case NAME    : if(                   temp.readTry   ( name               ))return &temp; return null; // have to return null on fail
-      case STD     : if(                   temp.readStdTry( name               ))return &temp; return null; // have to return null on fail
-      case MEM     :                       temp.readMem   ( memory, memory_size);return &temp;
+      default      :                                                          return  null;
+      case FILE    :                                                          return  file;
+      case PAK_FILE: if(pak_file && pak && temp.read   (*pak_file, *pak     ))return &temp; return null; // have to return null on fail
+      case NAME    : if(                   temp.read   ( name               ))return &temp; return null; // have to return null on fail
+      case STD     : if(                   temp.readStd( name               ))return &temp; return null; // have to return null on fail
+      case MEM     :                       temp.readMem( memory, memory_size);return &temp;
    }
 }
 File* DataSource::openRaw(File &temp)C
 {
    switch(type)
    {
-      default      :                                                             return  null;
-      case FILE    :                                                             return  file;
-      case PAK_FILE: if(pak_file && pak && temp.readTryRaw(*pak_file, *pak     ))return &temp; return null; // have to return null on fail
-      case NAME    : if(                   temp.readTry   ( name               ))return &temp; return null; // have to return null on fail
-      case STD     : if(                   temp.readStdTry( name               ))return &temp; return null; // have to return null on fail
-      case MEM     :                       temp.readMem   ( memory, memory_size);return &temp;
+      default      :                                                          return  null;
+      case FILE    :                                                          return  file;
+      case PAK_FILE: if(pak_file && pak && temp.readRaw(*pak_file, *pak     ))return &temp; return null; // have to return null on fail
+      case NAME    : if(                   temp.read   ( name               ))return &temp; return null; // have to return null on fail
+      case STD     : if(                   temp.readStd( name               ))return &temp; return null; // have to return null on fail
+      case MEM     :                       temp.readMem( memory, memory_size);return &temp;
    }
 }
 Long DataSource::size()C
@@ -641,7 +641,7 @@ PAK_LOAD Pak::loadEx(C Str &name, Cipher *cipher, Long pak_offset, Long *expecte
    if(  actual_size)*  actual_size=0;
 
    PAK_LOAD result;
-   File f; Bool processed; if(f.readTryEx(name, cipher, &processed))
+   File f; Bool processed; if(f.readEx(name, cipher, &processed))
    {
       if(processed) // if the Pak container had to be processed, then we need to copy it to a memory buffer and keep that memory for further usage
       {

@@ -456,7 +456,7 @@ Bool ImportB3D(C Str &name, Mesh *mesh, Skeleton *skeleton, XAnimation *animatio
    Memc<BRUS> brus;
    Memx<NODE> node;
 
-   File f; if(f.readTry(name))
+   File f; if(f.read(name))
    {
       Chunk c; f>>c; if(c.equal("BB3D"))
       {

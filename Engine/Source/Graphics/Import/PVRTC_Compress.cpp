@@ -34,7 +34,7 @@ Bool _CompressPVRTC(C Image &src, Image &dest, Int quality)
       Image temp; // defined outside of loop to avoid overhead
       REPD(mip, Min(src.mipMaps(), dest.mipMaps()))
       {
-         if(!temp.createTry(PaddedWidth(dest.w(), dest.h(), mip, dest.hwType()), PaddedHeight(dest.w(), dest.h(), mip, dest.hwType()), 1, dest.sRGB() ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8, IMAGE_SOFT, 1))return false; //  use R8G8B8A8 because PVRTEX operates on that format
+         if(!temp.create(PaddedWidth(dest.w(), dest.h(), mip, dest.hwType()), PaddedHeight(dest.w(), dest.h(), mip, dest.hwType()), 1, dest.sRGB() ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8, IMAGE_SOFT, 1))return false; //  use R8G8B8A8 because PVRTEX operates on that format
          REPD(face, dest.faces())
          {
             if(! src.lockRead(            mip, (DIR_ENUM)Min(face, src_faces1)))               return false;

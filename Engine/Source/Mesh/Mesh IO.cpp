@@ -574,12 +574,12 @@ Bool MeshBase::load(File &f, CChar *path)
 /******************************************************************************/
 Bool MeshBase::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool MeshBase::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f, _GetPath(name));
+   File f; if(f.read(name))return load(f, _GetPath(name));
    del(); return false;
 }
 /******************************************************************************/
@@ -810,12 +810,12 @@ Bool MeshRender::load(File &f)
 
 Bool MeshRender::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool MeshRender::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f);
+   File f; if(f.read(name))return load(f);
    del(); return false;
 }
 /******************************************************************************/
@@ -1193,12 +1193,12 @@ Bool Mesh::load(File &f, CChar *path)
 
 Bool Mesh::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f, _GetPath(name)) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f, _GetPath(name)) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool Mesh::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f, _GetPath(name));
+   File f; if(f.read(name))return load(f, _GetPath(name));
    del(); return false;
 }
 /******************************************************************************/
@@ -1295,12 +1295,12 @@ Bool MeshGroup::loadAdd(File &f, CChar *path)
 }
 Bool MeshGroup::save(C Str &name)C
 {
-   File f; if(f.writeTry(name)){if(save(f, _GetPath(name)) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(save(f, _GetPath(name)) && f.flush())return true; f.del(); FDelFile(name);}
    return false;
 }
 Bool MeshGroup::load(C Str &name)
 {
-   File f; if(f.readTry(name))return load(f, _GetPath(name));
+   File f; if(f.read(name))return load(f, _GetPath(name));
    del(); return false;
 }
 /******************************************************************************/
