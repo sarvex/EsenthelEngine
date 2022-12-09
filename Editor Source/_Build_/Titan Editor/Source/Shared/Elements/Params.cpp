@@ -711,7 +711,7 @@ Cache<EditObject> EditObjects;
    }
    bool EditObject::load(C Str &name)
    {
-      File f; if(f.readTry(name))return load(f, GetPath(name));
+      File f; if(f.read(name))return load(f, GetPath(name));
       del(); return false;
    }
  C Str & GuiEditParam::desc()C {return _desc;}

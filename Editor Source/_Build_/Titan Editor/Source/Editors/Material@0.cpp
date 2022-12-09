@@ -962,7 +962,7 @@ Property &tss=props.New().create("Tex Size Switch", MemberDesc(DATA_INT).setFunc
       {
          detail_bump_file=file;
          Image temp; Proj.loadImages(temp, null, detail_bump_file, true); // use sRGB because this is for preview
-         temp.copyTry(detail_bump, Min(temp.w(), 128), Min(temp.h(), 128), 1, IMAGE_L8_SRGB, IMAGE_2D, 1, FILTER_LINEAR, IC_WRAP|IC_IGNORE_GAMMA); // we only need a preview, so make it small, no mip maps, and fast filtering, need to IC_IGNORE_GAMMA because 'loadImages' may lose it due to "channel" transform and here we need sRGB for preview
+         temp.copy(detail_bump, Min(temp.w(), 128), Min(temp.h(), 128), 1, IMAGE_L8_SRGB, IMAGE_2D, 1, FILTER_LINEAR, IC_WRAP|IC_IGNORE_GAMMA); // we only need a preview, so make it small, no mip maps, and fast filtering, need to IC_IGNORE_GAMMA because 'loadImages' may lose it due to "channel" transform and here we need sRGB for preview
       }
       return detail_bump.is() ? &detail_bump : null;
    }

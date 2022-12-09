@@ -39,7 +39,7 @@ class CompareProjects : PropWin
             {
                image_id=list_elm.id;
                Str name=(list_elm.path.is() ? list_elm.path : path+EncodeFileName(image_id));
-               File f; if(pak.totalFiles())f.readTry(name, pak);else f.readTry(name);
+               File f; if(pak.totalFiles())f.read(name, pak);else f.read(name);
                image.load(f);
             }
 

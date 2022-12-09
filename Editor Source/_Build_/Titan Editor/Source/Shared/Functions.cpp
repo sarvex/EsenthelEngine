@@ -17,13 +17,13 @@ bool SafeOverwriteChunk(File &src, C Str &dest, ReadWriteSync &rws)
 }
 bool SafeCopy(C Str &src, C Str &dest)
 {
-   File f; return f.readStdTry(src) && EE::SafeOverwrite(f, dest, &NoTemp(FileInfoSystem(src).modify_time_utc), null, S+"@new"+Random());
+   File f; return f.readStd(src) && EE::SafeOverwrite(f, dest, &NoTemp(FileInfoSystem(src).modify_time_utc), null, S+"@new"+Random());
 }
 /******************************************************************************/
 void RemoveChunk(C Str &file, C Str &chunk, ReadWriteSync &rws)
 {
    ReadLock rl(rws);
-   File src; if(src.readTry(file))
+   File src; if(src.read(file))
    {
       File temp; ChunkWriter cw(temp.writeMem());
       for(ChunkReader cr(src); File *s=cr(); )
@@ -137,10 +137,10 @@ void Save (C EditEnv         &env , C Str &name                        ) {File f
 void Save (C Environment     &env , C Str &name, C Str &resource_path) {File f; env .save(f.writeMem(), resource_path.is() ? resource_path : GetPath(name)); f.pos(0); if(SafeOverwrite(f, name))Saved(env , name);}
 void Save (C Game::WorldSettings &s, C Str &name, C Str &resource_path) {File f; s   .save(f.writeMem(), resource_path.is() ? resource_path : GetPath(name)); f.pos(0); if(SafeOverwrite(f, name))Saved(s   , name);}
 
-bool Load (Mesh       &mesh, C Str &name, C Str &resource_path) {File f; if(f.readTry(name))return mesh.load(f, resource_path.is() ? resource_path : GetPath(name)); mesh.del  (); return false;}
-bool Load (Material   &mtrl, C Str &name, C Str &resource_path) {File f; if(f.readTry(name))return mtrl.load(f, resource_path.is() ? resource_path : GetPath(name)); mtrl.reset(); return false;}
-bool Load (WaterMtrl  &mtrl, C Str &name, C Str &resource_path) {File f; if(f.readTry(name))return mtrl.load(f, resource_path.is() ? resource_path : GetPath(name)); mtrl.reset(); return false;}
-bool Load (EditObject &obj , C Str &name, C Str &resource_path) {File f; if(f.readTry(name))return obj .load(f, resource_path.is() ? resource_path : GetPath(name)); obj .del  (); return false;}
+bool Load (Mesh       &mesh, C Str &name, C Str &resource_path) {File f; if(f.read(name))return mesh.load(f, resource_path.is() ? resource_path : GetPath(name)); mesh.del  (); return false;}
+bool Load (Material   &mtrl, C Str &name, C Str &resource_path) {File f; if(f.read(name))return mtrl.load(f, resource_path.is() ? resource_path : GetPath(name)); mtrl.reset(); return false;}
+bool Load (WaterMtrl  &mtrl, C Str &name, C Str &resource_path) {File f; if(f.read(name))return mtrl.load(f, resource_path.is() ? resource_path : GetPath(name)); mtrl.reset(); return false;}
+bool Load (EditObject &obj , C Str &name, C Str &resource_path) {File f; if(f.read(name))return obj .load(f, resource_path.is() ? resource_path : GetPath(name)); obj .del  (); return false;}
 // other assets either don't use sub-assets, or are stored in game path and don't require "edit->game" path change
 
 bool SaveCode(C Str &code, C Str &name)
@@ -271,7 +271,7 @@ bool SetFullAlpha(Image &image, IMAGE_TYPE dest_type) // returns if any change w
 {
    if(NeedFullAlpha(image, dest_type))
    {
-      if(image.compressed())return image.copyTry(image, -1, -1, -1, ImageTypeExcludeAlpha(ImageTypeUncompressed(image.type())), IMAGE_SOFT, 1);
+      if(image.compressed())return image.copy(image, -1, -1, -1, ImageTypeExcludeAlpha(ImageTypeUncompressed(image.type())), IMAGE_SOFT, 1);
       if(image.lock())
       {
          REPD(y, image.h())
@@ -403,7 +403,7 @@ void ImageProps(C Image &image, UID *hash, IMAGE_TYPE *best_type, uint flags, Ed
 void LoadTexture(C Project &proj, C UID &tex_id, Image &image)
 {
    ImagePtr src=proj.texPath(tex_id);
-   if(src)src->copyTry(image, -1, -1, -1, ImageTypeUncompressed(src->type()), IMAGE_SOFT, 1);else image.del(); // always copy, because: src texture will always be compressed, also soft doesn't require locking
+   if(src)src->copy(image, -1, -1, -1, ImageTypeUncompressed(src->type()), IMAGE_SOFT, 1);else image.del(); // always copy, because: src texture will always be compressed, also soft doesn't require locking
 }
 void ExtractBaseTextures(C Project &proj, C UID &base_0, C UID &base_1, C UID &base_2, Image *color, Image *alpha, Image *bump, Image *normal, Image *smooth, Image *metal, Image *glow)
 { // #MaterialTextureLayout
@@ -522,14 +522,14 @@ bool EditToGameImage(Image &edit, Image &game, bool pow2, bool srgb, bool alpha_
    }
    if(alpha_lum)
    {
-      if(&edit!=&game){src->copyTry(temp); src=&temp;}
+      if(&edit!=&game){src->copy(temp); src=&temp;}
       src->alphaFromBrightness().divRgbByAlpha();
    }
    if(ignore_alpha && src->typeInfo().a) // if want to ignore alpha then set it to full as some compressed texture formats will benefit from better quality (like BC7, ETC2, ASTC, PVRTC)
    {
       if(mip_maps<0)mip_maps=((src->mipMaps()==1) ? 1 : 0); // source will have now only one mip-map so we can't use "-1", auto-detect instead
       if(mode    <0)mode    =src->mode();                   // source will now be as IMAGE_SOFT      so we can't use "-1", auto-detect instead
-      if(src->copyTry(temp, -1, -1, -1, IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1))src=&temp;
+      if(src->copy(temp, -1, -1, -1, IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1))src=&temp;
    }
 
    IMAGE_TYPE    dest_type;
@@ -541,7 +541,7 @@ bool EditToGameImage(Image &edit, Image &game, bool pow2, bool srgb, bool alpha_
    if((src->type()==IMAGE_L8 || src->type()==IMAGE_L8_SRGB) &&  dest_type==IMAGE_A8
    ||  src->type()==IMAGE_A8                               && (dest_type==IMAGE_L8 || dest_type==IMAGE_L8_SRGB))
    {
-      Image temp2; if(temp2.createSoftTry(src->w(), src->h(), src->d(), dest_type) && src->lockRead())
+      Image temp2; if(temp2.createSoft(src->w(), src->h(), src->d(), dest_type) && src->lockRead())
       {
          REPD(z, temp2.d())
          REPD(y, temp2.h())
@@ -550,7 +550,7 @@ bool EditToGameImage(Image &edit, Image &game, bool pow2, bool srgb, bool alpha_
          Swap(temp, temp2); src=&temp;
       }
    }
-   return src->copyTry(game, size.x, size.y, size.z, dest_type, mode, mip_maps, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT|(env ? IC_ENV_CUBE : 0));
+   return src->copy(game, size.x, size.y, size.z, dest_type, mode, mip_maps, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT|(env ? IC_ENV_CUBE : 0));
 }
 bool EditToGameImage(Image &edit, Image &game, C ElmImage &data, C int *force_type)
 {
@@ -576,7 +576,7 @@ void DrawPanelImage(C PanelImage &pi, C Rect &rect, bool draw_lines)
 /******************************************************************************/
 bool UpdateMtrlBase1Tex(C Image &src, Image &dest)
 {
-   Image temp; if(src.copyTry(temp, -1, -1, -1, IMAGE_R8G8B8A8, IMAGE_SOFT, 1))
+   Image temp; if(src.copy(temp, -1, -1, -1, IMAGE_R8G8B8A8, IMAGE_SOFT, 1))
    {
       // old: r=spec, g=NrmY, b=alpha, a=NrmX
       // new: r=NrmX, g=NrmY, b=spec , a=alpha
@@ -587,23 +587,23 @@ bool UpdateMtrlBase1Tex(C Image &src, Image &dest)
          c.set(c.a, c.g, c.r, c.b);
          temp.color(x, y, c);
       }
-      return temp.copyTry(dest, -1, -1, -1, (src.type()==IMAGE_BC3 || src.type()==IMAGE_BC3_SRGB) ? IMAGE_BC7 : ImageTypeExcludeSRGB(src.type()), src.mode(), src.mipMaps(), FILTER_BEST, IC_WRAP);
+      return temp.copy(dest, -1, -1, -1, (src.type()==IMAGE_BC3 || src.type()==IMAGE_BC3_SRGB) ? IMAGE_BC7 : ImageTypeExcludeSRGB(src.type()), src.mode(), src.mipMaps(), FILTER_BEST, IC_WRAP);
    }
    return false;
 }
 /******************************************************************************/
 bool ImportImage(Image &image, C Str &name, int type, int mode, int mip_maps, bool decompress)
 {
-   if(image.ImportTry(name, type, mode, mip_maps))
+   if(image.Import(name, type, mode, mip_maps))
    {
-      if(image.compressed() && decompress && !image.copyTry(image, -1, -1, -1, ImageTypeUncompressed(image.type())))return false;
+      if(image.compressed() && decompress && !image.copy(image, -1, -1, -1, ImageTypeUncompressed(image.type())))return false;
       return true;
    }
  /*if(name.is())
    {
-      File f, dec; if(f.readTry(name+".cmpr"))if(Decompress(f, dec.writeMem()))
+      File f, dec; if(f.read(name+".cmpr"))if(Decompress(f, dec.writeMem()))
       {
-         dec.pos(0); if(image.ImportTry(dec, type, mode, mip_maps))return true;
+         dec.pos(0); if(image.Import(dec, type, mode, mip_maps))return true;
       }
    }*/
    return false;
@@ -815,7 +815,7 @@ void AdjustImage(Image &image, bool rgb, bool alpha, bool high_prec)
    if(high_prec)type=ImageTypeHighPrec    (type);
    if(type!=image.type())
    {
-      image.copyTry(image, -1, -1, -1, type);
+      image.copy(image, -1, -1, -1, type);
     C ImageTypeInfo &new_ti=image.typeInfo();
       if(old_ti.r && !old_ti.g && !old_ti.b && (new_ti.g || new_ti.b)) // expand single channel Red -> Green, Blue
       {
@@ -1077,7 +1077,7 @@ void Crop(Image &image, int x, int y, int w, int h, C Color &background, bool hp
 {
    Vec4 clear_color=background;
    if(image.is())image.crop(image, x, y, w, h, &clear_color);else
-   if(image.createSoftTry(w, h, 1, hp ? IMAGE_F32_4_SRGB : IMAGE_R8G8B8A8_SRGB))
+   if(image.createSoft(w, h, 1, hp ? IMAGE_F32_4_SRGB : IMAGE_R8G8B8A8_SRGB))
       REPD(y, h)
       REPD(x, w)image.colorF(x, y, clear_color);
 }
@@ -1216,7 +1216,7 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
    }else
    if(param.name=="swapXY")
    {
-      Image temp; temp.createSoftTry(image.h(), image.w(), image.d(), image.type());
+      Image temp; temp.createSoft(image.h(), image.w(), image.d(), image.type());
       if(temp.highPrecision())
       {
          REPD(y, image.h())
@@ -1311,7 +1311,7 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
          flt range=((c.elms()>=2) ? TextFlt(c[1]) : 1);
          if(box.min.allZero() && box.max==image.size3())image.sharpen(power, range, clamp);else
          {
-            Image temp; image.copyTry(temp); temp.sharpen(power, range, clamp);
+            Image temp; image.copy(temp); temp.sharpen(power, range, clamp);
             for(int z=box.min.z; z<box.max.z; z++)
             for(int y=box.min.y; y<box.max.y; y++)
             for(int x=box.min.x; x<box.max.x; x++)image.color3DF(x, y, z, temp.color3DF(x, y, z));
@@ -2141,7 +2141,7 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
             bool  srgb=image.sRGB();
             if(image.highPrecision())
             {
-               temp.createSoftTry(image.w(), image.h(), image.d(), channels==1 ? IMAGE_F32 : channels==2 ? IMAGE_F32_2 : channels==3 ? (srgb ? IMAGE_F32_3_SRGB : IMAGE_F32_3) : (srgb ? IMAGE_F32_4_SRGB : IMAGE_F32_4));
+               temp.createSoft(image.w(), image.h(), image.d(), channels==1 ? IMAGE_F32 : channels==2 ? IMAGE_F32_2 : channels==3 ? (srgb ? IMAGE_F32_3_SRGB : IMAGE_F32_3) : (srgb ? IMAGE_F32_4_SRGB : IMAGE_F32_4));
                Vec4 d(0, 0, 0, 1);
                REPD(z, image.d())
                REPD(y, image.h())
@@ -2153,7 +2153,7 @@ void TransformImage(Image &image, TextParam param, bool clamp, C Color &backgrou
                }
             }else
             {
-               temp.createSoftTry(image.w(), image.h(), image.d(), channels==1 ? IMAGE_R8 : channels==2 ? IMAGE_R8G8 : channels==3 ? (srgb ? IMAGE_R8G8B8_SRGB : IMAGE_R8G8B8) : (srgb ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8));
+               temp.createSoft(image.w(), image.h(), image.d(), channels==1 ? IMAGE_R8 : channels==2 ? IMAGE_R8G8 : channels==3 ? (srgb ? IMAGE_R8G8B8_SRGB : IMAGE_R8G8B8) : (srgb ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8));
                Color d(0, 0, 0, 255);
                REPD(z, image.d())
                REPD(y, image.h())
@@ -2287,9 +2287,9 @@ bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FilePar
    bool lum_to_alpha=false;
 
    // check for special images
-   if(name=="|color|" ){if(color ){color ->copyTry(image); if( color_resize){if(image_resize)*image_resize=* color_resize;else TransformImage(image, * color_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
-   if(name=="|smooth|"){if(smooth){smooth->copyTry(image); if(smooth_resize){if(image_resize)*image_resize=*smooth_resize;else TransformImage(image, *smooth_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
-   if(name=="|bump|"  ){if(bump  ){bump  ->copyTry(image); if(  bump_resize){if(image_resize)*image_resize=*  bump_resize;else TransformImage(image, *  bump_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|color|" ){if(color ){color ->copy(image); if( color_resize){if(image_resize)*image_resize=* color_resize;else TransformImage(image, * color_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|smooth|"){if(smooth){smooth->copy(image); if(smooth_resize){if(image_resize)*image_resize=*smooth_resize;else TransformImage(image, *smooth_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
+   if(name=="|bump|"  ){if(bump  ){bump  ->copy(image); if(  bump_resize){if(image_resize)*image_resize=*  bump_resize;else TransformImage(image, *  bump_resize, clamp, background, background_size);} goto imported;}}else // if have info about resize for source image, then if can store it in 'image_resize' then store and if not then resize now
    {
       if(proj) // check for element ID
       {
@@ -2303,7 +2303,7 @@ bool LoadImage(C Project *proj, Image &image, TextParam *image_resize, C FilePar
       if(ImportImage(image, name, -1, IMAGE_SOFT, 1, true))
       {
       imported:
-         image.copyTry(image, -1, -1, -1, srgb ? ImageTypeIncludeSRGB(image.type()) : ImageTypeExcludeSRGB(image.type())); // set desired sRGB
+         image.copy(image, -1, -1, -1, srgb ? ImageTypeIncludeSRGB(image.type()) : ImageTypeExcludeSRGB(image.type())); // set desired sRGB
          if(lum_to_alpha)image.alphaFromBrightness().divRgbByAlpha();
          TransformImage(image, ConstCast(fp.params), clamp, background, background_size);
          return true;

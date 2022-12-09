@@ -247,7 +247,7 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
    bool Chunks::load(C Str &name, ReadWriteSync &rws)
    {
       ReadLock rl(rws);
-      File f; if(f.readTry(name))return load(f);
+      File f; if(f.read(name))return load(f);
       del(); return false;
    }
    bool Chunks::save(C Str &name, ReadWriteSync &rws) // warning: this sorts 'chunks' and changes memory addresses for each element
@@ -263,9 +263,9 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
       {
          super::del(); return clearParams();
       }
-      bool MtrlImages::ImageResize::createTry(C VecI2 &size, IMAGE_TYPE type)
+      bool MtrlImages::ImageResize::create(C VecI2 &size, IMAGE_TYPE type)
       {
-         clearParams(); return super::createSoftTry(size.x, size.y, 1, type);
+         clearParams(); return super::createSoft(size.x, size.y, 1, type);
       }
       ::MtrlImages::ImageResize& MtrlImages::ImageResize::resize(C VecI2 &size)
       {
@@ -288,7 +288,7 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
       }
       void MtrlImages::ImageResize::apply()
       {
-         copyTry(T, (size.x>0) ? size.x : -1, (size.y>0) ? size.y : -1, -1, -1, -1, -1, InRange(filter, FILTER_NUM) ? FILTER_TYPE(filter) : FILTER_BEST, (clamp ? IC_CLAMP : IC_WRAP)|(alpha_weight ? IC_ALPHA_WEIGHT : 0)|(keep_edges ? IC_KEEP_EDGES : 0));
+         copy(T, (size.x>0) ? size.x : -1, (size.y>0) ? size.y : -1, -1, -1, -1, -1, InRange(filter, FILTER_NUM) ? FILTER_TYPE(filter) : FILTER_BEST, (clamp ? IC_CLAMP : IC_WRAP)|(alpha_weight ? IC_ALPHA_WEIGHT : 0)|(keep_edges ? IC_KEEP_EDGES : 0));
       }
       MtrlImages::ImageResize::operator ImageSource()C {return ImageSource(T, size, filter, clamp);}
    MtrlImages& MtrlImages::del()

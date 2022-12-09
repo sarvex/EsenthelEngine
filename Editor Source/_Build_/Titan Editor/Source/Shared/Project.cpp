@@ -665,7 +665,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
 
          case ELM_IMAGE:
          {
-            Image image; image.ImportTry(file_edit_path); EditToGameImage(image, image, *elm.imageData());
+            Image image; image.Import(file_edit_path); EditToGameImage(image, image, *elm.imageData());
             Save( image, file_game_path); savedGame(elm, file_game_path);
          }break;
 
@@ -1052,7 +1052,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
       {
          REPA(elms)if(elms[i].type==ELM_SKEL)
          {
-            Str path=gamePath(elms[i]); if(f.readTry(path) && Compress(f, temp.writeMem(), ClientNetworkCompression, ClientNetworkCompressionLevel))
+            Str path=gamePath(elms[i]); if(f.read(path) && Compress(f, temp.writeMem(), ClientNetworkCompression, ClientNetworkCompressionLevel))
             {
                f.del(); temp.pos(0); SafeOverwrite(temp, path);
             }
@@ -1081,7 +1081,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
 
             case ELM_ANIM: if(ver<=47)if(ElmAnim *anim_data=elm->animData())
             {
-               src=&f; if(src->readTry(gamePath(*elm)))
+               src=&f; if(src->read(gamePath(*elm)))
                {
                   if(compress_anim)if(Decompress(*src, temp, true)){src=&temp; src->pos(0);}else src=null;
                   if(src)
@@ -1091,7 +1091,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
                         // load skeleton
                         if(Elm *skel_elm=findElm(anim_data->skel_id))
                         {
-                           src=&f; if(src->readTry(gamePath(*skel_elm)))
+                           src=&f; if(src->read(gamePath(*skel_elm)))
                            {
                               if(compress_skel)if(Decompress(*src, temp, true)){src=&temp; src->pos(0);}else src=null;
                               if(src)
@@ -1124,7 +1124,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
          {
             case ELM_SKEL: if(ver<=47)
             {
-               src=&f; if(src->readTry(gamePath(*elm)))
+               src=&f; if(src->read(gamePath(*elm)))
                {
                   if(compress_skel)if(Decompress(*src, temp, true)){src=&temp; src->pos(0);}else continue;
                   Skeleton skel; if(skel.load(*src))
@@ -2480,7 +2480,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
    error:
       return false;
    }
-   bool Project::loadOldSettings(C Str &name)  {File f; return f.readTry(name) && loadOldSettings(f);}
+   bool Project::loadOldSettings(C Str &name)  {File f; return f.read(name) && loadOldSettings(f);}
    bool Project::loadOldSettings2(C Str &name)  {return loadOldSettings(name) || loadOldSettings(name+".old");}
    void Project::save(MemPtr<TextNode> nodes)C
    {
@@ -2582,7 +2582,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
    newer:
       del(); return LOAD_NEWER;
    }
-   LOAD_RESULT Project::load(C Str &name, int &ver, SAVE_DATA mode)  {File f; if(f.readTry(name))return load(f, ver, false, mode); ver=-1; del(); return LOAD_EMPTY;}
+   LOAD_RESULT Project::load(C Str &name, int &ver, SAVE_DATA mode)  {File f; if(f.read(name))return load(f, ver, false, mode); ver=-1; del(); return LOAD_EMPTY;}
    bool        Project::save(C Str &name                                   )C {File f; save(f.writeMem()); f.pos(0); return SafeOverwrite(f, name);}
    LOAD_RESULT Project::load2(C Str &name, int &ver, SAVE_DATA mode)  {LOAD_RESULT result=load(name, ver, mode); if(result==LOAD_EMPTY || result==LOAD_ERROR)result=load(name+".old", ver, mode); return result;}
    bool        Project::save2(C Str &name                                   )C {if(FExistSystem(name))if(!FRename(name, name+".old"))return false; return save(name);}
@@ -2664,7 +2664,7 @@ PROJ_CMPR_PLATFORM ProjCompres(Edit::EXE_TYPE type)
       if(!_path.is() ){error="Invalid Path"; return LOAD_ERROR;} // path must be valid
       Str lock_name=_path+"Lock";
       if(!ignore_lock && FExistSystem(lock_name))return LOAD_LOCKED; // check if it's already opened, do this at start so the project won't be opened
-      File f; f.writeTry(lock_name); f.del(); // lock it
+      File f; f.write(lock_name); f.del(); // lock it
 
       int ver; LOAD_RESULT result=load3(_path, ver, error);
       if(LoadOK(result))

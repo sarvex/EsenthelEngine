@@ -49,7 +49,7 @@ class ExportWindow : WindowIO
                Str src=Proj.basePath(*elm);
                if(GetExt(name)==ext)ok=FCopy(src, name);else
                {
-                  Image image; if(image.ImportTry(src))ok=image.Export(name);
+                  Image image; if(image.Import(src))ok=image.Export(name);
                }
             }break;
 
@@ -86,14 +86,14 @@ class ExportWindow : WindowIO
                   Game.MiniMap map; if(map.load(Proj.gamePath(elm_id)))
                   {
                      RectI images=ver.images.last(); REPA(ver.images)images|=ver.images[i];
-                     Image image, temp; if(image.createSoftTry(image_size*(images.w()+1), image_size*(images.h()+1), 1, IMAGE_R8G8B8A8_SRGB))
+                     Image image, temp; if(image.createSoft(image_size*(images.w()+1), image_size*(images.h()+1), 1, IMAGE_R8G8B8A8_SRGB))
                      {
                         image.clear();
                         for(int y=images.min.y; y<=images.max.y; y++)
                         for(int x=images.min.x; x<=images.max.x; x++)
                         {
                            C Image &src=map(VecI2(x, y));
-                           if(src.is() && src.copyTry(temp, image_size, image_size, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))
+                           if(src.is() && src.copy(temp, image_size, image_size, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))
                            {
                               int ox=(x-images.min.x  )*image_size,
                                   oy=(  images.max.y-y)*image_size;
@@ -125,7 +125,7 @@ class ExportWindow : WindowIO
 
             case ELM_IMAGE:
             {
-              .File f; if(f.readTry(Proj.editPath(elm_id))) // set main extension
+              .File f; if(f.read(Proj.editPath(elm_id))) // set main extension
                {
                   Image temp;
                 //if(!ext.is()){f.pos(0); if(temp.ImportWEBP(f))ext="webp";} ignore WEBP because it's not popular yet

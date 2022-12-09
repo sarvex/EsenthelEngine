@@ -96,10 +96,10 @@ ImporterClass Importer;
                                   known_textures =TEXF_BASE|TEXF_EMISSIVE;
 
                // process textures only if they're added for the first time, otherwise delete them so they won't be saved
-               IMAGE_TYPE ct; ImageProps(      base_0, &  base_0_id, &ct, MTRL_BASE_0  ); if(Importer.includeTex(  base_0_id))                                 base_0      .copyTry(base_0      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_0    .del();
-                              ImageProps(      base_1, &  base_1_id, &ct, MTRL_BASE_1  ); if(Importer.includeTex(  base_1_id))                                 base_1      .copyTry(base_1      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_1    .del();
-                              ImageProps(      base_2, &  base_2_id, &ct, MTRL_BASE_2  ); if(Importer.includeTex(  base_2_id))                                 base_2      .copyTry(base_2      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_2    .del();
-                              ImageProps(emissive_img, &emissive_id, &ct, MTRL_EMISSIVE); if(Importer.includeTex(emissive_id)){SetFullAlpha(emissive_img, ct); emissive_img.copyTry(emissive_img, -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP);}else emissive_img.del();
+               IMAGE_TYPE ct; ImageProps(      base_0, &  base_0_id, &ct, MTRL_BASE_0  ); if(Importer.includeTex(  base_0_id))                                 base_0      .copy(base_0      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_0    .del();
+                              ImageProps(      base_1, &  base_1_id, &ct, MTRL_BASE_1  ); if(Importer.includeTex(  base_1_id))                                 base_1      .copy(base_1      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_1    .del();
+                              ImageProps(      base_2, &  base_2_id, &ct, MTRL_BASE_2  ); if(Importer.includeTex(  base_2_id))                                 base_2      .copy(base_2      , -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP); else   base_2    .del();
+                              ImageProps(emissive_img, &emissive_id, &ct, MTRL_EMISSIVE); if(Importer.includeTex(emissive_id)){SetFullAlpha(emissive_img, ct); emissive_img.copy(emissive_img, -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP);}else emissive_img.del();
             }
          }
       Str ImporterClass::Import::nodeName(int bone_i)C
@@ -153,7 +153,7 @@ ImporterClass Importer;
                   // load helper data from the project
                   File src;
                   UID  image_id;
-                  REPA(files)if(DecodeFileName(files[i].name, image_id))if(src.readTry(Proj.editPath(image_id)))
+                  REPA(files)if(DecodeFileName(files[i].name, image_id))if(src.read(Proj.editPath(image_id)))
                   {
                      ImageEx &image=images(i);
                      src.copy(image.raw.writeMem());
@@ -161,7 +161,7 @@ ImporterClass Importer;
                   }
 
                   // check if any of the images were not imported
-                  if(src.readTry(Proj.editPath(elm_id)))src.copy(raw.writeMem());
+                  if(src.read(Proj.editPath(elm_id)))src.copy(raw.writeMem());
                }
             }break;
 
@@ -316,17 +316,17 @@ ImporterClass Importer;
                   }
                }
             error:
-               File f; if(f.readStdTry(file)){f.copy(raw.writeMem()); return true;}
+               File f; if(f.readStd(file)){f.copy(raw.writeMem()); return true;}
             }break;
 
             case ELM_VIDEO:
             {
-               File f; if(f.readStdTry(file)){f.copy(raw.writeMem()); return true;}
+               File f; if(f.readStd(file)){f.copy(raw.writeMem()); return true;}
             }break;
 
             case ELM_FILE:
             {
-               File f; if(f.readStdTry(file))f.copy(raw.writeMem());
+               File f; if(f.readStd(file))f.copy(raw.writeMem());
             }return true; // allow replacing with empty file
 
             case ELM_CODE:
@@ -390,7 +390,7 @@ ImporterClass Importer;
                   {
                      ImageEx &image=images(i); if(!ImportImage(image, files[i].name))
                      {
-                        image.raw.pos(0); if(image.ImportTry(image.raw))
+                        image.raw.pos(0); if(image.Import(image.raw))
                         {
                            if(image.cube)image.crop(image, i*image.w()/6, 0, image.w()/6, image.h()); // crop to i-th face for cubes
                         }
@@ -401,10 +401,10 @@ ImporterClass Importer;
                   // check if any of the images were not imported
                   REPA(images)if(!images[i].is())
                   {
-                     Image src; raw.pos(0); if(src.ImportTry(raw)) // try extracting from existing data
+                     Image src; raw.pos(0); if(src.Import(raw)) // try extracting from existing data
                      {
                         bool one=(src.aspect()<Avg(1.0f, 6.0f)); // source is only 1 face, not "6 x face"
-                        REPA(images)if(!images[i].is())if(one)src.copyTry(images[i]);else src.crop(images[i], i*src.w()/6, 0, src.w()/6, src.h());
+                        REPA(images)if(!images[i].is())if(one)src.copy(images[i]);else src.crop(images[i], i*src.w()/6, 0, src.w()/6, src.h());
                      }
                      break;
                   }
@@ -417,7 +417,7 @@ ImporterClass Importer;
                   // if actually has some images
                   if(size>0)
                   {
-                     Image dest; if(dest.createSoftTry(size*6, size, 1, IMAGE_R8G8B8A8_SRGB)) // create soft RGBA so we can use simple mem copy
+                     Image dest; if(dest.createSoft(size*6, size, 1, IMAGE_R8G8B8A8_SRGB)) // create soft RGBA so we can use simple mem copy
                      {
                         // clear to zero in case some images are not found
                         dest.clear();
@@ -426,7 +426,7 @@ ImporterClass Importer;
                         REPA(images)
                         {
                            Image &src=images[i];
-                           if(src.is() && src.copyTry(src, size, size, 1, dest.hwType(), IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_NO_ALT_TYPE)) // copy to the same size and HW type as dest so simple mem copy can be used
+                           if(src.is() && src.copy(src, size, size, 1, dest.hwType(), IMAGE_SOFT, 1, FILTER_BEST, IC_CLAMP|IC_NO_ALT_TYPE)) // copy to the same size and HW type as dest so simple mem copy can be used
                               if(src.lockRead())
                            {
                               // copy non-compressed 2D face to non-compressed 6*2D
@@ -451,7 +451,7 @@ ImporterClass Importer;
                   bool transforms=(files.elms()>1 || (files.elms() && files[0].params.elms())); // if want to apply any transforms
                   if(!transforms && (ext=="jpg" || ext=="jpeg" || ext=="webp"/* || ext=="png"*/)) // images are already in accepted format (even though PNG is compressed, we can achieve much better compression with WEBP)
                   {
-                     File f; if(!f.readStdTry(file))break; f.copy(raw.writeMem());
+                     File f; if(!f.readStd(file))break; f.copy(raw.writeMem());
                      if(ext=="jpg" || ext=="jpeg"){Image image; raw.pos(0); if(image.ImportJPG (raw)){has_color=HasColor(image); has_alpha=false          ;}}else // JPG never has any alpha
                      if(ext=="png"               ){Image image; raw.pos(0); if(image.ImportPNG (raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}else
                      if(ext=="webp"              ){Image image; raw.pos(0); if(image.ImportWEBP(raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}
@@ -1221,8 +1221,8 @@ ImporterClass Importer;
                   RectI images=ver->images.last(); REPA(ver->images)images|=ver->images[i];
                   VecI2 images_size=image_size*(images.size()+1);
                   Image &all=import.images[0], single, temp;
-                  if(all.copyTry(all, images_size.x, images_size.y, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1)
-                  && single.createSoftTry(image_size, image_size, 1, IMAGE_R8G8B8A8_SRGB))
+                  if(all.copy(all, images_size.x, images_size.y, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1)
+                  && single.createSoft(image_size, image_size, 1, IMAGE_R8G8B8A8_SRGB))
                   {
                      ver->changed=true;
                      ver->time=time; // update time of mini map
@@ -1234,7 +1234,7 @@ ImporterClass Importer;
                             oy=(            images.max.y-image_pos.y)*image_size;
                         REPD(y, single.h())
                         REPD(x, single.w())single.pixel(x, y, all.pixel(x+ox, y+oy));
-                        if(single.copyTry(temp, -1, -1, -1, IMAGE_BC1_SRGB, IMAGE_2D, 1))
+                        if(single.copy(temp, -1, -1, -1, IMAGE_BC1_SRGB, IMAGE_2D, 1))
                         {
                            temp.save(Proj.gamePath(elm->id).tailSlash(true)+image_pos);
                            Synchronizer.setMiniMapImage(elm->id, image_pos);

@@ -174,7 +174,7 @@ GuiView GuiEdit;
       }
       bool GuiView::Objects::load(C Str &name)
       {
-         File f; if(f.readTry(name))return load(f, GetPath(name));
+         File f; if(f.read(name))return load(f, GetPath(name));
          del(); return false;
       }
    void GuiView::PosX(  GuiObj &go, C Str &t) {       go.pos(Vec2(TextFlt(t), go.pos().y));}

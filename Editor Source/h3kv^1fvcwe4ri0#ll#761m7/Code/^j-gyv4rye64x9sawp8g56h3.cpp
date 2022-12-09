@@ -646,7 +646,7 @@ class AppPropsEditor : PropWin
             VecI2 size=image->size();
             if(size.x>256)size=size*256/size.x;
             if(size.y>256)size=size*256/size.y;
-            image->copyTry(image_2d, Max(size.x, 1), Max(size.y, 1), 1, ImageTypeUncompressed(image->type()), IMAGE_2D, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
+            image->copy(image_2d, Max(size.x, 1), Max(size.y, 1), 1, ImageTypeUncompressed(image->type()), IMAGE_2D, 1, FILTER_BEST, IC_CLAMP|IC_ALPHA_WEIGHT);
             image=&image_2d;
          }
          remove.visible(id.valid());

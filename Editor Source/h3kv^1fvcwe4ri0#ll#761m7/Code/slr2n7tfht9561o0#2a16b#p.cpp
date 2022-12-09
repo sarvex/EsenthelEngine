@@ -1642,7 +1642,7 @@ class StoreClass : ClosableWindow
                if(itemCanUploadFile(*item, file_file))
                {
                   names.remove(i--, true);
-                  File src; if(src.readStdTry(name))
+                  File src; if(src.readStd(name))
                   {
                      if(src.size()<=EsenthelStoreMaxFileSize)
                      {
@@ -1670,11 +1670,11 @@ class StoreClass : ClosableWindow
                Str name=names[i], ext=GetExt(name);
                if(ExtType(ext)==EXT_IMAGE)
                {
-                  Image temp; if(temp.ImportTry(name))
+                  Image temp; if(temp.Import(name))
                   {
                      File src;
                      if(ext=="jpeg")ext="jpg";
-                     if(ext=="jpg" || ext=="png")src.readStdTry(name);else
+                     if(ext=="jpg" || ext=="png")src.readStd(name);else
                      {
                         src.writeMem(); if(HasAlpha(temp)){temp.ExportPNG(src); ext="png";}else{temp.ExportJPG(src, 0.8); ext="jpg";}
                         src.pos(0);
@@ -1702,11 +1702,11 @@ class StoreClass : ClosableWindow
                Str name=names[i], ext=GetExt(name);
                if(ExtType(ext)==EXT_IMAGE)
                {
-                  Image temp; if(temp.ImportTry(name, IMAGE_R8G8B8_SRGB)) // ignore alpha channel
+                  Image temp; if(temp.Import(name, IMAGE_R8G8B8_SRGB)) // ignore alpha channel
                   {
                      File src;
                      if(ext=="jpeg")ext="jpg";
-                     if(ext=="jpg")src.readStdTry(name);else
+                     if(ext=="jpg")src.readStd(name);else
                      {
                                   src.writeMem(); temp.ExportJPG(src, 0.8); ext="jpg";
                         File png; png.writeMem(); temp.ExportPNG(png); if(png.size()<src.size()){Swap(png, src); ext="png";}
