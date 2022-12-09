@@ -2685,7 +2685,7 @@ Str CleanFileName(C Str &name)
       case '<' :
       case '>' :
       case '|' : break;
-      default  : if(U16(c)>31)temp+=c; break;
+      default  : if(Unsigned(c)>31)temp.alwaysAppend(c); break;
    }
    temp.removeOuterWhiteChars(); // on Windows names can't end with spaces (but they can start with spaces), on Windows names can start with spaces (but remove them anyway, because it's a non-standard naming convention to start with a space)
    REPA(temp)if(temp[i]!='.' && temp[i]!=' ')return temp; // on Windows name must contain at least one character which is not space or dot (".", "..", ". .", "......", ". . ." - all of these are invalid names)
@@ -2696,8 +2696,12 @@ Str CleanFileName(C Str &name)
 static const     Char8 CleanFileNameArray[]={'!', '#', '^', '-', '_', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 static const     Byte  CleanFileNameIndex[]={255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 255, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 3, 255, 255, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 255, 255, 255, 255, 255, 255, 255, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 255, 255, 255, 2, 4, 255, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}; ASSERT(Elms(CleanFileNameIndex)==256);
 static constexpr Int   CleanFileNameElms   =Elms(CleanFileNameArray);
+
+static const     Char8 CleanFileName64Array[]={'!', '#', '$', '%', '&', '\'', '(', ')', '+', ',', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ';', '=', '@', '[', ']', '^', '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '}', '~'};
+static const     Byte  CleanFileName64Index[]={255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 255, 1, 2, 3, 4, 5, 6, 7, 255, 8, 9, 10, 255, 255, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 255, 21, 255, 22, 255, 255, 23, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 24, 255, 25, 26, 27, 255, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 255, 55, 56, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255}; ASSERT(Elms(CleanFileName64Index)==256);
+static constexpr Int   CleanFileName64Elms   =Elms(CleanFileName64Array);
 /******************************************************************************
-static Int CompareChar(C Char8 &a, C Char8 &b) {return EE::Compare(a, b);}
+static Int CompareChar(C Char8 &a, C Char8 &b) {return EE::Compare(a, b, true);}
 void MakeCleanFileNameArray()
 {
    Str s;
@@ -2705,7 +2709,7 @@ void MakeCleanFileNameArray()
    s+="!#^-_";
    for(Int i='a'; i<='z'; i++)s+=Char8(i);
    for(Int i='0'; i<='9'; i++)s+=Char8(i);
-#else // 57 chars
+#else // 57 chars, this is enough to store 11-chars per 8-bytes
    for(Int i='a'; i<='z'; i++)s+=Char8(i);
    for(Int i='0'; i<='9'; i++)s+=Char8(i);
    s+=" `~!@#$%^&*()_-+=[]{};'\\:\"|,./<>?";
@@ -2723,7 +2727,8 @@ void MakeCleanFileNameArray()
 }
 void Test()
 {
-   REPA(CleanFileNameArray)DEBUG_ASSERT(CleanFileNameIndex[(Byte)CleanFileNameArray[i]]==i, "err");
+   REPA(CleanFileNameArray  )DEBUG_ASSERT(CleanFileNameIndex  [(Byte)CleanFileNameArray  [i]]==i, "err");
+   REPA(CleanFileName64Array)DEBUG_ASSERT(CleanFileName64Index[(Byte)CleanFileName64Array[i]]==i, "err");
 }
 /******************************************************************************/
 CChar* _EncodeFileName(C UID &id, Char (&name)[24+1]) // 24 chars needed + NUL terminate
@@ -2765,7 +2770,7 @@ Str  EncodeFileName(           CPtr src, Int size) {Str dest; EncodeFileName(des
 void EncodeFileName(Str &dest, CPtr src, Int size)
 {
    dest.clear();
-   if(Byte *s=(Byte*)src)if(size>0)
+   if(C Byte *s=(Byte*)src)if(size>0)
    {
       dest.reserve(DivCeil4(size)*6); // 6 chars per 4 bytes
       UInt u, max;
@@ -2785,6 +2790,35 @@ void EncodeFileName(Str &dest, CPtr src, Int size)
    end:;
    }
 }
+Str  EncodeFileName64(           CPtr src, Int size) {Str dest; EncodeFileName64(dest, src, size); return dest;}
+void EncodeFileName64(Str &dest, CPtr src, Int size)
+{
+   dest.clear();
+   if(C Byte *s=(Byte*)src)if(size>0)
+   {
+      dest.reserve(DivCeil8(size)*11); // 11 chars per 8 bytes
+      ULong u, max;
+      REP(ULong(size)/SIZE(ULong))
+      {
+         for(u=*(ULong*)s, max=ULONG_MAX; ; ){dest.alwaysAppend(CleanFileName64Array[u%CleanFileName64Elms]); max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
+         s+=SIZE(ULong);
+      }
+      switch(size&7)
+      {
+         case  1: u=*      s                                        ; max=0x000000000000FF; break;
+         case  2: u=*(U16*)s                                        ; max=0x0000000000FFFF; break;
+         case  3: u=*(U16*)s|(s[2]<<16)                             ; max=0x00000000FFFFFF; break;
+         case  4: u=*(U32*)s                                        ; max=0x000000FFFFFFFF; break;
+         case  5: u=*(U32*)s|(U64(s[4])<<32)                        ; max=0x0000FFFFFFFFFF; break;
+         case  6: u=*(U32*)s|(U64(*(U16*)(s+4))<<32)                ; max=0x00FFFFFFFFFFFF; break;
+         case  7: u=*(U32*)s|(U64(*(U16*)(s+4))<<32)|(U64(s[6])<<48); max=0xFFFFFFFFFFFFFF; break;
+         default: goto end;
+      }
+      for(;;){dest.alwaysAppend(CleanFileName64Array[u%CleanFileName64Elms]); max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
+   end:;
+   }
+}
+/******************************************************************************/
 Bool DecodeFileName(C Str &src, Ptr dest, Int size)
 {
    if(Byte *d=(Byte*)dest)if(size>0)
@@ -2864,9 +2898,9 @@ Bool DecodeRaw(C Str &src, Ptr dest, Int size)
 /******************************************************************************/
 Bool ValidEmail(C Str &email) // "user@domain.xxx"
 {
-   if(    email.length() >=5  // 1@3.5
-   && U16(email.first ())>32  // not space, tab, new line, ..
-   && U16(email.last  ())>32) // not space, tab, new line, ..
+   if(         email.length() >=5  // 1@3.5
+   && Unsigned(email.first ())>32  // not space, tab, new line, ..
+   && Unsigned(email.last  ())>32) // not space, tab, new line, ..
    {
       Int at =TextPosI(email, '@');
       if( at>=1 && TextPosI(email()+at+1, '@')<0) // if found '@' at 1 or higher position and there's no other '@' after
