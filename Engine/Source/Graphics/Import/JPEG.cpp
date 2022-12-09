@@ -107,7 +107,7 @@ Bool Image::ImportJPG(File &f)
 
       if(cinfo.output_components==1 && cinfo.out_color_space==JCS_GRAYSCALE
       || cinfo.output_components==3 && cinfo.out_color_space==JCS_RGB)
-         if(createSoftTry(cinfo.output_width, cinfo.output_height, 1, (cinfo.output_components==1) ? IMAGE_L8_SRGB : IMAGE_R8G8B8_SRGB))
+         if(createSoft(cinfo.output_width, cinfo.output_height, 1, (cinfo.output_components==1) ? IMAGE_L8_SRGB : IMAGE_R8G8B8_SRGB))
       {
          created=true;
          for(; cinfo.output_scanline<cinfo.output_height; ){JSAMPROW row=T.data()+cinfo.output_scanline*pitch(); jpeg_read_scanlines(&cinfo, &row, 1);}
@@ -181,7 +181,7 @@ Bool Image::ExportJPG(File &f, Flt quality, Int sub_sample)C
    && src->hwType()!=IMAGE_B8G8R8A8_SRGB
 #endif
    )
-      if(src->copyTry(temp, -1, -1, -1, (src->type()==IMAGE_I16) ? IMAGE_L8_SRGB : IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1))src=&temp;else return false;
+      if(src->copy(temp, -1, -1, -1, (src->type()==IMAGE_I16) ? IMAGE_L8_SRGB : IMAGE_R8G8B8_SRGB, IMAGE_SOFT, 1))src=&temp;else return false;
 
    if(src->lockRead())
    {
@@ -232,14 +232,14 @@ Bool Image::ExportJPG(File &f, Flt quality, Int sub_sample)C
 Bool Image::ExportJPG(C Str &name, Flt quality, Int sub_sample)C
 {
 #if SUPPORT_JPG
-   File f; if(f.writeTry(name)){if(ExportJPG(f, quality, sub_sample) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(ExportJPG(f, quality, sub_sample) && f.flush())return true; f.del(); FDelFile(name);}
 #endif
    return false;
 }
 Bool Image::ImportJPG(C Str &name)
 {
 #if SUPPORT_JPG
-   File f; if(f.readTry(name))return ImportJPG(f);
+   File f; if(f.read(name))return ImportJPG(f);
 #endif
    del(); return false;
 }

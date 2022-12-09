@@ -1811,7 +1811,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
 error:
    del(); return false;
 }
-Bool Image::createTry(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Bool alt_type_on_fail)
+Bool Image::create(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Bool alt_type_on_fail)
 {
    if(createEx(w, h, d, type, mode, mip_maps, 1))return true;
 
@@ -1827,8 +1827,8 @@ Bool Image::createTry(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int
 }
 Image& Image::mustCreate(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Bool alt_type_on_fail)
 {
-   if(!createTry(w, h, d, type, mode, mip_maps, alt_type_on_fail))Exit(MLT(S+"Can't create Image "        +w+'x'+h+'x'+d+", type "+ImageTI[type].name+", mode "+mode+".",
-                                                                       PL,S+u"Nie można utworzyć obrazka "+w+'x'+h+'x'+d+", typ " +ImageTI[type].name+", tryb "+mode+"."));
+   if(!create(w, h, d, type, mode, mip_maps, alt_type_on_fail))Exit(MLT(S+"Can't create Image "        +w+'x'+h+'x'+d+", type "+ImageTI[type].name+", mode "+mode+".",
+                                                                    PL,S+u"Nie można utworzyć obrazka "+w+'x'+h+'x'+d+", typ " +ImageTI[type].name+", tryb "+mode+"."));
    return T;
 }
 /******************************************************************************/
@@ -1876,11 +1876,11 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
       case IMAGE_ASTC_8x8: case IMAGE_ASTC_8x8_SRGB:
          return DecompressASTC(src, dest, max_mip_maps);
    }
-   if(dest.is() || dest.createTry(src.w(), src.h(), src.d(), decompress_block        ? (src.sRGB() ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8) // use 'IMAGE_R8G8B8A8'  because Decompress Block functions operate on 'Color'
-                                                           : decompress_block_SByte  ?               IMAGE_R8_SIGN                         // use 'IMAGE_R8_SIGN'   because Decompress Block functions operate on 'SByte'
-                                                           : decompress_block_VecSB2 ?               IMAGE_R8G8_SIGN                       // use 'IMAGE_R8G8_SIGN' because Decompress Block functions operate on 'VecSB2'
-                                                           : decompress_block_VecH   ?               IMAGE_F16_3                           // use 'IMAGE_F16_3'     because Decompress Block functions operate on 'VecH'
-                                                           :                                         IMAGE_NONE, AsSoft(src.mode()), src.mipMaps()))
+   if(dest.is() || dest.create(src.w(), src.h(), src.d(), decompress_block        ? (src.sRGB() ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8A8) // use 'IMAGE_R8G8B8A8'  because Decompress Block functions operate on 'Color'
+                                                        : decompress_block_SByte  ?               IMAGE_R8_SIGN                         // use 'IMAGE_R8_SIGN'   because Decompress Block functions operate on 'SByte'
+                                                        : decompress_block_VecSB2 ?               IMAGE_R8G8_SIGN                       // use 'IMAGE_R8G8_SIGN' because Decompress Block functions operate on 'VecSB2'
+                                                        : decompress_block_VecH   ?               IMAGE_F16_3                           // use 'IMAGE_F16_3'     because Decompress Block functions operate on 'VecH'
+                                                        :                                         IMAGE_NONE, AsSoft(src.mode()), src.mipMaps()))
       if(dest.size3()==src.size3())
    {
       Int src_faces1=src.faces()-1,
@@ -2166,10 +2166,10 @@ static Int CopyMipMaps(C Image &src, Image &dest, Bool ignore_gamma, Int max_mip
 static Bool BlurCubeMipMaps(Image &src, Image &dest, Int type, Int mode, FILTER_TYPE filter, UInt flags)
 {
    return src.blurCubeMipMaps()
-       && src.copyTry(dest, -1, -1, -1, IMAGE_TYPE(type), IMAGE_MODE(mode), -1, filter, flags&~IC_ENV_CUBE); // disable IC_ENV_CUBE because we've already blurred mip-maps
+       && src.copy(dest, -1, -1, -1, IMAGE_TYPE(type), IMAGE_MODE(mode), -1, filter, flags&~IC_ENV_CUBE); // disable IC_ENV_CUBE because we've already blurred mip-maps
 }
 /******************************************************************************/
-Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_maps, FILTER_TYPE filter, UInt flags)C
+Bool Image::copy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_maps, FILTER_TYPE filter, UInt flags)C
 {
    if(!is()){dest.del(); return true;}
 
@@ -2219,7 +2219,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
    {
       // create destination
       Image temp_dest, &target=((src==&dest) ? temp_dest : dest);
-      if(!target.createTry(w, h, d, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail))return false; // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
+      if(!target.create(w, h, d, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail))return false; // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
       Bool ignore_gamma=IgnoreGamma(flags, src->hwType(), target.hwType()); // calculate after knowing 'target.hwType'
 
       // copy
@@ -2258,7 +2258,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
                Image resized_src;
                if(!same_size) // resize needed
                {
-                  if(!resized_src.createTry(target.w(), target.h(), target.d(), src->hwType(), (src->cube() && target.cube()) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))return false; // for resize use only 1 mip map, and remaining set with 'updateMipMaps' below
+                  if(!resized_src.create(target.w(), target.h(), target.d(), src->hwType(), (src->cube() && target.cube()) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))return false; // for resize use only 1 mip map, and remaining set with 'updateMipMaps' below
                   if(!src->copySoft(resized_src, filter, flags))return false; src=&resized_src; decompressed_src.del(); // we don't need 'decompressed_src' anymore so delete it to release memory
                }
                if(!Compress(*src, target))return false;
@@ -2285,7 +2285,7 @@ Bool Image::copyTry(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mi
 }
 void Image::mustCopy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_maps, FILTER_TYPE filter, UInt flags)C
 {
-   if(!copyTry(dest, w, h, d, type, mode, mip_maps, filter, flags))
+   if(!copy(dest, w, h, d, type, mode, mip_maps, filter, flags))
    {
       Str s="Can't copy Image";
       if(!CanCompress((IMAGE_TYPE)type))s+="\n'SupportCompress*' function was not called";
@@ -2317,7 +2317,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
 
       Bool  alt_type_on_fail=FlagOff(flags, IC_NO_ALT_TYPE),
             env=(FlagOn(flags, IC_ENV_CUBE) && mip_maps>1);
-      Image temp; if(temp.createTry(size, size, 1, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail)) // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
+      Image temp; if(temp.create(size, size, 1, env ? ImageTypeUncompressed(IMAGE_TYPE(type)) : IMAGE_TYPE(type), env ? IMAGE_SOFT_CUBE : IMAGE_MODE(mode), mip_maps, alt_type_on_fail)) // 'env'/'blurCubeMipMaps' requires uncompressed/soft image
       {
          if(layout==CUBE_LAYOUT_ONE)
          {
@@ -2325,7 +2325,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
          }else
          {
           C Image *s=&src;
-            Image  decompressed; if(src.compressed()){if(!src.copyTry(decompressed, -1, -1, -1, ImageTypeUncompressed(src.type()), IMAGE_SOFT, 1))return false; s=&decompressed;}
+            Image  decompressed; if(src.compressed()){if(!src.copy(decompressed, -1, -1, -1, ImageTypeUncompressed(src.type()), IMAGE_SOFT, 1))return false; s=&decompressed;}
             Image  face; // keep outside the loop in case we can reuse it
             REP(6)
             {
@@ -2362,7 +2362,7 @@ Bool Image::fromCube(C Image &src, Int uncompressed_type)
 
       // extract 6 faces
       Int   size=src.h();
-      Image temp; if(!temp.createTry(size*6, size, 1, type, IMAGE_SOFT, 1))return false;
+      Image temp; if(!temp.create(size*6, size, 1, type, IMAGE_SOFT, 1))return false;
       if(temp.lock(LOCK_WRITE))
       {
          Image face; // keep outside the loop in case we can reuse it
@@ -2390,7 +2390,7 @@ Bool Image::fromCube(C Image &src, Int uncompressed_type)
          }
 
          temp.unlock();
-       //if(!temp.copyTry(temp, -1, -1, -1, type, IMAGE_SOFT))return false; skip this step to avoid unnecessary operations, this method uses 'uncompressed_type' instead of 'type'
+       //if(!temp.copy(temp, -1, -1, -1, type, IMAGE_SOFT))return false; skip this step to avoid unnecessary operations, this method uses 'uncompressed_type' instead of 'type'
          Swap(T, temp); return true;
       }
    }
@@ -2551,7 +2551,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                   if(lock==LOCK_WRITE)Alloc(_data, pitch2);else
                   {
                      // get from GPU
-                     Image temp; if(temp.createTry(PaddedWidth(hwW(), hwH(), mip_map, hwType()), PaddedHeight(hwW(), hwH(), mip_map, hwType()), 1, hwType(), IMAGE_STAGING, 1, false))
+                     Image temp; if(temp.create(PaddedWidth(hwW(), hwH(), mip_map, hwType()), PaddedHeight(hwW(), hwH(), mip_map, hwType()), 1, hwType(), IMAGE_STAGING, 1, false))
                      {
                         D3DC->CopySubresourceRegion(temp._txtr, D3D11CalcSubresource(0, 0, temp.mipMaps()), 0, 0, 0, _txtr, D3D11CalcSubresource(mip_map, cube_face, mipMaps()), null);
                         if(temp.lockRead())
@@ -3437,13 +3437,13 @@ Bool Image::capture(C ImageRT &src)
       SyncLocker locker(D._lock);
       if(src.multiSample())
       {
-         if(createTry(src.w(), src.h(), 1, src.hwType(), IMAGE_2D, 1, false))
+         if(create(src.w(), src.h(), 1, src.hwType(), IMAGE_2D, 1, false))
          {
             D3DC->ResolveSubresource(_txtr, 0, src._txtr, 0, src.hwTypeInfo().format);
             return true;
          }
       }else
-      if(createTry(PaddedWidth(src.hwW(), src.hwH(), 0, src.hwType()), PaddedHeight(src.hwW(), src.hwH(), 0, src.hwType()), 1, src.hwType(), IMAGE_STAGING, 1, false))
+      if(create(PaddedWidth(src.hwW(), src.hwH(), 0, src.hwType()), PaddedHeight(src.hwW(), src.hwH(), 0, src.hwType()), 1, src.hwType(), IMAGE_STAGING, 1, false))
       {
          D3DC->CopySubresourceRegion(_txtr, D3D11CalcSubresource(0, 0, mipMaps()), 0, 0, 0, src._txtr, D3D11CalcSubresource(0, 0, src.mipMaps()), null);
          return true;
@@ -3453,14 +3453,14 @@ Bool Image::capture(C ImageRT &src)
    if(src.lockRead())
    {
       Bool ok=false;
-      if(createTry(src.w(), src.h(), 1, src.hwType(), IMAGE_SOFT, 1, false))ok=src.copySoft(T, FILTER_NO_STRETCH);
+      if(create(src.w(), src.h(), 1, src.hwType(), IMAGE_SOFT, 1, false))ok=src.copySoft(T, FILTER_NO_STRETCH);
       src.unlock();
       return ok;
    }else
    {
       Bool depth=(src.hwTypeInfo().d>0);
       if( !depth || src.depthTexture())
-         if(createTry(src.w(), src.h(), 1, depth ? IMAGE_F32 : src.hwType(), IMAGE_RT, 1, false))
+         if(create(src.w(), src.h(), 1, depth ? IMAGE_F32 : src.hwType(), IMAGE_RT, 1, false))
       {
          ImageRT temp; Swap(T, SCAST(Image, temp)); // we can do a swap because on OpenGL 'ImageRT' doesn't have anything extra, this swap is only to allow 'capture' to be a method of 'Image' instead of having to use 'ImageRT'
          {SyncLocker locker(D._lock); src.copyHw(temp, true);}

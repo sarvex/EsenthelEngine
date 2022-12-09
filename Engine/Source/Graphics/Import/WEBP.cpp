@@ -42,7 +42,7 @@ Bool Image::ImportWEBP(File &f)
                   type                     =IMAGE_R8G8B8_SRGB;
                   output_buffer->colorspace=MODE_RGB;
                }
-               if(createSoftTry(bitstream->width, bitstream->height, 1, type))
+               if(createSoft(bitstream->width, bitstream->height, 1, type))
                {
                   output_buffer->is_external_memory=true;
                   output_buffer->u.RGBA.stride=pitch ();
@@ -61,7 +61,7 @@ Bool Image::ImportWEBP(File &f)
 Bool Image::ImportWEBP(C Str &name)
 {
 #if SUPPORT_WEBP
-   File f; if(f.readTry(name))return ImportWEBP(f);
+   File f; if(f.read(name))return ImportWEBP(f);
 #endif
    del(); return false;
 }
@@ -80,7 +80,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
  C Image *src=this;
    Image  temp;
    if(src->cube  ()                                                      )if(temp.fromCube(*src ,             IMAGE_B8G8R8A8_SRGB               ))src=&temp;else return false;
-   if(src->hwType()!=IMAGE_B8G8R8A8 && src->hwType()!=IMAGE_B8G8R8A8_SRGB)if(src->copyTry ( temp, -1, -1, -1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return false; // WEBP uses BGRA
+   if(src->hwType()!=IMAGE_B8G8R8A8 && src->hwType()!=IMAGE_B8G8R8A8_SRGB)if(src->copy    ( temp, -1, -1, -1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return false; // WEBP uses BGRA
 
    if(src->w()<=WEBP_MAX_DIMENSION
    && src->h()<=WEBP_MAX_DIMENSION)
@@ -117,11 +117,11 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          picture.argb_stride  =src->pitch()/src->bytePP(); // in pixel units
       #else // YUVA, this didn't improve the quality, we could use it mainly if we had the source already in YUV format
          Image Y, U, V, A;
-         Y.createSoftTry(src->w(), src->h(), 1, IMAGE_L8);
-         U.createSoftTry(src->w(), src->h(), 1, IMAGE_L8);
-         V.createSoftTry(src->w(), src->h(), 1, IMAGE_L8);
+         Y.createSoft(src->w(), src->h(), 1, IMAGE_L8);
+         U.createSoft(src->w(), src->h(), 1, IMAGE_L8);
+         V.createSoft(src->w(), src->h(), 1, IMAGE_L8);
          if(src->typeInfo().a)
-            if(src->copyTry(A, -1, -1, -1, IMAGE_A8, IMAGE_SOFT, 1))
+            if(src->copy(A, -1, -1, -1, IMAGE_A8, IMAGE_SOFT, 1))
          {
             picture.a       =(uint8_t*)A.data();
             picture.a_stride=A.pitch()/A.bytePP(); // in pixel units
@@ -156,7 +156,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
 Bool Image::ExportWEBP(C Str &name, Flt rgb_quality, Flt alpha_quality)C
 {
 #if SUPPORT_WEBP
-   File f; if(f.writeTry(name)){if(ExportWEBP(f, rgb_quality, alpha_quality) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(ExportWEBP(f, rgb_quality, alpha_quality) && f.flush())return true; f.del(); FDelFile(name);}
 #endif
    return false;
 }
