@@ -2790,6 +2790,13 @@ void EncodeFileName(Str &dest, CPtr src, Int size)
    end:;
    }
 }
+/******************************************************************************
+Str  EncodeFileName64(             CPtr src , Int size); // encode 'src' binary data of 'size' size, into        string which can be used as a file name
+void EncodeFileName64(  Str &dest, CPtr src , Int size); // encode 'src' binary data of 'size' size, into 'dest' string which can be used as a file name
+
+T1(TYPE) Str  EncodeFileName64(             C TYPE &elm) {return EncodeFileName64(      &elm, SIZE(elm));}
+T1(TYPE) void EncodeFileName64(  Str &dest, C TYPE &elm) {return EncodeFileName64(dest, &elm, SIZE(elm));}
+
 Str  EncodeFileName64(           CPtr src, Int size) {Str dest; EncodeFileName64(dest, src, size); return dest;}
 void EncodeFileName64(Str &dest, CPtr src, Int size)
 {

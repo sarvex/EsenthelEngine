@@ -256,14 +256,6 @@ T1(TYPE) Bool DecodeFileName(C Str &src ,   TYPE &elm) {return DecodeFileName(sr
          Bool DecodeFileName(CChar *src ,   UID  &elm);                                     // UID optimized version
   inline Bool DecodeFileName(C Str &src ,   UID  &elm) {return DecodeFileName(src(), elm);} // UID optimized version
 
-#if EE_PRIVATE // these are in different format
-Str  EncodeFileName64(             CPtr src , Int size); // encode 'src' binary data of 'size' size, into        string which can be used as a file name
-void EncodeFileName64(  Str &dest, CPtr src , Int size); // encode 'src' binary data of 'size' size, into 'dest' string which can be used as a file name
-
-T1(TYPE) Str  EncodeFileName64(             C TYPE &elm) {return EncodeFileName64(      &elm, SIZE(elm));}
-T1(TYPE) void EncodeFileName64(  Str &dest, C TYPE &elm) {return EncodeFileName64(dest, &elm, SIZE(elm));}
-#endif
-
 UID FileNameID(C Str &name); // convert base of 'name' (obtained using 'GetBase') to ID using 'DecodeFileName', 'UIDZero' on fail, this works like "UID id; DecodeFileName(GetBase(name), id); return id;"
 
 Str  EncodeRaw(              CPtr src , Int size); // encode 'src' binary data of 'size' size, into        string, this is the most efficient encoding (2-bytes per character), warning: string may contain '\0' null characters
