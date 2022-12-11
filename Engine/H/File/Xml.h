@@ -99,7 +99,10 @@ struct TextParam
 
    TextParam& clear() {name.clear(); value.clear(); return T;}
    TextParam& del  () {name.del  (); value.del  (); return T;}
-   
+
+   Bool operator==(C TextParam &tp)C {return name==tp.name && value==tp.value;}
+   Bool operator!=(C TextParam &tp)C {return name!=tp.name || value!=tp.value;}
+
             TextParam() {}
    explicit TextParam(C Str &name, C Str &value=S) {set(name, value);}
 };
@@ -126,6 +129,9 @@ struct TextNode : TextParam
    Char loadJSON(FileText &f, Bool just_values, Char first_char);
    Char loadYAML(FileText &f, Bool just_values, Char first_char, const Int node_spaces, Int &cur_spaces);
 #endif
+
+   Bool operator==(C TextNode &tn)C {return super::operator==(tn) && nodes==tn.nodes;}
+   Bool operator!=(C TextNode &tn)C {return super::operator!=(tn) || nodes!=tn.nodes;}
 
    TextNode() {}
    TextNode(C XmlNode &xml); // create from 'XmlNode'
@@ -160,6 +166,9 @@ struct TextData
 
    Bool loadYAML(C Str    &name, const_mem_addr Cipher *cipher=null); // load from file in YAML format, false on fail, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
    Bool loadYAML(FileText &f                                       ); // load from file in YAML format, false on fail, 'f' file should be already opened for reading
+
+   Bool operator==(C TextData &td)C {return nodes==td.nodes;}
+   Bool operator!=(C TextData &td)C {return nodes!=td.nodes;}
 
    TextData() {}
    TextData(C XmlData &xml); // create from 'XmlData'
