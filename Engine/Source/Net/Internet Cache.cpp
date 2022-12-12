@@ -51,6 +51,7 @@ void InternetCache::flush()
 }
 void InternetCache::del()
 {
+   got=null;
    App._callbacks.exclude(ICUpdate, T);
    REPAO(_downloading).del();
    if(_threads)REPA(_import_images)_threads->cancel(_import_images[i], ImportImageFunc, T); // cancel importing
@@ -168,6 +169,7 @@ void InternetCache::update()
       if(ii.done)
       {
          Swap(*ii.image_ptr, ii.image_temp);
+         if(got)got(ii.image_ptr);
         _import_images.removeValid(i);
       }
    }

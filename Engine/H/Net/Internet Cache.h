@@ -11,6 +11,8 @@ struct InternetCache
       SrcFile() {clear();}
    };
 
+   void (*got)(C ImagePtr &image)=null; // pointer to custom function called when cache has finished downloading and importing an image
+
    // manage
    void del   (); // delete manually
    void create(C Str &db_name, const_mem_addr Threads *threads=null, const_mem_addr Cipher *cipher=null, COMPRESS_TYPE compress=COMPRESS_LZ4, Int image_mip_maps=-1); // create, 'db_name'=file name where the database will be located, 'threads'=worker threads that will import the images (if null then importing will be done on the main thread), 'cipher'=database file encryption, 'compress'=database file compression, 'image_mip_maps'=number of mip maps to be created when importing images (-1..Inf, -1=keep original value, 0=autodetect)
