@@ -977,7 +977,7 @@ Bool ExtractTry(File &f, C ZipFile &zip_file, C Str &dest, DateTime *utc)
 }
 Bool ExtractTry(C Str &name)
 {
-   File f; if(f.readStdTry(name))
+   File f; if(f.readStd(name))
    {
       Memt<ZipFile> files; if(ParseZip(f, files))
       {
