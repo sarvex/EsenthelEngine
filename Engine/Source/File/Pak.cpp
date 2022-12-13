@@ -1398,7 +1398,7 @@ struct PakCreator
          {
             // wait until there's memory available
             Long mem_needed= // estimate memory needed for this file
-            (  
+            (
            Long(  decompress                                                   ? dest.data_size+DecompressionMemUsage(dest.compression, 255, dest.data_size) : 0)
               +(try_compress                                                   ? dest.data_size                                                              : 0)
               +((set_hash && dest.compression && !decompress && !try_compress) ? dest.data_size                                                              : 0) // if we need to set hash, but the file is compressed, then we will have to decompress it first to temp memory, we don't need to do this if we already decompress or compress because we can calculate hash over there too
