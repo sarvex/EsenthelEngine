@@ -211,6 +211,7 @@ struct Pak;
 struct PakSet;
 struct PakProgress;
 struct PakInPlace;
+struct PakPostHeader;
 struct PakNode;
 struct PakFileData;
 struct TextNode;

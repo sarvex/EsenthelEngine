@@ -1134,7 +1134,7 @@ struct PakCreator
                     data_name; // can come from STD
     C DataSource   *data     ; // can come from NODE
       File          processed; // this is processed file data (that was decompressed/compressed and ready to use)
-      // !! clear values in 'set' instead of constructor !!
+      // !! clear values in 'set', 'setPostHeader' instead of constructor !!
 
       Bool needHash      ()C {return data_xxHash64_32==0                      && data_size>                     0;} // we need hash only if it wasn't set yet, if hash is already set, then we don't need it
       Bool needCompress  ()C {return    compress_mode==COMPRESS_ENABLE        && data_size>=MIN_COMPRESSABLE_SIZE;} // if file wants to be compressed and compressing may reduce its size
@@ -1153,6 +1153,11 @@ struct PakCreator
          if(temp.read(data_name, src_cipher))f=&temp               ;
          if(f)f->pos(0);
          return f;
+      }
+      void setPostHeader(PakCreator &pc)
+      { // 'name' must be empty because we put post header first in pak files, so this must be correct with files being sorted by names, for Pak.find to work
+         reset(); ready=false; compress_mode=COMPRESS_DISABLE; data=null; // disable compression because post header is meant to be read manually after header
+         pc.names_elms++; pc.root_files++; // pc.names_elms+=name.length()+1; if(parent<0)pc.root_files++;
       }
       Bool set(C FileTemp &ft, Int parent_index, PakCreator &pc)
       {
@@ -1516,7 +1521,19 @@ struct PakCreator
       return pos;
    }
 
-   Bool create(C Str &pak_name, Cipher *cipher)
+   Bool savePostHeader(File &f, PakPostHeader *post_header)
+   {
+      if(post_header)
+      {
+         File &data=files[0].processed; if(data.size())
+         {
+            if(pak._cipher_per_file)f.cipherOffsetClear(); // make encryption result always the same regardless of position in Pak file
+            return data.pos(0) && data.copy(f);
+         }
+      }
+      return true;
+   }
+   Bool create(C Str &pak_name, Cipher *cipher, PakPostHeader *post_header)
    {
       // !! these are needed before any "goto error" !!
       File f_dest;
@@ -1543,7 +1560,8 @@ struct PakCreator
          Int  files_to_process          =0;
          UInt max_data_size_compress    =0;
          Long thread_mem_usage          =0,
-              data_offset               =PreHeaderSize()+header_data_size,
+              data_start                =PreHeaderSize()+header_data_size,
+              data_offset               =data_start,
               total_data_size_compressed=0, total_data_size_decompressed=0,
               decompressed_processed=0;
          FREPA(files)
@@ -1584,6 +1602,37 @@ struct PakCreator
          }
          DEBUG_ASSERT(names_elms==pak._names.elms(), "Pak names elms");
          DEBUG_ASSERT(root_files==pak._root_files  , "Pak root files");
+         if(post_header)
+         {
+            DEBUG_ASSERT(pak._files.elms(), "Pak post header");
+            PakFileEx &src =     files[0];
+            PakFile   &dest=pak._files[0];
+            DEBUG_ASSERT(!Is(dest.name) && !dest.data_size && !src.data, "Pak post header");
+            if(post_header->save)
+            {
+               File &data=src.processed;
+               post_header->save(data.writeMem(), pak, post_header->user);
+               if(auto data_size=data.size())
+               {
+                  header_data_size+=data_size; // for 'in_place' we write post header data manually after header, so we need space for it
+
+                        data_offset           +=data_size;
+                  total_data_size_compressed  +=data_size;
+                  total_data_size_decompressed+=data_size;
+
+                  dest.data_size=dest.data_size_compressed=
+                  src .data_size=src .data_size_compressed=data_size;
+                  dest.data_offset                        =data_start; // at the start, right after header
+
+                  REP(pak._files.elms()-1) // adjust all other files offset (excluding post header)
+                  {
+                     PakFile &file=pak._files[i+1];
+                     if(file.data_size)file.data_offset+=data_size;
+                  }
+                //if(pak_flag&PAK_SET_HASH){data.pos(0); dest.data_xxHash64_32=src.data_xxHash64_32=data.xxHash64_32();} // calc manually to avoid 'header_changed', better do it on another thread
+               }
+            }
+         }
 
          if(progress && progress->wantStop(error_message))goto error;
 
@@ -1681,6 +1730,8 @@ struct PakCreator
 
                         if(in_place)
                         {
+                           if(post_header && !i)continue; // for 'in_place' we write post header data manually after header
+
                            // find place to store the new file
                            if(!f_dest.pos(posForWrite(dest.data_size_compressed))){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
                            dest.data_offset=f_dest.posAbs()-pak._data_offset;
@@ -1717,8 +1768,8 @@ struct PakCreator
                {
                   if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
                   Long header_data_pos=posForWrite(header_data_size);
-                  if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
-                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
+                  if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !savePostHeader(f_dest, post_header) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
+                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                         !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
                }else
                if(header_changed) // if during file processing, the header was changed, then we need to resave it
@@ -1783,10 +1834,10 @@ Bool Pak::create(C CMemPtr<Str> &files, C Str &pak_name, UInt flag, Cipher *dest
    }
 
    // create
-   return pc.create(pn, dest_cipher);
+   return pc.create(pn, dest_cipher, null);
 }
-Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress) {return create(files, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null);}
-Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place)
+Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress) {return create(files, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null, null);}
+Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
 {
    if(progress && progress->wantStop(error_message))return false;
    // !! don't delete Pak anywhere here because we still need 'pak_name' which can be a Pak member !!
@@ -1796,6 +1847,7 @@ Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *
    PakCreator::FileTempContainer ftc; FREPA(files)ftc.add(files[i]); ftc.sort();
 
    // add files
+   if(post_header)pc.files.New().setPostHeader(pc); // !! POST HEADER MUST BE ADDED FIRST, codes assume that it's at #0 index, this will also guarantee its data is right after the header !!
    if(FlagOn(flag, PAK_SHORTEN) && ftc.files.elms()==1 && ftc.files[0].isDir())pc.enter(ftc.files[0], -1, null);else
    {
       FREPA(ftc.files)pc.add  (ftc.files[i], -1      );
@@ -1803,7 +1855,7 @@ Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *
    }
 
    // create
-   return pc.create(pak_name, dest_cipher); // !! Warning: 'pak_name' can be a Pak member !!
+   return pc.create(pak_name, dest_cipher, post_header); // !! Warning: 'pak_name' can be a Pak member !!
 }
 /******************************************************************************/
 // TODO: use binarySearch, make sure Editor passes files sorted in order and that name from UID is sorted too
@@ -1834,7 +1886,7 @@ static Memb<PakNode>& GetNodeChildren(Memb<PakNode> &nodes, C Str &path, DateTim
 
    return GetNodeChildren(node->children, GetStartNot(path), date_time_utc);
 }
-Bool Pak::create(C Mems<C PakFileData*> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place)
+Bool Pak::create(C Mems<C PakFileData*> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
 {
    DateTime      date_time_utc; date_time_utc.getUTC();
    Memb<PakNode> nodes;
@@ -1876,13 +1928,13 @@ Bool Pak::create(C Mems<C PakFileData*> &files, C Str &pak_name, UInt flag, Ciph
    }
 
    // create according to created nodes
-   return create(nodes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, in_place);
+   return create(nodes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, in_place, post_header);
 }
-Bool Pak::create(C CMemPtr<PakFileData> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress) {return create(files, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null);}
-Bool Pak::create(C CMemPtr<PakFileData> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place)
+Bool Pak::create(C CMemPtr<PakFileData> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress) {return create(files, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null, null);}
+Bool Pak::create(C CMemPtr<PakFileData> &files, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
 {
    Mems<C PakFileData*> f; f.setNum(files.elms()); REPAO(f)=&files[i];
-   return create(f, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, in_place);
+   return create(f, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, in_place, post_header);
 }
 /******************************************************************************/
 // MAIN
@@ -1902,7 +1954,7 @@ static Bool CheckInPlaceSettings(C Pak &src_pak, Cipher *dest_cipher, Str *error
    if(src_pak._cipher_per_file!=CipherPerFile() && (src_pak._file_cipher || dest_cipher)){if(error_message)*error_message="Can't update Pak in-place because CipherPerFile doesn't match"; return false;}
    return true;
 }
-static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place)
+static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
 {
    if(error_message)error_message->clear();
    // !! Here don't try to skip update if 'changes' are empty, because even if 'src_pak' file name is the same as 'pak_name' we may still want to recreate it, to optimize it (if it's unoptimized, has holes), or to just update to latest Pak file format !!
@@ -1948,7 +2000,7 @@ static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak
    // create Pak basing on all files
    Pak  temp; temp.pakFileName(pak_name); // this will normalize and make full path, we need the full name to make the comparison
    Bool temp_file=(!in_place && EqualPath(src_pak.pakFileName(), temp.pakFileName()) && temp.pakFileName().is()); // if dest name is the same as source name, then we have to write to a temporary file (but ignore if the name is empty, perhaps it wants to update Pak object only without operating on files)
-   if(  temp.create(all_files, temp_file ? temp.pakFileName()+"@new" : temp.pakFileName(), flag, dest_cipher, compress, compression_level, error_message, progress, in_place)) // have to work on a temporary Pak, because during creation we may access files from the old Pak
+   if(  temp.create(all_files, temp_file ? temp.pakFileName()+"@new" : temp.pakFileName(), flag, dest_cipher, compress, compression_level, error_message, progress, in_place, post_header)) // have to work on a temporary Pak, because during creation we may access files from the old Pak
    {
       if(temp_file) // if we've created a temp file, we need to rename it first
       {
@@ -1965,7 +2017,7 @@ static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak
 }
 Bool PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
 {
-   return _PakUpdate(src_pak, changes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null);
+   return _PakUpdate(src_pak, changes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null, null);
 }
 Bool PakUpdateInPlace(C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
 {
@@ -1977,11 +2029,11 @@ Bool PakUpdateInPlace(C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt fla
    switch(src_pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
    {
       default                : if(error_message)*error_message="Failed to load Pak"; return false;
-      case PAK_LOAD_NOT_FOUND:                                                                        return src_pak.create(         changes, pak_name, flag, cipher, compress, compression_level, error_message, progress           ); // create as new
-      case PAK_LOAD_OK       : if(!CheckInPlaceSettings(src_pak, cipher, error_message))return false; return     _PakUpdate(src_pak, changes, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place); // update in place
+      case PAK_LOAD_NOT_FOUND:                                                                        return src_pak.create(         changes, pak_name, flag, cipher, compress, compression_level, error_message, progress                 ); // create as new
+      case PAK_LOAD_OK       : if(!CheckInPlaceSettings(src_pak, cipher, error_message))return false; return     _PakUpdate(src_pak, changes, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place, null); // update in place
    }
 }
-Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt flag, Cipher *cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
+Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt flag, Cipher *cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakPostHeader *post_header)
 {
    if(error_message)error_message->clear();
 
@@ -1990,7 +2042,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
    switch(src_pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
    {
       default                : if(error_message)*error_message="Failed to load Pak"; return false;
-      case PAK_LOAD_NOT_FOUND: return src_pak.create(new_files, pak_name, flag, cipher, compress, compression_level, error_message, progress); // create as new
+      case PAK_LOAD_NOT_FOUND: return src_pak.create(new_files, pak_name, flag, cipher, compress, compression_level, error_message, progress, null, post_header); // create as new
       case PAK_LOAD_OK       :
       {
          if(!CheckInPlaceSettings(src_pak, cipher, error_message))return false;
@@ -2016,7 +2068,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
          }
 
          // check if we have anything to update
-         if(!changed) // we can potentially skip only if we're sure nothing was changed
+         if(!changed && !post_header) // we can potentially skip only if we're sure nothing was changed, 'post_header' is created dynamically so have to skip equal check
          {
             if(flag&PAK_SET_HASH) // if want hash
                REPA(files){PakFileData &file=files[i]; if(!file.xxHash64_32 && file.mode==PakFileData::REPLACE && file.data.type)goto skip_equal_check;} // at least one file doesn't have hash
@@ -2024,7 +2076,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
          skip_equal_check:;
          }
 
-         Pak temp; if(temp.create(files, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place)) // update in place
+         Pak temp; if(temp.create(files, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place, post_header)) // update in place
          {
             Swap(temp, src_pak);
             return true;
