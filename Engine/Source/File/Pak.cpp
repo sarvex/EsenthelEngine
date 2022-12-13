@@ -1157,7 +1157,7 @@ struct PakCreator
       Bool set(C FileTemp &ft, Int parent_index, PakCreator &pc)
       {
          reset(); ready=false; compress_mode=COMPRESS_ENABLE; data=null;
-         T.parent=parent_index; if(parent<0)pc.root_files++;
+         parent=parent_index; if(parent<0)pc.root_files++;
          switch(ft.type)
          {
             default: return pc.setError("Invalid FileTemp.type");
@@ -1538,11 +1538,12 @@ struct PakCreator
          pak._data_decompressed.del();
          pak._data              =null;
 
+         auto header_data_size          =pak.headerDataSize(); // !! THIS RELIES ON PAK MEMBERS: '_root_files', '_names', '_files', etc. !!
               names_elms                =0; if(DEBUG)root_files=0;
          Int  files_to_process          =0;
          UInt max_data_size_compress    =0;
          Long thread_mem_usage          =0,
-              data_offset               =PreHeaderSize()+pak.headerDataSize(), // !! THIS RELIES ON PAK MEMBERS: '_root_files', '_names', '_files', etc. !!
+              data_offset               =PreHeaderSize()+header_data_size,
               total_data_size_compressed=0, total_data_size_decompressed=0,
               decompressed_processed=0;
          FREPA(files)
@@ -1715,7 +1716,7 @@ struct PakCreator
                if(in_place)
                {
                   if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
-                  Long header_data_pos=posForWrite(pak.headerDataSize());
+                  Long header_data_pos=posForWrite(header_data_size);
                   if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
                   if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
