@@ -2008,7 +2008,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
                                               file.compressed       =src_file->compression;
                                               file.decompressed_size=src_file->data_size;
                if(!    file.      xxHash64_32)file.xxHash64_32      =src_file->data_xxHash64_32;else // only if not specified
-               if(!src_file->data_xxHash64_32)changed                =true; // if user specified hash that wasn't available in the source, then it means we have to write it
+               if(!src_file->data_xxHash64_32)changed               =true; // if user specified hash that wasn't available in the source, then it means we have to write it
                                               file.modify_time_utc  =src_file->modify_time_utc;
                                               file.data.set(*src_file, src_pak);
             }
