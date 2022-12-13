@@ -1521,14 +1521,16 @@ struct PakCreator
       return pos;
    }
 
-   Bool savePostHeader(File &f, PakPostHeader *post_header)
+   inline Bool savePostHeader(File &f, PakPostHeader *post_header, Int& cipher_offset) // use Int& as reference to make sure we operate on same original type
    {
       if(post_header)
       {
          File &data=files[0].processed; if(data.size())
          {
             if(pak._cipher_per_file)f.cipherOffsetClear(); // make encryption result always the same regardless of position in Pak file
-            return data.pos(0) && data.copy(f);
+            Bool ok=(data.pos(0) && data.copy(f));
+            if(pak._cipher_per_file)f.cipherOffset(cipher_offset); // restore 'cipherOffset' needed for 'savePreHeader'
+            return ok;
          }
       }
       return true;
@@ -1768,8 +1770,8 @@ struct PakCreator
                {
                   if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
                   Long header_data_pos=posForWrite(header_data_size);
-                  if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !savePostHeader(f_dest, post_header) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
-                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                         !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
+                  if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !savePostHeader(f_dest, post_header, f_dest_cipher_offset) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
+                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                                               !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
                }else
                if(header_changed) // if during file processing, the header was changed, then we need to resave it
