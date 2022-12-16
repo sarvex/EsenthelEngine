@@ -1306,6 +1306,7 @@ struct PakCreator
    Threads               threads;
    MemtN<Compressor, 16> compressors;
    MemPtr<DataRangeAbs>  used_file_ranges;
+   Memt  <DataRangeAbs>  used_file_ranges_temp;
 
    PakCreator(Pak &pak, UInt pak_flag, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, MemPtr<DataRangeAbs> used_file_ranges, COMPRESS_MODE (*CompressMode)(C Str &name)) : pak(pak)
    {
@@ -1340,7 +1341,7 @@ struct PakCreator
             write_pos=in_place->used_file_ranges.last().end;
          }
          MAX(write_pos, pre_header_size); // make sure we have room for pre-header, this is needed in case loading 'src_pak' failed
-         if(used_file_ranges)AddAbs(used_file_ranges, 0, pre_header_size);
+         if(used_file_ranges)AddAbs(used_file_ranges_temp, 0, pre_header_size);
       }
    }
 
@@ -1519,12 +1520,12 @@ struct PakCreator
          if(size>=best_hole->size)holes.removeData(best_hole); // if size filled entire hole, remove it
          else     best_hole->moveStart(size); // reduce hole size
          MAX(updated_size, pos+size);
-         if(used_file_ranges)AddRel(used_file_ranges, pos, size);
+         if(used_file_ranges)AddRel(used_file_ranges_temp, pos, size);
          return pos;
       }
       Long pos=write_pos;
       updated_size=(write_pos+=size); // no need for "MAX" because this will always be biggest
-      if(used_file_ranges)AddRel(used_file_ranges, pos, size);
+      if(used_file_ranges)AddRel(used_file_ranges_temp, pos, size);
       return pos;
    }
 
@@ -1718,7 +1719,7 @@ struct PakCreator
                      {
                         Long data_offset=src.data->pak->_data_offset+src.data->pak_file->data_offset;
                         dest.data_offset=data_offset-pak._data_offset;
-                        if(used_file_ranges)AddRel(used_file_ranges, data_offset, dest.data_size_compressed);
+                        if(used_file_ranges)AddRel(used_file_ranges_temp, data_offset, dest.data_size_compressed);
                         MAX(updated_size, data_offset+dest.data_size_compressed);
                      }else
                      {
@@ -1783,7 +1784,7 @@ struct PakCreator
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
                }else
                {
-                  if(used_file_ranges)AddAbs(used_file_ranges, 0, f_dest.pos());
+                  if(used_file_ranges)AddAbs(used_file_ranges_temp, 0, f_dest.pos());
                   if(header_changed) // if during file processing, the header was changed, then we need to resave it
                   {
                      if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
@@ -1793,6 +1794,10 @@ struct PakCreator
             }
          }
 
+         if(used_file_ranges)
+         {
+            used_file_ranges_temp.sort(); FREPA(used_file_ranges_temp){C DataRangeAbs &dr=used_file_ranges_temp[i]; AddAbs(used_file_ranges, dr.start, dr.end);} // process in order
+         }
          return true;
       }
 
