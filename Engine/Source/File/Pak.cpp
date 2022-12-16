@@ -302,7 +302,8 @@ static void AddAbs(Memt<DataRangeAbs> &ranges, Long start, Long end)
       ranges.New().set(start, end);
    }
 }
-static inline void AddRel(Memt<DataRangeAbs> &ranges, Long start, Long size) {AddAbs(ranges, start, start+size);}
+static inline void AddRel(MemPtr<DataRangeAbs> &ranges, Long start, Long size) {AddAbs(ranges, start, start+size);}
+static inline void AddRel(Memt  <DataRangeAbs> &ranges, Long start, Long size) {AddAbs(ranges, start, start+size);}
 
 static Bool FixCompressed(Pak &pak, File &f) // old versions stored compressed files with an extra header per file
 {
@@ -1304,6 +1305,7 @@ struct PakCreator
    SyncEvent             ready;
    Threads               threads;
    MemtN<Compressor, 16> compressors;
+   MemPtr<DataRangeAbs>  used_file_ranges;
 
    PakCreator(Pak &pak, UInt pak_flag, Cipher *src_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, COMPRESS_MODE (*CompressMode)(C Str &name)) : pak(pak)
    {
@@ -1337,6 +1339,7 @@ struct PakCreator
             write_pos=in_place->used_file_ranges.last().end;
          }
          MAX(write_pos, pre_header_size); // make sure we have room for pre-header, this is needed in case loading 'src_pak' failed
+         if(used_file_ranges)AddAbs(used_file_ranges, 0, pre_header_size);
       }
    }
 
@@ -1515,10 +1518,12 @@ struct PakCreator
          if(size>=best_hole->size)holes.removeData(best_hole); // if size filled entire hole, remove it
          else     best_hole->moveStart(size); // reduce hole size
          MAX(updated_size, pos+size);
+         if(used_file_ranges)AddRel(used_file_ranges, pos, size);
          return pos;
       }
       Long pos=write_pos;
       updated_size=(write_pos+=size); // no need for "MAX" because this will always be biggest
+      if(used_file_ranges)AddRel(used_file_ranges, pos, size);
       return pos;
    }
 
@@ -1712,6 +1717,7 @@ struct PakCreator
                      {
                         Long data_offset=src.data->pak->_data_offset+src.data->pak_file->data_offset;
                         dest.data_offset=data_offset-pak._data_offset;
+                        if(used_file_ranges)AddRel(used_file_ranges, data_offset, dest.data_size_compressed);
                         MAX(updated_size, data_offset+dest.data_size_compressed);
                      }else
                      {
@@ -1772,13 +1778,16 @@ struct PakCreator
                   if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
                   Long header_data_pos=posForWrite(header_data_size);
                   if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !savePostHeader(f_dest, post_header, f_dest_cipher_offset) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
-                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                                               !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after
+                  if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                                               !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after. 'used_file_ranges' was already adjusted in constructor
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
                }else
-               if(header_changed) // if during file processing, the header was changed, then we need to resave it
                {
-                  if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
-                  if(!f_dest.pos(0) || !pak.saveHeader(f_dest) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
+                  if(used_file_ranges)AddAbs(used_file_ranges, 0, f_dest.pos());
+                  if(header_changed) // if during file processing, the header was changed, then we need to resave it
+                  {
+                     if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
+                     if(!f_dest.pos(0) || !pak.saveHeader(f_dest) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
+                  }
                }
             }
          }
@@ -1788,7 +1797,7 @@ struct PakCreator
 
    error:
       stopThreads();
-      f_dest.del(); if(!in_place)FDelFile(pak.pakFileName()); pak.del(); // release the file handle first, then delete Pak file, then delete Pak object, this is important to avoid having partial incomplete Pak files (which headers could be OK, but the data is missing), we delete Pak object last because we need its file name to delete the file
+      f_dest.del(); if(!in_place)FDelFile(pak.pakFileName()); pak.del(); used_file_ranges.clear(); // release the file handle first, then delete Pak file, then delete Pak object, this is important to avoid having partial incomplete Pak files (which headers could be OK, but the data is missing), we delete Pak object last because we need its file name to delete the file
       return false;
    }
 };
