@@ -639,6 +639,7 @@ PAK_LOAD Pak::loadEx(C Str &name, Cipher *cipher, Long pak_offset, Long *expecte
 {
    if(expected_size)*expected_size=0;
    if(  actual_size)*  actual_size=0;
+   used_file_ranges.clear();
 
    PAK_LOAD result;
    File f; Bool processed; if(f.readEx(name, cipher, &processed))
@@ -1956,39 +1957,39 @@ static Bool CheckInPlaceSettings(C Pak &src_pak, Cipher *dest_cipher, Str *error
    if(src_pak._cipher_per_file!=CipherPerFile() && (src_pak._file_cipher || dest_cipher)){if(error_message)*error_message="Can't update Pak in-place because CipherPerFile doesn't match"; return false;}
    return true;
 }
-static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
+Bool Pak::update(C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakInPlace *in_place, PakPostHeader *post_header)
 {
    if(error_message)error_message->clear();
-   // !! Here don't try to skip update if 'changes' are empty, because even if 'src_pak' file name is the same as 'pak_name' we may still want to recreate it, to optimize it (if it's unoptimized, has holes), or to just update to latest Pak file format !!
+   // !! Here don't try to skip update if 'changes' are empty, because even if 'T' file name is the same as 'pak_name' we may still want to recreate it, to optimize it (if it's unoptimized, has holes), or to just update to latest Pak file format !!
 
-   // set 'src_pak' files as 'PakFileData'
-   Mems<PakFileData> src_files; // this container will include all files from 'src_pak' that weren't excluded (weren't replaced by newer versions from 'changes')
+   // set 'T' files as 'PakFileData'
+   Mems<PakFileData> src_files; // this container will include all files from 'T' that weren't excluded (weren't replaced by newer versions from 'changes')
    {
-      Memt<Bool> is; is.setNum(src_pak.totalFiles()); SetMem(is.data(), true, is.elms()); // set 'is' array specifying which files from 'src_pak' should be placed in target file
-      REPA(changes) // check all new elements (order is not important as we're comparing them to 'src_pak' files only)
+      Memt<Bool> is; is.setNum(totalFiles()); SetMem(is.data(), true, is.elms()); // set 'is' array specifying which files from 'T' should be placed in target file
+      REPA(changes) // check all new elements (order is not important as we're comparing them to 'T' files only)
       {
             C PakFileData &pfd=changes[i]; // take new element
-         if(C PakFile     *pf =src_pak.find(pfd.name, true)) // if there exists an original version (file in 'src_pak')
+         if(C PakFile     *pf =find(pfd.name, true)) // if there exists an original version (file in 'T')
          {
-            Int i=src_pak.files().index(pf); // take the index of file in 'src_pak'
-            is[i]=false; // exclude that file from 'src_pak' (instead of it, we'll use 'pfd' - the newer version from 'changes')
-            if(pfd.mode!=PakFileData::REPLACE)ExcludeChildren(src_pak, *pf, is); // if the newer version removes old file then we need to exclude also all children of 'pf' in 'src_pak'
+            Int i=files().index(pf); // take the index of file in 'T'
+            is[i]=false; // exclude that file from 'T' (instead of it, we'll use 'pfd' - the newer version from 'changes')
+            if(pfd.mode!=PakFileData::REPLACE)ExcludeChildren(T, *pf, is); // if the newer version removes old file then we need to exclude also all children of 'pf' in 'T'
          }
       }
       src_files.setNum(CountIs(is));
-      Int j=0; FREPA(src_pak)if(is[i])
+      Int j=0; FREPA(T)if(is[i])
       {
-       C PakFile     &pf =src_pak.file(i);
+       C PakFile     &pf =file(i);
          PakFileData &pfd=src_files[j++];
          pfd.mode             =(FlagOn(pf.flag, PF_REMOVED) ? PakFileData::MARK_REMOVED : PakFileData::REPLACE);
          pfd.type             =pf.type();
          pfd.compress_mode    =COMPRESS_KEEP_ORIGINAL; // keep source files in original compression (for example if a Sound file was requested to have no compression before, to speed up streaming playback, then let's keep it)
          pfd.compressed       =pf.compression;
          pfd.decompressed_size=pf.data_size;
-         pfd.name             =src_pak.fullName(i);
+         pfd.name             =fullName(i);
          pfd.xxHash64_32      =pf.data_xxHash64_32;
          pfd.modify_time_utc  =pf.modify_time_utc;
-         pfd.data.set(pf, src_pak);
+         pfd.data.set(pf, T);
       }
 
       // here 'is' is deleted
@@ -2001,53 +2002,54 @@ static Bool _PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak
 
    // create Pak basing on all files
    Pak  temp; temp.pakFileName(pak_name); // this will normalize and make full path, we need the full name to make the comparison
-   Bool temp_file=(!in_place && EqualPath(src_pak.pakFileName(), temp.pakFileName()) && temp.pakFileName().is()); // if dest name is the same as source name, then we have to write to a temporary file (but ignore if the name is empty, perhaps it wants to update Pak object only without operating on files)
+   Bool temp_file=(!in_place && EqualPath(pakFileName(), temp.pakFileName()) && temp.pakFileName().is()); // if dest name is the same as source name, then we have to write to a temporary file (but ignore if the name is empty, perhaps it wants to update Pak object only without operating on files)
    if(  temp.create(all_files, temp_file ? temp.pakFileName()+"@new" : temp.pakFileName(), flag, dest_cipher, compress, compression_level, error_message, progress, in_place, post_header)) // have to work on a temporary Pak, because during creation we may access files from the old Pak
    {
       if(temp_file) // if we've created a temp file, we need to rename it first
       {
-         if(!FRename(temp.pakFileName(), src_pak.pakFileName())) // if failed to rename
+         if(!FRename(temp.pakFileName(), pakFileName())) // if failed to rename
          {
             FDelFile(temp.pakFileName()); // delete the new file
-            return false; // return without updating 'src_pak'
+            return false; // return without updating 'T'
          }
-         Swap(temp._file_name, src_pak._file_name); // swap file names, because we need 'temp' to have the original file name, and 'src_pak' is going to be deleted so we don't care
+         Swap(temp._file_name, _file_name); // swap file names, because we need 'temp' to have the original file name, and 'T' is going to be deleted so we don't care
       }
-      Swap(src_pak, temp); return true;
+      Swap(T, temp); return true;
    } // no need to do anything because 'Pak.create' will delete the file on failure
    return false;
 }
-Bool PakUpdate(Pak &src_pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
+Bool PakUpdate(Pak &pak, C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *dest_cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
 {
-   return _PakUpdate(src_pak, changes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null, null);
+   return pak.update(changes, pak_name, flag, dest_cipher, compress, compression_level, error_message, progress, null, null);
 }
 Bool PakUpdateInPlace(C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Cipher *cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress)
 {
    if(error_message)error_message->clear();
    if(!changes.elms())return true; // if nothing to update then succeed
 
-   Pak                 src_pak;
-   PakInPlace in_place(src_pak);
-   switch(src_pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
+   Pak                 pak;
+   PakInPlace in_place(pak);
+   switch(pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
    {
       default                : if(error_message)*error_message="Failed to load Pak"; return false;
-      case PAK_LOAD_NOT_FOUND:                                                                        return src_pak.create(         changes, pak_name, flag, cipher, compress, compression_level, error_message, progress                 ); // create as new
-      case PAK_LOAD_OK       : if(!CheckInPlaceSettings(src_pak, cipher, error_message))return false; return     _PakUpdate(src_pak, changes, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place, null); // update in place
+      case PAK_LOAD_NOT_FOUND:                                                                    return pak.create(changes, pak_name, flag, cipher, compress, compression_level, error_message, progress                 ); // create as new
+      case PAK_LOAD_OK       : if(!CheckInPlaceSettings(pak, cipher, error_message))return false; return pak.update(changes, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place, null); // update in place
+   }
    }
 }
 Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt flag, Cipher *cipher, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakPostHeader *post_header)
 {
    if(error_message)error_message->clear();
 
-   Pak                 src_pak;
-   PakInPlace in_place(src_pak);
-   switch(src_pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
+   Pak                 pak;
+   PakInPlace in_place(pak);
+   switch(pak.loadEx(pak_name, cipher, 0, null, null, in_place.used_file_ranges))
    {
       default                : if(error_message)*error_message="Failed to load Pak"; return false;
-      case PAK_LOAD_NOT_FOUND: return src_pak.create(new_files, pak_name, flag, cipher, compress, compression_level, error_message, progress, null, post_header); // create as new
+      case PAK_LOAD_NOT_FOUND: return pak.create(new_files, pak_name, flag, cipher, compress, compression_level, error_message, progress, null, post_header); // create as new
       case PAK_LOAD_OK       :
       {
-         if(!CheckInPlaceSettings(src_pak, cipher, error_message))return false;
+         if(!CheckInPlaceSettings(pak, cipher, error_message))return false;
          Mems<PakFileData> files; files=new_files;
 
          Bool changed=false;
@@ -2056,7 +2058,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
             PakFileData &    file=    files[i];
           C PakFileData &new_file=new_files[i];
             if(file.mode==PakFileData::REPLACE && file.data.type) // if want to store some data
-               if(C PakFile *src_file=src_pak.find(file.name, false))
+               if(C PakFile *src_file=pak.find(file.name, false))
                   if(Equal(&file, src_file)) // if data is the same
             { // reuse from src
                                               file.compress_mode    =COMPRESS_KEEP_ORIGINAL; // keep source files in original compression (for example if a Sound file was requested to have no compression before, to speed up streaming playback, then let's keep it)
@@ -2065,7 +2067,7 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
                if(!    file.      xxHash64_32)file.xxHash64_32      =src_file->data_xxHash64_32;else // only if not specified
                if(!src_file->data_xxHash64_32)changed               =true; // if user specified hash that wasn't available in the source, then it means we have to write it
                                               file.modify_time_utc  =src_file->modify_time_utc;
-                                              file.data.set(*src_file, src_pak);
+                                              file.data.set(*src_file, pak);
             }
          }
 
@@ -2074,13 +2076,13 @@ Bool PakReplaceInPlace(C CMemPtr<PakFileData> &new_files, C Str &pak_name, UInt 
          {
             if(flag&PAK_SET_HASH) // if want hash
                REPA(files){PakFileData &file=files[i]; if(!file.xxHash64_32 && file.mode==PakFileData::REPLACE && file.data.type)goto skip_equal_check;} // at least one file doesn't have hash
-            if(PakEqual(files, src_pak))return true; // if nothing to update then succeed
+            if(PakEqual(files, pak))return true; // if nothing to update then succeed
          skip_equal_check:;
          }
 
          Pak temp; if(temp.create(files, pak_name, flag, cipher, compress, compression_level, error_message, progress, &in_place, post_header)) // update in place
          {
-            Swap(temp, src_pak);
+            Swap(temp, pak);
             return true;
          }
       }
