@@ -1791,6 +1791,14 @@ struct PakCreator
                {
                   if(pak._cipher_per_file)f_dest.cipherOffset(f_dest_cipher_offset); // reset the cipher offset here so that saving file header will use it
                   Long header_data_pos=posForWrite(header_data_size);
+                  if(post_header)
+                  {
+                     PakFile &post_header=pak._files[0]; // #PostHeaderFileIndex
+                     if(post_header.data_size_compressed)
+                        post_header.data_offset=header_data_pos+f_dest._offset // f_dest.posAbs() for 'header_data_pos'
+                                               -pak._data_offset
+                                               +(header_data_size-post_header.data_size_compressed); // 'header_data_size' includes: header data + post header. Subtract 'post_header.data_size_compressed' to get location of the post header
+                  }
                   if(!f_dest.pos(header_data_pos) || !pak.saveHeaderData(f_dest                 ) || !savePostHeader(f_dest, post_header, f_dest_cipher_offset) || !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
                   if(!f_dest.pos(              0) || !pak.savePreHeader (f_dest, header_data_pos) ||                                                               !f_dest.flush()){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;} // no need to adjust 'updated_size' for pre-header, as header data will always be after. 'used_file_ranges' was already adjusted in constructor
                       f_dest.size(updated_size); // trim to used data only, this can ignore checking for errors, as Pak will work with or without this call
