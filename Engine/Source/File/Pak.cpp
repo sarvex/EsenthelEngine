@@ -280,6 +280,10 @@ Bool Pak::saveHeader(File &f)C
 {
    return savePreHeader(f) && saveHeaderData(f);
 }
+static inline Bool Overlaps(C DataRangeAbs &range, Long start, Long end)
+{
+   return start<range.end && end>range.start;
+}
 static void AddAbs(MemPtr<DataRangeAbs> &ranges, Long start, Long end)
 {
    if(end>start)
@@ -287,6 +291,10 @@ static void AddAbs(MemPtr<DataRangeAbs> &ranges, Long start, Long end)
       if(ranges.elms())
       {
          auto &last=ranges.last(); if(last.end==start){last.end=end; return;}
+      #if DEBUG && 0
+         #pragma message("!! Warning: Use this only for debugging !!")
+         REPA(ranges)if(Overlaps(ranges[i], start, end))Break();
+      #endif
       }
       ranges.New().set(start, end);
    }
@@ -298,6 +306,10 @@ static void AddAbs(Memt<DataRangeAbs> &ranges, Long start, Long end)
       if(ranges.elms())
       {
          auto &last=ranges.last(); if(last.end==start){last.end=end; return;}
+      #if DEBUG && 0
+         #pragma message("!! Warning: Use this only for debugging !!")
+         REPA(ranges)if(Overlaps(ranges[i], start, end))Break();
+      #endif
       }
       ranges.New().set(start, end);
    }
