@@ -1533,7 +1533,7 @@ struct PakCreator
    {
       if(post_header)
       {
-         File &data=files[0].processed; if(data.size())
+         File &data=files[0].processed; if(data.size()) // #PostHeaderFileIndex
          {
             if(pak._cipher_per_file)f.cipherOffsetClear(); // make encryption result always the same regardless of position in Pak file
             Bool ok=(data.pos(0) && data.copy(f));
