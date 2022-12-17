@@ -1324,9 +1324,9 @@ struct PakCreator
       T.error_message       =error_message; if(error_message)error_message->clear();
       T.progress            =progress     ; if(progress     )progress     ->progress=0;
       T.in_place            =in_place;
-      T.used_file_ranges    =used_file_ranges; used_file_ranges.clear();
       T.CompressMode        =CompressMode;
       T.write_pos           =T.updated_size=0;
+      T.used_file_ranges.point(used_file_ranges.clear());
       if(in_place)
       {
          Int pre_header_size=PreHeaderSize();
@@ -1615,7 +1615,7 @@ struct PakCreator
          if(post_header)
          {
             DEBUG_ASSERT(pak._files.elms(), "Pak post header");
-            PakFileEx &src =     files[0];
+            PakFileEx &src =     files[0]; // #PostHeaderFileIndex
             PakFile   &dest=pak._files[0];
             DEBUG_ASSERT(!Is(dest.name) && !dest.data_size && !src.data, "Pak post header");
             if(post_header->save)
@@ -1634,9 +1634,9 @@ struct PakCreator
                   src .data_size=src .data_size_compressed=data_size;
                   dest.data_offset                        =data_start; // at the start, right after header
 
-                  REP(pak._files.elms()-1) // adjust all other files offset (excluding post header)
+                  REP(pak._files.elms()-1) // adjust all other files offset (excluding post header) #PostHeaderFileIndex
                   {
-                     PakFile &file=pak._files[i+1];
+                     PakFile &file=pak._files[i+1]; // #PostHeaderFileIndex
                      if(file.data_size)file.data_offset+=data_size;
                   }
                 //if(pak_flag&PAK_SET_HASH){data.pos(0); dest.data_xxHash64_32=src.data_xxHash64_32=data.xxHash64_32();} // calc manually to avoid 'header_changed', better do it on another thread
@@ -1741,7 +1741,7 @@ struct PakCreator
 
                         if(in_place)
                         {
-                           if(post_header && !i)continue; // for 'in_place' we write post header data manually after header
+                           if(post_header && !i)continue; // for 'in_place' we write post header data manually after header #PostHeaderFileIndex
 
                            // find place to store the new file
                            if(!f_dest.pos(posForWrite(dest.data_size_compressed))){if(error_message)*error_message=CantFlush(pak.pakFileName()); goto error;}
@@ -1865,7 +1865,7 @@ Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *
    PakCreator::FileTempContainer ftc; FREPA(files)ftc.add(files[i]); ftc.sort();
 
    // add files
-   if(post_header)pc.files.New().setPostHeader(pc); // !! POST HEADER MUST BE ADDED FIRST, codes assume that it's at #0 index, this will also guarantee its data is right after the header !!
+   if(post_header)pc.files.New().setPostHeader(pc); // !! POST HEADER MUST BE ADDED FIRST, codes assume that it's at #0 index, this will also guarantee its data is right after the header !! #PostHeaderFileIndex
    if(FlagOn(flag, PAK_SHORTEN) && ftc.files.elms()==1 && ftc.files[0].isDir())pc.enter(ftc.files[0], -1, null);else
    {
       FREPA(ftc.files)pc.add  (ftc.files[i], -1      );

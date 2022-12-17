@@ -332,9 +332,11 @@ struct PakInPlace
 };
 struct PakPostHeader
 {
-   Ptr user=null;
+   Ptr user;
 
-   void (*save)(File &f, C Pak &pak, Ptr user)=null;
+   void (*save)(File &f, C Pak &pak, Ptr user);
+
+   PakPostHeader(void (*save)(File &f, C Pak &pak, Ptr user)=null, Ptr user=null) : save(save), user(user) {}
 };
 #endif
 /******************************************************************************/
