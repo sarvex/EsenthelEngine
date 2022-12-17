@@ -1868,8 +1868,9 @@ Bool Pak::create(C CMemPtr<PakNode> &files, C Str &pak_name, UInt flag, Cipher *
    if(post_header)pc.files.New().setPostHeader(pc); // !! POST HEADER MUST BE ADDED FIRST, codes assume that it's at #0 index, this will also guarantee its data is right after the header !! #PostHeaderFileIndex
    if(FlagOn(flag, PAK_SHORTEN) && ftc.files.elms()==1 && ftc.files[0].isDir())pc.enter(ftc.files[0], -1, null);else
    {
-      FREPA(ftc.files)pc.add  (ftc.files[i], -1      );
-      FREPA(ftc.files)pc.enter(ftc.files[i],  i, null);
+      Int file_elms=pc.files.elms();
+      FREPA(ftc.files)pc.add  (ftc.files[i], -1               );
+      FREPA(ftc.files)pc.enter(ftc.files[i], file_elms+i, null);
    }
 
    // create
