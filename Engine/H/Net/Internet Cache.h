@@ -35,6 +35,8 @@ private:
    struct FileTime
    {
       Flt access_time, verify_time;
+
+      void zero() {access_time=-FLT_MAX; verify_time=INT_MIN;}
    };
    struct Downloaded : FileTime
    {

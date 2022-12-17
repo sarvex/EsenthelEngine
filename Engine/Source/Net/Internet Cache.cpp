@@ -122,7 +122,7 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
             {
                case 0:
                {
-                 _pak_files.setNum(_pak.totalFiles()); FREPA(_pak_files)
+                 _pak_files.setNumDiscard(_pak.totalFiles()); FREPA(_pak_files)
                   {
                      FileTime &file_time=_pak_files[i];
                      Flt access_time; Long verify_time; f.getMulti(access_time, verify_time);
@@ -137,6 +137,7 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
       }
       SrcFiles files; PakPostHeader post_header(SavePostHeader, &files);
      _pak.create(CMemPtr<PakFileData>(), name, 0, cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
+     _pak_files.setNumDiscard(_pak.totalFiles()); REPAO(_pak_files).zero();
    }
 }
 /******************************************************************************/
@@ -172,11 +173,7 @@ Bool InternetCache::flush()
                {
                   file.access_time=src->access_time;
                   file.verify_time=src->verify_time;
-               }else
-               {
-                  file.access_time=-FLT_MAX;
-                  file.verify_time= INT_MIN;
-               }
+               }else file.zero();
             }
          }else return false;
       }else
