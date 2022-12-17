@@ -2054,18 +2054,55 @@ Bool Pak::update(C CMemPtr<PakFileData> &changes, C Str &pak_name, UInt flag, Ci
    } // no need to do anything because 'Pak.create' will delete the file on failure
    return false;
 }
+Bool Pak::replace(Memb<DataRangeAbs> &used_file_ranges, C CMemPtr<PakFileData> &new_files, UInt flag, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakPostHeader *post_header)
+{
+   if(error_message)error_message->clear();
+
+   Mems<PakFileData> files(new_files.elms());
+   REPA(files)
+   {
+      PakFileData &file=files[i]; file=new_files[i];
+      if(file.mode==PakFileData::REPLACE && file.data.type) // if want to store some data
+         if(C PakFile *src_file=find(file.name, false))
+            if(Equal(&file, src_file)) // if data is the same
+      { // reuse from src
+                              file.compress_mode    =COMPRESS_KEEP_ORIGINAL; // keep source files in original compression (for example if a Sound file was requested to have no compression before, to speed up streaming playback, then let's keep it)
+                              file.compressed       =src_file->compression;
+                              file.decompressed_size=src_file->data_size;
+         if(!file.xxHash64_32)file.xxHash64_32      =src_file->data_xxHash64_32; // only if not specified
+                              file.modify_time_utc  =src_file->modify_time_utc;
+                              file.data.set(*src_file, T);
+      }
+   }
+
+   Memb<DataRangeAbs> temp_used_file_ranges;
+   Str temp_name=pakFileName(); if(temp_name.is())temp_name+="@new";
+   Pak temp; if(temp.create(files, temp_name, flag, _file_cipher, compress, compression_level, error_message, progress, null, temp_used_file_ranges, post_header))
+   {
+      if(!FRename(temp.pakFileName(), pakFileName())) // if failed to rename
+      {
+         FDelFile(temp.pakFileName()); // delete the new file
+         return false; // return without updating 'T'
+      }
+      Swap(temp._file_name, _file_name); // swap file names, because we need 'temp' to have the original file name, and 'T' is going to be deleted so we don't care
+
+      Swap(temp, T);
+      Swap(temp_used_file_ranges, used_file_ranges);
+      return true;
+   } // no need to do anything because 'Pak.create' will delete the file on failure
+   return false;
+}
 Bool Pak::replaceInPlace(Memb<DataRangeAbs> &used_file_ranges, C CMemPtr<PakFileData> &new_files, UInt flag, COMPRESS_TYPE compress, Int compression_level, Str *error_message, PakProgress *progress, PakPostHeader *post_header)
 {
    if(error_message)error_message->clear();
 
    if(!CheckInPlaceSettings(T, _file_cipher, error_message))return false;
-   Mems<PakFileData> files; files=new_files;
 
    Bool changed=false;
+   Mems<PakFileData> files(new_files.elms());
    REPA(files)
    {
-      PakFileData &    file=    files[i];
-    C PakFileData &new_file=new_files[i];
+      PakFileData &file=files[i]; file=new_files[i];
       if(file.mode==PakFileData::REPLACE && file.data.type) // if want to store some data
          if(C PakFile *src_file=find(file.name, false))
             if(Equal(&file, src_file)) // if data is the same
