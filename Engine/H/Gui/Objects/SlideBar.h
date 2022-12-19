@@ -12,6 +12,12 @@ enum SLIDEBAR_BUTTON : Byte
    SB_LEFT_UP   ,
    SB_RIGHT_DOWN,
 };
+enum SCROLL : Byte
+{
+   SCROLL_STOP, // stop scroll
+   SCROLL_REL , // relative - keep scrolling by the same delta
+   SCROLL_ABS , // absolute - keep scrolling to the same target
+};
 const_mem_addr struct SlideBar : GuiObj // Gui SlideBar !! must be stored in constant memory address !!
 {
    Button                   button[3]; // 3 SLIDEBAR_BUTTON buttons
@@ -24,20 +30,20 @@ const_mem_addr struct SlideBar : GuiObj // Gui SlideBar !! must be stored in con
            SlideBar& create(C SlideBar &src );                              // create from 'src'
 
    // set / get
-   SlideBar&  setLengths  (Flt length, Flt length_total         );                                  // set, 'length'=covered length, 'length_total'=total length
-   SlideBar&  set         (Flt step  , SET_MODE mode=SET_DEFAULT);                                  // set slidebar step                 (0..1)
-   Flt        operator()  (                                     )C;                                 // get slidebar step                 (0..1)
-   Flt        wantedOffset(                                     )C;                                 // get slidebar offset target        (0..length_total-length), if slidebar is currently scrolling then this returns target offset
-   Flt              offset(                                     )C {return  _offset              ;} // get slidebar offset at the moment (0..length_total-length)
-   SlideBar&        offset(Flt offset, SET_MODE mode=SET_DEFAULT);                                  // set slidebar offset               (0..length_total-length)
-   Flt           maxOffset(                                     )C {return  _length_total-_length;} // get slidebar max possible offset
-   Flt         length     (                                     )C {return  _length              ;} // get slidebar length
-   Flt         lengthTotal(                                     )C {return  _length_total        ;} // get slidebar length total
-   Bool           vertical(                                     )C {return  _vertical            ;} // if  slidebar is   vertical
-   Bool         horizontal(                                     )C {return !_vertical            ;} // if  slidebar is horizontal
-   SlideBar&      skin    (C GuiSkinPtr &skin                   );                                  // set skin override, default=null (if set to null then current value of 'Gui.skin' is used), changing this value will automatically change the skin of the SlideBar buttons
- C GuiSkinPtr&    skin    (                                     )C {return _skin                 ;} // get skin override, default=null (if set to null then current value of 'Gui.skin' is used)
-   GuiSkin*    getSkin    (                                     )C {return _skin ? _skin() : Gui.skin();} // get actual skin
+   SlideBar&  setLengths  (Flt length, Flt length_total                                    );                                  // set, 'length'=covered length, 'length_total'=total length
+   SlideBar&  set         (Flt step  , SET_MODE mode=SET_DEFAULT, SCROLL scroll=SCROLL_STOP);                                  // set slidebar step                 (0..1)
+   Flt        operator()  (                                                                )C;                                 // get slidebar step                 (0..1)
+   Flt        wantedOffset(                                                                )C;                                 // get slidebar offset target        (0..length_total-length), if slidebar is currently scrolling then this returns target offset
+   Flt              offset(                                                                )C {return  _offset              ;} // get slidebar offset at the moment (0..length_total-length)
+   SlideBar&        offset(Flt offset, SET_MODE mode=SET_DEFAULT, SCROLL scroll=SCROLL_STOP);                                  // set slidebar offset               (0..length_total-length)
+   Flt           maxOffset(                                                                )C {return  _length_total-_length;} // get slidebar max possible offset
+   Flt         length     (                                                                )C {return  _length              ;} // get slidebar length
+   Flt         lengthTotal(                                                                )C {return  _length_total        ;} // get slidebar length total
+   Bool           vertical(                                                                )C {return  _vertical            ;} // if  slidebar is   vertical
+   Bool         horizontal(                                                                )C {return !_vertical            ;} // if  slidebar is horizontal
+   SlideBar&      skin    (C GuiSkinPtr &skin                                              );                                  // set skin override, default=null (if set to null then current value of 'Gui.skin' is used), changing this value will automatically change the skin of the SlideBar buttons
+ C GuiSkinPtr&    skin    (                                                                )C {return _skin                 ;} // get skin override, default=null (if set to null then current value of 'Gui.skin' is used)
+   GuiSkin*    getSkin    (                                                                )C {return _skin ? _skin() : Gui.skin();} // get actual skin
 
    Bool       atEnd(Flt eps=EPS)C {return       offset()+eps>=maxOffset();} // if slidebar is              at the end
    Bool wantedAtEnd(Flt eps=EPS)C {return wantedOffset()+eps>=maxOffset();} // if slidebar is wanted to be at the end
@@ -76,12 +82,11 @@ const_mem_addr struct SlideBar : GuiObj // Gui SlideBar !! must be stored in con
    virtual void    draw  (C GuiPC &gpc)override; // draw   object
 
 #if EE_PRIVATE
-   void      zero            ();
-   void      setButtonSubType();
-   void      setParams       ();
-   void      setButtonRect   ();
-   SlideBar& setOffset       (Flt offset, Bool stop=true, SET_MODE mode=SET_DEFAULT);
-   void      call            ();
+   void zero            ();
+   void setButtonSubType();
+   void setParams       ();
+   void setButtonRect   ();
+   void call            ();
 #endif
 
   ~SlideBar() {del();}
