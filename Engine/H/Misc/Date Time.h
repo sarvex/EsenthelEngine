@@ -3,6 +3,27 @@
    Use 'DateTime' to handle time and date information.
 
 /******************************************************************************/
+struct Date
+{
+   Byte  day  , // 1..31
+         month; // 1..12
+   Short year ;
+
+   // get
+   Bool valid ()C; // if  current date is valid
+   Int  days  ()C; // get    days since 1 January 0 year
+   Str  asText()C; // get date in text format "YYYY-MM-DD"
+
+   // set
+   Date& zero    (        ); // set date to zero
+   Date& getLocal(        ); // set from current Date (local time zone)
+   Date& getUTC  (        ); // set from current Date (UTC   time zone)
+   Date& incMonth(        ); // increase by 1 month
+   Date& decMonth(        ); // decrease by 1 month
+   Date& incDay  (        ); // increase by 1 day
+   Date& decDay  (        ); // decrease by 1 day
+   Date& fromText(C Str &t); // set date from text format "YYYY-MM-DD", 'zero' method is called on fail
+};
 struct DateTime
 {
    Byte second, // 0..59

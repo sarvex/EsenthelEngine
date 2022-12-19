@@ -65,6 +65,16 @@ static const Int MonthDaysAccumulated[12]=
 /******************************************************************************/
 // DATE TIME
 /******************************************************************************/
+Bool Date::valid()C
+{
+   if(day   >=1 && day   <=31
+   && month >=1 && month <=12)
+   {
+      if(day<=_MonthDays[month-1]             )return true;
+      if(month==2 && day==29 && LeapYear(year))return true;
+   }
+   return false;
+}
 Bool DateTime::valid()C
 {
    if(InRange(second, 60) // second>=0 && second<=59
@@ -78,6 +88,11 @@ Bool DateTime::valid()C
    }
    return false;
 }
+Int Date::days()C
+{
+    Int    leap_years=(year+3)/4 - 3*((year-1)/400) - ((year-1)%400)/100 + (LeapYear(year) && month>=3);
+    return year*365 + MonthDaysAccumulated[Mid(month, 1, 12)-1] + day-1 + leap_years; // each leap year has 1 extra day
+}
 Int DateTime::days()C
 {
     Int    leap_years=(year+3)/4 - 3*((year-1)/400) - ((year-1)%400)/100 + (LeapYear(year) && month>=3);
@@ -86,6 +101,13 @@ Int DateTime::days()C
 Long DateTime::seconds()C
 {
    return Long(days())*(60*60*24) + (hour*(60*60) + minute*60 + second);
+}
+Str Date::asText()C
+{
+   Char8  temp[256];
+   Str    s; s.reserve(4+1+2+1+2);
+   s+=TextInt(year, temp); s+='-'; s+=TextInt(month, temp, 2); s+='-'; s+=TextInt(day, temp, 2);
+   return s;
 }
 Str DateTime::asText(Bool include_seconds)C
 {
@@ -104,10 +126,26 @@ Str DateTime::asFileName(Bool include_seconds)C
    return s;
 }
 /******************************************************************************/
+Date      & Date      ::zero() {Zero(T); return T;}
 DateTime  & DateTime  ::zero() {Zero(T); return T;}
 DateTimeMs& DateTimeMs::zero() {Zero(T); return T;}
 
 #if !SWITCH
+Date& Date::getLocal()
+{
+#if WINDOWS
+   SYSTEMTIME time; GetLocalTime(&time);
+   day  =time.wDay;
+   month=time.wMonth;
+   year =time.wYear;
+#else
+   tm    t; time_t sec=time(null); localtime_r(&sec, &t);
+   year =t.tm_year+1900;
+   month=t.tm_mon+1;
+   day  =t.tm_mday;
+#endif
+   return T;
+}
 DateTime& DateTime::getLocal()
 {
 #if WINDOWS
@@ -153,6 +191,21 @@ DateTimeMs& DateTimeMs::getLocal()
    return T;
 }
 
+Date& Date::getUTC()
+{
+#if WINDOWS
+   SYSTEMTIME time; GetSystemTime(&time);
+   day  =time.wDay;
+   month=time.wMonth;
+   year =time.wYear;
+#else
+   tm    t; time_t sec=time(null); gmtime_r(&sec, &t);
+   year =t.tm_year+1900;
+   month=t.tm_mon+1;
+   day  =t.tm_mday;
+#endif
+   return T;
+}
 DateTime& DateTime::getUTC()
 {
 #if WINDOWS
@@ -291,14 +344,21 @@ DateTime& DateTime::toLocal()
 }
 #endif
 
-DateTime& DateTime::incMonth()
+Date    & Date    ::incMonth() {if(++month>12){month= 1; year++;} return T;}
+DateTime& DateTime::incMonth() {if(++month>12){month= 1; year++;} return T;}
+Date    & Date    ::decMonth() {if(--month<1 ){month=12; year--;} return T;}
+DateTime& DateTime::decMonth() {if(--month<1 ){month=12; year--;} return T;}
+
+Date& Date::incDay()
 {
-   if(++month>12){month=1; year++;}
-   return T;
-}
-DateTime& DateTime::decMonth()
-{
-   if(--month<1){month=12; year--;}
+   if(++day>28)
+   {
+      if(day>MonthDays(month, year))
+      {
+         day=1;
+         incMonth();
+      }
+   }
    return T;
 }
 DateTime& DateTime::incDay()
@@ -313,6 +373,16 @@ DateTime& DateTime::incDay()
    }
    return T;
 }
+
+Date& Date::decDay()
+{
+   if(day>1)day--;else
+   {
+      decMonth();
+      day=MonthDays(month, year); // set 'day' after having new 'month'
+   }
+   return T;
+}
 DateTime& DateTime::decDay()
 {
    if(day>1)day--;else
@@ -322,6 +392,7 @@ DateTime& DateTime::decDay()
    }
    return T;
 }
+
 DateTime& DateTime::incHour()
 {
    if(++hour>=24){hour=0; incDay();}
@@ -399,15 +470,29 @@ DateTime& DateTime::fromSeconds(Long s)
    day  =1+days;
    return T;
 }
+Date& Date::fromText(C Str &t)
+{
+   Memt<Str> date_time; Split(date_time, t, ' '); if(date_time.elms()>=1)
+   {
+      Memc<Str> date; Split(date, date_time[0], '-'); if(date.elms()==3)
+      {
+         year =TextInt(date[0]);
+         month=TextInt(date[1]);
+         day  =TextInt(date[2]);
+         return T;
+      }
+   }
+   return zero();
+}
 DateTime& DateTime::fromText(C Str &t)
 {
    Memt<Str> date_time; Split(date_time, t, ' '); if(date_time.elms()>=1)
    {
       Memc<Str> date; Split(date, date_time[0], '-'); if(date.elms()==3)
       {
-         year  =TextInt(date[0]);
-         month =TextInt(date[1]);
-         day   =TextInt(date[2]);
+         year =TextInt(date[0]);
+         month=TextInt(date[1]);
+         day  =TextInt(date[2]);
 
          Memc<Str> &time=date;
          if(date_time.elms()>=2)Split(time, date_time[1], ':');else time.clear();
