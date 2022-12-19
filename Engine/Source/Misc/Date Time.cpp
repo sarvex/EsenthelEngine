@@ -401,20 +401,19 @@ DateTime& DateTime::fromSeconds(Long s)
 }
 DateTime& DateTime::fromText(C Str &t)
 {
-   Memt<Str> date_time; Split(date_time, t, ' ');
-   if(date_time.elms()==2)
+   Memt<Str> date_time; Split(date_time, t, ' '); if(date_time.elms()>=1)
    {
-      Memc<Str> date, time;
-      Split(date, date_time[0], '-');
-      Split(time, date_time[1], ':');
-      if(date.elms()==3 && (time.elms()==2 || time.elms()==3))
+      Memc<Str> date; Split(date, date_time[0], '-'); if(date.elms()==3)
       {
          year  =TextInt(date[0]);
          month =TextInt(date[1]);
          day   =TextInt(date[2]);
-         hour  =TextInt(time[0]);
-         minute=TextInt(time[1]);
-         second=((time.elms()==3) ? TextInt(time[2]) : 0);
+
+         Memc<Str> &time=date;
+         if(date_time.elms()>=2)Split(time, date_time[1], ':');else time.clear();
+         hour  =(InRange(0, time) ? TextInt(time[0]) : 0);
+         minute=(InRange(1, time) ? TextInt(time[1]) : 0);
+         second=(InRange(2, time) ? TextInt(time[2]) : 0);
          return T;
       }
    }
