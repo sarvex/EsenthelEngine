@@ -23,6 +23,9 @@ struct Date
    Date& incDay  (        ); // increase by 1 day
    Date& decDay  (        ); // decrease by 1 day
    Date& fromText(C Str &t); // set date from text format "YYYY-MM-DD", 'zero' method is called on fail
+
+   Date() {}
+   Date(C DateTime &dt);
 };
 struct DateTime
 {

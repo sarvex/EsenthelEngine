@@ -65,10 +65,12 @@ static const Int MonthDaysAccumulated[12]=
 /******************************************************************************/
 // DATE TIME
 /******************************************************************************/
+Date::Date(C DateTime &dt) {day=dt.day; month=dt.month; year=dt.year;}
+
 Bool Date::valid()C
 {
-   if(day   >=1 && day   <=31
-   && month >=1 && month <=12)
+   if(day  >=1 && day  <=31
+   && month>=1 && month<=12)
    {
       if(day<=_MonthDays[month-1]             )return true;
       if(month==2 && day==29 && LeapYear(year))return true;
@@ -80,8 +82,8 @@ Bool DateTime::valid()C
    if(InRange(second, 60) // second>=0 && second<=59
    && InRange(minute, 60) // minute>=0 && minute<=59
    && InRange(hour  , 24) // hour  >=0 && hour  <=23
-   && day   >=1 && day   <=31
-   && month >=1 && month <=12)
+   && day  >=1 && day  <=31
+   && month>=1 && month<=12)
    {
       if(day<=_MonthDays[month-1]             )return true;
       if(month==2 && day==29 && LeapYear(year))return true;
