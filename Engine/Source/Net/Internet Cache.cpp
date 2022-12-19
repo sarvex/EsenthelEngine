@@ -49,7 +49,6 @@ struct SrcFile : PakFileData, InternetCache::FileTime
       type=pf.type(); compress_mode=COMPRESS_KEEP_ORIGINAL; compressed=pf.compression; decompressed_size=pf.data_size; compressed_size=pf.data_size_compressed; T.name=name; data.set(pf, pak); xxHash64_32=pf.data_xxHash64_32; modify_time_utc=pf.modify_time_utc; access_time=time.access_time; verify_time=time.verify_time; return T;
    }
 };
-typedef Memc<SrcFile> SrcFiles;
 
 static Int CompareName      (C SrcFile &a, C SrcFile &b) {return COMPARE(a.name       , b.name       );}
 static Int CompareName      (C SrcFile &a, C Str     &b) {return COMPARE(a.name       , b            );}
@@ -57,26 +56,35 @@ static Int CompareAccessTime(C SrcFile &a, C SrcFile &b) {return Compare(b.acces
 
 static void ICUpdate(InternetCache &ic);
 
-static void SavePostHeader(File &f, C Pak &pak, Ptr user)
+struct PostHeader : PakPostHeader
 {
-   f.putMulti(UInt(CC4_INCH), Byte(0)); // version
-   SrcFiles &files=*(SrcFiles*)user;
-   Dbl time=Time.curTime(); Long now=DateTime().getUTC().seconds(); // calculate times at same moment
-   FREPA(pak)
+   Memc<SrcFile>  files;
+   InternetCache &ic;
+
+   PostHeader(InternetCache &ic) : ic(ic) {}
+
+   virtual void save(File &f, C Pak &pak)override
    {
-      Flt  access_time; // store as relative to current time, it will be -Inf..0
-      Long verify_time; // store as absolute DateTime.seconds
-      if(C SrcFile *file=files.binaryFind(pak.fullName(i), CompareName))
+      f.putMulti(UInt(CC4_INCH), Byte(0)); // version
+      Dbl time=Time.curTime(); Long now=DateTime().getUTC().seconds(); // calculate times at same moment
+      FREPA(pak)
       {
-         access_time=       file->access_time-time;
-         verify_time=RoundL(file->verify_time-time)+now;
-      }else
-      {
-         access_time=-FLT_MAX; verify_time=0;
+         Flt  access_time; // store as relative to current time, it will be -Inf..0
+         Long verify_time; // store as absolute DateTime.seconds
+         if(C SrcFile *file=files.binaryFind(pak.fullName(i), CompareName))
+         {
+            access_time=       file->access_time-time;
+            verify_time=RoundL(file->verify_time-time)+now;
+         }else
+         {
+            access_time=-FLT_MAX; verify_time=0;
+         }
+         f.putMulti(access_time, verify_time);
       }
-      f.putMulti(access_time, verify_time);
+      if(ic._save)ic._save(f);
    }
-}
+};
+
 void InternetCache::del()
 {
    REPAO(_downloading).stop();
@@ -91,6 +99,7 @@ void InternetCache::del()
    }
 
    got=null;
+  _save=_load=null;
   _downloaded          .del();
   _import_images       .del();
   _to_download         .del();
@@ -102,13 +111,15 @@ void InternetCache::del()
 
    REPAO(_downloading).del();
 }
-void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRESS_TYPE compress)
+void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRESS_TYPE compress, void (*save)(File &f), void (*load)(File &f))
 {
    del();
 
    if(D.canUseGPUDataOnSecondaryThread())_threads=threads; // setup worker threads only if we can operate on GPU on secondary threads
   _compress      =compress;
 //_image_mip_maps=image_mip_maps;
+  _save=save;
+  _load=load;
    if(name.is())
    {
       File f; if(f.readStd(name, cipher))
@@ -129,13 +140,17 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
                      file_time.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
                      file_time.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
                   }
-                  if(f.ok())return;
+                  if(f.ok())
+                  {
+                     if(load)load(f);
+                     return;
+                  }
                }break;
             }
          }
         _pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear();
       }
-      SrcFiles files; PakPostHeader post_header(SavePostHeader, &files);
+      PostHeader post_header(T);
      _pak.create(CMemPtr<PakFileData>(), name, 0, cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
      _pak_files.setNumDiscard(_pak.totalFiles()); REPAO(_pak_files).zero();
    }
@@ -149,7 +164,7 @@ Bool InternetCache::flush()
       {
          if(_threads)REPA(_import_images)_threads->wait(_import_images[i], ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
 
-         SrcFiles files; Long file_size=0;
+         PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
          FREPA(_downloaded)                                                            file_size+=files.New().set(_downloaded.key(i), _downloaded[i]     ).compressed_size;
          FREPA(_pak       )if(i){Str name=_pak.fullName(i); if(!_downloaded.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
@@ -158,7 +173,6 @@ Bool InternetCache::flush()
             do{file_size-=files.last().compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
-         PakPostHeader post_header(SavePostHeader, &files);
 
          if(((_max_file_size<0 || FSize(_pak.pakFileName())/2<_max_file_size) // if pak size is smaller than 2x limit, allow some tolerance because 'replaceInPlace' does not generate compact paks but they may have holes
            && _pak.replaceInPlace(_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // replace in place
@@ -179,7 +193,7 @@ Bool InternetCache::flush()
       }else
       if(_max_mem_size>=0)
       {
-         SrcFiles files; Long size=0;
+         Memc<SrcFile> files; Long size=0;
          FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
          if(size>_max_mem_size) // limit mem size
          {

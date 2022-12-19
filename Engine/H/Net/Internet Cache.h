@@ -11,7 +11,7 @@ struct InternetCache
 
    // manage
    void del   (); // delete manually
-   void create(C Str &name, const_mem_addr Threads *threads=null, const_mem_addr Cipher *cipher=null, COMPRESS_TYPE compress=COMPRESS_LZ4); // create, 'name'=file name where the cache will be located, 'threads'=worker threads that will import the images (if null then importing will be done on the main thread), 'cipher'=cache file encryption, 'compress'=cache file compression
+   void create(C Str &name, const_mem_addr Threads *threads=null, const_mem_addr Cipher *cipher=null, COMPRESS_TYPE compress=COMPRESS_LZ4, void (*save)(File &f)=null, void (*load)(File &f)=null); // create, 'name'=file name where the cache will be located, 'threads'=worker threads that will import the images (if null then importing will be done on the main thread), 'cipher'=cache file encryption, 'compress'=cache file compression, 'save' 'load' = callbacks allowing to save/load custom data
 
    // operations
    ImagePtr getImage(C Str &url                  , CACHE_VERIFY verify=CACHE_VERIFY_YES); // get image from the internet, image may be empty at start if it's not yet downloaded, it will be automatically updated once it completes downloading
@@ -57,6 +57,8 @@ private:
    Download             _downloading[6];
    Memc<Str>            _to_download, _to_verify;
    Memx<ImportImage>    _import_images; // use 'Memx' to have const_mem_addr needed for threads
+   void               (*_save)(File &f)=null;
+   void               (*_load)(File &f)=null;
 
 #if EE_PRIVATE
    Bool busy  ()C;

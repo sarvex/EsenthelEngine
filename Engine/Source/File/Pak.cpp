@@ -1630,10 +1630,10 @@ struct PakCreator
             PakFileEx &src =     files[0]; // #PostHeaderFileIndex
             PakFile   &dest=pak._files[0];
             DEBUG_ASSERT(!Is(dest.name) && !dest.data_size && !src.data, "Pak post header");
-            if(post_header->save)
+          //if(post_header->save)
             {
                File &data=src.processed;
-               post_header->save(data.writeMem(), pak, post_header->user);
+               post_header->save(data.writeMem(), pak);
                if(auto data_size=data.size())
                {
                   header_data_size+=data_size; // for 'in_place' we write post header data manually after header, so we need space for it
