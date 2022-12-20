@@ -398,7 +398,7 @@ enum EXTENSION_TYPE // Extension Type
 };
 EXTENSION_TYPE ExtType(C Str &ext); // get extension type from given extension name, Sample Usage : ExtType("bmp") -> EXT_IMAGE
 
-#define SUPPORTED_IMAGE_EXT "bmp|png|jpg|jpeg|webp|heif|tga|tif|tiff|dds|psd|ico|cur|hdr|img"
+#define SUPPORTED_IMAGE_EXT "bmp|png|jpg|jpeg|webp|avif|heif|tga|tif|tiff|dds|psd|ico|cur|hdr|img"
 #define SUPPORTED_SOUND_EXT "wav|flac|ogg|opus|weba|webm|mp3|mp4|m4a"
 #define SUPPORTED_MESH_EXT  "fbx|dae|ase|obj|3ds|b3d|ms3d|psk|mesh"
 /******************************************************************************/

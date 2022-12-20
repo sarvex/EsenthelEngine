@@ -2159,6 +2159,9 @@
     <ClCompile Include="Source\Misc\Translation.cpp">
       <Filter>Source\Misc</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Graphics\Import\AVIF.cpp">
+      <Filter>Source\Graphics\Import</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Platforms\Mac\MyApplication.mm">
@@ -2705,6 +2708,12 @@
     </Library>
     <Library Include="..\ThirdPartyLibs\SPIRV-Cross\lib\spirv-cross-core.lib">
       <Filter>H\_\Libs\64\SPIRV-Cross</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\AVIF\Windows\Release\avif.lib">
+      <Filter>H\_\Libs\64</Filter>
+    </Library>
+    <Library Include="..\ThirdPartyLibs\dav1d\Windows\src\libdav1d.lib">
+      <Filter>H\_\Libs\64</Filter>
     </Library>
   </ItemGroup>
   <ItemGroup>
