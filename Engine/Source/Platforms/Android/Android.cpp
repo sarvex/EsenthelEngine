@@ -1365,25 +1365,38 @@ extern "C"
 
 JNIEXPORT void JNICALL Java_com_esenthel_Native_connected(JNIEnv *env, jclass clazz, jboolean supports_items, jboolean supports_subs);
 JNIEXPORT void JNICALL Java_com_esenthel_Native_location (JNIEnv *env, jclass clazz, jboolean gps, jobject location) {JNI jni(env); UpdateLocation(location, gps!=0, jni);}
-JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass clazz, jint w, jint h, jint visible_x, jint visible_y, jint visible_w, jint visible_h)
+
+static Bool     Kb_visible;
+static RectI    Kb_rect;
+static SyncLock Kb_lock;
+static void UpdateKB()
 {
+   Bool changed=false;
+   {
+      SyncLocker locker(Kb_lock);
+      if(               Kb._visible!=Kb_visible){Kb._visible^=      1; changed=true;}
+      if(Kb._visible && Kb._recti  !=Kb_rect   ){Kb._recti   =Kb_rect; changed=true;}
+   }
+   if(changed)Kb.screenChanged();
+}
+
+JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass clazz, jint w, jint h, jint visible_x, jint visible_y, jint visible_w, jint visible_h)
+{ // !! this is called on a secondary thread !!
    Int l_size=visible_x,
        t_size=visible_y,
        r_size=w-(visible_x+visible_w),
        b_size=h-(visible_y+visible_h), max_size=Max(l_size, r_size, t_size, b_size);
-
-   Bool visible=(max_size>0), changed=false;
-   if(  visible!=Kb._visible){Kb._visible^=1; changed=true;}
-   if(  visible)
    {
-      RectI rect;
-      if(b_size>=max_size)rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
-      if(t_size>=max_size)rect.set(       0,        0,      w, t_size);else // top    size is the biggest
-      if(l_size>=max_size)rect.set(       0,        0, l_size,      h);else // left   size is the biggest
-                          rect.set(w-r_size,        0,      w,      h);     // right  size is the biggest
-      if(Kb._recti!=rect){Kb._recti=rect; changed=true;}
+      SyncLocker locker(Kb_lock);
+      if(Kb_visible=(max_size>0))
+      {
+         if(b_size>=max_size)Kb_rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
+         if(t_size>=max_size)Kb_rect.set(       0,        0,      w, t_size);else // top    size is the biggest
+         if(l_size>=max_size)Kb_rect.set(       0,        0, l_size,      h);else // left   size is the biggest
+                             Kb_rect.set(w-r_size,        0,      w,      h);     // right  size is the biggest
+      }
+      App.includeFuncCall(UpdateKB);
    }
-   if(changed)Kb.screenChanged();
 }
 
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceAdded  , Ptr(device_id));} // may be called on a secondary thread
