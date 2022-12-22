@@ -108,7 +108,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          config .alpha_quality=aq;
          config .method       =6;
          config .exact        =true;
-         config .use_sharp_yuv=true;
+         config .use_sharp_yuv=false; // disable because true introduces plenty of blurry artifacts for pixel-art
          picture.width        =src->w();
          picture.height       =src->h();
       #if 1 // RGBA
