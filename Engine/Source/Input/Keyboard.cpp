@@ -1594,13 +1594,16 @@ void KeyboardClass::setVisible()
 #elif ANDROID
    if(Jni && ActivityClass && Activity)
    {
-      if(KBWantVisible=visible)
+      if(visible)
       {
+         KBWantVisible=true;
          if(JMethodID editText=Jni.func(ActivityClass, "editText", "(Ljava/lang/String;III)V"))
          if(JString t=JString(Jni, sk.text ? *sk.text : S))
             Jni->CallVoidMethod(Activity, editText, t(), jint(sk.start), jint(sk.end), SKMode(sk));
       }else
+      if(KBWantVisible)
       {
+         KBWantVisible=false;
          if(JMethodID editTextHide=Jni.func(ActivityClass, "editTextHide", "()V"))
             Jni->CallVoidMethod(Activity, editTextHide);
       }
