@@ -18,9 +18,7 @@ enum FIT_MODE : Byte // Fit Mode, these modes specify fitting while preserving o
    FIT_UP   =64, // align up
 
    FIT_FULL_UP=FIT_FULL|FIT_UP,
-#if EE_PRIVATE
    FIT_MASK=7,
-#endif
 };
 SET_ENUM_FLAGS(FIT_MODE);
 /******************************************************************************/
