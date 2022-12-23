@@ -108,7 +108,7 @@ FileText& FileText::readMem(CPtr data, Int size, Int encoding, Cipher *cipher)
    del();
   _f.readMem(data, size, cipher);
   _code=LoadEncoding(_f); // load encoding always to skip potential BOM
-   if(encoding>=0)_code=(ENCODING)encoding; // override encoding if it was specified
+   if(!_code && encoding>=0)_code=(ENCODING)encoding; // override encoding if it was specified
    return T;
 }
 FileText& FileText::readMem(C Str &data)
