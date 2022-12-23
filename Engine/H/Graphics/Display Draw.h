@@ -41,6 +41,10 @@ struct DisplayDraw // Display Drawing Functions, this class methods can be calle
    // set text depth
    static void textDepth(Bool use, Flt depth=0); // this function can be optionally called before drawing text, to specify depth of the text (Z value for the Depth Buffer), if enabled then the text will be drawn with depth buffer test enabled and will be occluded by objects with depth smaller than 'depth'
 
+   // set text gamma
+   static void textBackgroundBlack(); // specify that text will mostly be drawn on black background
+   static void textBackgroundWhite(); // specify that text will mostly be drawn on white background
+
    // draw shadow
    static void drawShadowBorders(Byte alpha, C Rect &rect, Flt shadow_radius=0.05f);
    static void drawShadow       (Byte alpha, C Rect &rect, Flt shadow_radius=0.05f);
