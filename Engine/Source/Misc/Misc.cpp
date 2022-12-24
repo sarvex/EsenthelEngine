@@ -697,7 +697,7 @@ void IDGenerator::Return(UInt id) // return ID so it can be re-used later
    }
 }
 /******************************************************************************/
-static CChar8 *SizeSuffix []={"", " K" , " M" , " G" , " T" , " P" , " E" , " Z" };
+static CChar8 *SizeSuffix []={"",  "K" ,  "M" ,  "G" ,  "T" ,  "P" ,  "E" ,  "Z" };
 static CChar8 *SizeSuffixB[]={"", " KB", " MB", " GB", " TB", " PB", " EB", " ZB"};
 Str SizeText(Long size, Char dot)
 {

@@ -203,7 +203,7 @@ UInt Shr(UInt x, Int i); // safe "x>>i", works ok on negative 'i', and 'i' great
 UInt Rol(UInt x, Int i); // safe "x ROL i" (Rotate Left ), works ok on negative 'i', and 'i' greater than 32
 UInt Ror(UInt x, Int i); // safe "x ROR i" (Rotate Right), works ok on negative 'i', and 'i' greater than 32
 
-Str SizeText (Long size, Char dot='.'); // return size               as text in a shortened version, example: SizeText (1024) -> "1.0 K" , SizeText (1024*1024) ->   "1.0 M" , SizeText (1024*1024*1024) ->       "1.0 G"
+Str SizeText (Long size, Char dot='.'); // return size               as text in a shortened version, example: SizeText (1024) -> "1.0K"  , SizeText (1024*1024) ->   "1.0M"  , SizeText (1024*1024*1024) ->       "1.0G"
 Str SizeBytes(Long size, Char dot=','); // return size in      Bytes as text in a shortened version, example: SizeBytes(1024) -> "1,0 KB", SizeBytes(1024*1024) ->   "1,0 MB", SizeBytes(1024*1024*1024) ->       "1,0 GB"
 Str SizeKB   (Long size, Char dot=','); // return size in Kilo-Bytes as text in a shortened version, example: SizeKB   (1024) -> "1,0 KB", SizeKB   (1024*1024) -> "1 024 KB", SizeKB   (1024*1024*1024) -> "1 048 576 KB"
 Str SizeMB   (Long size, Char dot=','); // return size in Mega-Bytes as text in a shortened version, example: SizeMB   (1024) -> "0,0 MB", SizeMB   (1024*1024) ->   "1,0 MB", SizeMB   (1024*1024*1024) ->     "1 024 MB"
