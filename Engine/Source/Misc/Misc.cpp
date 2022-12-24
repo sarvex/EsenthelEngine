@@ -702,41 +702,46 @@ static CChar8 *SizeSuffixB[]={"", " KB", " MB", " GB", " TB", " PB", " EB", " ZB
 Str SizeText(Long size, Char dot)
 {
    const Int f=10;
+   Str s; if(size<0){s='-'; CHS(size);}
    size*=f;
-   Int i=0; for(; i<Elms(SizeSuffix)-1 && size>=1000*f; i++, size>>=10); // check for "1000*f" instead of "1024*f", because we want to avoid displaying things like "1 001 M"
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=dot; s+=size%10;} s+=SizeSuffix[i];
+   Int i=0; for(; i<Elms(SizeSuffix)-1 && size>=1000*f; i++, size/=1000); // check for "1000*f" instead of "1024*f", because we want to avoid displaying things like "1 001 M"
+   s+=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=dot; s+=size%10;} s+=SizeSuffix[i];
    return s;
 }
 Str SizeBytes(Long size, Char dot)
 {
    const Int f=10;
+   Str s; if(size<0){s='-'; CHS(size);}
    size*=f;
    Int i=0; for(; i<Elms(SizeSuffixB)-1 && size>=1000*f; i++, size>>=10); // check for "1000*f" instead of "1024*f", because we want to avoid displaying things like "1 001 MB"
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=dot; s+=size%10;} s+=SizeSuffixB[i];
+   s+=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=dot; s+=size%10;} s+=SizeSuffixB[i];
    return s;
 }
 Str SizeKB(Long size, Char dot)
 {
    const Int f=10;
+   Str s; if(size<0){s='-'; CHS(size);}
    size*=f;
    Int i=1; size>>=10*i;
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
+   s+=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
    return s;
 }
 Str SizeMB(Long size, Char dot)
 {
    const Int f=10;
+   Str s; if(size<0){s='-'; CHS(size);}
    size*=f;
    Int i=2; size>>=10*i;
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
+   s+=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
    return s;
 }
 Str SizeGB(Long size, Char dot)
 {
    const Int f=10;
+   Str s; if(size<0){s='-'; CHS(size);}
    size*=f;
    Int i=3; size>>=10*i;
-   Str s=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
+   s+=TextInt(size/f, -1, 3); if(size<100*f && i && dot){s+=','; s+=size%10;} s+=SizeSuffixB[i];
    return s;
 }
 /******************************************************************************/
