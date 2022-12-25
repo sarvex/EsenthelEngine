@@ -1398,6 +1398,12 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass claz
       App.includeFuncCall(UpdateKB);
    }
 }
+JNIEXPORT void JNICALL Java_com_esenthel_Native_drop(JNIEnv *env, jclass clazz, jint fd)
+{
+   File f; if(f.readFD(fd))
+   {
+   }
+}
 
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceAdded  (JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceAdded  , Ptr(device_id));} // may be called on a secondary thread
 JNIEXPORT void JNICALL Java_com_esenthel_Native_deviceRemoved(JNIEnv *env, jclass clazz, jint device_id) {App._callbacks.add(DeviceRemoved, Ptr(device_id));} // may be called on a secondary thread
