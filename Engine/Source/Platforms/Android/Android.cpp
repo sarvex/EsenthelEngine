@@ -1380,7 +1380,7 @@ static void UpdateKB()
    if(changed)Kb.screenChanged();
 }
 
-JNIEXPORT void JNICALL Java_com_esenthel_Native_resized  (JNIEnv *env, jclass clazz, jint w, jint h, jint visible_x, jint visible_y, jint visible_w, jint visible_h)
+JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass clazz, jint w, jint h, jint visible_x, jint visible_y, jint visible_w, jint visible_h)
 { // !! this is called on a secondary thread !!
    Int l_size=visible_x,
        t_size=visible_y,

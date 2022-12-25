@@ -49,6 +49,7 @@ struct File
    Bool   readEx   (C UID     &id  , C PakSet &paks, const_mem_addr Cipher *cipher, Bool *processed, Bool stream=false); // try to read Pak          file, writing is not allowed in this mode, false on fail, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed), 'processed'=if original file had to be processed
    Bool   readEx   (C PakFile &file, C Pak    &pak , const_mem_addr Cipher *cipher, Bool *processed, Bool stream=false); // try to read Pak          file, writing is not allowed in this mode, false on fail, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed), 'processed'=if original file had to be processed
    Bool   readRaw  (C PakFile &file, C Pak    &pak                                                                    ); // try to read Pak          file, writing is not allowed in this mode, false on fail, this reads file in raw mode (does not decompress files)
+   Bool   readFD   (  Int      fd, const_mem_addr Cipher *cipher=null);
 #endif
 
    File& writeMemFixed(           Int size    , const_mem_addr Cipher *cipher=null); // start writing to   fixed     memory file   , reading is     allowed in this mode, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)

@@ -27,6 +27,7 @@ public class Native
    public static native void   notification   (int id, boolean selected);
    public static native void   deviceAdded    (int device_id);
    public static native void   deviceRemoved  (int device_id);
+   public static native void   drop           (int fd);
 
    static
    {

@@ -13,6 +13,7 @@ import android.app.Service;
 import android.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
@@ -193,6 +194,9 @@ public class EsenthelActivity extends NativeActivity
    public static final int POST_ERROR=0;
    public static final int POST_CANCEL=1;
    public static final int POST_SUCCESS=2;
+
+   public static final int REQUEST_CODE_IAB=0;
+   public static final int REQUEST_CODE_FILE_PICKER=1;
 
    // variables
    static EsenthelActivity     activity;
@@ -466,9 +470,9 @@ public class EsenthelActivity extends NativeActivity
    /*FACEBOOK*\
       if(callbackManager!=null)callbackManager.onActivityResult(requestCode, resultCode, data);
    /*FACEBOOK*/
-      /*switch(requestCode)
+      switch(requestCode)
       {
-         case REQUEST_CODE_IAB:
+         /*case REQUEST_CODE_IAB:
          {
             int    responseCode=-1;
             long   date=0;
@@ -501,9 +505,37 @@ public class EsenthelActivity extends NativeActivity
           //log("responseCode:"+responseCode+", resultCode:"+resultCode+", result:"+result);
 
             com.esenthel.Native.purchased(result, sku, custom_data, token, date);
+         }break;*/
+
+         case REQUEST_CODE_FILE_PICKER:
+         {
+            if(resultCode==RESULT_OK && data!=null)
+            {
+               ContentResolver resolver=getContentResolver(); if(resolver!=null)
+               {
+                  android.content.ClipData clipData=data.getClipData();
+                  if(clipData!=null)for(int i=0; i<clipData.getItemCount(); i++)
+                  {
+                     android.content.ClipData.Item item=clipData.getItemAt(i); if(item!=null)
+                     {
+                        Uri uri=item.getUri(); if(uri!=null)try
+                        {
+                           ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null)com.esenthel.Native.drop(pfd.getFd());
+                        }catch(Exception e){}
+                     }
+                  }else
+                  {
+                     Uri uri=data.getData(); if(uri!=null)try
+                     {
+                        ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null)com.esenthel.Native.drop(pfd.getFd());
+                     }catch(Exception e){}
+                  }
+               }
+            }
          }break;
-      }*/
+      }
    }
+
    @Override public final void onConfigurationChanged(Configuration newConfig)
    {
       super.onConfigurationChanged(newConfig);
@@ -1268,8 +1300,6 @@ public class EsenthelActivity extends NativeActivity
    public static final String RESPONSE_INAPP_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE_LIST";
    public static final String INAPP_CONTINUATION_TOKEN = "INAPP_CONTINUATION_TOKEN";
 
-   public static final int REQUEST_CODE_IAB=0;
-
    // Billing response codes
    public static final int BILLING_RESPONSE_RESULT_OK = 0;
    public static final int BILLING_RESPONSE_RESULT_USER_CANCELED = 1;
@@ -1788,6 +1818,18 @@ public class EsenthelActivity extends NativeActivity
          stopService(background_intent);
          background_intent=null;
       }
+   }
+
+   /******************************************************************************/
+   // PHOTO PICKER
+   /******************************************************************************/
+   public final void pickPhoto(int max)
+   {
+      Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);
+      i.addCategory(Intent.CATEGORY_OPENABLE);
+      i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, max>1);
+      i.setType("image/*");
+      startActivityForResult(i, REQUEST_CODE_FILE_PICKER);
    }
 }
 /******************************************************************************/
