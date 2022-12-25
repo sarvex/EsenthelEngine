@@ -1063,19 +1063,23 @@ T1(TYPE)  UIntPtr  Memx<TYPE>::  memUsage()C {return super::  memUsage();}
 
 T1(TYPE)  TYPE&  Memx<TYPE>::    absElm(Int i) {return *(TYPE*)super::    absElm(i);}
 T1(TYPE)  TYPE&  Memx<TYPE>::  validElm(Int i) {return *(TYPE*)super::  validElm(i);}
-T1(TYPE)  TYPE*  Memx<TYPE>::      addr(Int i) {return  (TYPE*)super::      addr(i);}
+T1(TYPE)  TYPE*  Memx<TYPE>:: addr     (Int i) {return  (TYPE*)super:: addr     (i);}
+T1(TYPE)  TYPE*  Memx<TYPE>:: addrFirst(     ) {return  (TYPE*)super:: addrFirst( );}
+T1(TYPE)  TYPE*  Memx<TYPE>:: addrLast (     ) {return  (TYPE*)super:: addrLast ( );}
 T1(TYPE)  TYPE&  Memx<TYPE>::operator[](Int i) {return *(TYPE*)super::operator[](i);}
 T1(TYPE)  TYPE&  Memx<TYPE>::     first(     ) {return *(TYPE*)super::     first( );}
 T1(TYPE)  TYPE&  Memx<TYPE>::      last(     ) {return *(TYPE*)super::      last( );}
 T1(TYPE)  TYPE&  Memx<TYPE>::     New  (     ) {return *(TYPE*)super::     New  ( );}
 T1(TYPE)  TYPE&  Memx<TYPE>::     NewAt(Int i) {return *(TYPE*)super::     NewAt(i);}
 
-T1(TYPE)  C TYPE&  Memx<TYPE>::    absElm(Int i)C {return ConstCast(T).  absElm(i);}
-T1(TYPE)  C TYPE&  Memx<TYPE>::  validElm(Int i)C {return ConstCast(T).validElm(i);}
-T1(TYPE)  C TYPE*  Memx<TYPE>::      addr(Int i)C {return ConstCast(T).    addr(i);}
-T1(TYPE)  C TYPE&  Memx<TYPE>::operator[](Int i)C {return ConstCast(T)         [i];}
-T1(TYPE)  C TYPE&  Memx<TYPE>::     first(     )C {return ConstCast(T).   first( );}
-T1(TYPE)  C TYPE&  Memx<TYPE>::      last(     )C {return ConstCast(T).    last( );}
+T1(TYPE)  C TYPE&  Memx<TYPE>::    absElm(Int i)C {return ConstCast(T).   absElm(i);}
+T1(TYPE)  C TYPE&  Memx<TYPE>::  validElm(Int i)C {return ConstCast(T). validElm(i);}
+T1(TYPE)  C TYPE*  Memx<TYPE>:: addr     (Int i)C {return ConstCast(T).addr     (i);}
+T1(TYPE)  C TYPE*  Memx<TYPE>:: addrFirst(     )C {return ConstCast(T).addrFirst( );}
+T1(TYPE)  C TYPE*  Memx<TYPE>:: addrLast (     )C {return ConstCast(T).addrLast ( );}
+T1(TYPE)  C TYPE&  Memx<TYPE>::operator[](Int i)C {return ConstCast(T)          [i];}
+T1(TYPE)  C TYPE&  Memx<TYPE>::     first(     )C {return ConstCast(T).    first( );}
+T1(TYPE)  C TYPE&  Memx<TYPE>::      last(     )C {return ConstCast(T).     last( );}
 
 T1(TYPE)  Int   Memx<TYPE>::validToAbsIndex(  Int valid)C {return super::validToAbsIndex(valid);}
 T1(TYPE)  Int   Memx<TYPE>::absToValidIndex(  Int   abs)C {return super::absToValidIndex(abs  );}
