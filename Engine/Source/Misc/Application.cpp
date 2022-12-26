@@ -196,6 +196,13 @@ Application& Application::backgroundText(C Str &text)
    return T;
 }
 /******************************************************************************/
+#if IOS
+static SYSTEM_BAR StatusBar=SYSTEM_BAR_HIDDEN, NavBar=SYSTEM_BAR_HIDDEN;
+SYSTEM_BAR   Application::statusBar()C {return StatusBar;}
+SYSTEM_BAR   Application::   navBar()C {return    NavBar;}
+Application& Application::statusBar(SYSTEM_BAR bar) {if(StatusBar!=bar){StatusBar=bar; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
+Application& Application::   navBar(SYSTEM_BAR bar) {if(   NavBar!=bar){   NavBar=bar; if(ViewController)[ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];} return T;}
+#endif
 Bool Application::getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C
 {
 #if ANDROID
@@ -209,8 +216,8 @@ Bool Application::getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C
       return true;
    }
 #elif IOS
-   status    =SYSTEM_BAR_HIDDEN;
-   navigation=SYSTEM_BAR_HIDDEN;
+   status    =StatusBar;
+   navigation=   NavBar;
    return true;
 #endif
    status=navigation=SYSTEM_BAR_HIDDEN;
@@ -223,11 +230,16 @@ Application& Application::systemBars(SYSTEM_BAR status, SYSTEM_BAR navigation)
    if(jni && ActivityClass)
    if(JMethodID systemBars=jni.staticFunc(ActivityClass, "systemBars", "(I)V"))
       jni->CallStaticVoidMethod(ActivityClass, systemBars, jint(status|(navigation<<2)));
+#elif IOS
+   statusBar(status);
+      navBar(navigation);
 #endif
    return T;
 }
+#if !IOS
 SYSTEM_BAR Application::statusBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return status    ;}   Application& Application::statusBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(bar   , navigation); return T;}
 SYSTEM_BAR Application::   navBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return navigation;}   Application& Application::   navBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(status, bar       ); return T;}
+#endif
 /******************************************************************************/
 #if WINDOWS || ANDROID
 Bool Application::minimized()C {return _minimized;}
