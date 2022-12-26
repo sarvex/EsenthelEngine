@@ -124,10 +124,12 @@ static void UpdateMagnetometer(CLHeading *heading)
             dispatch_async(dispatch_get_main_queue(),
             ^{ // this is main thread
                NSLog(@"Selected image: %@", image);
+             //[image release]; crashes
             });
          }
       }];
    }
+ //[results release]; crashes
 }
 /******************************************************************************
 // FACEBOOK
