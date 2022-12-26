@@ -1403,7 +1403,7 @@ static Memc<Int> Files;
 static void ProcessFiles()
 {
    SyncLocker locker(JavaLock);
-   auto received=App.received; File f; FREPA(Files)if(f.readFD(Files[i]) && received)received(f); Files.clear(); // !! PROCESS IN ORDER, MUST CALL 'readFD' FOR ALL 'Files' EVEN IF 'received'==null TO CLOSE THEM !!
+   auto receive=App.receive; File f; FREPA(Files)if(f.readFD(Files[i]) && receive)receive(f); Files.clear(); // !! PROCESS IN ORDER, MUST CALL 'readFD' FOR ALL 'Files' EVEN IF 'receive'==null TO CLOSE THEM !!
 }
 JNIEXPORT void JNICALL Java_com_esenthel_Native_drop(JNIEnv *env, jclass clazz, jint fd)
 {

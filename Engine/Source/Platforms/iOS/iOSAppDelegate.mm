@@ -114,18 +114,39 @@ static void UpdateMagnetometer(CLHeading *heading)
 {
    [picker dismissViewControllerAnimated:YES completion:nil];
    [picker release];
-   for(PHPickerResult *result in results)
+   if(auto receive=App.receive_image)
+      for(PHPickerResult *result in results)
    {
       [result.itemProvider loadObjectOfClass:[UIImage class] completionHandler:^(__kindof id<NSItemProviderReading> _Nullable object, NSError *_Nullable error)
       {
          if([object isKindOfClass:[UIImage class]])
          {  // this is not main thread
-            UIImage *image=(UIImage*)object;
-            dispatch_async(dispatch_get_main_queue(),
-            ^{ // this is main thread
-               NSLog(@"Selected image: %@", image);
-             //[image release]; crashes
-            });
+            UIImage *image=(UIImage*)object; if(CGImageRef cg_image=[image CGImage])
+            {
+            #if 0
+               Int w=RoundPos(image.size.width ),
+                   h=RoundPos(image.size.height);
+            #else
+               Int w=CGImageGetWidth (cg_image),
+                   h=CGImageGetHeight(cg_image);
+            #endif
+               Image img; if(img.createSoft(w, h, 1, IMAGE_R8G8B8A8_SRGB))if(CGColorSpaceRef color_space=CGColorSpaceCreateDeviceRGB())
+               {
+                  if(CGContextRef context=CGBitmapContextCreate(img.data(), img.w(), img.h(), 8, img.pitch(), color_space, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big)) // kCGImageAlphaLast results in error
+                  {
+                     CGContextDrawImage(context, CGRectMake(0, 0, w, h), cg_image);
+                     CGContextRelease  (context);
+                     img.mirrorXY();
+                     dispatch_async(dispatch_get_main_queue(),
+                     ^{ // this is main thread
+                        receive(ConstCast(img));
+                     });
+                  }
+                  CGColorSpaceRelease(color_space);
+               }
+             //CGImageRelease(cg_image); crashes
+            }
+          //[image release]; crashes
          }
       }];
    }
