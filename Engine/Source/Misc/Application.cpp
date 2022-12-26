@@ -197,14 +197,14 @@ Application& Application::backgroundText(C Str &text)
 }
 /******************************************************************************/
 #if IOS
-static SYSTEM_BAR StatusBar=SYSTEM_BAR_HIDDEN, NavBar=SYSTEM_BAR_HIDDEN;
+static SYSTEM_BAR StatusBar=SYSTEM_BAR_HIDDEN, NavBar=SYSTEM_BAR_OVERLAY;
 static Bool       StatusBarColor=true;
 SYSTEM_BAR   Application::statusBar     ()C {return StatusBar     ;}
 SYSTEM_BAR   Application::   navBar     ()C {return    NavBar     ;}
 Bool         Application::statusBarColor()C {return StatusBarColor;}
-Application& Application::statusBar     (SYSTEM_BAR bar  ) {if(StatusBar     !=bar  ){StatusBar     =bar  ; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
-Application& Application::   navBar     (SYSTEM_BAR bar  ) {if(   NavBar     !=bar  ){   NavBar     =bar  ; if(ViewController)[ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];} return T;}
-Application& Application::statusBarColor(Bool       light) {if(StatusBarColor!=light){StatusBarColor=light; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
+Application& Application::statusBar     (SYSTEM_BAR bar  ) {if(StatusBar     !=bar  ){StatusBar     =bar  ; if(ViewController) [ViewController setNeedsStatusBarAppearanceUpdate      ];                                                                      } return T;}
+Application& Application::   navBar     (SYSTEM_BAR bar  ) {if(   NavBar     !=bar  ){   NavBar     =bar  ; if(ViewController){[ViewController setNeedsUpdateOfHomeIndicatorAutoHidden]; [ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];}} return T;}
+Application& Application::statusBarColor(Bool       light) {if(StatusBarColor!=light){StatusBarColor=light; if(ViewController) [ViewController setNeedsStatusBarAppearanceUpdate      ];                                                                      } return T;}
 #endif
 Bool Application::getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C
 {
