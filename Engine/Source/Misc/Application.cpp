@@ -664,11 +664,32 @@ void Application::close()
 /******************************************************************************/
 void Application::pickPhoto(Int max_files)
 {
-#if ANDROID
-   if(max_files>0 && Jni && ActivityClass && Activity)
-      if(JMethodID pickPhoto=Jni.func(ActivityClass, "pickPhoto", "(I)V"))
-         Jni->CallVoidMethod(Activity, pickPhoto, jint(max_files));
-#endif
+   if(max_files>0)
+   {
+   #if ANDROID
+      if(Jni && ActivityClass && Activity)
+         if(JMethodID pickPhoto=Jni.func(ActivityClass, "pickPhoto", "(I)V"))
+            Jni->CallVoidMethod(Activity, pickPhoto, jint(max_files));
+   #elif IOS
+      if(ViewController)
+      {
+       /*UIImagePickerController *picker=[[UIImagePickerController alloc] init];
+         picker.delegate=GetAppDelegate();
+         picker.sourceType=UIImagePickerControllerSourceTypePhotoLibrary;
+
+         [ViewController presentViewController:picker animated:YES completion:nil];*/
+
+         PHPickerConfiguration *config=[[PHPickerConfiguration alloc] init];
+         config.selectionLimit=max_files;
+         config.filter=[PHPickerFilter imagesFilter];
+
+         PHPickerViewController *picker=[[PHPickerViewController alloc] initWithConfiguration:config];
+         [config release];
+         picker.delegate=GetAppDelegate();
+         [ViewController presentViewController:picker animated:YES completion:nil];
+      }
+   #endif
+   }
 }
 /******************************************************************************/
 Bool Application::testInstance()

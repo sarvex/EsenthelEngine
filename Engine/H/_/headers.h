@@ -324,6 +324,7 @@
       #elif IOS
          #define IFT_ETHER 0x06 // iOS does not have this in headers
          #include <UIKit/UIKit.h>
+         #include <PhotosUI/PhotosUI.h>
          #include <QuartzCore/QuartzCore.h>
          #include <CoreMotion/CoreMotion.h>
          #include <CoreLocation/CoreLocation.h>

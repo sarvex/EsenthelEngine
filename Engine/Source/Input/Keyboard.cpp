@@ -1609,7 +1609,14 @@ void KeyboardClass::setVisible()
       }
    }
 #elif IOS
-   if(EAGLView *view=GetUIView())[view keyboardVisible:visible];
+   if(EAGLView *view=GetUIView())
+   {
+      if(visible)
+      {
+       //view.keyboardType=(sk.email ? UIKeyboardTypeEmailAddress : sk.number ? UIKeyboardTypeNumberPad : UIKeyboardTypeDefault);
+      }
+      [view keyboardVisible:visible];
+   }
 #elif SWITCH
    NS::KeyboardVisible(visible ? &sk : null);
 #endif

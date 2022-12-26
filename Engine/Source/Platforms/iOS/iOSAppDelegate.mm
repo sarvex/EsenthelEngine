@@ -109,6 +109,26 @@ static void UpdateMagnetometer(CLHeading *heading)
 {
    UpdateMagnetometer(newHeading);
 }
+/******************************************************************************/
+-(void)picker:(PHPickerViewController*)picker didFinishPicking:(NSArray<PHPickerResult*>*)results
+{
+   [picker dismissViewControllerAnimated:YES completion:nil];
+   [picker release];
+   for(PHPickerResult *result in results)
+   {
+      [result.itemProvider loadObjectOfClass:[UIImage class] completionHandler:^(__kindof id<NSItemProviderReading> _Nullable object, NSError *_Nullable error)
+      {
+         if([object isKindOfClass:[UIImage class]])
+         {  // this is not main thread
+            UIImage *image=(UIImage*)object;
+            dispatch_async(dispatch_get_main_queue(),
+            ^{ // this is main thread
+               NSLog(@"Selected image: %@", image);
+            });
+         }
+      }];
+   }
+}
 /******************************************************************************
 // FACEBOOK
 /******************************************************************************/
