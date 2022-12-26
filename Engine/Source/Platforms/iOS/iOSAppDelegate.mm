@@ -138,11 +138,13 @@ static void UpdateMagnetometer(CLHeading *heading)
                      CGContextRelease  (context);
                      switch(image.imageOrientation)
                      {
-                        case UIImageOrientationDown        : img.mirrorXY(); break;
-                        case UIImageOrientationUpMirrored  : img.mirrorX (); break;
-                        case UIImageOrientationDownMirrored: img.mirrorY (); break;
-                        case UIImageOrientationLeft        : img.rotateL (); break;
-                        case UIImageOrientationRight       : img.rotateR (); break;
+                        case UIImageOrientationDown         : img.mirrorXY(); break;
+                        case UIImageOrientationUpMirrored   : img.mirrorX (); break;
+                        case UIImageOrientationDownMirrored : img.mirrorY (); break;
+                        case UIImageOrientationLeft         : img.rotateL (); break;
+                        case UIImageOrientationRight        : img.rotateR (); break;
+                        case UIImageOrientationLeftMirrored : img.rotateR ().mirrorX(); break; // TODO: optimize
+                        case UIImageOrientationRightMirrored: img.rotateL ().mirrorX(); break; // TODO: optimize
                      }
                      dispatch_async(dispatch_get_main_queue(),
                      ^{ // this is main thread
