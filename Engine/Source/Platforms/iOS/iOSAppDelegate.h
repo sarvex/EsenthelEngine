@@ -1,6 +1,4 @@
 /******************************************************************************/
-@class EAGLView;
-
 @interface iOSAppDelegate : NSObject<UIApplicationDelegate, CLLocationManagerDelegate
 #if SUPPORT_FACEBOOK
 , FBSDKSharingDelegate
