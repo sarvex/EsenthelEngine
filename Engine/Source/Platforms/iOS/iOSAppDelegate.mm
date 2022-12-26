@@ -114,9 +114,11 @@ static void UpdateMagnetometer(CLHeading *heading)
 {
    [picker dismissViewControllerAnimated:YES completion:nil];
    [picker release];
-   if(auto receive=App.receive_image)
+ //if(auto receive=App.receive_image)
+   if(auto receive=App.receive)
       for(PHPickerResult *result in results)
    {
+   #if 0
       [result.itemProvider loadObjectOfClass:[UIImage class] completionHandler:^(__kindof id<NSItemProviderReading> _Nullable object, NSError *_Nullable error)
       {
          if([object isKindOfClass:[UIImage class]])
@@ -158,6 +160,15 @@ static void UpdateMagnetometer(CLHeading *heading)
           //[image release]; crashes
          }
       }];
+   #else
+      [result.itemProvider loadDataRepresentationForTypeIdentifier:@"public.data" completionHandler:^(NSData *data, NSError *error) // UTTypeData UTTypeImage
+      {  // this is not main thread
+         if(data)dispatch_async(dispatch_get_main_queue(),
+         ^{ // this is main thread
+            receive(NoTemp(File(data.bytes, data.length)));
+         });
+      }];
+   #endif
    }
  //[results release]; crashes
 }
