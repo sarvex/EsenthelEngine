@@ -546,7 +546,7 @@ Bool File::readFD(Int fd, const_mem_addr Cipher *cipher) // !! THIS TAKES OWNERS
    {
      _handle=fd;
      _type=FILE_STD_READ; _size=Max(0, Seek(_handle, 0, SEEK_END)); if(setBuf(Min(BUF_SIZE, _size))){/*_writable=false; already cleared in 'close'*/ _path=FILE_CUR; Seek(_handle, 0, SEEK_SET); _cipher=cipher; _full_size=_size; return true;}
-     _type=FILE_NONE    ; ::close(_handle); _handle=0; _size=0;
+     _type=FILE_NONE    ; ::PLATFORM(_close, close)(_handle); _handle=0; _size=0;
    }
    return false;
 }

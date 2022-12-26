@@ -583,6 +583,75 @@ Image& Image::mirrorXY()
    return T;
 }
 /******************************************************************************/
+Image& Image::rotateL()
+{
+   if(is())
+   {
+    C Image *src=this;
+      Image  temp;
+      if(compressed())
+         if(copy(temp, -1, -1, -1, ImageTypeUncompressed(type()), IMAGE_SOFT, 1))src=&temp;else return T;
+      if(src->lockRead())
+      {
+         Bool  ok=false;
+         Image rot; if(rot.create(src->h(), src->w(), src->d(), src->type(), src->mode(), src->mipMaps()))
+            if(rot.lock(LOCK_WRITE))
+         {
+            if(rot.highPrecision())
+            {
+               REPD(z, rot.d())
+               REPD(y, rot.h())
+               REPD(x, rot.w())rot.color3DF(x, y, z, src->color3DF(src->w()-1-y, x, z));
+            }else
+            {
+               REPD(z, rot.d())
+               REPD(y, rot.h())
+               REPD(x, rot.w())rot.color3D(x, y, z, src->color3D(src->w()-1-y, x, z));
+            }
+            rot.unlock().updateMipMaps();
+            ok=rot.copy(rot, h(), w(), d(), type(), mode(), mipMaps());
+         }
+         src->unlock();
+         if(ok)Swap(T, rot);
+      }
+   }
+   return T;
+}
+Image& Image::rotateR()
+{
+   if(is())
+   {
+    C Image *src=this;
+      Image  temp;
+      if(compressed())
+         if(copy(temp, -1, -1, -1, ImageTypeUncompressed(type()), IMAGE_SOFT, 1))src=&temp;else return T;
+      if(src->lockRead())
+      {
+         Bool  ok=false;
+         Image rot; if(rot.create(src->h(), src->w(), src->d(), src->type(), src->mode(), src->mipMaps()))
+            if(rot.lock(LOCK_WRITE))
+         {
+            if(rot.highPrecision())
+            {
+               REPD(z, rot.d())
+               REPD(y, rot.h())
+               REPD(x, rot.w())rot.color3DF(x, y, z, src->color3DF(y, src->h()-1-x, z));
+            }else
+            {
+               REPD(z, rot.d())
+               REPD(y, rot.h())
+               REPD(x, rot.w())rot.color3D(x, y, z, src->color3D(y, src->h()-1-x, z));
+            }
+            rot.unlock().updateMipMaps();
+            ok=rot.copy(rot, h(), w(), d(), type(), mode(), mipMaps());
+         }
+         src->unlock();
+         if(ok)Swap(T, rot);
+      }
+   }
+   return T;
+}
+/******************************************************************************/
 void Image::transform(Image &dest, C Matrix2 &matrix, FILTER_TYPE filter, UInt flags)C
 {
    if(is())
