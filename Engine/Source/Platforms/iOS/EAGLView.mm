@@ -370,8 +370,9 @@ static Joypad* FindJoypad(GCExtendedGamepad *gamepad)
 {
    Str s=text; FREPA(s)
    {
-      Char c=s[i]; Kb.queue(c, -1);
-    //U16  u=c   ; if(InRange(u, KeyMap)){KB_KEY k=KeyMap[u]; Kb.push(k); Kb.release(k);}
+      Char c=s[i];
+      if(  c=='\n'){Kb.push (KB_ENTER, c); Kb.release(KB_ENTER);} //U16 u=c; if(InRange(u, KeyMap)){KB_KEY k=KeyMap[u]; Kb.push(k); Kb.release(k);}
+                    Kb.queue(c, c);
    }
 }
 -(void)deleteBackward
