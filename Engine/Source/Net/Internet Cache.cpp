@@ -54,8 +54,6 @@ static Int CompareName      (C SrcFile &a, C SrcFile &b) {return COMPARE(a.name 
 static Int CompareName      (C SrcFile &a, C Str     &b) {return COMPARE(a.name       , b            );}
 static Int CompareAccessTime(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
 
-static void ICUpdate(InternetCache &ic);
-
 struct PostHeader : PakPostHeader
 {
    Memc<SrcFile>  files;
@@ -84,6 +82,9 @@ struct PostHeader : PakPostHeader
       if(ic._save)ic._save(f);
    }
 };
+
+static void ICUpdate(InternetCache &ic);
+void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 
 void InternetCache::del()
 {
@@ -425,7 +426,6 @@ inline void InternetCache::update()
    if(busy())enable();
 }
 static void ICUpdate(InternetCache &ic) {ic.update();}
-void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 /******************************************************************************/
 }
 /******************************************************************************/

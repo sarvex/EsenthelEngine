@@ -81,6 +81,7 @@ static JavaVM        *JVM;
        android_app   *AndroidApp;
        Str8           AndroidPackageName;
        Str            AndroidAppPath, AndroidAppDataPath, AndroidAppDataPublicPath, AndroidAppCachePath, AndroidPublicPath, AndroidSDCardPath;
+       SyncLock       JavaLock;
 static KB_KEY         KeyMap[256];
 static Byte           JoyMap[256];
 static Bool           Initialized, // !! This may be set to true when app is restarted (without previous crashing) !!
@@ -1366,14 +1367,13 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_esenthel_Native_connected(JNIEnv *env, jclass clazz, jboolean supports_items, jboolean supports_subs);
 JNIEXPORT void JNICALL Java_com_esenthel_Native_location (JNIEnv *env, jclass clazz, jboolean gps, jobject location) {JNI jni(env); UpdateLocation(location, gps!=0, jni);}
 
-static Bool     Kb_visible;
-static RectI    Kb_rect;
-static SyncLock Kb_lock;
+static Bool  Kb_visible;
+static RectI Kb_rect;
 static void UpdateKB()
 {
    Bool changed=false;
    {
-      SyncLocker locker(Kb_lock);
+      SyncLocker locker(JavaLock);
       if(               Kb._visible!=Kb_visible){Kb._visible^=      1; changed=true;}
       if(Kb._visible && Kb._recti  !=Kb_rect   ){Kb._recti   =Kb_rect; changed=true;}
    }
@@ -1387,7 +1387,7 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass claz
        r_size=w-(visible_x+visible_w),
        b_size=h-(visible_y+visible_h), max_size=Max(l_size, r_size, t_size, b_size);
    {
-      SyncLocker locker(Kb_lock);
+      SyncLocker locker(JavaLock);
       if(Kb_visible=(max_size>0))
       {
          if(b_size>=max_size)Kb_rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
@@ -1398,10 +1398,19 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass claz
       App.includeFuncCall(UpdateKB);
    }
 }
+
+static Memc<Int> Files;
+static void ProcessFiles()
+{
+   SyncLocker locker(JavaLock);
+   auto received=App.received; File f; FREPA(Files)if(f.readFD(Files[i]) && received)received(f); Files.clear(); // !! PROCESS IN ORDER, MUST CALL 'readFD' FOR ALL 'Files' EVEN IF 'received'==null TO CLOSE THEM !!
+}
 JNIEXPORT void JNICALL Java_com_esenthel_Native_drop(JNIEnv *env, jclass clazz, jint fd)
 {
-   File f; if(f.readFD(fd))
+   fd=dup(fd); if(fd>=0)
    {
+      {SyncLocker locker(JavaLock); Files.add(fd);}
+      App.includeFuncCall(ProcessFiles);
    }
 }
 

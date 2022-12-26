@@ -520,14 +520,14 @@ public class EsenthelActivity extends NativeActivity
                      {
                         Uri uri=item.getUri(); if(uri!=null)try
                         {
-                           ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null)com.esenthel.Native.drop(pfd.getFd());
+                           ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null){com.esenthel.Native.drop(pfd.getFd()); pfd.close();} // must be closed manually
                         }catch(Exception e){}
                      }
                   }else
                   {
                      Uri uri=data.getData(); if(uri!=null)try
                      {
-                        ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null)com.esenthel.Native.drop(pfd.getFd());
+                        ParcelFileDescriptor pfd=resolver.openFileDescriptor(uri, "r"); if(pfd!=null){com.esenthel.Native.drop(pfd.getFd()); pfd.close();} // must be closed manually
                      }catch(Exception e){}
                   }
                }

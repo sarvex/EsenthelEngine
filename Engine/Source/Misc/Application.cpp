@@ -646,6 +646,15 @@ void Application::close()
    if(quit)quit();else _close=true;
 }
 /******************************************************************************/
+void Application::pickPhoto(Int max_files)
+{
+#if ANDROID
+   if(max_files>0 && Jni && ActivityClass && Activity)
+      if(JMethodID pickPhoto=Jni.func(ActivityClass, "pickPhoto", "(I)V"))
+         Jni->CallVoidMethod(Activity, pickPhoto, jint(max_files));
+#endif
+}
+/******************************************************************************/
 Bool Application::testInstance()
 {
    if(flag&APP_EXIT_IMMEDIATELY)return false;

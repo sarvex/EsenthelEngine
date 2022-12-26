@@ -68,6 +68,7 @@ struct Application // Application Settings
    void (* paused            )(                                                       ); // pointer to custom function called when application is being  paused (lost   focus), default=null
    void (*resumed            )(                                                       ); // pointer to custom function called when application is being resumed (gained focus), default=null
    void (*drop               )(Memc<Str> &names, GuiObj *focus_obj, C Vec2 &screen_pos); // pointer to custom function called when a file is Drag and Dropped on the application window, 'names'=list of file names being drag and dropped, 'focus_obj'=gui object at which elements are being dropped, 'screen_pos'=screen position at which dropping occurs, default=null
+   void (*received           )(File &f                                                ); // pointer to custom function called when a file is received [Supported Platforms: Android, iOS]
    void (*quit               )(                                                       ); // pointer to custom function called when the application was requested to quit (for example by pressing Alt+F4 or clicking on the "X" close window button), if this member is different than null, then the application will not exit automatically, manual exiting can be called inside custom 'quit' function (for example by activating 'StateExit' State), this member is ignored when the application was created with APP_NO_CLOSE flag, default=null, this is not supported on Windows Universal Apps
    void (*exit               )(CChar *error                                           ); // pointer to custom function called when 'Exit' function is called, typically this happens when application has encountered an error and is about to be terminated, default=null
    void (*low_memory         )(                                                       ); // pointer to custom function called when the application has received low memory notification from the system, inside it you can release any unnecessary memory, default=null
@@ -124,6 +125,8 @@ struct Application // Application Settings
    Bool renameSelf      (C Str &dest); // rename application executable file to 'dest' location, false on fail
    void deleteSelfAtExit(           ); // notify that the exe should delete itself at application exit
    void close           (           ); // request application to be closed, if 'App.quit' was specified then it will be called instead
+
+   void pickPhoto(Int max_files); // open Photo Picker allowing to select 'max_files' number of images, they will be received through 'App.received' callback [Supported Platforms: Android, iOS]
 
    // function callbacks
             void addFuncCall(void func(          )            ) {_callbacks.add(func      );}             // add custom function to the Application callback list to be automatically called during Application Update on the main thread
