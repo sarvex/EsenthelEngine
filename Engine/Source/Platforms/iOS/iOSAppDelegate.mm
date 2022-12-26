@@ -132,7 +132,7 @@ static void UpdateMagnetometer(CLHeading *heading)
             #endif
                Image img; if(img.createSoft(w, h, 1, IMAGE_R8G8B8A8_SRGB))if(CGColorSpaceRef color_space=CGColorSpaceCreateDeviceRGB())
                {
-                  if(CGContextRef context=CGBitmapContextCreate(img.data(), img.w(), img.h(), 8, img.pitch(), color_space, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big)) // kCGImageAlphaLast results in error
+                  if(CGContextRef context=CGBitmapContextCreate(img.data(), img.w(), img.h(), 8, img.pitch(), color_space, kCGImageAlphaPremultipliedLast|kCGBitmapByteOrder32Big)) // kCGImageAlphaLast or kCGBitmapFloatComponents results in error on iOS
                   {
                      CGContextDrawImage(context, CGRectMake(0, 0, w, h), cg_image);
                      CGContextRelease  (context);
