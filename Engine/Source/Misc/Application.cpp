@@ -198,10 +198,13 @@ Application& Application::backgroundText(C Str &text)
 /******************************************************************************/
 #if IOS
 static SYSTEM_BAR StatusBar=SYSTEM_BAR_HIDDEN, NavBar=SYSTEM_BAR_HIDDEN;
-SYSTEM_BAR   Application::statusBar()C {return StatusBar;}
-SYSTEM_BAR   Application::   navBar()C {return    NavBar;}
-Application& Application::statusBar(SYSTEM_BAR bar) {if(StatusBar!=bar){StatusBar=bar; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
-Application& Application::   navBar(SYSTEM_BAR bar) {if(   NavBar!=bar){   NavBar=bar; if(ViewController)[ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];} return T;}
+static Bool       StatusBarColor=true;
+SYSTEM_BAR   Application::statusBar     ()C {return StatusBar     ;}
+SYSTEM_BAR   Application::   navBar     ()C {return    NavBar     ;}
+Bool         Application::statusBarColor()C {return StatusBarColor;}
+Application& Application::statusBar     (SYSTEM_BAR bar  ) {if(StatusBar     !=bar  ){StatusBar     =bar  ; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
+Application& Application::   navBar     (SYSTEM_BAR bar  ) {if(   NavBar     !=bar  ){   NavBar     =bar  ; if(ViewController)[ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];} return T;}
+Application& Application::statusBarColor(Bool       light) {if(StatusBarColor!=light){StatusBarColor=light; if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate                 ];} return T;}
 #endif
 Bool Application::getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C
 {
@@ -237,6 +240,7 @@ Application& Application::systemBars(SYSTEM_BAR status, SYSTEM_BAR navigation)
    return T;
 }
 #if !IOS
+Bool       Application::statusBarColor()C {return false;}   Application& Application::statusBarColor(Bool light) {return T;}
 SYSTEM_BAR Application::statusBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return status    ;}   Application& Application::statusBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(bar   , navigation); return T;}
 SYSTEM_BAR Application::   navBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return navigation;}   Application& Application::   navBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(status, bar       ); return T;}
 #endif

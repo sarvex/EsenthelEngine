@@ -117,9 +117,10 @@ struct Application // Application Settings
    Application& backgroundFull(Bool   on      );                           // set if Application is allowed to remain visible on the screen when in fullscreen mode but inactive (if false then application is minimized), default=false
 
    // system bars
-   Bool    getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C;   Application& systemBars(SYSTEM_BAR status, SYSTEM_BAR navigation); // get/set system     bars [Supported Platforms: Android]
-   SYSTEM_BAR statusBar (                                          )C;   Application& statusBar (SYSTEM_BAR bar                          ); // get/set status     bar  [Supported Platforms: Android]
-   SYSTEM_BAR navBar    (                                          )C;   Application&    navBar (SYSTEM_BAR bar                          ); // get/set navigation bar  [Supported Platforms: Android]
+   Bool    getSystemBars    (SYSTEM_BAR &status, SYSTEM_BAR &navigation)C;   Application& systemBars    (SYSTEM_BAR status, SYSTEM_BAR navigation); // get/set system     bars      [Supported Platforms: Android, iOS]
+   SYSTEM_BAR statusBar     (                                          )C;   Application& statusBar     (SYSTEM_BAR bar                          ); // get/set status     bar       [Supported Platforms: Android, iOS]
+   SYSTEM_BAR navBar        (                                          )C;   Application&    navBar     (SYSTEM_BAR bar                          ); // get/set navigation bar       [Supported Platforms: Android, iOS]
+   Bool       statusBarColor(                                          )C;   Application& statusBarColor(Bool       light                        ); // get/set status     bar color [Supported Platforms:          iOS]
 
    // operations
    Bool renameSelf      (C Str &dest); // rename application executable file to 'dest' location, false on fail
