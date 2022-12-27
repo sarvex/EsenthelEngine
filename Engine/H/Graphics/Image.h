@@ -683,6 +683,8 @@ struct Image // Image (Texture)
    Bool ExportJPG (  File &f   , Flt quality=-1, Int sub_sample=-1       )C; // export as JPG  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'sub_sample'=0..2 (chroma sub-sampling for RGB images, 0=none, 1=half, 2=quarter, -1=default)
    Bool ImportJXL (C Str  &name                                          ) ; // import    JXL  from file, false on fail
    Bool ImportJXL (  File &f                                             ) ; // import    JXL  from file, false on fail
+   Bool ExportJXL (C Str  &name, Flt quality=-1, Flt compression_level=-1)C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ExportJXL (  File &f   , Flt quality=-1, Flt compression_level=-1)C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
    Bool ImportWEBP(C Str  &name                                          ) ; // import    WEBP from file, false on fail
    Bool ImportWEBP(  File &f                                             ) ; // import    WEBP from file, false on fail
    Bool ExportWEBP(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1)C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
