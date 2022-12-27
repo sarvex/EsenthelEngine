@@ -163,17 +163,10 @@ EAGLView* GetUIView()
 /******************************************************************************/
 -(void)keyboardWasShown:(NSNotification*)notification
 {
-   Kb._visible=true;
    NSDictionary *info=[notification userInfo];
    CGRect rect=[[info objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-   RectI  recti(Round(rect.origin.x*ScreenScale), Round(rect.origin.y*ScreenScale), Round((rect.origin.x+rect.size.width)*ScreenScale), Round((rect.origin.y+rect.size.height)*ScreenScale));
-   switch(App.orientation())
-   {
-      default       : Kb._recti=recti; break;
-      case DIR_DOWN : Kb._recti.set(recti.min.x, D.resH()-recti.max.y, recti.max.x, D.resH()-recti.min.y); break;
-      case DIR_RIGHT: Kb._recti.set(recti.min.y,          recti.min.x, recti.max.y,          recti.max.x); break;
-      case DIR_LEFT : Kb._recti.set(recti.min.y, D.resH()-recti.max.x, recti.max.y, D.resH()-recti.min.x); break;
-   }
+   Kb._recti.set(Round(rect.origin.x*ScreenScale), Round(rect.origin.y*ScreenScale), Round((rect.origin.x+rect.size.width)*ScreenScale), Round((rect.origin.y+rect.size.height)*ScreenScale));
+   Kb._visible=true;
    Kb.screenChanged();
 }
 -(void)keyboardWillBeHidden:(NSNotification*)notification {Kb._visible=false; Kb.screenChanged();}

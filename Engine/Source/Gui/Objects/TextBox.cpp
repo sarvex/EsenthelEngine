@@ -198,7 +198,7 @@ TextBox& TextBox::scrollToCursor(Bool margin)
          pos.y     -=margin;
          pos_bottom+=margin;
       }
-      Flt bottom=pos_bottom;
+      Flt  bottom=pos_bottom;
       Rect kb_rect; if(Kb.rect(kb_rect))
       { // TODO: this assumes screen keyboard is at the bottom
          Rect screen_rect=screenRect();
