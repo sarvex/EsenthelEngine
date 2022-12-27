@@ -434,10 +434,10 @@ Menu& Menu::move(C Vec2 &delta)
 Menu& Menu::moveClamp(C Vec2 &delta)
 {
    Vec2 d=delta;
-   if(rect().max.x+d.x> D.w())d.x= D.w()-rect().max.x;
-   if(rect().min.y+d.y<-D.h())d.y=-D.h()-rect().min.y;
-   if(rect().min.x+d.x<-D.w())d.x=-D.w()-rect().min.x;
-   if(rect().max.y+d.y> D.h())d.y= D.h()-rect().max.y;
+   if(rect().max.x+d.x>D.rectUI().max.x)d.x=D.rectUI().max.x-rect().max.x;
+   if(rect().min.y+d.y<D.rectUI().min.y)d.y=D.rectUI().min.y-rect().min.y;
+   if(rect().min.x+d.x<D.rectUI().min.x)d.x=D.rectUI().min.x-rect().min.x;
+   if(rect().max.y+d.y>D.rectUI().max.y)d.y=D.rectUI().max.y-rect().max.y;
    return move(d);
 }
 Menu& Menu::pos  (C Vec2 &pos) {return moveClamp(pos-T.pos  ());}
@@ -453,7 +453,7 @@ Menu& Menu::posAround(C Rect &rect, Flt align)
 {
    Vec2 size=T.size(),
         pos =rect.ld(); pos.x+=Lerp(rect.w()-size.x+paddingR(), -paddingL(), LerpR(-1.0f, 1.0f, align));
-   Rect screen_rect(0, -D.h(), 0, D.h()); // only Y are needed
+   Rect screen_rect(0, D.rectUI().min.y, 0, D.rectUI().max.y); // only Y are needed
    Flt  h_below=(Rect_LU(0, pos.y         , 0, size.y)&screen_rect).h(), // visible height when below the 'rect'
         h_above=(Rect_LD(0, pos.y+rect.h(), 0, size.y)&screen_rect).h(); // visible height when above the 'rect'
 
@@ -599,26 +599,26 @@ void Menu::update(C GuiPC &gpc)
                                                    if(!pos       && Gui.menu()->contains(Gui  .ms    ()) && !list._kb_action){pos=&Ms   .pos();       }
             if(pos) // use detection basing on the 'pos' screen position
             {
-               Flt margin=Max(0.0f, D.h()-paddingT()-list.elmHeight()*1.0f); // use max 0 to don't go to lower half of the screen
+               Flt margin=Max(0.0f, D.rectUI().max.y-paddingT()-list.elmHeight()*1.0f); // use max 0 to don't go to lower half of the screen
                if(pos->y>=margin) // top of the screen
                {
-                  Flt d=D.h()-rect().max.y; if(d<0)T.move(Vec2(0, Max(d, -ScrollSpeed(T))));
+                  Flt d=D.rectUI().max.y-rect().max.y; if(d<0)T.move(Vec2(0, Max(d, -ScrollSpeed(T))));
                }else
                if(pos->y<=-margin) // bottom of the screen
                {
-                  Flt d=-D.h()-rect().min.y; if(d>0)T.move(Vec2(0, Min(d, ScrollSpeed(T))));
+                  Flt d=D.rectUI().min.y-rect().min.y; if(d>0)T.move(Vec2(0, Min(d, ScrollSpeed(T))));
                }
             }else // use detection basing on the 'list.cur'
             if(InRange(list.cur, list.visibleElms()))
             {
                Flt y=list.visToLocalY(list.cur)+gpc_this.offset.y,
-                   d=D.h()-(y+paddingT());
+                   d=D.rectUI().max.y-(y+paddingT());
                if( d<0) // top of the screen (check this before bottom of the screen)
                {
                   T.move(Vec2(0, Max(d, -ScrollSpeed(T))));
                }else
                {
-                  d=-D.h()-(y-list.elmHeight()-paddingB());
+                  d=D.rectUI().min.y-(y-list.elmHeight()-paddingB());
                   if(d>0) // bottom of the screen
                   {
                      T.move(Vec2(0, Min(d, ScrollSpeed(T))));
@@ -727,7 +727,7 @@ void Menu::update(C GuiPC &gpc)
                {
                   if(visible)
                   {
-                     Flt  w=menu->rect().w(), r=D.w()-_crect.max.x+EPS, l=_crect.min.x-(-D.w()); // visible space on the right/left
+                     Flt  w=menu->rect().w(), r=D.rectUI().max.x-_crect.max.x+EPS, l=_crect.min.x-D.rectUI().min.x; // visible space on the right/left
                      Vec2 pos((r>=w || r>=l) // put on right side if there's enough space to fit all, or right side has more visible space
                             ? _crect.max.x : _crect.min.x-w, rect().max.y+list.visToLocalY(list.absToVis(i)));
                      menu->pos (pos); // first use 'pos' to use clamping
