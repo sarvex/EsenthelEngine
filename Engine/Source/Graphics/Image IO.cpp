@@ -1527,6 +1527,7 @@ Bool Image::Import(File &f, Int type, Int mode, Int mip_maps)
    f.resetOK().pos(pos); if(ImportBMP (f))goto ok;
    f.resetOK().pos(pos); if(ImportPNG (f))goto ok;
    f.resetOK().pos(pos); if(ImportJPG (f))goto ok;
+   f.resetOK().pos(pos); if(ImportJXL (f))goto ok;
    f.resetOK().pos(pos); if(ImportWEBP(f))goto ok;
    f.resetOK().pos(pos); if(ImportAVIF(f))goto ok;
    f.resetOK().pos(pos); if(ImportHEIF(f))goto ok;

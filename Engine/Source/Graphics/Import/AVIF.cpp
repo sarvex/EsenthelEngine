@@ -19,7 +19,7 @@ Bool Image::ImportAVIF(File &f)
          Byte data[Elms(sig)];
    if(f.getFast(data) && EqualMem(sig, data) && f.skip(-SIZEI(sig)))
    {
-      Memt<Byte> data; data.setNumDiscard(f.size());
+      Memt<Byte> data; data.setNumDiscard(f.left());
       if(f.getFast(data.data(), data.elms()))
       if(avifDecoder *decoder=avifDecoderCreate())
       {

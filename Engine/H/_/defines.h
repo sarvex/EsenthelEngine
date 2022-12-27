@@ -209,6 +209,7 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
 
 // Image
 #define SUPPORT_JPG  1
+#define SUPPORT_JXL  (WINDOWS)
 #define SUPPORT_PNG  1
 #define SUPPORT_PSD  (!SWITCH && !WEB)
 #define SUPPORT_TIF  (!SWITCH && !WEB)

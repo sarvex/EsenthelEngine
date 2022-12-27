@@ -15,6 +15,18 @@
    #include "../../../../ThirdPartyLibs/end.h"
 #endif
 
+#if SUPPORT_JXL
+   #include "../../../../ThirdPartyLibs/begin.h"
+
+   #define JXL_STATIC_DEFINE
+   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/decode.h"
+   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/decode_cxx.h"
+   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/resizable_parallel_runner.h"
+   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/resizable_parallel_runner_cxx.h"
+
+   #include "../../../../ThirdPartyLibs/end.h"
+#endif
+
 namespace EE{
 /******************************************************************************/
 #if !SWITCH
@@ -221,7 +233,7 @@ Bool Image::ImportJPG(File &f)
       }
    };
 
-   	Bool  ok=false, created=false;
+   	Bool ok=false, created=false;
       JPGReader                  jpg(f);
       jpeg_error_mgr_ex          jerr ;
       jpeg_decompress_struct     cinfo; cinfo.err=jpeg_std_error(&jerr); jerr.error_exit=my_error_exit; if(setjmp(jerr.jump_buffer))goto error; // setup jump position that will be reached upon jpeg error
@@ -373,6 +385,95 @@ Bool Image::ExportJPG(File &f, Flt quality, Int sub_sample)C
 }
 #endif
 /******************************************************************************/
+Bool Image::ImportJXL(File &f)
+{
+#if SUPPORT_JXL
+   if(f.getUInt()==CC4(255, 10, 250, 44))
+   {
+      f.skip(-4);
+    //JxlSignatureCheck
+      Memt<Byte> data; data.setNumDiscard(f.left());
+      if(f.getFast(data.data(), data.elms()))
+      {
+         auto runner=JxlResizableParallelRunnerMake(nullptr);
+         auto dec   =JxlDecoderMake(nullptr);
+         if(JXL_DEC_SUCCESS!=JxlDecoderSubscribeEvents(dec.get(), JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE))goto error;
+         if(JXL_DEC_SUCCESS!=JxlDecoderSetParallelRunner(dec.get(), JxlResizableParallelRunner, runner.get()))goto error;
+
+         JxlBasicInfo info;
+         JxlPixelFormat format; Zero(format);
+         format.endianness=JXL_LITTLE_ENDIAN;
+
+         JxlDecoderSetInput(dec.get(), data.data(), data.elms());
+         JxlDecoderCloseInput(dec.get());
+
+         for(;;)switch(JxlDecoderStatus status=JxlDecoderProcessInput(dec.get()))
+         {
+            //case JXL_DEC_ERROR:
+            //case JXL_DEC_NEED_MORE_INPUT:
+            default:
+               goto error;
+
+            case JXL_DEC_BASIC_INFO:
+            {
+               if(JXL_DEC_SUCCESS!=JxlDecoderGetBasicInfo(dec.get(), &info))goto error;
+               Bool real =(info.bits_per_sample>8),
+                    color=(info.num_color_channels>1), // 'num_color_channels' can be 1 or 3
+                    alpha=(info.alpha_bits!=0);
+               IMAGE_TYPE type;
+               if(real)
+               {
+                  format.data_type=JXL_TYPE_FLOAT;
+                  if(alpha){type=IMAGE_F32_4_SRGB; format.num_channels=4;}
+                  else     {type=IMAGE_F32_3_SRGB; format.num_channels=3;}
+               }else
+               {
+                  format.data_type=JXL_TYPE_UINT8;
+                  if(color)
+                  {
+                     if(alpha){type=IMAGE_R8G8B8A8_SRGB; format.num_channels=4;}
+                     else     {type=IMAGE_R8G8B8_SRGB  ; format.num_channels=3;}
+                  }else
+                  {
+                     if(alpha){type=IMAGE_L8A8_SRGB; format.num_channels=2;}
+                     else     {type=IMAGE_L8_SRGB  ; format.num_channels=1;}
+                  }
+               }
+
+               createSoft(info.xsize, info.ysize, 1, type);
+               JxlResizableParallelRunnerSetThreads(runner.get(), JxlResizableParallelRunnerSuggestThreads(info.xsize, info.ysize));
+            }break;
+
+            case JXL_DEC_COLOR_ENCODING:
+            {
+               size_t icc_size; if(JXL_DEC_SUCCESS!=JxlDecoderGetICCProfileSize(dec.get(), &format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size))goto error;
+               Mems<Char8> icc_profile((Int)icc_size);
+               if(JXL_DEC_SUCCESS!=JxlDecoderGetColorAsICCProfile(dec.get(), &format, JXL_COLOR_PROFILE_TARGET_DATA, (uint8_t*)icc_profile.data(), icc_profile.elms()))goto error;
+            }break;
+
+          //case JXL_DEC_NEED_PREVIEW_OUT_BUFFER: break;
+          //case JXL_DEC_PREVIEW_IMAGE: break;
+
+            case JXL_DEC_NEED_IMAGE_OUT_BUFFER:
+            {
+               size_t buffer_size; if(JXL_DEC_SUCCESS!=JxlDecoderImageOutBufferSize(dec.get(), &format, &buffer_size))goto error;
+               if(buffer_size!=pitch2())goto error;
+               if(JXL_DEC_SUCCESS!=JxlDecoderSetImageOutBuffer(dec.get(), &format, T.data(), pitch2()))goto error;
+            }break;
+
+            case JXL_DEC_FULL_IMAGE:
+             //info.orientation;
+               return true; // If the image is an animation, more full frames may be decoded.
+
+            case JXL_DEC_SUCCESS: return true; // All decoding successfully finished. It's not required to call JxlDecoderReleaseInput(dec.get()) here since the decoder will be destroyed.
+         }
+      }
+   }
+error:
+#endif
+   del(); return false;
+}
+/******************************************************************************/
 Bool Image::ExportJPG(C Str &name, Flt quality, Int sub_sample)C
 {
 #if SUPPORT_JPG
@@ -384,6 +485,13 @@ Bool Image::ImportJPG(C Str &name)
 {
 #if SUPPORT_JPG
    File f; if(f.read(name))return ImportJPG(f);
+#endif
+   del(); return false;
+}
+Bool Image::ImportJXL(C Str &name)
+{
+#if SUPPORT_JXL
+   File f; if(f.read(name))return ImportJXL(f);
 #endif
    del(); return false;
 }
