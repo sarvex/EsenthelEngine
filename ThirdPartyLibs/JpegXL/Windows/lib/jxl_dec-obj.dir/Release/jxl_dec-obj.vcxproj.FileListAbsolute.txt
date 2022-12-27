@@ -1,1 +1,0 @@
-C:\Esenthel\ThirdPartyLibs\JpegXL\Windows\lib\jxl_dec-obj.dir\Release\jxl_dec-obj.lib

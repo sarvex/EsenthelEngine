@@ -1,1 +1,0 @@
-C:\Esenthel\ThirdPartyLibs\JpegXL\Windows\lib\jxl_enc-obj.dir\Release\jxl_enc-obj.lib

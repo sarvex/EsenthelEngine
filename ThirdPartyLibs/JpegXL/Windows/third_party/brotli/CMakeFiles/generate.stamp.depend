@@ -1,6 +1,0 @@
-# CMake generation dependency list for this directory.
-C:/Esenthel/ThirdPartyLibs/JpegXL/Windows/third_party/brotli/sources.lst.cmake
-C:/Esenthel/ThirdPartyLibs/JpegXL/lib/third_party/brotli/CMakeLists.txt
-C:/Program Files/CMake/share/cmake-3.24/Modules/CheckCSourceCompiles.cmake
-C:/Program Files/CMake/share/cmake-3.24/Modules/CheckFunctionExists.cmake
-C:/Program Files/CMake/share/cmake-3.24/Modules/GNUInstallDirs.cmake
