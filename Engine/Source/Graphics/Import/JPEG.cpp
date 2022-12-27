@@ -550,24 +550,13 @@ Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
          if(JXL_ENC_SUCCESS!=JxlEncoderAddImageFrame(frame_settings, &format, src->data(), src->pitch2()))goto error;
          JxlEncoderCloseInput(enc.get());
 
-         Mems<Byte> compressed(64);
-         uint8_t* next_out = compressed.data();
-         size_t avail_out = compressed.elms() - (next_out - compressed.data());
       again:
+         uint8_t temp[65536], *next_out=temp;
+         size_t  avail_out=SIZE(temp);
          JxlEncoderStatus process_result=JxlEncoderProcessOutput(enc.get(), &next_out, &avail_out);
-         if(process_result==JXL_ENC_NEED_MORE_OUTPUT)
-         {
-            size_t offset = next_out - compressed.data();
-            compressed.setNum(compressed.elms() * 2);
-            next_out = compressed.data() + offset;
-            avail_out = compressed.elms() - offset;
-            goto again;
-         }
-         compressed.setNum(next_out - compressed.data());
-         if(JXL_ENC_SUCCESS!=process_result)goto error;
-
-         f.put(compressed.data(), compressed.elms());
-         ok=true;
+         if(!f.put(temp, next_out-temp))goto error;
+         if(JXL_ENC_NEED_MORE_OUTPUT==process_result)goto again;
+         if(JXL_ENC_SUCCESS         ==process_result)ok=true;
       }
 
    error:
