@@ -198,13 +198,15 @@ TextBox& TextBox::scrollToCursor(Bool margin)
          pos.y     -=margin;
          pos_bottom+=margin;
       }
-      if(Kb.visible())
+      Flt bottom=pos_bottom;
+      Rect kb_rect; if(Kb.rect(kb_rect))
       { // TODO: this assumes screen keyboard is at the bottom
-         Int pixel_h=D.resH()-Kb._recti.min.y;
-         if( pixel_h>0)pos_bottom+=D.pixelToScreenSize().y*pixel_h;
+         Rect screen_rect=screenRect();
+         Flt  h=kb_rect.max.y-screen_rect.min.y;
+         if(  h>0)bottom+=h;
       }
       if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
-      if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
+      if(pos.y   <slidebar[1].offset() ||     bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   ,     bottom, true);
 
       if(GuiObj *parent=T.parent())if(parent->isRegion()) // scroll nearest parent too, in case this TextBox is located within a Region
       {
@@ -212,6 +214,12 @@ TextBox& TextBox::scrollToCursor(Bool margin)
          Vec2 ofs(-slidebar[0].wantedOffset(), -slidebar[1].wantedOffset());
          ofs.x+=rect().min.x;
          ofs.y-=rect().max.y;
+         if(Kb.visible())
+         { // TODO: this assumes screen keyboard is at the bottom
+            Rect screen_rect=region.screenRect();
+            Flt  h=kb_rect.max.y-screen_rect.min.y;
+            if(  h>0)pos_bottom+=h;
+         }
          region.scrollFitX(pos_left+ofs.x, pos_right +ofs.x, true);
          region.scrollFitY(pos.y   +ofs.y, pos_bottom+ofs.y, true);
       }
@@ -494,8 +502,10 @@ void TextBox::update(C GuiPC &gpc)
           C TextStyle &ts=*text_style;
          #endif
 
-            Flt   offset     =ts.size.x*TEXTBOX_OFFSET;
-            Rect  text_rect  =_crect+gpc.offset, clipped_text_rect=text_rect&gpc.clip;
+            Flt  offset=ts.size.x*TEXTBOX_OFFSET;
+            Rect clip  =gpc.clip;
+            Rect    kb_rect; if(Kb.rect(kb_rect))MAX(clip.min.y, kb_rect.max.y); // TODO: this assumes screen keyboard is at the bottom
+            Rect  text_rect  =_crect+gpc.offset, clipped_text_rect=text_rect&clip;
             Vec2  clipped_pos=*mt_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
             Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
 
@@ -545,10 +555,10 @@ void TextBox::update(C GuiPC &gpc)
                   MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                }
                // if pos is outside of clipped text rect then scroll (check <= instead of < in case we're at screen border), scroll parents only if rect is actually clipped with some margin (so we can still scroll a little bit more so we can see visually the rect)
-               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<gpc.clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else
-               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>gpc.clip.max.x-(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);
-               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<gpc.clip.min.y+(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );else
-               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>gpc.clip.max.y-(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );
+               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else
+               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>clip.max.x-(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);
+               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<clip.min.y+(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );else
+               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>clip.max.y-(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );
             }
          }
       }else _can_select=true;
