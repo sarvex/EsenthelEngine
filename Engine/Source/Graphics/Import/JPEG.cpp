@@ -549,7 +549,11 @@ Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
          JxlEncoderFrameSettings *frame_settings=JxlEncoderFrameSettingsCreate(enc.get(), null);
                                  JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_KEEP_INVISIBLE, 1);
          if(compression_level>=0)JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_EFFORT, Mid(RoundPos(Lerp(1, 9, compression_level)), 1, 9));
-       //JxlEncoderSetFrameLossless(frame_settings, );
+         if(quality          >=0)
+         {
+            JxlEncoderSetFrameDistance(frame_settings, Lerp(15, 0, Sat(quality)));
+            JxlEncoderSetFrameLossless(frame_settings, quality>=1);
+         }
 
          if(JXL_ENC_SUCCESS!=JxlEncoderAddImageFrame(frame_settings, &format, src->data(), src->pitch2()))goto error;
          JxlEncoderCloseInput(enc.get());
