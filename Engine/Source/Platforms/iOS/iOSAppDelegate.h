@@ -1,7 +1,7 @@
 /******************************************************************************/
 @interface iOSAppDelegate : NSObject<UIApplicationDelegate, CLLocationManagerDelegate
 , PHPickerViewControllerDelegate // for PHPickerViewController
-//, UINavigationControllerDelegate, UIImagePickerControllerDelegate // for UIImagePickerController
+, UINavigationControllerDelegate, UIImagePickerControllerDelegate // for UIImagePickerController
 #if SUPPORT_FACEBOOK
 , FBSDKSharingDelegate
 #endif

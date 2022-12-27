@@ -117,7 +117,15 @@ static void UpdateMagnetometer(CLHeading *heading)
    if(auto receive=App.receive_file)
       for(PHPickerResult *result in results)
    {
-   #if 0
+   #if 1
+      [result.itemProvider loadDataRepresentationForTypeIdentifier:@"public.data" completionHandler:^(NSData *data, NSError *error) // UTTypeData UTTypeImage
+      {  // this is not main thread
+         if(data)dispatch_async(dispatch_get_main_queue(),
+         ^{ // this is main thread
+            receive(NoTemp(File(data.bytes, data.length)));
+         });
+      }];
+   #else
       [result.itemProvider loadObjectOfClass:[UIImage class] completionHandler:^(__kindof id<NSItemProviderReading> _Nullable object, NSError *_Nullable error)
       {
          if([object isKindOfClass:[UIImage class]])
@@ -159,17 +167,30 @@ static void UpdateMagnetometer(CLHeading *heading)
           //[image release]; crashes
          }
       }];
-   #else
-      [result.itemProvider loadDataRepresentationForTypeIdentifier:@"public.data" completionHandler:^(NSData *data, NSError *error) // UTTypeData UTTypeImage
-      {  // this is not main thread
-         if(data)dispatch_async(dispatch_get_main_queue(),
-         ^{ // this is main thread
-            receive(NoTemp(File(data.bytes, data.length)));
-         });
-      }];
    #endif
    }
  //[results release]; crashes
+}
+-(void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id>*)info
+{
+   [picker dismissViewControllerAnimated:YES completion:nil];
+   [picker release];
+   if(auto receive=App.receive_file)
+   {
+   #if 1
+      if(NSURL *url=info[UIImagePickerControllerImageURL])
+      { // this is main thread
+         Str path=url.path;
+         File f; if(f.readStd(path))receive(f);
+      }
+   #else
+      if(UIImage *image=info[UIImagePickerControllerOriginalImage])
+      {
+         TODO
+      }
+   #endif
+   }
+ //[info release]; crashes
 }
 /******************************************************************************
 // FACEBOOK

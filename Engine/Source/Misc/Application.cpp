@@ -673,20 +673,24 @@ void Application::pickPhoto(Int max_files)
    #elif IOS
       if(ViewController)
       {
-       /*UIImagePickerController *picker=[[UIImagePickerController alloc] init];
-         picker.delegate=GetAppDelegate();
-         picker.sourceType=UIImagePickerControllerSourceTypePhotoLibrary;
+         if([PHPickerConfiguration class]) // if class was found, this is needed because PHPickerConfiguration is available on iOS 14.0+
+         {
+            PHPickerConfiguration *config=[[PHPickerConfiguration alloc] init];
+            config.selectionLimit=max_files;
+            config.filter=[PHPickerFilter imagesFilter];
 
-         [ViewController presentViewController:picker animated:YES completion:nil];*/
+            PHPickerViewController *picker=[[PHPickerViewController alloc] initWithConfiguration:config];
+            [config release];
+            picker.delegate=GetAppDelegate();
+            [ViewController presentViewController:picker animated:YES completion:nil];
+         }else
+         {
+            UIImagePickerController *picker=[[UIImagePickerController alloc] init];
+            picker.delegate=GetAppDelegate();
+            picker.sourceType=UIImagePickerControllerSourceTypePhotoLibrary;
 
-         PHPickerConfiguration *config=[[PHPickerConfiguration alloc] init];
-         config.selectionLimit=max_files;
-         config.filter=[PHPickerFilter imagesFilter];
-
-         PHPickerViewController *picker=[[PHPickerViewController alloc] initWithConfiguration:config];
-         [config release];
-         picker.delegate=GetAppDelegate();
-         [ViewController presentViewController:picker animated:YES completion:nil];
+            [ViewController presentViewController:picker animated:YES completion:nil];
+         }
       }
    #endif
    }
