@@ -539,7 +539,8 @@ Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
             basic_info.alpha_bits         =0;
             basic_info.alpha_exponent_bits=0;
          }
-         basic_info.uses_original_profile=JXL_FALSE;
+         Bool lossless=(quality>=1);
+         basic_info.uses_original_profile=lossless; // headers say this should be false for lossy, this needs to be true for lossless because 'JxlEncoderSetFrameLossless' will fail
          if(JXL_ENC_SUCCESS!=JxlEncoderSetBasicInfo(enc.get(), &basic_info))goto error;
 
          JxlColorEncoding color_encoding;
@@ -552,7 +553,7 @@ Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
          if(quality          >=0)
          {
             JxlEncoderSetFrameDistance(frame_settings, Lerp(15, 0, Sat(quality)));
-            JxlEncoderSetFrameLossless(frame_settings, quality>=1);
+            JxlEncoderSetFrameLossless(frame_settings, lossless);
          }
 
          if(JXL_ENC_SUCCESS!=JxlEncoderAddImageFrame(frame_settings, &format, src->data(), src->pitch2()))goto error;

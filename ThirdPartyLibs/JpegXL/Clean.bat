@@ -1,3 +1,4 @@
+rmdir /s /q Windows\.vs
 rmdir /s /q Windows\CMakeFiles
 rmdir /s /q Windows\lib\CMakeFiles
 rmdir /s /q Windows\lib\jxl_dec-obj.dir
