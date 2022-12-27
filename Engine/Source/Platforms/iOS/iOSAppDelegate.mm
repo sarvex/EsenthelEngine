@@ -114,8 +114,7 @@ static void UpdateMagnetometer(CLHeading *heading)
 {
    [picker dismissViewControllerAnimated:YES completion:nil];
    [picker release];
- //if(auto receive=App.receive_image)
-   if(auto receive=App.receive)
+   if(auto receive=App.receive_file)
       for(PHPickerResult *result in results)
    {
    #if 0
