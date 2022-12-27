@@ -198,6 +198,11 @@ TextBox& TextBox::scrollToCursor(Bool margin)
          pos.y     -=margin;
          pos_bottom+=margin;
       }
+      if(Kb.visible())
+      { // TODO: this assumes screen keyboard is at the bottom
+         Int pixel_h=D.resH()-Kb._recti.min.y;
+         if( pixel_h>0)pos_bottom+=D.pixelToScreenSize().y*pixel_h;
+      }
       if(pos_left<slidebar[0].offset() || pos_right >clientWidth ()+slidebar[0].offset())scrollFitX(pos_left, pos_right , true);
       if(pos.y   <slidebar[1].offset() || pos_bottom>clientHeight()+slidebar[1].offset())scrollFitY(pos.y   , pos_bottom, true);
 

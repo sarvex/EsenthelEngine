@@ -1390,7 +1390,7 @@ JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass claz
       SyncLocker locker(JavaLock);
       if(Kb_visible=(max_size>0))
       {
-         if(b_size>=max_size)Kb_rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest
+         if(b_size>=max_size)Kb_rect.set(       0, h-b_size,      w,      h);else // bottom size is the biggest (most common case)
          if(t_size>=max_size)Kb_rect.set(       0,        0,      w, t_size);else // top    size is the biggest
          if(l_size>=max_size)Kb_rect.set(       0,        0, l_size,      h);else // left   size is the biggest
                              Kb_rect.set(w-r_size,        0,      w,      h);     // right  size is the biggest
