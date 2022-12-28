@@ -42,3 +42,11 @@ AVIF_ENABLE_WERROR=0
 BUILD_SHARED_LIBS=0
 AOM_INCLUDE_DIR=/Applications/Esenthel/ThirdPartyLibs/AOM/lib
 AOM_LIBRARY=/Applications/Esenthel/ThirdPartyLibs/AOM/Mac/Release/libaom.a
+/******************************************************************************/
+iOS
+open xcode project
+add new Target "iOS"
+architectures=Standard Architectures
+Base SDK=iOS
+supported platforms=iOS
+product name=avif-iOS

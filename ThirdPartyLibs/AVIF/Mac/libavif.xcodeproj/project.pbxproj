@@ -60,6 +60,24 @@
 		96E930A281604D29B914D601 /* obu.c in Sources */ = {isa = PBXBuildFile; fileRef = 15F550D50DE54A7180353A0E /* obu.c */; };
 		AA0DEC9541DE4C65957C951B /* codec_aom.c in Sources */ = {isa = PBXBuildFile; fileRef = 8D4F31835FD44B7380261E6E /* codec_aom.c */; };
 		AF77655BA235489EA04E000B /* avif.c in Sources */ = {isa = PBXBuildFile; fileRef = 7527A68023A94C2196058A6A /* avif.c */; };
+		B66FD410295CBB9C00F1CFE5 /* alpha.c in Sources */ = {isa = PBXBuildFile; fileRef = B1BCAF98C67942C9A91E1070 /* alpha.c */; };
+		B66FD411295CBB9C00F1CFE5 /* avif.c in Sources */ = {isa = PBXBuildFile; fileRef = 7527A68023A94C2196058A6A /* avif.c */; };
+		B66FD412295CBB9C00F1CFE5 /* codec_aom.c in Sources */ = {isa = PBXBuildFile; fileRef = 8D4F31835FD44B7380261E6E /* codec_aom.c */; };
+		B66FD413295CBB9C00F1CFE5 /* colr.c in Sources */ = {isa = PBXBuildFile; fileRef = 8E5F8E0BCE244B6BBE1D9C8B /* colr.c */; };
+		B66FD414295CBB9C00F1CFE5 /* diag.c in Sources */ = {isa = PBXBuildFile; fileRef = FD7710E90B1A483A8F24ABD1 /* diag.c */; };
+		B66FD415295CBB9C00F1CFE5 /* exif.c in Sources */ = {isa = PBXBuildFile; fileRef = C4D3B3408A5940FBAC08B217 /* exif.c */; };
+		B66FD416295CBB9C00F1CFE5 /* io.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B7FBEB9CF4759B2721C46 /* io.c */; };
+		B66FD417295CBB9C00F1CFE5 /* mem.c in Sources */ = {isa = PBXBuildFile; fileRef = 4288985834824E97A890ACFE /* mem.c */; };
+		B66FD418295CBB9C00F1CFE5 /* obu.c in Sources */ = {isa = PBXBuildFile; fileRef = 15F550D50DE54A7180353A0E /* obu.c */; };
+		B66FD419295CBB9C00F1CFE5 /* rawdata.c in Sources */ = {isa = PBXBuildFile; fileRef = 104D150496004314A2A613FF /* rawdata.c */; };
+		B66FD41A295CBB9C00F1CFE5 /* read.c in Sources */ = {isa = PBXBuildFile; fileRef = 74385C8BDB5B4FBD8E41F3F0 /* read.c */; };
+		B66FD41B295CBB9C00F1CFE5 /* reformat.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E450E11E6B4B6B952DFFCC /* reformat.c */; };
+		B66FD41C295CBB9C00F1CFE5 /* reformat_libsharpyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = C144E68A9F8D44FBA0B83C24 /* reformat_libsharpyuv.c */; };
+		B66FD41D295CBB9C00F1CFE5 /* reformat_libyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = B33555FBB5854BE7A3D61A02 /* reformat_libyuv.c */; };
+		B66FD41E295CBB9C00F1CFE5 /* scale.c in Sources */ = {isa = PBXBuildFile; fileRef = 4CD4B7F3C8E64BDFAF51A9CE /* scale.c */; };
+		B66FD41F295CBB9C00F1CFE5 /* stream.c in Sources */ = {isa = PBXBuildFile; fileRef = F8D18AFAB5C84A8E87B7D420 /* stream.c */; };
+		B66FD420295CBB9C00F1CFE5 /* utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 9C1559514F51407C9918EF2C /* utils.c */; };
+		B66FD421295CBB9C00F1CFE5 /* write.c in Sources */ = {isa = PBXBuildFile; fileRef = 10D362794A744FB09961746E /* write.c */; };
 		BB2DC63D32DA470B8AE805DC /* reformat.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E450E11E6B4B6B952DFFCC /* reformat.c */; };
 		BF43D80DCAC54B4F86F1E28D /* io.c in Sources */ = {isa = PBXBuildFile; fileRef = 4C0B7FBEB9CF4759B2721C46 /* io.c */; };
 		E2D9A6ED062646979EF2B6EC /* reformat_libyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = B33555FBB5854BE7A3D61A02 /* reformat_libyuv.c */; };
@@ -95,6 +113,13 @@
 			remoteGlobalIDString = 07B0607353F948638FF21FC6;
 			remoteInfo = ZERO_CHECK;
 		};
+		B66FD40E295CBB9C00F1CFE5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 21CA08F6CB0C4A2198C468C9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 07B0607353F948638FF21FC6;
+			remoteInfo = ZERO_CHECK;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +139,7 @@
 		9C1559514F51407C9918EF2C /* utils.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = utils.c; path = src/utils.c; sourceTree = SOURCE_ROOT; };
 		B1BCAF98C67942C9A91E1070 /* alpha.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = alpha.c; path = src/alpha.c; sourceTree = SOURCE_ROOT; };
 		B33555FBB5854BE7A3D61A02 /* reformat_libyuv.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = reformat_libyuv.c; path = src/reformat_libyuv.c; sourceTree = SOURCE_ROOT; };
+		B66FD428295CBB9C00F1CFE5 /* libavif-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libavif-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C144E68A9F8D44FBA0B83C24 /* reformat_libsharpyuv.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = reformat_libsharpyuv.c; path = src/reformat_libsharpyuv.c; sourceTree = SOURCE_ROOT; };
 		C4D3B3408A5940FBAC08B217 /* exif.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.c; fileEncoding = 4; name = exif.c; path = src/exif.c; sourceTree = SOURCE_ROOT; };
 		D6094824E28144158C58BCFC /* CMakeLists.txt */ = {isa = PBXFileReference; explicitFileType = sourcecode.text; fileEncoding = 4; lastKnownFileType = text; path = CMakeLists.txt; sourceTree = SOURCE_ROOT; };
@@ -122,6 +148,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B66FD422295CBB9C00F1CFE5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DE70C156316747BA84A84A52 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -194,6 +227,7 @@
 			isa = PBXGroup;
 			children = (
 				5CE23F71633F4E1ABF79FC75 /* libavif.a */,
+				B66FD428295CBB9C00F1CFE5 /* libavif-iOS.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -227,6 +261,23 @@
 			productReference = 5CE23F71633F4E1ABF79FC75 /* libavif.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		B66FD40C295CBB9C00F1CFE5 /* iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B66FD423295CBB9C00F1CFE5 /* Build configuration list for PBXNativeTarget "iOS" */;
+			buildPhases = (
+				B66FD40F295CBB9C00F1CFE5 /* Sources */,
+				B66FD422295CBB9C00F1CFE5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B66FD40D295CBB9C00F1CFE5 /* PBXTargetDependency */,
+			);
+			name = iOS;
+			productName = avif;
+			productReference = B66FD428295CBB9C00F1CFE5 /* libavif-iOS.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -250,6 +301,7 @@
 				673B2D53B8CC43DDAD0F5CB7 /* ALL_BUILD */,
 				07B0607353F948638FF21FC6 /* ZERO_CHECK */,
 				13C871B161654E1B9694FA22 /* avif */,
+				B66FD40C295CBB9C00F1CFE5 /* iOS */,
 				6900F59E4B8F4CBC8A5A6F14 /* install */,
 			);
 		};
@@ -307,6 +359,31 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B66FD40F295CBB9C00F1CFE5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B66FD410295CBB9C00F1CFE5 /* alpha.c in Sources */,
+				B66FD411295CBB9C00F1CFE5 /* avif.c in Sources */,
+				B66FD412295CBB9C00F1CFE5 /* codec_aom.c in Sources */,
+				B66FD413295CBB9C00F1CFE5 /* colr.c in Sources */,
+				B66FD414295CBB9C00F1CFE5 /* diag.c in Sources */,
+				B66FD415295CBB9C00F1CFE5 /* exif.c in Sources */,
+				B66FD416295CBB9C00F1CFE5 /* io.c in Sources */,
+				B66FD417295CBB9C00F1CFE5 /* mem.c in Sources */,
+				B66FD418295CBB9C00F1CFE5 /* obu.c in Sources */,
+				B66FD419295CBB9C00F1CFE5 /* rawdata.c in Sources */,
+				B66FD41A295CBB9C00F1CFE5 /* read.c in Sources */,
+				B66FD41B295CBB9C00F1CFE5 /* reformat.c in Sources */,
+				B66FD41C295CBB9C00F1CFE5 /* reformat_libsharpyuv.c in Sources */,
+				B66FD41D295CBB9C00F1CFE5 /* reformat_libyuv.c in Sources */,
+				B66FD41E295CBB9C00F1CFE5 /* scale.c in Sources */,
+				B66FD41F295CBB9C00F1CFE5 /* stream.c in Sources */,
+				B66FD420295CBB9C00F1CFE5 /* utils.c in Sources */,
+				B66FD421295CBB9C00F1CFE5 /* write.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F1410283E3BD4D5181DAFD24 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -354,6 +431,11 @@
 			isa = PBXTargetDependency;
 			target = 13C871B161654E1B9694FA22 /* avif */;
 			targetProxy = 977BCC7826204AD288E2B9B5 /* PBXContainerItemProxy */;
+		};
+		B66FD40D295CBB9C00F1CFE5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 07B0607353F948638FF21FC6 /* ZERO_CHECK */;
+			targetProxy = B66FD40E295CBB9C00F1CFE5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -729,6 +811,193 @@
 			};
 			name = Release;
 		};
+		B66FD424295CBB9C00F1CFE5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/Debug;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					"'AVIF_CODEC_AOM=1'",
+					"'AVIF_CODEC_AOM_ENCODE=1'",
+					"'AVIF_CODEC_AOM_DECODE=1'",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					/Applications/Esenthel/ThirdPartyLibs/AVIF/lib/include,
+					/Applications/Esenthel/ThirdPartyLibs/AOM/lib,
+					"$(inherited)",
+				);
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CFLAGS = (
+					"-fvisibility=hidden",
+					"-Wall",
+					"-Wextra",
+					"-Wshorten-64-to-32",
+					"'-std=gnu99'",
+					"$(inherited)",
+				);
+				OTHER_LIBTOOLFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "avif-iOS";
+				SDKROOT = iphoneos;
+				SECTORDER_FLAGS = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				TARGET_TEMP_DIR = "/Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/build/avif.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "$(inherited)";
+			};
+			name = Debug;
+		};
+		B66FD425295CBB9C00F1CFE5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/Release;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					"'AVIF_CODEC_AOM=1'",
+					"'AVIF_CODEC_AOM_ENCODE=1'",
+					"'AVIF_CODEC_AOM_DECODE=1'",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					/Applications/Esenthel/ThirdPartyLibs/AVIF/lib/include,
+					/Applications/Esenthel/ThirdPartyLibs/AOM/lib,
+					"$(inherited)",
+				);
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CFLAGS = (
+					"-DNDEBUG",
+					"-fvisibility=hidden",
+					"-Wall",
+					"-Wextra",
+					"-Wshorten-64-to-32",
+					"'-std=gnu99'",
+					"$(inherited)",
+				);
+				OTHER_LIBTOOLFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "avif-iOS";
+				SDKROOT = iphoneos;
+				SECTORDER_FLAGS = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				TARGET_TEMP_DIR = "/Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/build/avif.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "$(inherited)";
+			};
+			name = Release;
+		};
+		B66FD426295CBB9C00F1CFE5 /* MinSizeRel */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/MinSizeRel;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					"'AVIF_CODEC_AOM=1'",
+					"'AVIF_CODEC_AOM_ENCODE=1'",
+					"'AVIF_CODEC_AOM_DECODE=1'",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					/Applications/Esenthel/ThirdPartyLibs/AVIF/lib/include,
+					/Applications/Esenthel/ThirdPartyLibs/AOM/lib,
+					"$(inherited)",
+				);
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CFLAGS = (
+					"-DNDEBUG",
+					"-fvisibility=hidden",
+					"-Wall",
+					"-Wextra",
+					"-Wshorten-64-to-32",
+					"'-std=gnu99'",
+					"$(inherited)",
+				);
+				OTHER_LIBTOOLFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "avif-iOS";
+				SDKROOT = iphoneos;
+				SECTORDER_FLAGS = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				TARGET_TEMP_DIR = "/Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/build/avif.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "$(inherited)";
+			};
+			name = MinSizeRel;
+		};
+		B66FD427295CBB9C00F1CFE5 /* RelWithDebInfo */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				COMBINE_HIDPI_IMAGES = YES;
+				CONFIGURATION_BUILD_DIR = /Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/RelWithDebInfo;
+				EXECUTABLE_PREFIX = lib;
+				EXECUTABLE_SUFFIX = .a;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = NO;
+				GCC_OPTIMIZATION_LEVEL = 2;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"'CMAKE_INTDIR=\"$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)\"'",
+					"'AVIF_CODEC_AOM=1'",
+					"'AVIF_CODEC_AOM_ENCODE=1'",
+					"'AVIF_CODEC_AOM_DECODE=1'",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				HEADER_SEARCH_PATHS = (
+					/Applications/Esenthel/ThirdPartyLibs/AVIF/lib/include,
+					/Applications/Esenthel/ThirdPartyLibs/AOM/lib,
+					"$(inherited)",
+				);
+				INSTALL_PATH = "";
+				LIBRARY_STYLE = STATIC;
+				OTHER_CFLAGS = (
+					"-DNDEBUG",
+					"-fvisibility=hidden",
+					"-Wall",
+					"-Wextra",
+					"-Wshorten-64-to-32",
+					"'-std=gnu99'",
+					"$(inherited)",
+				);
+				OTHER_LIBTOOLFLAGS = "";
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "avif-iOS";
+				SDKROOT = iphoneos;
+				SECTORDER_FLAGS = "";
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
+				TARGET_TEMP_DIR = "/Applications/Esenthel/ThirdPartyLibs/AVIF/Mac/build/avif.build/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)";
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = "$(inherited)";
+			};
+			name = RelWithDebInfo;
+		};
 		CE8A36BFFC3E4A219A81201E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -896,6 +1165,17 @@
 				3E53CB3534C64F0586F9DBA2 /* Release */,
 				EF1705A33CA04B35AE97D109 /* MinSizeRel */,
 				53C5608BD8B449B8B15D38B3 /* RelWithDebInfo */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B66FD423295CBB9C00F1CFE5 /* Build configuration list for PBXNativeTarget "iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B66FD424295CBB9C00F1CFE5 /* Debug */,
+				B66FD425295CBB9C00F1CFE5 /* Release */,
+				B66FD426295CBB9C00F1CFE5 /* MinSizeRel */,
+				B66FD427295CBB9C00F1CFE5 /* RelWithDebInfo */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
