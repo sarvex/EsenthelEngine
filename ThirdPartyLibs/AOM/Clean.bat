@@ -112,6 +112,5 @@ del Mac\Release\libaom_dsp_encoder_ssse3_static.a
 del Mac\Release\libaom_version.a
 del Mac\Release\libav1_rc_qmode.a
 del Mac\cmake_install.cmake
-del Mac\CMakeCache.txt
 del Mac\libaom_srcs.gni
 del Mac\libaom_srcs.txt

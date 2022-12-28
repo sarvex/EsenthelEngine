@@ -16,6 +16,5 @@ rmdir /s /q Mac\CMakeFiles
 rmdir /s /q Mac\contrib
 rmdir /s /q Mac\Debug
 del Mac\cmake_install.cmake
-del Mac\CMakeCache.txt
 del Mac\libavif.pc
 del Mac\libavif-config-version.cmake
