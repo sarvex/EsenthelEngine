@@ -601,6 +601,9 @@ inline Flt  U2ToFlt(Byte u) {return u/3.0f                  ;} // 0..3 -> 0..1
 inline UInt FltToU10(Flt  f) {return Mid(RoundPos(f*1023), 0, 1023);} // 0..1    -> 0..1023, it's okay to clamp after converting to int for small values
 inline Flt  U10ToFlt(UInt u) {return u/1023.0f                     ;} // 0..1023 -> 0..1
 
+inline UInt FltToU12(Flt  f) {return RoundPos(Sat(f)*4095);} // 0..1    -> 0..4095
+inline Flt  U12ToFlt(UInt u) {return u/4095.0f            ;} // 0..4095 -> 0..1
+
 inline Flt  ShortToSFlt (Short s) {return         (s<=-32767) ? -1 : s/32767.0f;} // -32767..32767 -> -1..1
 inline Short SFltToShort(Flt   f) {return RoundPos(Mid(f, -1.0f, 1.0f)*32767)  ;} // -1..1 -> -32767..32767
 
