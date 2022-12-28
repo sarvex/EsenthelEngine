@@ -114,3 +114,14 @@ del Mac\Release\libav1_rc_qmode.a
 del Mac\cmake_install.cmake
 del Mac\libaom_srcs.gni
 del Mac\libaom_srcs.txt
+
+rmdir /s /q iOS\CMakeFiles
+rmdir /s /q iOS\examples
+rmdir /s /q iOS\tools
+del iOS\aom.pc
+del iOS\libaom_pc.a
+del iOS\libaom_srcs.gni
+del iOS\libaom_srcs.txt
+del iOS\libaom_test_srcs.txt
+del iOS\libaom_version.a
+del iOS\libav1_rc_qmode.a

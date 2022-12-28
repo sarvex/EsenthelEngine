@@ -71,3 +71,27 @@ static void setup_rtcd_internal(void)
 don't include:
 aom_pc_dummy.o
 ducky_encode.o
+/******************************************************************************/
+MAC:
+Xcode
+CONFIG_SHARED=0
+ENABLE_DOCS=0
+ENABLE_EXAMPLES=0
+ENABLE_TESTDATA=0
+ENABLE_TESTS=0
+ENABLE_TOOLS=0
+ENABLE_VSX=0
+/******************************************************************************/
+iOS:
+Unix Makefiles
+CONFIG_SHARED=0
+ENABLE_DOCS=0
+ENABLE_EXAMPLES=0
+ENABLE_TESTDATA=0
+ENABLE_TESTS=0
+ENABLE_TOOLS=0
+ENABLE_VSX=0
+HAVE_NEON=1
+
+cd /Applications/Esenthel/ThirdPartyLibs/AOM/iOS
+make
