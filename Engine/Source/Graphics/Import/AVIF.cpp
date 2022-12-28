@@ -80,8 +80,67 @@ Bool Image::ExportAVIF(File &f, Flt rgb_quality, Flt alpha_quality)C
 #if SUPPORT_AVIF
  C Image *src=this;
    Image  temp;
-   if(src->cube  ()                                                      )if(temp.fromCube(*src ,             IMAGE_R8G8B8A8_SRGB               ))src=&temp;else return false;
-   if(src->hwType()!=IMAGE_R8G8B8A8 && src->hwType()!=IMAGE_R8G8B8A8_SRGB)if(src->copy    ( temp, -1, -1, -1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else return false; // AVIF uses RGBA
+
+ C auto &type_info=src->typeInfo();
+   Bool  hp   =(type_info.high_precision),
+         alpha=(type_info.a>0);
+   IMAGE_TYPE type=(hp ? (alpha ? IMAGE_F16_4 : IMAGE_F16_3) : (alpha ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8_SRGB));
+
+   if(src->cube())if(temp.fromCube(*src, type))src=&temp;else return false;
+
+   if(hp // always copy for 'hp' because there we have to convert values
+   || !CanDoRawCopy(src->hwType(), type, IgnoreGamma(0, src->hwType(), type)))
+      if(src->copy(temp, -1, -1, -1, type, IMAGE_SOFT, 1))src=&temp;else return false;
+
+   if(hp)
+   {
+      Image &img=temp;
+      if(!img.lock())return false;
+      REPD(y, img.h())
+      {
+         Byte *dy=img.data() + y*img.pitch();
+         REPD(x, img.w())
+         {
+            Byte *d=dy + x*img.bytePP();
+                     ((U16*)d)[0]=FltToU16(LinearToSRGB(((Half*)d)[0]));
+                     ((U16*)d)[1]=FltToU16(LinearToSRGB(((Half*)d)[1]));
+                     ((U16*)d)[2]=FltToU16(LinearToSRGB(((Half*)d)[2]));
+            if(alpha)((U16*)d)[3]=FltToU16(             ((Half*)d)[3] );
+         }
+      }
+      img.unlock();
+   }
+   if(!src->lockRead())return false;
+
+   avifEncoder *encoder=null;
+   avifImage     *image=avifImageCreate(src->w(), src->h(), hp ? 16 : 8, AVIF_PIXEL_FORMAT_YUV444); // these values dictate what goes into the final AVIF
+   avifRWData    output=AVIF_DATA_EMPTY;
+   avifRGBImage  rgb; avifRGBImageSetDefaults(&rgb, image);
+   rgb.pixels  =ConstCast(src->data ());
+   rgb.rowBytes=          src->pitch();
+   rgb.format  =(alpha ? AVIF_RGB_FORMAT_RGBA : AVIF_RGB_FORMAT_RGB);
+ //rgb.depth;
+ //rgb.chromaDownsampling;
+   if(avifImageRGBToYUV(image, &rgb)!=AVIF_RESULT_OK)goto error;
+   encoder=avifEncoderCreate();
+    // Configure your encoder here (see avif/avif.h):
+    // * speed
+    // * maxThreads
+    // * quality
+    // * qualityAlpha
+   encoder->quality     =60;
+   encoder->qualityAlpha=AVIF_QUALITY_LOSSLESS;
+
+   if(avifEncoderAddImage(encoder, image, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)!=AVIF_RESULT_OK)goto error;
+   if(avifEncoderFinish  (encoder, &output                             )!=AVIF_RESULT_OK)goto error;
+
+   ok=f.put(output.data, (Int)output.size);
+error:
+    if(image  )avifImageDestroy  (image);
+    if(encoder)avifEncoderDestroy(encoder);
+               avifRWDataFree    (&output);
+
+   src->unlock();
 #endif
    return ok;
 }
