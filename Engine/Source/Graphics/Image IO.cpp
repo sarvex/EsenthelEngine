@@ -1511,7 +1511,7 @@ Bool Image::Export(C Str &name, Flt rgb_quality, Flt alpha_quality, Flt compress
    if(Equal(ext, "jpg" ))return ExportJPG (name, rgb_quality, sub_sample);
    if(Equal(ext, "jxl" ))return ExportJXL (name, rgb_quality, compression_level);
    if(Equal(ext, "webp"))return ExportWEBP(name, rgb_quality, alpha_quality);
-   if(Equal(ext, "avif"))return ExportAVIF(name, rgb_quality);
+   if(Equal(ext, "avif"))return ExportAVIF(name, rgb_quality, alpha_quality, compression_level);
    if(Equal(ext, "heif"))return ExportHEIF(name, rgb_quality);
    if(Equal(ext, "tga" ))return ExportTGA (name);
    if(Equal(ext, "tif" ))return ExportTIF (name, compression_level);

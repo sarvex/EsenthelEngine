@@ -74,7 +74,7 @@ Bool Image::ImportAVIF(C Str &name)
    del(); return false;
 }
 /******************************************************************************/
-Bool Image::ExportAVIF(File &f, Flt rgb_quality, Flt alpha_quality)C
+Bool Image::ExportAVIF(File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level)C
 {
    Bool ok=false;
 #if SUPPORT_AVIF
@@ -144,10 +144,10 @@ error:
 #endif
    return ok;
 }
-Bool Image::ExportAVIF(C Str &name, Flt rgb_quality, Flt alpha_quality)C
+Bool Image::ExportAVIF(C Str &name, Flt rgb_quality, Flt alpha_quality, Flt compression_level)C
 {
 #if SUPPORT_AVIF
-   File f; if(f.write(name)){if(ExportAVIF(f, rgb_quality, alpha_quality) && f.flush())return true; f.del(); FDelFile(name);}
+   File f; if(f.write(name)){if(ExportAVIF(f, rgb_quality, alpha_quality, compression_level) && f.flush())return true; f.del(); FDelFile(name);}
 #endif
    return false;
 }

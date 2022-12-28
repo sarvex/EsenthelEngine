@@ -669,55 +669,55 @@ struct Image // Image (Texture)
    Bool       ImportCube(C Str   &right, C Str   &left, C Str   &up, C Str   &down, C Str   &forward, C Str   &back, Int type=-1, Bool soft=false, Int mip_maps=1, Bool resize_to_pow2=true, FILTER_TYPE filter=FILTER_BEST); // import BMP PNG JPG JXL WEBP AVIF HEIF TGA TIF DDS PSD ICO HDR as cube texture, 'type'=IMAGE_TYPE (-1=keep original value), 'soft'=if use IMAGE_SOFT_CUBE or IMAGE_CUBE, false on fail
    Image& mustImportCube(C Str   &right, C Str   &left, C Str   &up, C Str   &down, C Str   &forward, C Str   &back, Int type=-1, Bool soft=false, Int mip_maps=1, Bool resize_to_pow2=true, FILTER_TYPE filter=FILTER_BEST); // import BMP PNG JPG JXL WEBP AVIF HEIF TGA TIF DDS PSD ICO HDR as cube texture, 'type'=IMAGE_TYPE (-1=keep original value), 'soft'=if use IMAGE_SOFT_CUBE or IMAGE_CUBE, Exit  on fail
 
-   Bool ImportBMP (C Str  &name                                          ) ; // import    BMP  from file, false on fail
-   Bool ImportBMP (  File &f                                             ) ; // import    BMP  from file, false on fail
-   Bool ExportBMP (C Str  &name                                          )C; // export as BMP  to   file, false on fail
-   Bool ExportBMP (  File &f                                             )C; // export as BMP  to   file, false on fail
-   Bool ImportPNG (C Str  &name                                          ) ; // import    PNG  from file, false on fail
-   Bool ImportPNG (  File &f                                             ) ; // import    PNG  from file, false on fail
-   Bool ExportPNG (C Str  &name, Flt compression_level=-1                )C; // export as PNG  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ExportPNG (  File &f   , Flt compression_level=-1                )C; // export as PNG  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ImportJPG (C Str  &name                                          ) ; // import    JPG  from file, false on fail
-   Bool ImportJPG (  File &f                                             ) ; // import    JPG  from file, false on fail
-   Bool ExportJPG (C Str  &name, Flt quality=-1, Int sub_sample=-1       )C; // export as JPG  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'sub_sample'=0..2 (chroma sub-sampling for RGB images, 0=none, 1=half, 2=quarter, -1=default)
-   Bool ExportJPG (  File &f   , Flt quality=-1, Int sub_sample=-1       )C; // export as JPG  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'sub_sample'=0..2 (chroma sub-sampling for RGB images, 0=none, 1=half, 2=quarter, -1=default)
-   Bool ImportJXL (C Str  &name                                          ) ; // import    JXL  from file, false on fail
-   Bool ImportJXL (  File &f                                             ) ; // import    JXL  from file, false on fail
-   Bool ExportJXL (C Str  &name, Flt quality=-1, Flt compression_level=-1)C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ExportJXL (  File &f   , Flt quality=-1, Flt compression_level=-1)C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ImportWEBP(C Str  &name                                          ) ; // import    WEBP from file, false on fail
-   Bool ImportWEBP(  File &f                                             ) ; // import    WEBP from file, false on fail
-   Bool ExportWEBP(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1)C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
-   Bool ExportWEBP(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1)C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
-   Bool ImportAVIF(C Str  &name                                          ) ; // import    AVIF from file, false on fail
-   Bool ImportAVIF(  File &f                                             ) ; // import    AVIF from file, false on fail
-   Bool ExportAVIF(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
-   Bool ExportAVIF(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
-   Bool ImportHEIF(C Str  &name                                          ) ; // import    HEIF from file, false on fail
-   Bool ImportHEIF(  File &f                                             ) ; // import    HEIF from file, false on fail
-   Bool ExportHEIF(C Str  &name, Flt quality=-1                          )C; // export as HEIF to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=lossless)
-   Bool ExportHEIF(  File &f   , Flt quality=-1                          )C; // export as HEIF to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=lossless)
-   Bool ImportTGA (C Str  &name                                          ) ; // import    TGA  from file, false on fail
-   Bool ImportTGA (  File &f                                             ) ; // import    TGA  from file, false on fail
-   Bool ExportTGA (C Str  &name                                          )C; // export as TGA  to   file, false on fail
-   Bool ExportTGA (  File &f                                             )C; // export as TGA  to   file, false on fail
-   Bool ImportTIF (C Str  &name                                          ) ; // import    TIF  from file, false on fail
-   Bool ImportTIF (  File &f                                             ) ; // import    TIF  from file, false on fail
-   Bool ExportTIF (C Str  &name, Flt compression_level=-1                )C; // export as TIF  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ExportTIF (  File &f   , Flt compression_level=-1                )C; // export as TIF  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
-   Bool ImportDDS (C Str  &name                                          ) ; // import    DDS  from file, false on fail
-   Bool ImportDDS (  File &f                                             ) ; // import    DDS  from file, false on fail
-   Bool ExportDDS (C Str  &name                                          )C; // export as DDS  to   file, false on fail
-   Bool ImportPSD (C Str  &name                                          ) ; // import    PSD  from file, false on fail
-   Bool ImportPSD (  File &f                                             ) ; // import    PSD  from file, false on fail
-   Bool ImportICO (C Str  &name                                          ) ; // import    ICO  from file, false on fail
-   Bool ImportICO (  File &f                                             ) ; // import    ICO  from file, false on fail
-   Bool ExportICO (C Str  &name                                          )C; // export as ICO  to   file, false on fail
-   Bool ExportICO (  File &f                                             )C; // export as ICO  to   file, false on fail
-   Bool ExportICNS(C Str  &name                                          )C; // export as ICNS to   file, false on fail
-   Bool ExportICNS(  File &f                                             )C; // export as ICNS to   file, false on fail
-   Bool ImportHDR (C Str  &name                                          ) ; // import    HDR  from file, false on fail
-   Bool ImportHDR (  File &f                                             ) ; // import    HDR  from file, false on fail
+   Bool ImportBMP (C Str  &name                                                                    ) ; // import    BMP  from file, false on fail
+   Bool ImportBMP (  File &f                                                                       ) ; // import    BMP  from file, false on fail
+   Bool ExportBMP (C Str  &name                                                                    )C; // export as BMP  to   file, false on fail
+   Bool ExportBMP (  File &f                                                                       )C; // export as BMP  to   file, false on fail
+   Bool ImportPNG (C Str  &name                                                                    ) ; // import    PNG  from file, false on fail
+   Bool ImportPNG (  File &f                                                                       ) ; // import    PNG  from file, false on fail
+   Bool ExportPNG (C Str  &name, Flt compression_level=-1                                          )C; // export as PNG  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ExportPNG (  File &f   , Flt compression_level=-1                                          )C; // export as PNG  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ImportJPG (C Str  &name                                                                    ) ; // import    JPG  from file, false on fail
+   Bool ImportJPG (  File &f                                                                       ) ; // import    JPG  from file, false on fail
+   Bool ExportJPG (C Str  &name, Flt quality=-1, Int sub_sample=-1                                 )C; // export as JPG  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'sub_sample'=0..2 (chroma sub-sampling for RGB images, 0=none, 1=half, 2=quarter, -1=default)
+   Bool ExportJPG (  File &f   , Flt quality=-1, Int sub_sample=-1                                 )C; // export as JPG  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'sub_sample'=0..2 (chroma sub-sampling for RGB images, 0=none, 1=half, 2=quarter, -1=default)
+   Bool ImportJXL (C Str  &name                                                                    ) ; // import    JXL  from file, false on fail
+   Bool ImportJXL (  File &f                                                                       ) ; // import    JXL  from file, false on fail
+   Bool ExportJXL (C Str  &name, Flt quality=-1, Flt compression_level=-1                          )C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ExportJXL (  File &f   , Flt quality=-1, Flt compression_level=-1                          )C; // export as JXL  to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=best quality), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ImportWEBP(C Str  &name                                                                    ) ; // import    WEBP from file, false on fail
+   Bool ImportWEBP(  File &f                                                                       ) ; // import    WEBP from file, false on fail
+   Bool ExportWEBP(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1                          )C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
+   Bool ExportWEBP(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1                          )C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
+   Bool ImportAVIF(C Str  &name                                                                    ) ; // import    AVIF from file, false on fail
+   Bool ImportAVIF(  File &f                                                                       ) ; // import    AVIF from file, false on fail
+   Bool ExportAVIF(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1, Flt compression_level=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ExportAVIF(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1, Flt compression_level=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ImportHEIF(C Str  &name                                                                    ) ; // import    HEIF from file, false on fail
+   Bool ImportHEIF(  File &f                                                                       ) ; // import    HEIF from file, false on fail
+   Bool ExportHEIF(C Str  &name, Flt quality=-1                                                    )C; // export as HEIF to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=lossless)
+   Bool ExportHEIF(  File &f   , Flt quality=-1                                                    )C; // export as HEIF to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=lossless)
+   Bool ImportTGA (C Str  &name                                                                    ) ; // import    TGA  from file, false on fail
+   Bool ImportTGA (  File &f                                                                       ) ; // import    TGA  from file, false on fail
+   Bool ExportTGA (C Str  &name                                                                    )C; // export as TGA  to   file, false on fail
+   Bool ExportTGA (  File &f                                                                       )C; // export as TGA  to   file, false on fail
+   Bool ImportTIF (C Str  &name                                                                    ) ; // import    TIF  from file, false on fail
+   Bool ImportTIF (  File &f                                                                       ) ; // import    TIF  from file, false on fail
+   Bool ExportTIF (C Str  &name, Flt compression_level=-1                                          )C; // export as TIF  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ExportTIF (  File &f   , Flt compression_level=-1                                          )C; // export as TIF  to   file, false on fail, 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+   Bool ImportDDS (C Str  &name                                                                    ) ; // import    DDS  from file, false on fail
+   Bool ImportDDS (  File &f                                                                       ) ; // import    DDS  from file, false on fail
+   Bool ExportDDS (C Str  &name                                                                    )C; // export as DDS  to   file, false on fail
+   Bool ImportPSD (C Str  &name                                                                    ) ; // import    PSD  from file, false on fail
+   Bool ImportPSD (  File &f                                                                       ) ; // import    PSD  from file, false on fail
+   Bool ImportICO (C Str  &name                                                                    ) ; // import    ICO  from file, false on fail
+   Bool ImportICO (  File &f                                                                       ) ; // import    ICO  from file, false on fail
+   Bool ExportICO (C Str  &name                                                                    )C; // export as ICO  to   file, false on fail
+   Bool ExportICO (  File &f                                                                       )C; // export as ICO  to   file, false on fail
+   Bool ExportICNS(C Str  &name                                                                    )C; // export as ICNS to   file, false on fail
+   Bool ExportICNS(  File &f                                                                       )C; // export as ICNS to   file, false on fail
+   Bool ImportHDR (C Str  &name                                                                    ) ; // import    HDR  from file, false on fail
+   Bool ImportHDR (  File &f                                                                       ) ; // import    HDR  from file, false on fail
 
             Image& operator=(C Image &src); // create from 'src' image using 'copy' method, Exit on fail
            ~Image();
