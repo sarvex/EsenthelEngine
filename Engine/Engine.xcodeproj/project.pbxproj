@@ -1013,6 +1013,8 @@
 		A375E780283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
 		A375E781283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
 		A375E782283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
+		B66FD3EC295C9E6E00F1CFE5 /* libavif.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD3EB295C9E6E00F1CFE5 /* libavif.a */; };
+		B66FD3EE295C9E9900F1CFE5 /* libaom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD3ED295C9E9900F1CFE5 /* libaom.a */; };
 		B6C416AD295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
 		B6C416AE295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
 		B6C416AF295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
@@ -1704,6 +1706,8 @@
 		37F83D7825C44AB7000E5568 /* libPhysXVehicle_static_64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhysXVehicle_static_64.a; path = ../ThirdPartyLibs/PhysX/physx/bin/ios.arm_64/release/libPhysXVehicle_static_64.a; sourceTree = "<group>"; };
 		37F83D7925C44AB7000E5568 /* libPhysXExtensions_static_64.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPhysXExtensions_static_64.a; path = ../ThirdPartyLibs/PhysX/physx/bin/ios.arm_64/release/libPhysXExtensions_static_64.a; sourceTree = "<group>"; };
 		A375E77F283A313400C71054 /* Translation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Translation.cpp; sourceTree = "<group>"; };
+		B66FD3EB295C9E6E00F1CFE5 /* libavif.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavif.a; path = ../ThirdPartyLibs/AVIF/Mac/Release/libavif.a; sourceTree = "<group>"; };
+		B66FD3ED295C9E9900F1CFE5 /* libaom.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaom.a; path = ../ThirdPartyLibs/AOM/Mac/Release/libaom.a; sourceTree = "<group>"; };
 		B6C416AC295972790073B05F /* AVIF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AVIF.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1756,6 +1760,7 @@
 				3716E2941BB8EA490037177D /* libLZ4.a in Frameworks */,
 				3716E2CE1BB8EBE80037177D /* libSQLite.a in Frameworks */,
 				37F83D7225C44AA1000E5568 /* libPhysXVehicle_static_64.a in Frameworks */,
+				B66FD3EC295C9E6E00F1CFE5 /* libavif.a in Frameworks */,
 				3716E2E01BB8EC590037177D /* libVorbis.a in Frameworks */,
 				3716E2AC1BB8EAE00037177D /* libOgg.a in Frameworks */,
 				37F83D5325C43DA9000E5568 /* libxml2.a in Frameworks */,
@@ -1768,6 +1773,7 @@
 				3716E28A1BB8E9210037177D /* libBullet.a in Frameworks */,
 				3716E2E21BB8EC760037177D /* libWebP.a in Frameworks */,
 				37AE2BD91D30F16A004D8A41 /* libZStd.a in Frameworks */,
+				B66FD3EE295C9E9900F1CFE5 /* libaom.a in Frameworks */,
 				3716E2C81BB8EBA90037177D /* libSnappy.a in Frameworks */,
 				37B2FF89193987D300A63FAD /* libvpx.a in Frameworks */,
 				3706B2E41E972C000057BFB5 /* libFDK-AAC.a in Frameworks */,
@@ -2878,6 +2884,8 @@
 			isa = PBXGroup;
 			children = (
 				37F83C3225C40023000E5568 /* PhysX */,
+				B66FD3ED295C9E9900F1CFE5 /* libaom.a */,
+				B66FD3EB295C9E6E00F1CFE5 /* libavif.a */,
 				3716E2891BB8E9210037177D /* libBullet.a */,
 				0BED409E17E2FC9100B2DD6C /* libfbxsdk.a */,
 				378C062C25584ED200281D12 /* libxml2.a */,
@@ -4169,6 +4177,8 @@
 				ARCHS = x86_64;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					../ThirdPartyLibs/AOM/Mac/Release,
+					../ThirdPartyLibs/AVIF/Mac/Release,
 					../ThirdPartyLibs/Bullet/Mac/build/Release,
 					../ThirdPartyLibs/LZ4/Mac/build/Release,
 					../ThirdPartyLibs/LZHAM/Mac/build/Release,
@@ -4209,6 +4219,8 @@
 				ARCHS = x86_64;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					../ThirdPartyLibs/AOM/Mac/Release,
+					../ThirdPartyLibs/AVIF/Mac/Release,
 					../ThirdPartyLibs/Bullet/Mac/build/Release,
 					../ThirdPartyLibs/LZ4/Mac/build/Release,
 					../ThirdPartyLibs/LZHAM/Mac/build/Release,

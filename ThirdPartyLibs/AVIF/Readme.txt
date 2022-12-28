@@ -32,3 +32,7 @@ VS
 new targets Android
 MultiProcessor Compilation=No
 C/C++ \ Command Line = delete all
+/******************************************************************************/
+MAC
+AOM_INCLUDE_DIR=/Applications/Esenthel/ThirdPartyLibs/AOM/lib
+AOM_LIBRARY=/Applications/Esenthel/ThirdPartyLibs/AOM/Mac/Release/libaom.a
