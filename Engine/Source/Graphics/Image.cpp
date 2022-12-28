@@ -2280,6 +2280,7 @@ Bool Image::copy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_m
       target.updateMipMaps(FILTER_BEST, flags, copied_mip_maps-1);
    skip_mip_maps:
       if(&target!=&dest)Swap(dest, target);
+      if(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA)dest.freeOpenGLESData();
       return true;
    }
 }
@@ -2346,6 +2347,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
          }
          if(env)return BlurCubeMipMaps(temp, T, type, mode, filter, flags);
          Swap(T, temp.updateMipMaps());
+         if(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA)freeOpenGLESData();
          return true;
       }
    }
