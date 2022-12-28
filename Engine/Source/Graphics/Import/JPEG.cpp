@@ -404,7 +404,7 @@ static inline Bool JXLSigOK(const uint8_t* buf, size_t len)
 Bool Image::ImportJXL(File &f)
 {
 #if SUPPORT_JXL
-   Byte sig[12]; if(f.getFast(sig) && JXLSigOK(sig, SIZE(sig)) && f.skip(-SIZEI(sig))) // based on 'JxlSignatureCheck' source code we need 12 bytes to make a full check
+   uint8_t sig[12]; if(f.getFast(sig) && JXLSigOK(sig, SIZE(sig)) && f.skip(-SIZEI(sig))) // based on 'JxlSignatureCheck' source code we need 12 bytes to make a full check
    {
       Memt<Byte> data; data.setNumDiscard(f.left());
       if(f.getFast(data.data(), data.elms()))
@@ -418,7 +418,7 @@ Bool Image::ImportJXL(File &f)
          JxlPixelFormat format; Zero(format);
          format.endianness=JXL_LITTLE_ENDIAN;
 
-         JxlDecoderSetInput(dec.get(), data.data(), data.elms());
+         JxlDecoderSetInput  (dec.get(), data.data(), data.elms());
          JxlDecoderCloseInput(dec.get());
 
          for(;;)switch(JxlDecoderStatus status=JxlDecoderProcessInput(dec.get()))
@@ -540,12 +540,15 @@ Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
          basic_info.ysize=src->h();
          basic_info.         bits_per_sample=(real ? 32 : 8);
          basic_info.exponent_bits_per_sample=(real ?  8 : 0);
+         basic_info.num_color_channels      =(color ? 3 : 1);
          if(alpha)
          {
+            basic_info.num_extra_channels =1;
             basic_info.alpha_bits         =basic_info.         bits_per_sample;
             basic_info.alpha_exponent_bits=basic_info.exponent_bits_per_sample;
          }else
          {
+            basic_info.num_extra_channels =0;
             basic_info.alpha_bits         =0;
             basic_info.alpha_exponent_bits=0;
          }
