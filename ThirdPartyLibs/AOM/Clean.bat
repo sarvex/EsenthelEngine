@@ -119,6 +119,7 @@ rmdir /s /q iOS\CMakeFiles
 rmdir /s /q iOS\examples
 rmdir /s /q iOS\tools
 del iOS\aom.pc
+del iOS\cmake_install.cmake
 del iOS\libaom_pc.a
 del iOS\libaom_srcs.gni
 del iOS\libaom_srcs.txt
