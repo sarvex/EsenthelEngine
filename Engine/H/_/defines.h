@@ -214,7 +214,7 @@ ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
 #define SUPPORT_PSD  (!SWITCH && !WEB)
 #define SUPPORT_TIF  (!SWITCH && !WEB)
 #define SUPPORT_WEBP 1
-#define SUPPORT_AVIF (WINDOWS || ANDROID)
+#define SUPPORT_AVIF (WINDOWS || ANDROID || MAC || IOS)
 #define SUPPORT_HEIF 0 // (WINDOWS_OLD && X64 && !ARM)
 
 // Video

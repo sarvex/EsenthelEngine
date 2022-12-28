@@ -1015,6 +1015,8 @@
 		A375E782283A313400C71054 /* Translation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A375E77F283A313400C71054 /* Translation.cpp */; };
 		B66FD3EC295C9E6E00F1CFE5 /* libavif.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD3EB295C9E6E00F1CFE5 /* libavif.a */; };
 		B66FD3EE295C9E9900F1CFE5 /* libaom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD3ED295C9E9900F1CFE5 /* libaom.a */; };
+		B66FD42A295CBD5900F1CFE5 /* libaom.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD429295CBD5800F1CFE5 /* libaom.a */; };
+		B66FD42C295CBD7200F1CFE5 /* libavif-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B66FD42B295CBD7100F1CFE5 /* libavif-iOS.a */; };
 		B6C416AD295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
 		B6C416AE295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
 		B6C416AF295972790073B05F /* AVIF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B6C416AC295972790073B05F /* AVIF.cpp */; };
@@ -1708,6 +1710,8 @@
 		A375E77F283A313400C71054 /* Translation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Translation.cpp; sourceTree = "<group>"; };
 		B66FD3EB295C9E6E00F1CFE5 /* libavif.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libavif.a; path = ../ThirdPartyLibs/AVIF/Mac/Release/libavif.a; sourceTree = "<group>"; };
 		B66FD3ED295C9E9900F1CFE5 /* libaom.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaom.a; path = ../ThirdPartyLibs/AOM/Mac/Release/libaom.a; sourceTree = "<group>"; };
+		B66FD429295CBD5800F1CFE5 /* libaom.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libaom.a; path = ../ThirdPartyLibs/AOM/iOS/libaom.a; sourceTree = "<group>"; };
+		B66FD42B295CBD7100F1CFE5 /* libavif-iOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libavif-iOS.a"; path = "../ThirdPartyLibs/AVIF/Mac/Release/libavif-iOS.a"; sourceTree = "<group>"; };
 		B6C416AC295972790073B05F /* AVIF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AVIF.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1798,6 +1802,7 @@
 				3716E2E41BB8EC7E0037177D /* libWebP.a in Frameworks */,
 				3716E2C61BB8EBA00037177D /* libSnappy.a in Frameworks */,
 				37E70CD51FEC8DDE00F10018 /* libmbedTLS.a in Frameworks */,
+				B66FD42A295CBD5900F1CFE5 /* libaom.a in Frameworks */,
 				37F83D7F25C44AB7000E5568 /* libPhysXVehicle_static_64.a in Frameworks */,
 				3716E2CC1BB8EBE10037177D /* libSQLite.a in Frameworks */,
 				3716E2A21BB8EA9C0037177D /* libLZMA.a in Frameworks */,
@@ -1818,6 +1823,7 @@
 				37834C5623A520F700AE51F1 /* libWaifu2x.a in Frameworks */,
 				3706B2E61E972C0D0057BFB5 /* libFDK-AAC.a in Frameworks */,
 				377FCFB71B1826E90007F1BD /* libChartboost.a in Frameworks */,
+				B66FD42C295CBD7200F1CFE5 /* libavif-iOS.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2921,6 +2927,8 @@
 			children = (
 				37F83C3325C40046000E5568 /* PhysX */,
 				3778B76521F711F6001D764E /* Facebook */,
+				B66FD429295CBD5800F1CFE5 /* libaom.a */,
+				B66FD42B295CBD7100F1CFE5 /* libavif-iOS.a */,
 				3716E2871BB8E9080037177D /* libBullet.a */,
 				377FCFB61B1826E90007F1BD /* libChartboost.a */,
 				3706B2E51E972C0D0057BFB5 /* libFDK-AAC.a */,
@@ -4261,6 +4269,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"../ThirdPartyLibs/AOM/iOS/",
+					"../ThirdPartyLibs/AVIF/Mac/Release",
 					"../ThirdPartyLibs/Jpeg/Mac/build/Release-iphoneos",
 					"../ThirdPartyLibs/JpegTurbo/Mac/Build/Release-iphoneos",
 					"../ThirdPartyLibs/Ogg/Mac/build/Release-iphoneos",
@@ -4303,6 +4313,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"../ThirdPartyLibs/AOM/iOS/",
+					"../ThirdPartyLibs/AVIF/Mac/Release",
 					"../ThirdPartyLibs/Jpeg/Mac/build/Release-iphoneos",
 					"../ThirdPartyLibs/JpegTurbo/Mac/Build/Release-iphoneos",
 					"../ThirdPartyLibs/Ogg/Mac/build/Release-iphoneos",
