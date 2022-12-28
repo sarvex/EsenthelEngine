@@ -55,6 +55,9 @@
     <ClCompile Include="C:\Esenthel\ThirdPartyLibs\AVIF\lib\src\codec_dav1d.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Esenthel\ThirdPartyLibs\AVIF\lib\src\codec_aom.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="C:\Esenthel\ThirdPartyLibs\AVIF\lib\CMakeLists.txt" />
