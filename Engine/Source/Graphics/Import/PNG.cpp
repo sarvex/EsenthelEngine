@@ -31,7 +31,7 @@ Bool Image::ImportPNG(File &f)
    png_infop      info_ptr=null;
    Memt<png_byte*> row_ptrs;
 
-   png_byte signature[8]; f>>signature; if(png_sig_cmp(signature, 0, 8))goto error;
+   png_byte signature[8]; if(!f.getFast(signature) || png_sig_cmp(signature, 0, 8))goto error;
     png_ptr=png_create_read_struct(PNG_LIBPNG_VER_STRING, null, null, null); if(! png_ptr)goto error; if(setjmp(png_jmpbuf(png_ptr)))goto error;
    info_ptr=png_create_info_struct(png_ptr                                ); if(!info_ptr)goto error;
 

@@ -18,16 +18,16 @@ struct ICONDIRENTRY
 Bool Image::ImportICO(File &f)
 {
    Long    pos=f.pos(); // remember current position in case we're not at the start
-   ICONDIR dir; f>>dir;
-   if(!dir.reserved && dir.images<=256 && (dir.type==1 || dir.type==2))
+   ICONDIR dir;
+   if(f.getFast(dir) && !dir.reserved && dir.images<=256 && (dir.type==1 || dir.type==2))
    {
       Bool ico=(dir.type==1), cur=(dir.type==2);
       Int  best_x, best_y, best_col;
       UInt best_offset=0, best_size, end=0;
       REP(dir.images)
       {
-         ICONDIRENTRY entry; f>>entry;
-         if(entry.size>=f.size() || entry.offset>f.size() || entry.reserved)goto error;
+         ICONDIRENTRY entry;
+         if(!f.getFast(entry) || entry.size>=f.size() || entry.offset>f.size() || entry.reserved)goto error;
          Int x=(entry.width  ? entry.width  : 256),
              y=(entry.height ? entry.height : 256),
              col=(ico ? entry.hot_y : entry.colors ? entry.colors : 256);

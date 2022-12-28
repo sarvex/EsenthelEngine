@@ -373,8 +373,8 @@ static void CMYKToRGB(Dbl c, Dbl m, Dbl y, Dbl k, Int &r, Int &g, Int &b)
 /******************************************************************************/
 Bool PSD::ReadHeader(File &f, HEADER_INFO& header_info)
 {
-   HEADER header; f>>header;
-   if(header.Signature[0]=='8' && header.Signature[1]=='B' && header.Signature[2]=='P' && header.Signature[3]=='S')
+   HEADER header;
+   if(f.getFast(header) && header.Signature[0]=='8' && header.Signature[1]=='B' && header.Signature[2]=='P' && header.Signature[3]=='S')
    {
       Int ver=Calculate(header.Version, SIZE(header.Version));
       if( ver==1)

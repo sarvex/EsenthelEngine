@@ -389,19 +389,29 @@ Bool Image::ExportJPG(File &f, Flt quality, Int sub_sample)C
 }
 #endif
 /******************************************************************************/
+#if SUPPORT_JXL
+static inline Bool JXLSigOK(const uint8_t* buf, size_t len)
+{
+   switch(JxlSignatureCheck(buf, len))
+   {
+      case JXL_SIG_CODESTREAM:
+      case JXL_SIG_CONTAINER:
+               return true;
+      default: return false;
+   }
+}
+#endif
 Bool Image::ImportJXL(File &f)
 {
 #if SUPPORT_JXL
-   if(f.getUInt()==CC4(255, 10, 250, 44))
+   Byte sig[12]; if(f.getFast(sig) && JXLSigOK(sig, SIZE(sig)) && f.skip(-SIZEI(sig))) // based on 'JxlSignatureCheck' source code we need 12 bytes to make a full check
    {
-      f.skip(-4);
-    //JxlSignatureCheck
       Memt<Byte> data; data.setNumDiscard(f.left());
       if(f.getFast(data.data(), data.elms()))
       {
          auto runner=JxlResizableParallelRunnerMake(null);
          auto dec   =JxlDecoderMake(null);
-         if(JXL_DEC_SUCCESS!=JxlDecoderSubscribeEvents(dec.get(), JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE))goto error;
+         if(JXL_DEC_SUCCESS!=JxlDecoderSubscribeEvents  (dec.get(), JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE))goto error;
          if(JXL_DEC_SUCCESS!=JxlDecoderSetParallelRunner(dec.get(), JxlResizableParallelRunner, runner.get()))goto error;
 
          JxlBasicInfo info;

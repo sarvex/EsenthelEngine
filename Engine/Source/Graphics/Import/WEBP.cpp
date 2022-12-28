@@ -18,8 +18,9 @@ Bool Image::ImportWEBP(File &f)
 #if SUPPORT_WEBP
    if(f.getUInt()==CC4('R','I','F','F'))
    {
-      UInt size; f>>size;
-      if(f.left()>=size
+      UInt size;
+      if(f.getFast(size)
+      && f.left()>=size
       && f.getUInt()==CC4('W','E','B','P'))
       {
          WebPDecoderConfig            config;

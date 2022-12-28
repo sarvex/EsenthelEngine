@@ -21,8 +21,8 @@ struct BitmapInfoHeader
 /******************************************************************************/
 Bool Image::ImportBMPRaw(File &f, Bool ico)
 {
-   BitmapInfoHeader bmih; f>>bmih;
-   if(Unaligned(bmih.planes)==1)
+   BitmapInfoHeader bmih;
+   if(f.getFast(bmih) && Unaligned(bmih.planes)==1)
       if(Unaligned(bmih.bitCount)==8 || Unaligned(bmih.bitCount)==16 || Unaligned(bmih.bitCount)==24 || Unaligned(bmih.bitCount)==32)
    {
       if(ico)Unaligned(bmih.height, Unaligned(bmih.height)/2); // ICO files have height 2x bigger
@@ -60,8 +60,7 @@ Bool Image::ImportBMPRaw(File &f, Bool ico)
 }
 Bool Image::ImportBMP(File &f)
 {
-   BitmapFileHeader bmfh; f>>bmfh;
-   if(Unaligned(bmfh.type)==0x4D42)return ImportBMPRaw(f);
+   BitmapFileHeader bmfh; if(f.getFast(bmfh) && Unaligned(bmfh.type)==0x4D42)return ImportBMPRaw(f);
    del(); return false;
 }
 Bool Image::ImportBMP(C Str &name)
