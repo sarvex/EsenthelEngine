@@ -101,13 +101,12 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          if( aq>100)aq=100;
 
        //config .pass         =10; // very little difference, not sure if better or worse
-       //config .method       =6; // this affects only lossy, 5 and 6 are supposed to be better quality, however they actually made image lose detail
-       //config .thread_level =2; // 1=no performance difference, >=1 actually makes the compression to fail
+         config .method       =6;
+         config .thread_level =1; // 0=disabled, 1=no performance difference, >1 makes the compression to fail
        //config .near_lossless=; // made things much worse
          config .lossless     =(q>=100-EPS);
          config .      quality= q;
          config .alpha_quality=aq;
-         config .method       =6;
          config .exact        =true;
          config .use_sharp_yuv=false; // disable because true introduces plenty of blurry artifacts for pixel-art
          picture.width        =src->w();
