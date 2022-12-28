@@ -98,3 +98,21 @@ rmdir /s /q Android\CMakeFiles
 rmdir /s /q Android\Debug
 rmdir /s /q Android\x64
 rmdir /s /q Android\yuv.dir
+
+rmdir /s /q Mac\asm_objects
+rmdir /s /q Mac\build
+rmdir /s /q Mac\CMakeFiles
+rmdir /s /q Mac\CMakeScripts
+rmdir /s /q Mac\Debug
+del Mac\Release\libaom_av1_encoder_sse2_static.a
+del Mac\Release\libaom_av1_encoder_ssse3_static.a
+del Mac\Release\libaom_dsp_common_sse2_static.a
+del Mac\Release\libaom_dsp_common_ssse3_static.a
+del Mac\Release\libaom_dsp_encoder_sse2_static.a
+del Mac\Release\libaom_dsp_encoder_ssse3_static.a
+del Mac\Release\libaom_version.a
+del Mac\Release\libav1_rc_qmode.a
+del Mac\cmake_install.cmake
+del Mac\CMakeCache.txt
+del Mac\libaom_srcs.gni
+del Mac\libaom_srcs.txt
