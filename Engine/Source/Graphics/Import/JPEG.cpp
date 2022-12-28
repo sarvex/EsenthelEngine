@@ -46,8 +46,8 @@ static void my_error_exit(j_common_ptr cinfo)
    longjmp(err.jump_buffer, 1);
 }
 
-#define EXIF_JPEG_MARKER   JPEG_APP0+1
-#define EXIF_IDENT_STRING  "Exif\000\000"
+#define EXIF_JPEG_MARKER  JPEG_APP0+1
+#define EXIF_IDENT_STRING "Exif\000\000"
 
 static const Byte LETH[]={0X49, 0X49, 0X2A, 0X00}; // Little endian TIFF header
 static const Byte BETH[]={0X4D, 0X4D, 0X00, 0X2A}; // Big    endian TIFF header
