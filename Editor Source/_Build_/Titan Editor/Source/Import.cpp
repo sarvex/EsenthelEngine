@@ -11,8 +11,10 @@ ImporterClass Importer;
             Mems<FileParams> texs=FileParams::Decode(tex);
             FREPA(texs)if(!FExistSystem(texs[i].name))
             {
-               Str test=path; test.tailSlash(true)+=GetBaseNoExt(texs[i].name); test+=".webp";
-               if(FExistSystem(test))texs[i].name=test;
+               Str test=path; test.tailSlash(true)+=GetBaseNoExt(texs[i].name); test+='.';
+               Str test_ext=test+"webp"; if(FExistSystem(test_ext))texs[i].name=test_ext;
+                   test_ext=test+"avif"; if(FExistSystem(test_ext))texs[i].name=test_ext;
+                   test_ext=test+"jxl" ; if(FExistSystem(test_ext))texs[i].name=test_ext;
             }
             tex=FileParams::Encode(texs);
          }
@@ -449,12 +451,14 @@ ImporterClass Importer;
                {
                   Str  ext=GetExt(file);
                   bool transforms=(files.elms()>1 || (files.elms() && files[0].params.elms())); // if want to apply any transforms
-                  if(!transforms && (ext=="jpg" || ext=="jpeg" || ext=="webp"/* || ext=="png"*/)) // images are already in accepted format (even though PNG is compressed, we can achieve much better compression with WEBP)
+                  if(!transforms && (ext=="jpg" || ext=="jpeg" || ext=="jxl" || ext=="webp" || ext=="avif"/* || ext=="png"*/)) // images are already in accepted format (even though PNG is compressed, we can achieve much better compression with WEBP)
                   {
                      File f; if(!f.readStd(file))break; f.copy(raw.writeMem());
                      if(ext=="jpg" || ext=="jpeg"){Image image; raw.pos(0); if(image.ImportJPG (raw)){has_color=HasColor(image); has_alpha=false          ;}}else // JPG never has any alpha
+                     if(ext=="jxl"               ){Image image; raw.pos(0); if(image.ImportJXL (raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}else
                      if(ext=="png"               ){Image image; raw.pos(0); if(image.ImportPNG (raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}else
-                     if(ext=="webp"              ){Image image; raw.pos(0); if(image.ImportWEBP(raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}
+                     if(ext=="webp"              ){Image image; raw.pos(0); if(image.ImportWEBP(raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}else
+                     if(ext=="avif"              ){Image image; raw.pos(0); if(image.ImportAVIF(raw)){has_color=HasColor(image); has_alpha=HasAlpha(image);}}
                      return true;
                   }else // import and export as WEBP
                   {

@@ -889,7 +889,7 @@ void SetPublishFiles(Memb<PakFileData> &files, Memc<ImageGenerate> &generate, Me
                PakFileData &pfd=files.New();
                pfd.name    =S+"Edit/"+EncodeFileName(elm.id);
                pfd.data.set(           Proj.editPath(elm.id));
-               pfd.compress_mode=((elm.type==ELM_IMAGE) ? COMPRESS_DISABLE : COMPRESS_ENABLE); // in Edit folder images are stored using JPG/PNG/WEBP
+               pfd.compress_mode=((elm.type==ELM_IMAGE) ? COMPRESS_DISABLE : COMPRESS_ENABLE); // in Edit folder images are stored using JPG/JXL/PNG/WEBP/AVIF
             }
             if(ElmGame(elm.type))
             {

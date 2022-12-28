@@ -128,15 +128,17 @@ class ExportWindow : WindowIO
               .File f; if(f.read(Proj.editPath(elm_id))) // set main extension
                {
                   Image temp;
-                //if(!ext.is()){f.pos(0); if(temp.ImportWEBP(f))ext="webp";} ignore WEBP because it's not popular yet
-                  if(!ext.is()){f.pos(0); if(temp.ImportPNG (f))ext="png" ;}
-                  if(!ext.is()){f.pos(0); if(temp.ImportJPG (f))ext="jpg" ;}
+                  if(!ext.is()){f.resetOK().pos(0); if(temp.ImportWEBP(f))ext="webp";}
+                  if(!ext.is()){f.resetOK().pos(0); if(temp.ImportAVIF(f))ext="avif";}
+                  if(!ext.is()){f.resetOK().pos(0); if(temp.ImportJXL (f))ext="jxl" ;}
+                  if(!ext.is()){f.resetOK().pos(0); if(temp.ImportPNG (f))ext="png" ;}
+                  if(!ext.is()){f.resetOK().pos(0); if(temp.ImportJPG (f))ext="jpg" ;}
                }
-               supp_ext=ext+"|bmp|png|jpg|tga|tif|webp|ico|icns|img"; // add secondary extensions
+               supp_ext=ext+"|bmp|png|jpg|jxl|tga|tif|webp|avif|ico|icns|img"; // add secondary extensions
             }break;
 
             case ELM_PANEL_IMAGE:
-            case ELM_MINI_MAP   : supp_ext="bmp|png|jpg|tga|tif|webp|img"; break;
+            case ELM_MINI_MAP   : supp_ext="bmp|png|jpg|jxl|tga|tif|webp|avif|img"; break;
 
             case ELM_OBJ        : ext="obj"; break;
             case ELM_ANIM       : ext="anim"; break;
@@ -144,7 +146,7 @@ class ExportWindow : WindowIO
             case ELM_IMAGE_ATLAS: ext="atlas"; break;
             case ELM_SKEL       : ext="skel"; break;
             case ELM_PHYS_MTRL  : ext="physmtrl"; break;
-            case ELM_ICON       : ext="img"; supp_ext="bmp|png|jpg|tga|tif|webp|img"; break;
+            case ELM_ICON       : ext="img"; supp_ext="bmp|png|jpg|jxl|tga|tif|webp|avif|img"; break;
             case ELM_CODE       : supp_ext="txt|c|cpp|h|cs|cc|cxx|m|mm"; break;
 
             case ELM_SOUND: {SoundHeader sound; sound.load(Proj.gamePath(elm_id)); ext=CaseDown(sound.codecName());} break;
