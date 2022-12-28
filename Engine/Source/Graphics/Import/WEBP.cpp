@@ -108,7 +108,8 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          config .      quality= q;
          config .alpha_quality=aq;
          config .exact        =true;
-         config .use_sharp_yuv=false; // disable because true introduces plenty of blurry artifacts for pixel-art
+         config .use_sharp_yuv=true; // if enabled then introduces plenty of blurry artifacts for pixel-art rescaled x4 NearestNeighbor, however using 'autofilter=1' fixes the problem
+         config .autofilter   =1; // enable because of 'use_sharp_yuv'
          picture.width        =src->w();
          picture.height       =src->h();
       #if 1 // RGBA
