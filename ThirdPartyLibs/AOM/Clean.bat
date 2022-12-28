@@ -102,7 +102,6 @@ rmdir /s /q Android\yuv.dir
 rmdir /s /q Mac\asm_objects
 rmdir /s /q Mac\build
 rmdir /s /q Mac\CMakeFiles
-rmdir /s /q Mac\CMakeScripts
 rmdir /s /q Mac\Debug
 del Mac\Release\libaom_av1_encoder_sse2_static.a
 del Mac\Release\libaom_av1_encoder_ssse3_static.a
