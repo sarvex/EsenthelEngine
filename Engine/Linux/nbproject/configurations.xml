@@ -364,6 +364,7 @@
         <logicalFolder name="Import" displayName="Import" projectFiles="true">
           <itemPath>../Source/Graphics/Import/ASTC.cpp</itemPath>
           <itemPath>../Source/Graphics/Import/ASTC_Compress.cpp</itemPath>
+          <itemPath>../Source/Graphics/Import/AVIF.cpp</itemPath>
           <itemPath>../Source/Graphics/Import/BC.cpp</itemPath>
           <itemPath>../Source/Graphics/Import/BC.h</itemPath>
           <itemPath>../Source/Graphics/Import/BC_Compress.cpp</itemPath>
@@ -1461,6 +1462,8 @@
             ex="false"
             tool="1"
             flavor2="0">
+      </item>
+      <item path="../Source/Graphics/Import/AVIF.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Graphics/Import/BC.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -2878,6 +2881,8 @@
             ex="false"
             tool="1"
             flavor2="0">
+      </item>
+      <item path="../Source/Graphics/Import/AVIF.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="../Source/Graphics/Import/BC.cpp" ex="false" tool="1" flavor2="0">
       </item>

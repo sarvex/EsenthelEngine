@@ -458,7 +458,7 @@ Application& Application::icon(C Image &icon)
    if(XDisplay && window() && _NET_WM_ICON)
    {
       Image temp; C Image *src=(icon.is() ? &icon : null);
-      if(src && src->compressed())if(src->copyTry(temp, -1, -1, 1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else src=null;
+      if(src && src->compressed())if(src->copy(temp, -1, -1, 1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1))src=&temp;else src=null;
       if(src && src->is() && src->lockRead())
       {
          Memt<long> data; data.setNum(2+src->w()*src->h());
@@ -482,7 +482,7 @@ Application& Application::icon(C Image &icon)
    }else
    {
       // remember it so it will be set later
-      icon.copyTry(_icon, -1, -1, 1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1);
+      icon.copy(_icon, -1, -1, 1, IMAGE_B8G8R8A8_SRGB, IMAGE_SOFT, 1);
    }
 #endif
    return T;
@@ -1146,7 +1146,7 @@ void LoadEmbeddedPaks(Cipher *cipher)
 #elif MAC
    for(FileFind ff(App.exe()+"/Contents/Resources", "pak"); ff(); )Paks.add(ff.pathName(), cipher, false); // iterate all PAK files inside APP resources folder
 #elif LINUX
-   File f; if(f.readStdTry(App.exe()))for(Long next=f.size(); f.pos(next-2*4); )
+   File f; if(f.readStd(App.exe()))for(Long next=f.size(); f.pos(next-2*4); )
    {
       Long skip=f.getUInt(); // !! use Long and not UInt, because of "-skip" below, which would cause incorrect behavior
       UInt end =f.getUInt();
@@ -1170,7 +1170,7 @@ void LoadEmbeddedPaks(Cipher *cipher)
 
                   case CC4('I', 'C', 'O', 'N'):
                   {
-                     Image icon; if(icon.ImportTry(f, -1, IMAGE_SOFT, 1))if(icon.is())App.icon(icon);
+                     Image icon; if(icon.Import(f, -1, IMAGE_SOFT, 1))if(icon.is())App.icon(icon);
                   }break;
                }
                f.unlimit(total_size, applied_offset);
