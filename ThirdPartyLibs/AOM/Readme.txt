@@ -95,3 +95,19 @@ HAVE_NEON=1
 
 cd /Applications/Esenthel/ThirdPartyLibs/AOM/iOS
 make
+/******************************************************************************/
+Linux:
+Unix Makefiles
+CONFIG_SHARED=0
+ENABLE_DOCS=0
+ENABLE_EXAMPLES=0
+ENABLE_TESTDATA=0
+ENABLE_TESTS=0
+ENABLE_TOOLS=0
+ENABLE_VSX=0
+
+cd /Esenthel/ThirdPartyLibs/AOM/Linux
+make
+copy files back to Windows
+Clean.bat
+Extract Linux Objs.bat

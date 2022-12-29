@@ -96,6 +96,21 @@ rmdir /s /q Android\av1_rc_qmode.dir
 rmdir /s /q Android\ARM64
 rmdir /s /q Android\CMakeFiles
 rmdir /s /q Android\Debug
+rmdir /s /q Android\Release\Android-arm64-v8a\aom.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_av1_common.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_av1_decoder.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_av1_encoder.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_dsp.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_mem.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_pc.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_ports_static.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_rtcd.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_scale.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_util.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\aom_version.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\av1_rc_qmode.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\yuv.tlog
+rmdir /s /q Android\Release\Android-arm64-v8a\*.tlog
 rmdir /s /q Android\x64
 rmdir /s /q Android\yuv.dir
 
@@ -126,3 +141,20 @@ del iOS\libaom_srcs.txt
 del iOS\libaom_test_srcs.txt
 del iOS\libaom_version.a
 del iOS\libav1_rc_qmode.a
+
+rmdir /s /q Linux\asm_objects
+rmdir /s /q Linux\CMakeFiles
+del Linux\aom.pc
+del Linux\cmake_install.cmake
+del Linux\libaom_pc.a
+del Linux\libaom_srcs.gni
+del Linux\libaom_srcs.txt
+del Linux\libaom_test_srcs.txt
+del Linux\libaom_av1_encoder_sse2_static.a
+del Linux\libaom_av1_encoder_ssse3_static.a
+del Linux\libaom_dsp_common_sse2_static.a
+del Linux\libaom_dsp_common_ssse3_static.a
+del Linux\libaom_dsp_encoder_sse2_static.a
+del Linux\libaom_dsp_encoder_ssse3_static.a
+del Linux\libaom_version.a
+del Linux\libav1_rc_qmode.a
