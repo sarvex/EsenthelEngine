@@ -50,3 +50,18 @@ architectures=Standard Architectures
 Base SDK=iOS
 supported platforms=iOS
 product name=avif-iOS
+/******************************************************************************/
+LINUX
+AVIF_CODEC_AOM=1
+AVIF_CODEC_AOM_DECODE=1
+AVIF_CODEC_AOM_ENCODE=1
+AVIF_ENABLE_GTEST=0
+AVIF_ENABLE_WERROR=0
+BUILD_SHARED_LIBS=0
+AOM_INCLUDE_DIR=/home/greg/Esenthel/ThirdPartyLibs/AOM/lib
+AOM_LIBRARY=/home/greg/Esenthel/ThirdPartyLibs/AOM/Linux/libaom.a
+cd Linux
+make
+copy files back to Windows
+Clean.bat
+Extract Linux Objs.bat

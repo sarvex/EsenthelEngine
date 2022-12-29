@@ -18,3 +18,9 @@ rmdir /s /q Mac\Debug
 del Mac\cmake_install.cmake
 del Mac\libavif.pc
 del Mac\libavif-config-version.cmake
+
+rmdir /s /q Linux\CMakeFiles
+rmdir /s /q Linux\contrib
+del Linux\cmake_install.cmake
+del Linux\libavif.pc
+del Linux\libavif-config-version.cmake
