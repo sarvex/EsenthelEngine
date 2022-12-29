@@ -904,14 +904,22 @@ public class EsenthelActivity extends NativeActivity
             if(insets_compat!=null)
             {
                int ime=WindowInsetsCompat.Type.ime(), nav=WindowInsetsCompat.Type.navigationBars(), status=WindowInsetsCompat.Type.statusBars(), cutout=WindowInsetsCompat.Type.displayCutout(), caption=WindowInsetsCompat.Type.captionBar();
-               int v=status|caption|cutout; // this is without Screen Keyboard (ime)
-               if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // getInsets is buggy for 'nav', it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check it only if not hidden
+               int v=caption|cutout; // this is without Screen Keyboard (ime). Also without status, nav, because of #ImmediateInsets and because:
+               // 'getInsets' is buggy for 'status', in landscape mode, status=SYSTEM_BAR_VISIBLE, nav=SYSTEM_BAR_HIDDEN, it may not include status bar, so force it if we know it's visible
+               // 'getInsets' is buggy for 'nav'   , it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check it only if not hidden
                androidx.core.graphics.Insets ins=insets_compat.getInsets(v);
                l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
-               if(statusBar()==SYSTEM_BAR_VISIBLE) // getInsets is buggy for 'status', in landscape mode, status=SYSTEM_BAR_VISIBLE, nav=SYSTEM_BAR_HIDDEN, it may not include status bar, so force it if we know it's visible
+
+               v=0; // #ImmediateInsets, force setting as visible by using 'getInsetsIgnoringVisibility' if we know they're visible. This is so we can get latest 'D.rectUI' before waiting for Android/Java to process requests on other threads.
+               if(statusBar()!=SYSTEM_BAR_HIDDEN)v|=status;
+               if(   navBar()!=SYSTEM_BAR_HIDDEN)v|=nav   ;
+               if(v!=0)
                {
-                  ins=insets_compat.getInsetsIgnoringVisibility(status);
-                  if(ins.top>t)t=ins.top;
+                  ins=insets_compat.getInsetsIgnoringVisibility(v);
+                  if(ins.left  >l)l=ins.left  ;
+                  if(ins.right >r)r=ins.right ;
+                  if(ins.top   >t)t=ins.top   ;
+                  if(ins.bottom>b)b=ins.bottom;
                }
              //if(insets_compat.isVisible(ime)) // Kb.visible, check not needed because zeros will be returned below
                {

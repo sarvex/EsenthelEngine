@@ -232,7 +232,10 @@ Application& Application::systemBars(SYSTEM_BAR status, SYSTEM_BAR navigation)
    JNI jni;
    if(jni && ActivityClass)
    if(JMethodID systemBars=jni.staticFunc(ActivityClass, "systemBars", "(I)V"))
+   {
       jni->CallStaticVoidMethod(ActivityClass, systemBars, jint(status|(navigation<<2)));
+      extern void AndroidResized(); AndroidResized(); // immediatelly request size check to call 'D.screenChanged' ASAP. This is so we can get latest 'D.rectUI' before waiting for Android/Java to process requests on other threads. For this we need #ImmediateInsets
+   }
 #elif IOS
    statusBar(status);
       navBar(navigation);

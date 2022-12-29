@@ -1359,6 +1359,12 @@ void LoadAndroidAssetPacks(Int asset_packs, Cipher *cipher)
    }
 }
 /******************************************************************************/
+void AndroidResized()
+{
+   Rect rect_ui =D.rectUI(); D.setRectUI();
+   if(  rect_ui!=D.rectUI()) D.screenChanged(D.w(), D.h());
+}
+/******************************************************************************/
 } // namespace EE
 /******************************************************************************/
 extern "C"
@@ -1367,12 +1373,7 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_esenthel_Native_connected(JNIEnv *env, jclass clazz, jboolean supports_items, jboolean supports_subs);
 JNIEXPORT void JNICALL Java_com_esenthel_Native_location (JNIEnv *env, jclass clazz, jboolean gps, jobject location) {JNI jni(env); UpdateLocation(location, gps!=0, jni);}
 
-static void Resized()
-{
-   Rect rect_ui =D.rectUI(); D.setRectUI();
-   if(  rect_ui!=D.rectUI()) D.screenChanged(D.w(), D.h());
-}
-JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass clazz) {App.includeFuncCall(Resized);} // !! this is called on a secondary thread !!
+JNIEXPORT void JNICALL Java_com_esenthel_Native_resized(JNIEnv *env, jclass clazz) {App.includeFuncCall(AndroidResized);} // !! this is called on a secondary thread !!
 
 static Memc<Int> Files;
 static void ProcessFiles()
