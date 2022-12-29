@@ -87,7 +87,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 /*CHARTBOOST*\
 import com.chartboost.sdk.*;
@@ -818,21 +820,22 @@ public class EsenthelActivity extends NativeActivity
          {
             View view=window.getDecorView(); if(view!=null)
             {
-               int v=view.getSystemUiVisibility(), status, nav;
-               if((window.getAttributes().flags&WindowManager.LayoutParams.FLAG_FULLSCREEN)!=0 // have to check this too
-               || (v&View.SYSTEM_UI_FLAG_FULLSCREEN            )!=0)status=SYSTEM_BAR_HIDDEN ;else
-               if((v&View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN     )!=0)status=SYSTEM_BAR_OVERLAY;else
-                                                                    status=SYSTEM_BAR_VISIBLE;
-               if((v&View.SYSTEM_UI_FLAG_HIDE_NAVIGATION       )!=0)nav   =SYSTEM_BAR_HIDDEN ;else
-               if((v&View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)!=0)nav   =SYSTEM_BAR_OVERLAY;else
-                                                                    nav   =SYSTEM_BAR_VISIBLE;
+               int v=view.getSystemUiVisibility(), w=window.getAttributes().flags, status, nav;
+               if((v&View.SYSTEM_UI_FLAG_FULLSCREEN                    )!=0
+               || (w&WindowManager.LayoutParams.FLAG_FULLSCREEN        )!=0)status=SYSTEM_BAR_HIDDEN ;else // have to check this too
+               if((w&WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)!=0)status=SYSTEM_BAR_OVERLAY;else
+                                                                            status=SYSTEM_BAR_VISIBLE;
+
+               if((v&View.SYSTEM_UI_FLAG_HIDE_NAVIGATION                   )!=0)nav=SYSTEM_BAR_HIDDEN ;else
+               if((w&WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)!=0)nav=SYSTEM_BAR_OVERLAY;else
+                                                                                nav=SYSTEM_BAR_VISIBLE;
                result=(status|(nav<<2));
             }
          }
       }
       return result;
    }
-   public static final void systemBars(final int bars)
+   public static final void systemBars(int bars)
    {
       system_bars=bars;
       if(activity!=null)activity.runOnUiThread(new Runnable()
@@ -841,29 +844,35 @@ public class EsenthelActivity extends NativeActivity
          {
             Window window=activity.getWindow(); if(window!=null)
             {
-               int status=(bars&(1|2)), nav=((bars>>2)&(1|2)), v=0;
+               int v=View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY, w=0;
+               switch(statusBar())
+               {
+                  case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_FULLSCREEN; w|=WindowManager.LayoutParams.FLAG_FULLSCREEN; break;
+                  case SYSTEM_BAR_OVERLAY: w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS; break;
+               }
+               switch(navBar())
+               {
+                  case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION; break;
+                  case SYSTEM_BAR_OVERLAY: w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION; break;
+               }
+               View view=window.getDecorView(); if(view!=null)view.setSystemUiVisibility(v);
+               window.setFlags(w, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION|WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+               /* Alternative:
+               int status=statusBar(), nav=navBar(), w=0;
                View view=window.getDecorView(); if(view!=null)
                {
-                  switch(status)
+                  WindowInsetsControllerCompat wic=WindowCompat.getInsetsController(window, view); if(wic!=null)
                   {
-                     case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_FULLSCREEN; break;
-                     case SYSTEM_BAR_OVERLAY: v|=View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN; break;
+                     wic.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                     if(status==SYSTEM_BAR_HIDDEN)wic.hide(WindowInsetsCompat.Type.    statusBars());else wic.show(WindowInsetsCompat.Type.    statusBars());
+                     if(nav   ==SYSTEM_BAR_HIDDEN)wic.hide(WindowInsetsCompat.Type.navigationBars());else wic.show(WindowInsetsCompat.Type.navigationBars());
                   }
-                  switch(nav)
-                  {
-                     case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE|View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION; break; // use SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION so when user swipes to show nav bar manually, the view won't be resized because it will be temporarily as we post 'handler.postDelayed' to hide it later
-                     case SYSTEM_BAR_OVERLAY: v|=View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION; break;
-                  }
-                  view.setSystemUiVisibility(v);
-                  view.setFitsSystemWindows(true);
                }
-               v=0;
-               if(status==SYSTEM_BAR_HIDDEN )v|=WindowManager.LayoutParams.FLAG_FULLSCREEN|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-               if(status==SYSTEM_BAR_OVERLAY)v|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
-               if(nav   ==SYSTEM_BAR_OVERLAY)v|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
-             //if(status==SYSTEM_BAR_VISIBLE && nav==SYSTEM_BAR_VISIBLE){} currently this will cause window resize when keyboard is shown, WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN this helped however caused window to be extended underneath the status bar
-
-               window.setFlags(v, WindowManager.LayoutParams.FLAG_FULLSCREEN|WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION|WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+               if(status==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+               if(nav   ==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+               window.setFlags(w, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+               */
             }
          }
       });
