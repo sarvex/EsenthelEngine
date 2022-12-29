@@ -396,6 +396,7 @@ public class EsenthelActivity extends NativeActivity
       else             systemBars(system_bars);        // when restarting, set what last requested (this can happen when opening app when it was closed using 'SysWindow.minimize')
       Window window=activity.getWindow(); if(window!=null)
       {
+         if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
          View view=window.getDecorView(); if(view!=null)
          {
             view.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
@@ -742,7 +743,7 @@ public class EsenthelActivity extends NativeActivity
             if(!FileProvider.pathOK(path) // without this check 'run' will return true even if later accessing path will fail
             || !file        .exists(    ))return false; // or file doesn't exist
             String mime=GetMime(GetExt(path)); if(!Is(mime))mime="*/*";
-            intent.setDataAndType((Build.VERSION.SDK_INT>=Build.VERSION_CODES.N) ? FileProvider.getUriForPath(path) : Uri.fromFile(file), mime); // file provider needed starting Android Nougat, don't use below, as it may not work on older versions
+            intent.setDataAndType((Build.VERSION.SDK_INT>=24) ? FileProvider.getUriForPath(path) : Uri.fromFile(file), mime); // file provider needed starting Android Nougat, don't use below, as it may not work on older versions
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION|Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
          }else // HTTP, HTTPS, FTP, etc
          {
