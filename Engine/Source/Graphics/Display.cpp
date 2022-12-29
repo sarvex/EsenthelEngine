@@ -2729,6 +2729,37 @@ void DisplayClass::validateCoords(Int eye)
    Sh.Coords->setConditional(coords);
 }
 /******************************************************************************/
+#if ANDROID
+extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_setRects(JNIEnv *env, jclass clazz, jint l, jint t, jint r, jint b, jint kb_h)
+{
+   D._rect_ui.min.x+=l*D._pixel_size.x; D._rect_ui.max.x-=r*D._pixel_size.x;
+   D._rect_ui.min.y+=b*D._pixel_size.y; D._rect_ui.max.y-=t*D._pixel_size.y;
+
+   Bool kb_changed=false, kb_vis=(kb_h>0);
+   if(Kb._visible!=kb_vis){Kb._visible^=1; kb_changed=true;}
+   if(Kb._visible)
+   {
+      RectI r(0, D.resH()-kb_h, D.resW(), D.resH());
+      if(Kb._recti!=r){Kb._recti=r; kb_changed=true;}
+   }
+   if(kb_changed)Kb.screenChanged();
+}
+#endif
+
+void DisplayClass::setRectUI()
+{
+   D._rect_ui=D._rect;
+#if IOS
+   if(auto view=GetUIView())
+   {
+      Vec2 scale=ScreenScale*D._pixel_size; // convert from iOS points to pixels, then to screen
+      D._rect_ui.min.x+=view.safeAreaInsets.left  *scale.x; D._rect_ui.max.x-=view.safeAreaInsets.right*scale.x;
+      D._rect_ui.min.y+=view.safeAreaInsets.bottom*scale.y; D._rect_ui.max.y-=view.safeAreaInsets.top  *scale.y;
+   }
+#elif ANDROID
+   if(Jni && ActivityClass && Activity)if(JMethodID getRects=Jni.func(ActivityClass, "getRects", "()V"))Jni->CallVoidMethod(Activity, getRects); // this will call 'setRects' above
+#endif
+}
 void DisplayClass::sizeChanged()
 {
    D._rect.min=-(D._rect.max=D._unscaled_size/D._scale);
@@ -2755,17 +2786,7 @@ void DisplayClass::sizeChanged()
       D._window_pixel_to_screen_add*=D._window_pixel_to_screen_scale;
    }
 
-   // rect UI
-   D._rect_ui=D._rect;
-#if IOS
-   if(auto view=GetUIView())
-   {
-      Vec2 scale=ScreenScale*D._pixel_size; // convert from iOS points to pixels, then to screen
-      D._rect_ui.min.x+=view.safeAreaInsets.left  *scale.x; D._rect_ui.max.x-=view.safeAreaInsets.right*scale.x;
-      D._rect_ui.min.y+=view.safeAreaInsets.bottom*scale.y; D._rect_ui.max.y-=view.safeAreaInsets.top  *scale.y;
-   }
-#endif
-
+   setRectUI(); // rect UI
    viewReset();
 }
 DisplayClass& DisplayClass::scale(Flt scale)

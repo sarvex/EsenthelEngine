@@ -55,6 +55,7 @@ dependencies {
    implementation 'com.google.android.play:review:2.0.0'
 	implementation 'com.google.android.gms:play-services-tasks:18.0.2'
 	/**/
+   implementation "androidx.core:core:1.8.0"
 }
 
 buildDir = MSBUILD_ANDROID_GRADLE_BUILD_OUTPUT_DIR

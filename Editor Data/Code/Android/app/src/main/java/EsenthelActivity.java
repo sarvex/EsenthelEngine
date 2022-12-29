@@ -30,6 +30,7 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.input.InputManager;
@@ -74,6 +75,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.EditText;
@@ -83,6 +85,10 @@ import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 /*CHARTBOOST*\
 import com.chartboost.sdk.*;
 import com.chartboost.sdk.Model.CBError.CBImpressionError;
@@ -411,21 +417,20 @@ public class EsenthelActivity extends NativeActivity
                {
                   @Override public void onGlobalLayout()
                   {
-                   /*int status    = system_bars    &(1|2);
-                     int navigation=(system_bars>>2)&(1|2);
-
-                     int     statusBarHeight=0; if(status    ==SYSTEM_BAR_OVERLAY)    statusBarHeight=statusBarHeight();
-                     int navigationBarHeight=0; if(navigation==SYSTEM_BAR_OVERLAY)navigationBarHeight=   navBarHeight();*/
-
-                     View  view=getWindow().getDecorView();
-                     Rect  visible=new Rect(); view.getWindowVisibleDisplayFrame(visible); // in screen coordinates
-                     int   w=view.getWidth(), h=view.getHeight();
-                     int[] screen_pos=new int[2]; view.getLocationOnScreen(screen_pos); // in screen coordinates
-                   //log("w:"+w+", h:"+h+", r.top:"+visible.top+", r.bottom:"+visible.bottom+", r.w:"+visible.width()+", r.h:"+visible.height()+", pos.x:"+screen_pos[0]+", pos.y:"+screen_pos[1]);
-                     com.esenthel.Native.resized(w, h, visible.left-screen_pos[0], visible.top-screen_pos[1], visible.width(), visible.height());
+                     com.esenthel.Native.resized();
                   }
                };
                root_view.getViewTreeObserver().addOnGlobalLayoutListener(global_layout_listener);
+
+             /*use 'OnGlobalLayoutListener' because this is out of sync (values are outdated)
+               root_view.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener()
+               {
+                  @Override public WindowInsets onApplyWindowInsets(View v, WindowInsets insets)
+                  {
+                     //WindowInsetsCompat insets_compat=WindowInsetsCompat.toWindowInsetsCompat(insets, v);
+                     return v.onApplyWindowInsets(insets);
+                  }
+               });*/
             }
          }
       }
@@ -867,6 +872,37 @@ public class EsenthelActivity extends NativeActivity
    public final int resH() {return getWindowManager().getDefaultDisplay().getHeight();}
    public final float refreshRate() {return getWindowManager().getDefaultDisplay().getRefreshRate();}
    public final long screen() {Point size=new Point(); getWindowManager().getDefaultDisplay().getRealSize(size); return size.x | (((long)size.y)<<32);}
+
+   public final void getRects()
+   {
+    /*int status    = system_bars    &(1|2);
+      int navigation=(system_bars>>2)&(1|2);
+
+      int     statusBarHeight=0; if(status    ==SYSTEM_BAR_OVERLAY)    statusBarHeight=statusBarHeight();
+      int navigationBarHeight=0; if(navigation==SYSTEM_BAR_OVERLAY)navigationBarHeight=   navBarHeight();*/
+
+      Window window=getWindow(); if(window!=null)
+      {
+         View view=window.getDecorView(); if(view!=null)
+         {
+            Rect  visible =new Rect(); view.getWindowVisibleDisplayFrame(visible ); // in screen coordinates
+            int[] view_pos=new int[2]; view.getLocationOnScreen         (view_pos); // in screen coordinates
+            int   view_w=view.getWidth(), view_h=view.getHeight(); // same as D.res
+            int   view_r=view_pos[0]+view_w, view_b=view_pos[1]+view_h;
+          //log("r.top:"+visible.top+", r.bottom:"+visible.bottom+", r.w:"+visible.width()+", r.h:"+visible.height()+", view_pos.x:"+view_pos[0]+", view_pos.y:"+view_pos[1]+", view_w:"+view_w+", view_h:"+view_h);
+
+            int kb_h=0;
+          //WindowInsets       insets       =view      .getRootWindowInsets(    ); WindowInsetsCompat insets_compat=WindowInsetsCompat.toWindowInsetsCompat(insets, view);
+            WindowInsetsCompat insets_compat=ViewCompat.getRootWindowInsets(view); // use compat because 'View.getRootWindowInsets' is >=23 API, and 'WindowInsets.isVisible' is >=30 API
+            if(insets_compat!=null && insets_compat.isVisible(WindowInsetsCompat.Type.ime())) // Kb.visible
+            {
+               androidx.core.graphics.Insets r=insets_compat.getInsets(WindowInsetsCompat.Type.ime()); // left, top, right are always zero
+               kb_h=r.bottom;
+            }
+            com.esenthel.Native.setRects(visible.left-view_pos[0], visible.top-view_pos[1], view_r-visible.right, view_b-visible.bottom, kb_h);
+         }
+      }
+   }
 
    public static final void vibrate(int intensity, int milliseconds) // intensity=0..255
    {

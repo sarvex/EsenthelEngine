@@ -660,6 +660,7 @@ private:
    static void finish        ();
           void screenChanged (Flt old_width, Flt old_height);
           void   sizeChanged ();
+          void setRectUI     ();
           void validateCoords(Int eye=-1);
           void fadeUpdate    ();
           void fadeDraw      ();
