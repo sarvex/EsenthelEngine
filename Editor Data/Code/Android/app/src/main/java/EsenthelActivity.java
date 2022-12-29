@@ -896,10 +896,10 @@ public class EsenthelActivity extends NativeActivity
             {
                int ime=WindowInsetsCompat.Type.ime(), nav=WindowInsetsCompat.Type.navigationBars(), status=WindowInsetsCompat.Type.statusBars(), cutout=WindowInsetsCompat.Type.displayCutout(), caption=WindowInsetsCompat.Type.captionBar();
                int v=status|caption|cutout; // this is without Screen Keyboard (ime)
-               if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // nav is buggy, it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check manually
+               if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // getInsets is buggy for 'nav', it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check it only if not hidden
                androidx.core.graphics.Insets ins=insets_compat.getInsets(v);
                l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
-               if(statusBar()==SYSTEM_BAR_VISIBLE) // getInsets is buggy for 'status', in landscape mode, status=SYSTEM_BAR_VISIBLE, nav=SYSTEM_BAR_HIDDEN, it may not include status bar, so force it
+               if(statusBar()==SYSTEM_BAR_VISIBLE) // getInsets is buggy for 'status', in landscape mode, status=SYSTEM_BAR_VISIBLE, nav=SYSTEM_BAR_HIDDEN, it may not include status bar, so force it if we know it's visible
                {
                   ins=insets_compat.getInsetsIgnoringVisibility(status);
                   if(ins.top>t)t=ins.top;
