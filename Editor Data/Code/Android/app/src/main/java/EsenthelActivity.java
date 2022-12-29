@@ -402,7 +402,7 @@ public class EsenthelActivity extends NativeActivity
             {
                @Override public void onSystemUiVisibilityChange(int visibility)
                {
-                  if((system_bars>>2)==SYSTEM_BAR_HIDDEN && (visibility&View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)==0) // if want to hide, but user disabled
+                  if(navBar()==SYSTEM_BAR_HIDDEN && (visibility&View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)==0) // if want to hide, but user disabled
                   {
                      handler.postDelayed(new Runnable()
                      {
@@ -806,8 +806,10 @@ public class EsenthelActivity extends NativeActivity
    }
 
    static int system_bars=-1;
-   public static final int systemBars      () {return system_bars;} // what requested by code
-   public static final int systemBarsActual()                       // what we actually have
+   public static final int statusBar       () {return  system_bars    &(1|2);} // what requested by code
+   public static final int    navBar       () {return (system_bars>>2)&(1|2);} // what requested by code
+   public static final int systemBars      () {return  system_bars          ;} // what requested by code
+   public static final int systemBarsActual()                                  // what we actually have
    {
       int result=0; if(activity!=null)
       {
@@ -885,21 +887,35 @@ public class EsenthelActivity extends NativeActivity
       {
          View view=window.getDecorView(); if(view!=null)
          {
-            Rect  visible =new Rect(); view.getWindowVisibleDisplayFrame(visible ); // in screen coordinates
-            int[] view_pos=new int[2]; view.getLocationOnScreen         (view_pos); // in screen coordinates
-            int   view_w=view.getWidth(), view_h=view.getHeight(); // same as D.res
-            int   view_r=view_pos[0]+view_w, view_b=view_pos[1]+view_h;
-          //log("r.top:"+visible.top+", r.bottom:"+visible.bottom+", r.w:"+visible.width()+", r.h:"+visible.height()+", view_pos.x:"+view_pos[0]+", view_pos.y:"+view_pos[1]+", view_w:"+view_w+", view_h:"+view_h);
-
-            int kb_h=0;
+            int l, t, r, b, kb_h=0;
+          // insets are opposite of extends, they extend rectangle inwards
           //WindowInsets       insets       =view      .getRootWindowInsets(    ); WindowInsetsCompat insets_compat=WindowInsetsCompat.toWindowInsetsCompat(insets, view);
             WindowInsetsCompat insets_compat=ViewCompat.getRootWindowInsets(view); // use compat because 'View.getRootWindowInsets' is >=23 API, and 'WindowInsets.isVisible' is >=30 API
-            if(insets_compat!=null && insets_compat.isVisible(WindowInsetsCompat.Type.ime())) // Kb.visible
+            if(insets_compat!=null)
             {
-               androidx.core.graphics.Insets r=insets_compat.getInsets(WindowInsetsCompat.Type.ime()); // left, top, right are always zero
-               kb_h=r.bottom;
+               int ime=WindowInsetsCompat.Type.ime(), nav=WindowInsetsCompat.Type.navigationBars(), status=WindowInsetsCompat.Type.statusBars(), cutout=WindowInsetsCompat.Type.displayCutout();
+               int v=status|cutout; // this is without Screen Keyboard (ime)
+               if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // nav is buggy, it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check manually
+               androidx.core.graphics.Insets ins=insets_compat.getInsets(v);
+               l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
+             //if(insets_compat.isVisible(ime)) // Kb.visible, check not needed because zeros will be returned below
+               {
+                  ins=insets_compat.getInsets(ime);
+                  kb_h=ins.bottom; // TODO: this assumes screen keyboard is at the bottom
+               }
+            }else
+            {
+               Rect  visible =new Rect(); view.getWindowVisibleDisplayFrame(visible ); // in screen coordinates
+               int[] view_pos=new int[2]; view.getLocationOnScreen         (view_pos); // in screen coordinates
+               int   view_w=view.getWidth(), view_h=view.getHeight(); // same as D.res
+               int   view_r=view_pos[0]+view_w, view_b=view_pos[1]+view_h;
+             //log("r.top:"+visible.top+", r.bottom:"+visible.bottom+", r.w:"+visible.width()+", r.h:"+visible.height()+", view_pos.x:"+view_pos[0]+", view_pos.y:"+view_pos[1]+", view_w:"+view_w+", view_h:"+view_h);
+               l=visible.left-view_pos[0];
+               t=visible.top -view_pos[1];
+               r=view_r-visible.right;
+               b=view_b-visible.bottom;
             }
-            com.esenthel.Native.setRects(visible.left-view_pos[0], visible.top-view_pos[1], view_r-visible.right, view_b-visible.bottom, kb_h);
+            com.esenthel.Native.setRects(l, t, r, b, kb_h);
          }
       }
    }
