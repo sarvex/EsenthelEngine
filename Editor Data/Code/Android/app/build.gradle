@@ -44,6 +44,7 @@ android {
 
 dependencies {
 	implementation fileTree(dir: "libs", include: ["*.jar"])
+   implementation "androidx.core:core:1.8.0" // needed for androidx.core.view.ViewCompat
 }
 
 buildDir = MSBUILD_ANDROID_GRADLE_BUILD_OUTPUT_DIR
