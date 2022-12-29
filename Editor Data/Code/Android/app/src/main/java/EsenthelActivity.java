@@ -396,7 +396,7 @@ public class EsenthelActivity extends NativeActivity
       else             systemBars(system_bars);        // when restarting, set what last requested (this can happen when opening app when it was closed using 'SysWindow.minimize')
       Window window=activity.getWindow(); if(window!=null)
       {
-         if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
+         if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
          View view=window.getDecorView(); if(view!=null)
          {
             view.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
@@ -899,6 +899,11 @@ public class EsenthelActivity extends NativeActivity
                if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // nav is buggy, it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check manually
                androidx.core.graphics.Insets ins=insets_compat.getInsets(v);
                l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
+               if(statusBar()==SYSTEM_BAR_VISIBLE) // getInsets is buggy for 'status', in landscape mode, status=SYSTEM_BAR_VISIBLE, nav=SYSTEM_BAR_HIDDEN, it may not include status bar, so force it
+               {
+                  ins=insets_compat.getInsetsIgnoringVisibility(status);
+                  if(ins.top>t)t=ins.top;
+               }
              //if(insets_compat.isVisible(ime)) // Kb.visible, check not needed because zeros will be returned below
                {
                   ins=insets_compat.getInsets(ime);
