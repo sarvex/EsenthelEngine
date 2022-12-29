@@ -893,8 +893,8 @@ public class EsenthelActivity extends NativeActivity
             WindowInsetsCompat insets_compat=ViewCompat.getRootWindowInsets(view); // use compat because 'View.getRootWindowInsets' is >=23 API, and 'WindowInsets.isVisible' is >=30 API
             if(insets_compat!=null)
             {
-               int ime=WindowInsetsCompat.Type.ime(), nav=WindowInsetsCompat.Type.navigationBars(), status=WindowInsetsCompat.Type.statusBars(), cutout=WindowInsetsCompat.Type.displayCutout();
-               int v=status|cutout; // this is without Screen Keyboard (ime)
+               int ime=WindowInsetsCompat.Type.ime(), nav=WindowInsetsCompat.Type.navigationBars(), status=WindowInsetsCompat.Type.statusBars(), cutout=WindowInsetsCompat.Type.displayCutout(), caption=WindowInsetsCompat.Type.captionBar();
+               int v=status|caption|cutout; // this is without Screen Keyboard (ime)
                if(navBar()!=SYSTEM_BAR_HIDDEN)v|=nav; // nav is buggy, it might be included even if it's hidden ("insets_compat.isVisible(nav)" can be true), so check manually
                androidx.core.graphics.Insets ins=insets_compat.getInsets(v);
                l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
