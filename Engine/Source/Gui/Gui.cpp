@@ -134,9 +134,10 @@ struct TextMenuButton : Tab
 };
 static Tabs TextMenu;
 
+void GUI::hideTextMenu() {Gui-=TextMenu;}
 static void TextSelectAll(Ptr user)
 {
-   Gui-=TextMenu;
+   Gui.hideTextMenu();
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().selectAll(); break;
@@ -145,7 +146,7 @@ static void TextSelectAll(Ptr user)
 }
 static void TextCut(Ptr user)
 {
-   Gui-=TextMenu;
+   Gui.hideTextMenu();
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().cut(); break;
@@ -154,7 +155,7 @@ static void TextCut(Ptr user)
 }
 static void TextCopy(Ptr user)
 {
-   Gui-=TextMenu;
+   Gui.hideTextMenu();
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().copy(); break;
@@ -163,7 +164,7 @@ static void TextCopy(Ptr user)
 }
 static void TextPaste(Ptr user)
 {
-   Gui-=TextMenu;
+   Gui.hideTextMenu();
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().paste(); break;
@@ -172,7 +173,6 @@ static void TextPaste(Ptr user)
 }
 
 void GUI:: setTextMenu (Bool visible) {if(visible)showTextMenu();else hideTextMenu();}
-void GUI::hideTextMenu() {Gui-=TextMenu;}
 void GUI::showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
