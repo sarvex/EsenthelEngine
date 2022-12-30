@@ -972,11 +972,13 @@ public class EsenthelActivity extends NativeActivity
       {
          boolean password=((mode&1)!=0),
                    number=((mode&2)!=0),
-                    email=((mode&4)!=0);
+                    email=((mode&4)!=0),
+                      url=((mode&8)!=0);
          edit_text.removeTextChangedListener(text_watcher);
          edit_text.setText(text);
          edit_text.setSelection(start, end);
-         edit_text.setInputType(email ?             InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS|InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE
+         edit_text.setInputType(url   ?             InputType.TYPE_TEXT_VARIATION_URI          |InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                             :  email ?             InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS|InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE
                              : number ? (password ? InputType.   TYPE_NUMBER_VARIATION_PASSWORD|InputType.TYPE_CLASS_NUMBER                                   : InputType.TYPE_CLASS_NUMBER                                  )
                                       : (password ? InputType.     TYPE_TEXT_VARIATION_PASSWORD|InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE : InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_FLAG_MULTI_LINE)); // TYPE_TEXT_FLAG_MULTI_LINE prevents from Enter making the keyboard disappear (on Google and Samsung keyboards)
          edit_text.addTextChangedListener(text_watcher);

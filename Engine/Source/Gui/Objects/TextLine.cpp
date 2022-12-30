@@ -97,6 +97,9 @@ TextLine& TextLine::number(Bool on)  {if(number()!=on){_flag^=NUMBER ; setTextIn
 
 Bool      TextLine::email(       )C {return   FlagOn(_flag, EMAIL);}
 TextLine& TextLine::email(Bool on)  {if(email()!=on){_flag^=EMAIL ; setTextInput();} return T;}
+
+Bool      TextLine::url(       )C {return FlagOn(_flag, URL);}
+TextLine& TextLine::url(Bool on)  {if(url()!=on){_flag^=URL ; setTextInput();} return T;}
 /******************************************************************************/
 TextLine& TextLine::maxLength(Int max_length)
 {

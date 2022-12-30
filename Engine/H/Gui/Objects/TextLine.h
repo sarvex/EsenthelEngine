@@ -16,6 +16,7 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    Bool  password  ()C;                        TextLine& password (  Bool on                             );    // get/set password mode, in password mode text characters will be displayed as '*' (the character can be changed using 'Gui.passwordChar' method), password mode additionally prevents copying text to the clipboard
    Bool  number    ()C;                        TextLine& number   (  Bool on                             );    // get/set number   mode
    Bool  email     ()C;                        TextLine& email    (  Bool on                             );    // get/set email    mode
+   Bool  url       ()C;                        TextLine& url      (  Bool on                             );    // get/set url      mode
    Int   maxLength ()C {return _max_length;}   TextLine& maxLength(  Int  max_length                     );    // get/set maximum allowed text length (-1=no limit), default=-1
    Int   cursor    ()C {return _edit.cur  ;}   TextLine& cursor   (  Int  position, Bool margin=true     );    // get/set cursor position
  C Str&  operator()()C {return _text      ;}   TextLine& set      (C Str &text, SET_MODE mode=SET_DEFAULT);    // get/set text
@@ -62,6 +63,7 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    {
       NUMBER=1<<0,
       EMAIL =1<<1,
+      URL   =1<<2,
    };
 #endif
 

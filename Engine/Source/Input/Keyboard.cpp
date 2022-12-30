@@ -1491,7 +1491,7 @@ void ScreenKeyboard::set()
    text=null;
    start=end=0;
    max_length=-1;
-   multi_line=pass=number=email=false;
+   multi_line=pass=number=email=url=false;
 
    if(Gui.kb())switch(Gui.kb()->type())
    {
@@ -1508,12 +1508,13 @@ void ScreenKeyboard::set()
       case GO_TEXTLINE:
       {
        C TextLine &tl=Gui.kb()->asTextLine();
-         text =&tl();
-         pass = tl.password();
-         number=tl.number  ();
-         email =tl.email   ();
-         end  = tl.cursor  ();
-         start=((tl._edit.sel<0) ? tl.cursor() : tl._edit.sel);
+         text  = &tl();
+         pass  =  tl.password();
+         number=  tl.number  ();
+         email =  tl.email   ();
+         url   =  tl.url     ();
+         end   =  tl.cursor  ();
+         start =((tl._edit.sel<0) ? tl.cursor() : tl._edit.sel);
          max_length=tl.maxLength();
       }break;
    }
@@ -1557,7 +1558,7 @@ Bool ScreenKeyboard::Set(Int cur, Int sel)
    return false;
 }
 #if ANDROID
-static jint SKMode(C ScreenKeyboard &sk) {return (sk.pass) | (sk.number<<1) | (sk.email<<2);}
+static jint SKMode(C ScreenKeyboard &sk) {return (sk.pass) | (sk.number<<1) | (sk.email<<2) | (sk.url<<3);}
 static Bool KBWantVisible;
 #endif
 void KeyboardClass::setVisible()
@@ -1579,7 +1580,8 @@ void KeyboardClass::setVisible()
       {
          if(TextEditContext)
          {
-            TextEditContext->InputScope=(sk.email  ?                                                                           Windows::UI::Text::Core::CoreTextInputScope::EmailAddress
+            TextEditContext->InputScope=(sk.url    ?                                                                           Windows::UI::Text::Core::CoreTextInputScope::Url
+                                       : sk.email  ?                                                                           Windows::UI::Text::Core::CoreTextInputScope::EmailAddress
                                        : sk.number ? (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::PasswordNumeric : Windows::UI::Text::Core::CoreTextInputScope::Number)
                                                    : (sk.pass ? Windows::UI::Text::Core::CoreTextInputScope::Password        : Windows::UI::Text::Core::CoreTextInputScope::Text  ));
             TextEditContext->NotifyFocusEnter();
@@ -1613,7 +1615,7 @@ void KeyboardClass::setVisible()
    {
       if(visible)
       {
-       //view.keyboardType=(sk.email ? UIKeyboardTypeEmailAddress : sk.number ? UIKeyboardTypeNumberPad : UIKeyboardTypeDefault);
+       //view.keyboardType=(sk.url ? UIKeyboardTypeURL : sk.email ? UIKeyboardTypeEmailAddress : sk.number ? UIKeyboardTypeNumberPad : UIKeyboardTypeDefault);
       }
       [view keyboardVisible:visible];
    }
