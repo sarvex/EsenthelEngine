@@ -304,6 +304,71 @@ TextBox& TextBox::selectAll()
    return T;
 }
 /******************************************************************************/
+TextBox& TextBox::cut()
+{
+   if(_edit.sel<0)
+   {
+      ClipSet(T());
+      clear();
+   }else
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      Int len=max-min;
+      ClipSet(Trim(T(), min, len));
+     _text.remove(min, len);
+     _edit.sel=-1;
+     _edit.cur=min;
+      scrollToCursor();
+      call();
+      setTextInput();
+   }
+   return T;
+}
+TextBox& TextBox::copy()
+{
+   if(_edit.sel<0)
+   {
+      ClipSet(T());
+   }else
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      ClipSet(Trim(T(), min, max-min));
+   }
+   return T;
+}
+TextBox& TextBox::paste()
+{
+   Bool changed=false;
+   if(_edit.sel>=0) // del selection
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      Int len=max-min;
+     _text.remove(min, len);
+     _edit.sel=-1;
+     _edit.cur=min;
+      changed=true;
+   }
+   Str paste=ClipGet(); if(paste.is())
+   {
+      if(_max_length>=0)
+      {
+         paste.clip(_max_length-_edit.cur); if(!paste.is())goto skip;
+        _text .clip(_max_length-paste.length());
+      }
+     _text.insert(_edit.cur, paste);
+     _edit.cur+=paste.length();
+      changed=true;
+   }
+skip:
+   if(changed)
+   {
+      scrollToCursor();
+      call();
+      setTextInput();
+   }
+   return T;
+}
+/******************************************************************************/
 void TextBox::setButtons()
 {
    Bool vertical, horizontal;

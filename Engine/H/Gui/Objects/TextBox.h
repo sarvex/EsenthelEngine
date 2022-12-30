@@ -35,6 +35,10 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    TextBox& selectNone(); // select no  text
    TextBox& selectAll (); // select all text
 
+   TextBox& cut  (); // perform operation "cut"
+   TextBox& copy (); // perform operation "copy"
+   TextBox& paste(); // perform operation "paste"
+
    TextBox& scrollX   (Flt delta       , Bool immediate=false) {slidebar[0].scroll   (delta   , immediate); return T;} // horizontal scroll by delta
    TextBox& scrollToX (Flt pos         , Bool immediate=false) {slidebar[0].scrollTo (pos     , immediate); return T;} // horizontal scroll to pos
    TextBox& scrollFitX(Flt min, Flt max, Bool immediate=false) {slidebar[0].scrollFit(min, max, immediate); return T;} // horizontal scroll to fit min..max range
