@@ -474,7 +474,7 @@ void TextLine::update(C GuiPC &gpc)
                      setTextInput();
                   }
                   if(touch)
-                     if(_edit.sel!=-1 || touch->longPress())Gui.showTextMenu();
+                     if(_edit.sel>=0 || touch->longPress())Gui.showTextMenu();
                }
 
                // scroll offset
