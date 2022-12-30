@@ -231,6 +231,71 @@ TextLine& TextLine::selectExtNot()
    return T;
 }
 /******************************************************************************/
+TextLine& TextLine::cut()
+{
+   if(_edit.sel<0)
+   {
+      ClipSet(T());
+      clear();
+   }else
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      Int len=max-min;
+      ClipSet(Trim(T(), min, len));
+     _text.remove(min, len);
+     _edit.sel=-1;
+     _edit.cur=min;
+      adjustOffset();
+      call();
+      setTextInput();
+   }
+   return T;
+}
+TextLine& TextLine::copy()
+{
+   if(_edit.sel<0)
+   {
+      ClipSet(T());
+   }else
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      ClipSet(Trim(T(), min, max-min));
+   }
+   return T;
+}
+TextLine& TextLine::paste()
+{
+   Bool changed=false;
+   if(_edit.sel>=0) // del selection
+   {
+      Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
+      Int len=max-min;
+     _text.remove(min, len);
+     _edit.sel=-1;
+     _edit.cur=min;
+      changed=true;
+   }
+   Str paste=ClipGet(); if(paste.is())
+   {
+      if(_max_length>=0)
+      {
+         paste.clip(_max_length-_edit.cur); if(!paste.is())goto skip;
+        _text .clip(_max_length-paste.length());
+      }
+     _text.insert(_edit.cur, paste);
+     _edit.cur+=paste.length();
+      changed=true;
+   }
+skip:
+   if(changed)
+   {
+      adjustOffset();
+      call();
+      setTextInput();
+   }
+   return T;
+}
+/******************************************************************************/
 TextLine& TextLine::rect(C Rect &rect)
 {
  //if(T.rect()!=rect) below looks fast so don't need this
@@ -267,6 +332,61 @@ GuiObj* TextLine::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)
       return go;
    }
    return null;
+}
+Flt TextLine::localTextPosX(Int index)C
+{
+   Flt pos=_offset;
+   if(GuiSkin *skin=getSkin())
+      if(TextStyle *text_style=skin->textline.text_style())
+   {
+      TextStyleParams ts=*text_style; ts.size=rect().h()*skin->textline.text_size;
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #endif
+      pos+=ts.size.x*TEXTLINE_OFFSET;
+      if(_text.is() && index>0)
+      {
+       C Str &text=displayText();
+         pos+=ts.textPos(text, index, 0, false).x;
+      }
+   }
+   return pos;
+}
+Vec2 TextLine::localTextPosX(Int index0, Int index1)C
+{
+   Flt pos=_offset;
+   if(GuiSkin *skin=getSkin())
+      if(TextStyle *text_style=skin->textline.text_style())
+   {
+      TextStyleParams ts=*text_style; ts.size=rect().h()*skin->textline.text_size;
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #endif
+      pos+=ts.size.x*TEXTLINE_OFFSET;
+      if(_text.is())
+      {
+       C Str &text=displayText();
+         return Vec2(pos+ts.textPos(text, index0, 0, false).x,
+                     pos+ts.textPos(text, index1, 0, false).x);
+      }
+   }
+   return pos;
+}
+Rect TextLine::screenTextPos(Int index)C
+{
+   Vec2 screen_pos=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset+pos() : screenPos());
+   return Rect().setX(localTextPosX(index) + screen_pos.x).setY(screen_pos.y-rect().h(), screen_pos.y);
+}
+Rect TextLine::screenTextPos(Int index0, Int index1)C
+{
+   Vec2 screen_pos=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset+pos() : screenPos());
+   Vec2 lx=localTextPosX(index0, index1); if(lx.x>lx.y)lx.swap();
+   return Rect().setX(lx.x+screen_pos.x, lx.y+screen_pos.x).setY(screen_pos.y-rect().h(), screen_pos.y);
+}
+Rect TextLine::screenSelPos()C
+{
+   return (_edit.sel<0) ? screenTextPos(           cursor())
+                        : screenTextPos(_edit.sel, cursor());
 }
 void TextLine::update(C GuiPC &gpc)
 {
