@@ -717,17 +717,17 @@ void CodeEditor::setMenu(Node<MenuElm> &menu)
          Node<MenuElm> &f=(menu+="File");
        /*f.New().create("New"      , MenuNew      ).kbsc(KbSc(KB_N, KBSC_CTRL_CMD));
          f++;*/
-         f.New().create("Save"     , MenuOverwrite).kbsc(KbSc(KB_F2               )).kbsc2(KbSc(KB_S, KBSC_CTRL_CMD           ));
-       /*f.New().create("Save"     , MenuSave     ).kbsc(KbSc(KB_F2, KBSC_CTRL_CMD)).kbsc2(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_SHIFT));
+         f.New().create("Save"     , MenuOverwrite).kbsc(KbSc(KB_F2               )).kbsc1(KbSc(KB_S, KBSC_CTRL_CMD           ));
+       /*f.New().create("Save"     , MenuSave     ).kbsc(KbSc(KB_F2, KBSC_CTRL_CMD)).kbsc1(KbSc(KB_S, KBSC_CTRL_CMD|KBSC_SHIFT));
          f++;
-         f.New().create("Load"     , MenuLoad     ).kbsc(KbSc(KB_F3                      )).kbsc2(KbSc(KB_O, KBSC_CTRL_CMD));*/
-         f.New().create("Close"    , MenuClose    ).kbsc(KbSc(KB_F3, KBSC_ALT|KBSC_REPEAT)).kbsc2(KbSc('q' , KBSC_CTRL_CMD|KBSC_REPEAT));
+         f.New().create("Load"     , MenuLoad     ).kbsc(KbSc(KB_F3                      )).kbsc1(KbSc(KB_O, KBSC_CTRL_CMD));*/
+         f.New().create("Close"    , MenuClose    ).kbsc(KbSc(KB_F3, KBSC_ALT|KBSC_REPEAT)).kbsc1(KbSc('q' , KBSC_CTRL_CMD|KBSC_REPEAT));
          f.New().create("Locate"   , MenuLocate   ).kbsc(KbSc(KB_L , KBSC_CTRL_CMD       )).desc("Locate this file in the Project");
       }
       {
          Node<MenuElm> &e=(menu+="Edit");
          e.New().create("Undo" , EditUndo).kbsc(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_REPEAT));
-         e.New().create("Redo" , EditRedo).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_REPEAT)).kbsc2(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
+         e.New().create("Redo" , EditRedo).kbsc(KbSc(KB_Y, KBSC_CTRL_CMD|KBSC_REPEAT)).kbsc1(KbSc(KB_Z, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
          e.New().create("Undo2", EditUndo).kbsc(KbSc(KB_BACK, KBSC_ALT           |KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space (besides on Windows Notepad they also work and are not listed)
          e.New().create("Redo2", EditRedo).kbsc(KbSc(KB_BACK, KBSC_ALT|KBSC_SHIFT|KBSC_REPEAT)).flag(MENU_HIDDEN); // keep those hidden because they occupy too much of visible space (besides on Windows Notepad they also work and are not listed)
          e++;
@@ -750,14 +750,14 @@ void CodeEditor::setMenu(Node<MenuElm> &menu)
          e.New().create("Find Previous", FindPrev, find).kbsc(KbSc('D', KBSC_CTRL_CMD|KBSC_REPEAT));
          e.New().create("Replace"      , EditReplace   ).kbsc(KbSc('r', KBSC_CTRL_CMD));
          e++;
-         e.New().create("Next Opened File"    , EditNextFile).kbsc(KbSc(KB_F6,            KBSC_REPEAT)).kbsc2(KbSc(KB_TAB, KBSC_CTRL_CMD           |KBSC_REPEAT));
-         e.New().create("Previous Opened File", EditPrevFile).kbsc(KbSc(KB_F6, KBSC_SHIFT|KBSC_REPEAT)).kbsc2(KbSc(KB_TAB, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
+         e.New().create("Next Opened File"    , EditNextFile).kbsc(KbSc(KB_F6,            KBSC_REPEAT)).kbsc1(KbSc(KB_TAB, KBSC_CTRL_CMD           |KBSC_REPEAT));
+         e.New().create("Previous Opened File", EditPrevFile).kbsc(KbSc(KB_F6, KBSC_SHIFT|KBSC_REPEAT)).kbsc1(KbSc(KB_TAB, KBSC_CTRL_CMD|KBSC_SHIFT|KBSC_REPEAT));
          e++;
          e.New().create("Next Issue"    , EditNextIssue).kbsc(KbSc('e', KBSC_CTRL_CMD|KBSC_REPEAT)).desc("Go to the next compiler issue");
          e.New().create("Previous Issue", EditPrevIssue).kbsc(KbSc('E', KBSC_CTRL_CMD|KBSC_REPEAT)).desc("Go to the previous compiler issue");
          e++;
-         e.New().create("Navigate Forward"  , EditNextCurPos).kbsc(KbSc(KB_RIGHT, KBSC_ALT|KBSC_REPEAT)).kbsc2(KbSc(KB_RBR, KBSC_CTRL_CMD|KBSC_REPEAT));
-         e.New().create("Navigate Backward" , EditPrevCurPos).kbsc(KbSc(KB_LEFT , KBSC_ALT|KBSC_REPEAT)).kbsc2(KbSc(KB_LBR, KBSC_CTRL_CMD|KBSC_REPEAT));
+         e.New().create("Navigate Forward"  , EditNextCurPos).kbsc(KbSc(KB_RIGHT, KBSC_ALT|KBSC_REPEAT)).kbsc1(KbSc(KB_RBR, KBSC_CTRL_CMD|KBSC_REPEAT));
+         e.New().create("Navigate Backward" , EditPrevCurPos).kbsc(KbSc(KB_LEFT , KBSC_ALT|KBSC_REPEAT)).kbsc1(KbSc(KB_LBR, KBSC_CTRL_CMD|KBSC_REPEAT));
          e.New().create("Navigate Forward2" , EditNextCurPos).kbsc(KbSc(KB_NAV_FORWARD, KBSC_REPEAT)).flag(MENU_HIDDEN);
          e.New().create("Navigate Backward2", EditPrevCurPos).kbsc(KbSc(KB_NAV_BACK   , KBSC_REPEAT)).flag(MENU_HIDDEN);
          e++;

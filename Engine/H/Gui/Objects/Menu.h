@@ -11,7 +11,7 @@ enum MENU_COLUMN // List columns available when creating 'Menu' from 'Node<MenuE
    MENU_COLUMN_CHECK, // enabled/checked state
    MENU_COLUMN_NAME , // display name
    MENU_COLUMN_KBSC , // keyboard shortcut
-   MENU_COLUMN_KBSC2, // keyboard shortcut #2
+   MENU_COLUMN_KBSC1, // keyboard shortcut #1
    MENU_COLUMN_SUB  , // sub-elements (children)
    MENU_COLUMN_NUM  , // number of menu list columns
 };
@@ -42,7 +42,7 @@ struct MenuElm // Menu Element
 
    MenuElm& flag   (  Byte  flag   );   Byte  flag ()C {return _flag ;} // set/get MENU_FLAG
    MenuElm& kbsc   (C KbSc &kbsc   );   KbSc  kbsc ()C {return _kbsc ;} // set/get keyboard shortcut
-   MenuElm& kbsc2  (C KbSc &kbsc   );   KbSc  kbsc2()C {return _kbsc2;} // set/get keyboard shortcut (alternative)
+   MenuElm& kbsc1  (C KbSc &kbsc   );   KbSc  kbsc1()C {return _kbsc1;} // set/get keyboard shortcut (alternative)
    MenuElm& desc   (C Str  &desc   ); C Str&  desc ()C {return _desc ;} // set/get description
    MenuElm& setOn  (  Bool  on=true);                                   // set     if on
    MenuElm& display(C Str  &name   );                                   // set     display name, this method makes effect only if 'name' is not empty
@@ -70,9 +70,9 @@ private:
    Byte   _flag;
    Ptr    _func_user;
    void (*_func )(        );
-   void (*_func2)(Ptr user);
+   void (*_func1)(Ptr user);
    Str    _desc;
-   KbSc   _kbsc, _kbsc2;
+   KbSc   _kbsc, _kbsc1;
    Menu  *_menu;
 
    NO_COPY_CONSTRUCTOR(MenuElm);

@@ -148,7 +148,7 @@ TextStyle* Button::textParams(Flt &text_size, Flt &text_padd, C Flt *height)C
    }
    return null;
 }
-Flt Button::textWidth(C Flt *height)C
+Flt Button::textWidth(C Flt *height, Bool padd)C
 {
    if(hasData())
    {
@@ -158,7 +158,9 @@ Flt Button::textWidth(C Flt *height)C
       #if DEFAULT_FONT_FROM_CUSTOM_SKIN
          if(!ts.font())if(GuiSkin *skin=getSkin())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
       #endif
-         return ts.textWidth(text, extra.data(), extra.elms());
+         Flt     w=ts.textWidth(text, extra.data(), extra.elms());
+         if(padd)w+=text_padd*2;
+         return  w;
       }
    }
    return 0;

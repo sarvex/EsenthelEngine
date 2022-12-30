@@ -58,7 +58,7 @@ void MenuElm::zero()
   _func_immediate=false;
   _func_user     =null;
   _func          =null;
-  _func2         =null;
+  _func1         =null;
   _menu          =null;
 }
 MenuElm::MenuElm() {zero();}
@@ -102,31 +102,31 @@ MenuElm& MenuElm::create(C MenuElm &src, Menu *parent)
       T._func_immediate=src._func_immediate;
       T._func_user     =src._func_user;
       T._func          =src._func;
-      T._func2         =src._func2;
+      T._func1         =src._func1;
       T._desc          =src._desc;
       T._kbsc          =src._kbsc;
-      T._kbsc2         =src._kbsc2;
+      T._kbsc1         =src._kbsc1;
    }
    return T;
 }
 /******************************************************************************/
 MenuElm& MenuElm::flag   (  Byte  flag) {T._flag =flag; return T;}
 MenuElm& MenuElm::kbsc   (C KbSc &kbsc) {T._kbsc =kbsc; return T;}
-MenuElm& MenuElm::kbsc2  (C KbSc &kbsc) {T._kbsc2=kbsc; return T;}
+MenuElm& MenuElm::kbsc1  (C KbSc &kbsc) {T._kbsc1=kbsc; return T;}
 MenuElm& MenuElm::desc   (C Str  &desc) {T._desc =desc; return T;}
 MenuElm& MenuElm::setOn  (  Bool  on  ) {T. on   =on  ; return T;}
 MenuElm& MenuElm::display(C Str  &name) {if(name.is())display_name=name; return T;}
-MenuElm& MenuElm::func   (void (*func)(        ),           Bool immediate) {T._func=func; T._func2=null; T._func_user=null; T._func_immediate=immediate; return T;} // clear the other function as only one function type should be available at a time
-MenuElm& MenuElm::func   (void (*func)(Ptr user), Ptr user, Bool immediate) {T._func=null; T._func2=func; T._func_user=user; T._func_immediate=immediate; return T;} // clear the other function as only one function type should be available at a time
+MenuElm& MenuElm::func   (void (*func)(        ),           Bool immediate) {T._func=func; T._func1=null; T._func_user=null; T._func_immediate=immediate; return T;} // clear the other function as only one function type should be available at a time
+MenuElm& MenuElm::func   (void (*func)(Ptr user), Ptr user, Bool immediate) {T._func=null; T._func1=func; T._func_user=user; T._func_immediate=immediate; return T;} // clear the other function as only one function type should be available at a time
 void     MenuElm::call   ()
 {
    if(_func )if(_func_immediate)_func (          );else Gui.addFuncCall(_func             );
-   if(_func2)if(_func_immediate)_func2(_func_user);else Gui.addFuncCall(_func2, _func_user);
+   if(_func1)if(_func_immediate)_func1(_func_user);else Gui.addFuncCall(_func1, _func_user);
 }
 /******************************************************************************/
 Bool MenuElm::pushable()
 {
-   return (flag()&MENU_TOGGLABLE) || _func || _func2;
+   return (flag()&MENU_TOGGLABLE) || _func || _func1;
 }
 void MenuElm::push()
 {
@@ -317,7 +317,7 @@ Menu& Menu::setData(C Node<MenuElm> &node)
    Bool children   =false, togglable=false;
    Flt  width_name =0,
         width_kbsc =0,
-        width_kbsc2=0;
+        width_kbsc1=0;
    GuiSkin   *skin      =list.getSkin();
    TextStyle *text_style=(skin ? skin->list.text_style() : null); TextStyleParams ts(text_style, false); ts.size=list.textSize();
 #if DEFAULT_FONT_FROM_CUSTOM_SKIN
@@ -346,7 +346,7 @@ Menu& Menu::setData(C Node<MenuElm> &node)
          togglable|=FlagOn(elm.flag(), MENU_TOGGLABLE);
                              MAX(width_name , ts.textWidth(elm.display_name    ));
          if(elm.kbsc ().is())MAX(width_kbsc , ts.textWidth(elm.kbsc ().asText()));
-         if(elm.kbsc2().is())MAX(width_kbsc2, ts.textWidth(elm.kbsc2().asText()));
+         if(elm.kbsc1().is())MAX(width_kbsc1, ts.textWidth(elm.kbsc1().asText()));
       }
    }
 
@@ -355,17 +355,17 @@ Menu& Menu::setData(C Node<MenuElm> &node)
       ListColumn(MEMBER(MenuElm,  on          ), 0.05f, "on"   ), // 0
       ListColumn(MEMBER(MenuElm,  display_name), 0.00f, "name" ), // 1
       ListColumn(MEMBER(MenuElm, _kbsc        ), 0.00f, "kbsc" ), // 2
-      ListColumn(MEMBER(MenuElm, _kbsc2       ), 0.00f, "kbsc2"), // 3
+      ListColumn(MEMBER(MenuElm, _kbsc1       ), 0.00f, "kbsc1"), // 3
       ListColumn(MEMBER(MenuElm, _menu        ), 0.05f, "menu" ), // 4
-   }; ASSERT(MENU_COLUMN_CHECK==0 && MENU_COLUMN_NAME==1 && MENU_COLUMN_KBSC==2 && MENU_COLUMN_KBSC2==3 && MENU_COLUMN_SUB==4 && MENU_COLUMN_NUM==5);
+   }; ASSERT(MENU_COLUMN_CHECK==0 && MENU_COLUMN_NAME==1 && MENU_COLUMN_KBSC==2 && MENU_COLUMN_KBSC1==3 && MENU_COLUMN_SUB==4 && MENU_COLUMN_NUM==5);
    columns[MENU_COLUMN_CHECK].md.type=DATA_CHECK;
    columns[MENU_COLUMN_CHECK].sort=&MenuElmFlag; // use 'sort' to point to '_flag' so we can access 'MENU_TOGGLABLE' in 'DataGuiImage'
-   columns[MENU_COLUMN_NAME ].width  =width_name +ts.size.x*(0.5f+((width_kbsc || width_kbsc2) ? 0.5f : 0));
+   columns[MENU_COLUMN_NAME ].width  =width_name +ts.size.x*(0.5f+((width_kbsc || width_kbsc1) ? 0.5f : 0));
    columns[MENU_COLUMN_KBSC ].width  =width_kbsc +ts.size.x* 0.5f;
-   columns[MENU_COLUMN_KBSC2].width  =width_kbsc2+ts.size.x*(0.5f+(               width_kbsc   ? 0.5f : 0)); // keyboard shortcuts are right-aligned, so we need to add space to kbsc2 (on the right) if kbsc (on the left) exists
+   columns[MENU_COLUMN_KBSC1].width  =width_kbsc1+ts.size.x*(0.5f+(               width_kbsc   ? 0.5f : 0)); // keyboard shortcuts are right-aligned, so we need to add space to kbsc1 (on the right) if kbsc (on the left) exists
    columns[MENU_COLUMN_CHECK].visible(togglable     );
    columns[MENU_COLUMN_KBSC ].visible(width_kbsc !=0);
-   columns[MENU_COLUMN_KBSC2].visible(width_kbsc2!=0);
+   columns[MENU_COLUMN_KBSC1].visible(width_kbsc1!=0);
    columns[MENU_COLUMN_SUB  ].visible(children   !=0);
 
    disabled(node.disabled);
@@ -543,10 +543,10 @@ void Menu::checkKeyboardShortcuts()
             e.push();
               push(i);
          }else
-         if(e._kbsc2.pd())
+         if(e._kbsc1.pd())
          {
             DEBUG_BYTE_LOCK(_used);
-            e._kbsc2.eat();
+            e._kbsc1.eat();
             e.push();
               push(i);
          }
