@@ -127,7 +127,14 @@ void GUI::setText()
 {
    REPAO(_desktops).setText();
 }
-static void SelectAll()
+/******************************************************************************/
+struct TextMenuButton : Tab
+{
+   virtual TextMenuButton& activate()override {return T;} // ignore, because we cannot activate/change keyboard focus, because that would hide the screen keyboard
+};
+static Tabs TextMenu;
+
+static void SelectAll(Ptr user)
 {
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
@@ -135,7 +142,7 @@ static void SelectAll()
       case GO_TEXTBOX : go->asTextBox ().selectAll(); break;
    }
 }
-static void Cut()
+static void Cut(Ptr user)
 {
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
@@ -143,7 +150,7 @@ static void Cut()
       case GO_TEXTBOX : go->asTextBox ().cut(); break;
    }
 }
-static void Copy()
+static void Copy(Ptr user)
 {
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
@@ -151,12 +158,64 @@ static void Copy()
       case GO_TEXTBOX : go->asTextBox ().copy(); break;
    }
 }
-static void Paste()
+static void Paste(Ptr user)
 {
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().paste(); break;
       case GO_TEXTBOX : go->asTextBox ().paste(); break;
+   }
+}
+
+void GUI::showTextMenu()
+{
+   if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
+   {
+      Rect rect;
+      Bool sel;
+      Flt  h=0.06f;
+      switch(go->type())
+      {
+         case GO_TEXTLINE:
+         {
+            TextLine &tl=go->asTextLine();
+            sel=(tl._edit.sel>=0);
+            rect=tl.screenSelPos();
+            if(GuiSkin *skin=tl.getSkin())h=tl.rect().h()*skin->textline.text_size;
+         }break;
+      }
+      rect.min.y-=h; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
+      Node<MenuElm> n;
+      if(sel)
+      {
+            n.New().create("Cut"       , Cut);
+            n.New().create("Copy"      , Copy);
+      }else n.New().create("Select All", SelectAll);
+            n.New().create("Paste"     , Paste);
+   #if 1
+      Flt w=0;
+      TextMenu._tabs.replaceClass<TextMenuButton>();
+      Gui+=TextMenu.create((CChar**)null, n.children.elms(), true);
+      FREPA(TextMenu)
+      {
+         Tab &tab=TextMenu.tab(i);
+         MenuElm &m=n.children[i];
+         tab.Button::setText(m.name); // don't call Tab.setText because that will resize Tabs
+         tab.func(m._func1);
+         w+=tab.textWidth(&h, true);
+      }
+      w+=(TextMenu.tabs()+1)*h/2; // spacing around elements
+      TextMenu.rect(Rect_C(0, 0, w, h));
+   #else
+      TextMenu.create(n); TextMenu.list.cur_mode=LCM_MOUSE;
+      if(GuiSkin *skin=TextMenu.getSkin())
+         if(C PanelPtr &panel=skin->menu.normal)
+      {
+         Rect margin; panel->outerMargin(TextMenu.rect(), margin);
+         rect.extendY(Max(margin.min.y, margin.max.y)); // use Max because we don't know yet if we'll place above or below
+      }
+      Gui+=TextMenu.posAround(rect, 0, true).show();
+   #endif
    }
 }
 /******************************************************************************/

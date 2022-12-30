@@ -465,12 +465,16 @@ void TextLine::update(C GuiPC &gpc)
                      setTextInput();
                   }
                }else
-               if(pos!=_edit.cur)
                {
-                  if(_edit.sel<   0)_edit.sel=_edit.cur;else
-                  if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
-                                    _edit.cur=pos;
-                  setTextInput();
+                  if(pos!=_edit.cur)
+                  {
+                     if(_edit.sel<   0)_edit.sel=_edit.cur;else
+                     if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
+                                       _edit.cur=pos;
+                     setTextInput();
+                  }
+                  if(touch)
+                     if(_edit.sel!=-1 || touch->longPress())Gui.showTextMenu();
                }
 
                // scroll offset
