@@ -303,8 +303,9 @@ void TextLine::update(C GuiPC &gpc)
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
       Bool    margin;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false;}else
-      if(Gui.kb()==this)REPA(Touches){Touch &touch=Touches[i]; if(touch.guiObj()==this && (touch.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&touch.pos(); mt_state=touch._state; margin=touch.selecting(); touch.disableScroll(); break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
+      Touch  *touch;
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false; touch=null;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; margin=t.selecting(); t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
       if(_text.is() && mt_pos)
       {
          if(GuiSkin *skin=getSkin())

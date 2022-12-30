@@ -42,6 +42,10 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    TextLine& selectAll   (); // select all text
    TextLine& selectExtNot(); // select all but extension
 
+   TextLine& cut  (); // perform operation "cut"
+   TextLine& copy (); // perform operation "copy"
+   TextLine& paste(); // perform operation "paste"
+
    // main
    virtual GuiObj* test  (C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)override; // test if 'pos' screen position intersects with the object, by returning pointer to object or its children upon intersection and null in case no intersection, 'mouse_wheel' may be modified upon intersection either to the object or its children or null
    virtual void    update(C GuiPC &gpc)override; // update object
@@ -58,6 +62,12 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    void  adjustOffset(              Bool margin=true);
    Bool cursorChanged(Int position, Bool margin=true);
    void  setTextInput()C;
+
+   Flt   localTextPosX(Int index)C;
+   Vec2  localTextPosX(Int index0, Int index1)C;
+   Rect screenTextPos (Int index)C;
+   Rect screenTextPos (Int index0, Int index1)C;
+   Rect screenSelPos  ()C;
 
    enum
    {

@@ -449,15 +449,16 @@ Menu& Menu::posD (C Vec2 &pos) {return moveClamp(pos-T.posD ());}
 Menu& Menu::posU (C Vec2 &pos) {return moveClamp(pos-T.posU ());}
 Menu& Menu::posC (C Vec2 &pos) {return moveClamp(pos-T.posC ());}
 
-Menu& Menu::posAround(C Rect &rect, Flt align)
+Menu& Menu::posAround(C Rect &rect, Flt align, Bool prefer_up)
 {
    Vec2 size=T.size(),
         pos =rect.ld(); pos.x+=Lerp(rect.w()-size.x+paddingR(), -paddingL(), LerpR(-1.0f, 1.0f, align));
    Rect screen_rect(0, D.rectUI().min.y, 0, D.rectUI().max.y); // only Y are needed
-   Flt  h_below=(Rect_LU(0, pos.y         , 0, size.y)&screen_rect).h(), // visible height when below the 'rect'
-        h_above=(Rect_LD(0, pos.y+rect.h(), 0, size.y)&screen_rect).h(); // visible height when above the 'rect'
+   Rect kb_rect; if(Kb.rect(kb_rect))MAX(screen_rect.min.y, kb_rect.max.y); // TODO: this assumes screen keyboard is at the bottom
+   Flt  h_below=(Rect_LU(0, pos.y         , 0, size.y)&screen_rect).h(), // visible menu height when below the 'rect'
+        h_above=(Rect_LD(0, pos.y+rect.h(), 0, size.y)&screen_rect).h(); // visible menu height when above the 'rect'
 
-   return T.pos((h_above>h_below+EPS) ? pos+Vec2(0, rect.h()+size.y) : pos); // select position according to which visible height is bigger, use EPS to more often place the Menu below
+   return T.pos((h_above>h_below+(prefer_up ? -EPS : EPS)) ? pos+Vec2(0, rect.h()+size.y) : pos); // select position according to which visible height is bigger, use EPS to more often place the Menu above/below
 }
 void Menu::clientSize(C Vec2 &size)
 {

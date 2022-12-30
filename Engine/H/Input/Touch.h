@@ -28,9 +28,10 @@ struct Touch // Single Touch on a Touch-Screen
    Dbl startTime()C {return                    _start_time ;} // time of when the touch has started, obtained using "Time.appTime()"
    Flt life     ()C {return Flt(Time.appTime()-_start_time);} // how long the touch is active
 
-   Bool selecting()C {return _selecting;} // if enough                     movement occurred since the touch start to consider it selecting
-   Bool dragging ()C {return _dragging ;} // if enough time has passed and movement occurred since the touch start to consider it dragging
-   Bool scrolling()C {return _scrolling;} // if this touch is currently being used to scroll a Region
+   Bool selecting()C {return _selecting           ;} // if enough                     movement occurred since the touch start to consider it selecting
+   Bool dragging ()C {return _dragging            ;} // if enough time has passed and movement occurred since the touch start to consider it dragging
+   Bool scrolling()C {return _scrolling           ;} // if this touch is currently being used to scroll a Region
+   Bool longPress()C {return life()>=LongPressTime;} // if this touch is pressed for a long time
 
    GuiObj* guiObj(           )C {return _gui_obj;} // get gui object at touch position when the touch was started
    void    guiObj(GuiObj *obj)  {   _gui_obj=obj;} // manually change the gui object for this touch

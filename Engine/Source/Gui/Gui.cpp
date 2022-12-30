@@ -127,6 +127,38 @@ void GUI::setText()
 {
    REPAO(_desktops).setText();
 }
+static void SelectAll()
+{
+   if(GuiObj *go=Gui.kb())switch(go->type())
+   {
+      case GO_TEXTLINE: go->asTextLine().selectAll(); break;
+      case GO_TEXTBOX : go->asTextBox ().selectAll(); break;
+   }
+}
+static void Cut()
+{
+   if(GuiObj *go=Gui.kb())switch(go->type())
+   {
+      case GO_TEXTLINE: go->asTextLine().cut(); break;
+      case GO_TEXTBOX : go->asTextBox ().cut(); break;
+   }
+}
+static void Copy()
+{
+   if(GuiObj *go=Gui.kb())switch(go->type())
+   {
+      case GO_TEXTLINE: go->asTextLine().copy(); break;
+      case GO_TEXTBOX : go->asTextBox ().copy(); break;
+   }
+}
+static void Paste()
+{
+   if(GuiObj *go=Gui.kb())switch(go->type())
+   {
+      case GO_TEXTLINE: go->asTextLine().paste(); break;
+      case GO_TEXTBOX : go->asTextBox ().paste(); break;
+   }
+}
 /******************************************************************************/
 GuiObj* GUI::objAtPos(C Vec2 &pos)C
 {

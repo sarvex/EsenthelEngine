@@ -130,7 +130,7 @@ const_mem_addr struct Menu : GuiObj // Gui Menu !! must be stored in constant me
    virtual Menu& moveClamp(C Vec2 &delta);                                                   // move by delta and clamp to desktop area
    virtual Menu& show     (             )override;                                           // show
 
-   virtual Menu& posAround(C Rect &rect, Flt align=1); // set menu position around the 'rect' screen rectangle while trying to avoid occluding it, 'align'=horizontal alignment (-1 .. 1) specifying on which side (left or right) the menu should be located
+   virtual Menu& posAround(C Rect &rect, Flt align=1, Bool prefer_up=false); // set menu position around the 'rect' screen rectangle while trying to avoid occluding it, 'align'=horizontal alignment (-1 .. 1) specifying on which side (left or right) the menu should be located, 'prefer_up'=if prefer setting position above 'rect'
 
    Menu& skin(C GuiSkinPtr &skin, Bool sub_objects=true); C GuiSkinPtr& skin()C {return _skin                       ;} // set/get skin override, default=null (if set to null then current value of 'Gui.skin' is used), 'sub_objects'=if additionally change the skin of the 'list' and sub-menus
                                                             GuiSkin* getSkin()C {return _skin ? _skin() : Gui.skin();} //     get actual skin
