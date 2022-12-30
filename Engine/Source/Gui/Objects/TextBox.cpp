@@ -254,6 +254,7 @@ Bool TextBox::setChanged(C Str &text, SET_MODE mode)
       if(cursor()>t.length())cursorChanged(t.length());
 
       if(mode!=QUIET)call();
+      if(Gui.kb()==this)Gui.hideTextMenu();
       return true;
    }
    return false;
@@ -549,7 +550,7 @@ void TextBox::update(C GuiPC &gpc)
          if(Kb.k(KB_DOWN)){moveCursor( 1, 0); Kb.eatKey();}
          if(Kb.k(KB_PGUP)){moveCursor(0, -1); Kb.eatKey();}
          if(Kb.k(KB_PGDN)){moveCursor(0,  1); Kb.eatKey();}
-         if(cur!=_edit.cur || changed){cur=_edit.cur; _edit.cur=-1; cursor(cur);} // set -1 to force adjustment of offset and calling 'setTextInput'
+         if(cur!=_edit.cur || changed){cur=_edit.cur; _edit.cur=-1; cursor(cur); Gui.hideTextMenu();} // set -1 to force adjustment of offset and calling 'setTextInput'
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;

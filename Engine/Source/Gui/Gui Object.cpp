@@ -256,10 +256,9 @@ Bool GuiObj::kbCatch()C
    }
 }
 /******************************************************************************/
-static void AdjustGuiKb() // call when 'Gui.kb' got changed (or just 'kbSet' getting called to force showing soft keyboard when clicking on 'TextLine' or 'TextBox', etc.)
+static void GuiKbChanged() // call when 'Gui.kb' got changed
 {
    Gui._window=&Gui.kb()->first(GO_WINDOW)->asWindow();
-   Kb.setVisible();
    Gui.hideTextMenu();
 }
 GuiObj& GuiObj::kbSet() // this means setting keyboard focus to this element
@@ -267,6 +266,8 @@ GuiObj& GuiObj::kbSet() // this means setting keyboard focus to this element
    if(is()) // allow setting focus only if created, to keep consistency with clearing kb focus when deleting object
    {
       DEBUG_BYTE_LOCK(_used);
+
+      GuiObj *old=Gui.kb();
 
       if(MOBILE // do this for all types on Mobile platforms, because of the soft keyboard overlay, which could keep popping up annoyingly and occlude big portion of the screen
       || isDesktop() || isList()) // if this is a 'Desktop' or a 'List' then clear the sub kb focus so children won't have it, and only this object will
@@ -317,7 +318,8 @@ GuiObj& GuiObj::kbSet() // this means setting keyboard focus to this element
          }
       }
 
-      AdjustGuiKb();
+      if(Gui.kb()!=old)GuiKbChanged();
+      Kb.setVisible(); // always call, not just on change, because screen keyboard might got hidden, but we want to show it again even without changing Gui.kb
    }
    return T;
 }
@@ -341,7 +343,8 @@ GuiObj& GuiObj::kbClear()
    {
       Gui._kb=(_parent ? _parent : null);
       for(; Gui.kb() && !Gui.kb()->kbCatch(); )Gui._kb=Gui.kb()->parent();
-      AdjustGuiKb();
+      GuiKbChanged();
+      Kb.setVisible();
    }
    return T;
 }

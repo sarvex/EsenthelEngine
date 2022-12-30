@@ -160,6 +160,7 @@ Bool TextLine::setChanged(C Str &text, SET_MODE mode)
       if(cursor()>t.length())cursorChanged(t.length());
 
       if(mode!=QUIET)call();
+      if(Gui.kb()==this)Gui.hideTextMenu();
       return true;
    }
    return false;
@@ -418,7 +419,7 @@ void TextLine::update(C GuiPC &gpc)
       #if !ADJUST_OFFSET_ON_SEL // when offset is not adjusted on selection, then it's possible that cursor is outside of visible space, so when changing selection (clearing it) we should focus on the cursor
          || sel!=_edit.sel
       #endif
-         ){adjustOffset(); setTextInput();}
+         ){adjustOffset(); setTextInput(); Gui.hideTextMenu();}
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
