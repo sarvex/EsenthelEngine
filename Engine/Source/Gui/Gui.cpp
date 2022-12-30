@@ -136,14 +136,17 @@ static Tabs TextMenu;
 
 static void SelectAll(Ptr user)
 {
+   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().selectAll(); break;
       case GO_TEXTBOX : go->asTextBox ().selectAll(); break;
    }
+   Gui.showTextMenu();
 }
 static void Cut(Ptr user)
 {
+   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().cut(); break;
@@ -152,6 +155,7 @@ static void Cut(Ptr user)
 }
 static void Copy(Ptr user)
 {
+   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().copy(); break;
@@ -160,6 +164,7 @@ static void Copy(Ptr user)
 }
 static void Paste(Ptr user)
 {
+   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().paste(); break;
