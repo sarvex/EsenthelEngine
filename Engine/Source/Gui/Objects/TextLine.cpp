@@ -214,8 +214,8 @@ TextLine& TextLine::selectAll()
      _edit.cur=_text.length();
    #endif
       setTextInput();
+      if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
    }
-   if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
    return T;
 }
 TextLine& TextLine::selectExtNot()
@@ -300,8 +300,8 @@ skip:
       adjustOffset();
       call();
       setTextInput();
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
-   if(Gui.kb()==this)Gui.hideTextMenu();
    return T;
 }
 /******************************************************************************/
