@@ -2967,6 +2967,11 @@ Bool ValidLicenseKey(C Str &key) // "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" 5*5X + 4*-
    return true;
 }
 /******************************************************************************/
+CChar * SkipHttp   (CChar  *url) {return            _SkipStart(_SkipStart(url, "http://"), "https://")         ;}
+CChar8* SkipHttp   (CChar8 *url) {return            _SkipStart(_SkipStart(url, "http://"), "https://")         ;}
+CChar * SkipHttpWww(CChar  *url) {return _SkipStart(_SkipStart(_SkipStart(url, "http://"), "https://"), "www.");}
+CChar8* SkipHttpWww(CChar8 *url) {return _SkipStart(_SkipStart(_SkipStart(url, "http://"), "https://"), "www.");}
+/******************************************************************************/
 #if WINDOWS_OLD
 static Bool HasDeviceInfo=false;
 static Str  _DeviceManufacturer, _DeviceModel;

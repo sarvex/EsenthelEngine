@@ -277,6 +277,11 @@ Bool ValidEmail     (C Str &email); // test if 'email' is in correct email      
 Bool ValidURL       (C Str &url  ); // test if 'url'   is in correct url         format - "http://domain.com"
 Bool ValidLicenseKey(C Str &key  ); // test if 'key'   is in correct license key format - "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
 
+CChar * SkipHttpWww(CChar  *url); // skip any "http://", "https://", "www." from url, example "http://www.domain.com" ->     "domain.com"
+CChar8* SkipHttpWww(CChar8 *url); // skip any "http://", "https://", "www." from url, example "http://www.domain.com" ->     "domain.com"
+CChar * SkipHttp   (CChar  *url); // skip any "http://", "https://"         from url, example "http://www.domain.com" -> "www.domain.com"
+CChar8* SkipHttp   (CChar8 *url); // skip any "http://", "https://"         from url, example "http://www.domain.com" -> "www.domain.com"
+
 Str         CString(C Str &str); // get string as if it would be stored for the C++ language (preceeding '\' and '"' characters with '\'                                ), for example:         CString("abc"def\ghi"     ) -> ("abc\"def\\ghi")
 Str       XmlString(C Str &str); // get string as if it would be stored for the XML text     (replacing   & -> &amp;   < -> &lt;   > -> &gt;   ' -> &apos;   " -> &quot;), for example:       XmlString("abc"def\ghi"     ) -> ("abc&quot;def\ghi")
 Str DecodeXmlString(C Str &str); // decode string back from the                 XML text     (replacing   &amp; -> &   &lt; -> <   &gt; -> >   &apos; -> '   &quot; -> "), for example: DecodeXmlString("abc&quot;def\ghi") -> ("abc"def\ghi")

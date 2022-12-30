@@ -16,13 +16,6 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
    if(http )url.insert(0, "http://" );
    return url;
 }
-static Str ShortName(Str url) // convert "http://www.esenthel.com" -> "esenthel.com"
-{
-   if(StartsPath(url, "http://" ))url.remove(0, 7);else
-   if(StartsPath(url, "https://"))url.remove(0, 8);
-   if(Starts    (url, "www."    ))url.remove(0, 4);
-   return url;
-}
 static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0)
 {
    File temp; if(File *src=ii.data.open(temp))
@@ -217,7 +210,7 @@ void InternetCache::changed(C Str &url)
 {
    if(url.is())
    {
-      Str name=ShortName(url); if(name.is())
+      Str name=SkipHttpWww(url); if(name.is())
       {
          if(Downloaded *down=_downloaded.find(name       ))down       ->verify_time=INT_MIN;
          if(C PakFile  *pf  =_pak       .find(name, false))pakFile(*pf).verify_time=INT_MIN;
@@ -246,7 +239,7 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
 {
    file.set();
    if(!url.is())return true;
-   Str name=ShortName(url); if(!name.is())return false;
+   Str name=SkipHttpWww(url); if(!name.is())return false;
 
    // find in cache
    Flt *verify_time;
@@ -354,7 +347,7 @@ inline void InternetCache::update()
 
          case DWNL_DONE: // finished downloading
          {
-            Str name=ShortName(down.url());
+            Str name=SkipHttpWww(down.url());
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;

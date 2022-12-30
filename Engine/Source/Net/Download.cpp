@@ -67,7 +67,7 @@ Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
 }
 static Str8 GetHeaders(C Str8 &url, CChar8 *request)
 {
-   CChar8 *name    =_SkipStartPath(_SkipStartPath(url, "http://"), "https://");
+   CChar8 *name    =SkipHttp(url);
    Str8    headers =S+request+" /"+GetStartNot(name)+" HTTP/1.1\r\nHost: "+_GetStart(name)+"\r\n";
            headers+="Connection: close\r\n"; // connection will be closed after receiving all data
 #if WINDOWS
