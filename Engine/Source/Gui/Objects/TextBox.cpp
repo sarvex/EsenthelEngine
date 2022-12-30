@@ -557,7 +557,7 @@ void TextBox::update(C GuiPC &gpc)
       Touch  *touch;
       if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false; touch=null;}else
       if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; margin=t.selecting(); t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
-      if(_text.is() && mt_pos)
+      if(mt_pos)
       {
          if(GuiSkin *skin=getSkin())
             if(TextStyle *text_style=skin->textline.text_style())
@@ -575,7 +575,7 @@ void TextBox::update(C GuiPC &gpc)
             Vec2  clipped_pos=*mt_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
             Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
 
-            if(ButtonDb(mt_state))
+            if(ButtonDb(mt_state) && _text.is())
             {
                if(eol && pos && _text[pos-1]!='\n')pos--; // if double-clicked at the end of the line and previous character isn't a new line (have to check for this because if we don't then we would go to previous line when clicking on empty lines), then go back, have to check 'eol' and not "_text[pos]=='\n'" because this line could be split because of too long text (in this case there will be 'eol' but no '\n')
                Char c=_text[Min(pos, _text.length()-1)];
@@ -592,6 +592,7 @@ void TextBox::update(C GuiPC &gpc)
                }
               _can_select=false;
                setTextInput();
+               if(touch)Gui.showTextMenu();
             }else
             if(_can_select)
             {

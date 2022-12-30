@@ -260,6 +260,7 @@ static void AdjustGuiKb() // call when 'Gui.kb' got changed (or just 'kbSet' get
 {
    Gui._window=&Gui.kb()->first(GO_WINDOW)->asWindow();
    Kb.setVisible();
+   Gui.hideTextMenu();
 }
 GuiObj& GuiObj::kbSet() // this means setting keyboard focus to this element
 {

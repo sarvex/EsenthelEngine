@@ -172,6 +172,7 @@ static void Paste(Ptr user)
    }
 }
 
+void GUI::hideTextMenu() {Gui-=TextMenu;}
 void GUI::showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())

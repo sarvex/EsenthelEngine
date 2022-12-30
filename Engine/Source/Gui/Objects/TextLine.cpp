@@ -426,7 +426,7 @@ void TextLine::update(C GuiPC &gpc)
       Touch  *touch;
       if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false; touch=null;}else
       if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; margin=t.selecting(); t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
-      if(_text.is() && mt_pos)
+      if(mt_pos)
       {
          if(GuiSkin *skin=getSkin())
             if(TextStyle *text_style=skin->textline.text_style())
@@ -440,7 +440,7 @@ void TextLine::update(C GuiPC &gpc)
             Flt gpc_offset=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset.x : gpc.offset.x);
             Int pos=ts.textIndex(text, mt_pos->x - rect().min.x - gpc_offset - _offset - ts.size.x*TEXTLINE_OFFSET, (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT);
 
-            if(ButtonDb(mt_state))
+            if(ButtonDb(mt_state) && _text.is())
             {
                if(password())selectAll();else
                {
@@ -453,6 +453,7 @@ void TextLine::update(C GuiPC &gpc)
                  _can_select=false;
                   setTextInput();
                }
+               if(touch)Gui.showTextMenu();
             }else
             if(_can_select)
             {
