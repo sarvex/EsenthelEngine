@@ -113,6 +113,7 @@ TextLine& TextLine::maxLength(Int max_length)
          MIN(_edit.cur, max_length);
          MIN(_edit.sel, max_length);
          if (_edit.sel==_edit.cur)_edit.sel=-1;
+         call();
          setTextInput();
       }
    }
@@ -140,6 +141,7 @@ Bool TextLine::cursorChanged(Int position, Bool margin)
    {
      _edit.cur=position;
       adjustOffset(margin);
+      if(Gui.kb()==this)Gui.hideTextMenu();
       return true;
    }
    return false;
@@ -236,13 +238,13 @@ TextLine& TextLine::cut()
 {
    if(_edit.sel<0)
    {
-      ClipSet(T());
+      if(!_edit.password)ClipSet(T());
       clear();
    }else
    {
       Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
       Int len=max-min;
-      ClipSet(Trim(T(), min, len));
+      if(!_edit.password)ClipSet(Trim(T(), min, len));
      _text.remove(min, len);
      _edit.sel=-1;
      _edit.cur=min;
@@ -254,6 +256,7 @@ TextLine& TextLine::cut()
 }
 TextLine& TextLine::copy()
 {
+   if(!_edit.password)
    if(_edit.sel<0)
    {
       ClipSet(T());
@@ -466,6 +469,7 @@ void TextLine::update(C GuiPC &gpc)
                     _edit.sel=-1;
                      setTextInput();
                   }
+                  Gui.hideTextMenu();
                }else
                {
                   if(pos!=_edit.cur)

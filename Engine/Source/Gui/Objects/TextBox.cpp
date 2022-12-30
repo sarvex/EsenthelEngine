@@ -165,6 +165,7 @@ TextBox& TextBox::maxLength(Int max_length)
          MIN(_edit.sel, max_length);
          if (_edit.sel==_edit.cur)_edit.sel=-1;
          setVirtualSize();
+         call();
          setTextInput();
       }
    }
@@ -233,6 +234,7 @@ Bool TextBox::cursorChanged(Int position, Bool margin)
    {
      _edit.cur=position;
       scrollToCursor(margin);
+      if(Gui.kb()==this)Gui.hideTextMenu();
       return true;
    }
    return false;
@@ -309,13 +311,13 @@ TextBox& TextBox::cut()
 {
    if(_edit.sel<0)
    {
-      ClipSet(T());
+      if(!_edit.password)ClipSet(T());
       clear();
    }else
    {
       Int min, max; MinMax(_edit.sel, _edit.cur, min, max);
       Int len=max-min;
-      ClipSet(Trim(T(), min, len));
+      if(!_edit.password)ClipSet(Trim(T(), min, len));
      _text.remove(min, len);
      _edit.sel=-1;
      _edit.cur=min;
@@ -327,6 +329,7 @@ TextBox& TextBox::cut()
 }
 TextBox& TextBox::copy()
 {
+   if(!_edit.password)
    if(_edit.sel<0)
    {
       ClipSet(T());
@@ -550,7 +553,7 @@ void TextBox::update(C GuiPC &gpc)
          if(Kb.k(KB_DOWN)){moveCursor( 1, 0); Kb.eatKey();}
          if(Kb.k(KB_PGUP)){moveCursor(0, -1); Kb.eatKey();}
          if(Kb.k(KB_PGDN)){moveCursor(0,  1); Kb.eatKey();}
-         if(cur!=_edit.cur || changed){cur=_edit.cur; _edit.cur=-1; cursor(cur); Gui.hideTextMenu();} // set -1 to force adjustment of offset and calling 'setTextInput'
+         if(cur!=_edit.cur || changed){cur=_edit.cur; _edit.cur=-1; cursor(cur);} // set -1 to force adjustment of offset and calling 'setTextInput', 'Gui.hideTextMenu'
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
@@ -603,6 +606,7 @@ void TextBox::update(C GuiPC &gpc)
                   {
                     _edit.cur=_edit.sel=-1; cursor(pos, false); // set -1 to force adjustment of offset and calling 'setTextInput'
                   }
+                  Gui.hideTextMenu();
                }else
                {
                   if(pos!=_edit.cur)
