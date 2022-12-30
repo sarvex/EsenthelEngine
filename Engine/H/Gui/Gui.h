@@ -132,6 +132,7 @@ private:
    void setText      ();
    void hideTextMenu ();
    void showTextMenu ();
+   void  setTextMenu (Bool visible);
 
  C Str& passTemp(Int length); // Warning: this is not thread-safe
 

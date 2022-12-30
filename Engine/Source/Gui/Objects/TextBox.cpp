@@ -292,6 +292,7 @@ TextBox& TextBox::selectNone()
    {
      _edit.sel=-1;
       setTextInput();
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }
@@ -304,6 +305,7 @@ TextBox& TextBox::selectAll()
      _edit.cur=_text.length();
       setTextInput();
    }
+   if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
    return T;
 }
 /******************************************************************************/
@@ -324,6 +326,7 @@ TextBox& TextBox::cut()
       scrollToCursor();
       call();
       setTextInput();
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }
@@ -370,6 +373,7 @@ skip:
       call();
       setTextInput();
    }
+   if(Gui.kb()==this)Gui.hideTextMenu();
    return T;
 }
 /******************************************************************************/

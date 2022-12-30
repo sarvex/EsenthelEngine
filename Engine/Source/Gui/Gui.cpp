@@ -136,17 +136,14 @@ static Tabs TextMenu;
 
 static void TextSelectAll(Ptr user)
 {
-   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().selectAll(); break;
       case GO_TEXTBOX : go->asTextBox ().selectAll(); break;
    }
-   Gui.showTextMenu();
 }
 static void TextCut(Ptr user)
 {
-   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().cut(); break;
@@ -164,7 +161,6 @@ static void TextCopy(Ptr user)
 }
 static void TextPaste(Ptr user)
 {
-   Gui-=TextMenu;
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
       case GO_TEXTLINE: go->asTextLine().paste(); break;
@@ -172,29 +168,32 @@ static void TextPaste(Ptr user)
    }
 }
 
+void GUI:: setTextMenu (Bool visible) {if(visible)showTextMenu();else hideTextMenu();}
 void GUI::hideTextMenu() {Gui-=TextMenu;}
 void GUI::showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
    {
       Rect rect;
-      Bool sel, pass;
+      Bool sel, any, pass;
       Flt  h=0.06f;
       switch(go->type())
       {
          case GO_TEXTLINE:
          {
             TextLine &tl=go->asTextLine();
-            sel=(tl._edit.sel>=0);
-            pass=tl.password();
-            rect=tl.screenSelPos();
+            sel =(tl._edit.sel>=0);
+            any = tl().is();
+            pass= tl.password();
+            rect= tl.screenSelPos();
             if(GuiSkin *skin=tl.getSkin())h=tl.rect().h()*skin->textline.text_size;
          }break;
 
          case GO_TEXTBOX:
          {
             TextBox &tb=go->asTextBox();
-            sel=(tb._edit.sel>=0);
+            sel =(tb._edit.sel>=0);
+            any = tb().is();
             pass=false;
             //FIXME rect=tb.screenSelPos();
             if(GuiSkin *skin=tb.getSkin())h=skin->textline.text_size;
@@ -204,11 +203,11 @@ void GUI::showTextMenu()
       Node<MenuElm> n;
       if(sel)
       {
-         if(pass)n.New().create("Delete"    , TextCut);else
-         {       n.New().create("Cut"       , TextCut);
-                 n.New().create("Copy"      , TextCopy);}
-      }else      n.New().create("Select All", TextSelectAll);
-                 n.New().create("Paste"     , TextPaste);
+         if(pass)  n.New().create("Delete"    , TextCut);else
+         {         n.New().create("Cut"       , TextCut);
+                   n.New().create("Copy"      , TextCopy);}
+      }else if(any)n.New().create("Select All", TextSelectAll);
+                   n.New().create("Paste"     , TextPaste);
    #if 1
       Flt w=0;
       TextMenu._tabs.replaceClass<TextMenuButton>();

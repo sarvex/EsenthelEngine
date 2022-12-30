@@ -198,6 +198,7 @@ TextLine& TextLine::selectNone()
    {
      _edit.sel=-1;
       setTextInput();
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }
@@ -214,6 +215,7 @@ TextLine& TextLine::selectAll()
    #endif
       setTextInput();
    }
+   if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
    return T;
 }
 TextLine& TextLine::selectExtNot()
@@ -230,6 +232,7 @@ TextLine& TextLine::selectExtNot()
      _edit.cur=dot;
    #endif
       setTextInput();
+      if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
    }
    return T;
 }
@@ -251,6 +254,7 @@ TextLine& TextLine::cut()
       adjustOffset();
       call();
       setTextInput();
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }
@@ -297,6 +301,7 @@ skip:
       call();
       setTextInput();
    }
+   if(Gui.kb()==this)Gui.hideTextMenu();
    return T;
 }
 /******************************************************************************/
