@@ -214,6 +214,7 @@ struct PakInPlace;
 struct PakPostHeader;
 struct PakNode;
 struct PakFileData;
+struct TextParam;
 struct TextNode;
 struct TextData;
 struct XmlNode;

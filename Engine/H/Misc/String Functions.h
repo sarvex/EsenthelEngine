@@ -182,6 +182,8 @@ Str CaseUp  (C Str &t); // return case up   version of the string, Sample Usage:
 void      Split(MemPtr<Str> splits, C Str &string, Char separator); // split 'string' into an array of strings separated by 'separator', Sample Usage: Split("123:45::6:", ':') -> {"123", "45", "", "6", ""}
 Memc<Str> Split(                    C Str &string, Char separator); // split 'string' into an array of strings separated by 'separator', Sample Usage: Split("123:45::6:", ':') -> {"123", "45", "", "6", ""}
 
+void SplitURLParams(MemPtr<TextParam> params, C Str &url); // split 'url' parameters into 'params'. Example: SplitURLParams("http://domain.com?param=1&other=2") -> {{name="param", value="1"}, {name="other", value="2"}}
+
 void Tokenize(MemPtr<Str> tokens, C Str &string); // tokenize 'string' into tokens, this works by removing all white chars and making sure that symbols are separate from words, Sample Usage: Split("Sample value   = 15") -> {"Sample", "value", "=", "15"}
 
 Int     TextPosI(CChar  *src, Char  c); // get            position of first 'c' character in 'src' text (-1   if none)

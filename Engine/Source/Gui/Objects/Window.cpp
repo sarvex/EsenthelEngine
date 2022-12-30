@@ -921,6 +921,21 @@ Dialog& Dialog::autoSize()
    REPAO(buttons).move(move);
    return T;
 }
+Dialog& Dialog::extendX(Flt e)
+{
+   Vec2 d(e, 0);
+            text .move(d);
+   REPAO(buttons).move(d);
+   rect(Rect(rect()).extendX(e));
+   return T;
+}
+Dialog& Dialog::separateTextButtons(Flt space)
+{
+   Vec2 d(0, -space);
+   REPAO(buttons).move(d);
+   rect(Rect(rect()).extendY(space/2));
+   return T;
+}
 Dialog& Dialog::set(C Str &title, C Str &text, C CMemPtr<Str> &buttons, C TextStylePtr &text_style)
 {
    super::setTitle(title).barVisible(title.is());

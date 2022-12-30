@@ -1823,6 +1823,30 @@ void Split(MemPtr<Str> splits, C Str &string, Char separator)
 }
 Memc<Str> Split(C Str &string, Char separator) {Memc<Str> splits; Split(splits, string, separator); return splits;}
 /******************************************************************************/
+void SplitURLParams(MemPtr<TextParam> params, C Str &url)
+{
+   params.clear();
+   FREPA(url)if(url[i]=='?')
+   {
+   next_param:
+      TextParam &param=params.New();
+      for(;;)
+      {
+         if(++i>=url.length())return;
+         Char c=url[i];
+         if(c=='=')for(;;) // value
+         {
+            if(++i>=url.length())return;
+            Char c=url[i];
+            if(c=='&')goto next_param;
+            param.value.alwaysAppend(c);
+         }
+         if(c=='&')goto next_param;
+         param.name.alwaysAppend(c);
+      }
+   }
+}
+/******************************************************************************/
 void Tokenize(MemPtr<Str> tokens, C Str &string)
 {
    I();

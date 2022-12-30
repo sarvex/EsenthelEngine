@@ -42,10 +42,11 @@ inline Bool Str ::save(File &f)C {f.putStr(T); return f.ok();}
 inline Bool Str8::load(File &f)  {f.getStr(T); return f.ok();}
 inline Bool Str ::load(File &f)  {f.getStr(T); return f.ok();}
 /******************************************************************************/
-inline   TextNode*           FindNode (MemPtr<TextNode> nodes, C Str &name, Int i)  {return ConstCast(  CFindNode (nodes, name, i));}
-inline C XmlParam*  XmlNode::findParam(C Str &name, Int i                        )C {return ConstCast(T).findParam(       name, i) ;}
-inline C TextNode* TextNode::findNode (C Str &name, Int i                        )C {return ConstCast(T).findNode (       name, i) ;}
-inline C TextNode* TextData::findNode (C Str &name, Int i                        )C {return ConstCast(T).findNode (       name, i) ;}
+inline   TextParam*           FindParam(MemPtr<TextParam> params, C Str &name, Int i)  {return ConstCast(  CFindParam(params, name, i));}
+inline   TextNode *           FindNode (MemPtr<TextNode >  nodes, C Str &name, Int i)  {return ConstCast(  CFindNode ( nodes, name, i));}
+inline C XmlParam *  XmlNode::findParam(C Str &name, Int i                          )C {return ConstCast(T).findParam(        name, i) ;}
+inline C TextNode * TextNode::findNode (C Str &name, Int i                          )C {return ConstCast(T).findNode (        name, i) ;}
+inline C TextNode * TextData::findNode (C Str &name, Int i                          )C {return ConstCast(T).findNode (        name, i) ;}
 /******************************************************************************/
 inline C TextParam* FileParams::findParam(C Str &name)C {return ConstCast(T).findParam(name);}
 /******************************************************************************/

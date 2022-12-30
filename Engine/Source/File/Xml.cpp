@@ -607,6 +607,17 @@ TextParam& TextParam::setValuePacked(C Vec  &value) {T.value=_TextPacked(value);
 TextParam& TextParam::setValuePacked(C Vec4 &value) {T.value=_TextPacked(value); return T;}
 #endif
 /******************************************************************************/
+C TextParam* CFindParam(C CMemPtr<TextParam> &params, C Str &name, Int i)
+{
+   if(InRange(i, params))FREPAD(n, params) // process in order
+   {
+    C TextParam &param=params[n]; if(param.name==name)
+      {
+         if(i==0)return &param; i--;
+      }
+   }
+   return null;
+}
 C TextNode* CFindNode(C CMemPtr<TextNode> &nodes, C Str &name, Int i)
 {
    if(InRange(i, nodes))FREPAD(n, nodes) // process in order

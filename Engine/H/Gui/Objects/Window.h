@@ -126,6 +126,9 @@ struct Dialog : ModalWindow // Dialog (has text and custom amount of buttons, cr
    Dialog& set     (C Str &title, C Str &text, C CMemPtr<Str> &buttons, C TextStylePtr &text_style=null); // adjust an already created Dialog with given parameters, this automatically calls 'autoSize'
    Dialog& autoSize(); // set window, text and buttons rectangles based on their values
 
+   Dialog& extendX            (Flt e    ); // extend width keeping elements in the center
+   Dialog& separateTextButtons(Flt space); // separate text and buttons with 'space'
+
    virtual GuiObj* test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)override;
    virtual void nearest(C GuiPC &gpc, GuiObjNearest &gon)override;
    virtual void  update(C GuiPC &gpc)override;
