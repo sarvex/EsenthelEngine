@@ -188,6 +188,14 @@ void GUI::showTextMenu()
             rect=tl.screenSelPos();
             if(GuiSkin *skin=tl.getSkin())h=tl.rect().h()*skin->textline.text_size;
          }break;
+
+         case GO_TEXTBOX:
+         {
+            TextBox &tb=go->asTextBox();
+            sel=(tb._edit.sel>=0);
+            //FIXME rect=tb.screenSelPos();
+            if(GuiSkin *skin=tb.getSkin())h=skin->textline.text_size;
+         }break;
       }
       rect.min.y-=h; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
       Node<MenuElm> n;
