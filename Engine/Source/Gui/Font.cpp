@@ -1365,9 +1365,11 @@ void DisplayDraw::textDepth(Bool use, Flt depth)
 {
    if(D._text_depth=use)Sh.FontDepth->set(depth);
 }
-                                                                 //Sh.FontLum=GetShaderParam("FontLum");
-void DisplayDraw::textBackgroundBlack() {SPSet("FontLum", Vec(1)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
-void DisplayDraw::textBackgroundWhite() {SPSet("FontLum", Vec(0)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
+void DisplayDraw::textBackgroundAuto (                            ) {Sh.FontLum=GetShaderParam("FontLum");}
+void DisplayDraw::textBackgroundReset(ShaderParam *&sp,   Vec &col) {sp=Sh.FontLum; textBackgroundAuto(); col=Sh.FontLum->getVec();}
+void DisplayDraw::textBackgroundSet  (ShaderParam * sp, C Vec &col) {SPSet("FontLum", col   ); Sh.FontLum=sp;}
+void DisplayDraw::textBackgroundBlack(                            ) {SPSet("FontLum", Vec(1)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
+void DisplayDraw::textBackgroundWhite(                            ) {SPSet("FontLum", Vec(0)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
 /******************************************************************************/
 // MAIN
 /******************************************************************************/

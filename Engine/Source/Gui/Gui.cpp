@@ -137,10 +137,14 @@ struct TextMenuTabs : Tabs
 {
    virtual void draw(C GuiPC &gpc)override
    {
+   #if 0 // shadow
       D.clip(gpc.clip);
       Rect r=rect()+gpc.offset;
       D.drawShadow(128, r, 0.01f);
+   #endif
+      ShaderParam *sp; Vec col; D.textBackgroundReset(sp, col);
       super::draw(gpc);
+      D.textBackgroundSet(sp, col);
    }
 };
 static TextMenuTabs TextMenu;
