@@ -555,7 +555,7 @@ void MouseClass::_push(Byte b) // !! assumes 'b' is in range !!
    if(!(_button[b]&BS_ON))
    {
      _button[b]|=BS_PUSHED|BS_ON;
-      if(_cur==b && _first && Time.appTime()<=_start_time+DoubleClickTime+Time.ad())
+      if(_cur==b && _first && life()<=DoubleClickTime+Time.ad())
       {
         _button[b]|=BS_DOUBLE;
         _first=false;
