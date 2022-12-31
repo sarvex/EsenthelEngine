@@ -142,9 +142,9 @@ struct TextMenuTabs : Tabs
       Rect r=rect()+gpc.offset;
       D.drawShadow(128, r, 0.01f);
    #endif
-      ShaderParam *sp; Vec col; D.textBackgroundReset(sp, col);
+      ShaderParam *sp; Vec col; D.textBackgroundReset(sp, col); // text menu may be drawn with different style/colors/theme, so reset auto text background
       super::draw(gpc);
-      D.textBackgroundSet(sp, col);
+      D.textBackgroundSet(sp, col); // restore what was set originally
    }
 };
 static TextMenuTabs TextMenu;
