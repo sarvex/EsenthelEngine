@@ -234,7 +234,7 @@ void GUI::   showTextMenu()
       Rect  screen=D.rectUIKB();
       rect&=screen; // clip so we can detect position at screen center even if selection rectangle extends far away outside screen on one side
 const Flt align=0;
-      Flt pos_x=Lerp(rect.min.x, rect.max.x-size.x, LerpR(-1.0f, 1.0f, align));
+      Flt pos_x=Lerp(rect.min.x, rect.max.x-size.x, LerpR(1.0f, -1.0f, align));
       Clamp(pos_x, screen.min.x, screen.max.x-size.x); // have to clip again
 
       Rect_LD above(pos_x, rect.max.y, size.x, size.y); // rect above 'rect'
