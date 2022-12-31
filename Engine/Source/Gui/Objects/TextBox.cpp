@@ -93,6 +93,7 @@ TextBox& TextBox::create(C TextBox &src)
          slidebar[1].create(src.slidebar[1]);
          setParent();
          setTextInput();
+         if(Gui.kb()==this)Gui.hideTextMenu();
       }
    }
    return T;
@@ -163,7 +164,11 @@ TextBox& TextBox::maxLength(Int max_length)
         _text.clip(     max_length);
          MIN(_edit.cur, max_length);
          MIN(_edit.sel, max_length);
-         if (_edit.sel==_edit.cur)_edit.sel=-1;
+         if (_edit.sel==_edit.cur)
+         {
+           _edit.sel=-1;
+            if(Gui.kb()==this)Gui.hideTextMenu();
+         }
          setVirtualSize();
          call();
          setTextInput();

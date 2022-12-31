@@ -73,6 +73,7 @@ TextLine& TextLine::create(C TextLine &src)
         _edit          =src._edit;
          reset.create(src.reset)._parent=this;
          setTextInput();
+         if(Gui.kb()==this)Gui.hideTextMenu();
       }
    }
    return T;
@@ -112,7 +113,11 @@ TextLine& TextLine::maxLength(Int max_length)
         _text.clip(     max_length);
          MIN(_edit.cur, max_length);
          MIN(_edit.sel, max_length);
-         if (_edit.sel==_edit.cur)_edit.sel=-1;
+         if (_edit.sel==_edit.cur)
+         {
+           _edit.sel=-1;
+            if(Gui.kb()==this)Gui.hideTextMenu();
+         }
          call();
          setTextInput();
       }
