@@ -129,11 +129,21 @@ void GUI::setText()
    REPAO(_desktops).setText();
 }
 /******************************************************************************/
-struct TextMenuButton : Tab
+struct TextMenuTab : Tab
 {
-   virtual TextMenuButton& activate()override {return T;} // ignore, because we cannot activate/change keyboard focus, because that would hide the screen keyboard
+   virtual TextMenuTab& activate()override {return T;} // ignore, because we cannot activate/change keyboard focus, because that would hide the screen keyboard
 };
-static Tabs TextMenu;
+struct TextMenuTabs : Tabs
+{
+   virtual void draw(C GuiPC &gpc)override
+   {
+      D.clip(gpc.clip);
+      Rect r=rect()+gpc.offset;
+      D.drawShadow(128, r, 0.01f);
+      super::draw(gpc);
+   }
+};
+static TextMenuTabs TextMenu;
 
 void GUI::hideTextMenu() {Gui-=TextMenu.hide();} // also hide so we can do fast check in 'visibleTextMenu'
 static void TextSelectAll(Ptr user)
@@ -214,13 +224,11 @@ void GUI::   showTextMenu()
              n.New().create("Paste"     , TextPaste);
 
       Vec2 size(0, text_menu_height);
-      const Flt p=0.01f;
-      rect.max.y+=p;
-      rect.min.y-=p+size.y; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
+      rect.extendY(0.01f);
 
    #if 1
-      TextMenu._tabs.replaceClass<TextMenuButton>();
-      Gui+=TextMenu.create((CChar**)null, n.children.elms(), false).baseLevel(GBL_MENU); // for now disable 'auto_size' because we don't want changing tab text below calling resize
+      TextMenu._tabs.replaceClass<TextMenuTab>();
+      TextMenu.create((CChar**)null, n.children.elms(), false).skin(Gui.text_menu_skin).baseLevel(GBL_MENU); // for now disable 'auto_size' because we don't want changing tab text below calling resize
       FREPA(TextMenu)
       {
          Tab &tab=TextMenu.tab(i);
@@ -246,14 +254,26 @@ const Flt align=0;
       {
          rect=above;
          if(rect.max.y>screen.max.y)rect.moveY(screen.max.y-rect.max.y);
+         if(TextMenu.tabs()==1)TextMenu.tab(0).subType(BUTTON_TYPE_TAB_TOP);else
+         if(TextMenu.tabs()> 1)
+         {
+            TextMenu.tab(                0).subType(BUTTON_TYPE_TAB_TOP_LEFT );
+            TextMenu.tab(TextMenu.tabs()-1).subType(BUTTON_TYPE_TAB_TOP_RIGHT);
+         }
       }else
       {
          rect=below;
          if(rect.min.y<screen.min.y)rect.moveY(screen.min.y-rect.min.y);
+         if(TextMenu.tabs()==1)TextMenu.tab(0).subType(BUTTON_TYPE_TAB_BOTTOM);else
+         if(TextMenu.tabs()> 1)
+         {
+            TextMenu.tab(                0).subType(BUTTON_TYPE_TAB_BOTTOM_LEFT );
+            TextMenu.tab(TextMenu.tabs()-1).subType(BUTTON_TYPE_TAB_BOTTOM_RIGHT);
+         }
       }
-      TextMenu.rect(rect, 0, true);
+      Gui+=TextMenu.rect(rect, 0, true);
    #else
-      TextMenu.create(n); TextMenu.list.cur_mode=LCM_MOUSE;
+      TextMenu.create(n).skin(Gui.text_menu_skin); TextMenu.list.cur_mode=LCM_MOUSE;
       if(GuiSkin *skin=TextMenu.getSkin())
          if(C PanelPtr &panel=skin->menu.normal)
       {

@@ -25,7 +25,8 @@ struct GUI // Graphical User Interface
             image_resize_ru, // resize right up   image, default=ImagePtr().get("Gui/resize_ru.img")
             image_resize_rd; // resize right down image, default=ImagePtr().get("Gui/resize_rd.img")
 
-   GuiSkinPtr skin        ; // active Gui Skin
+   GuiSkinPtr         skin, // active Gui Skin
+            text_menu_skin; // skin used for Screen Keyboard Text Menu
    UID        default_skin; // ID of the Gui Skin to be loaded during engine initialization, this can be modified in 'InitPre'
 
    void (*draw_keyboard_highlight)(GuiObj *obj, C Rect &rect, C GuiSkin *skin       ); // pointer to custom function responsible for drawing keyboard highlight    , 'obj'=pointer to gui object for the highlight , 'rect'=screen rectangle of the object, 'skin'=Gui Skin of the object, default='DrawKeyboardHighlight'
