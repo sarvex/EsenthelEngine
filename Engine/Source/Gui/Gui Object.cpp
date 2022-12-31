@@ -594,9 +594,10 @@ Vec2 GuiObj::clientOffset()C
 {
    switch(type())
    {
-      case GO_MENU  : return asMenu  ().clientRect().lu()-pos();
-      case GO_WINDOW: return asWindow().clientRect().lu()-pos();
-      case GO_REGION: return asRegion().clientRect().lu()-pos();
+      case GO_MENU   : return asMenu   ().clientRect().lu()-pos();
+      case GO_WINDOW : return asWindow ().clientRect().lu()-pos();
+      case GO_REGION : return asRegion ().clientRect().lu()-pos();
+      case GO_TEXTBOX: return asTextBox().clientRect().lu()-pos();
    }
    return 0;
 }
@@ -604,10 +605,11 @@ Vec2 GuiObj::clientSize()C
 {
    switch(type())
    {
-      case GO_MENU  : return asMenu  ().clientSize();
-      case GO_WINDOW: return asWindow().clientSize();
-      case GO_REGION: return asRegion().clientSize();
-      default       : return size();
+      case GO_MENU   : return asMenu   ().clientSize();
+      case GO_WINDOW : return asWindow ().clientSize();
+      case GO_REGION : return asRegion ().clientSize();
+      case GO_TEXTBOX: return asTextBox().clientSize();
+      default        : return                   size();
    }
 }
 Rect GuiObj::localClientRect()C
