@@ -7,7 +7,7 @@
    Use 'Location*' functions to access device world location.
 
 /******************************************************************************/
-#define        LongPressTime 0.40f // amount of time to consider any                   button press a long   press
+#define        LongPressTime 0.35f // amount of time to consider any                   button press a long   press
 #define      DoubleClickTime 0.25f // amount of time to consider Keyboard/Mouse/Joypad button press a double click
 #define TouchDoubleClickTime 0.33f // amount of time to consider Touch                        press a double click
 #if EE_PRIVATE
