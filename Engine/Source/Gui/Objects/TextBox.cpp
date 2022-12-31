@@ -561,10 +561,9 @@ void TextBox::update(C GuiPC &gpc)
       }
     C Vec2   *mt_pos=null;
       BS_FLAG mt_state;
-      Bool    margin;
       Touch  *touch;
-      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; margin=false; touch=null;}else
-      if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; margin=t.selecting(); t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll. Touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
+      if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; touch=null;}else
+      if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
       if(mt_pos)
       {
          if(GuiSkin *skin=getSkin())
@@ -625,7 +624,7 @@ void TextBox::update(C GuiPC &gpc)
                      if(_edit.sel>=0 || touch->longPress())Gui.showTextMenu();
                }
 
-               if(margin)
+               if(touch && touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
                {
                   Flt margin=ts.size.x;
                   MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
