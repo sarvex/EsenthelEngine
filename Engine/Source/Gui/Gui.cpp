@@ -48,6 +48,7 @@ GUI::GUI() : default_skin(3649875776, 1074192063, 580730756, 799774185), _deskto
    desc_delay=0.3f;
    resize_radius=0.022f;
    click_sound_id.zero();
+   text_menu_height=0.08f;
 
    draw_keyboard_highlight=DrawKeyboardHighlight;
    draw_description       =DrawDescription;
@@ -180,7 +181,6 @@ void GUI::   showTextMenu()
    {
       Rect rect;
       Bool sel, any, pass;
-      Flt  h=0.06f;
       switch(go->type())
       {
          case GO_TEXTLINE:
@@ -190,7 +190,6 @@ void GUI::   showTextMenu()
             any = tl().is();
             pass= tl.password();
             rect= tl.screenSelPos();
-            if(GuiSkin *skin=tl.getSkin())h=tl.rect().h()*skin->textline.text_size;
          }break;
 
          case GO_TEXTBOX:
@@ -200,10 +199,9 @@ void GUI::   showTextMenu()
             any = tb().is();
             pass=false;
             //FIXME rect=tb.screenSelPos();
-            if(GuiSkin *skin=tb.getSkin())h=skin->textline.text_size;
          }break;
       }
-      rect.min.y-=h; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
+      rect.min.y-=text_menu_height; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
       Node<MenuElm> n;
       if(sel)
       {
@@ -222,10 +220,10 @@ void GUI::   showTextMenu()
          MenuElm &m=n.children[i];
          tab.Button::setText(m.name); // don't call Tab.setText because that will resize Tabs
          tab.func(m._func1);
-         w+=tab.textWidth(&h, true);
+         w+=tab.textWidth(&text_menu_height, true);
       }
-      w+=(TextMenu.tabs()+1)*h/2; // spacing around elements
-      TextMenu.rect(Rect_C(0, 0, w, h));
+      w+=(TextMenu.tabs()+1)*text_menu_height/2; // spacing around elements
+      TextMenu.rect(Rect_C(0, 0, w, text_menu_height));
    #else
       TextMenu.create(n); TextMenu.list.cur_mode=LCM_MOUSE;
       if(GuiSkin *skin=TextMenu.getSkin())
