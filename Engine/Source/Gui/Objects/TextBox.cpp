@@ -453,6 +453,51 @@ TextBox& TextBox::skin(C GuiSkinPtr &skin, Bool sub_objects)
    return T;
 }
 /******************************************************************************/
+Rect TextBox::localTextPos(Int index)C
+{
+   Vec2 pos(-slidebar[0].offset(), slidebar[1].offset());
+   if(GuiSkin *skin=getSkin())
+      if(TextStyle *text_style=skin->textline.text_style())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+      Vec2 p=ts.textPos(T(), index, _text_space, wordWrap()); // here Y is 0..Inf
+      pos.x+=p.x+ts.size.x*TEXTBOX_OFFSET;
+      pos.y-=p.y;
+      return Rect().setX(pos.x).setY(pos.y-ts.size.y, pos.y);
+   }
+   return pos;
+}
+Rect TextBox::localTextPos(Int index0, Int index1)C
+{
+   Vec2 pos(-slidebar[0].offset(), slidebar[1].offset());
+   if(GuiSkin *skin=getSkin())
+      if(TextStyle *text_style=skin->textline.text_style())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+       pos.x+=ts.size.x*TEXTBOX_OFFSET;
+      Vec2 p0=ts.textPos(T(), index0, _text_space, wordWrap()); p0.chsY(); // here Y is 0..Inf
+      Vec2 p1=ts.textPos(T(), index1, _text_space, wordWrap()); p1.chsY(); // here Y is 0..Inf
+      Rect r; r.from(p0, p1)+=pos; r.min.y-=ts.size.y;
+      return r;
+   }
+   return pos;
+}
+Rect TextBox::screenTextPos(Int index             )C {return localTextPos(index         )+screenPos();}
+Rect TextBox::screenTextPos(Int index0, Int index1)C {return localTextPos(index0, index1)+screenPos();}
+Rect TextBox::screenSelPos (                      )C
+{
+   return (_edit.sel<0) ? screenTextPos(           cursor())
+                        : screenTextPos(_edit.sel, cursor());
+}
+/******************************************************************************/
 GuiObj* TextBox::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)
 {
    if(GuiObj *go=super::test(gpc, pos, mouse_wheel))

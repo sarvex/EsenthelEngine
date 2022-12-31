@@ -66,6 +66,12 @@ const_mem_addr struct TextBox : GuiObj // Gui TextBox !! must be stored in const
    void setVirtualSize(C Rect *rect=null);
    void setTextInput  ()C;
 
+   Rect  localTextPos(Int index)C;
+   Rect  localTextPos(Int index0, Int index1)C;
+   Rect screenTextPos(Int index)C;
+   Rect screenTextPos(Int index0, Int index1)C;
+   Rect screenSelPos ()C;
+
    Flt    clientWidth ()C {return      _crect.w          ()            ;} // get client  width
    Flt    clientHeight()C {return      _crect.h          ()            ;} // get client  height
    Vec2   clientSize  ()C {return      _crect.size       ()            ;} // get client  size

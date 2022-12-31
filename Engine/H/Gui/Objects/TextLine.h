@@ -64,7 +64,7 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    void  setTextInput()C;
 
    Flt   localTextPosX(Int index)C;
-   Vec2  localTextPosX(Int index0, Int index1)C;
+   Vec2  localTextPosX(Int index0, Int index1)C; // x=index0 PosX, y=index1 PosX
    Rect screenTextPos (Int index)C;
    Rect screenTextPos (Int index0, Int index1)C;
    Rect screenSelPos  ()C;

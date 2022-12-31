@@ -336,17 +336,6 @@ TextLine& TextLine::skin(C GuiSkinPtr &skin, Bool sub_objects)
    return T;
 }
 /******************************************************************************/
-// MAIN
-/******************************************************************************/
-GuiObj* TextLine::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)
-{
-   if(GuiObj *go=super::test(gpc, pos, mouse_wheel))
-   {
-      if(showClear())if(GuiObj *go=reset.test(gpc, pos, mouse_wheel))return go;
-      return go;
-   }
-   return null;
-}
 Flt TextLine::localTextPosX(Int index)C
 {
    Flt pos=_offset;
@@ -401,6 +390,18 @@ Rect TextLine::screenSelPos()C
 {
    return (_edit.sel<0) ? screenTextPos(           cursor())
                         : screenTextPos(_edit.sel, cursor());
+}
+/******************************************************************************/
+// MAIN
+/******************************************************************************/
+GuiObj* TextLine::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)
+{
+   if(GuiObj *go=super::test(gpc, pos, mouse_wheel))
+   {
+      if(showClear())if(GuiObj *go=reset.test(gpc, pos, mouse_wheel))return go;
+      return go;
+   }
+   return null;
 }
 void TextLine::update(C GuiPC &gpc)
 {

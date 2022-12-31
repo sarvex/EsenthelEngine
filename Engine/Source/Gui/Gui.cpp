@@ -198,7 +198,7 @@ void GUI::   showTextMenu()
             sel =(tb._edit.sel>=0);
             any = tb().is();
             pass=false;
-            //FIXME rect=tb.screenSelPos();
+            rect=tb.screenSelPos();
          }break;
       }
       Node<MenuElm> n;
