@@ -134,7 +134,7 @@ struct TextMenuButton : Tab
 };
 static Tabs TextMenu;
 
-void GUI::hideTextMenu() {Gui-=TextMenu;}
+void GUI::hideTextMenu() {Gui-=TextMenu.hide();} // also hide so we can do fast check in 'visibleTextMenu'
 static void TextSelectAll(Ptr user)
 {
    Gui.hideTextMenu();
@@ -172,8 +172,9 @@ static void TextPaste(Ptr user)
    }
 }
 
-void GUI:: setTextMenu (Bool visible) {if(visible)showTextMenu();else hideTextMenu();}
-void GUI::showTextMenu()
+Bool GUI::visibleTextMenu()C {return TextMenu.visible();}
+void GUI::    setTextMenu(Bool visible) {if(visible)showTextMenu();else hideTextMenu();}
+void GUI::   showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
    {
@@ -214,7 +215,7 @@ void GUI::showTextMenu()
    #if 1
       Flt w=0;
       TextMenu._tabs.replaceClass<TextMenuButton>();
-      Gui+=TextMenu.create((CChar**)null, n.children.elms(), true);
+      Gui+=TextMenu.create((CChar**)null, n.children.elms(), true).baseLevel(GBL_MENU);
       FREPA(TextMenu)
       {
          Tab &tab=TextMenu.tab(i);

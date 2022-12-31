@@ -598,7 +598,7 @@ void Window::draw(C GuiPC &gpc)
       Bool  active=T.active(), transparent=(finalAlpha()<1-EPS_COL8_1);
       GuiPC gpc_this(gpc, T); // first calculate the GuiPC for children which sets the offset per pixel aligned exactly at client rect top left corner
       Vec2  aligned_offset=gpc_this.offset-_crect.lu(); // now based on that offset calculate the offset for the Window, which is just as 'gpc.offset' however compatible with 'gpc_this'
-      Rect  r=rect()+aligned_offset, ext_rect;
+      Rect  r=rect()+aligned_offset, fx_rect;
 
       if(ripple || transparent)
       {
@@ -607,8 +607,8 @@ void Window::draw(C GuiPC &gpc)
          if(ripple)D.clearCol();else // clear entire screen for ripple as it may use various tex coordinates basing on the ripple intensity
          { // clear only the screen part that we're going to use
             ALPHA_MODE alpha=D.alpha(ALPHA_NONE);
-            extendedRect(ext_rect); ext_rect+=aligned_offset;
-            Sh.clear(Vec4Zero, &Rect(ext_rect).extend(D.pixelToScreenSize())); // extend by 1 pixel to avoid tex filtering issues
+            extendedRect(fx_rect); fx_rect+=aligned_offset; fx_rect&=D.rect(); // clip to screen rectangle to avoid artifacts on screen border due to UV clamping, when drawing window that extends over screen rectangle, normally it tries to draw entire rectangle of the window but since it can be outside the screen then it will not be available and UV coordinates get clamped to the same pixels from the border resulting in artifacts
+            Sh.clear(Vec4Zero, &Rect(fx_rect).extend(D.pixelToScreenSize())); // extend by 1 pixel to avoid tex filtering issues
             D .alpha(alpha);
          }
       }else
@@ -691,8 +691,8 @@ void Window::draw(C GuiPC &gpc)
          {
             Color      color=ColorMul(finalAlpha()); // set all 4 channels to final alpha
             ALPHA_MODE alpha=D.alpha(ALPHA_MERGE);
-            if(Equal(Gui.window_fade_scale, 1))Sh .draw    (*rt, color, TRANSPARENT, &ext_rect);
-            else                               rt->drawPart(     color, TRANSPARENT, Rect_C(ext_rect.center(), ext_rect.size()*Lerp(Mid(Gui.window_fade_scale, 0.0f, 2.0f), 1.0f, fadeAlpha())), D.screenToUV(ext_rect));
+            if(Equal(Gui.window_fade_scale, 1))Sh .draw    (*rt, color, TRANSPARENT, &fx_rect);
+            else                               rt->drawPart(     color, TRANSPARENT, Rect_C(fx_rect.center(), fx_rect.size()*Lerp(Mid(Gui.window_fade_scale, 0.0f, 2.0f), 1.0f, fadeAlpha())), D.screenToUV(fx_rect));
             D.alpha(alpha);
          }
       }

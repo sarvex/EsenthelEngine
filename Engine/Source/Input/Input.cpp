@@ -217,6 +217,7 @@ void DeviceVibrate(Flt intensity, Flt duration)
    }
 #endif
 }
+void DeviceVibrateShort() {DeviceVibrate(1, 0.02f);}
 /******************************************************************************/
 // INPUT
 /******************************************************************************/

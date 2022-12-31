@@ -130,9 +130,10 @@ private:
    Bool Switch       (                             );
    void kbLit        (GuiObj *obj, C Rect &rect, C GuiSkin *skin) {if(draw_keyboard_highlight)draw_keyboard_highlight(obj, rect, skin);}
    void setText      ();
-   void hideTextMenu ();
-   void showTextMenu ();
-   void  setTextMenu (Bool visible);
+   void    hideTextMenu();
+   void    showTextMenu();
+   void     setTextMenu(Bool visible);
+   Bool visibleTextMenu()C;
 
  C Str& passTemp(Int length); // Warning: this is not thread-safe
 

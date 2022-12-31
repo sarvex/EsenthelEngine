@@ -615,6 +615,7 @@ void TextBox::update(C GuiPC &gpc)
                {
                   if(pos!=_edit.cur)
                   {
+                     if(touch)DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
                      if(_edit.sel<   0)_edit.sel=_edit.cur;else
                      if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
                                        _edit.cur=pos;
