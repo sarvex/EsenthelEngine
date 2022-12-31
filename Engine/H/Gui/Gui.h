@@ -133,7 +133,6 @@ private:
    void setText      ();
    void    hideTextMenu();
    void    showTextMenu();
-   void     setTextMenu(Bool visible);
    Bool visibleTextMenu()C;
 
  C Str& passTemp(Int length); // Warning: this is not thread-safe

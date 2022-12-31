@@ -309,7 +309,7 @@ TextBox& TextBox::selectAll()
      _edit.sel=0;
      _edit.cur=_text.length();
       setTextInput();
-      if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }

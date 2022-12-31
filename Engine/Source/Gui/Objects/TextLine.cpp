@@ -219,7 +219,7 @@ TextLine& TextLine::selectAll()
      _edit.cur=_text.length();
    #endif
       setTextInput();
-      if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }
@@ -237,7 +237,7 @@ TextLine& TextLine::selectExtNot()
      _edit.cur=dot;
    #endif
       setTextInput();
-      if(Gui.kb()==this)Gui.setTextMenu(_edit.cur>0);
+      if(Gui.kb()==this)Gui.hideTextMenu();
    }
    return T;
 }

@@ -141,9 +141,10 @@ static void TextSelectAll(Ptr user)
    Gui.hideTextMenu();
    if(GuiObj *go=Gui.kb())switch(go->type())
    {
-      case GO_TEXTLINE: go->asTextLine().selectAll(); break;
-      case GO_TEXTBOX : go->asTextBox ().selectAll(); break;
+      case GO_TEXTLINE: if(go->asTextLine().selectAll().cursor()<=0)return; break; // if have no selection then return and don't show menu
+      case GO_TEXTBOX : if(go->asTextBox ().selectAll().cursor()<=0)return; break; // if have no selection then return and don't show menu
    }
+   Gui.showTextMenu();
 }
 static void TextCut(Ptr user)
 {
@@ -174,7 +175,6 @@ static void TextPaste(Ptr user)
 }
 
 Bool GUI::visibleTextMenu()C {return TextMenu.visible();}
-void GUI::    setTextMenu(Bool visible) {if(visible)showTextMenu();else hideTextMenu();}
 void GUI::   showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
