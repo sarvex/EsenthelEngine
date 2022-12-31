@@ -502,7 +502,7 @@ void TextLine::update(C GuiPC &gpc)
                         MAX(l, D.rectUI().min.x+margin);
                         MIN(r, D.rectUI().max.x-margin);
                      }else
-                     if(_edit.sel<0 && touch->longPress() && !Gui.visibleTextMenu()) // no selection and long press
+                     if(touch->longPress() && _edit.sel<0) // long press and no selection
                      {
                         DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
                         Gui.showTextMenu();

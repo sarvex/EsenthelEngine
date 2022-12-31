@@ -685,7 +685,7 @@ void TextBox::update(C GuiPC &gpc)
                         MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
                         MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                      }else
-                     if(_edit.sel<0 && touch->longPress() && !Gui.visibleTextMenu()) // no selection and long press
+                     if(touch->longPress() && _edit.sel<0) // long press and no selection
                      {
                         DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
                         Gui.showTextMenu();

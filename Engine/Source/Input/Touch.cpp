@@ -186,6 +186,9 @@ void TouchesUpdate()
          {
             if(!t.selecting())
             {
+               if(old_life  < LongPressTime
+               &&   t.life()>=LongPressTime)t._state|=BS_LONG_PRESS;
+
                Flt dist2=Dist2(t.pos(), t.startPos())*Sqr(D.scale()*(D.smallSize() ? 0.5f : 1.0f));
                if(t.stylus() ? (dist2>=TouchSelectDist2 && old_life>=StylusSelectTime) || dist2>=TouchSelectBigDist2 // stylus can be slippery, because of that process it differently (for short distance require time, or allow big distance in case user made long swipe)
                              :  dist2>=TouchSelectDist2                                                             )t._selecting=true;

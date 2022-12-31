@@ -543,9 +543,9 @@ void GUI::update()
       REPA(Touches)
       {
        C Touch &touch=Touches[i]; BS_FLAG state=touch._state;
-         if(state&(BS_PUSHED|BS_TAPPED))
+         if(state&(BS_PUSHED|BS_TAPPED|BS_LONG_PRESS))
             if(GuiObj *go=touch.guiObj())
-               if(state&(go->isTextEdit() ? BS_TAPPED : BS_PUSHED))go->activate(); // activate textfields only on tap, in case we just want to Touch-Scroll, because their activation will show soft keyboard
+               if(state&(go->isTextEdit() ? BS_TAPPED|BS_LONG_PRESS : BS_PUSHED))go->activate(); // activate textfields only on Tap/LongPress, in case we just want to Touch-Scroll, because their activation will show soft keyboard
       }
       if(Kb.k(KB_TAB))if(Switch())Kb.eatKey();
    }
