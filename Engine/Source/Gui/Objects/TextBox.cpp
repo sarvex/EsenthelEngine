@@ -563,7 +563,7 @@ void TextBox::update(C GuiPC &gpc)
       BS_FLAG mt_state;
       Touch  *touch;
       if(Gui.ms()==this && (Ms._button[0]&(BS_ON|BS_PUSHED))){mt_pos=&Ms.pos(); mt_state=Ms._button[0]; touch=null;}else
-      if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
+      if(Gui.kb()==this)REPA(Touches){Touch &t=Touches[i]; if(t.guiObj()==this && (t.state()&(BS_ON|BS_PUSHED|BS_RELEASED|BS_TAPPED))){mt_pos=&t.pos(); mt_state=t._state; t.disableScroll(); touch=&t; break;}} // check touches only if we already have keyboard focus, so without focus we don't select but instead can scroll
       if(mt_pos)
       {
          if(GuiSkin *skin=getSkin())
@@ -611,6 +611,7 @@ void TextBox::update(C GuiPC &gpc)
                   }
                   Gui.hideTextMenu();
                }else
+               if(mt_state&BS_ON)
                {
                   if(pos!=_edit.cur)
                   {
@@ -619,26 +620,38 @@ void TextBox::update(C GuiPC &gpc)
                      if(_edit.sel==pos)_edit.sel=-1; // we're setting '_edit.cur' to 'pos' below, so if 'sel' is the same then clear it
                                        _edit.cur=pos;
                      setTextInput();
+                     Gui.hideTextMenu();
                   }
+
+                  // scroll
                   if(touch)
-                     if(_edit.sel>=0 || touch->longPress())Gui.showTextMenu();
-               }
+                  {
+                     if(touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
+                     {
+                        Flt margin=ts.size.x;
+                        MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
+                        MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
 
-               if(touch && touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
+                        margin=ts.size.y;
+                        MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
+                        MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
+                     }else
+                     if(_edit.sel<0 && touch->longPress() && !Gui.visibleTextMenu()) // no selection and long press
+                     {
+                        DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
+                        Gui.showTextMenu();
+                     }
+                  }
+                  // if pos is outside of clipped text rect then scroll (check <= instead of < in case we're at screen border), scroll parents only if rect is actually clipped with some margin (so we can still scroll a little bit more so we can see visually the rect)
+                  if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else
+                  if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>clip.max.x-(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);
+                  if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<clip.min.y+(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );else
+                  if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>clip.max.y-(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );
+               }else
+               if(mt_state&BS_RELEASED) // released
                {
-                  Flt margin=ts.size.x;
-                  MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
-                  MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
-
-                  margin=ts.size.y;
-                  MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
-                  MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
+                  if(touch && _edit.sel>=0)Gui.showTextMenu(); // by touch and have some selection
                }
-               // if pos is outside of clipped text rect then scroll (check <= instead of < in case we're at screen border), scroll parents only if rect is actually clipped with some margin (so we can still scroll a little bit more so we can see visually the rect)
-               if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else
-               if(mt_pos->x>=clipped_text_rect.max.x)ScrollPlus (&slidebar[0], (_rect.max.x+gpc.offset.x>clip.max.x-(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);
-               if(mt_pos->y<=clipped_text_rect.min.y)ScrollPlus (&slidebar[1], (_rect.min.y+gpc.offset.y<clip.min.y+(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );else
-               if(mt_pos->y>=clipped_text_rect.max.y)ScrollMinus(&slidebar[1], (_rect.max.y+gpc.offset.y>clip.max.y-(ts.size.y*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, true );
             }
          }
       }else _can_select=true;
