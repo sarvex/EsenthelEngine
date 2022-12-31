@@ -1563,7 +1563,7 @@ static Bool KBWantVisible;
 #endif
 void KeyboardClass::setVisible()
 {
-   Bool visible=(Gui.kb() && (Gui.kb()->isTextLine() || Gui.kb()->isTextBox()));
+   Bool visible=(Gui.kb() && Gui.kb()->isTextEdit());
 #if WINDOWS_OLD
    imm(visible); // here ignore 'hardware'
 #endif

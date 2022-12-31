@@ -191,7 +191,7 @@ static void TextPaste(Ptr user)
 Bool GUI::visibleTextMenu()C {return TextMenu.visible();}
 void GUI::   showTextMenu()
 {
-   if(GuiObj *go=Gui.kb())if(go->isTextLine() || go->isTextBox())
+   if(GuiObj *go=Gui.kb())if(go->isTextEdit())
    {
       Rect rect;
       Bool sel, any, pass;
@@ -545,7 +545,7 @@ void GUI::update()
        C Touch &touch=Touches[i]; BS_FLAG state=touch._state;
          if(state&(BS_PUSHED|BS_TAPPED))
             if(GuiObj *go=touch.guiObj())
-               if(state&((go->isTextLine() || go->isTextBox()) ? BS_TAPPED : BS_PUSHED))go->activate(); // activate textfields only on tap, in case we just want to Touch-Scroll, because their activation will show soft keyboard
+               if(state&(go->isTextEdit() ? BS_TAPPED : BS_PUSHED))go->activate(); // activate textfields only on tap, in case we just want to Touch-Scroll, because their activation will show soft keyboard
       }
       if(Kb.k(KB_TAB))if(Switch())Kb.eatKey();
    }
