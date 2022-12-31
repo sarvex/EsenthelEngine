@@ -189,7 +189,7 @@ void GUI::   showTextMenu()
             sel =(tl._edit.sel>=0);
             any = tl().is();
             pass= tl.password();
-            rect= tl.localSelRect(); rect&=Rect_LU(0, 0, tl.clientWidth(), tl.clientHeight()); rect+=((Gui._overlay_textline==&tl) ? Gui._overlay_textline_offset+tl.pos() : tl.screenPos());
+            rect= tl.localSelRect(); rect.clampFull(Rect_LU(0, 0, tl.clientWidth(), tl.clientHeight())); rect+=((Gui._overlay_textline==&tl) ? Gui._overlay_textline_offset+tl.pos() : tl.screenPos());
          }break;
 
          case GO_TEXTBOX:
@@ -198,7 +198,7 @@ void GUI::   showTextMenu()
             sel =(tb._edit.sel>=0);
             any = tb().is();
             pass=false;
-            rect=tb.localSelRect(); rect&=Rect_LU(0, 0, tb.clientWidth(), tb.clientHeight()); rect+=tb.screenPos();
+            rect=tb.localSelRect(); rect.clampFull(Rect_LU(0, 0, tb.clientWidth(), tb.clientHeight())); rect+=tb.screenPos();
          }break;
       }
       Node<MenuElm> n;
@@ -231,8 +231,8 @@ void GUI::   showTextMenu()
       }
       size.x+=(TextMenu.tabs()+1)*size.y/2; // spacing around elements
       // posAround
-      Rect  screen=D.rectUIKB();
-      rect&=screen; // clip so we can detect position at screen center even if selection rectangle extends far away outside screen on one side
+      Rect screen=D.rectUIKB();
+      rect.clampFull(screen); // clip so we can detect position at screen center even if selection rectangle extends far away outside screen on one side
 const Flt align=0;
       Flt pos_x=Lerp(rect.min.x, rect.max.x-size.x, LerpR(1.0f, -1.0f, align));
       Clamp(pos_x, screen.min.x, screen.max.x-size.x); // have to clip again

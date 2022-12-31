@@ -141,6 +141,7 @@ struct Rect // Rectangle Shape
    Rect& include   (C Rect &r                ); // extend   rectangle to include rectangle
    Rect& clampX    (  Flt   min, Flt max     ); // clamp    rectangle to intersect min..max X range
    Rect& clampY    (  Flt   min, Flt max     ); // clamp    rectangle to intersect min..max Y range
+   Rect& clampFull (C Rect &r                ); // clamp    rectangle to intersect 'r' fully
    Rect& moveX     (  Flt   dx               ); // move     rectangle X's by 'dx'
    Rect& moveY     (  Flt   dy               ); // move     rectangle Y's by 'dy'
    Rect& mulX      (  Flt   x                ); // multiply rectangle X's by 'x'

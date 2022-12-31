@@ -20,6 +20,12 @@ Rect& Rect::operator&=(C Rect &r)
    if(r.min.y>min.y)min.y=r.min.y; if(r.max.y<max.y)max.y=r.max.y;
    return T;
 }
+Rect& Rect::clampFull(C Rect &r)
+{
+   Clamp(min.x, r.min.x, r.max.x); Clamp(min.y, r.min.y, r.max.y);
+   Clamp(max.x, r.min.x, r.max.x); Clamp(max.y, r.min.y, r.max.y);
+   return T;
+}
 Rect& Rect::operator&=(C RectI &r)
 {
    if(r.min.x>min.x)min.x=r.min.x; if(r.max.x<max.x)max.x=r.max.x;
