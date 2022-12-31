@@ -204,6 +204,7 @@ struct DisplayClass : DisplayState, DisplayDraw // Display Control
                                                                      Flt              eyeDistance_2     ()C {return _eye_dist_2       ;}
                                                                      Bool             exclusiveFull     ()C;                             // if actually in exclusive full-screen mode
                                                                      Bool             colorManaged      ()C {return _color_lut.is()   ;} // if need to perform any color transformations
+                                                                     Rect             rectUIKB          ()C;                             // get     full screen rectangle that's safe for UI placement, excluding Screen Keyboard
 #endif
                                                                    C Rect&            rect              ()C {return _rect             ;} // get     full screen rectangle Rect(-w(), -h(), w(), h())
                                                                    C Rect&            rectUI            ()C {return _rect_ui          ;} // get     full screen rectangle that's safe for UI placement, normally it's equal to 'rect' however it may be smaller due to system controls, rounded corners, notch, etc.

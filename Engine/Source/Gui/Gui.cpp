@@ -201,29 +201,57 @@ void GUI::   showTextMenu()
             //FIXME rect=tb.screenSelPos();
          }break;
       }
-      rect.min.y-=text_menu_height; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
       Node<MenuElm> n;
       if(sel)
       {
-         if(pass)  n.New().create("Delete"    , TextCut);else
-         {         n.New().create("Cut"       , TextCut);
-                   n.New().create("Copy"      , TextCopy);}
-      }else if(any)n.New().create("Select All", TextSelectAll);
-                   n.New().create("Paste"     , TextPaste);
+         if(pass)n.New().create("Delete", TextCut);else
+         {
+            n.New().create("Cut" , TextCut);
+            n.New().create("Copy", TextCopy);
+         }
+      }else
+      if(any)n.New().create("Select All", TextSelectAll);
+             n.New().create("Paste"     , TextPaste);
+
+      Vec2 size(0, text_menu_height);
+      const Flt p=0.01f;
+      rect.max.y+=p;
+      rect.min.y-=p+size.y; // add margin on the bottom, so if we're going to show menu below, then move it more, because of finger occluding the menu
+
    #if 1
-      Flt w=0;
       TextMenu._tabs.replaceClass<TextMenuButton>();
-      Gui+=TextMenu.create((CChar**)null, n.children.elms(), true).baseLevel(GBL_MENU);
+      Gui+=TextMenu.create((CChar**)null, n.children.elms(), false).baseLevel(GBL_MENU); // for now disable 'auto_size' because we don't want changing tab text below calling resize
       FREPA(TextMenu)
       {
          Tab &tab=TextMenu.tab(i);
          MenuElm &m=n.children[i];
          tab.Button::setText(m.name); // don't call Tab.setText because that will resize Tabs
          tab.func(m._func1);
-         w+=tab.textWidth(&text_menu_height, true);
+         size.x+=tab.textWidth(&size.y, true);
       }
-      w+=(TextMenu.tabs()+1)*text_menu_height/2; // spacing around elements
-      TextMenu.rect(Rect_C(0, 0, w, text_menu_height));
+      size.x+=(TextMenu.tabs()+1)*size.y/2; // spacing around elements
+      // posAround
+      Rect  screen=D.rectUIKB();
+      rect&=screen; // clip so we can detect position at screen center even if selection rectangle extends far away outside screen on one side
+const Flt align=0;
+      Flt pos_x=Lerp(rect.min.x, rect.max.x-size.x, LerpR(-1.0f, 1.0f, align));
+      Clamp(pos_x, screen.min.x, screen.max.x-size.x); // have to clip again
+
+      Rect_LD above(pos_x, rect.max.y, size.x, size.y); // rect above 'rect'
+      Rect_LU below(pos_x, rect.min.y, size.x, size.y); // rect below 'rect'
+      Flt   h_above=(above&screen).h(), // visible menu height when using 'above'
+            h_below=(below&screen).h(); // visible menu height when using 'below'
+      const Bool prefer_up=true;
+      if(h_above>h_below+(prefer_up ? -EPS : EPS))
+      {
+         rect=above;
+         if(rect.max.y>screen.max.y)rect.moveY(screen.max.y-rect.max.y);
+      }else
+      {
+         rect=below;
+         if(rect.min.y<screen.min.y)rect.moveY(screen.min.y-rect.min.y);
+      }
+      TextMenu.rect(rect, 0, true);
    #else
       TextMenu.create(n); TextMenu.list.cur_mode=LCM_MOUSE;
       if(GuiSkin *skin=TextMenu.getSkin())

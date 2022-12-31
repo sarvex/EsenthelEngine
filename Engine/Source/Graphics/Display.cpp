@@ -460,6 +460,12 @@ VecI2 DisplayClass::screen()C
    return App.desktop(); // this is not changed when device is rotated (obtained at app startup)
 }
 #endif
+Rect DisplayClass::rectUIKB()C
+{
+   Rect r=D.rectUI();
+   Rect kb; if(Kb.rect(kb))MAX(r.min.y, kb.max.y); // TODO: this assumes screen keyboard is at the bottom
+   return r;
+}
 /******************************************************************************/
 void DisplayClass::setShader(C Material *material)
 {

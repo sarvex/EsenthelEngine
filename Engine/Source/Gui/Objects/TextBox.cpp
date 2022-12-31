@@ -581,9 +581,9 @@ void TextBox::update(C GuiPC &gpc)
          #endif
 
             Flt  offset=ts.size.x*TEXTBOX_OFFSET;
-            Rect clip  =gpc.clip;
+            Rect   clip=gpc.clip;
             Rect    kb_rect; if(Kb.rect(kb_rect))MAX(clip.min.y, kb_rect.max.y); // TODO: this assumes screen keyboard is at the bottom
-            Rect  text_rect  =_crect+gpc.offset, clipped_text_rect=text_rect&clip;
+            Rect  text_rect=_crect+gpc.offset, clipped_text_rect=text_rect&clip;
             Vec2  clipped_pos=*mt_pos&clipped_text_rect; // have to clip so after we start selecting and move mouse outside the client rectangle, we don't set cursor to be outside, instead start smooth scrolling when mouse is outside towards cursor, but limit the cursor position within visible area
             Bool eol; Int pos=ts.textIndex(T(), clipped_pos.x - text_rect.min.x + slidebar[0].offset() - offset, text_rect.max.y - clipped_pos.y + slidebar[1].offset(), (ButtonDb(mt_state) || _edit.overwrite) ? TEXT_INDEX_OVERWRITE : TEXT_INDEX_DEFAULT, _text_space, wordWrap(), eol);
 
