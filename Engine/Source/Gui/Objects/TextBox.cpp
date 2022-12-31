@@ -485,6 +485,7 @@ Rect TextBox::localTextRect(Int index0, Int index1)C
        pos.x+=ts.size.x*TEXTBOX_OFFSET;
       Vec2 p0=ts.textPos(T(), index0, _text_space, wordWrap()); p0.chsY(); // here Y is 0..Inf
       Vec2 p1=ts.textPos(T(), index1, _text_space, wordWrap()); p1.chsY(); // here Y is 0..Inf
+      if(!Equal(p0.y, p1.y)){p0.x=0; p1.x=virtualWidth();} // if Y are different, then they're on multiple lines, so extend X to full space
       Rect r; r.from(p0, p1)+=pos; r.min.y-=ts.size.y;
       return r;
    }
