@@ -577,7 +577,7 @@ void MouseClass::_release(Byte b) // !! assumes 'b' is in range !!
    {
       FlagDisable(_button[b], BS_ON      );
       FlagEnable (_button[b], BS_RELEASED);
-      if(!selecting() && life()<=0.25f+Time.ad())_button[b]|=BS_TAPPED;
+      if(!selecting() && life()<=TapTime+Time.ad())_button[b]|=BS_TAPPED;
       Inputs.New().set(false, INPUT_MOUSE, b);
    }
 }

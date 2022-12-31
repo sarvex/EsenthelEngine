@@ -225,7 +225,7 @@ void TouchesUpdate()
 
       if(t.rs())
       {
-         if(!t.selecting() && t.life()<=0.25f+Time.ad())t._state|=BS_TAPPED;
+         if(!t.selecting() && t.life()<=TapTime+Time.ad())t._state|=BS_TAPPED;
 
          // scroll regions (don't check for 't.scrolling' here because we want to process dragging region slidebars too and for those the scrolling is not enabled)
          if(t._axis_moved && t.id()!=Gui._drag_touch_id) // only if not dragging something
