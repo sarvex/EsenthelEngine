@@ -53,7 +53,9 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
 
 #if EE_PRIVATE
    Bool     showClear()C;
-   Flt    clientWidth()C;
+   Flt   clientWidth ()C;
+   Flt   clientHeight()C {return rect().h();}
+   Vec2  clientSize  ()C {return Vec2(clientWidth(), clientHeight());}
  C Str&   displayText()C; // returns "***" when in password mode, Warning: this is not thread-safe
    void          zero() ;
    void          call() ;
@@ -63,11 +65,11 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    Bool cursorChanged(Int position, Bool margin=true);
    void  setTextInput()C;
 
-   Flt   localTextPosX(Int index)C;
-   Vec2  localTextPosX(Int index0, Int index1)C; // x=index0 PosX, y=index1 PosX
-   Rect screenTextPos (Int index)C;
-   Rect screenTextPos (Int index0, Int index1)C;
-   Rect screenSelPos  ()C;
+   Flt  localTextPosX(Int index             )C;
+   Vec2 localTextPosX(Int index0, Int index1)C; // x=index0 PosX, y=index1 PosX
+   Rect localTextRect(Int index             )C;
+   Rect localTextRect(Int index0, Int index1)C;
+   Rect localSelRect (                      )C;
 
    enum
    {

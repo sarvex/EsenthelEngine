@@ -189,7 +189,7 @@ void GUI::   showTextMenu()
             sel =(tl._edit.sel>=0);
             any = tl().is();
             pass= tl.password();
-            rect= tl.screenSelPos();
+            rect= tl.localSelRect(); rect&=Rect_LU(0, 0, tl.clientWidth(), tl.clientHeight()); rect+=((Gui._overlay_textline==&tl) ? Gui._overlay_textline_offset+tl.pos() : tl.screenPos());
          }break;
 
          case GO_TEXTBOX:
@@ -198,7 +198,7 @@ void GUI::   showTextMenu()
             sel =(tb._edit.sel>=0);
             any = tb().is();
             pass=false;
-            rect=tb.screenSelPos();
+            rect=tb.localSelRect(); rect&=Rect_LU(0, 0, tb.clientWidth(), tb.clientHeight()); rect+=tb.screenPos();
          }break;
       }
       Node<MenuElm> n;

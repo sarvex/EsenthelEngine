@@ -605,11 +605,12 @@ Vec2 GuiObj::clientSize()C
 {
    switch(type())
    {
-      case GO_MENU   : return asMenu   ().clientSize();
-      case GO_WINDOW : return asWindow ().clientSize();
-      case GO_REGION : return asRegion ().clientSize();
-      case GO_TEXTBOX: return asTextBox().clientSize();
-      default        : return                   size();
+      case GO_MENU    : return asMenu    ().clientSize();
+      case GO_WINDOW  : return asWindow  ().clientSize();
+      case GO_REGION  : return asRegion  ().clientSize();
+      case GO_TEXTBOX : return asTextBox ().clientSize();
+      case GO_TEXTLINE: return asTextLine().clientSize();
+      default         : return                    size();
    }
 }
 Rect GuiObj::localClientRect()C

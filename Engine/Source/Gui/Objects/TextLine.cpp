@@ -375,21 +375,19 @@ Vec2 TextLine::localTextPosX(Int index0, Int index1)C
    }
    return pos;
 }
-Rect TextLine::screenTextPos(Int index)C
+Rect TextLine::localTextRect(Int index)C
 {
-   Vec2 screen_pos=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset+pos() : screenPos());
-   return Rect().setX(localTextPosX(index) + screen_pos.x).setY(screen_pos.y-rect().h(), screen_pos.y);
+   return Rect().setX(localTextPosX(index)).setY(-rect().h(), 0);
 }
-Rect TextLine::screenTextPos(Int index0, Int index1)C
+Rect TextLine::localTextRect(Int index0, Int index1)C
 {
-   Vec2 screen_pos=((Gui._overlay_textline==this) ? Gui._overlay_textline_offset+pos() : screenPos());
    Vec2 lx=localTextPosX(index0, index1); if(lx.x>lx.y)lx.swap();
-   return Rect().setX(lx.x+screen_pos.x, lx.y+screen_pos.x).setY(screen_pos.y-rect().h(), screen_pos.y);
+   return Rect().setX(lx.x, lx.y).setY(-rect().h(), 0);
 }
-Rect TextLine::screenSelPos()C
+Rect TextLine::localSelRect()C
 {
-   return (_edit.sel<0) ? screenTextPos(           cursor())
-                        : screenTextPos(_edit.sel, cursor());
+   return (_edit.sel<0) ? localTextRect(           cursor())
+                        : localTextRect(_edit.sel, cursor());
 }
 /******************************************************************************/
 // MAIN

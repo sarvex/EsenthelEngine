@@ -453,7 +453,7 @@ TextBox& TextBox::skin(C GuiSkinPtr &skin, Bool sub_objects)
    return T;
 }
 /******************************************************************************/
-Rect TextBox::localTextPos(Int index)C
+Rect TextBox::localTextRect(Int index)C
 {
    Vec2 pos(-slidebar[0].offset(), slidebar[1].offset());
    if(GuiSkin *skin=getSkin())
@@ -471,7 +471,7 @@ Rect TextBox::localTextPos(Int index)C
    }
    return pos;
 }
-Rect TextBox::localTextPos(Int index0, Int index1)C
+Rect TextBox::localTextRect(Int index0, Int index1)C
 {
    Vec2 pos(-slidebar[0].offset(), slidebar[1].offset());
    if(GuiSkin *skin=getSkin())
@@ -490,12 +490,10 @@ Rect TextBox::localTextPos(Int index0, Int index1)C
    }
    return pos;
 }
-Rect TextBox::screenTextPos(Int index             )C {return localTextPos(index         )+screenPos();}
-Rect TextBox::screenTextPos(Int index0, Int index1)C {return localTextPos(index0, index1)+screenPos();}
-Rect TextBox::screenSelPos (                      )C
+Rect TextBox::localSelRect()C
 {
-   return (_edit.sel<0) ? screenTextPos(           cursor())
-                        : screenTextPos(_edit.sel, cursor());
+   return (_edit.sel<0) ? localTextRect(           cursor())
+                        : localTextRect(_edit.sel, cursor());
 }
 /******************************************************************************/
 GuiObj* TextBox::test(C GuiPC &gpc, C Vec2 &pos, GuiObj* &mouse_wheel)
