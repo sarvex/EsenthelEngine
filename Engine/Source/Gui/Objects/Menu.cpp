@@ -458,7 +458,7 @@ Menu& Menu::posAround(C Rect &rect, Flt align, Bool prefer_up)
    Rect_LU below(pos_x, rect.min.y, size.x, size.y); // rect below 'rect'
    Flt   h_above=(above&screen).h(), // visible menu height when using 'above'
          h_below=(below&screen).h(); // visible menu height when using 'below'
-   return pos(((h_above>h_below+(prefer_up ? -EPS : EPS)) ? above : below).lu()); // select position according to which visible height is bigger, use EPS to more often place the Menu above/below
+   return pos(((h_above>h_below+(prefer_up ? -EPS : EPS)) ? SCAST(Rect, above) : SCAST(Rect, below)).lu()); // select position according to which visible height is bigger, use EPS to more often place the Menu above/below
 }
 void Menu::clientSize(C Vec2 &size)
 {
