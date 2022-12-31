@@ -107,10 +107,11 @@ private:
 #endif
    Bool          _drag_want, _dragging, _window_buttons_right;
    Char          _pass_char;
-   GuiObj       *_kb, *_ms, *_ms_src, *_ms_lit, *_wheel, *_desc, *_touch_desc, *_overlay_textline;
+   GuiObj       *_kb, *_ms, *_ms_src, *_ms_lit, *_wheel, *_desc, *_touch_desc;
    Menu         *_menu;
    Window       *_window, *_window_lit;
    Desktop      *_desktop;
+   TextLine     *_overlay_textline;
    Flt           _update_time, _time_d_fade_out;
    Dbl           _desc_time, _touch_desc_time;
    UInt          _drag_touch_id;
@@ -132,9 +133,10 @@ private:
    Bool Switch       (                             );
    void kbLit        (GuiObj *obj, C Rect &rect, C GuiSkin *skin) {if(draw_keyboard_highlight)draw_keyboard_highlight(obj, rect, skin);}
    void setText      ();
+   Bool visibleTextMenu()C;
    void    hideTextMenu();
    void    showTextMenu();
-   Bool visibleTextMenu()C;
+   void  updateTextMenu();
 
  C Str& passTemp(Int length); // Warning: this is not thread-safe
 

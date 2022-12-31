@@ -149,7 +149,8 @@ struct TextMenuTabs : Tabs
 };
 static TextMenuTabs TextMenu;
 
-void GUI::hideTextMenu() {Gui-=TextMenu.hide();} // also hide so we can do fast check in 'visibleTextMenu'
+Bool GUI::visibleTextMenu()C {return TextMenu.visible();}
+void GUI::   hideTextMenu()  {  Gui-=TextMenu.hide   ();} // also hide so we can do fast check in 'visibleTextMenu'
 static void TextSelectAll(Ptr user)
 {
    Gui.hideTextMenu();
@@ -188,8 +189,7 @@ static void TextPaste(Ptr user)
    }
 }
 
-Bool GUI::visibleTextMenu()C {return TextMenu.visible();}
-void GUI::   showTextMenu()
+void GUI::showTextMenu()
 {
    if(GuiObj *go=Gui.kb())if(go->isTextEdit())
    {
@@ -288,6 +288,7 @@ const Flt align=0;
    #endif
    }
 }
+void GUI::updateTextMenu() {if(visibleTextMenu())showTextMenu();}
 /******************************************************************************/
 GuiObj* GUI::objAtPos(C Vec2 &pos)C
 {
@@ -532,9 +533,14 @@ void GUI::update()
    SyncLocker locker(_lock);
 
    // test
-  _overlay_textline=overlayTextLine(_overlay_textline_offset);
-  _wheel           =null;
-  _ms_lit          =((Ms.detected() && Ms.visible() && Ms._on_client && desktop()) ? desktop()->test(Ms.pos(), _wheel) : null); // don't set 'msLit' if mouse is not detected or hidden or on another window (do checks if mouse was focused on other window but now moves onto our window, and with buttons pressed in case for drag and drop detection and we would want to highlight the target gui object at which we're gonna drop the files)
+   auto ovr_tl=overlayTextLine(_overlay_textline_offset); if(ovr_tl!=_overlay_textline) // TODO: we could also check offset "|| (ovr_tl && ovr_tl_ofs!=_overlay_textline_offset)"
+   {
+     _overlay_textline=ovr_tl;
+      updateTextMenu();
+   }
+
+  _wheel =null;
+  _ms_lit=((Ms.detected() && Ms.visible() && Ms._on_client && desktop()) ? desktop()->test(Ms.pos(), _wheel) : null); // don't set 'msLit' if mouse is not detected or hidden or on another window (do checks if mouse was focused on other window but now moves onto our window, and with buttons pressed in case for drag and drop detection and we would want to highlight the target gui object at which we're gonna drop the files)
    BS_FLAG ms_button=BS_NONE; REPA(Ms._button)ms_button|=Ms._button[i];
    if(!(ms_button&(BS_ON|BS_RELEASED)))_ms=_ms_src=msLit();
    if(App.active())

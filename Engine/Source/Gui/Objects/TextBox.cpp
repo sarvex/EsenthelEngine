@@ -725,7 +725,7 @@ void TextBox::draw(C GuiPC &gpc)
             if(TextStyle *text_style=skin->textline.text_style())
             {
                Bool enabled=(T.enabled() && gpc.enabled),
-                    active=(Gui.kb()==this && enabled && ((Gui._overlay_textline==this) ? Equal(Gui._overlay_textline_offset, gpc.offset) : true)); // if this is the overlay textline, then draw cursor and editing only if it matches the overlay offset
+                    active=(Gui.kb()==this && enabled);
                if(T().is() || active || hint.is())
                {
                 C Color *text_color; // never null

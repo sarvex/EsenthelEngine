@@ -1477,7 +1477,7 @@ Bool KeyboardClass::rect(Rect &rect)C
    }
    return false;
 }
-void KeyboardClass::screenChanged() {if(screen_changed)screen_changed();}
+void KeyboardClass::screenChanged() {if(screen_changed)screen_changed(); Gui.updateTextMenu();}
 void KeyboardClass::set(C RectI &rect)
 {
    if(_recti!=rect)
