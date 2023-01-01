@@ -244,7 +244,7 @@ void Button::update(C GuiPC &gpc)
             {
                state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON                 : BS_NONE)  // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
                     | ((t.rs() &&                          Gui.objAtPos(t.pos())==this ) ? BS_RELEASED|BS_PUSHED : BS_NONE); // process touch release as both BS_RELEASED|BS_PUSHED so it can be used instead of touch pushes
-             //if(t.pd()){state|=BS_PUSHED; t.eat();} ignore the first push
+             //here have to ignore 't.pd()'
             }else
             {
                state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON       : BS_NONE) // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
