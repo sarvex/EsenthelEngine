@@ -652,13 +652,17 @@ void TextBox::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate TextEdits only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
+               if(mt_state&(BS_PUSHED|BS_TAPPED|BS_LONG_PRESS)) // check BS_TAPPED|BS_LONG_PRESS too, because touches activate TextEdits only on BS_TAPPED|BS_LONG_PRESS (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
                     _edit.cur=_edit.sel=-1; cursor(pos, false); // set -1 to force adjustment of offset and calling 'setTextInput'
                   }
-                  Gui.hideTextMenu();
+                  if(touch && touch->longPress() && _edit.sel<0) // long press and no selection
+                  {
+                        DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
+                        Gui.showTextMenu();
+                  }else Gui.hideTextMenu();
                }else
                if(mt_state&BS_ON)
                {
@@ -673,23 +677,15 @@ void TextBox::update(C GuiPC &gpc)
                   }
 
                   // scroll
-                  if(touch)
+                  if(touch && touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
                   {
-                     if(touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
-                     {
-                        Flt margin=ts.size.x;
-                        MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
-                        MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
+                     Flt margin=ts.size.x;
+                     MAX(clipped_text_rect.min.x, D.rectUI().min.x+margin);
+                     MIN(clipped_text_rect.max.x, D.rectUI().max.x-margin);
 
-                        margin=ts.size.y;
-                        MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
-                        MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
-                     }else
-                     if(touch->longPress() && _edit.sel<0) // long press and no selection
-                     {
-                        DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
-                        Gui.showTextMenu();
-                     }
+                     margin=ts.size.y;
+                     MAX(clipped_text_rect.min.y, D.rectUI().min.y+margin);
+                     MIN(clipped_text_rect.max.y, D.rectUI().max.y-margin);
                   }
                   // if pos is outside of clipped text rect then scroll (check <= instead of < in case we're at screen border), scroll parents only if rect is actually clipped with some margin (so we can still scroll a little bit more so we can see visually the rect)
                   if(mt_pos->x<=clipped_text_rect.min.x)ScrollMinus(&slidebar[0], (_rect.min.x+gpc.offset.x<clip.min.x+(ts.size.x*TEXTBOX_MARGIN_REL+TEXTBOX_MARGIN_ABS)) ? parent() : null, false);else

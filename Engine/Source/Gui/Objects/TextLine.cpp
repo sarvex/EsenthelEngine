@@ -469,7 +469,7 @@ void TextLine::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate TextEdits only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
+               if(mt_state&(BS_PUSHED|BS_TAPPED|BS_LONG_PRESS)) // check BS_TAPPED|BS_LONG_PRESS too, because touches activate TextEdits only on BS_TAPPED|BS_LONG_PRESS (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
@@ -477,7 +477,11 @@ void TextLine::update(C GuiPC &gpc)
                     _edit.sel=-1;
                      setTextInput();
                   }
-                  Gui.hideTextMenu();
+                  if(touch && touch->longPress() && _edit.sel<0) // long press and no selection
+                  {
+                        DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
+                        Gui.showTextMenu();
+                  }else Gui.hideTextMenu();
                }else
                if(mt_state&BS_ON)
                {
@@ -494,19 +498,11 @@ void TextLine::update(C GuiPC &gpc)
                   // scroll
                   Flt w=clientWidth(), l=rect().min.x+gpc_offset, r=l+w; // text_rect
                   MAX(l, gpc.clip.min.x); MIN(r, gpc.clip.max.x); // clipped_text_rect
-                  if(touch)
+                  if(touch && touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
                   {
-                     if(touch->selecting()) // margin - touches may not reach screen border comfortably, so turn on scrolling with margin for them, but only after some movement to prevent instant scroll at start
-                     {
-                        Flt margin=ts.size.x;
-                        MAX(l, D.rectUI().min.x+margin);
-                        MIN(r, D.rectUI().max.x-margin);
-                     }else
-                     if(touch->longPress() && _edit.sel<0) // long press and no selection
-                     {
-                        DeviceVibrateShort(); // vibrate ASAP so user is notified quickly
-                        Gui.showTextMenu();
-                     }
+                     Flt margin=ts.size.x;
+                     MAX(l, D.rectUI().min.x+margin);
+                     MIN(r, D.rectUI().max.x-margin);
                   }
                   // check <= instead of < in case we're at screen border
                   if(mt_pos->x<=l)_offset=Min(0,     Time.d()* 2+_offset                          );else
