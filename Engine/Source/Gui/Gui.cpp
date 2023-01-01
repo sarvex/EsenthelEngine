@@ -549,9 +549,27 @@ void GUI::update()
       REPA(Touches)
       {
        C Touch &touch=Touches[i]; BS_FLAG state=touch._state;
-         if(state&(BS_PUSHED|BS_TAPPED|BS_LONG_PRESS))
-            if(GuiObj *go=touch.guiObj())
-               if(state&(go->isTextEdit() ? BS_TAPPED|BS_LONG_PRESS : BS_PUSHED))go->activate(); // activate textfields only on Tap/LongPress, in case we just want to Touch-Scroll, because their activation will show soft keyboard
+         if(touch.scrolling()) // we might want to scroll
+         {
+            if(state&(BS_RELEASED|BS_TAPPED|BS_LONG_PRESS)) // potential activation
+               if(GuiObj *go=touch.guiObj())
+            {
+               BS_FLAG mask;
+               switch(go->type())
+               {
+                  case GO_TEXTLINE:
+                  case GO_TEXTBOX :
+                           mask=BS_TAPPED|BS_LONG_PRESS; break; // activate TextEdits only on Tap/LongPress, in case we just want to Touch-Scroll, because their activation will show soft keyboard
+                  default: mask=BS_RELEASED            ; break; // others activate on release. This is important for Buttons to don't show keyboard focus, and especially for Comboboxes so when they're pushed, they don't get unpushed when touch BS_PUSHED (because if Combobox is pushed, and we activate Combobox on BS_PUSHED then any visible Menu disappears, which causes Combobox to get unpushed since its Menu is now hidden)
+               }
+               if(state&mask)go->activate();
+            }
+         }else
+         {
+            if(state&BS_PUSHED)
+               if(GuiObj *go=touch.guiObj())
+                  go->activate();
+         }
       }
       if(Kb.k(KB_TAB))if(Switch())Kb.eatKey();
    }

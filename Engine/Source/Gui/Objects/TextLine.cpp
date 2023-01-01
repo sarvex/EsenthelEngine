@@ -469,7 +469,7 @@ void TextLine::update(C GuiPC &gpc)
             }else
             if(_can_select)
             {
-               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate textfields only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
+               if(mt_state&(BS_PUSHED|BS_TAPPED)) // check tapped too, because touches activate TextEdits only on tap (to allow for Touch-Scroll) and we want to set cursor in that case as well
                {
                   if(_edit.cur!=pos || _edit.sel>=0)
                   {
