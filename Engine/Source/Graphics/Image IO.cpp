@@ -662,14 +662,8 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
       Shrink(want.mip_maps, 1);
    }
 
-   // detect HW type that we will use
-   want_hw_type=want.type;
-   for(; !ImageSupported(want_hw_type, want.mode); )
-   {
-          want_hw_type=ImageTypeOnFail(want_hw_type); // use replacement
-      if(!want_hw_type)return false; // there isn't any then fail
-   }
-
+   // detect what we will use
+   want_hw_type=ImageTypeForMode(want.type, want.mode); if(!want_hw_type)return false; // no type available then fail
    want_faces  =    ImageFaces  (want.mode);
    want_hw_size.set(PaddedWidth (want.size.x, want.size.y, 0, want_hw_type),
                     PaddedHeight(want.size.x, want.size.y, 0, want_hw_type), want.size.z);
