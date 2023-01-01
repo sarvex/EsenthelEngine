@@ -824,9 +824,9 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
                   if(image.createEx(soft.w(), soft.h(), soft.d(), soft.hwType(), want.mode, soft.mipMaps(), soft.samples(), mip_data, image_base_mip))
                   {
                      // these could've changed if converted to another type
-                     want_hw_size  =image.hwSize3();
-                     same_type     =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
-                     direct        =(same_type && want_faces==file_faces);
+                     want_hw_size=image.hwSize3();
+                     same_type   =CanDoRawCopy(header.type, want_hw_type, ignore_gamma);
+                     direct      =(same_type && want_faces==file_faces);
                   #if IMAGE_STREAM_FULL
                      if(stream)
                      {
