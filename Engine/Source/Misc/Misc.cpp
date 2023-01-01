@@ -2967,6 +2967,31 @@ Bool ValidLicenseKey(C Str &key) // "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" 5*5X + 4*-
    return true;
 }
 /******************************************************************************/
+Str ShortEmail(C Str &email)
+{
+   if(Ends(email, "@gmail.com"))
+   {
+      const Int gmail_len=10;
+      Str e; e.reserve(email.length());
+      for(Int len=email.length()-gmail_len, i=0; i<len; i++)
+      {
+         Char c=email()[i]; if(c!='.')e.alwaysAppend(c);
+      }
+      e+="@gmail.com";
+      return e;
+   }
+   return email;
+}
+Str BaseEmail(C Str &email)
+{
+   Str e=ShortEmail(email);
+   Int plus=TextPosI(e, '+'); if(plus>=0)
+   {
+      Int at=TextPosI(e()+plus, '@'); if(at>=0)e.remove(plus, at);
+   }
+   return e;
+}
+/******************************************************************************/
 CChar * SkipHttp   (CChar  *url) {return            _SkipStart(_SkipStart(url, "http://"), "https://")         ;}
 CChar8* SkipHttp   (CChar8 *url) {return            _SkipStart(_SkipStart(url, "http://"), "https://")         ;}
 CChar * SkipHttpWww(CChar  *url) {return _SkipStart(_SkipStart(_SkipStart(url, "http://"), "https://"), "www.");}
