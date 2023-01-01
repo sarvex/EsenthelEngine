@@ -20,7 +20,7 @@ static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, I
 {
    File temp; if(File *src=ii.data.open(temp))
    {
-      ThreadMayUseGPUData();
+      ThreadMayUseGPUData(); // keep this covering even 'Import' in case the file is Engine 'Image' which can be IMAGE_2D
       ii.image_temp.Import(*src, -1, IMAGE_2D, ic._image_mip_maps);
       ThreadFinishedUsingGPUData();
    }
