@@ -416,7 +416,7 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
       case IMAGE_BC1 : // use since there's no other desktop compressed format without alpha
       case IMAGE_ETC1:
       case IMAGE_ETC2_RGB:
-      #if !DX11 // DX11 doesn't support HW RGB
+      #if !DX11 // DX11 doesn't support HW RGB DXGI_FORMAT_R8G8B8_UNORM
          return IMAGE_R8G8B8;
       #endif
       default: return IMAGE_R8G8B8A8;
@@ -425,7 +425,7 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
       /* RGB_A_SRGB ************/
       case IMAGE_BC1_SRGB:
       case IMAGE_ETC2_RGB_SRGB:
-      #if !DX11 // DX11 doesn't support HW RGB_SRGB
+      #if !DX11 // DX11 doesn't support HW RGB_SRGB DXGI_FORMAT_R8G8B8_UNORM_SRGB
          return IMAGE_R8G8B8_SRGB;
       #endif
       case IMAGE_B8G8R8A8_SRGB  :
