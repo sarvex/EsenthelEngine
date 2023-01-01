@@ -225,15 +225,15 @@ void Button::update(C GuiPC &gpc)
       BS_FLAG state=BS_NONE;
       if(Gui.ms()==this)
       {
-         lit   =true;
-         state|=((Ms.b (0) && (mode!=BUTTON_DEFAULT || Gui.msLit()==this)) ? BS_ON       : BS_NONE) // mode==BUTTON_DEFAULT requires Gui.msLit()==this while other modes don't
-              | ((Ms.bp(0)                                               ) ? BS_PUSHED   : BS_NONE)
-              | ((Ms.br(0) &&                          Gui.msLit()==this ) ? BS_RELEASED : BS_NONE);
+         lit=true;
+         if(Ms.bp(0)                                               )state|=BS_PUSHED  ;
+         if(Ms.b (0) && (mode!=BUTTON_DEFAULT || Gui.msLit()==this))state|=BS_ON      ; // mode==BUTTON_DEFAULT requires Gui.msLit()==this while other modes don't
+         if(Ms.br(0) &&                          Gui.msLit()==this )state|=BS_RELEASED;
       }
       if(Gui.kb()==this)
       {
-         if(mode==BUTTON_CONTINUOUS)state|=((Kb.b(KB_ENTER) || Kb.b(KB_NPENTER)) ? BS_ON : BS_NONE);
-         if((Kb.k(KB_ENTER) || Kb.k(KB_NPENTER)) && Kb.k.first()){Kb.eatKey(); state|=(BS_PUSHED|BS_RELEASED|BS_ON);} // 'BS_RELEASED' to work for 'BUTTON_DEFAULT', this is because there's no way to cancel keyboard activation (mouse cursor for example can be moved away before releasing button, while keyboard can't)
+         if(                           (Kb.k(KB_ENTER) || Kb.k(KB_NPENTER)) && Kb.k.first()){state|=BS_PUSHED|BS_RELEASED|BS_ON; Kb.eatKey();} // 'BS_RELEASED' to work for 'BUTTON_DEFAULT', this is because there's no way to cancel keyboard activation (mouse cursor for example can be moved away before releasing button, while keyboard can't)
+         if(mode==BUTTON_CONTINUOUS && (Kb.b(KB_ENTER) || Kb.b(KB_NPENTER))                ) state|=BS_ON;
       }
       REPA(Touches)
       {
@@ -242,14 +242,14 @@ void Button::update(C GuiPC &gpc)
             lit|=t.stylus();
             if(t.scrolling()) // if touch is used for scrolling, then we need to process the button differently
             {
-               state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON                 : BS_NONE)  // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
-                    | ((t.rs() &&                          Gui.objAtPos(t.pos())==this ) ? BS_RELEASED|BS_PUSHED : BS_NONE); // process touch release as both BS_RELEASED|BS_PUSHED so it can be used instead of touch pushes
              //here have to ignore 't.pd()'
+               if(t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this))state|=BS_ON                ; // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
+               if(t.rs() &&                          Gui.objAtPos(t.pos())==this )state|=BS_RELEASED|BS_PUSHED; // process touch release as both BS_RELEASED|BS_PUSHED so it can be used instead of touch pushes
             }else
             {
-               state|=((t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this)) ? BS_ON       : BS_NONE) // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
-                    | ((t.rs() &&                          Gui.objAtPos(t.pos())==this ) ? BS_RELEASED : BS_NONE);
-               if(t.pd()){state|=BS_PUSHED; t.eat();}
+               if(t.pd()                                                         )state|=BS_PUSHED  ; // don't 't.eat' because 't.pd' information is needed for Combobox 'ChangedButton'
+               if(t.on() && (mode!=BUTTON_DEFAULT || Gui.objAtPos(t.pos())==this))state|=BS_ON      ; // mode==BUTTON_DEFAULT requires Gui.objAtPos(t.pos())==this while other modes don't
+               if(t.rs() &&                          Gui.objAtPos(t.pos())==this )state|=BS_RELEASED;
             }
          }
       }
