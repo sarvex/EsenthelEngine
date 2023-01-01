@@ -412,28 +412,37 @@ IMAGE_TYPE ImageTypeOnFail(IMAGE_TYPE type) // this is for HW images, don't retu
 {
    switch(type)
    {
+      /* RGB_A *****************/
+      case IMAGE_BC1 : // use since there's no other desktop compressed format without alpha
+      case IMAGE_ETC1:
+      case IMAGE_ETC2_RGB:
+         return IMAGE_R8G8B8;
       default: return IMAGE_R8G8B8A8;
+      /*************************/
 
-      case IMAGE_NONE         : // don't try if original is empty
-      case IMAGE_R8G8B8A8     : // don't try the same type again
-      case IMAGE_R8G8B8A8_SRGB:
-         return IMAGE_NONE;
-
+      /* RGB_A_SRGB ************/
+      case IMAGE_BC1_SRGB:
+      case IMAGE_ETC2_RGB_SRGB:
+         return IMAGE_R8G8B8_SRGB;
       case IMAGE_B8G8R8A8_SRGB  :
       case IMAGE_B8G8R8_SRGB    :
       case IMAGE_R8G8B8_SRGB    :
       case IMAGE_L8_SRGB        :
       case IMAGE_L8A8_SRGB      :
-      case IMAGE_BC1_SRGB       :
       case IMAGE_BC2_SRGB       :
       case IMAGE_BC3_SRGB       :
       case IMAGE_BC7_SRGB       :
-      case IMAGE_ETC2_RGB_SRGB  :
       case IMAGE_ETC2_RGBA1_SRGB:
       case IMAGE_ETC2_RGBA_SRGB :
       case IMAGE_PVRTC1_2_SRGB  :
       case IMAGE_PVRTC1_4_SRGB  :
          return IMAGE_R8G8B8A8_SRGB;
+      /*************************/
+
+      case IMAGE_NONE         : // don't try if original is empty
+      case IMAGE_R8G8B8A8     : // don't try the same type again
+      case IMAGE_R8G8B8A8_SRGB:
+         return IMAGE_NONE;
 
       case IMAGE_F16_3:
          return IMAGE_F16_4;
@@ -619,6 +628,14 @@ Bool ImageSupported(IMAGE_TYPE type, IMAGE_MODE mode, Byte samples)
    }
    if(samples>1 && !(got&ImageTypeInfo::USAGE_IMAGE_MS))return false; // if need multi-sampling then require USAGE_IMAGE_MS
    return FlagAll(got, need); // require all flags from 'need'
+}
+IMAGE_TYPE ImageTypeForMode(IMAGE_TYPE type, IMAGE_MODE mode)
+{
+   for(;;)
+   {
+      if(ImageSupported(type, mode))return type;
+      type=ImageTypeOnFail(type);
+   }
 }
 #if DX11
 static DXGI_FORMAT Typeless(IMAGE_TYPE type)
