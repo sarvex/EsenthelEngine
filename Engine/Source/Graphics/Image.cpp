@@ -860,6 +860,12 @@ ULong ImageSizeL(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_
    return size;
 }
 /******************************************************************************/
+Int TotalMipMaps(Int w, Int h)
+{
+ //if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2, for simplicity ignore this. In worst case we won't have the last 1x1 mip for non-square PVRTC
+   Int    total=0; for(Int i=Max(w, h); i>=1; i>>=1)total++;
+   return total;
+}
 Int TotalMipMaps(Int w, Int h, Int d)
 {
  //if(type==IMAGE_PVRTC1_2 || type==IMAGE_PVRTC1_4 || type==IMAGE_PVRTC1_2_SRGB || type==IMAGE_PVRTC1_4_SRGB)w=h=CeilPow2(Max(w, h)); // PVRTC1 must be square and power of 2, for simplicity ignore this. In worst case we won't have the last 1x1 mip for non-square PVRTC
@@ -2333,7 +2339,7 @@ Bool Image::toCube(C Image &src, Int layout, Int size, Int type, Int mode, Int m
       if(!IsCube(IMAGE_MODE(mode)))mode    =(IsSoft(src.mode()) ? IMAGE_SOFT_CUBE : IMAGE_CUBE);
       if(mip_maps<0               )mip_maps=((src.mipMaps()==1) ? 1 : 0); // if source has 1 mip map, then create only 1, else create full
 
-      Int dest_total_mip_maps=TotalMipMaps(size, size, 1);
+      Int dest_total_mip_maps=TotalMipMaps(size, size);
       if(mip_maps<=0)mip_maps=dest_total_mip_maps ; // if mip maps not specified then use full chain
       else       MIN(mip_maps,dest_total_mip_maps); // don't use more than maximum allowed
 
