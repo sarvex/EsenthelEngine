@@ -1863,6 +1863,41 @@ Image& Image::mustCreate(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, 
    return T;
 }
 /******************************************************************************/
+Bool Image::createHWfromSoft(C Image &soft, IMAGE_TYPE type, IMAGE_MODE mode, Bool alt_type_on_fail)
+{
+ C Image *src=&soft;
+
+   if(!src->soft()
+   ||  src->hwW()!=PaddedWidth (src->w(), src->h(), 0, src->hwType())
+   ||  src->hwH()!=PaddedHeight(src->w(), src->h(), 0, src->hwType()))return false;
+
+   CPtr mip_data[MAX_MIP_MAPS];
+   if(!CheckMipNum(src->mipMaps()))return false; REP(src->mipMaps())mip_data[i]=src->softData(i);
+
+   Image temp_dest, &dest=((src==this) ? temp_dest : *this);
+   if(!dest.createEx(src->w(), src->h(), src->d(), src->hwType(), mode, src->mipMaps(), src->samples(), mip_data))
+   {
+      if(!alt_type_on_fail)return false;
+    //FlagDisable(flags, IC_ENV_CUBE); // if flags are passed, then disable IC_ENV_CUBE because it's assumed to be already applied
+
+      Image temp_src;
+      for(IMAGE_TYPE alt_type=src->hwType(); ; )
+      {
+         alt_type=ImageTypeOnFail(alt_type); if(!alt_type)return false;
+         if(ImageSupported(alt_type, mode, src->samples()) // do a quick check before 'copy' to avoid it if we know creation will fail
+         && src->copy(temp_src, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA)) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
+         {
+            src=&temp_src;
+            if(!CheckMipNum(src->mipMaps()))return false; REP(src->mipMaps())mip_data[i]=src->softData(i);
+            if( dest.createEx(src->w(), src->h(), src->d(), src->hwType(), mode, src->mipMaps(), src->samples(), mip_data))break; // success
+         }
+      }
+   }
+   if(&dest!=this)Swap(dest, T);
+   adjustType(type);
+   return true;
+}
+/******************************************************************************/
 // COPY
 /******************************************************************************/
 static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // assumes that 'src' and 'dest' are 2 different objects, 'src' is compressed, and 'dest' not compressed or not yet created, this always ignores gamma

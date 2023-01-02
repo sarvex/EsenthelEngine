@@ -1198,30 +1198,12 @@ const Bool        fast_load=(image.soft() && CanDoRawCopy(image.hwType(), header
             f.skip(ImageFaceSize(header.size.x, header.size.y, header.size.z, file_mip, header.type)*file_faces);
          }
       }
+      soft.del(); // release memory
       if(image_mip)image.updateMipMaps(filter, IC_CLAMP, image_mip-1); // set any missing mip maps, this is needed for example if file had 1 mip map, but we've requested to create more
       else         image.clear(); // or if we didn't load anything, then clear to zero
 
       if(image.mode()!=want.mode) // if created as SOFT, then convert to HW
-      {
-         Swap(soft, image); // can't create from self
-         CPtr mip_data[MAX_MIP_MAPS];
-         if(!CheckMipNum(soft.mipMaps()))return false; REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-         if(!image.createEx(soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), mip_data))
-         {
-            IMAGE_TYPE type=soft.type(); // remember for adjust later
-            for(IMAGE_TYPE alt_type=type; ; )
-            {
-               alt_type=ImageTypeOnFail(alt_type); if(!alt_type)return false;
-               if(ImageSupported(alt_type, want.mode, soft.samples()) // do a quick check before 'copy' to avoid it if we know creation will fail
-               && soft.copy(soft, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA)) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
-               {
-                  if(!CheckMipNum(soft.mipMaps()))return false; REP(soft.mipMaps())mip_data[i]=soft.softData(i);
-                  if(image.createEx(soft.w(), soft.h(), soft.d(), soft.type(), want.mode, soft.mipMaps(), soft.samples(), mip_data))break; // success
-               }
-            }
-            image.adjustInfo(image.w(), image.h(), image.d(), type);
-         }
-      }
+         if(!image.createHWfromSoft(image, want.type, want.mode))return false;
 
       return f.ok();
    }
