@@ -27,7 +27,8 @@ private:
 #endif
    struct ImportImage
    {
-      Bool       done=false; // if finished importing
+      Bool       done=false, // if finished importing
+                 fail=false; // if failed to open file
       DataSource data;
       ImagePtr   image_ptr;  // image into which import
       Image      image_temp; // temp image which will have the data
@@ -51,6 +52,8 @@ private:
    Long                 _max_file_size=512<<20, _max_mem_size=16<<20;
    Threads             *_threads=null;
    Pak                  _pak;
+   Long                 _pak_size=-1;
+   DateTime             _pak_modify_time_utc;
    Memb<DataRangeAbs>   _pak_used_file_ranges;
    Mems<FileTime>       _pak_files;
    Map<Str, Downloaded> _downloaded;
@@ -67,6 +70,9 @@ private:
    void import(ImportImage &ii);
    void cancel(C ImagePtr &image);
    FileTime& pakFile(C PakFile &pf) {return _pak_files[_pak.files().index(&pf)];}
+   void   getPakFileInfo();
+   void checkPakFileInfo();
+   void reset();
 #endif
 };
 /******************************************************************************/

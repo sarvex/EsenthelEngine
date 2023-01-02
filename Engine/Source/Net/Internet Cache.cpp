@@ -23,11 +23,11 @@ static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, I
       ThreadMayUseGPUData(); // keep this covering even 'Import' in case the file is Engine 'Image' which can be IMAGE_2D
       ii.image_temp.Import(*src, -1, IMAGE_2D, ic._image_mip_maps);
       ThreadFinishedUsingGPUData();
-   }
-   ii.done=true; // !! don't do anything after this step because the object can get removed !!
+   }else ii.fail=true;
+         ii.done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'ii' OBJECT CAN GET REMOVED !!
 }
 /******************************************************************************/
-InternetCache::InternetCache() : _downloaded(COMPARE) {}
+InternetCache::InternetCache() : _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
 /******************************************************************************/
 struct SrcFile : PakFileData, InternetCache::FileTime
 {
@@ -82,13 +82,13 @@ void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 void InternetCache::del()
 {
    REPAO(_downloading).stop();
-   if(_threads)REPA(_import_images)_threads->cancel(_import_images[i], ImportImageFunc, T); // cancel importing
+   if(_threads)_threads->cancelFuncUser(ImportImageFunc, T); // cancel importing
 
    flush();
 
    if(_threads)
    {
-      REPA(_import_images)_threads->wait(_import_images[i], ImportImageFunc, T);
+     _threads->waitFuncUser(ImportImageFunc, T);
      _threads=null;
    }
 
@@ -99,6 +99,8 @@ void InternetCache::del()
   _to_download         .del();
   _to_verify           .del();
   _pak                 .del();
+  _pak_size            =-1;
+  _pak_modify_time_utc .zero();
   _pak_used_file_ranges.del();
   _pak_files           .del();
    App._callbacks.exclude(ICUpdate, T);
@@ -137,17 +139,40 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
                   if(f.ok())
                   {
                      if(load)load(f);
+                     getPakFileInfo();
                      return;
                   }
                }break;
             }
          }
-        _pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear();
+      //_pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear(); ignore because we recreate in 'reset'
       }
-      PostHeader post_header(T);
-     _pak.create(CMemPtr<PakFileData>(), name, 0, cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
-     _pak_files.setNumDiscard(_pak.totalFiles()); REPAO(_pak_files).zero();
+     _pak.pakFileName(name);
+     _pak._file_cipher=cipher;
+      reset();
    }
+}
+/******************************************************************************/
+static void GetFileInfo(C Str &name, Long &size, DateTime &modify_time_utc)
+{
+   FileInfo fi; if(fi.getSystem(name) && fi.type==FSTD_FILE)
+   {
+      size           =fi.size;
+      modify_time_utc=fi.modify_time_utc;
+   }else
+   {
+      size           =-1;
+      modify_time_utc.zero();
+   }
+}
+void InternetCache::getPakFileInfo()
+{
+   GetFileInfo(_pak.pakFileName(), _pak_size, _pak_modify_time_utc);
+}
+void InternetCache::checkPakFileInfo()
+{
+            Long size;                DateTime modify_time_utc; GetFileInfo(_pak.pakFileName(), size, modify_time_utc);
+   if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)reset();
 }
 /******************************************************************************/
 Bool InternetCache::flush()
@@ -156,7 +181,9 @@ Bool InternetCache::flush()
    {
       if(_pak.pakFileName().is()) // we want to save data
       {
-         if(_threads)REPA(_import_images)_threads->wait(_import_images[i], ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
+         checkPakFileInfo(); // check before waiting, because potential 'reset' might create '_import_images' as well, for which we need to wait
+
+         if(_threads)_threads->waitFuncUser(ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
 
          PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
          FREPA(_downloaded)                                                            file_size+=files.New().set(_downloaded.key(i), _downloaded[i]     ).compressed_size;
@@ -168,7 +195,7 @@ Bool InternetCache::flush()
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
 
-         if(((_max_file_size<0 || FSize(_pak.pakFileName())/2<_max_file_size) // if pak size is smaller than 2x limit, allow some tolerance because 'replaceInPlace' does not generate compact paks but they may have holes
+         if(((_max_file_size<0 || _pak_size/2<_max_file_size) // if pak size is smaller than 2x limit "_pak_size<_max_file_size*2", allow some tolerance because 'replaceInPlace' does not generate compact paks but they may have holes
            && _pak.replaceInPlace(_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // replace in place
          ||   _pak.replace       (_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // recreate
          {
@@ -183,6 +210,7 @@ Bool InternetCache::flush()
                   file.verify_time=src->verify_time;
                }else file.zero();
             }
+            getPakFileInfo();
          }else return false;
       }else
       if(_max_mem_size>=0)
@@ -192,7 +220,7 @@ Bool InternetCache::flush()
          if(size>_max_mem_size) // limit mem size
          {
             files.sort(CompareAccessTime);
-            if(_threads)REPA(_import_images)_threads->wait(_import_images[i], ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
+            if(_threads)_threads->waitFuncUser(ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
             do
             {
                SrcFile &file=files.last();
@@ -299,6 +327,12 @@ void InternetCache::import(ImportImage &ii)
 {
    if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T);
 }
+Bool InternetCache::busy()C
+{
+   if(_to_download.elms() || _to_verify.elms() || _import_images.elms())return true;
+   REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
+   return false;
+}
 void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sure we won't replace newer data with older
 {
    REPA(_import_images)
@@ -311,11 +345,51 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
       }
    }
 }
-Bool InternetCache::busy()C
+void InternetCache::reset()
 {
-   if(_to_download.elms() || _to_verify.elms() || _import_images.elms())return true;
-   REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
-   return false;
+   if(_threads)
+   {
+     _threads->cancelFuncUser(ImportImageFunc, T); // cancel   all
+     _threads->  waitFuncUser(ImportImageFunc, T); // wait for all
+   }
+   Memc<Str> retry;
+   REPA(_import_images)
+   {
+      ImportImage &ii=_import_images[i]; if(ii.image_ptr) // not canceled
+      {
+         if(ii.done && !ii.fail) // success
+         {
+            Swap(*ii.image_ptr, ii.image_temp);
+            if(got)got(ii.image_ptr);
+         }else retry.add(ii.image_ptr.name());
+      }
+   }
+  _import_images.clear();
+
+   PostHeader post_header(T);
+  _pak.create(CMemPtr<PakFileData>(), _pak.pakFileName(), 0, _pak._file_cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
+  _pak_files.setNumDiscard(_pak.totalFiles()); REPAO(_pak_files).zero();
+   getPakFileInfo();
+
+   if(retry.elms())
+   {
+      Bool enable=false;
+      CACHE_MODE mode=Images.mode(CACHE_DUMMY);
+      REPA(retry)
+      {
+       C Str &url=retry[i];
+         DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // always call 'getFile' to adjust 'access_time' and request verification if needed
+         {
+            ImportImage &ii=_import_images.New();
+            Swap(ii.data, file);
+            ii.image_ptr=url;
+            import(ii);
+            enable=true;
+         }
+      }
+      Images.mode(mode);
+      if(enable)T.enable();
+   }
 }
 inline void InternetCache::update()
 {
@@ -326,6 +400,8 @@ inline void InternetCache::update()
       {
          if(ii.image_ptr) // not canceled
          {
+            if(ii.fail){reset(); break;} // if failed to open file, then we have to reset, break because 'reset' will handle '_import_images'
+
             Swap(*ii.image_ptr, ii.image_temp);
             if(got)got(ii.image_ptr);
          }
