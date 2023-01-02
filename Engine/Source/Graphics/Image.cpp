@@ -2283,6 +2283,25 @@ Bool Image::copy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_m
          {dest._hw_type=dest._type=(IMAGE_TYPE)type; return true;} // if software and can do a raw copy, then just adjust types
    }
 
+   // try copy to soft, and create HW dest out of soft copy, this can be much faster because it will create HW image without locks directly from source data
+   if(src->soft() && IsHW(IMAGE_MODE(mode)))
+   {
+      IMAGE_TYPE hw_type=ImageTypeForMode(IMAGE_TYPE(type), IMAGE_MODE(mode)); if(!hw_type)return false;
+      if(hw_type==type || alt_type_on_fail)
+      {
+         IMAGE_MODE soft_mode=AsSoft(IMAGE_MODE(mode));
+         Int             hw_w=PaddedWidth (w, h, 0, hw_type),
+                         hw_h=PaddedHeight(w, h, 0, hw_type);
+         if(w!=src->w() || h!=src->h() || d!=src->d() || hw_w!=src->hwW() || hw_h!=src->hwH() || hw_type!=src->hwType() || soft_mode!=src->mode() || mip_maps!=src->mipMaps() || env) // conversion is needed
+         {
+            if(!ImageTypeInfo::usageKnown() && ImageTI[hw_type].compressed)goto skip; // if it's unknown if 'hw_type' is supported, and if it's compressed, then skip this, because we could waste time resizing/env/compressing when it's possible we couldn't use results, and the results would lose quality due to compression
+            if(src->copy(temp_src, w, h, d, hw_type, soft_mode, mip_maps, filter, flags)){src=&temp_src; FlagDisable(flags, IC_ENV_CUBE); env=false;}else goto skip; // we've just processed env, so disable it
+         }
+         if(dest.createHWfromSoft(*src, IMAGE_TYPE(type), IMAGE_MODE(mode), flags))goto success;
+      }
+   }
+skip:;
+
    // convert
    {
       // create destination
