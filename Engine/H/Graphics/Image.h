@@ -330,6 +330,7 @@ struct Image // Image (Texture)
    // manage
 #if EE_PRIVATE
    Bool createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mip_maps, Byte samples=1, CPtr *data=null, Int base_mip=0);
+   Bool createHWfromSoft(C Image &src, IMAGE_MODE mode, Bool alt_type_on_fail=true); // !! THIS ASSUMES THAT 'src' IS SOFTWARE, SIZES HAVE NOT BEEN MANIPULATED, 'adjustInfo' WAS NOT CALLED, BECAUSE WE NEED CORRECT 'size'/'hwSize' !!
 #endif
    Image& del(); // delete
 
@@ -732,6 +733,7 @@ struct Image // Image (Texture)
    Bool    setInfo  ();
    void  forceInfo  (Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int samples);
    void adjustInfo  (Int w, Int h, Int d, IMAGE_TYPE type);
+   void adjustType  (                     IMAGE_TYPE type);
    void  setPartial ();
    void  setGLParams();
 

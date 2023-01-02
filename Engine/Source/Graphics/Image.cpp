@@ -1296,6 +1296,10 @@ void Image::adjustInfo(Int w, Int h, Int d, IMAGE_TYPE type)
    if(soft())lockSoft();
    setPartial();
 }
+void Image::adjustType(IMAGE_TYPE type)
+{
+  _type=type;
+}
 /******************************************************************************/
 void Image::setGLParams()
 {
@@ -1846,7 +1850,7 @@ Bool Image::create(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int mi
       for(IMAGE_TYPE alt_type=type; alt_type=ImageTypeOnFail(alt_type); )
          if(createEx(w, h, d, alt_type, mode, mip_maps, 1))
    {
-      adjustInfo(w, h, d, type);
+      adjustType(type);
       return true;
    }
 

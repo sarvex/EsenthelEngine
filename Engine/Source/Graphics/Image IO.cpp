@@ -696,7 +696,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          REP(want.mip_maps)mip_data[i]=(Byte*)f->memFast()+mips[file_base_mip+i].offset;
          if(image.createEx(want.size.x, want.size.y, want.size.z, want_hw_type, want.mode, want.mip_maps, 1, mip_data))
          {
-            image.adjustInfo(image.w(), image.h(), image.d(), want.type);
+            image.adjustType(want.type);
             return can_del_f || f->skip(compressed_size); // skip image data, no need to seek if 'f' isn't needed later (important if 'f' is compressed)
          }
       }
@@ -843,7 +843,7 @@ Bool Loader::load(Image &image, C Str &name, Bool can_del_f)
          return false;
       }
    ok:
-      image.adjustInfo(image.w(), image.h(), image.d(), want.type);
+      image.adjustType(want.type);
       image.updateMipMaps(FILTER_BEST, copy_flags, can_read_mips-1);
       if(stream)
       {
@@ -969,7 +969,7 @@ void Loader::update()
          if(image.createEx(full_size.x, full_size.y, full_size.z, want_hw_type, want_mode, full_mips, 1, mip_data))
          {
             if(!StreamLoadCur)return; // canceled
-            image.adjustInfo(image.w(), image.h(), image.d(), want_type);
+            image.adjustType(want_type);
             image.updateMipMaps(FILTER_BEST, copy_flags, big_small_mips-1);
             Submit(set);
             return; // success
