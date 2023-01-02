@@ -1863,7 +1863,7 @@ Image& Image::mustCreate(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, 
    return T;
 }
 /******************************************************************************/
-Bool Image::createHWfromSoft(C Image &soft, IMAGE_TYPE type, IMAGE_MODE mode, Bool alt_type_on_fail)
+Bool Image::createHWfromSoft(C Image &soft, IMAGE_TYPE type, IMAGE_MODE mode, UInt flags)
 {
  C Image *src=&soft;
 
@@ -1877,15 +1877,17 @@ Bool Image::createHWfromSoft(C Image &soft, IMAGE_TYPE type, IMAGE_MODE mode, Bo
    Image temp_dest, &dest=((src==this) ? temp_dest : *this);
    if(!dest.createEx(src->w(), src->h(), src->d(), src->hwType(), mode, src->mipMaps(), src->samples(), mip_data))
    {
-      if(!alt_type_on_fail)return false;
-    //FlagDisable(flags, IC_ENV_CUBE); // if flags are passed, then disable IC_ENV_CUBE because it's assumed to be already applied
+      if(flags&IC_NO_ALT_TYPE)return false;
+      FlagDisable(flags, IC_ENV_CUBE     ); // disable IC_ENV_CUBE      because it's assumed to be already applied
+      FlagDisable(flags, IC_IGNORE_GAMMA ); // disable IC_IGNORE_GAMMA  because we always need to convert gamma
+      FlagEnable (flags, IC_CONVERT_GAMMA); //  enable IC_CONVERT_GAMMA because we always need to convert gamma
 
       Image temp_src;
       for(IMAGE_TYPE alt_type=src->hwType(); ; )
       {
          alt_type=ImageTypeOnFail(alt_type); if(!alt_type)return false;
          if(ImageSupported(alt_type, mode, src->samples()) // do a quick check before 'copy' to avoid it if we know creation will fail
-         && src->copy(temp_src, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, IC_CONVERT_GAMMA)) // we have to keep depth, soft mode, mip maps, make sure gamma conversion is performed
+         && src->copy(temp_src, -1, -1, -1, alt_type, -1, -1, FILTER_BEST, flags)) // we have to keep size, mode, mip maps
          {
             src=&temp_src;
             if(!CheckMipNum(src->mipMaps()))return false; REP(src->mipMaps())mip_data[i]=src->softData(i);
@@ -2346,9 +2348,10 @@ Bool Image::copy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_m
       target.updateMipMaps(FILTER_BEST, flags, copied_mip_maps-1);
    skip_mip_maps:
       if(&target!=&dest)Swap(dest, target);
-      if(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA)dest.freeOpenGLESData();
-      return true;
    }
+success:
+   if(App.flag&APP_AUTO_FREE_IMAGE_OPEN_GL_ES_DATA)dest.freeOpenGLESData();
+   return true;
 }
 void Image::mustCopy(Image &dest, Int w, Int h, Int d, Int type, Int mode, Int mip_maps, FILTER_TYPE filter, UInt flags)C
 {
