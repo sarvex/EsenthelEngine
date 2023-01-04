@@ -1,6 +1,8 @@
 ﻿/******************************************************************************/
 #include "stdafx.h"
 namespace EE{
+/******************************************************************************/
+#define CONSISTENT_CIPHER 0 // if 1 then both 'PakPostHeader.save' and 'PakPostHeader.load' will have the same 'File.cipher' (this is more consistent, however slower)
 /******************************************************************************
 
    'Pak._file_name' should always include normalized full path
@@ -1633,7 +1635,7 @@ struct PakCreator
           //if(post_header->save)
             {
                File &data=src.processed;
-               post_header->save(data.writeMem(), pak);
+               post_header->save(data.writeMem(64*1024, CONSISTENT_CIPHER ? cipher : null), pak);
                if(auto data_size=data.size())
                {
                   header_data_size+=data_size; // for 'in_place' we write post header data manually after header, so we need space for it
