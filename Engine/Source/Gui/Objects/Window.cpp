@@ -816,11 +816,15 @@ Bool Window::load(File &f, CChar *path)
 void ClosableWindow::update(C GuiPC &gpc)
 {
    super::update(gpc);
-   if(Gui.window()==this && button[2].func()) // this is the active window and close button has a function assigned
+   if(button[2].func()) // close button has a function assigned
    {
-      if((Kb.kf(KB_ESC) && !Kb.k.ctrlCmd() && !Kb.k.shift()) || Kb.kf(KB_NAV_BACK) || (Ms.bp(2) && contains(Gui.ms()) && !Gui.menu()->contains(Gui.ms())))
+      if(Gui.window()==this && ((Kb.kf(KB_ESC) && !Kb.k.ctrlCmd() && !Kb.k.shift()) || Kb.kf(KB_NAV_BACK))) // this is the active window and key pressed
       {
-         Kb.eatKey(); Ms.eat(2); button[2].push(); // use "button.push" to trigger calling custom function assigned to that button
+         Kb.eatKey(); button[2].push(); // use "button.push" to trigger calling custom function assigned to that button
+      }else
+      if(Ms.bp(2) && contains(Gui.ms()) && !Gui.menu()->contains(Gui.ms()))
+      {
+         Ms.eat(2); button[2].push(); // use "button.push" to trigger calling custom function assigned to that button
       }
    }
 }

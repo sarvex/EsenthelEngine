@@ -545,7 +545,7 @@ void GUI::update()
    if(!(ms_button&(BS_ON|BS_RELEASED)))_ms=_ms_src=msLit();
    if(App.active())
    {
-      if((ms_button&BS_PUSHED) && msLit())msLit()->activate();
+      if(Ms.bp(0) && msLit())msLit()->activate();
       REPA(Touches)
       {
        C Touch &touch=Touches[i]; BS_FLAG state=touch._state;
