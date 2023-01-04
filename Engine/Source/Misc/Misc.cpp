@@ -2919,19 +2919,38 @@ Bool DecodeRaw(C Str &src, Ptr dest, Int size)
 /******************************************************************************/
 Bool ValidEmail(C Str &email) // "user@domain.xxx"
 {
-   if(         email.length() >=5  // 1@3.5
-   && Unsigned(email.first ())>32  // not space, tab, new line, ..
-   && Unsigned(email.last  ())>32) // not space, tab, new line, ..
+   if(email.length()>=5)FREPA(email) // 1@3.5
    {
-      Int at =TextPosI(email, '@');
-      if( at>=1 && TextPosI(email()+at+1, '@')<0) // if found '@' at 1 or higher position and there's no other '@' after
+      Char c=email()[i]; if(c=='@') // domain
       {
-         Int dot =TextPosI(email()+at+1, '.');
-         if( dot>=1) // if found '.' at 1 or higher position
-            if(email.length()>at+2+dot) // if there's something after the dot
-               return true;
+         if(i // local cannot be empty
+         && InRange(++i, email)) // domain cannot be empty
+         {
+            c=email()[i]; if(c!='.')for(;;) // domain cannot start with '.'
+            {
+               if(Unsigned(c)<32
+               || c=='@'
+               || !InRange(++i, email))goto error;
+               c=email()[i];
+               if(c=='.')
+               {
+                  if(InRange(++i, email))for(;;) // need to have something after first '.'
+                  {
+                     c=email()[i];
+                     if(Unsigned(c)<32
+                     || c=='@')goto error;
+                     if(!InRange(++i, email))return true;
+                     c=email()[i];
+                  }
+                  goto error;
+               }
+            }
+         }
+         goto error;
       }
+      if(Unsigned(c)<32)goto error; // local
    }
+error:
    return false;
 }
 Bool ValidURL(C Str &url) // "http://domain.com"
