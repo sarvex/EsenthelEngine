@@ -79,11 +79,7 @@ struct File
    Ptr       mem      (        ) ; // get raw memory pointer for FILE_MEM
    UInt      memUsage (        )C; // get memory usage
    FSTD_TYPE stdType  (        )C; // get FSTD_TYPE
-   void      cipher           (Cipher *cipher);                             // adjust file cipher
-   void      cipherOffset     (Int     offset);                             // adjust file cipher offset
-   void      cipherOffset     (Long    offset) {cipherOffset((Int)offset);} // adjust file cipher offset, can be Int (instead Long) because Cipher operates on Int offset only
-   void      cipherOffsetClear(              ) {cipherOffset(-pos()     );} // adjust file cipher offset so that "posCipher()==0 -> pos+cipher_offset==0 -> cipher_offset=-pos", this will result in encryption being always the same, regardless of current location
-   Long      fullLeft         (              )C{return _full_size-_pos   ;} // get size left (number of bytes from current position to the end of the file)
+   Long      fullLeft (        )C{return _full_size-_pos;} // get size left (number of bytes from current position to the end of the file)
 #endif
    Bool  is     (        )C {return _type!=0    ;} // if  file is opened
    Bool  pos    (Long pos);                        // set position, false on fail
@@ -265,6 +261,15 @@ struct File
    // fast but unsafe save/load methods for multiple elements at the same time
    T2(TYPE_FROM, TYPE_TO)  File& putRange(C TYPE_FROM &from, C TYPE_TO &to) {put(&from, UIntPtr(&to)-UIntPtr(&from)+SIZE(to)); return T;}
    T2(TYPE_FROM, TYPE_TO)  File& getRange(  TYPE_FROM &from,   TYPE_TO &to) {get(&from, UIntPtr(&to)-UIntPtr(&from)+SIZE(to)); return T;}
+#endif
+
+   // cipher
+   Cipher* cipher(                             )C {return _cipher;} // get file cipher
+   void    cipher(const_mem_addr Cipher *cipher);                   // set file cipher
+#if EE_PRIVATE
+   void    cipherOffset     (Int  offset);                             // adjust file cipher offset
+   void    cipherOffset     (Long offset) {cipherOffset((Int)offset);} // adjust file cipher offset, can be Int (instead Long) because Cipher operates on Int offset only
+   void    cipherOffsetClear(           ) {cipherOffset(-pos()     );} // adjust file cipher offset so that "posCipher()==0 -> pos+cipher_offset==0 -> cipher_offset=-pos", this will result in encryption being always the same, regardless of current location
 #endif
 
            ~File() {del();}

@@ -326,7 +326,7 @@ static Bool FixCompressed(Pak &pak, File &f) // old versions stored compressed f
       {
          Long pos=data_offset_local+pf.data_offset;
          COMPRESS_TYPE compress; ULong compressed_size, decompressed_size;
-         if((f._cipher && pak._cipher_per_file) // this can't work
+         if((f.cipher() && pak._cipher_per_file) // this can't work
          || !f.pos(pos)
          || !_OldDecompressHeader(f, compress, compressed_size, decompressed_size)){pak.del(); return false;}
          pf.compression         =  compress       ;
