@@ -19,6 +19,7 @@ struct Str8 // Text String (8-bit per character)
    // operations
    Str8& del       (                     ); // clear stored data and free helper memory
    Str8& clear     (                     ); // clear stored data
+   Str8& erase     (                     ); // clear stored data and zero helper memory, this can be used to protect private data
    Str8& insert    (Int i,   Char8 c     ); // insert 'c'    at 'i' string position
    Str8& insert    (Int i, C Str8 &text  ); // insert 'text' at 'i' string position
    Str8& remove    (Int i,   Int   num=1 ); // remove      'num' characters starting from 'i-th'

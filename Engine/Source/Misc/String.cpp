@@ -3044,6 +3044,9 @@ Str & Str ::del() {_d.del(); _length=0; return T;}
 Str8& Str8::clear() {if(_d.elms())_d[0]='\0'; _length=0; return T;}
 Str & Str ::clear() {if(_d.elms())_d[0]='\0'; _length=0; return T;}
 
+Str8& Str8::erase() {ZeroFast(_d.data(), _d.memUsage()); _length=0; return T;}
+Str & Str ::erase() {ZeroFast(_d.data(), _d.memUsage()); _length=0; return T;}
+
 Str8& Str8::space() {if(is() && !WhiteChar(last()))T+=' '; return T;}
 Str & Str ::space() {if(is() && !WhiteChar(last()))T+=' '; return T;}
 

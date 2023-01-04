@@ -41,6 +41,7 @@ struct Str // Text String (16-bit per character)
    // operations
    Str& del       (                   ); // clear stored data and free helper memory
    Str& clear     (                   ); // clear stored data
+   Str& erase     (                   ); // clear stored data and zero helper memory, this can be used to protect private data
    Str& insert    (Int i,   Char c    ); // insert 'c'    at 'i' string position
    Str& insert    (Int i, C Str &text ); // insert 'text' at 'i' string position
    Str& remove    (Int i,   Int  num=1); // remove      'num' characters starting from 'i-th'
