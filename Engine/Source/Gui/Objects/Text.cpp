@@ -106,8 +106,8 @@ Vec2 Text::textSize()C
     C TextStyle &ts=*text_style;
    #endif
 
-      Flt width; Int lines=ts.textLines(text, extra.data(), extra.elms(), rect().w(), auto_line, &width);
-      return Vec2(width, lines*ts.lineHeight());
+      Vec2   size; size.y=ts.textHeight(text, extra.data(), extra.elms(), rect().w(), auto_line, &size.x);
+      return size;
    }
    return 0;
 }

@@ -1179,7 +1179,7 @@ void Source::draw(C GuiPC &gpc)
 
                                  Flt     ext=0.01f;
                                  Rect_LU r(fp.x, suggestions_region.visible() ? pos.y-size.y-ext : fp.y-CE.ts.lineHeight()-ext, w, 0); if(r.max.x>=_crect.max.x)r-=Vec2(r.max.x-_crect.max.x, 0);
-                                 Int     lines=CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), r.w(), true); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
+                                 r.min.y=r.max.y-CE.ts_small.textHeight((CChar*)null, sx.data(), sx.elms(), r.w(), true);
                                  Rect(r).extend(ext).draw(WHITE);
                                  Rect(r).extend(ext).draw(Color(0, 0, 0, 112), false);
                                  D.text(CE.ts_small, r, (CChar*)null, sx.data(), sx.elms(), true);
@@ -1265,7 +1265,7 @@ void Source::draw(C GuiPC &gpc)
 
             Flt     space=D.pixelToScreenSize().x*24;
             Rect_LU r(pos+Vec2(size.x+space, 0), w, 0); if(r.max.x>=D.w())r-=Vec2(r.max.x-pos.x+space, 0); if(r.min.x<rect().min.x)r+=Vec2(pos.x+size.x+space-r.min.x, 0);
-            Int     lines=CE.ts_small.textLines((CChar*)null, sx.data(), sx.elms(), r.w(), true); r.min.y=r.max.y-lines*CE.ts_small.lineHeight();
+            r.min.y=r.max.y-CE.ts_small.textHeight((CChar*)null, sx.data(), sx.elms(), r.w(), true);
 
             if(Gui.skin)
             {
@@ -1347,8 +1347,7 @@ void Source::draw(C GuiPC &gpc)
                     max_x=pos.x+clientWidth()-0.1f,
                     max_y=Ms.pos().y-0.15f;
 
-               Int  lines=CE.ts.textLines(cl.text, cl.extra.data(), cl.extra.elms(), max_x-min_x, true);
-               Flt  min_y=max_y-lines*CE.ts.lineHeight();
+               Flt  min_y=max_y-CE.ts.textHeight(cl.text, cl.extra.data(), cl.extra.elms(), max_x-min_x, true);
                Rect rect (min_x, min_y, max_x, max_y);
                if(rect.min.y-0.05f<=pos.y-clientHeight())rect+=Vec2(0, rect.h() + 0.15f*2);
                Rect rect_e=rect; rect_e.extend(0.02f);

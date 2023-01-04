@@ -2271,10 +2271,10 @@ Int TextStyleParams::textLines(CChar *text, C StrData *data, Int datas, Flt widt
    }
    return lines;
 }
-Int TextStyleParams::textLines(CChar *text, Flt width, Bool auto_line, Flt *actual_width)C
-{
-   return textLines(text, null, 0, width, auto_line, actual_width);
-}
+Int TextStyleParams::textLines (CChar  *text,                             Flt width, Bool auto_line, Flt *actual_width)C {return              textLines(text, null,     0, width, auto_line, actual_width);}
+Flt TextStyleParams::textHeight(CChar  *text,                             Flt width, Bool auto_line, Flt *actual_width)C {return lineHeight()*textLines(text,              width, auto_line, actual_width);}
+Flt TextStyleParams::textHeight(CChar  *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width)C {return lineHeight()*textLines(text, data, datas, width, auto_line, actual_width);}
+Flt TextStyleParams::textHeight(CChar8 *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width)C {return lineHeight()*textLines(text, data, datas, width, auto_line, actual_width);}
 /******************************************************************************/
 TextStyleParams& TextStyleParams::resetColors(Bool gui)
 {

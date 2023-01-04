@@ -128,9 +128,7 @@ void TextBox::setVirtualSize(C Rect *set_rect)
    #endif
 
       Flt offset2=ts.size.x*(TEXTBOX_OFFSET*2);
-      Int lines  =ts.textLines(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
-      Flt line_h =ts.lineHeight();
-      size.y=lines*line_h;
+           size.y=ts.textHeight(T(), _text_space-=offset2, wordWrap(), &size.x); // decrease available space for text by offset for both sides
       if(_auto_height)
       {
          Flt client_height=Max(size.y, min_height);
@@ -141,8 +139,7 @@ void TextBox::setVirtualSize(C Rect *set_rect)
          Flt client_height=rect.h(); // here can't use 'clientHeight' because it may not be available yet
          if(size.y>client_height+EPS) // exceeds client height
          { // recalculate using smaller width
-            Int lines=ts.textLines(T(), _text_space-=slidebarSize(), wordWrap(), &size.x);
-            size.y=lines*ts.lineHeight();
+            size.y=ts.textHeight(T(), _text_space-=slidebarSize(), wordWrap(), &size.x);
          }
       }
       size.x+=offset2; // we've calculated text widths with offset removed, but here we're calculating virtual size, and it needs to include it

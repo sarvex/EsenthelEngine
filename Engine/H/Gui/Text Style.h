@@ -183,6 +183,10 @@ struct TextStyleParams // Text Style Params
    Int textLines(CChar  *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width=null)C; // get number of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
    Int textLines(CChar8 *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width=null)C; // get number of lines needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
 
+   Flt textHeight(CChar  *text,                             Flt width, Bool auto_line, Flt *actual_width=null)C; // get height needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
+   Flt textHeight(CChar  *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width=null)C; // get height needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
+   Flt textHeight(CChar8 *text, C StrData *data, Int datas, Flt width, Bool auto_line, Flt *actual_width=null)C; // get height needed to draw 'text' in space as wide as 'width', 'actual_width'=actual width of the text (this is the Max of all line widths)
+
    // operations
    TextStyleParams& reset          (Bool gui=false); // reset all   parameters to default settings, this copies settings from 'Gui.skin.text_style' when 'gui' is false, and 'Gui.skin.text.text_style' when 'gui' is true
    TextStyleParams& resetColors    (Bool gui=false); // reset color parameters to default settings, this copies settings from 'Gui.skin.text_style' when 'gui' is false, and 'Gui.skin.text.text_style' when 'gui' is true, parameters which are copied include: 'shadow', 'shade', 'color', 'selection'
