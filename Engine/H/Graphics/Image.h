@@ -7,18 +7,20 @@ enum FILTER_TYPE : Byte // Filtering Type
 {
    FILTER_NONE             , //  1.0000 speed, worst  quality, uses 1x1 samples no 2D filtering
    FILTER_LINEAR           , // ~0.7500 speed, low    quality, uses 2x2 samples in 2D filtering
-   FILTER_CUBIC_FAST       , // ~0.1700 speed, high   quality, uses 4x4 samples in 2D filtering, low    sharpening is applied
    FILTER_CUBIC_FAST_SMOOTH, // ~0.1700 speed, blurry quality, uses 4x4 samples in 2D filtering, no     sharpening is applied, result will appear blurry however without aliasing
-   FILTER_CUBIC_FAST_SHARP , // ~0.1700 speed, high   quality, uses 4x4 samples in 2D filtering, high   sharpening is applied (best for down-scaling)
+   FILTER_CUBIC_FAST       , // ~0.1700 speed, high   quality, uses 4x4 samples in 2D filtering, low    sharpening is applied
+   FILTER_CUBIC_FAST_MED   , // ~0.1700 speed, high   quality, uses 4x4 samples in 2D filtering, medium sharpening is applied (best for down-scaling)
+   FILTER_CUBIC_FAST_SHARP , // ~0.1700 speed, high   quality, uses 4x4 samples in 2D filtering, high   sharpening is applied (best for  mip-maps   )
    FILTER_CUBIC_PLUS       , // ~0.1000 speed, high   quality, uses 6x6 samples in 2D filtering, medium sharpening is applied (best for   up-scaling)
    FILTER_CUBIC_PLUS_SHARP , // ~0.1000 speed, high   quality, uses 6x6 samples in 2D filtering, high   sharpening is applied
    FILTER_WAIFU            , // ~0.0005 speed, super  quality however super slow, this filter is available only if 'SupportFilterWaifu' was called inside 'InitPre', it's used only for up-scaling
    FILTER_EASU             , //                high   quality, AMD Edge Adaptive Spatial Upsampling, this filter is available only for up-scaling
-   FILTER_BEST             , // automatically choose the best filter (currently FILTER_CUBIC_FAST_SHARP for down-scaling and FILTER_WAIFU for up-scaling)
+   FILTER_BEST             , // automatically choose the best filter (currently FILTER_WAIFU for up-scaling, FILTER_CUBIC_FAST_MED for down-scaling, FILTER_CUBIC_FAST_SHARP for mip-maps)
    FILTER_NO_STRETCH       , // does not perform any stretching, pixels out of range are either wrapped or clamped
    FILTER_NUM              , // number of filters
 #if EE_PRIVATE
-   FILTER_DOWN=FILTER_CUBIC_FAST_SHARP, // best filter used for down-scaling
+   FILTER_DOWN=FILTER_CUBIC_FAST_MED  , // best filter used for down-scaling
+   FILTER_MIP =FILTER_CUBIC_FAST_SHARP, // best filter used for  mip-maps
 #endif
 };
 /******************************************************************************/

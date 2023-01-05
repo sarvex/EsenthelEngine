@@ -3169,6 +3169,7 @@ Bool Image::updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter, UInt fl
    Bool  ok=true;
    Int   src_faces1=src.faces()-1;
    Image temp; // keep outside the loop in case we can reuse the image
+   if(filter==FILTER_BEST)filter=FILTER_MIP;
    REPD(face, faces())
    {
       ok&=src.extractMipMap(temp, typeInfo().compressed ? ImageTypeUncompressed(type()) : type(), src_mip, (DIR_ENUM)Min(face, src_faces1)); // use 'type' instead of 'hwType' (this is correct), use destination type instead of 'src.type' because we extract only one time, but inject several times
