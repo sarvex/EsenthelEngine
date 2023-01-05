@@ -695,10 +695,15 @@ struct Image // Image (Texture)
    Bool ImportWEBP(  File &f                                                                       ) ; // import    WEBP from file, false on fail
    Bool ExportWEBP(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1                          )C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
    Bool ExportWEBP(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1                          )C; // export as WEBP to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless)
+
+   // supported only if 'SupportImportAVIF' was called in 'InitPre'
    Bool ImportAVIF(C Str  &name                                                                    ) ; // import    AVIF from file, false on fail
    Bool ImportAVIF(  File &f                                                                       ) ; // import    AVIF from file, false on fail
+
+   // supported only if 'SupportExportAVIF' was called in 'InitPre'
    Bool ExportAVIF(C Str  &name, Flt rgb_quality=-1, Flt alpha_quality=-1, Flt compression_level=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
    Bool ExportAVIF(  File &f   , Flt rgb_quality=-1, Flt alpha_quality=-1, Flt compression_level=-1)C; // export as AVIF to   file, false on fail, 'rgb_quality'=color quality 0..1 (-1=default, 0=smallest size, 1=lossless), 'alpha_quality'=alpha quality 0..1 (-1=use 'rgb_quality', 0=smallest size, 1=lossless), 'compression_level'=0..1 (-1=default, 0=fast/biggest size, 1=slow/smallest size)
+
    Bool ImportHEIF(C Str  &name                                                                    ) ; // import    HEIF from file, false on fail
    Bool ImportHEIF(  File &f                                                                       ) ; // import    HEIF from file, false on fail
    Bool ExportHEIF(C Str  &name, Flt quality=-1                                                    )C; // export as HEIF to   file, false on fail, 'quality'=0..1 (-1=default, 0=smallest size, 1=lossless)

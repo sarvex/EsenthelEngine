@@ -1538,6 +1538,37 @@ Image& Image::mustImport(C Str &name, Int type, Int mode, Int mip_maps)
    return T;
 }
 /******************************************************************************/
+Bool      (*ImportAVIF)(Image &image, File &f);
+Bool Image::ImportAVIF (              File &f)
+{
+#if SUPPORT_AVIF
+   if(::ImportAVIF)return ::ImportAVIF(T, f);
+#endif
+   del(); return false;
+}
+Bool      (*ExportAVIF)(C Image &image, File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level);
+Bool Image::ExportAVIF (                File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level)C
+{
+#if SUPPORT_AVIF
+   if(::ExportAVIF)return ::ExportAVIF(T, f, rgb_quality, alpha_quality, compression_level);
+#endif
+   return false;
+}
+Bool Image::ImportAVIF(C Str &name)
+{
+#if SUPPORT_AVIF
+   File f; if(f.read(name))return ImportAVIF(f);
+#endif
+   del(); return false;
+}
+Bool Image::ExportAVIF(C Str &name, Flt rgb_quality, Flt alpha_quality, Flt compression_level)C
+{
+#if SUPPORT_AVIF
+   File f; if(f.write(name)){if(ExportAVIF(f, rgb_quality, alpha_quality, compression_level) && f.flush())return true; f.del(); FDelFile(name);}
+#endif
+   return false;
+}
+/******************************************************************************/
 Bool Image::ImportCube(C Image &right, C Image &left, C Image &up, C Image &down, C Image &forward, C Image &back, Int type, Bool soft, Int mip_maps, Bool resize_to_pow2, FILTER_TYPE filter)
 {
    Int size= Max(right  .w(), right  .h(), left.w(), left.h()) ;

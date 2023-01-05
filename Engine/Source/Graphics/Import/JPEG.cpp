@@ -381,7 +381,6 @@ Bool Image::ImportJXL (              File &f)
 #endif
    del(); return false;
 }
-/******************************************************************************/
 Bool      (*ExportJXL)(C Image &image, File &f, Flt quality, Flt compression_level);
 Bool Image::ExportJXL (                File &f, Flt quality, Flt compression_level)C
 {

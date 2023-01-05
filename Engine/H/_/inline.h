@@ -77,6 +77,16 @@ inline void   SupportExportJXL() {ExportJXL=_ExportJXL;}
 
 inline void   SupportJXL() {SupportImportJXL(); SupportExportJXL();}
 
+extern Bool  _ImportAVIF (Image &image, File &f);
+extern Bool (*ImportAVIF)(Image &image, File &f);
+inline void   SupportImportAVIF() {ImportAVIF=_ImportAVIF;}
+
+extern Bool  _ExportAVIF (C Image &image, File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level);
+extern Bool (*ExportAVIF)(C Image &image, File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level);
+inline void   SupportExportAVIF() {ExportAVIF=_ExportAVIF;}
+
+inline void   SupportAVIF() {SupportImportAVIF(); SupportExportAVIF();}
+
 extern Bool  _CompressBC67 (C Image &src, Image &dest);
 extern Bool (*CompressBC67)(C Image &src, Image &dest);
 inline void   SupportCompressBC() {CompressBC67=_CompressBC67;}
@@ -93,7 +103,7 @@ extern Bool  _CompressPVRTC (C Image &src, Image &dest, Int quality=-1);
 extern Bool (*CompressPVRTC)(C Image &src, Image &dest, Int quality   );
 inline void   SupportCompressPVRTC() {if(WINDOWS_OLD || MAC || LINUX)CompressPVRTC=_CompressPVRTC;}
 
-inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressASTC(); SupportCompressPVRTC(); SupportJXL();}
+inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressASTC(); SupportCompressPVRTC(); SupportJXL(); SupportAVIF();}
 
 extern Bool  _ResizeWaifu (C Image &src, Image &dest, UInt flags);
 extern Bool (*ResizeWaifu)(C Image &src, Image &dest, UInt flags);
