@@ -1985,7 +1985,7 @@
     <ClCompile Include="Source\Platforms\Windows\Windows Platform.cpp">
       <Filter>Source\Platforms\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Sound\VorbisEncoder.cpp">
+    <ClCompile Include="Source\Sound\Vorbis Encoder.cpp">
       <Filter>Source\Sound</Filter>
     </ClCompile>
     <ClCompile Include="Source\Input\Virtual Reality.cpp">
@@ -2012,10 +2012,10 @@
     <ClCompile Include="..\ThirdPartyLibs\GL\glew.cpp">
       <Filter>H\_\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Import\PVRTC_Compress.cpp">
+    <ClCompile Include="Source\Graphics\Import\PVRTC Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Import\ETC_Compress.cpp">
+    <ClCompile Include="Source\Graphics\Import\ETC Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
     <ClCompile Include="Source\Memory\Counted Pointer.cpp">
@@ -2030,7 +2030,7 @@
     <ClCompile Include="Source\Misc\Printer.cpp">
       <Filter>Source\Misc</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Import\BC_Compress.cpp">
+    <ClCompile Include="Source\Graphics\Import\BC Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
     <ClCompile Include="Source\Shaders\FXAA.cpp">
@@ -2129,7 +2129,7 @@
     <ClCompile Include="Source\Graphics\Shader Compilers.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\ImageFilterWaifu.cpp">
+    <ClCompile Include="Source\Graphics\Image Filter Waifu.cpp">
       <Filter>Source\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Source\Shaders\Temporal.cpp">
@@ -2159,7 +2159,7 @@
     <ClCompile Include="Source\Graphics\Import\ASTC.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Graphics\Import\ASTC_Compress.cpp">
+    <ClCompile Include="Source\Graphics\Import\ASTC Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
     <ClCompile Include="Source\Misc\Translation.cpp">
