@@ -66,6 +66,7 @@ bool LoadOK(LOAD_RESULT result);
 bool CanRead     (USER_ACCESS access);
 bool CanWrite    (USER_ACCESS access);
 bool CanWriteCode(USER_ACCESS access);
+int Compare(C TimeStamp &a, C TimeStamp &b);
 TimeStamp Min(C TimeStamp &a, C TimeStamp &b);
 TimeStamp Max(C TimeStamp &a, C TimeStamp &b);
 /******************************************************************************/

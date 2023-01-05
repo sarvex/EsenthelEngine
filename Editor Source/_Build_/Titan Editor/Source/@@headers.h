@@ -965,6 +965,7 @@ ASSERT(OBJ_ACCESS_CUSTOM==0 && OBJ_ACCESS_TERRAIN==1 && OBJ_ACCESS_GRASS==2 && O
 /******************************************************************************/
 #include "Auto.h"
 #include "Editor Update.h"
+#include "Editors/Code@0.h"
 #include "Editors/Mini Map.h"
 #include "Editors/Object/Mesh.h"
 #include "Editors/World/Area@0.h"
@@ -1008,5 +1009,6 @@ ASSERT(OBJ_ACCESS_CUSTOM==0 && OBJ_ACCESS_TERRAIN==1 && OBJ_ACCESS_GRASS==2 && O
 #include "Game/Game.inline.h"
 #include "Gui/Gui.inline.h"
 #include "Project@0.inline.h"
+#include "Shared/Constants.inline.h"
 #include "Shared/Functions.inline.h"
 /******************************************************************************/

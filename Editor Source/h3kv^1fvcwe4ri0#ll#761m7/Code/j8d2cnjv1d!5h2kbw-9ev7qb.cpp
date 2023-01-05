@@ -311,7 +311,7 @@ class ImportTerrainTask : Window
          flt  intensity;
       }
 
-      static int Compare(C Mtrl &a, C Mtrl &b) {return .Compare(b.intensity, a.intensity);} // we sort from higher to lower order, so swap 'a' 'b' order
+      static int CompareIntensity(C Mtrl &a, C Mtrl &b) {return Compare(b.intensity, a.intensity);} // we sort from higher to lower order, so swap 'a' 'b' order
 
       Mtrl mtrl[8]; int mtrls=0;
 
@@ -335,7 +335,7 @@ class ImportTerrainTask : Window
             if(InRange(mtrls, mtrl)){Mtrl &m=mtrl[mtrls++]; m.index=index; m.intensity=intensity;} // add new one
          }
       }
-      void sort() {Sort(mtrl, mtrls, Compare);}
+      void sort() {Sort(mtrl, mtrls, CompareIntensity);}
    }
    void import(Heightmap &hm)
    {

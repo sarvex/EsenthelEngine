@@ -868,9 +868,12 @@ bool ServerRecvSetMiniMapImage(File &f, UID &mini_map_id, VecI2 &image_xy, TimeS
 /******************************************************************************/
 // CS_GET_CODE_VER
 /******************************************************************************/
+int Compare(C ElmTypeVer &a, C ElmTypeVer &b ) {return Compare(a.id, b.id);}
+int Compare(C ElmTypeVer &a, C UID        &id) {return Compare(a.id,   id);}
+
 void ClientSendGetCodeVer(Connection &conn, Memc<ElmTypeVer> &elms)
 {
-   elms.sort(ElmTypeVer::Compare); // sort on the client so server can access using binary search
+   elms.sort(Compare); // sort on the client so server can access using binary search
    File f; f.writeMem().putByte(CS_GET_CODE_VER); elms.save(f); f.pos(0); conn.send(f, -1, false);
 }
 bool ServerRecvGetCodeVer(File &f, Memc<ElmTypeVer> &elms)
@@ -924,8 +927,6 @@ bool ClientRecvCodeSyncStatus(File &f, Memc<ElmCodeBase> &elms, bool &resync, UI
    void ElmTypeVer::set(C Elm &elm                              ) {set(elm.id, elm.type, elm.data ? elm.data->ver : Version());}
    bool ElmTypeVer::save(File &f)C {f<<id<<type<<ver; return f.ok();}
    bool ElmTypeVer::load(File &f)  {f>>id>>type>>ver; return f.ok();}
-   int ElmTypeVer::Compare(C ElmTypeVer &a, C ElmTypeVer &b ) {return ::Compare(a.id, b.id);}
-   int ElmTypeVer::Compare(C ElmTypeVer &a, C UID        &id) {return ::Compare(a.id,   id);}
    void ElmCodeData::set(Elm &elm, Code *code)
    {
       super::set(elm);

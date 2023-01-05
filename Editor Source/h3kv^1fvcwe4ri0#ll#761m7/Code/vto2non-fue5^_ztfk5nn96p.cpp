@@ -200,31 +200,33 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
    static const long Start=63524217600, // 63524217600 is the number of seconds at 1st Jan 2013 (approximate time of the first application version)
                      Unix =62167219200; // 62167219200 is the number of seconds at 1st Jan 1970
 
+   static TimeStamp UTC() {return DateTime().getUTC();}
+
    uint u=0;
 
-   bool is()C {return u!=0;} // if was set
+   inline bool is()C {return u!=0;} // if was set
 
-   uint text()C {return u;} // this method is used when saving to text, it can be replaced in the future to something like "Str text()C {return ..;}"
+   inline uint text()C {return u;} // this method is used when saving to text, it can be replaced in the future to something like "Str text()C {return ..;}"
 
    TimeStamp& operator--(   ) {u--; return T;}
    TimeStamp& operator--(int) {u--; return T;}
    TimeStamp& operator++(   ) {u++; return T;}
    TimeStamp& operator++(int) {u++; return T;}
 
-   TimeStamp& zero  () {u=0;                   return T;}
-   TimeStamp& getUTC() {T=DateTime().getUTC(); return T;} // set to current time
-   TimeStamp& now   () {uint prev=u; getUTC(); if(u<=prev)u=prev+1; return T;} // set to current time and make sure that it's newer than the previous time
+   inline TimeStamp& zero  () {u=0;                   return T;}
+          TimeStamp& getUTC() {T=DateTime().getUTC(); return T;} // set to current time
+          TimeStamp& now   () {uint prev=u; getUTC(); if(u<=prev)u=prev+1; return T;} // set to current time and make sure that it's newer than the previous time
 
    TimeStamp& fromUnix(long u) {T=u+(Unix-Start); return T;}
 
    bool old(C TimeStamp &now=TimeStamp().getUTC())C {return T<now;} // if this timestamp is older than 'now'
 
-   bool operator==(C TimeStamp &t)C {return u==t.u;} // if equal
-   bool operator!=(C TimeStamp &t)C {return u!=t.u;} // if not equal
-   bool operator>=(C TimeStamp &t)C {return u>=t.u;} // if greater or equal
-   bool operator<=(C TimeStamp &t)C {return u<=t.u;} // if smaller or equal
-   bool operator> (C TimeStamp &t)C {return u> t.u;} // if greater
-   bool operator< (C TimeStamp &t)C {return u< t.u;} // if smaller
+   inline bool operator==(C TimeStamp &t)C {return u==t.u;} // if equal
+   inline bool operator!=(C TimeStamp &t)C {return u!=t.u;} // if not equal
+   inline bool operator>=(C TimeStamp &t)C {return u>=t.u;} // if greater or equal
+   inline bool operator<=(C TimeStamp &t)C {return u<=t.u;} // if smaller or equal
+   inline bool operator> (C TimeStamp &t)C {return u> t.u;} // if greater
+   inline bool operator< (C TimeStamp &t)C {return u< t.u;} // if smaller
 
    TimeStamp& operator+=(int i) {T=long(T.u)+long(i); return T;}
    TimeStamp& operator-=(int i) {T=long(T.u)-long(i); return T;}
@@ -234,16 +236,21 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
 
    long operator-(C TimeStamp &t)C {return long(u)-long(t.u);}
 
-   DateTime asDateTime()C {return DateTime().fromSeconds(u+Start);}
+            DateTime asDateTime()C {return DateTime().fromSeconds(u+Start);}
+   operator DateTime           ()C {return asDateTime();}
 
-   TimeStamp(   int      i ) {T.u=Max(i, 0);}
-   TimeStamp(  uint      u ) {T.u=u;}
-   TimeStamp(  long      l ) {T.u=Mid(l, (long)0, (long)UINT_MAX);}
-   TimeStamp(C DateTime &dt) {T=dt.seconds()-Start;}
-   TimeStamp(C Str      &t ) {T.u=TextUInt(t);} // this method is used when loading from text, it can be replaced in the future
+   long age()C {return UTC()-T;}
 
-   static int Compare(C TimeStamp &a, C TimeStamp &b) {return .Compare(a.u, b.u);}
+   void operator=(C Str &t) {u=TextUInt(t);} // this method is used when loading from text, it can be replaced in the future
+
+            TimeStamp(   int      i ) : u(Max(i, 0)) {}
+            TimeStamp(  uint      u ) : u(u) {}
+            TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
+            TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
+   explicit TimeStamp(C Str      &t ) : u(TextUInt(t)) {}
 }
+int Compare(C TimeStamp &a, C TimeStamp &b) {return Compare(a.u, b.u);}
+
 TimeStamp Min(C TimeStamp &a, C TimeStamp &b) {return a<=b ? a : b;}
 TimeStamp Max(C TimeStamp &a, C TimeStamp &b) {return a>=b ? a : b;}
 /******************************************************************************/

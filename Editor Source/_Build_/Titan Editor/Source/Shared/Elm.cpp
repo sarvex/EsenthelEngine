@@ -1609,17 +1609,17 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
          if(n.name=="FileTime"        )     file_time=n.value;
       }
    }
-      int ElmImageAtlas::Img::Compare(C Img &img, C UID &id) {return ::Compare(img.id, id);}
       bool ElmImageAtlas::Img::equal(C Img &src)C {return removed_time==src.removed_time;}
       bool ElmImageAtlas::Img::newer(C Img &src)C {return removed_time> src.removed_time;}
       bool ElmImageAtlas::Img::undo(C Img &src) {return Undo(removed_time, src.removed_time, removed, src.removed);}
+   int ElmImageAtlas::CompareID(C Img &img, C UID &id) {return Compare(img.id, id);}
    bool ElmImageAtlas::mipMaps()C {return FlagOn(flag, MIP_MAPS);}
    void ElmImageAtlas::mipMaps(bool on) {FlagSet(flag, MIP_MAPS, on);}
    bool ElmImageAtlas::compress()C {return FlagOn(flag, COMPRESS);}
    void ElmImageAtlas::compress(bool on) {FlagSet(flag, COMPRESS, on);}
  C ::ElmImageAtlas::Img* ElmImageAtlas::find(C UID &id)C {return ConstCast(T).find(id);}
-   ::ElmImageAtlas::Img* ElmImageAtlas::find(C UID &id)  {       return images.binaryFind  (id,    Img::Compare);}
-   ::ElmImageAtlas::Img&  ElmImageAtlas::get(C UID &id)  {int i; return images.binarySearch(id, i, Img::Compare) ? images[i] : images.NewAt(i);}
+   ::ElmImageAtlas::Img* ElmImageAtlas::find(C UID &id)  {       return images.binaryFind  (id,    CompareID);}
+   ::ElmImageAtlas::Img&  ElmImageAtlas::get(C UID &id)  {int i; return images.binarySearch(id, i, CompareID) ? images[i] : images.NewAt(i);}
    void ElmImageAtlas::newData(){super::newData(); file_time++; mip_maps_time++; compress_time++;}
    bool ElmImageAtlas::equal(C ElmImageAtlas &src)C
    {

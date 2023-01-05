@@ -241,7 +241,7 @@ class ConvertToDeAtlasClass : PropWin
             mtrl_replace.New().set(elm_mtrl.id, de_atlas.id);
          }
 
-         mtrl_replace.sort(IDReplace.Compare);
+         mtrl_replace.sort(Compare);
          convertMeshes(mtrl_replace, crop);
          Proj.setList();
       }

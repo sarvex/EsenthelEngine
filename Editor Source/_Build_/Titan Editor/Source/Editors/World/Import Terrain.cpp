@@ -256,7 +256,7 @@ Memx<ImportTerrainTask> ImportTerrainTasks;
       world_id  =WorldEdit.elm_id;
       world_ver =Proj.worldVerRequire(world_id);
    }
-      int ImportTerrainTask::MaterialIntensities::Compare(C Mtrl &a, C Mtrl &b) {return ::Compare(b.intensity, a.intensity);}
+      int ImportTerrainTask::MaterialIntensities::CompareIntensity(C Mtrl &a, C Mtrl &b) {return Compare(b.intensity, a.intensity);}
       void ImportTerrainTask::MaterialIntensities::set(int i, byte &index, flt &intensity)
       {
          if(InRange(i, mtrls))
@@ -277,7 +277,7 @@ Memx<ImportTerrainTask> ImportTerrainTasks;
             if(InRange(mtrls, mtrl)){Mtrl &m=mtrl[mtrls++]; m.index=index; m.intensity=intensity;} // add new one
          }
       }
-      void ImportTerrainTask::MaterialIntensities::sort() {Sort(mtrl, mtrls, Compare);}
+      void ImportTerrainTask::MaterialIntensities::sort() {Sort(mtrl, mtrls, CompareIntensity);}
    void ImportTerrainTask::import(Heightmap &hm)
    {
       if(AreaVer *area_ver=world_ver->areas.get(area_xy))

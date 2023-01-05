@@ -501,7 +501,7 @@ class Client : ConnectionServer.Client
                      Elm &server_elm=project.elms[i];
                      if(server_elm.type==ELM_CODE || server_elm.type==ELM_APP)
                      {
-                        if(ElmTypeVer *client_elm=elm_type_vers.binaryFind(server_elm.id, ElmTypeVer.Compare))
+                        if(ElmTypeVer *client_elm=elm_type_vers.binaryFind(server_elm.id, Compare))
                            if(server_elm.type==client_elm.type && (server_elm.data ? server_elm.data.ver : Version())==client_elm.ver)continue; // elements are the same so we can skip them
                         // add element from the server
                         ElmCodeData &ecd=elm_code_datas.New(); ecd.set(server_elm);

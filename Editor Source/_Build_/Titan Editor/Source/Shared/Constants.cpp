@@ -104,6 +104,8 @@ bool CanRead     (USER_ACCESS access) {return access>=UA_READ_ONLY;}
 bool CanWrite    (USER_ACCESS access) {return access>=UA_ARTIST   ;}
 bool CanWriteCode(USER_ACCESS access) {return access>=UA_NORMAL   ;}
 /******************************************************************************/
+int Compare(C TimeStamp &a, C TimeStamp &b) {return Compare(a.u, b.u);}
+
 TimeStamp Min(C TimeStamp &a, C TimeStamp &b) {return a<=b ? a : b;}
 TimeStamp Max(C TimeStamp &a, C TimeStamp &b) {return a>=b ? a : b;}
 /******************************************************************************/
@@ -159,35 +161,29 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
    bool Version::operator! (            )C {return !ver;}
         Version::operator bool(         )C {return  ver!=0;}
    void Version::randomize() {uint old=ver; do ver=Random();while(!ver || ver==old);}
-   bool TimeStamp::is()C {return u!=0;}
-   uint TimeStamp::text()C {return u;}
+   TimeStamp TimeStamp::UTC() {return DateTime().getUTC();}
    TimeStamp& TimeStamp::operator--(   ) {u--; return T;}
    TimeStamp& TimeStamp::operator--(int) {u--; return T;}
    TimeStamp& TimeStamp::operator++(   ) {u++; return T;}
    TimeStamp& TimeStamp::operator++(int) {u++; return T;}
-   TimeStamp& TimeStamp::zero() {u=0;                   return T;}
-   TimeStamp& TimeStamp::getUTC() {T=DateTime().getUTC(); return T;}
-   TimeStamp& TimeStamp::now() {uint prev=u; getUTC(); if(u<=prev)u=prev+1; return T;}
+          TimeStamp& TimeStamp::getUTC() {T=DateTime().getUTC(); return T;}
+          TimeStamp& TimeStamp::now() {uint prev=u; getUTC(); if(u<=prev)u=prev+1; return T;}
    TimeStamp& TimeStamp::fromUnix(long u) {T=u+(Unix-Start); return T;}
    bool TimeStamp::old(C TimeStamp &now)C {return T<now;}
-   bool TimeStamp::operator==(C TimeStamp &t)C {return u==t.u;}
-   bool TimeStamp::operator!=(C TimeStamp &t)C {return u!=t.u;}
-   bool TimeStamp::operator>=(C TimeStamp &t)C {return u>=t.u;}
-   bool TimeStamp::operator<=(C TimeStamp &t)C {return u<=t.u;}
-   bool TimeStamp::operator> (C TimeStamp &t)C {return u> t.u;}
-   bool TimeStamp::operator< (C TimeStamp &t)C {return u< t.u;}
    TimeStamp& TimeStamp::operator+=(int i) {T=long(T.u)+long(i); return T;}
    TimeStamp& TimeStamp::operator-=(int i) {T=long(T.u)-long(i); return T;}
    TimeStamp TimeStamp::operator+(int i) {return long(T.u)+long(i);}
    TimeStamp TimeStamp::operator-(int i) {return long(T.u)-long(i);}
    long TimeStamp::operator-(C TimeStamp &t)C {return long(u)-long(t.u);}
-   DateTime TimeStamp::asDateTime()C {return DateTime().fromSeconds(u+Start);}
-   TimeStamp::TimeStamp(   int      i ) : u(0) {T.u=Max(i, 0);}
-   TimeStamp::TimeStamp(  uint      u ) : u(0) {T.u=u;}
-   TimeStamp::TimeStamp(  long      l ) : u(0) {T.u=Mid(l, (long)0, (long)UINT_MAX);}
-   TimeStamp::TimeStamp(C DateTime &dt) : u(0) {T=dt.seconds()-Start;}
-   TimeStamp::TimeStamp(C Str      &t ) : u(0) {T.u=TextUInt(t);}
-   int TimeStamp::Compare(C TimeStamp &a, C TimeStamp &b) {return ::Compare(a.u, b.u);}
+            DateTime TimeStamp::asDateTime()C {return DateTime().fromSeconds(u+Start);}
+   TimeStamp::operator DateTime           ()C {return asDateTime();}
+   long TimeStamp::age()C {return UTC()-T;}
+   void TimeStamp::operator=(C Str &t) {u=TextUInt(t);}
+            TimeStamp::TimeStamp(   int      i ) : u(Max(i, 0)) {}
+            TimeStamp::TimeStamp(  uint      u ) : u(u) {}
+            TimeStamp::TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
+            TimeStamp::TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
+   TimeStamp::TimeStamp(C Str      &t ) : u(TextUInt(t)) {}
    Matrix Pose::operator()()C {return MatrixD().setPosScale(pos, scale).rotateZ(rot.z).rotateXY(rot.x, rot.y);}
    Str Pose::asText()C {return S+"Scale:"+scale+", Pos:"+pos+", Rot:"+rot;}
    Pose& Pose::reset() {scale=1; pos.zero(); rot.zero(); return T;}

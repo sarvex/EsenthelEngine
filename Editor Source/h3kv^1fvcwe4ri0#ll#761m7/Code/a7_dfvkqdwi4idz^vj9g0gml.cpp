@@ -977,13 +977,13 @@ class ElmTypeVer
 
    bool save(File &f)C {f<<id<<type<<ver; return f.ok();}
    bool load(File &f)  {f>>id>>type>>ver; return f.ok();}
-
-   static int Compare(C ElmTypeVer &a, C ElmTypeVer &b ) {return .Compare(a.id, b.id);}
-   static int Compare(C ElmTypeVer &a, C UID        &id) {return .Compare(a.id,   id);}
 }
+int Compare(C ElmTypeVer &a, C ElmTypeVer &b ) {return Compare(a.id, b.id);}
+int Compare(C ElmTypeVer &a, C UID        &id) {return Compare(a.id,   id);}
+
 void ClientSendGetCodeVer(Connection &conn, Memc<ElmTypeVer> &elms)
 {
-   elms.sort(ElmTypeVer.Compare); // sort on the client so server can access using binary search
+   elms.sort(Compare); // sort on the client so server can access using binary search
    File f; f.writeMem().putByte(CS_GET_CODE_VER); elms.save(f); f.pos(0); conn.send(f, -1, false);
 }
 bool ServerRecvGetCodeVer(File &f, Memc<ElmTypeVer> &elms)

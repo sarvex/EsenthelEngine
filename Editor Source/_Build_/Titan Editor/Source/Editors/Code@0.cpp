@@ -1,6 +1,7 @@
 ﻿/******************************************************************************/
 #include "stdafx.h"
 /******************************************************************************/
+int Compare(C Enum::Elm &a, C Enum::Elm &b) {return Compare(a.name, b.name, true);}
 CodeView CodeEdit;
 /******************************************************************************/
 AppPropsEditor AppPropsEdit;
@@ -310,7 +311,6 @@ AppPropsEditor AppPropsEdit;
       super::cleanAll(); // first call super to stop any build in progress
       FDelDirs(ProjectsPath.tailSlash(true)+ProjectsPublishPath);
    }
-   int CodeView::Compare(C Enum::Elm &a, C Enum::Elm &b) {return ::Compare(a.name, b.name, true);}
    void CodeView::makeAuto(bool publish)
    {
       if(Proj.valid())

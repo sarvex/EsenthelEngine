@@ -1,4 +1,5 @@
 /******************************************************************************/
+int Compare(C Enum.Elm &a, C Enum.Elm &b) {return Compare(a.name, b.name, true);}
 class EEItem
 {
    bool         opened=false;
@@ -298,7 +299,6 @@ class CodeView : Region, Edit.CodeEditorInterface
       FDelDirs(ProjectsPath.tailSlash(true)+ProjectsPublishPath);
    }
 
-   static int Compare(C Enum.Elm &a, C Enum.Elm &b) {return .Compare(a.name, b.name, true);}
    void makeAuto(bool publish=false)
    {
       if(Proj.valid())

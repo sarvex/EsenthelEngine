@@ -1921,13 +1921,13 @@ class ElmImageAtlas : ElmData
       UID       id=UIDZero;
       TimeStamp removed_time;
 
-      static int Compare(C Img &img, C UID &id) {return .Compare(img.id, id);}
-
       bool equal(C Img &src)C {return removed_time==src.removed_time;}
       bool newer(C Img &src)C {return removed_time> src.removed_time;}
 
       bool undo(C Img &src) {return Undo(removed_time, src.removed_time, removed, src.removed);}
    }
+   static int CompareID(C Img &img, C UID &id) {return Compare(img.id, id);}
+
    byte      flag=MIP_MAPS|COMPRESS;
    Memc<Img> images;
    TimeStamp file_time, mip_maps_time, compress_time;
@@ -1936,8 +1936,8 @@ class ElmImageAtlas : ElmData
    bool compress()C {return FlagOn(flag, COMPRESS);}   void compress(bool on) {FlagSet(flag, COMPRESS, on);}
 
  C Img* find(C UID &id)C {return ConstCast(T).find(id);}
-   Img* find(C UID &id)  {       return images.binaryFind  (id,    Img.Compare);}
-   Img&  get(C UID &id)  {int i; return images.binarySearch(id, i, Img.Compare) ? images[i] : images.NewAt(i);}
+   Img* find(C UID &id)  {       return images.binaryFind  (id,    CompareID);}
+   Img&  get(C UID &id)  {int i; return images.binarySearch(id, i, CompareID) ? images[i] : images.NewAt(i);}
 
    // operations
    virtual void newData()override {super.newData(); file_time++; mip_maps_time++; compress_time++;}
