@@ -197,8 +197,8 @@ static INLINE Flt Robidoux         (Flt x) {return Cubic(x, 12/(19+9*SQRT2), 113
 static INLINE Flt RobidouxSharp    (Flt x) {return Cubic(x,  6/(13+7*SQRT2),   7/( 2+ 12*SQRT2));}
 
 static INLINE Flt CubicFast      (Flt x) {return Cubic(x, 1.0f/3, 1.0f/3);}
-static INLINE Flt CubicFastSmooth(Flt x) {return Cubic(x, 1.0f  , 0.000f);}
-static INLINE Flt CubicFastSharp (Flt x) {return Cubic(x, 0.0f  , 0.500f);}
+static INLINE Flt CubicFastSmooth(Flt x) {return Cubic(x, 1.0f  , 0.000f);} // if changing this, then have to recalc 'CFSMW8'
+static INLINE Flt CubicFastSharp (Flt x) {return Cubic(x, 0.0f  , 0.500f);} // if changing this, then have to recalc 'CW8', 'CWA8'
 static INLINE Flt CubicPlus      (Flt x) {return Cubic(x, 0.0f  , 0.400f);}
 static INLINE Flt CubicPlusSharp (Flt x) {return Cubic(x, 0.0f  , 0.500f);}
 
