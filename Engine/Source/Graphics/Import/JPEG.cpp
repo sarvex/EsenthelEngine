@@ -15,22 +15,6 @@
    #include "../../../../ThirdPartyLibs/end.h"
 #endif
 
-#if SUPPORT_JXL
-   #include "../../../../ThirdPartyLibs/begin.h"
-
-   #define JXL_STATIC_DEFINE
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/decode.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/decode_cxx.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/resizable_parallel_runner.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/resizable_parallel_runner_cxx.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/encode.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/encode_cxx.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/thread_parallel_runner.h"
-   #include "../../../../ThirdPartyLibs/JpegXL/lib/lib/include/jxl/thread_parallel_runner_cxx.h"
-
-   #include "../../../../ThirdPartyLibs/end.h"
-#endif
-
 namespace EE{
 /******************************************************************************/
 #if !SWITCH
@@ -389,202 +373,20 @@ Bool Image::ExportJPG(File &f, Flt quality, Int sub_sample)C
 }
 #endif
 /******************************************************************************/
-#if SUPPORT_JXL
-static inline Bool JXLSigOK(const uint8_t* buf, size_t len)
-{
-   switch(JxlSignatureCheck(buf, len))
-   {
-      case JXL_SIG_CODESTREAM:
-      case JXL_SIG_CONTAINER:
-               return true;
-      default: return false;
-   }
-}
-#endif
-Bool Image::ImportJXL(File &f)
+Bool      (*ImportJXL)(Image &image, File &f);
+Bool Image::ImportJXL (              File &f)
 {
 #if SUPPORT_JXL
-   uint8_t sig[12]; if(f.getFast(sig) && JXLSigOK(sig, SIZE(sig)) && f.skip(-SIZEI(sig))) // based on 'JxlSignatureCheck' source code we need 12 bytes to make a full check
-   {
-      Memt<Byte> data; data.setNumDiscard(f.left());
-      if(f.getFast(data.data(), data.elms()))
-      {
-         auto runner=JxlResizableParallelRunnerMake(null);
-         auto dec   =JxlDecoderMake(null);
-         if(JXL_DEC_SUCCESS!=JxlDecoderSubscribeEvents  (dec.get(), JXL_DEC_BASIC_INFO | JXL_DEC_COLOR_ENCODING | JXL_DEC_FULL_IMAGE))goto error;
-         if(JXL_DEC_SUCCESS!=JxlDecoderSetParallelRunner(dec.get(), JxlResizableParallelRunner, runner.get()))goto error;
-
-         JxlBasicInfo info;
-         JxlPixelFormat format; Zero(format);
-         format.endianness=JXL_LITTLE_ENDIAN;
-
-         JxlDecoderSetInput  (dec.get(), data.data(), data.elms());
-         JxlDecoderCloseInput(dec.get());
-
-         for(;;)switch(JxlDecoderStatus status=JxlDecoderProcessInput(dec.get()))
-         {
-            //case JXL_DEC_ERROR:
-            //case JXL_DEC_NEED_MORE_INPUT:
-            default:
-               goto error;
-
-            case JXL_DEC_BASIC_INFO:
-            {
-               if(JXL_DEC_SUCCESS!=JxlDecoderGetBasicInfo(dec.get(), &info))goto error;
-               Bool real =(info.bits_per_sample>8),
-                    color=(info.num_color_channels>1), // 'num_color_channels' can be 1 or 3
-                    alpha=(info.alpha_bits!=0);
-               IMAGE_TYPE type;
-               if(real)
-               {
-                  format.data_type=JXL_TYPE_FLOAT;
-                  if(alpha){type=IMAGE_F32_4_SRGB; format.num_channels=4;}
-                  else     {type=IMAGE_F32_3_SRGB; format.num_channels=3;}
-               }else
-               {
-                  format.data_type=JXL_TYPE_UINT8;
-                  if(color)
-                  {
-                     if(alpha){type=IMAGE_R8G8B8A8_SRGB; format.num_channels=4;}
-                     else     {type=IMAGE_R8G8B8_SRGB  ; format.num_channels=3;}
-                  }else
-                  {
-                     if(alpha){type=IMAGE_L8A8_SRGB; format.num_channels=2;}
-                     else     {type=IMAGE_L8_SRGB  ; format.num_channels=1;}
-                  }
-               }
-
-               createSoft(info.xsize, info.ysize, 1, type);
-               JxlResizableParallelRunnerSetThreads(runner.get(), JxlResizableParallelRunnerSuggestThreads(info.xsize, info.ysize));
-            }break;
-
-            case JXL_DEC_COLOR_ENCODING:
-            {
-               size_t icc_size; if(JXL_DEC_SUCCESS!=JxlDecoderGetICCProfileSize(dec.get(), &format, JXL_COLOR_PROFILE_TARGET_DATA, &icc_size))goto error;
-               Mems<Char8> icc_profile((Int)icc_size);
-               if(JXL_DEC_SUCCESS!=JxlDecoderGetColorAsICCProfile(dec.get(), &format, JXL_COLOR_PROFILE_TARGET_DATA, (uint8_t*)icc_profile.data(), icc_profile.elms()))goto error;
-            }break;
-
-          //case JXL_DEC_NEED_PREVIEW_OUT_BUFFER: break;
-          //case JXL_DEC_PREVIEW_IMAGE: break;
-
-            case JXL_DEC_NEED_IMAGE_OUT_BUFFER:
-            {
-               size_t buffer_size; if(JXL_DEC_SUCCESS!=JxlDecoderImageOutBufferSize(dec.get(), &format, &buffer_size))goto error;
-               if(buffer_size!=pitch2())goto error;
-               if(JXL_DEC_SUCCESS!=JxlDecoderSetImageOutBuffer(dec.get(), &format, T.data(), pitch2()))goto error;
-            }break;
-
-            case JXL_DEC_FULL_IMAGE:
-             //info.orientation;
-               return true; // If the image is an animation, more full frames may be decoded.
-
-            case JXL_DEC_SUCCESS: return true; // All decoding successfully finished. It's not required to call JxlDecoderReleaseInput(dec.get()) here since the decoder will be destroyed.
-         }
-      }
-   }
-error:
+   if(::ImportJXL)return ::ImportJXL(T, f);
 #endif
    del(); return false;
 }
 /******************************************************************************/
-Bool Image::ExportJXL(File &f, Flt quality, Flt compression_level)C
+Bool      (*ExportJXL)(C Image &image, File &f, Flt quality, Flt compression_level);
+Bool Image::ExportJXL (                File &f, Flt quality, Flt compression_level)C
 {
 #if SUPPORT_JXL
- C Image *src=this;
-   Image temp;
-
-   JxlPixelFormat format; Zero(format);
-   format.endianness=JXL_LITTLE_ENDIAN;
- C auto &type_info=src->typeInfo();
-   Bool  real =(type_info.high_precision),
-         alpha=(type_info.a>0),
-         color=(type_info.channels>1+alpha);
-   IMAGE_TYPE type;
-   if(real)
-   {
-      format.data_type=JXL_TYPE_FLOAT;
-      if(alpha){type=IMAGE_F32_4_SRGB; format.num_channels=4;}
-      else     {type=IMAGE_F32_3_SRGB; format.num_channels=3;}
-   }else
-   {
-      format.data_type=JXL_TYPE_UINT8;
-      if(color)
-      {
-         if(alpha){type=IMAGE_R8G8B8A8_SRGB; format.num_channels=4;}
-         else     {type=IMAGE_R8G8B8_SRGB  ; format.num_channels=3;}
-      }else
-      {
-         if(alpha){type=IMAGE_L8A8_SRGB; format.num_channels=2;}
-         else     {type=IMAGE_L8_SRGB  ; format.num_channels=1;}
-      }
-   }
-
-   if(!src->is  ())return false;
-   if( src->cube())if(temp.fromCube(*src, type))src=&temp;else return false;
-
-   if(!CanDoRawCopy(src->hwType(), type, IgnoreGamma(0, src->hwType(), type)))
-      if(src->copy(temp, -1, -1, -1, type, IMAGE_SOFT, 1))src=&temp;else return false;
-
-   if(src->lockRead())
-   {
-      Bool ok=false;
-      {
-         auto enc   =JxlEncoderMake(null);
-         auto runner=JxlThreadParallelRunnerMake(null, JxlThreadParallelRunnerDefaultNumWorkerThreads());
-         if(JXL_ENC_SUCCESS!=JxlEncoderSetParallelRunner(enc.get(), JxlThreadParallelRunner, runner.get()))goto error;
-
-         JxlBasicInfo basic_info;
-         JxlEncoderInitBasicInfo(&basic_info);
-         basic_info.xsize=src->w();
-         basic_info.ysize=src->h();
-         basic_info.         bits_per_sample=(real ? 32 : 8);
-         basic_info.exponent_bits_per_sample=(real ?  8 : 0);
-         basic_info.num_color_channels      =(color ? 3 : 1);
-         if(alpha)
-         {
-            basic_info.num_extra_channels =1;
-            basic_info.alpha_bits         =basic_info.         bits_per_sample;
-            basic_info.alpha_exponent_bits=basic_info.exponent_bits_per_sample;
-         }else
-         {
-            basic_info.num_extra_channels =0;
-            basic_info.alpha_bits         =0;
-            basic_info.alpha_exponent_bits=0;
-         }
-         Bool lossless=(quality>=1);
-         basic_info.uses_original_profile=lossless; // headers say this should be false for lossy, this needs to be true for lossless because 'JxlEncoderSetFrameLossless' will fail
-         if(JXL_ENC_SUCCESS!=JxlEncoderSetBasicInfo(enc.get(), &basic_info))goto error;
-
-         JxlColorEncoding color_encoding;
-         JxlColorEncodingSetToSRGB(&color_encoding, !color);
-         if(JXL_ENC_SUCCESS!=JxlEncoderSetColorEncoding(enc.get(), &color_encoding))goto error;
-
-         JxlEncoderFrameSettings *frame_settings=JxlEncoderFrameSettingsCreate(enc.get(), null);
-                                 JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_KEEP_INVISIBLE, 1);
-         if(compression_level>=0)JxlEncoderFrameSettingsSetOption(frame_settings, JXL_ENC_FRAME_SETTING_EFFORT, Mid(RoundPos(Lerp(1, 9, compression_level)), 1, 9));
-         if(quality          >=0)
-         {
-            JxlEncoderSetFrameDistance(frame_settings, Lerp(15, 0, Sat(quality)));
-            JxlEncoderSetFrameLossless(frame_settings, lossless);
-         }
-
-         if(JXL_ENC_SUCCESS!=JxlEncoderAddImageFrame(frame_settings, &format, src->data(), src->pitch2()))goto error;
-         JxlEncoderCloseInput(enc.get());
-
-      again:
-         uint8_t temp[65536], *next_out=temp;
-         size_t  avail_out=SIZE(temp);
-         JxlEncoderStatus process_result=JxlEncoderProcessOutput(enc.get(), &next_out, &avail_out);
-         if(!f.put(temp, next_out-temp))goto error;
-         if(JXL_ENC_NEED_MORE_OUTPUT==process_result)goto again;
-         if(JXL_ENC_SUCCESS         ==process_result)ok=true;
-      }
-
-   error:
-      src->unlock();
-      return ok && f.ok();
-   }
+   if(::ExportJXL)return ::ExportJXL(T, f, quality, compression_level);
 #endif
    return false;
 }

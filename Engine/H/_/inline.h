@@ -67,6 +67,16 @@ inline C Param* Object::findParam(C Str8 &name)C {return ConstCast(T).findParam(
 inline C Param* Object::findParam(C Str  &name)C {return ConstCast(T).findParam(name  );}
 inline C Param& Object:: getParam(C Str  &name)C {return ConstCast(T). getParam(name  );}
 /******************************************************************************/
+extern Bool  _ImportJXL (Image &image, File &f);
+extern Bool (*ImportJXL)(Image &image, File &f);
+inline void   SupportImportJXL() {ImportJXL=_ImportJXL;}
+
+extern Bool  _ExportJXL (C Image &image, File &f, Flt quality, Flt compression_level);
+extern Bool (*ExportJXL)(C Image &image, File &f, Flt quality, Flt compression_level);
+inline void   SupportExportJXL() {ExportJXL=_ExportJXL;}
+
+inline void   SupportJXL() {SupportImportJXL(); SupportExportJXL();}
+
 extern Bool  _CompressBC67 (C Image &src, Image &dest);
 extern Bool (*CompressBC67)(C Image &src, Image &dest);
 inline void   SupportCompressBC() {CompressBC67=_CompressBC67;}
@@ -83,7 +93,7 @@ extern Bool  _CompressPVRTC (C Image &src, Image &dest, Int quality=-1);
 extern Bool (*CompressPVRTC)(C Image &src, Image &dest, Int quality   );
 inline void   SupportCompressPVRTC() {if(WINDOWS_OLD || MAC || LINUX)CompressPVRTC=_CompressPVRTC;}
 
-inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressASTC(); SupportCompressPVRTC();}
+inline void SupportCompressAll() {SupportCompressBC(); SupportCompressETC(); SupportCompressASTC(); SupportCompressPVRTC(); SupportJXL();}
 
 extern Bool  _ResizeWaifu (C Image &src, Image &dest, UInt flags);
 extern Bool (*ResizeWaifu)(C Image &src, Image &dest, UInt flags);
