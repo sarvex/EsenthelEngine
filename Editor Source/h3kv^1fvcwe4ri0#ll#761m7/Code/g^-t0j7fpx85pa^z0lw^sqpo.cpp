@@ -2632,17 +2632,17 @@ class Project
          if(node.name=="EncryptionKey"        )node.getValueRaw(cipher_key);else
          if(node.name=="Compress"             ){REP(COMPRESS_NUM)if(node.value==CompressionName(COMPRESS_TYPE(i))){compress_type[PCP_DEFAULT]=COMPRESS_TYPE(i); break;}}else
          if(node.name=="CompressMobile"       ){REP(COMPRESS_NUM)if(node.value==CompressionName(COMPRESS_TYPE(i))){compress_type[PCP_MOBILE ]=COMPRESS_TYPE(i); break;}}else
-         if(node.name=="CompressLevel"        )compress_level[PCP_DEFAULT]=node.asInt ();else
-         if(node.name=="CompressLevelMobile"  )compress_level[PCP_MOBILE ]=node.asInt ();else
+         if(node.name=="CompressLevel"        )compress_level[PCP_DEFAULT]=node.asInt();else
+         if(node.name=="CompressLevelMobile"  )compress_level[PCP_MOBILE ]=node.asInt();else
          if(node.name=="SimplifyMaterials"    )material_simplify          =(MATERIAL_SIMPLIFY)node.asInt();else
-         if(node.name=="TexDownsizeMobile"    )tex_downsize[TSP_MOBILE]   =node.asInt ();else
-         if(node.name=="TexDownsizeSwitch"    )tex_downsize[TSP_SWITCH]   =node.asInt ();else
-         if(node.name=="EncryptTime"          )cipher_time                =node.asText();else
-         if(node.name=="EncryptionKeyTime"    )cipher_key_time            =node.asText();else
-         if(node.name=="CompressTime"         )compress_time[PCP_DEFAULT] =node.asText();else
-         if(node.name=="CompressTimeMobile"   )compress_time[PCP_MOBILE ] =node.asText();else
-         if(node.name=="SimplifyMaterialsTime")material_simplify_time     =node.asText();else
-         if(node.name=="TexDownsizeTime"      )tex_downsize_time          =node.asText();else
+         if(node.name=="TexDownsizeMobile"    )tex_downsize[TSP_MOBILE]   =node.asInt();else
+         if(node.name=="TexDownsizeSwitch"    )tex_downsize[TSP_SWITCH]   =node.asInt();else
+         if(node.name=="EncryptTime"          )cipher_time                .text(node);else
+         if(node.name=="EncryptionKeyTime"    )cipher_key_time            .text(node);else
+         if(node.name=="CompressTime"         )compress_time[PCP_DEFAULT] .text(node);else
+         if(node.name=="CompressTimeMobile"   )compress_time[PCP_MOBILE ] .text(node);else
+         if(node.name=="SimplifyMaterialsTime")material_simplify_time     .text(node);else
+         if(node.name=="TexDownsizeTime"      )tex_downsize_time          .text(node);else
          if(node.name=="Elements"             )
          {
             // remember 'IMPORTING' and 'OPENED' which are not saved in text

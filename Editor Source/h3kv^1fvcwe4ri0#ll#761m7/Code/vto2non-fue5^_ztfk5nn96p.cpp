@@ -206,12 +206,14 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
 
    inline bool is()C {return u!=0;} // if was set
 
-   inline uint text()C {return u;} // this method is used when saving to text, it can be replaced in the future to something like "Str text()C {return ..;}"
+   inline uint text(             )C {return      u;} // this method is used when  saving to   text, it can be replaced in the future to something like "Str text()C {return ..;}"
+          void text(C Str      &t)  {u=TextUInt(t);} // this method is used when loading from text, it can be replaced in the future
+          void text(C TextNode &n)  {text(n.value);}
 
-   TimeStamp& operator--(   ) {u--; return T;}
-   TimeStamp& operator--(int) {u--; return T;}
-   TimeStamp& operator++(   ) {u++; return T;}
-   TimeStamp& operator++(int) {u++; return T;}
+   inline TimeStamp& operator--(   ) {u--; return T;}
+   inline TimeStamp& operator--(int) {u--; return T;}
+   inline TimeStamp& operator++(   ) {u++; return T;}
+   inline TimeStamp& operator++(int) {u++; return T;}
 
    inline TimeStamp& zero  () {u=0;                   return T;}
           TimeStamp& getUTC() {T=DateTime().getUTC(); return T;} // set to current time
@@ -241,13 +243,10 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
 
    long age()C {return UTC()-T;}
 
-   void operator=(C Str &t) {u=TextUInt(t);} // this method is used when loading from text, it can be replaced in the future
-
-            TimeStamp(   int      i ) : u(Max(i, 0)) {}
-            TimeStamp(  uint      u ) : u(u) {}
-            TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
-            TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
-   explicit TimeStamp(C Str      &t ) : u(TextUInt(t)) {}
+   TimeStamp(   int      i ) : u(Max(i, 0)) {}
+   TimeStamp(  uint      u ) : u(u) {}
+   TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
+   TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
 }
 int Compare(C TimeStamp &a, C TimeStamp &b) {return Compare(a.u, b.u);}
 

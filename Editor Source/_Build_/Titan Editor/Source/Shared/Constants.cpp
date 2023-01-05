@@ -162,10 +162,8 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
         Version::operator bool(         )C {return  ver!=0;}
    void Version::randomize() {uint old=ver; do ver=Random();while(!ver || ver==old);}
    TimeStamp TimeStamp::UTC() {return DateTime().getUTC();}
-   TimeStamp& TimeStamp::operator--(   ) {u--; return T;}
-   TimeStamp& TimeStamp::operator--(int) {u--; return T;}
-   TimeStamp& TimeStamp::operator++(   ) {u++; return T;}
-   TimeStamp& TimeStamp::operator++(int) {u++; return T;}
+          void TimeStamp::text(C Str      &t)  {u=TextUInt(t);}
+          void TimeStamp::text(C TextNode &n)  {text(n.value);}
           TimeStamp& TimeStamp::getUTC() {T=DateTime().getUTC(); return T;}
           TimeStamp& TimeStamp::now() {uint prev=u; getUTC(); if(u<=prev)u=prev+1; return T;}
    TimeStamp& TimeStamp::fromUnix(long u) {T=u+(Unix-Start); return T;}
@@ -178,12 +176,10 @@ ListColumn NameDescListColumn[1]= // !! need to define array size because this w
             DateTime TimeStamp::asDateTime()C {return DateTime().fromSeconds(u+Start);}
    TimeStamp::operator DateTime           ()C {return asDateTime();}
    long TimeStamp::age()C {return UTC()-T;}
-   void TimeStamp::operator=(C Str &t) {u=TextUInt(t);}
-            TimeStamp::TimeStamp(   int      i ) : u(Max(i, 0)) {}
-            TimeStamp::TimeStamp(  uint      u ) : u(u) {}
-            TimeStamp::TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
-            TimeStamp::TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
-   TimeStamp::TimeStamp(C Str      &t ) : u(TextUInt(t)) {}
+   TimeStamp::TimeStamp(   int      i ) : u(Max(i, 0)) {}
+   TimeStamp::TimeStamp(  uint      u ) : u(u) {}
+   TimeStamp::TimeStamp(  long      l ) : u(Mid(                 l, (long)0, (long)UINT_MAX)) {}
+   TimeStamp::TimeStamp(C DateTime &dt) : u(Mid(dt.seconds()-Start, (long)0, (long)UINT_MAX)) {}
    Matrix Pose::operator()()C {return MatrixD().setPosScale(pos, scale).rotateZ(rot.z).rotateXY(rot.x, rot.y);}
    Str Pose::asText()C {return S+"Scale:"+scale+", Pos:"+pos+", Rot:"+rot;}
    Pose& Pose::reset() {scale=1; pos.zero(); rot.zero(); return T;}

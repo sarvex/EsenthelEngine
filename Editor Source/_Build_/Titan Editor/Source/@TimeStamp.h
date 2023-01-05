@@ -11,12 +11,14 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
 
    inline bool is()C; // if was set
 
-   inline uint text()C; // this method is used when saving to text, it can be replaced in the future to something like "Str text()C {return ..;}"
+   inline uint text(             )C; // this method is used when  saving to   text, it can be replaced in the future to something like "Str text()C {return ..;}"
+          void text(C Str      &t);  // this method is used when loading from text, it can be replaced in the future
+          void text(C TextNode &n); 
 
-   TimeStamp& operator--(   );
-   TimeStamp& operator--(int);
-   TimeStamp& operator++(   );
-   TimeStamp& operator++(int);
+   inline TimeStamp& operator--(   );
+   inline TimeStamp& operator--(int);
+   inline TimeStamp& operator++(   );
+   inline TimeStamp& operator++(int);
 
    inline TimeStamp& zero  ();
           TimeStamp& getUTC(); // set to current time
@@ -46,13 +48,10 @@ class TimeStamp // TODO: Warning: this is a 32-bit value and will overflow at so
 
    long age()C;
 
-   void operator=(C Str &t); // this method is used when loading from text, it can be replaced in the future
-
-            TimeStamp(   int      i );
-            TimeStamp(  uint      u );
-            TimeStamp(  long      l );
-            TimeStamp(C DateTime &dt);
-   explicit TimeStamp(C Str      &t );
+   TimeStamp(   int      i );
+   TimeStamp(  uint      u );
+   TimeStamp(  long      l );
+   TimeStamp(C DateTime &dt);
 
 public:
    TimeStamp();
