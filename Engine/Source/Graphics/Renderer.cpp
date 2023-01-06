@@ -2395,6 +2395,7 @@ void RendererClass::postProcess()
 
          case FILTER_CUBIC_FAST       :
          case FILTER_CUBIC_FAST_SMOOTH:
+         case FILTER_CUBIC_FAST_MED   :
          case FILTER_CUBIC_FAST_SHARP :
             pixels=2+1; // 2 for filtering + 1 for borders
             Sh.imgSize(*_col); shader=Sh.DrawTexCubicFastF[alpha][dither]; // this doesn't need to check for "_col->highPrecision" because resizing and cubic filtering generates smooth values

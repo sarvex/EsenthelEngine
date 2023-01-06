@@ -26,6 +26,7 @@ namespace EE{
 #define ALPHA_LIMIT_LINEAR            (1.0f/16)
 #define ALPHA_LIMIT_CUBIC_FAST        (1.0f/ 8)
 #define ALPHA_LIMIT_CUBIC_FAST_SMOOTH (1.0f/16)
+#define ALPHA_LIMIT_CUBIC_FAST_MED    (1.0f/ 6)
 #define ALPHA_LIMIT_CUBIC_FAST_SHARP  (1.0f/ 4) // Warning: if increasing this value then it might cause overflow for integer processing (for 'CWA8AlphaLimit')
 #define ALPHA_LIMIT_CUBIC_PLUS        (1.0f/ 6)
 #define ALPHA_LIMIT_CUBIC_PLUS_SHARP  (1.0f/ 4)
@@ -314,8 +315,9 @@ PtrImagePixel GetImagePixelF(FILTER_TYPE filter)
       case FILTER_LINEAR           : return &Image::pixelFLinear         ;
       case FILTER_CUBIC_FAST       : return &Image::pixelFCubicFast      ;
       case FILTER_CUBIC_FAST_SMOOTH: return &Image::pixelFCubicFastSmooth;
+      case FILTER_CUBIC_FAST_MED   : return &Image::pixelFCubicFastMed   ;
       case FILTER_CUBIC_FAST_SHARP : return &Image::pixelFCubicFastSharp ;
-      default                      : // FILTER_BEST, FILTER_WAIFU
+      default                      : // FILTER_BEST, FILTER_WAIFU, FILTER_EASU
       case FILTER_CUBIC_PLUS       : return &Image::pixelFCubicPlus      ;
       case FILTER_CUBIC_PLUS_SHARP : return &Image::pixelFCubicPlusSharp ;
    }
@@ -328,8 +330,9 @@ PtrImagePixel3D GetImagePixel3DF(FILTER_TYPE filter)
       case FILTER_LINEAR           : return &Image::pixel3DFLinear         ;
       case FILTER_CUBIC_FAST       : return &Image::pixel3DFCubicFast      ;
       case FILTER_CUBIC_FAST_SMOOTH: return &Image::pixel3DFCubicFastSmooth;
+      case FILTER_CUBIC_FAST_MED   : return &Image::pixel3DFCubicFastMed   ;
       case FILTER_CUBIC_FAST_SHARP : return &Image::pixel3DFCubicFastSharp ;
-      default                      : // FILTER_BEST, FILTER_WAIFU
+      default                      : // FILTER_BEST, FILTER_WAIFU, FILTER_EASU
       case FILTER_CUBIC_PLUS       : return &Image::pixel3DFCubicPlus      ;
       case FILTER_CUBIC_PLUS_SHARP : return &Image::pixel3DFCubicPlusSharp ;
    }
@@ -342,8 +345,9 @@ PtrImageColor GetImageColorF(FILTER_TYPE filter)
       case FILTER_LINEAR           : return &Image::colorFLinear         ;
       case FILTER_CUBIC_FAST       : return &Image::colorFCubicFast      ;
       case FILTER_CUBIC_FAST_SMOOTH: return &Image::colorFCubicFastSmooth;
+      case FILTER_CUBIC_FAST_MED   : return &Image::colorFCubicFastMed   ;
       case FILTER_CUBIC_FAST_SHARP : return &Image::colorFCubicFastSharp ;
-      default                      : // FILTER_BEST, FILTER_WAIFU
+      default                      : // FILTER_BEST, FILTER_WAIFU, FILTER_EASU
       case FILTER_CUBIC_PLUS       : return &Image::colorFCubicPlus      ;
       case FILTER_CUBIC_PLUS_SHARP : return &Image::colorFCubicPlusSharp ;
    }
@@ -356,8 +360,9 @@ PtrImageColor3D GetImageColor3DF(FILTER_TYPE filter)
       case FILTER_LINEAR           : return &Image::color3DFLinear         ;
       case FILTER_CUBIC_FAST       : return &Image::color3DFCubicFast      ;
       case FILTER_CUBIC_FAST_SMOOTH: return &Image::color3DFCubicFastSmooth;
+      case FILTER_CUBIC_FAST_MED   : return &Image::color3DFCubicFastMed   ;
       case FILTER_CUBIC_FAST_SHARP : return &Image::color3DFCubicFastSharp ;
-      default                      : // FILTER_BEST, FILTER_WAIFU
+      default                      : // FILTER_BEST, FILTER_WAIFU, FILTER_EASU
       case FILTER_CUBIC_PLUS       : return &Image::color3DFCubicPlus      ;
       case FILTER_CUBIC_PLUS_SHARP : return &Image::color3DFCubicPlusSharp ;
    }
@@ -370,7 +375,8 @@ PtrImageAreaColor GetImageAreaColor(FILTER_TYPE filter, Bool &linear_gamma)
       case FILTER_LINEAR           : linear_gamma=true ; return &Image::areaColorLLinear         ;
       case FILTER_CUBIC_FAST       : linear_gamma=true ; return &Image::areaColorLCubicFast      ;
       case FILTER_CUBIC_FAST_SMOOTH: linear_gamma=true ; return &Image::areaColorLCubicFastSmooth;
-      default                      : ASSERT(FILTER_DOWN==FILTER_CUBIC_FAST_SHARP); // FILTER_BEST, FILTER_WAIFU
+      default                      : ASSERT(FILTER_DOWN==FILTER_CUBIC_FAST_MED); // FILTER_BEST, FILTER_WAIFU, FILTER_EASU
+      case FILTER_CUBIC_FAST_MED   : linear_gamma=false; return &Image::areaColorFCubicFastMed   ; // FILTER_CUBIC_FAST_MED   is not suitable for linear gamma
       case FILTER_CUBIC_FAST_SHARP : linear_gamma=false; return &Image::areaColorFCubicFastSharp ; // FILTER_CUBIC_FAST_SHARP is not suitable for linear gamma
       case FILTER_CUBIC_PLUS       : linear_gamma=false; return &Image::areaColorFCubicPlus      ; // FILTER_CUBIC_PLUS       is not suitable for linear gamma
       case FILTER_CUBIC_PLUS_SHARP : linear_gamma=false; return &Image::areaColorFCubicPlusSharp ; // FILTER_CUBIC_PLUS_SHARP is not suitable for linear gamma
@@ -5439,9 +5445,19 @@ struct CopyContext
                         ImageThreads.init().process(dest.lh(), Downsize2xLinear, T);
                      }goto finish;
 
+                   /*TODO:
+                     case FILTER_CUBIC_FAST: // this operates on linear gamma
+                     {
+                     }break;
+
                      case FILTER_WAIFU: // there's no downscale for Waifu, so fall back to best available
-                     case FILTER_BEST:
-                     case FILTER_CUBIC_FAST_SHARP: ASSERT(FILTER_DOWN==FILTER_CUBIC_FAST_SHARP); // this operates on source native gamma
+                     case FILTER_EASU : // there's no downscale for EASU , so fall back to best available
+                     case FILTER_BEST : ASSERT(FILTER_DOWN==FILTER_CUBIC_FAST_MED);
+                     case FILTER_CUBIC_FAST_MED: // this operates on source native gamma
+                     {
+                     }break;*/
+
+                     case FILTER_CUBIC_FAST_SHARP: // used by 'updateMipMaps', this operates on source native gamma
                      {
                       //high_prec|=src_srgb; FILTER_CUBIC_FAST_SHARP is not suitable for linear gamma (artifacts happen due to sharpening)
                         if(!high_prec)
@@ -5531,11 +5547,11 @@ struct CopyContext
                   Weight     =(                                    (filter==FILTER_CUBIC_PLUS_SHARP) ? CubicPlusSharp2              : CubicPlus2            ); ASSERT(CUBIC_PLUS_SAMPLES==CUBIC_PLUS_SHARP_SAMPLES && CUBIC_PLUS_RANGE==CUBIC_PLUS_SHARP_RANGE && CUBIC_PLUS_SHARPNESS==CUBIC_PLUS_SHARP_SHARPNESS);
                   ImageThreads.init().process(dest.lh()*dest.ld(), UpsizeCubicPlus, T);
                }else
-               if((filter==FILTER_CUBIC_FAST || filter==FILTER_CUBIC_FAST_SMOOTH || filter==FILTER_CUBIC_FAST_SHARP) // optimized CubicFast upscale
+               if((filter==FILTER_CUBIC_FAST || filter==FILTER_CUBIC_FAST_SMOOTH || filter==FILTER_CUBIC_FAST_MED || filter==FILTER_CUBIC_FAST_SHARP) // optimized CubicFast upscale
                && src.ld()==1)
                {
-                  alpha_limit=(no_alpha_limit ? ALPHA_LIMIT_NONE : (filter==FILTER_CUBIC_FAST) ? ALPHA_LIMIT_CUBIC_FAST : (filter==FILTER_CUBIC_FAST_SMOOTH) ? ALPHA_LIMIT_CUBIC_FAST_SMOOTH : ALPHA_LIMIT_CUBIC_FAST_SHARP);
-                  Weight     =(                                    (filter==FILTER_CUBIC_FAST) ? CubicFast2             : (filter==FILTER_CUBIC_FAST_SMOOTH) ? CubicFastSmooth2              : CubicFastSharp2             );
+                  alpha_limit=(no_alpha_limit ? ALPHA_LIMIT_NONE : (filter==FILTER_CUBIC_FAST) ? ALPHA_LIMIT_CUBIC_FAST : (filter==FILTER_CUBIC_FAST_SMOOTH) ? ALPHA_LIMIT_CUBIC_FAST_SMOOTH : (filter==FILTER_CUBIC_FAST_MED) ? ALPHA_LIMIT_CUBIC_FAST_MED : ALPHA_LIMIT_CUBIC_FAST_SHARP);
+                  Weight     =(                                    (filter==FILTER_CUBIC_FAST) ? CubicFast2             : (filter==FILTER_CUBIC_FAST_SMOOTH) ? CubicFastSmooth2              : (filter==FILTER_CUBIC_FAST_MED) ? CubicFastMed2              : CubicFastSharp2             );
                   ImageThreads.init().process(dest.lh()*dest.ld(), UpsizeCubicFast, T);
                }else
                if(filter==FILTER_LINEAR // optimized Linear upscale, this is used for Texture Sharpness calculation
