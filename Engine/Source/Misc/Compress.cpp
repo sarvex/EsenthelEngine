@@ -2003,7 +2003,7 @@ UInt CompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncompr
    #endif
 
    #if SUPPORT_BROTLI
-      case COMPRESS_BROTLI: return ;
+      case COMPRESS_BROTLI: return ; https://github.com/google/brotli/issues/389
    #endif
 
    #if SUPPORT_LZHAM
@@ -2072,7 +2072,7 @@ UInt DecompressionMemUsage(COMPRESS_TYPE type, Int compression_level, Long uncom
    #endif
 
    #if SUPPORT_BROTLI
-      case COMPRESS_BROTLI: return ;
+      case COMPRESS_BROTLI: return ; https://github.com/google/brotli/issues/389
    #endif
 
    #if SUPPORT_LZHAM
