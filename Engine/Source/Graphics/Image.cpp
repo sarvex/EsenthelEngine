@@ -3166,13 +3166,15 @@ Bool Image::updateMipMaps(C Image &src, Int src_mip, FILTER_TYPE filter, UInt fl
    }
    if(!InRange(mip_start+1, mipMaps()))return true ; // if we can set the next one
    if(!InRange(src_mip, src.mipMaps()))return false; // if we can access the source
-   Bool  ok=true;
-   Int   src_faces1=src.faces()-1;
+   Bool       ok=true;
+   Int        src_faces1=src.faces()-1;
+   IMAGE_TYPE type=hwType(); // get type based on destination, because we extract only one time, but inject several times. Prefer dest 'hwType', so we can avoid conversions in 'injectMipMap'. For example 'type' can be RGB but 'hwType' can be RGBA, so we're actually setting RGBA data
+   if(ImageTI[type].compressed)type=ImageTypeUncompressed(type); // however if it's compressed, then use uncompressed type so we don't lose quality in each 'downSample'
    Image temp; // keep outside the loop in case we can reuse the image
-   if(filter==FILTER_BEST)filter=FILTER_MIP;
+   filter=FilterMip(filter);
    REPD(face, faces())
    {
-      ok&=src.extractMipMap(temp, typeInfo().compressed ? ImageTypeUncompressed(type()) : type(), src_mip, (DIR_ENUM)Min(face, src_faces1)); // use 'type' instead of 'hwType' (this is correct), use destination type instead of 'src.type' because we extract only one time, but inject several times
+      ok&=src.extractMipMap(temp, type, src_mip, (DIR_ENUM)Min(face, src_faces1));
       for(Int mip=mip_start; ++mip<mipMaps(); )
       {
          temp.downSample(filter, flags);
