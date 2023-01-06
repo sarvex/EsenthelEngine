@@ -6,6 +6,12 @@ namespace EE{
 /******************************************************************************/
 ImageThreadsClass ImageThreads;
 /******************************************************************************/
+ImageThreadsClass& ImageThreadsClass::init()
+{
+   if(!created())createIfEmpty(false, Cpu.threads()-1, 0, "EE.Image #"); // -1 because we will do processing on the caller thread too
+   return T;
+}
+/******************************************************************************/
 static Bool Decompress(Image &image, IMAGE_TYPE &type, IMAGE_MODE &mode, Int &mip_maps) // returns if image exists
 {
    type    =image.type   ();

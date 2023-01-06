@@ -831,6 +831,15 @@ struct ImageCompare
    Bool compare(C Image &a, C Image &b, Flt similar_dif=0.01f, Bool alpha_weight=false, Int a_mip=0, Flt skip_dif=1.0f); // compare 2 images, 'similar_dif'=limit used to determine that colors are similar, 'alpha_weight'=if use alpha channel as the weight, 'a_mip'=mip map of 'a' image used for comparison (based on this value, mip map of 'b' image will be selected to match the size of selected 'a' mip map), 'skip_dif'=if a single color difference exceeds this limit then skip remaining processing and return as soon as possible (value >=1 disables skipping), this function returns true on success and false on fail (if couldn't find matching mip map size between images, or if failed to lock the images)
 };
 /******************************************************************************/
+struct ImageThreadsClass : Threads
+{
+   ImageThreadsClass& init(); // initialize, call this at least once before any processing
+
+                 void process(Int elms, void func(IntPtr elm_index, Ptr        user, Int thread_index), Ptr        user) {process1(elms, func, user, INT_MAX);} // use all available threads, including this one
+   T1(USER_DATA) void process(Int elms, void func(IntPtr elm_index, USER_DATA &user, Int thread_index), USER_DATA &user) {process1(elms, func, user, INT_MAX);} // use all available threads, including this one
+}extern
+   ImageThreads;
+/******************************************************************************/
 IMAGE_TYPE BytesToImageType(Int byte_pp); // get IMAGE_TYPE needed to store 'byte_pp' amount of bytes per pixel, which is 1->IMAGE_I8, 2->IMAGE_I16, 3->IMAGE_I24, 4->IMAGE_I32, other->IMAGE_NONE
 
 IMAGE_TYPE ImageTypeIncludeRGB(IMAGE_TYPE type); // convert 'type' to the most similar IMAGE_TYPE that has RGB channels
@@ -851,20 +860,10 @@ IMAGE_TYPE ImageTypeForMode(IMAGE_TYPE type, IMAGE_MODE mode); // convert 'type'
 DIR_ENUM DirToCubeFace(C Vec &dir                    ); // convert vector direction (doesn't need to be normalized) to cube face
 DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &tex); // convert vector direction (doesn't need to be normalized) to cube face and texture coordinates, 'res'=cube image resolution, 'tex'=image coordinates
 Vec      CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert image coordinates, 'x,y'=image coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image cube face, returned vector is not normalized, however its on a cube with radius=1 ("Abs(dir).max()=1")
-
+/******************************************************************************/
 #if EE_PRIVATE
 #define MAX_MIP_MAPS 32
 INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);} // +1 because this checks number of elements
-struct ImageThreadsClass : Threads
-{
-   ImageThreadsClass& init()
-   {
-      if(!created())createIfEmpty(false, Cpu.threads()-1, 0, "EE.Image #"); // -1 because we will do processing on the caller thread too
-      return T;
-   }
-                 void process(Int elms, void func(IntPtr elm_index, Ptr        user, Int thread_index), Ptr        user) {process1(elms, func, user, INT_MAX);} // use all available threads, including this one
-   T1(USER_DATA) void process(Int elms, void func(IntPtr elm_index, USER_DATA &user, Int thread_index), USER_DATA &user) {process1(elms, func, user, INT_MAX);} // use all available threads, including this one
-}extern ImageThreads;
 
 extern const ImagePtr ImageNull;
 
