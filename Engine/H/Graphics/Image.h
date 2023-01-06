@@ -19,10 +19,11 @@ enum FILTER_TYPE : Byte // Filtering Type
    FILTER_BEST             , // automatically choose the best filter (currently FILTER_WAIFU for up-scaling, FILTER_CUBIC_FAST_MED for down-scaling, FILTER_CUBIC_FAST_SHARP for mip-maps)
    FILTER_NO_STRETCH       , // does not perform any stretching, pixels out of range are either wrapped or clamped
    FILTER_NUM              , // number of filters
+
 #if EE_PRIVATE
-   FILTER_DOWN=FILTER_CUBIC_FAST_MED  , // best filter used for down-scaling
-   FILTER_MIP =FILTER_CUBIC_FAST_SHARP, // best filter used for  mip-maps
+   FILTER_DOWN=FILTER_CUBIC_FAST_MED, // best filter for down-scaling
 #endif
+   FILTER_MIP=FILTER_CUBIC_FAST_SHARP, // best filter for mip-maps
 };
 /******************************************************************************/
 enum LOCK_MODE : Byte

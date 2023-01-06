@@ -494,13 +494,14 @@ TextureDownsize TexDownsize;
       different=false;
       Settings *settings=curSettings();
       int d;
+      FILTER_TYPE filter=FILTER_MIP; // use the same filter that's used for generating mip-maps, it will allow to do a fast copy by reusing existing mip-maps from source
 
       // base0
       d=((settings && normal_mtrl && normal_mtrl->base_0) ? settings->base0() : 0);
       different|=(d!=0);
       if(d>0)
       {
-         normal_mtrl->base_0->copy(downsized_base[0], Max(1, normal_mtrl->base_0->w()>>d), Max(1, normal_mtrl->base_0->h()>>d), -1, -1, -1, normal_mtrl->base_0->mipMaps()-d, FILTER_BEST, IC_WRAP);
+         normal_mtrl->base_0->copy(downsized_base[0], Max(1, normal_mtrl->base_0->w()>>d), Max(1, normal_mtrl->base_0->h()>>d), -1, -1, -1, normal_mtrl->base_0->mipMaps()-d, filter, IC_WRAP);
       }else downsized_base[0].del();
 
       // base1
@@ -508,7 +509,7 @@ TextureDownsize TexDownsize;
       different|=(d!=0);
       if(d>0)
       {
-         normal_mtrl->base_1->copy(downsized_base[1], Max(1, normal_mtrl->base_1->w()>>d), Max(1, normal_mtrl->base_1->h()>>d), -1, -1, -1, normal_mtrl->base_1->mipMaps()-d, FILTER_BEST, IC_WRAP);
+         normal_mtrl->base_1->copy(downsized_base[1], Max(1, normal_mtrl->base_1->w()>>d), Max(1, normal_mtrl->base_1->h()>>d), -1, -1, -1, normal_mtrl->base_1->mipMaps()-d, filter, IC_WRAP);
       }else downsized_base[1].del();
 
       // base2
@@ -516,7 +517,7 @@ TextureDownsize TexDownsize;
       different|=(d!=0);
       if(d>0)
       {
-         normal_mtrl->base_2->copy(downsized_base[2], Max(1, normal_mtrl->base_2->w()>>d), Max(1, normal_mtrl->base_2->h()>>d), -1, -1, -1, normal_mtrl->base_2->mipMaps()-d, FILTER_BEST, IC_WRAP);
+         normal_mtrl->base_2->copy(downsized_base[2], Max(1, normal_mtrl->base_2->w()>>d), Max(1, normal_mtrl->base_2->h()>>d), -1, -1, -1, normal_mtrl->base_2->mipMaps()-d, filter, IC_WRAP);
       }else downsized_base[2].del();
 
       // emissive
@@ -524,7 +525,7 @@ TextureDownsize TexDownsize;
       different|=(d!=0);
       if(d>0)
       {
-         normal_mtrl->emissive_map->copy(downsized_emis, Max(1, normal_mtrl->emissive_map->w()>>d), Max(1, normal_mtrl->emissive_map->h()>>d), -1, -1, -1, normal_mtrl->emissive_map->mipMaps()-d, FILTER_BEST, IC_WRAP);
+         normal_mtrl->emissive_map->copy(downsized_emis, Max(1, normal_mtrl->emissive_map->w()>>d), Max(1, normal_mtrl->emissive_map->h()>>d), -1, -1, -1, normal_mtrl->emissive_map->mipMaps()-d, filter, IC_WRAP);
       }else downsized_emis.del();
 
       int    size_original=0, size_downsized=0;
