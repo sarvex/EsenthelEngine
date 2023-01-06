@@ -3586,6 +3586,39 @@ Vec4 Image::areaColorLCubicFastSmooth(C Vec2 &pos, C Vec2 &size, Bool clamp, Boo
    return 0;
 }
 /******************************************************************************/
+Vec4 Image::areaColorFCubicFastMed(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool alpha_weight)C
+{
+   if(lw() && lh())
+   {
+      // f=(p-center)/size
+      const Vec2 size_a(Max(CUBIC_FAST_RANGE, size.x*CUBIC_FAST_RANGE), Max(CUBIC_FAST_RANGE, size.y*CUBIC_FAST_RANGE));
+      Vec2 x_mul_add; x_mul_add.x=CUBIC_FAST_RANGE/size_a.x; x_mul_add.y=-pos.x*x_mul_add.x;
+      Vec2 y_mul_add; y_mul_add.x=CUBIC_FAST_RANGE/size_a.y; y_mul_add.y=-pos.y*y_mul_add.x;
+
+      // ceil is used for min, and floor used for max, because these are coordinates at which the weight function is zero, so we need to process next/previous pixels because they will be the first ones with some weight
+      Int x0=CeilSpecial(pos.x-size_a.x), x1=FloorSpecial(pos.x+size_a.x),
+          y0=CeilSpecial(pos.y-size_a.y), y1=FloorSpecial(pos.y+size_a.y);
+
+      Flt  weight=0; // this is always non-zero
+      Vec  rgb   =0;
+      Vec4 color =0;
+      for(Int y=y0; y<=y1; y++)
+      {
+         Flt fy2=Sqr(y*y_mul_add.x + y_mul_add.y); Int yi=(clamp ? Mid(y, 0, lh()-1) : Mod(y, lh()));
+         for(Int x=x0; x<=x1; x++)
+         {
+            Flt fx2=Sqr(x*x_mul_add.x + x_mul_add.y), w=fx2+fy2;
+            if(w<Sqr(CUBIC_FAST_RANGE))
+            {
+               w=CubicFastMed2(w); Int xi=(clamp ? Mid(x, 0, lw()-1) : Mod(x, lw())); Add(color, rgb, colorF(xi, yi), w, alpha_weight); weight+=w;
+            }
+         }
+      }
+      Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST_MED);
+      return color;
+   }
+   return 0;
+}
 Vec4 Image::areaColorFCubicFastSharp(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool alpha_weight)C
 {
    if(lw() && lh())
