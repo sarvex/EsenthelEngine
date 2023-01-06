@@ -484,13 +484,16 @@ VecI2 GetSize(C Str &name, C Str &value, C VecI &src, C VecI &background_size)
 }
 int GetFilterI(C Str &name)
 {
-   if(Contains(name, "nearest"  ) || Contains(name, "point") || Contains(name, "FilterNone"))return FILTER_NONE;
-   if(Contains(name, "linear"   ))return FILTER_LINEAR;
-   if(Contains(name, "cubic+"   ) || Contains(name, "cubicPlus"))return FILTER_CUBIC_PLUS; // !! check this before "cubic" !!
-   if(Contains(name, "cubic"    ))return FILTER_CUBIC_FAST;
-   if(Contains(name, "waifu"    ))return FILTER_WAIFU;
-   if(Contains(name, "NoStretch"))return FILTER_NO_STRETCH;
-                                  return -1;
+   if(Contains(name, "nearest"   ) || Contains(name, "point") || Contains(name, "FilterNone"))return FILTER_NONE;
+   if(Contains(name, "linear"    ))return FILTER_LINEAR;
+   if(Contains(name, "cubic+"    ) || Contains(name, "cubicPlus"))return FILTER_CUBIC_PLUS; // !! check this before "cubic" !!
+   if(Contains(name, "cubic"     ))return FILTER_CUBIC_FAST;
+   if(Contains(name, "cubicMed"  ))return FILTER_CUBIC_FAST_MED;
+   if(Contains(name, "cubicSharp"))return FILTER_CUBIC_FAST_SHARP;
+   if(Contains(name, "Waifu"     ))return FILTER_WAIFU;
+   if(Contains(name, "EASU"      ))return FILTER_EASU;
+   if(Contains(name, "NoStretch" ))return FILTER_NO_STRETCH;
+                                   return -1;
 }
 FILTER_TYPE GetFilter(C Str &name)
 {
