@@ -1898,6 +1898,48 @@ Flt Image::pixelFCubicFastSmooth(Flt x, Flt y, Bool clamp)C
    }
    return 0;
 }
+Flt Image::pixelFCubicFastMed(Flt x, Flt y, Bool clamp)C
+{
+   if(lw() && lh())
+   {
+      Int xo[4]; xo[0]=Floor(x); x-=xo[0]; xo[0]--;
+      Int yo[4]; yo[0]=Floor(y); y-=yo[0]; yo[0]--;
+      if(clamp)
+      {
+         xo[1]=Mid(xo[0]+1, 0, lw()-1); xo[2]=Mid(xo[0]+2, 0, lw()-1); xo[3]=Mid(xo[0]+3, 0, lw()-1); Clamp(xo[0], 0, lw()-1);
+         yo[1]=Mid(yo[0]+1, 0, lh()-1); yo[2]=Mid(yo[0]+2, 0, lh()-1); yo[3]=Mid(yo[0]+3, 0, lh()-1); Clamp(yo[0], 0, lh()-1);
+      }else
+      {
+         xo[0]=Mod(xo[0], lw()); xo[1]=(xo[0]+1)%lw(); xo[2]=(xo[0]+2)%lw(); xo[3]=(xo[0]+3)%lw();
+         yo[0]=Mod(yo[0], lh()); yo[1]=(yo[0]+1)%lh(); yo[2]=(yo[0]+2)%lh(); yo[3]=(yo[0]+3)%lh();
+      }
+      Flt p[4][4]; gather(&p[0][0], xo, Elms(xo), yo, Elms(yo)); // [y][x]
+      Flt x0w=Sqr(x+1), x1w=Sqr(x), x2w=Sqr(x-1), x3w=Sqr(x-2),
+          y0w=Sqr(y+1), y1w=Sqr(y), y2w=Sqr(y-1), y3w=Sqr(y-2),
+          v=0, weight=0, w;
+      w=x0w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[0][0]*w; weight+=w;}
+      w=x1w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[0][1]*w; weight+=w;}
+      w=x2w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[0][2]*w; weight+=w;}
+      w=x3w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[0][3]*w; weight+=w;}
+
+      w=x0w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[1][0]*w; weight+=w;}
+      w=x1w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[1][1]*w; weight+=w;}
+      w=x2w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[1][2]*w; weight+=w;}
+      w=x3w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[1][3]*w; weight+=w;}
+
+      w=x0w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[2][0]*w; weight+=w;}
+      w=x1w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[2][1]*w; weight+=w;}
+      w=x2w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[2][2]*w; weight+=w;}
+      w=x3w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[2][3]*w; weight+=w;}
+
+      w=x0w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[3][0]*w; weight+=w;}
+      w=x1w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[3][1]*w; weight+=w;}
+      w=x2w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[3][2]*w; weight+=w;}
+      w=x3w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); v+=p[3][3]*w; weight+=w;}
+      return v/weight;
+   }
+   return 0;
+}
 Flt Image::pixelFCubicFastSharp(Flt x, Flt y, Bool clamp)C
 {
    if(lw() && lh())
@@ -2126,6 +2168,52 @@ Vec4 Image::colorFCubicFastSmooth(Flt x, Flt y, Bool clamp, Bool alpha_weight)C
    }
    return 0;
 }
+Vec4 Image::colorFCubicFastMed(Flt x, Flt y, Bool clamp, Bool alpha_weight)C
+{
+   if(lw() && lh())
+   {
+      Int xo[4]; xo[0]=Floor(x); x-=xo[0]; xo[0]--;
+      Int yo[4]; yo[0]=Floor(y); y-=yo[0]; yo[0]--;
+      if(clamp)
+      {
+         xo[1]=Mid(xo[0]+1, 0, lw()-1); xo[2]=Mid(xo[0]+2, 0, lw()-1); xo[3]=Mid(xo[0]+3, 0, lw()-1); Clamp(xo[0], 0, lw()-1);
+         yo[1]=Mid(yo[0]+1, 0, lh()-1); yo[2]=Mid(yo[0]+2, 0, lh()-1); yo[3]=Mid(yo[0]+3, 0, lh()-1); Clamp(yo[0], 0, lh()-1);
+      }else
+      {
+         xo[0]=Mod(xo[0], lw()); xo[1]=(xo[0]+1)%lw(); xo[2]=(xo[0]+2)%lw(); xo[3]=(xo[0]+3)%lw();
+         yo[0]=Mod(yo[0], lh()); yo[1]=(yo[0]+1)%lh(); yo[2]=(yo[0]+2)%lh(); yo[3]=(yo[0]+3)%lh();
+      }
+
+      Vec4 c[4][4]; gather(&c[0][0], xo, Elms(xo), yo, Elms(yo)); // [y][x]
+      Vec  rgb   =0;
+      Vec4 color =0;
+      Flt  weight=0, w,
+           x0w=Sqr(x+1), x1w=Sqr(x), x2w=Sqr(x-1), x3w=Sqr(x-2),
+           y0w=Sqr(y+1), y1w=Sqr(y), y2w=Sqr(y-1), y3w=Sqr(y-2);
+      w=x0w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[0][0], w, alpha_weight); weight+=w;}
+      w=x1w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[0][1], w, alpha_weight); weight+=w;}
+      w=x2w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[0][2], w, alpha_weight); weight+=w;}
+      w=x3w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[0][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[1][0], w, alpha_weight); weight+=w;}
+      w=x1w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[1][1], w, alpha_weight); weight+=w;}
+      w=x2w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[1][2], w, alpha_weight); weight+=w;}
+      w=x3w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[1][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[2][0], w, alpha_weight); weight+=w;}
+      w=x1w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[2][1], w, alpha_weight); weight+=w;}
+      w=x2w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[2][2], w, alpha_weight); weight+=w;}
+      w=x3w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[2][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[3][0], w, alpha_weight); weight+=w;}
+      w=x1w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[3][1], w, alpha_weight); weight+=w;}
+      w=x2w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[3][2], w, alpha_weight); weight+=w;}
+      w=x3w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFastMed2(w); Add(color, rgb, c[3][3], w, alpha_weight); weight+=w;}
+      Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST_MED);
+      return color;
+   }
+   return 0;
+}
 Vec4 Image::colorFCubicFastSharp(Flt x, Flt y, Bool clamp, Bool alpha_weight)C
 {
    if(lw() && lh())
@@ -2245,6 +2333,45 @@ Flt Image::pixel3DFCubicFastSmooth(Flt x, Flt y, Flt z, Bool clamp)C
          Flt w=xw[x]+yw[y]+zw[z]; if(w<Sqr(CUBIC_FAST_RANGE))
          {
             w=CubicFastSmooth2(w); v+=p[z][y][x]*w; weight+=w;
+         }
+      }
+      return v/weight;
+   }
+   return 0;
+}
+Flt Image::pixel3DFCubicFastMed(Flt x, Flt y, Flt z, Bool clamp)C
+{
+   if(lw() && lh() && ld())
+   {
+      Int xo[CUBIC_FAST_SAMPLES*2], yo[CUBIC_FAST_SAMPLES*2], zo[CUBIC_FAST_SAMPLES*2], xi=Floor(x), yi=Floor(y), zi=Floor(z);
+      Flt xw[CUBIC_FAST_SAMPLES*2], yw[CUBIC_FAST_SAMPLES*2], zw[CUBIC_FAST_SAMPLES*2];
+      Flt p [CUBIC_FAST_SAMPLES*2][CUBIC_FAST_SAMPLES*2][CUBIC_FAST_SAMPLES*2];
+      REPA(xo)
+      {
+         xo[i]=xi-CUBIC_FAST_SAMPLES+1+i; xw[i]=Sqr(x-xo[i]);
+         yo[i]=yi-CUBIC_FAST_SAMPLES+1+i; yw[i]=Sqr(y-yo[i]);
+         zo[i]=zi-CUBIC_FAST_SAMPLES+1+i; zw[i]=Sqr(z-zo[i]);
+         if(clamp)
+         {
+            Clamp(xo[i], 0, lw()-1);
+            Clamp(yo[i], 0, lh()-1);
+            Clamp(zo[i], 0, ld()-1);
+         }else
+         {
+            xo[i]=Mod(xo[i], lw());
+            yo[i]=Mod(yo[i], lh());
+            zo[i]=Mod(zo[i], ld());
+         }
+      }
+      gather(&p[0][0][0], xo, Elms(xo), yo, Elms(yo), zo, Elms(zo)); // [z][y][x]
+      Flt weight=0, v=0;
+      REPAD(z, zo)
+      REPAD(y, yo)
+      REPAD(x, xo)
+      {
+         Flt w=xw[x]+yw[y]+zw[z]; if(w<Sqr(CUBIC_FAST_RANGE))
+         {
+            w=CubicFastMed2(w); v+=p[z][y][x]*w; weight+=w;
          }
       }
       return v/weight;
@@ -2680,6 +2807,48 @@ Vec4 Image::color3DFCubicFastSmooth(Flt x, Flt y, Flt z, Bool clamp, Bool alpha_
          }
       }
       Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST_SMOOTH);
+      return color;
+   }
+   return 0;
+}
+Vec4 Image::color3DFCubicFastMed(Flt x, Flt y, Flt z, Bool clamp, Bool alpha_weight)C
+{
+   if(lw() && lh() && ld())
+   {
+      Int  xo[CUBIC_FAST_SAMPLES*2], yo[CUBIC_FAST_SAMPLES*2], zo[CUBIC_FAST_SAMPLES*2], xi=Floor(x), yi=Floor(y), zi=Floor(z);
+      Flt  xw[CUBIC_FAST_SAMPLES*2], yw[CUBIC_FAST_SAMPLES*2], zw[CUBIC_FAST_SAMPLES*2];
+      Vec4 c [CUBIC_FAST_SAMPLES*2][CUBIC_FAST_SAMPLES*2][CUBIC_FAST_SAMPLES*2];
+      REPA(xo)
+      {
+         xo[i]=xi-CUBIC_FAST_SAMPLES+1+i; xw[i]=Sqr(x-xo[i]);
+         yo[i]=yi-CUBIC_FAST_SAMPLES+1+i; yw[i]=Sqr(y-yo[i]);
+         zo[i]=zi-CUBIC_FAST_SAMPLES+1+i; zw[i]=Sqr(z-zo[i]);
+         if(clamp)
+         {
+            Clamp(xo[i], 0, lw()-1);
+            Clamp(yo[i], 0, lh()-1);
+            Clamp(zo[i], 0, ld()-1);
+         }else
+         {
+            xo[i]=Mod(xo[i], lw());
+            yo[i]=Mod(yo[i], lh());
+            zo[i]=Mod(zo[i], ld());
+         }
+      }
+      gather(&c[0][0][0], xo, Elms(xo), yo, Elms(yo), zo, Elms(zo)); // [z][y][x]
+      Flt  weight=0;
+      Vec  rgb   =0;
+      Vec4 color =0;
+      REPAD(z, zo)
+      REPAD(y, yo)
+      REPAD(x, xo)
+      {
+         Flt w=xw[x]+yw[y]+zw[z]; if(w<Sqr(CUBIC_FAST_RANGE))
+         {
+            w=CubicFastMed2(w); Add(color, rgb, c[z][y][x], w, alpha_weight); weight+=w;
+         }
+      }
+      Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST_MED);
       return color;
    }
    return 0;
