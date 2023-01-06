@@ -92,7 +92,7 @@ class ExportWindow : WindowIO
                         for(int y=images.min.y; y<=images.max.y; y++)
                         for(int x=images.min.x; x<=images.max.x; x++)
                         {
-                           C Image &src=map(VecI2(x, y));
+                         C Image &src=map(VecI2(x, y));
                            if(src.is() && src.copy(temp, image_size, image_size, 1, IMAGE_R8G8B8A8_SRGB, IMAGE_SOFT, 1))
                            {
                               int ox=(x-images.min.x  )*image_size,

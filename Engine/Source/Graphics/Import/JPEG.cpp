@@ -377,7 +377,7 @@ Bool      (*ImportJXL)(Image &image, File &f);
 Bool Image::ImportJXL (              File &f)
 {
 #if SUPPORT_JXL
-   if(::ImportJXL)return ::ImportJXL(T, f); DEBUG_EXIT("'SupportImportJXL/SupportJXL' was not called"); 
+   if(::ImportJXL)return ::ImportJXL(T, f); //DEBUG_EXIT("'SupportImportJXL/SupportJXL' was not called"); 
 #endif
    del(); return false;
 }

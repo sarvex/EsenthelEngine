@@ -1542,7 +1542,7 @@ Bool      (*ImportAVIF)(Image &image, File &f);
 Bool Image::ImportAVIF (              File &f)
 {
 #if SUPPORT_AVIF
-   if(::ImportAVIF)return ::ImportAVIF(T, f); DEBUG_EXIT("'SupportImportAVIF/SupportAVIF' was not called"); 
+   if(::ImportAVIF)return ::ImportAVIF(T, f); //DEBUG_EXIT("'SupportImportAVIF/SupportAVIF' was not called"); 
 #endif
    del(); return false;
 }

@@ -139,6 +139,17 @@ ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the sa
 }; ASSERT(IMAGE_ALL_TYPES==89);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
+static FILTER_TYPE FilterDown(FILTER_TYPE filter)
+{
+   switch(filter)
+   {
+      case FILTER_BEST :
+      case FILTER_WAIFU:
+      case FILTER_EASU :
+               return FILTER_DOWN;
+      default: return filter;
+   }
+}
 static FILTER_TYPE FilterMip(FILTER_TYPE filter)
 {
    switch(filter)
@@ -2170,7 +2181,7 @@ static Bool Decompress(C Image &src, Image &dest, Int max_mip_maps=INT_MAX) // a
    return false;
 }
 /******************************************************************************/
-static Bool Compress(C Image &src, Image &dest) // assumes that 'src' and 'dest' are 2 different objects, 'src' is created as non-compressed, and 'dest' is created as compressed, they have the same 'size3'
+static Bool Compress(C Image &src, Image &dest) // assumes that 'src' and 'dest' are 2 different objects, 'src' is created as non-compressed, and 'dest' is created as compressed, they have the same 'size3'. This will copy all mip-maps
 {
    switch(dest.hwType())
    {
@@ -2325,11 +2336,12 @@ skip:;
       Int  copied_mip_maps=0,
               max_mip_maps=(env ? 1 : INT_MAX); // for 'env' copy only the first mip map, the rest will be blurred manually
       Bool same_size=(src->size3()==target.size3());
+      FILTER_TYPE filter_mip=FILTER_BEST;
       if(same_size // if we use the same size (for which case 'filter' and IC_KEEP_EDGES are ignored)
       || (
-            (filter==FILTER_BEST || filter==FILTER_DOWN || filter==FILTER_WAIFU) // we're going to use default filter for downsampling (which is typically used for mip-map generation), FILTER_WAIFU falls back to FILTER_BEST
-         && FlagOff(flags, IC_KEEP_EDGES)                                        // we're not keeping the edges                        (which is typically used for mip-map generation)
-         && !env                                                                 // for 'env' allow copying only if we have same size, so we can copy only first mip-map (in case others are blurred specially)
+            FilterDown(filter)==FilterMip(filter_mip) // we're going to use the same filter that's used for generating mip-maps
+         && FlagOff(flags, IC_KEEP_EDGES)             // we're not keeping the edges                        (which is typically used for mip-map generation)
+         && !env                                      // for 'env' allow copying only if we have same size, so we can copy only first mip-map (in case others are blurred specially)
          )
       )copied_mip_maps=CopyMipMaps(*src, target, ignore_gamma, max_mip_maps);
       if(!copied_mip_maps)
@@ -2360,10 +2372,11 @@ skip:;
                   if(!resized_src.create(target.w(), target.h(), target.d(), src->hwType(), (src->cube() && target.cube()) ? IMAGE_SOFT_CUBE : IMAGE_SOFT, 1))return false; // for resize use only 1 mip map, and remaining set with 'updateMipMaps' below
                   if(!src->copySoft(resized_src, filter, flags))return false; src=&resized_src; decompressed_src.del(); // we don't need 'decompressed_src' anymore so delete it to release memory
                }
-               if(!Compress(*src, target))return false;
+               // now 'src' and 'target' are same size
+               if(!Compress(*src, target))return false; // this will copy all mip-maps
                // in this case we have to use last 'src' mip map as the base mip map to set remaining 'target' mip maps, because now 'target' is compressed and has lower quality, while 'src' has better, this is also faster because we don't have to decompress initial mip map
                Int mip_start=src->mipMaps()-1;
-               target.updateMipMaps(*src, mip_start, FILTER_BEST, flags, mip_start);
+               target.updateMipMaps(*src, mip_start, filter_mip, flags, mip_start);
                goto skip_mip_maps; // we've already set mip maps, so skip them
             }else
             {
@@ -2376,7 +2389,7 @@ skip:;
       }
    finish:
       if(env)return BlurCubeMipMaps(target, dest, type, mode, filter, flags);
-      target.updateMipMaps(FILTER_BEST, flags, copied_mip_maps-1);
+      target.updateMipMaps(filter_mip, flags, copied_mip_maps-1);
    skip_mip_maps:
       if(&target!=&dest)Swap(dest, target);
    }
