@@ -2477,7 +2477,7 @@ class ProjectEx : ProjectHierarchy
             if(includeTex(material.emissive_tex))
             {
                SetFullAlpha(emissive, ct);
-               emissive.copy(emissive, -1, -1, -1, ct, IMAGE_2D, 0);
+               emissive.copy(emissive, -1, -1, -1, ct, IMAGE_2D, 0, FILTER_BEST, IC_WRAP);
                saveTex(emissive, material.emissive_tex);
             }
             Server.setTex(material.emissive_tex);
