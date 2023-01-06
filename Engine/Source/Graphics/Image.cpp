@@ -139,6 +139,18 @@ ImageTypeInfo ImageTI[IMAGE_ALL_TYPES]= // !! in case multiple types have the sa
 }; ASSERT(IMAGE_ALL_TYPES==89);
 Bool ImageTypeInfo::_usage_known=false;
 /******************************************************************************/
+static FILTER_TYPE FilterMip(FILTER_TYPE filter)
+{
+   switch(filter)
+   {
+      case FILTER_BEST :
+      case FILTER_WAIFU:
+      case FILTER_EASU :
+               return FILTER_MIP;
+      default: return filter;
+   }
+}
+/******************************************************************************/
 Bool IsSRGB(IMAGE_TYPE type)
 {
    switch(type)

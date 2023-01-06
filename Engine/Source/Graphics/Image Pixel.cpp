@@ -5648,6 +5648,7 @@ struct CopyContext
                      }goto finish;
 
                    /*TODO:
+
                      case FILTER_CUBIC_FAST: // this operates on linear gamma
                      {
                      }break;
