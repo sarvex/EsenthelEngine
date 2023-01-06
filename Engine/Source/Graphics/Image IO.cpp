@@ -1542,7 +1542,7 @@ Bool      (*ImportAVIF)(Image &image, File &f);
 Bool Image::ImportAVIF (              File &f)
 {
 #if SUPPORT_AVIF
-   if(::ImportAVIF)return ::ImportAVIF(T, f);
+   if(::ImportAVIF)return ::ImportAVIF(T, f); DEBUG_EXIT("'SupportImportAVIF/SupportAVIF' was not called"); 
 #endif
    del(); return false;
 }
@@ -1550,7 +1550,7 @@ Bool      (*ExportAVIF)(C Image &image, File &f, Flt rgb_quality, Flt alpha_qual
 Bool Image::ExportAVIF (                File &f, Flt rgb_quality, Flt alpha_quality, Flt compression_level)C
 {
 #if SUPPORT_AVIF
-   if(::ExportAVIF)return ::ExportAVIF(T, f, rgb_quality, alpha_quality, compression_level);
+   if(::ExportAVIF)return ::ExportAVIF(T, f, rgb_quality, alpha_quality, compression_level); DEBUG_EXIT("'SupportExportAVIF/SupportAVIF' was not called"); 
 #endif
    return false;
 }

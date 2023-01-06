@@ -377,7 +377,7 @@ Bool      (*ImportJXL)(Image &image, File &f);
 Bool Image::ImportJXL (              File &f)
 {
 #if SUPPORT_JXL
-   if(::ImportJXL)return ::ImportJXL(T, f);
+   if(::ImportJXL)return ::ImportJXL(T, f); DEBUG_EXIT("'SupportImportJXL/SupportJXL' was not called"); 
 #endif
    del(); return false;
 }
@@ -385,7 +385,7 @@ Bool      (*ExportJXL)(C Image &image, File &f, Flt quality, Flt compression_lev
 Bool Image::ExportJXL (                File &f, Flt quality, Flt compression_level)C
 {
 #if SUPPORT_JXL
-   if(::ExportJXL)return ::ExportJXL(T, f, quality, compression_level);
+   if(::ExportJXL)return ::ExportJXL(T, f, quality, compression_level); DEBUG_EXIT("'SupportExportJXL/SupportJXL' was not called"); 
 #endif
    return false;
 }

@@ -133,18 +133,21 @@ T2(ENUM0, ENUM1) constexpr typename std::enable_if< std::is_enum<ENUM0>::value &
 #define ASSERT_CONCAT2(a, b) a##b                 // don't use this
 #define ASSERT_CONCAT( a, b) ASSERT_CONCAT2(a, b) // don't use this
 
-#define             ASSERT(value             )   typedef Int ASSERT_CONCAT(_AssertDummyName, __LINE__)[(value) ? 1 : -1]    // compile time assertion, alternative to static_assert(value, "assert failed"); which is more flexible on Clang/GCC
-#define     DYNAMIC_ASSERT(value, error      )   {if(!(value))Exit(S+(error)+"\nFile: \""+__FILE__+"\"\nLine: "+__LINE__);} // dynamic      assertion
+#define               EXIT(       error      )   Exit(S+(error)+"\nFile: \""+__FILE__+"\"\nLine: "+__LINE__)             // Exit application with debug info
+#define             ASSERT(value             )   typedef Int ASSERT_CONCAT(_AssertDummyName, __LINE__)[(value) ? 1 : -1] // compile time assertion, alternative to static_assert(value, "assert failed"); which is more flexible on Clang/GCC
+#define     DYNAMIC_ASSERT(value, error      )   {if(!(value))EXIT(error);}                                              // dynamic      assertion
 #if DEBUG
-   #define    DEBUG_ASSERT(value, error      )   DYNAMIC_ASSERT(value, error)                                               // debug        assertion   available only in debug   mode
+   #define    DEBUG_ASSERT(value, error      )   DYNAMIC_ASSERT(value, error)                                            // debug        assertion   available only in debug   mode
+   #define    DEBUG_EXIT(         error      )   EXIT          (       error)                                            // Exit in debug only
 #else
-   #define    DEBUG_ASSERT(value, error      )   {}                                                                         // debug        assertion unavailable      in release mode
+   #define    DEBUG_ASSERT(value, error      )   {}                                                                      // debug        assertion unavailable      in release mode
+   #define    DEBUG_EXIT(         error      )   {}                                                                      // Exit in debug only
 #endif
-#define DEBUG_RANGE_ASSERT(index, elms       )     DEBUG_ASSERT(InRange(index, elms), "Element out of range")               // out of range assertion, asserts that 'index' is in range "0..elms-1"
-#define       RANGE_ASSERT(index, elms       )   DYNAMIC_ASSERT(InRange(index, elms), "Element out of range")               // out of range assertion, asserts that 'index' is in range "0..elms-1"
-#define RANGE_ASSERT_ERROR(index, elms, error)   DYNAMIC_ASSERT(InRange(index, elms), error                 )               // out of range assertion, asserts that 'index' is in range "0..elms-1"
-#define     ALIGN_ASSERT(  Class, member     )   ASSERT(!(OFFSET(Class, member)&(SIZE(Ptr)-1)))                             // assert that class member has alignment native to the target platform
-#define     ALIGN_ASSERT_X(Class, member, x  )   ASSERT(!(OFFSET(Class, member)&(x        -1)))                             // assert that class member has alignment native to the target platform
+#define DEBUG_RANGE_ASSERT(index, elms       )     DEBUG_ASSERT(InRange(index, elms), "Element out of range")            // out of range assertion, asserts that 'index' is in range "0..elms-1"
+#define       RANGE_ASSERT(index, elms       )   DYNAMIC_ASSERT(InRange(index, elms), "Element out of range")            // out of range assertion, asserts that 'index' is in range "0..elms-1"
+#define RANGE_ASSERT_ERROR(index, elms, error)   DYNAMIC_ASSERT(InRange(index, elms), error                 )            // out of range assertion, asserts that 'index' is in range "0..elms-1"
+#define     ALIGN_ASSERT(  Class, member     )   ASSERT(!(OFFSET(Class, member)&(SIZE(Ptr)-1)))                          // assert that class member has alignment native to the target platform
+#define     ALIGN_ASSERT_X(Class, member, x  )   ASSERT(!(OFFSET(Class, member)&(x        -1)))                          // assert that class member has alignment native to the target platform
 
 ASSERT(SIZE(Bool )==1); // size of Bool  must be 1 byte
 ASSERT(SIZE(Char8)==1); // size of Char8 must be 1 byte
