@@ -2556,7 +2556,7 @@ const Palette PaletteFire[]=
    {0.90, Vec(0xFF, 0xD6, 0x13)/255},
    {1.00, Vec(0xFF, 0xFF, 0xA0)/255},
 };
-bool LoadImages(C Project *proj, Image &image, TextParam *image_resize, C Str &src, bool srgb=true, bool clamp=false, C Color &background=TRANSPARENT, C Image *color=null, C TextParam *color_resize=null, C Image *smooth=null, C TextParam *smooth_resize=null, C Image *bump=null, C TextParam *bump_resize=null)
+bool LoadImages(C Project *proj, Image &image, TextParam *image_resize, C Str &src, bool srgb=true, bool clamp=true, C Color &background=TRANSPARENT, C Image *color=null, C TextParam *color_resize=null, C Image *smooth=null, C TextParam *smooth_resize=null, C Image *bump=null, C TextParam *bump_resize=null)
 {
    image.del(); if(image_resize)image_resize.del(); if(!src.is())return true;
    Mems<FileParams> files=FileParams.Decode(src);

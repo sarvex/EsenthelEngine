@@ -682,7 +682,7 @@ class Project
          FCreateDirs(gamePath(mini_map_id));
    }
 
-   bool loadImages(Image &image, TextParam *image_resize, C Str &src, bool srgb=true, bool clamp=false, C Color &background=TRANSPARENT, C Image *color=null, C TextParam *color_resize=null, C Image *smooth=null, C TextParam *smooth_resize=null, C Image *bump=null, C TextParam *bump_resize=null)C
+   bool loadImages(Image &image, TextParam *image_resize, C Str &src, bool srgb=true, bool clamp=true, C Color &background=TRANSPARENT, C Image *color=null, C TextParam *color_resize=null, C Image *smooth=null, C TextParam *smooth_resize=null, C Image *bump=null, C TextParam *bump_resize=null)C
    {
       return LoadImages(this, image, image_resize, src, srgb, clamp, background, color, color_resize, smooth, smooth_resize, bump, bump_resize);
    }

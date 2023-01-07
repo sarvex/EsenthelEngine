@@ -2448,7 +2448,7 @@ class ProjectEx : ProjectHierarchy
    }
    TEX_FLAG mtrlCreateMacroTexture(EditMaterial &material)
    {
-      Image macro; if(loadImages(macro, null, material.macro_map, true)) // proceed only if loaded ok
+      Image macro; if(loadImages(macro, null, material.macro_map, true, false)) // proceed only if loaded ok
       {
          macro.resize(NearestPow2(macro.w()), NearestPow2(macro.h()), FILTER_BEST, IC_WRAP);
          IMAGE_TYPE ct; ImageProps(macro, &material.macro_tex, &ct, MTRL_MACRO); material.macro_map_time.getUTC(); // in order for 'macro_tex' to sync, 'macro_map_time' time must be changed
@@ -2468,7 +2468,7 @@ class ProjectEx : ProjectHierarchy
    }
    TEX_FLAG mtrlCreateEmissiveTexture(EditMaterial &material)
    {
-      Image emissive; if(loadImages(emissive, null, material.emissive_map, true)) // proceed only if loaded ok
+      Image emissive; if(loadImages(emissive, null, material.emissive_map, true, false)) // proceed only if loaded ok
       {
          emissive.resize(NearestPow2(emissive.w()), NearestPow2(emissive.h()));
          IMAGE_TYPE ct; ImageProps(emissive, &material.emissive_tex, &ct, MTRL_EMISSIVE); material.emissive_map_time.getUTC(); // in order for 'emissive_tex' to sync, 'emissive_map_time' time must be changed
