@@ -418,14 +418,15 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
                }
                if(hasAddrsHeader())
                {
-                  // example header = "HTTP/1.1 200 OK"
+                  //  example header= "HTTP/1.1 200 OK"
                   if(!Starts(_header, "HTTP/1.1", false, WHOLE_WORD_STRICT))return error();
+          C Int http_len=8; // Length("HTTP/1.1");
 
                   if(CChar8 *t=TextPos(_header, "Location:")) // check if it's a redirect (check this as first before all other data)
                   {
                      Int line =TextPosI(t, "\r\n");
                      if( line>=0)ConstCast(t)[line]=0;
-                     CChar8 *url=_SkipWhiteChars(t+9); // operate on 'url' before clearing the '_header'
+                     CChar8 *url=_SkipWhiteChars(t+9); // operate on 'url' before clearing the '_header'. Length("Location:")==9
                      if(!Is(url))return error(); // no path specified
                      if(StartsPath(url, "http://") || StartsPath(url, "https://")) // if this is a full path then just use it
                      {
@@ -460,7 +461,7 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
                      break;
                   }
 
-                 _code=TextInt(_header()+8+1); // 8=Length("HTTP/1.1")
+                 _code=TextInt(_header()+(http_len+1)); // +1 to skip space
                   // !! do not stop here if error code failed, instead continue downloading all data, and set DWNL_STATE at the end based on the code, as there may be some cases in which we want to process output even for error codes !!
 
                   Long content_length=-1; if(CChar8 *t=TextPos(_header, "Content-Length:"))content_length=TextLong(t+Length("Content-Length:"));
