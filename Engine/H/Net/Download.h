@@ -58,12 +58,18 @@ struct HTTPParam : TextParam // optional parameter that can be passed to the 'Do
 
    static Str8 Encode(C CMemPtr<HTTPParam> &params); // encode 'params' array into string
 };
+struct HTTPFile
+{
+   Str  name; // file name
+   File file; // file data
+   Long max_size=-1; // number of bytes to send, -1=all remaining
+};
 /******************************************************************************/
 const_mem_addr struct Download // File Downloader !! must be stored in constant memory address !!
 {
    // manage
    Download& del   (  Int  milliseconds=-1                                                                                                                                                                                    ); // wait 'milliseconds' time for thread to exit and delete (<0 = infinite wait)
-   Download& create(C Str &url, C CMemPtr<HTTPParam> &params=null, const_mem_addr File *post=null, Long max_post_size=-1, Long offset=0, Long size=-1, Bool paused=false, Bool ignore_auth_result=false, SyncEvent *event=null); // download 'url' file, 'params'=optional parameters that you can pass if the 'url' is a php script, 'post'=data to be sent to the specified address (if this is null then HTTP GET is used, otherwise HTTP POST is used, 'post' File must point to a constant memory address as that pointer will be used until the data has been fully sent), 'max_post_size'=number of bytes to send (-1=all remaining), 'offset'=offset position of the file data to download, use this for example if you wish to resume previous download by starting from 'offset' position, 'size'=number of bytes to download (-1=all remaining), warning: some servers don't support manual specifying 'offset' and 'size', 'paused'=if create paused, 'ignore_auth_result'=if ignore authorization results and continue even when they failed, 'event'=event to signal when 'Download.state' changes
+   Download& create(C Str &url, C CMemPtr<HTTPParam> &params=null, MemPtr<HTTPFile> files=null, Long offset=0, Long size=-1, Bool paused=false, Bool ignore_auth_result=false, SyncEvent *event=null); // download 'url' file, 'params'=optional parameters that you can pass if the 'url' is a php script, 'files'=data to be sent to the specified address (if this is null then HTTP GET is used, otherwise HTTP POST is used, 'files' must point to a constant memory address as that pointer will be used until the data has been fully sent), 'offset'=offset position of the file data to download, use this for example if you wish to resume previous download by starting from 'offset' position, 'size'=number of bytes to download (-1=all remaining), warning: some servers don't support manual specifying 'offset' and 'size', 'paused'=if create paused, 'ignore_auth_result'=if ignore authorization results and continue even when they failed, 'event'=event to signal when 'Download.state' changes
 
    // operations
    Download& pause (                   ); // pause  downloading
@@ -100,11 +106,13 @@ const_mem_addr struct Download // File Downloader !! must be stored in constant 
    void delPartial();
    Bool error     (); // !! this is not thread-safe !! set DWNL_ERROR state, you can signal that an error has encountered for example when invalid data downloaded, always returns false
    void state     (DWNL_STATE state);
+   Str8    fileHeader(Int i)C;
+   CChar8* fileSuffix(     )C {return "\r\n";}
 #endif
 
            ~Download() {del();}
             Download();
-   explicit Download(C Str &url, C CMemPtr<HTTPParam> &params=null, const_mem_addr File *post=null, Long max_post_size=-1, Long offset=0, Long size=-1, Bool paused=false);
+   explicit Download(C Str &url, C CMemPtr<HTTPParam> &params=null, MemPtr<HTTPFile> files=null, Long offset=0, Long size=-1, Bool paused=false);
 
 #if !EE_PRIVATE
 private:
@@ -127,24 +135,24 @@ private:
    Bool chunked       ()C {return FlagOn(_flags, CHUNKED);}
    Bool hasAddrsHeader()C {return FlagOn(_flags, HAS_ADDRS_HEADER);}
 #endif
-   Byte           _flags, _parse;
-   DWNL_STATE     _state;
-   UShort         _code;
-   Int            _expected_size, _pre_send, _pos_send;
-   Long           _offset, _done, _size, _total_size, _sent, _to_send, _total_sent, _total_rcvd;
-   Ptr            _data;
-   File          *_post_file;
-   SyncEvent     *_event;
-   DateTime       _modif_time;
-   Str8           _url_full, _header;
-   Str            _url;
-   Thread         _thread;
-   SecureSocket   _socket;
-   Memb<Byte>     _memb;
-   Mems<Byte>     _message;
-   Mems<SockAddr> _addrs;
+   Byte             _flags, _parse;
+   DWNL_STATE       _state;
+   UShort           _code;
+   Int              _expected_size, _pre_send, _pos_send, _file_i;
+   Long             _offset, _done, _size, _total_size, _sent, _to_send, _total_sent, _total_rcvd;
+   Ptr              _data;
+   MemPtr<HTTPFile> _files;
+   SyncEvent       *_event;
+   DateTime         _modif_time;
+   Str8             _url_full, _header, _file_header;
+   Str              _url;
+   Thread           _thread;
+   SecureSocket     _socket;
+   Memb<Byte>       _memb;
+   Mems<Byte>       _message;
+   Mems<SockAddr>   _addrs;
 #if WEB
-   Ptr            _js_download;
+   Ptr              _js_download;
 #endif
 
    NO_COPY_CONSTRUCTOR(Download);

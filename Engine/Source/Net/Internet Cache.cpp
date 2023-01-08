@@ -417,8 +417,8 @@ inline void InternetCache::update()
          case DWNL_NONE:
          {
          again:
-            if(_to_download.elms()){down.create(_to_download.last()                       ); _to_download.removeLast();}else
-            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, -1, 0); _to_verify  .removeLast();} // use offset as -1 to encode special mode of verification
+            if(_to_download.elms()){down.create(_to_download.last()                   ); _to_download.removeLast();}else
+            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, 0); _to_verify  .removeLast();} // use offset as -1 to encode special mode of verification
          }break;
 
          case DWNL_DONE: // finished downloading

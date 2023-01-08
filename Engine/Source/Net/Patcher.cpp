@@ -300,7 +300,7 @@ static Bool PatcherUpdate  (Thread &thread) {((Patcher*)thread.user)->update(); 
             {
                download.index=_to_download.pop(); locker.off();
             #if 1 // direct download
-               download.create(_http+CaseDown(_name)+'/'+ServerPath(_pak.fullName(download.index)), null, null, -1, 0, -1, false, false, &_event); // start downloading
+               download.create(_http+CaseDown(_name)+'/'+ServerPath(_pak.fullName(download.index)), null, null, 0, -1, false, false, &_event); // start downloading
             #else // through PHP (had problems when tried accessing 6 downloads at the same time)
                Memt<TextParam> params; params.New().set("file", ServerPath(_pak.fullName(download.index)));
                download.create(_http+CaseDown(_name)+".download.php", params, null, -1, 0, -1, false, false, &_event); // start downloading
