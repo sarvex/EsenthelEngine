@@ -356,13 +356,13 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
       case DWNL_SENDING: sending:
       {
          // send message
-         Int left=_send.length()-_pos_send; if(left>0)
+         Int left=_send.length()-_send_pos; if(left>0)
          {
             if(_socket.flush(DOWNLOAD_WAIT_TIME))
             {
-               Int sent=send(_send()+_pos_send, left); if(sent<=0)return error();
-              _pos_send+=sent;
-               if(_pos_send>=_send.length()){_pos_send=0; _send.clear();} // reached the end
+               Int sent=send(_send()+_send_pos, left); if(sent<=0)return error();
+              _send_pos+=sent;
+               if(_send_pos>=_send.length()){_send_pos=0; _send.clear();} // reached the end
             }
          }else
          if(InRange(_file_i, _files))
@@ -450,7 +450,7 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
                     _socket.del  (); // unsecure and delete the socket because we will need to reconnect to a different address
                     _addrs .clear();
                     _footer.clear();
-                    _pos_send=0;
+                    _send_pos=0;
 
                          _send =GetHeaders(_url_full, (_size==0) ? "HEAD" : "GET");
                      Str8 bytes=GetRange  (T);
@@ -604,7 +604,7 @@ void Download::zero()
   _flags=_parse=0;
   _state=DWNL_NONE;
   _code=0;
-  _expected_size=_pos_send=_file_i=0;
+  _expected_size=_send_pos=_file_i=0;
   _offset=_done=_size=_total_size=_sent=_to_send=_total_sent=_total_rcvd=0;
   _data=null;
   _event=null;

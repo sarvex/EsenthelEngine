@@ -137,7 +137,7 @@ private:
    Byte             _flags, _parse;
    DWNL_STATE       _state;
    UShort           _code;
-   Int              _expected_size, _pos_send, _file_i;
+   Int              _expected_size, _send_pos, _file_i;
    Long             _offset, _done, _size, _total_size, _sent, _to_send, _total_sent, _total_rcvd;
    Ptr              _data;
    MemPtr<HTTPFile> _files;
