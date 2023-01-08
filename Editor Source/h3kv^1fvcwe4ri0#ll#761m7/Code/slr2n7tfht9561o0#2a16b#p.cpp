@@ -813,7 +813,7 @@ class StoreClass : ClosableWindow
    {
       bool      chunked=false;
       Download  down;
-      File      src;
+      HTTPFile  src;
       Progress  progress;
       TextBlack ts;
       Text      text;
@@ -1653,7 +1653,7 @@ class StoreClass : ClosableWindow
                         upload.item_file=file_file;
                         upload.chunked=(src.size()>EsenthelStoreFileChunked);
                         item_files_region+=upload.cancel.create("Cancel").func(Upload.Cancel, upload);
-                        Swap(src, upload.src);
+                        Swap(src, SCAST(File, upload.src));
                         setUserParams(upload.params, "add_item_file");
                                       upload.params.New().set("i"             , cur_item);
                                       upload.params.New().set("item_file_file", file_file);
@@ -1686,9 +1686,9 @@ class StoreClass : ClosableWindow
                         upload.create(mode.tab(1), cur_item, "Icon");
                         upload.dest=&item_icon;
                         upload.set =ext;
-                        Swap(src, upload.src);
+                        Swap(src, SCAST(File, upload.src));
                         Memt<HTTPParam> params; setUserParams(params, "set_item_icon"); params.New().set("i", S+cur_item); params.New().set("item_icon", ext);
-                        upload.down.create(EsenthelStoreURL, params, &upload.src);
+                        upload.down.create(EsenthelStoreURL, params, upload.src);
                      }else Gui.msgBox(S, S+"File size "+SizeBytes(src.size())+" exceeds "+SizeBytes(EsenthelStoreMaxIconSize)+" limit");
                   }else Gui.msgBox(S, S+"Couldn't import image \""+name+"\"");
                   break;
@@ -1720,9 +1720,9 @@ class StoreClass : ClosableWindow
                         upload.index=image_index;
                         upload.dest =&item_images[image_index];
                         upload.set  =ext;
-                        Swap(src, upload.src);
+                        Swap(src, SCAST(File, upload.src));
                         Memt<HTTPParam> params; setUserParams(params, "set_item_image"); params.New().set("i", S+cur_item); params.New().set("item_image_index", S+image_index); params.New().set("item_image_status", ext);
-                        upload.down.create(EsenthelStoreURL, params, &upload.src);
+                        upload.down.create(EsenthelStoreURL, params, upload.src);
                      }else Gui.msgBox(S, S+"File size "+SizeBytes(src.size())+" exceeds "+SizeBytes(EsenthelStoreMaxImageSize)+" limit");
                   }else Gui.msgBox(S, S+"Couldn't import image \""+name+"\"");
                   break;
