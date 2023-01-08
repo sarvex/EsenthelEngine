@@ -59,13 +59,12 @@ struct HTTPParam : TextParam // optional parameter that can be passed to the 'Do
 
    static Str8 Encode(C CMemPtr<HTTPParam> &params); // encode 'params' array into string
 };
-struct HTTPFile
+struct HTTPFile : File
 {
-   Str  name; // file name, must be unique, cannot be empty (if not set then file index will be used)
-   File file; // file data
+   Str  name       ; // file name, must be unique, cannot be empty (if not set then file index will be used)
    Long max_size=-1; // number of bytes to send, -1=all remaining
 
-   void reset() {name.clear(); file.del(); max_size=-1;}
+   HTTPFile& del() {super::del(); name.del(); max_size=-1; return T;}
 };
 /******************************************************************************/
 const_mem_addr struct Download // File Downloader !! must be stored in constant memory address !!

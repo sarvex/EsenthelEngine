@@ -368,14 +368,14 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
          if(InRange(_file_i, _files))
          {
             HTTPFile &file=_files[_file_i];
-            Long left=file.max_size-file.file.pos(); if(left>0) // file data
+            Long left=file.max_size-file.pos(); if(left>0) // file data
             {
                if(_socket.flush(DOWNLOAD_WAIT_TIME))
                {
-                  Int buf_left=Min(BUF_SIZE, left); if(!file.file.getFast(data, buf_left))return error();
+                  Int buf_left=Min(BUF_SIZE, left); if(!file.getFast(data, buf_left))return error();
                   Int sent=send(data, buf_left); if(sent<=0)return error();
                  _sent+=sent;
-                  if(!file.file.skip(sent-buf_left))return error(); // go back to unsent data
+                  if(!file.skip(sent-buf_left))return error(); // go back to unsent data
                }
             }else
             {
@@ -678,7 +678,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
    REPA(files)
    {
       HTTPFile &file=files[i];
-      if(file.max_size<0)file.max_size=file.file.left();
+      if(file.max_size<0)file.max_size=file.left();
      _to_send+=file.max_size;
    }
 

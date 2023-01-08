@@ -592,13 +592,13 @@ class StoreClass : ClosableWindow
             file_done       .writeMem();
          }
 
-         if(ValidURL(file))down.create(file, null, null, -1, file_done.size());else
+         if(ValidURL(file))down.create(file, null, null, file_done.size());else
          {
             Memt<HTTPParam> params;
             AppStore.setUserParams(params, "get_item_file");
             params.New().set("i"   , S+item_id);
             params.New().set("file",   file+(temp ? "@new" : ""));
-            down.create(EsenthelStoreURL, params, null, -1, file_done.size());
+            down.create(EsenthelStoreURL, params, null, file_done.size());
          }
       }
 
@@ -870,8 +870,9 @@ class StoreClass : ClosableWindow
             if(src.left()<=EsenthelStoreFileChunkSize)mode=3;else // last
                mode=2; // middle
             params.New().set("item_file_mode", S+mode);
-         }
-         down.create(EsenthelStoreURL, params, &src, chunked ? Min(EsenthelStoreFileChunkSize, src.left()) : -1);
+               src.max_size=Min(EsenthelStoreFileChunkSize, src.left());
+         }else src.max_size=-1;
+         down.create(EsenthelStoreURL, params, src);
       }
       bool visible()C {return progress.visible();}
       void visible(bool on)
