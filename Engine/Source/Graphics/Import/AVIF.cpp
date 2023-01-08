@@ -34,7 +34,7 @@ Bool _ImportAVIF(Image &image, File &f)
                        hp=(decoder->image->depth>8);
                if(image.createSoft(decoder->image->width, decoder->image->height, 1, hp ? (alpha ? IMAGE_F16_4 : IMAGE_F16_3) : (alpha ? IMAGE_R8G8B8A8_SRGB : IMAGE_R8G8B8_SRGB)))
                {
-                  rgb.pixels  =image.data();
+                  rgb.pixels  =image.data ();
                   rgb.rowBytes=image.pitch();
                   rgb.format  =(alpha ? AVIF_RGB_FORMAT_RGBA : AVIF_RGB_FORMAT_RGB);
                 //rgb.isFloat =(decoder->image->depth==16); need to test gamma

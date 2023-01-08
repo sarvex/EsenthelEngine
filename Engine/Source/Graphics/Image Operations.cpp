@@ -2435,6 +2435,27 @@ error:
    return false;
 }
 /******************************************************************************/
+Bool Image::needsAlpha()C
+{
+   if(!typeInfo().a)return false;
+   Bool  extract=compressed(); IMAGE_TYPE type=ImageTypeUncompressed(T.type());
+   Image temp; C Image *src=(extract ? &temp : this);
+   REPD(face, faces()) // 'faces' and not 'src.faces' because that could be empty
+   {
+      int src_face=face; if(extract)if(extractMipMap(temp, type, 0, DIR_ENUM(face)))src_face=0;else return true; // error
+      if( src->lockRead(0, DIR_ENUM(src_face)))
+      {
+         REPD(z, src->ld())
+         REPD(y, src->lh())
+         REPD(x, src->lw())
+         {
+            Vec4 c=src->color3DF(x, y, z); if(!Equal(c.w, 1, 1.5f/255)){src->unlock(); return true;} // 1.5 instead of 0.5 because compressed texture formats may be imprecise (BC7..)
+         }
+         src->unlock();
+      }
+   }
+   return false;
+}
 Bool Image::monochromatic()C
 {
  C ImageTypeInfo &type_info=typeInfo();

@@ -392,9 +392,7 @@ Str SetCubeFile(Str files, int face, C Str &file) // put 'file' into specified '
 /******************************************************************************/
 bool HasAlpha(C Image &image) // if image has alpha channel
 {
-   if(!image.typeInfo().a)return false;
-   Vec4 min, max; if(image.stats(&min, &max))return !(Equal(min.w, 1, 1.5/255) && Equal(max.w, 1, 1.5/255));
-   return true;
+   return image.needsAlpha();
 }
 bool HasColor(C Image &image) // if image is not monochromatic
 {

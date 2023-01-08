@@ -355,6 +355,15 @@ struct Image // Image (Texture)
 
    // lock
 #if EE_PRIVATE
+   void lockSoft();
+   void lockedSetMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment !! NEEDS 'D._lock' !!
+   Bool      setFaceData(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
+#endif
+   Bool     lock    (LOCK_MODE lock=LOCK_READ_WRITE, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT) ; //   lock image for editing specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes)
+   Bool     lockRead(                                Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT)C; //   lock image for reading specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes), this method has the same effect as calling "lock(LOCK_READ, mip_map, cube_face)", however unlike 'lock' method it has 'const' modifier and can be called on "const Image" objects
+   Image& unlock    (                                                                           ) ; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
+ C Image& unlock    (                                                                           )C; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
+
    Byte* softData()  {return _data_all;} // get software image data without locking the image
  C Byte* softData()C {return _data_all;} // get software image data without locking the image
    Byte* softData(Int mip_map, DIR_ENUM cube_face=DIR_RIGHT);                                                     // get software image data for 'mip_map' and 'cube_face' without locking the image
@@ -364,15 +373,6 @@ struct Image // Image (Texture)
    UInt  softPitch2  (Int mip_map)C; // get pitch2    of specified 'mip_map' = pitch  * blocksY
    Int   softFaceSize(Int mip_map)C; // get face size of specified 'mip_map' = pitch2 * depth
    Int   softMipSize (Int mip_map)C; // get mip  size of specified 'mip_map' = face   * faces
-
-   void lockSoft();
-   void lockedSetMipData(CPtr data, Int mip_map); // set data for 'mip_map' for all faces, assumes that 'data' is in HW alignment !! NEEDS 'D._lock' !!
-   Bool      setFaceData(CPtr data, Int data_pitch, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT);
-#endif
-   Bool     lock    (LOCK_MODE lock=LOCK_READ_WRITE, Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT) ; //   lock image for editing specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes)
-   Bool     lockRead(                                Int mip_map=0, DIR_ENUM cube_face=DIR_RIGHT)C; //   lock image for reading specified 'mip_map', this needs to be called before manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), 'cube_face'=desired cube face (this is used only for IMAGE_CUBE modes), this method has the same effect as calling "lock(LOCK_READ, mip_map, cube_face)", however unlike 'lock' method it has 'const' modifier and can be called on "const Image" objects
-   Image& unlock    (                                                                           ) ; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
- C Image& unlock    (                                                                           )C; // unlock image                                , this needs to be called after  manual setting/getting pixels/colors on hardware images (IMAGE_SOFT doesn't need locking), if you want the mip maps to be updated according to any change applied during the lock then you must call 'updateMipMaps' after 'unlock'
 
 #if EE_PRIVATE
    void lockedBaseMip(Int base_mip); // !! NEEDS 'D._lock' !!
@@ -482,8 +482,9 @@ struct Image // Image (Texture)
    Image& divRgbByAlpha        (                                                                                                                                                                           ) ; // transform to (r/a, g/a, b/a, a)
    Bool   stats                (               Vec4 *min=null, Vec4 *max=null, Vec4 *avg=null, Vec4 *median=null, Vec4 *mode=null, Vec *avg_alpha_weight=null, Vec *med_alpha_weight=null, C BoxI *box=null)C; // get image statistics               , such as: minimum, maximum, average, median and mode color values, 'box'=optional box in which perform the operation (use null for entire image), false on fail
    Bool   statsSat             (               Flt  *min=null, Flt  *max=null, Flt  *avg=null, Flt  *median=null, Flt  *mode=null, Flt *avg_alpha_weight=null, Flt *med_alpha_weight=null, C BoxI *box=null)C; // get image statistics for saturation, such as: minimum, maximum, average, median and mode       values, 'box'=optional box in which perform the operation (use null for entire image), false on fail
-   Bool   monochromatic        (                                                                                                                                                                           )C; // check if image is monochromatic (all RGB values are the same)
-   Bool   monochromaticRG      (                                                                                                                                                                           )C; // check if image is monochromatic (all RG  values are the same, Blue values are ignored)
+   Bool   needsAlpha           (                                                                                                                                                                           )C; // check if image is needs alpha channel (any A   value  is != 1)
+   Bool   monochromatic        (                                                                                                                                                                           )C; // check if image is monochromatic       (all RGB values are the same)
+   Bool   monochromaticRG      (                                                                                                                                                                           )C; // check if image is monochromatic       (all RG  values are the same, Blue values are ignored)
 #if EE_PRIVATE
    void   transform            (  Image &dest, C Matrix2 &matrix, FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP                                                                                      )C; // transform image by 'matrix' and store in 'dest'
    Bool   extractNonCompressedMipMapNoStretch(Image &dest, Int w, Int h, Int d, Int mip_map, DIR_ENUM cube_face=DIR_RIGHT, Bool clamp=true)C;
