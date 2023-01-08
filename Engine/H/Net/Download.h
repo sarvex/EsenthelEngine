@@ -106,8 +106,7 @@ const_mem_addr struct Download // File Downloader !! must be stored in constant 
    void delPartial();
    Bool error     (); // !! this is not thread-safe !! set DWNL_ERROR state, you can signal that an error has encountered for example when invalid data downloaded, always returns false
    void state     (DWNL_STATE state);
-   Str8    fileHeader(Int i)C;
-   CChar8* fileSuffix(     )C {return "\r\n";}
+   Str8 fileHeader(Int i)C;
 #endif
 
            ~Download() {del();}
@@ -138,18 +137,17 @@ private:
    Byte             _flags, _parse;
    DWNL_STATE       _state;
    UShort           _code;
-   Int              _expected_size, _pre_send, _pos_send, _file_i;
+   Int              _expected_size, _pos_send, _file_i;
    Long             _offset, _done, _size, _total_size, _sent, _to_send, _total_sent, _total_rcvd;
    Ptr              _data;
    MemPtr<HTTPFile> _files;
    SyncEvent       *_event;
    DateTime         _modif_time;
-   Str8             _url_full, _header, _file_header;
+   Str8             _url_full, _send, _footer, _header, _file_header;
    Str              _url;
    Thread           _thread;
    SecureSocket     _socket;
    Memb<Byte>       _memb;
-   Mems<Byte>       _message;
    Mems<SockAddr>   _addrs;
 #if WEB
    Ptr              _js_download;

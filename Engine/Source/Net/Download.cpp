@@ -15,9 +15,9 @@ namespace EE{
 /******************************************************************************/
 static void EncodeChar(Str8 &text, Char8 c)
 {
-   text+='%';
-   text+=Digits16[Byte(c)>>4];
-   text+=Digits16[Byte(c)&15];
+   text.alwaysAppend('%');
+   text.alwaysAppend(Digits16[Byte(c)>>4]);
+   text.alwaysAppend(Digits16[Byte(c)&15]);
 }
 static Bool AppendUrlPath(Str8 &text, C Str8 &path)
 {
@@ -29,7 +29,7 @@ static Bool AppendUrlPath(Str8 &text, C Str8 &path)
       if(U8(c)<=32 || c=='#' || c=='%' || U8(c)>=127)EncodeChar(text, c);else // these are the only symbols that need to be replaced with %XX hex code
       if(c=='\\') // use Unix style paths
       {
-         text+='/';
+         text.alwaysAppend('/');
       }else
       {
          if(c=='?')has_params=true;
@@ -47,7 +47,7 @@ static void AppendParam(Str8 &text, C TextParam &param)
       if(U8(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || U8(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
       else text.alwaysAppend(c);
    }
-   text+='=';
+   text.alwaysAppend('=');
  C Str8 &value=UTF8(param.value);
    FREPA(value) // set value
    {
@@ -71,15 +71,6 @@ static Str8 GetRange(C Download &down)
    if(down._size && down._offset)return S8+"bytes="+down._offset+'-';
                                  return S8;
 }
-Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
-{
-   Str8 s; FREPA(params)
-   {
-      if(i)s+='&';
-      AppendParam(s, params[i]);
-   }
-   return s;
-}
 static Str8 GetHeaders(C Str8 &url, CChar8 *request)
 {
    CChar8 *name    =SkipHttp(url);
@@ -98,6 +89,19 @@ static Str8 GetHeaders(C Str8 &url, CChar8 *request)
 #endif
    return headers;
 }
+static CChar8* FileSuffix   () {return "\r\n";}
+static Int     FileSuffixLen() {return 2;} // Length(FileSuffix())
+/******************************************************************************/
+Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
+{
+   Str8 s; FREPA(params)
+   {
+      if(i)s.alwaysAppend('&');
+      AppendParam(s, params[i]);
+   }
+   return s;
+}
+/******************************************************************************/
 #if WEB
 struct JSDownload
 {
@@ -352,36 +356,42 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
       case DWNL_SENDING: sending:
       {
          // send message
-         Int left=_pre_send-_pos_send; if(left>0) // header
+         Int left=_send.length()-_pos_send; if(left>0)
          {
-         send_message:;
             if(_socket.flush(DOWNLOAD_WAIT_TIME))
             {
-               Int sent=send(_message.data()+_pos_send, left); if(sent<=0)return error();
+               Int sent=send(_send()+_pos_send, left); if(sent<=0)return error();
               _pos_send+=sent;
+               if(_pos_send>=_send.length()){_pos_send=0; _send.clear();} // reached the end
+            }
+         }else
+         if(InRange(_file_i, _files))
+         {
+            HTTPFile &file=_files[_file_i];
+            Long left=file.max_size-file.file.pos(); if(left>0) // file data
+            {
+               if(_socket.flush(DOWNLOAD_WAIT_TIME))
+               {
+                  Int buf_left=Min(BUF_SIZE, left); if(!file.file.getFast(data, buf_left))return error();
+                  Int sent=send(data, buf_left); if(sent<=0)return error();
+                 _sent+=sent;
+                  if(!file.file.skip(sent-buf_left))return error(); // go back to unsent data
+               }
+            }else
+            {
+               if(InRange(++_file_i, _files)) // have next file
+               {
+                 _send =FileSuffix();        // end   previous
+                 _send+=fileHeader(_file_i); // start next
+                  goto sending;
+               }
+               goto footer;
             }
          }else
          {
-      // FIXME
-            if(InRange(_file_i, _files))
-            {
-               HTTPFile &file=_files[_file_i];
-               Long left=file.max_size-file.file.pos(); if(left>0) // file data
-               {
-                  if(_socket.flush(DOWNLOAD_WAIT_TIME))
-                  {
-                     Int buf_left=Min(BUF_SIZE, left); if(!file.file.getFast(data, buf_left))return error();
-                     Int sent=send(data, buf_left); if(sent<=0)return error();
-                    _sent+=sent;
-                     if(!file.file.skip(sent-buf_left))return error(); // go back to unsent data
-                  }
-               }else
-                  _file_i++;
-            }else
-            {
-               left=_message.elms()-_pos_send; if(left>0)goto send_message; // footer
-               state(DWNL_DOWNLOAD); goto downloading;
-            }
+         footer:
+            if(_footer.is()){Swap(_send, _footer); goto sending;}
+            state(DWNL_DOWNLOAD); goto downloading;
          }
       }break;
 
@@ -439,15 +449,13 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
                     _header.clear();
                     _socket.del  (); // unsecure and delete the socket because we will need to reconnect to a different address
                     _addrs .clear();
+                    _footer.clear();
                     _pos_send=0;
 
-                     Str8 command=GetHeaders(_url_full, (_size==0) ? "HEAD" : "GET"),
-                          bytes  =GetRange  (T);
-                     if(  bytes.is())command+=S8+"Range: "+bytes+"\r\n";
-                     command+="\r\n";
-                    _pre_send=command.length();
-                    _message.setNum(command.length());
-                     CopyFast(_message.data(), command(), command.length());
+                         _send =GetHeaders(_url_full, (_size==0) ? "HEAD" : "GET");
+                     Str8 bytes=GetRange  (T);
+                     if(  bytes.is())_send+=S8+"Range: "+bytes+"\r\n";
+                    _send+="\r\n";
                      state(DWNL_CONNECTING);
                      break;
                   }
@@ -596,7 +604,7 @@ void Download::zero()
   _flags=_parse=0;
   _state=DWNL_NONE;
   _code=0;
-  _expected_size=_pre_send=_pos_send=_file_i=0;
+  _expected_size=_pos_send=_file_i=0;
   _offset=_done=_size=_total_size=_sent=_to_send=_total_sent=_total_rcvd=0;
   _data=null;
   _event=null;
@@ -614,10 +622,11 @@ void Download::delPartial() // this deletes only members which can't be accessed
   _socket     .del  ();
   _memb       .del  ();
   _addrs      .clear();
-  _message    .clear();
+  _url_full   .clear();
+  _send       .clear();
+  _footer     .clear();
   _header     .clear();
   _file_header.clear();
-  _url_full   .clear();
 }
 Download& Download::del(Int milliseconds)
 {
@@ -684,7 +693,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
          case HTTP_POST: has_post_params=true; break;
          case HTTP_GET :
          {
-           _url_full+=(url_has_params ? '&' : '?'); // first param must be started with '?', others with '&'
+           _url_full.alwaysAppend(url_has_params ? '&' : '?'); // first param must be started with '?', others with '&'
             url_has_params=true;
             AppendParam(_url_full, param);
          }break;
@@ -692,15 +701,15 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
    }
 
    // set message
-   Str8 prefix, suffix,
-        request=((files || has_post_params) ? "POST" : (_size==0) ? "HEAD" : "GET"),
-        command=GetHeaders(_url_full, request),
-        bytes  =GetRange  (T);
-   if(  bytes.is())command+=S8+"Range: "+bytes+"\r\n";
+   Str8 prefix,
+        request=((files || has_post_params) ? "POST" : (_size==0) ? "HEAD" : "GET");
+       _send   =GetHeaders(_url_full, request);
+   Str8 bytes  =GetRange  (T);
+   if(  bytes.is())_send+=S8+"Range: "+bytes+"\r\n";
 
    FREPA(params) // header params
    {
-    C HTTPParam &param=params[i]; if(param.type==HTTP_HEADER)command+=UTF8(param.name)+": "+UTF8(param.value)+"\r\n";
+    C HTTPParam &param=params[i]; if(param.type==HTTP_HEADER)_send+=UTF8(param.name)+": "+UTF8(param.value)+"\r\n";
    }
 
    if(files)
@@ -730,17 +739,24 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
      _file_header+="Content-Transfer-Encoding: binary\r\n";
      _file_header+="Content-Disposition: form-data; name=\"";
 
-      // FIXME
-      prefix+=fileHeader(0);
-      // data is here
-      suffix+=fileSuffix();
+      // header/suffix for file #0 is already included in main _send/_footer
+      prefix+=fileHeader(0); // file #0 header is here
+      // file #0 data is here
 
-      suffix+=S8+"--"+boundary+"--\r\n";
+      // other files will have it added dynamically in the update loop
+         // file suffix is here
+         // file header is here
+         // file data   is here
+         Int start=1, file_headers=(files.elms()-start)*FileSuffixLen();
+         for(Int i=start; i<files.elms(); i++)file_headers+=fileHeader(i).length();
+
+     _footer+=FileSuffix(); // file suffix is here
+     _footer+=S8+"--"+boundary+"--\r\n";
 
       // now when 'prefix' and 'suffix' are ready, setup the main header
-      command+=S8+"Content-Type: multipart/form-data; boundary=\""+boundary+"\"\r\n";
-      command+=S8+"Content-Length: "+(prefix.length()+toSend()+suffix.length())+"\r\n";
-      command+="Cache-Control: no-cache\r\n";
+     _send+=S8+"Content-Type: multipart/form-data; boundary=\""+boundary+"\"\r\n";
+     _send+=S8+"Content-Length: "+(prefix.length()+toSend()+file_headers+_footer.length())+"\r\n";
+     _send+="Cache-Control: no-cache\r\n";
    }else
    if(has_post_params) // just POST params
    {
@@ -749,24 +765,19 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
       {
        C HTTPParam &param=params[i]; if(param.type==HTTP_POST)
          {
-            if(added)prefix+='&';
+            if(added)prefix.alwaysAppend('&');
             AppendParam(prefix, param);
             added=true;
          }
       }
-      command+="Content-type: application/x-www-form-urlencoded\r\n";
-      command+="Content-Transfer-Encoding: binary\r\n";
-      command+=S8+"Content-Length: "+prefix.length()+"\r\n";
+     _send+="Content-type: application/x-www-form-urlencoded\r\n";
+     _send+="Content-Transfer-Encoding: binary\r\n";
+     _send+=S8+"Content-Length: "+prefix.length()+"\r\n";
    }
-   command+="\r\n";
-   command+=prefix;
+  _send+="\r\n";
+  _send+=prefix;
 
 #if !WEB
-  _pre_send=command.length();
-  _message.setNum(command.length()+suffix.length());
-   CopyFast(_message.data()                 , command(), command.length());
-   CopyFast(_message.data()+command.length(), suffix (), suffix .length());
-
    if(!_thread.create(DownloadFunc, this, 0, paused, "EE.Download"))error(); // thread as last
 #else
    // if we're running a game from "esenthel.com" then it cannot access files from "www.esenthel.com" and vice versa
@@ -831,7 +842,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
             user=null;
          }
       };
-  
+
       // error
       xhr.onerror=function http_onerror(e)
       {
@@ -844,7 +855,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
 
       // limit the number of redirections
       try{if(xhr.channel instanceof Ci.nsIHttpChannel)xhr.channel.redirectionLimit=0;}catch(ex){}
-  
+
       // send
       if(request!="POST")xhr.send(null);else
       {
