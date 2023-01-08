@@ -65,6 +65,12 @@ static void AppendName(Str8 &text, C Str &name)
       if(c>=' ')text.alwaysAppend(c);
    }
 }
+static Str8 GetRange(C Download &down)
+{
+   if(down._size>0              )return S8+"bytes="+down._offset+'-'+(down._offset+down._size-1);
+   if(down._size && down._offset)return S8+"bytes="+down._offset+'-';
+                                 return S8;
+}
 Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
 {
    Str8 s; FREPA(params)
@@ -431,16 +437,13 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
                      }
                      FlagDisable(_flags, HAS_ADDRS_HEADER);
                     _header.clear();
-                    _socket.del(); // unsecure and delete the socket because we will need to reconnect to a different address
-                    _addrs.clear();
+                    _socket.del  (); // unsecure and delete the socket because we will need to reconnect to a different address
+                    _addrs .clear();
                     _pos_send=0;
 
-                     Str8 bytes,
-                          command=GetHeaders(_url_full, (_size==0) ? "HEAD" : "GET");
-
-                     if(_size>0         )bytes   =S8+"bytes="+_offset+'-'+(_offset+_size-1);else
-                     if(_size && _offset)bytes   =S8+"bytes="+_offset+'-';
-                     if(bytes.is()      )command+=S8+"Range: "+bytes+"\r\n";
+                     Str8 command=GetHeaders(_url_full, (_size==0) ? "HEAD" : "GET"),
+                          bytes  =GetRange  (T);
+                     if(  bytes.is())command+=S8+"Range: "+bytes+"\r\n";
                      command+="\r\n";
                     _pre_send=command.length();
                     _message.setNum(command.length());
@@ -689,13 +692,11 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
    }
 
    // set message
-   Str8 prefix, suffix, bytes,
+   Str8 prefix, suffix,
         request=((files || has_post_params) ? "POST" : (_size==0) ? "HEAD" : "GET"),
-        command=GetHeaders(_url_full, request);
-
-   if(_size>0         )bytes   =S8+"bytes="+_offset+'-'+(_offset+_size-1);else
-   if(_size && _offset)bytes   =S8+"bytes="+_offset+'-';
-   if(bytes.is()      )command+=S8+"Range: "+bytes+"\r\n";
+        command=GetHeaders(_url_full, request),
+        bytes  =GetRange  (T);
+   if(  bytes.is())command+=S8+"Range: "+bytes+"\r\n";
 
    FREPA(params) // header params
    {
