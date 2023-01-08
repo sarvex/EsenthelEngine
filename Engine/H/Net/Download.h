@@ -9,10 +9,11 @@
       <?php
       function LogN($text) {error_log($text."\n", 3, "log.txt");}
 
-      $error    =$_FILES["file"]["error"   ]; // if error occurred during file receiving
-      $file_size=$_FILES["file"]["size"    ]; // file size
-      $temp_name=$_FILES["file"]["tmp_name"]; // temporary file name
-      $file_name="Uploads/file";              // desired   file name
+      $file_id  ="<here enter your HTTPFile.name>";
+      $error    =$_FILES[$file_id]["error"   ]; // if error occurred during file receiving
+      $file_size=$_FILES[$file_id]["size"    ]; // file size
+      $temp_name=$_FILES[$file_id]["tmp_name"]; // temporary file name
+      $file_name="Uploads/file";                // desired   file name
 
       if($error>0) // if any error occurred
       {
@@ -63,6 +64,8 @@ struct HTTPFile
    Str  name; // file name, cannot be empty, must be unique
    File file; // file data
    Long max_size=-1; // number of bytes to send, -1=all remaining
+
+   void reset() {name.clear(); file.del(); max_size=-1;}
 };
 /******************************************************************************/
 const_mem_addr struct Download // File Downloader !! must be stored in constant memory address !!
