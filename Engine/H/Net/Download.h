@@ -60,7 +60,7 @@ struct HTTPParam : TextParam // optional parameter that can be passed to the 'Do
 };
 struct HTTPFile
 {
-   Str  name; // file name
+   Str  name; // file name, cannot be empty, must be unique
    File file; // file data
    Long max_size=-1; // number of bytes to send, -1=all remaining
 };

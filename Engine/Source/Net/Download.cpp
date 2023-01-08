@@ -591,7 +591,7 @@ Str8 Download::fileHeader(Int i)C
  C HTTPFile &file=_files[i];
    Str8 h=_file_header;
    AppendName(h, file.name);
-   h+="\"; filename=\"";
+   h+="\"; filename=\""; // this is required too, without this, server will treat as if no file
    AppendName(h, file.name);
    h+="\"\r\n";
    h+=S8+"Content-Length: "+file.max_size+"\r\n";
