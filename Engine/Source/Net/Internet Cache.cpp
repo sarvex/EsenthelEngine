@@ -1,9 +1,14 @@
 /******************************************************************************/
 #include "stdafx.h"
+/******************************************************************************
+
+   TODO: '_missing' is not saved
+
 /******************************************************************************/
 #define COMPARE  ComparePathCI
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
+#define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
 /******************************************************************************/
 namespace EE{
 /******************************************************************************/
@@ -241,7 +246,11 @@ void InternetCache::changed(C Str &url)
    {
       Str name=SkipHttpWww(url); if(name.is())
       {
+      #if PRECISE_MISSING_ACCESS_TIME
+         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
+      #else
                              _missing   .removeKey(name);
+      #endif
          if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
          if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
@@ -441,6 +450,9 @@ inline void InternetCache::update()
          case DWNL_DONE: // finished downloading
          {
             Str name=SkipHttpWww(down.url());
+      #if PRECISE_MISSING_ACCESS_TIME
+           _missing.removeKey(name);
+      #endif
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;
