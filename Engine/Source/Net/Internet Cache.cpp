@@ -322,12 +322,12 @@ void InternetCache::changed(C Str &url)
       Str name=SkipHttpWww(url); if(name.is())
       {
       #if !PRECISE_MISSING_ACCESS_TIME
-                             _missing   .removeKey(name);
+                             _missing   .removeKey(name      );
       #else
-         if(FileTime   *miss=_missing   .find     (name))miss       ->verify_time=INT_MIN;
+         if(FileTime   *miss=_missing   .find     (name      ))miss       ->verify_time=INT_MIN;
       #endif
-         if(Downloaded *down=_downloaded.find     (name))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find     (name))pakFile(*pf).verify_time=INT_MIN;
+         if(Downloaded *down=_downloaded.find     (name      ))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find     (name, true))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
             Download &down=_downloading[i]; if(EqualPath(down.url(), url))
