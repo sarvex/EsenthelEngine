@@ -30,9 +30,6 @@ static void my_error_exit(j_common_ptr cinfo)
    longjmp(err.jump_buffer, 1);
 }
 
-#define EXIF_JPEG_MARKER  JPEG_APP0+1
-#define EXIF_IDENT_STRING "Exif\000\000"
-
 static const Byte LETH[]={0X49, 0X49, 0X2A, 0X00}; // Little endian TIFF header
 static const Byte BETH[]={0X4D, 0X4D, 0X00, 0X2A}; // Big    endian TIFF header
 
@@ -48,9 +45,14 @@ static U32 Get32(void *ptr, Bool big_endian)
    if(big_endian)SwapEndian(val);
    return val;
 }
+static Bool Exif(Int marker, JOCTET *data, Int size)
+{
+   #define EXIF_JPEG_MARKER  JPEG_APP0+1
+   #define EXIF_IDENT_STRING "Exif\000\000"
+   return marker==EXIF_JPEG_MARKER && size>=32 && !memcmp(data, EXIF_IDENT_STRING, 6);
+}
 static Int Orientation(JOCTET *data, Int size)
 {
-   if(size>=32 && !memcmp(data, EXIF_IDENT_STRING, 6))
    for(UInt i=0; i<16; i++)
    { /* Skip data until TIFF header - it should be within 16 bytes from marker start.
         Normal structure relative to APP1 marker -
@@ -94,7 +96,7 @@ static Int Orientation(JOCTET *data, Int size)
 static Int Orientation(j_decompress_ptr cinfo)
 {
    for(jpeg_saved_marker_ptr marker=cinfo->marker_list; marker; marker=marker->next)
-      if(marker->marker==EXIF_JPEG_MARKER)return Orientation(marker->data, marker->data_length);
+      if(Exif(marker->marker, marker->data, marker->data_length))return Orientation(marker->data, marker->data_length);
    return 0;
 }
 #endif
@@ -197,7 +199,7 @@ Bool Image::ImportJPG(File &f)
             cur   +=     copy;
             length-=(U16)copy;
          }
-         src.orientation=Orientation(data, data_size);
+         if(Exif(cinfo->unread_marker, data, data_size))src.orientation=Orientation(data, data_size); // set orientation only for Exif, because this can be called multiple times, and not all will be exif
       #endif
          return true;
       }
