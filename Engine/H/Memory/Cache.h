@@ -83,6 +83,7 @@ T1(TYPE) struct Cache : _Cache // Cache - container for dynamically loaded data,
    Int elms()C; // get number of elements in container
 
 #if EE_PRIVATE
+                                 Bool has     (C Str &file, CChar *path=null              )C;                                  // check if cache contains      object, returns true even if element is still loading
                                  Bool has     (C             TYPE        *data            )C;                                  // check if cache contains this object, returns true even if element is still loading
 #endif
                                  Bool contains(C             TYPE        *data            )C;                                  // check if cache contains this object

@@ -62,8 +62,8 @@ mutable Byte         _d_lock;
   CPtr   elmData(C Elm &elm )C {return          (Byte*)&elm/*+_data_offset*/ ;} // assumes that '_data_offset' is zero
    Elm*  dataElm( CPtr  data)C {return  (Elm *)((Byte*)data/*-_data_offset*/);} // assumes that '_data_offset' is zero
 
-   Elm*        findExact(CChar *file, Int    &stop);
-   Elm*        findElm  (CChar *file, CChar  *path);
+   Elm*        findExact(CChar *file, Int    &stop)C;
+   Elm*        findElm  (CChar *file, CChar  *path)C;
    Int   findDelayRemove(  Elm &elm);
    Ptr      validElmData(  Elm &elm , Bool counted);
    void       addToOrder(  Elm &elm);
@@ -78,6 +78,7 @@ mutable Byte         _d_lock;
    void lockedRemoveData( CPtr  data, Bool counted);
    void       removeData( CPtr  data, Bool counted);
    void  incRefContained( CPtr  data);
+   Bool   has       (CChar *file, CChar *path)C;
 #endif
    Ptr    find      (CChar *file, CChar *path, Bool counted);
    Ptr    find      (C UID &id  , CChar *path, Bool counted);

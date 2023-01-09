@@ -256,7 +256,7 @@ void InternetCache::changed(C Str &url)
          }
          if(_to_verify  .binaryHas(url, COMPARE))return; // it will be checked
          if(_to_download.binaryHas(url, COMPARE))return; // it will be downloaded
-         if(ImagePtr().find(url)) // download if currently referenced TODO: could be replaced with Images.has
+         if(Images.has(url)) // download if currently referenced
          {
            _to_download.binaryInclude(url, COMPARE); enable();
          }

@@ -1817,6 +1817,7 @@ T1(TYPE)  UID     Cache<TYPE>::id      (C TYPE *data             )C {return supe
 T1(TYPE)  Int     Cache<TYPE>::ptrCount(C TYPE *data             )C {return super::ptrCount(data       );}
 #if EE_PRIVATE
 T1(TYPE)  Bool    Cache<TYPE>::has     (C TYPE *data             )C {return super::has     (data       );}
+T1(TYPE)  Bool    Cache<TYPE>::has     (C Str  &file, CChar *path)C {return super::has     (file, path );}
 #endif
 T1(TYPE)  Bool    Cache<TYPE>::contains(C TYPE *data             )C {return super::contains(data       );}
 T1(TYPE)  Bool    Cache<TYPE>::dummy   (C TYPE *data             )C {return super::dummy   (data       );}
