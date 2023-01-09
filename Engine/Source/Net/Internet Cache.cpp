@@ -240,40 +240,6 @@ Bool InternetCache::flush()
    return true;
 }
 /******************************************************************************/
-void InternetCache::changed(C Str &url)
-{
-   if(url.is())
-   {
-      Str name=SkipHttpWww(url); if(name.is())
-      {
-      #if PRECISE_MISSING_ACCESS_TIME
-         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
-      #else
-                             _missing   .removeKey(name);
-      #endif
-         if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
-         REPA(_downloading)
-         {
-            Download &down=_downloading[i]; if(EqualPath(down.url(), url))
-            { // restart the download
-            #if 1
-               down.create(url);
-            #else
-               down.del(); _to_download.binaryInclude(url, COMPARE);
-            #endif
-               return;
-            }
-         }
-         if(_to_verify  .binaryHas(url, COMPARE))return; // it will be checked
-         if(_to_download.binaryHas(url, COMPARE))return; // it will be downloaded
-         if(Images.has(url)) // download if currently referenced
-         {
-           _to_download.binaryInclude(url, COMPARE); enable();
-         }
-      }
-   }
-}
 Bool InternetCache::missing(C Str &name)
 {
    if(FileTime *missing=_missing.find(name))
@@ -347,6 +313,41 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
       }
    }
    return img;
+}
+/******************************************************************************/
+void InternetCache::changed(C Str &url)
+{
+   if(url.is())
+   {
+      Str name=SkipHttpWww(url); if(name.is())
+      {
+      #if PRECISE_MISSING_ACCESS_TIME
+         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
+      #else
+                             _missing   .removeKey(name);
+      #endif
+         if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
+         REPA(_downloading)
+         {
+            Download &down=_downloading[i]; if(EqualPath(down.url(), url))
+            { // restart the download
+            #if 1
+               down.create(url);
+            #else
+               down.del(); _to_download.binaryInclude(url, COMPARE);
+            #endif
+               return;
+            }
+         }
+         if(_to_verify  .binaryHas(url, COMPARE))return; // it will be checked
+         if(_to_download.binaryHas(url, COMPARE))return; // it will be downloaded
+         if(Images.has(url)) // download if currently referenced
+         {
+           _to_download.binaryInclude(url, COMPARE); enable();
+         }
+      }
+   }
 }
 /******************************************************************************/
 void InternetCache::import(ImportImage &ii)
