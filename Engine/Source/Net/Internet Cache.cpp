@@ -324,10 +324,10 @@ void InternetCache::changed(C Str &url)
       #if !PRECISE_MISSING_ACCESS_TIME
                              _missing   .removeKey(name);
       #else
-         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
+         if(FileTime   *miss=_missing   .find     (name))miss       ->verify_time=INT_MIN;
       #endif
-         if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
+         if(Downloaded *down=_downloaded.find     (name))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find     (name))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
             Download &down=_downloading[i]; if(EqualPath(down.url(), url))
@@ -459,8 +459,8 @@ inline void InternetCache::update()
                Flt        *verify_time=null;
                Downloaded * downloaded=_downloaded.find(name);
              C PakFile    *         pf=null;
-               if(downloaded        ){if(downloaded->file_data.elms()==down.totalSize() && downloaded->modify_time_utc==down.modifyTimeUTC()){verify_time=& downloaded->verify_time;}}else
-               if(pf=_pak.find(name)){if(        pf->data_size       ==down.totalSize() &&         pf->modify_time_utc==down.modifyTimeUTC()){verify_time=&pakFile(*pf).verify_time;}}
+               if(downloaded               ){if(downloaded->file_data.elms()==down.totalSize() && downloaded->modify_time_utc==down.modifyTimeUTC()){verify_time=& downloaded->verify_time;}}else
+               if(pf=_pak.find(name, false)){if(        pf->data_size       ==down.totalSize() &&         pf->modify_time_utc==down.modifyTimeUTC()){verify_time=&pakFile(*pf).verify_time;}}
 
                if(verify_time)
                {
@@ -505,7 +505,7 @@ inline void InternetCache::update()
                   if(!downloaded)
                   {
                                     downloaded=_downloaded.find(name);
-                     if(!downloaded)pf        =_pak       .find(name);
+                     if(!downloaded)pf        =_pak       .find(name, false);
                   }
                   if(downloaded || pf)
                   {
