@@ -321,10 +321,10 @@ void InternetCache::changed(C Str &url)
    {
       Str name=SkipHttpWww(url); if(name.is())
       {
-      #if PRECISE_MISSING_ACCESS_TIME
-         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
-      #else
+      #if !PRECISE_MISSING_ACCESS_TIME
                              _missing   .removeKey(name);
+      #else
+         if(FileTime   *miss=_missing   .find     (name       ))miss       ->verify_time=INT_MIN;
       #endif
          if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
          if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
