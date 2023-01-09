@@ -101,7 +101,7 @@ Bool Image::ExportWEBP(File &f, Flt rgb_quality, Flt alpha_quality)C
          if( aq>100)aq=100;
 
        //config .pass         =10; // very little difference, not sure if better or worse
-         config .method       =6;
+       //config .method       =6; // don't turn this on, because for lossless it can be too slow for camera photographs (91s for 4K x 2K photo, default method=4 is 7.5s), for lossy it's not as slow, it makes file smaller but at lower quality so just skip too
          config .thread_level =1; // 0=disabled, 1=no performance difference, >1 makes the compression to fail
        //config .near_lossless=; // made things much worse
          config .lossless     =(q>=100-EPS);
