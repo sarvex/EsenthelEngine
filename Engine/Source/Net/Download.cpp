@@ -368,13 +368,14 @@ static Bool DownloadFunc(Thread &thread) {return ((Download*)thread.user)->func(
          if(InRange(_file_i, _files))
          {
             HTTPFile &file=_files[_file_i];
-            Long left=file.max_size-file.pos(); if(left>0) // file data
+            Long left=file.Send(); if(left>0) // file data
             {
                if(_socket.flush(DOWNLOAD_WAIT_TIME))
                {
                   Int buf_left=Min(BUF_SIZE, left); if(!file.getFast(data, buf_left))return error();
                   Int sent=send(data, buf_left); if(sent<=0)return error();
-                 _sent+=sent;
+                                       _sent+=sent;
+                  if( file.send>=0)file.send-=sent; // adjust because 'file.pos' gets adjusted too, but only if manually specified, if not specified then keep as unlimited in case user will reuse this 'file' again by adjusting 'file.pos' only
                   if(!file.skip(sent-buf_left))return error(); // go back to unsent data
                }
             }else
@@ -595,7 +596,7 @@ Str8 Download::fileHeader(Int i)C
    h+="\"; filename=\""; // this is required too, without this, server will treat as if no file
    if(file.name.is())AppendName(h, file.name);else h+=i; // if name is empty then use index
    h+="\"\r\n";
-   h+=S8+"Content-Length: "+file.max_size+"\r\n";
+   h+=S8+"Content-Length: "+file.Send()+"\r\n";
    h+="\r\n";
    return h;
 }
@@ -675,12 +676,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
   _total_size=-1; // unknown total size
   _files     .point(files);
   _event     =event;
-   REPA(files)
-   {
-      HTTPFile &file=files[i];
-      if(file.max_size<0)file.max_size=file.left();
-     _to_send+=file.max_size;
-   }
+   REPA(files)_to_send+=files[i].Send();
 
    // once base params are set, set state
    state(DWNL_CONNECTING); // this must be set before returning, so that we mark this 'Download' as used

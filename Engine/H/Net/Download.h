@@ -62,9 +62,12 @@ struct HTTPParam : TextParam // optional parameter that can be passed to the 'Do
 struct HTTPFile : File
 {
    Str  name   ; // file name, must be unique, cannot be empty (if not set then file index will be used)
-   Long send=-1; // number of bytes to send, -1=all remaining
+   Long send=-1; // number of bytes to send, -1=all remaining. This value might get modified during upload
 
    HTTPFile& del() {super::del(); name.del(); send=-1; return T;}
+#if EE_PRIVATE
+   Long Send()C {return send>=0 ? send : left();} // get data size left to send
+#endif
 };
 /******************************************************************************/
 const_mem_addr struct Download // File Downloader !! must be stored in constant memory address !!
@@ -106,9 +109,9 @@ const_mem_addr struct Download // File Downloader !! must be stored in constant 
    void zero      ();
    Bool func      ();
    void delPartial();
-   Bool error     (); // !! this is not thread-safe !! set DWNL_ERROR state, you can signal that an error has encountered for example when invalid data downloaded, always returns false
+   Bool error     (); // !! THIS IS NOT THREAD-SAFE !! set DWNL_ERROR state, you can signal that an error has encountered for example when invalid data downloaded, always returns false
    void state     (DWNL_STATE state);
-   Str8 fileHeader(Int i)C;
+   Str8 fileHeader(Int i)C; // !! CAN'T USE AFTER i-th FILE UPLOAD STARTED, BECAUSE 'file.Send' WILL BE DIFFERENT !!
 #endif
 
            ~Download() {del();}
