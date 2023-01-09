@@ -744,8 +744,8 @@ StoreClass AppStore;
             if(src.left()<=EsenthelStoreFileChunkSize)mode=3;else // last
                mode=2; // middle
             params.New().set("item_file_mode", S+mode);
-               src.max_size=Min(EsenthelStoreFileChunkSize, src.left());
-         }else src.max_size=-1;
+               src.send=Min(EsenthelStoreFileChunkSize, src.left());
+         }else src.send=-1;
          down.create(EsenthelStoreURL, params, src);
       }
       bool StoreClass::Upload::visible()C {return progress.visible();}
