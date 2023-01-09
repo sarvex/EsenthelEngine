@@ -192,8 +192,8 @@ Bool InternetCache::flush()
          if(_threads)_threads->waitFuncUser(ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
 
          PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
-         FREPA(_downloaded)                                                            file_size+=files.New().set(_downloaded.key(i), _downloaded[i]     ).compressed_size;
-         FREPA(_pak       )if(i){Str name=_pak.fullName(i); if(!_downloaded.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
+         FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
+         FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
          {
             files.sort(CompareAccessTime);
@@ -528,7 +528,19 @@ inline void InternetCache::update()
                Bool just_created;
                FileTime &missing=*_missing(name, just_created);
                missing.verify_time=TIME;
-               if(just_created)missing.access_time=missing.verify_time;
+               if(just_created)
+               {
+                  missing.access_time=missing.verify_time;
+                  ImagePtr img; if(img.find(down.url())) // delete image
+                  {
+                     cancel(img);
+                     if(img->is())
+                     {
+                        img->del();
+                        if(got)got(img);
+                     }
+                  }
+               }
             }
             next: down.del(); goto again;
          }break;
