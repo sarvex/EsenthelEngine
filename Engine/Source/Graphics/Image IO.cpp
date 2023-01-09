@@ -1478,40 +1478,40 @@ void Image::operator=(C Str &name)
 /******************************************************************************/
 Bool Image::Export(C Str &name, Flt rgb_quality, Flt alpha_quality, Flt compression_level, Int sub_sample)C
 {
-   CChar   *ext=_GetExt(name);
-   if(Equal(ext, "img" ))return save      (name);
-   if(Equal(ext, "bmp" ))return ExportBMP (name);
-   if(Equal(ext, "png" ))return ExportPNG (name, compression_level);
-   if(Equal(ext, "jpg" ))return ExportJPG (name, rgb_quality, sub_sample);
-   if(Equal(ext, "jxl" ))return ExportJXL (name, rgb_quality, compression_level);
-   if(Equal(ext, "webp"))return ExportWEBP(name, rgb_quality, alpha_quality);
-   if(Equal(ext, "avif"))return ExportAVIF(name, rgb_quality, alpha_quality, compression_level);
-   if(Equal(ext, "heif"))return ExportHEIF(name, rgb_quality);
-   if(Equal(ext, "tga" ))return ExportTGA (name);
-   if(Equal(ext, "tif" ))return ExportTIF (name, compression_level);
-   if(Equal(ext, "dds" ))return ExportDDS (name);
-   if(Equal(ext, "ico" ))return ExportICO (name);
-   if(Equal(ext, "icns"))return ExportICNS(name);
-                         return false;
+   CChar *ext=_GetExt(name);
+   if(                Equal(ext, "img" ))return save      (name);
+   if(                Equal(ext, "bmp" ))return ExportBMP (name);
+   if(                Equal(ext, "tga" ))return ExportTGA (name);
+   if(SUPPORT_PNG  && Equal(ext, "png" ))return ExportPNG (name, compression_level);
+   if(SUPPORT_JPG  && Equal(ext, "jpg" ))return ExportJPG (name, rgb_quality, sub_sample);
+   if(SUPPORT_WEBP && Equal(ext, "webp"))return ExportWEBP(name, rgb_quality, alpha_quality);
+   if(SUPPORT_AVIF && Equal(ext, "avif"))return ExportAVIF(name, rgb_quality, alpha_quality, compression_level);
+   if(SUPPORT_JXL  && Equal(ext, "jxl" ))return ExportJXL (name, rgb_quality, compression_level);
+   if(SUPPORT_HEIF && Equal(ext, "heif"))return ExportHEIF(name, rgb_quality);
+   if(SUPPORT_TIF  && Equal(ext, "tif" ))return ExportTIF (name, compression_level);
+   if(                Equal(ext, "dds" ))return ExportDDS (name);
+   if(                Equal(ext, "ico" ))return ExportICO (name);
+   if(                Equal(ext, "icns"))return ExportICNS(name);
+                                         return false;
 }
 /******************************************************************************/
 Bool Image::Import(File &f, Int type, Int mode, Int mip_maps)
 {
    Long pos=f.pos();
-                         if(load      (f))goto ok;
-   f.resetOK().pos(pos); if(ImportBMP (f))goto ok;
-   f.resetOK().pos(pos); if(ImportPNG (f))goto ok;
-   f.resetOK().pos(pos); if(ImportJPG (f))goto ok;
-   f.resetOK().pos(pos); if(ImportJXL (f))goto ok;
-   f.resetOK().pos(pos); if(ImportWEBP(f))goto ok;
-   f.resetOK().pos(pos); if(ImportAVIF(f))goto ok;
-   f.resetOK().pos(pos); if(ImportHEIF(f))goto ok;
-   f.resetOK().pos(pos); if(ImportTIF (f))goto ok; // import after PNG/JPG in case LibTIFF tries to decode them too
-   f.resetOK().pos(pos); if(ImportDDS (f, type, mode, mip_maps))goto ok;
-   f.resetOK().pos(pos); if(ImportPSD (f))goto ok;
-   f.resetOK().pos(pos); if(ImportHDR (f))goto ok;
-   f.resetOK().pos(pos); if(ImportICO (f))goto ok;
- //f.resetOK().pos(pos); if(ImportTGA (f, type, mode, mip_maps))goto ok; TGA format doesn't contain any special signatures, so we can't check it
+                                          if(load      (f))goto ok;
+                    f.resetOK().pos(pos); if(ImportBMP (f))goto ok;
+   if(SUPPORT_PNG ){f.resetOK().pos(pos); if(ImportPNG (f))goto ok;}
+   if(SUPPORT_JPG ){f.resetOK().pos(pos); if(ImportJPG (f))goto ok;}
+   if(SUPPORT_WEBP){f.resetOK().pos(pos); if(ImportWEBP(f))goto ok;}
+   if(SUPPORT_AVIF){f.resetOK().pos(pos); if(ImportAVIF(f))goto ok;}
+   if(SUPPORT_JXL ){f.resetOK().pos(pos); if(ImportJXL (f))goto ok;}
+   if(SUPPORT_HEIF){f.resetOK().pos(pos); if(ImportHEIF(f))goto ok;}
+   if(SUPPORT_TIF ){f.resetOK().pos(pos); if(ImportTIF (f))goto ok;} // import after PNG/JPG in case LibTIFF tries to decode them too
+   if(SUPPORT_PSD ){f.resetOK().pos(pos); if(ImportPSD (f))goto ok;}
+                    f.resetOK().pos(pos); if(ImportDDS (f, type, mode, mip_maps))goto ok;
+                    f.resetOK().pos(pos); if(ImportHDR (f))goto ok;
+                    f.resetOK().pos(pos); if(ImportICO (f))goto ok;
+                  //f.resetOK().pos(pos); if(ImportTGA (f, type, mode, mip_maps))goto ok; TGA format doesn't contain any special signatures, so we can't check it
    del(); return false;
 ok:
    return copy(T, -1, -1, -1, type, mode, mip_maps);
