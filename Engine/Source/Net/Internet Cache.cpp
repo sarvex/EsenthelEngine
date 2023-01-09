@@ -27,7 +27,7 @@ static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, I
          ii.done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'ii' OBJECT CAN GET REMOVED !!
 }
 /******************************************************************************/
-InternetCache::InternetCache() : _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
+InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
 /******************************************************************************/
 struct SrcFile : PakFileData, InternetCache::FileTime
 {
@@ -94,6 +94,7 @@ void InternetCache::del()
 
    got=null;
   _save=_load=null;
+  _missing             .del();
   _downloaded          .del();
   _import_images       .del();
   _to_download         .del();
@@ -240,8 +241,9 @@ void InternetCache::changed(C Str &url)
    {
       Str name=SkipHttpWww(url); if(name.is())
       {
-         if(Downloaded *down=_downloaded.find(name       ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find(name, false))pakFile(*pf).verify_time=INT_MIN;
+                             _missing   .removeKey(name);
+         if(Downloaded *down=_downloaded.find     (name       ))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find     (name, false))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
             Download &down=_downloading[i]; if(EqualPath(down.url(), url))
@@ -262,6 +264,19 @@ void InternetCache::changed(C Str &url)
          }
       }
    }
+}
+Bool InternetCache::missing(C Str &name)
+{
+   if(FileTime *missing=_missing.find(name))
+   {
+      if(TIME-missing->verify_time<=_verify_life) // verification still acceptable
+      {
+         missing->access_time=TIME;
+         return true;
+      }
+     _missing.removeData(missing); // verification expired, status unknown, so just remove missing info
+   }
+   return false;
 }
 Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
 {
@@ -285,6 +300,7 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
       file.set(*pf, _pak);
    }else
    { // not found
+      if(missing(name))return false;
       REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto downloading;
                         if(_to_download.binaryInclude(url, COMPARE))enable();
    downloading:
@@ -292,8 +308,9 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
    }
 
    // found
-   if(verify==CACHE_VERIFY_SKIP)return true;
+   if(verify==CACHE_VERIFY_SKIP      )return true; // verification not   needed
    if(TIME-*verify_time<=_verify_life)return true; // verification still acceptable
+   if(missing(name))return false;
    // verify
    REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto verifying; // downloading now
                      if(_to_download.binaryHas    (url, COMPARE))goto verifying; // will download soon
@@ -450,10 +467,12 @@ inline void InternetCache::update()
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
             }else // move to 'downloaded'
             {
-               Downloaded *downloaded=_downloaded(name);
+               Bool just_created;
+               Downloaded *downloaded=_downloaded(name, just_created);
                downloaded->file_data.setNumDiscard(down.size()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
-               downloaded->access_time=downloaded->verify_time=TIME;
+               downloaded->verify_time=TIME;
+               if(just_created)downloaded->access_time=downloaded->verify_time;
 
                if(_max_mem_size>=0)
                {
@@ -488,7 +507,18 @@ inline void InternetCache::update()
             }
          }break;
 
-         case DWNL_ERROR: next: down.del(); goto again; break; // failed, so just ignore it
+         case DWNL_ERROR: // failed
+         {
+            if(down.code()==404) // confirmed that file is missing
+            {
+               Str name=SkipHttpWww(down.url());
+               Bool just_created;
+               FileTime &missing=*_missing(name, just_created);
+               missing.verify_time=TIME;
+               if(just_created)missing.access_time=missing.verify_time;
+            }
+            next: down.del(); goto again;
+         }break;
       }
    }
 

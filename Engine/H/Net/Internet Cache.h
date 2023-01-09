@@ -56,6 +56,7 @@ private:
    DateTime             _pak_modify_time_utc;
    Memb<DataRangeAbs>   _pak_used_file_ranges;
    Mems<FileTime>       _pak_files;
+   Map<Str, FileTime>   _missing;
    Map<Str, Downloaded> _downloaded;
    Download             _downloading[6];
    Memc<Str>            _to_download, _to_verify;
@@ -73,6 +74,7 @@ private:
    void   getPakFileInfo();
    void checkPakFileInfo();
    void reset();
+   Bool missing(C Str &name);
 #endif
 };
 /******************************************************************************/
