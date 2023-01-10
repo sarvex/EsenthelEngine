@@ -175,7 +175,7 @@ Button& Button::fitText()
       #if DEFAULT_FONT_FROM_CUSTOM_SKIN
          if(!ts.font())if(GuiSkin *skin=getSkin())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
       #endif
-         Flt text_width=ts.textWidth(text, extra.data(), extra.elms()), avail_width=rect().w()-text_padd*2;
+         Flt text_width=ts.textWidth(text, extra.data(), extra.elms()), avail_width=rect().w()-text_padd*2; if(_sub_type==BUTTON_TYPE_COMBOBOX)avail_width-=rect().h();
          if( text_width>avail_width)T.text_size*=avail_width/text_width;
       }
    }
