@@ -134,6 +134,7 @@ CChar* TDamageR() {return MLTC(u"DamageR", DE, u"AttackeR", FR, u"DommageD", IT,
 CChar* TDark(TRANS_FORM form) {return MLTC(u"Dark", DE, u"Dunkel", FR, u"Sombre", IT, u"Scuro", SP, u"Oscuro", PO, u"Escuro", PL, (form==TF_MALE) ? u"Ciemny" : (form==TF_FEMALE) ? u"Ciemna" : u"Ciemno", RU, u"Темнота", JP, u"暗い", KO, u"어두운", CN, u"黑暗的", TH, u"มืด");}
 CChar* TDash() {return MLTC(u"Dash", DE, u"Sprint", FR, u"Sprint", IT, u"Sprint", SP, u"Pique", PO, u"Corrida", PL, u"Sprint", RU, u"Спринт", JP, u"ダッシュ", KO, u"대시", CN, u"短跑", TH, u"วิ่ง");}
 CChar* TDay() {return MLTC(u"Day", DE, u"Tag", FR, u"Jour", IT, u"Giorno", SP, u"Día", PO, u"Dia", PL, u"Dzień", RU, u"День", JP, u"日", KO, u"요일", CN, u"天", TH, u"วัน");}
+CChar* TDecember() {return MLTC(u"December", DE, u"Dezember", FR, u"Décembre", IT, u"Dicembre", SP, u"Diciembre", PO, u"Dezembro", PL, u"Grudzień", RU, u"Декабрь", JP, u"12月", KO, u"12월", CN, u"十二月", TH, u"ธันวาคม");}
 CChar* TDefault() {return MLTC(u"Default", DE, u"Standard", FR, u"Défaut", IT, u"Predefinito", SP, u"Defecto", PO, u"Predefinição", PL, u"Domyślne", RU, u"По умолчанию", JP, u"デフォルト", KO, u"기본", CN, u"默认", TH, u"ค่าเริ่มต้น");}
 CChar* TDelete() {return MLTC(u"Delete", DE, u"Löschen", FR, u"Supprimer", IT, u"Eliminare", SP, u"Borrar", PO, u"Excluir", PL, u"Usuń", RU, u"Удалить", JP, u"消去", KO, u"삭제", CN, u"删除", TH, u"ลบ");}
 CChar* TDescription() {return MLTC(u"Description", DE, u"Beschreibung", FR, u"La description", IT, u"Descrizione", SP, u"Descripción", PO, u"Descrição", PL, u"Opis", RU, u"Описание", JP, u"説明", KO, u"설명", CN, u"描述", TH, u"คำอธิบาย");}
@@ -262,6 +263,25 @@ CChar* TMods() {return MLTC(u"Mods", DE, u"Modifikationen", FR, u"Mods", IT, u"M
 CChar* TModsFolder() {return MLTC(u"Mods Folder", DE, u"Mods-Ordner", FR, u"Dossier Mods", IT, u"Cartella Mod", SP, u"Carpeta de Mods", PO, u"Pasta Mods", PL, u"Folder Modów", RU, u"Папка Модов", JP, u"改造フォルダ", KO, u"모드 폴더", CN, u"模组文件夹", TH, u"โฟลเดอร์แก้ไข");}
 CChar* TMonster() {return MLTC(u"Monster", DE, u"Monster", FR, u"Monstre", IT, u"Mostro", SP, u"Monstruo", PO, u"Monstro", PL, u"Potwór", RU, u"Монстр", JP, u"モンスター", KO, u"괴물", CN, u"怪物", TH, u"สัตว์ประหลาด");}
 CChar* TMonsters() {return MLTC(u"Monsters", DE, u"Monster", FR, u"Monstres", IT, u"Mostri", SP, u"Monstruos", PO, u"Monstros", PL, u"Potwory", RU, u"Монстры", JP, u"モンスター", KO, u"몬스터", CN, u"怪物", TH, u"สัตว์ประหลาด");}
+CChar* TMonthName(Int month)
+{
+   switch(month)
+   {
+      default: return null;
+      case  1: return TJanuary();
+      case  2: return TFebruary();
+      case  3: return TMarch();
+      case  4: return TApril();
+      case  5: return TMay();
+      case  6: return TJune();
+      case  7: return TJuly();
+      case  8: return TAugust();
+      case  9: return TSeptember();
+      case 10: return TOctober();
+      case 11: return TNovember();
+      case 12: return TDecember();
+   }
+}
 CChar* TMoreManaNeeded() {return MLTC(u"More Mana needed", DE, u"Mehr Mana benötigt", FR, u"Plus de Mana nécessaire", IT, u"Più Mana necessario", SP, u"Se necesita más Maná", PO, u"Mais Mana necessária", PL, u"Potrzeba więcej Many", RU, u"Нужно больше Маны", JP, u"もっとマナが必要", KO, u"더 많은 마나가 필요합니다", CN, u"需要更多法力", TH, u"ต้องการมานามากขึ้น");}
 CChar* TMotionBlur() {return MLTC(u"Motion Blur", DE, u"Bewegungsunschärfe", FR, u"Flou Cinétique", IT, u"Mosso", SP, u"Desenfoque de Movimiento", PO, u"Desfoque de Movimento", PL, u"Rozmycie w Ruchu", RU, u"Шевелёнка", JP, u"モーションブラー", KO, u"모션 블러", CN, u"動態模糊", TH, u"โมชั่นเบลอ");}
 CChar* TMotionBlurIntensity() {return MLTC(u"Motion Blur Intensity", DE, u"Unschärfeintensität", FR, u"Intensité du Flou", IT, u"Intensità Sfocatura", SP, u"Intensidad de Desenfoque", PO, u"Intensidade do Desfoque", PL, u"Intensywność Rozmycia", RU, u"Интенсивность Размытия", JP, u"モーションブラーの強度", KO, u"모션 블러 강도", CN, u"运动模糊强度", TH, u"ความเข้มของภาพเบลอ");}
@@ -295,7 +315,9 @@ CChar* TNoHeroSelected() {return MLTC(u"No Hero selected", DE, u"Kein Held ausge
 CChar* TNoMapSelected() {return MLTC(u"No Map selected", DE, u"Keine Karte ausgewählt", FR, u"Aucune carte sélectionnée", IT, u"Nessuna mappa selezionata", SP, u"Ningún mapa seleccionado", PO, u"Nenhum mapa selecionado", PL, u"Nie wybrano mapy", RU, u"Карта не выбрана", JP, u"マップが選択されていません", KO, u"선택한 지도 없음", CN, u"未选择地图", TH, u"ไม่ได้เลือกแผนที่");}
 CChar* TNone(TRANS_FORM form) {return MLTC(u"None", DE, u"Keiner", FR, (form==TF_FEMALE) ? u"Aucune" : u"Aucun", IT, u"Nessuno", SP, (form==TF_FEMALE) ? u"Ninguna" : u"Ninguno", PO, u"Nenhum", PL, (form==TF_MALE) ? u"Żadny" : (form==TF_FEMALE) ? u"Żadna" : u"Żadne", RU, u"Никто", JP, u"なし", KO, u"없음", CN, u"没有", TH, u"ไม่มี");}
 CChar* TNormal(TRANS_FORM form) {return MLTC(u"Normal", DE, u"Normal", FR, u"Normal", IT, u"Normale", SP, u"Normal", PO, u"Normal", PL, (form==TF_MALE) ? u"Normalny" : (form==TF_FEMALE) ? u"Normalna" : u"Normalne", RU, u"Обычный", JP, u"普通", KO, u"정상", CN, u"普通的", TH, u"ปกติ");}
+CChar* TNovember() {return MLTC(u"November", DE, u"November", FR, u"Novembre", IT, u"Novembre", SP, u"Noviembre", PO, u"Novembro", PL, u"Listopad", RU, u"Ноябрь", JP, u"11月", KO, u"11월", CN, u"十一月", TH, u"พฤศจิกายน");}
 CChar* TObjects() {return MLTC(u"Objects", DE, u"Objekte", FR, u"Objets", IT, u"Oggetti", SP, u"Objetos", PO, u"Objetos", PL, u"Obiekty", RU, u"Объекты", JP, u"オブジェクト", KO, u"사물", CN, u"对象", TH, u"วัตถุ");}
+CChar* TOctober() {return MLTC(u"October", DE, u"Oktober", FR, u"Octobre", IT, u"Ottobre", SP, u"Octubre", PO, u"Outubro", PL, u"Październik", RU, u"Октябрь", JP, u"10月", KO, u"10월", CN, u"十月", TH, u"ตุลาคม");}
 CChar* TOilBomb() {return MLTC(u"Oil Bomb", DE, u"Ölbombe", FR, u"Bombe à Huile", IT, u"Bomba Petrolifera", SP, u"Bomba de Aceite", PO, u"Bomba de Óleo", PL, u"Bomba Olejowa", RU, u"Масляная Бомба", JP, u"オイルボム", KO, u"기름폭탄", CN, u"石油炸弹", TH, u"ระเบิดน้ำมัน");}
 CChar* TOnServer() {return MLTC(u"On Server", DE, u"Auf dem Server", FR, u"Sur le Serveur", IT, u"Sul Server", SP, u"En el Servidor", PO, u"No Servidor", PL, u"Na Serwerze", RU, u"На Сервере", JP, u"サーバー上", KO, u"서버에서", CN, u"在服务器上", TH, u"บนเซิร์ฟเวอร์");}
 CChar* TOpen() {return MLTC(u"Open", DE, u"Öffne", FR, u"Ouvre", IT, u"Apri", SP, u"Abre", PO, u"Abra", PL, u"Otwórz", RU, u"Открыть", JP, u"開く", KO, u"열다", CN, u"打开", TH, u"เปิด");}

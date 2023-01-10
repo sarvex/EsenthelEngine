@@ -110,6 +110,7 @@ CChar* TDamageR();
 CChar* TDark(TRANS_FORM form=TF_NEUTRAL);
 CChar* TDash();
 CChar* TDay();
+CChar* TDecember();
 CChar* TDefault();
 CChar* TDelete();
 CChar* TDescription();
@@ -240,6 +241,7 @@ CChar* TMods();
 CChar* TModsFolder();
 CChar* TMonster();
 CChar* TMonsters();
+CChar* TMonthName(Int month); // get month name (January, February, March, ..), 'month'=1..12, null on fail
 CChar* TMoreManaNeeded();
 CChar* TMotionBlur();
 CChar* TMotionBlurIntensity();
@@ -273,7 +275,9 @@ CChar* TNoHeroSelected();
 CChar* TNoMapSelected();
 CChar* TNone(TRANS_FORM form=TF_NEUTRAL);
 CChar* TNormal(TRANS_FORM form=TF_NEUTRAL);
+CChar* TNovember();
 CChar* TObjects();
+CChar* TOctober();
 CChar* TOilBomb();
 inline CChar* TOK() {return u"OK";}
 CChar* TOnServer();
