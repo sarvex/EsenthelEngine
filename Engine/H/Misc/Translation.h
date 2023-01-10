@@ -286,6 +286,7 @@ CChar* TPoints();
 CChar* TPoisonBomb();
 CChar* TPoisonCloud();
 CChar* TPolearm();
+CChar* TPost();
 CChar* TPotion();
 CChar* TPoweredBy();
 Str    TPoweredBy(CChar *name);
