@@ -260,8 +260,8 @@ CChar* TManaPotion() {return MLTC(u"Mana Potion", DE, u"Manatrank", FR, u"Potion
 CChar* TMarch() {return MLTC(u"March", DE, u"März", FR, u"Mars", IT, u"Marzo", SP, u"Marzo", PO, u"Março", PL, u"Marzec", RU, u"Март", JP, u"3月", KO, u"3월", CN, u"三月", TH, u"มีนาคม");}
 CChar* TMarchShort() {return MLTC(u"Mar", DE, u"Mär", FR, u"Mar", IT, u"Mar", SP, u"Mar", PO, u"Mar", PL, u"Mar", RU, u"Мар", JP, u"3月", KO, u"3월", CN, u"三月", TH, u"มีนาคม");}
 CChar* TMasterVolume() {return MLTC(u"Master Volume", DE, u"Master Lautstärke", FR, u"Volume Principal", IT, u"Volume Principale", SP, u"Volumen Principal", PO, u"Volume Principal", PL, u"Głośność", RU, u"Мастер Громкость", JP, u"マスターボリューム", KO, u"마스터 볼륨", CN, u"主音量", TH, u"ปริมาณหลัก");}
-CChar* TMay() {return MLTC(u"May", DE, u"Mai", FR, u"Mai", IT, u"Maggio", SP, u"Mayo", PO, u"Maio", PL, u"Maj", RU, u"Май", JP, u"5月", KO, u"5월", CN, u"可能", TH, u"พฤษภาคม");}
-CChar* TMayShort() {return MLTC(u"May", DE, u"Mai", FR, u"Mai", IT, u"Mag", SP, u"May", PO, u"Mai", PL, u"Maj", RU, u"Май", JP, u"5月", KO, u"5월", CN, u"可能", TH, u"พฤษภาคม");}
+CChar* TMay() {return MLTC(u"May", DE, u"Mai", FR, u"Mai", IT, u"Maggio", SP, u"Mayo", PO, u"Maio", PL, u"Maj", RU, u"Май", JP, u"5月", KO, u"5월", CN, u"五月", TH, u"พฤษภาคม");}
+CChar* TMayShort() {return MLTC(u"May", DE, u"Mai", FR, u"Mai", IT, u"Mag", SP, u"May", PO, u"Mai", PL, u"Maj", RU, u"Май", JP, u"5月", KO, u"5월", CN, u"五月", TH, u"พฤษภาคม");}
 CChar* TMayan() {return MLTC(u"Mayan", DE, u"Maya", FR, u"Maya", IT, u"Maya", SP, u"Maya", PO, u"Maia", PL, u"Majowie", RU, u"Майя", JP, u"マヤ", KO, u"마야", CN, u"玛雅", TH, u"มายัน");}
 CChar* TMaxLights() {return MLTC(u"Max Lights", DE, u"Lichter Begrenzen", FR, u"Feux de Limite", IT, u"Limite di Luci", SP, u"Luces de Límite", PO, u"Luzes de Limite", PL, u"Limit Świateł", RU, u"Ограничение Огни", JP, u"ライトを制限する", KO, u"제한 조명", CN, u"限位灯", TH, u"ไฟจำกัด");}
 CChar* TMedium(TRANS_FORM form) {return MLTC(u"Medium", DE, u"Mittel", FR, u"Moyen", IT, u"Medio", SP, u"Medio", PO, u"Médio", PL, (form==TF_MALE) ? u"Średni" : (form==TF_FEMALE) ? u"Średnia" : u"Średnie", RU, u"Середина", JP, u"中くらい", KO, u"중간", CN, u"中等的", TH, u"ปานกลาง");}
