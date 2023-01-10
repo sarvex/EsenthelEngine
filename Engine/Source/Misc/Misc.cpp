@@ -1767,7 +1767,13 @@ Str LanguageSpecific(LANG_TYPE lang)
       case SP             : return u"ÁáÉéÍíÓóÚúÜüÑñ¿¡";
       case LANG_GREEK     : return u"ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩωΆάΈέΉήΊίΌόΎύΏώΐΰΪϊΫϋ";
       case LANG_THAI      : return u"กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛"; // https://en.wikipedia.org/wiki/Thai_alphabet#Unicode
-      case LANG_VIETNAMESE: return u"ĂăÂâĐđÊêÔôƠơƯư";
+      case LANG_VIETNAMESE: return u"ĂăÂâĐđÊêÔôƠơƯư"
+                                   u"AaĂăÂâEeÊêIiOoÔôƠơUuƯưYy"
+                                   u"ÁáẮắẤấÉéẾếÍíÓóỐốỚớÚúỨứÝý"
+                                   u"ÀàẰằẦầÈèỀềÌìÒòỒồỜờÙùỪừỲỳ"
+                                   u"ẢảẲẳẨẩẺẻỂểỈỉỎỏỔổỞởỦủỬửỶỷ"
+                                   u"ÃãẴẵẪẫẼẽỄễĨĩÕõỖỗỠỡŨũỮữỸỹ"
+                                   u"ẠạẶặẬậẸẹỆệỊịỌọỘộỢợỤụỰựỴỵ";
 
       case CN:
       {
