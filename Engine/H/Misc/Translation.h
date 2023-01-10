@@ -33,6 +33,8 @@ CChar* T1Player();
 CChar* T2Players();
 CChar* TAbout();
 CChar* TAction();
+CChar* TAddImage();
+CChar* TAddYouTubeVideo();
 CChar* TAlways();
 CChar* TAmbientOcclusion();
 CChar* TAmbientOcclusionRes();
