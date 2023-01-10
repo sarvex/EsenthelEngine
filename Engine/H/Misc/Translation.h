@@ -392,6 +392,7 @@ CChar* TSize();
 CChar* TSmall(TRANS_FORM form=TF_NEUTRAL);
 CChar* TSnakes();
 CChar* TSoftParticles();
+CChar* TSomeoneAwesome();
 CChar* TSometimes();
 CChar* TSound();
 CChar* TSoundVolume();
