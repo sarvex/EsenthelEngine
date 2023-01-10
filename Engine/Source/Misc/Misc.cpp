@@ -1755,7 +1755,7 @@ LANG_TYPE OSLanguage()
    return LANG_NONE;
 }
 /******************************************************************************/
-Str LanguageSpecific(LANG_TYPE lang)
+Str LanguageSpecific(LANG_TYPE lang) // https://en.wikipedia.org/wiki/Wikipedia:Language_recognition_chart
 {
    switch(lang)
    {
