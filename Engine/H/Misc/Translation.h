@@ -403,6 +403,7 @@ CChar* TTurnRight();
 CChar* TTutorial();
 CChar* TType();
 CChar* TUnequip();
+CChar* TUniqueID();
 CChar* TUnlocked();
 CChar* TUnlockedCharacter();
 CChar* TUp();
