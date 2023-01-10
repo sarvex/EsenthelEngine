@@ -166,7 +166,7 @@ CChar* TExitToSystem() {return MLTC(u"Exit to System", DE, u"Knappes Spiel", FR,
 CChar* TExp() {return MLTC(u"Exp.", DE, u"Erfahrung", FR, u"Exp.", IT, u"Esp.", SP, u"Exp.", PO, u"Exp.", PL, u"Dośw.", RU, u"Опыт", JP, u"経験", KO, u"경험", CN, u"经验", TH, u"ชำนาญ");}
 CChar* TExperience() {return MLTC(u"Experience", DE, u"Erfahrung", FR, u"Expérience", IT, u"Esperienza", SP, u"Experiencia", PO, u"Experiência", PL, u"Doświadczenie", RU, u"Опыт", JP, u"経験", KO, u"경험", CN, u"经验", TH, u"ประสบการณ์");}
 CChar* TEyeAdaptation() {return MLTC(u"Eye Adaptation", DE, u"Augenanpassung", FR, u"Adaptation des Yeux", IT, u"Adattamento Oculare", SP, u"Adaptación Ocular", PO, u"Adaptação dos Olhos", PL, u"Adaptacja Oka", RU, u"Адаптация Глаз", JP, u"目の適応", KO, u"눈 적응", CN, u"眼睛适应", TH, u"การปรับสายตา");}
-CChar* TFebruary() {return MLTC(u"February", DE, u"Februar", FR, u"Février", IT, u"Febbraio", SP, u"Febrero", PO, u"Fevereiro", PL, u"Luty", RU, u"февраль", JP, u"2月", KO, u"2월", CN, u"二月", TH, u"กุมภาพันธ์");}
+CChar* TFebruary() {return MLTC(u"February", DE, u"Februar", FR, u"Février", IT, u"Febbraio", SP, u"Febrero", PO, u"Fevereiro", PL, u"Luty", RU, u"Февраль", JP, u"2月", KO, u"2월", CN, u"二月", TH, u"กุมภาพันธ์");}
 CChar* TFeedback() {return MLTC(u"Feedback", DE, u"Feedback", FR, u"Réaction", IT, u"Risposta", SP, u"Opinión", PO, u"Comentários", PL, u"Opinia", RU, u"Мнение", JP, u"フィードバック", KO, u"피드백", CN, u"回馈", TH, u"ข้อเสนอแนะ");}
 CChar* TFeedbackOK() {return MLTC(u"Feedback received, thank you.", DE, u"Feedback erhalten, danke.", FR, u"Commentaires reçus, merci.", IT, u"Feedback ricevuto, grazie.", SP, u"Comentarios recibidos, gracias.", PO, u"Feedback recebido, obrigado.", PL, u"Opinia otrzymana, dziękujemy.", RU, u"Отзыв получен, спасибо.", JP, u"フィードバックをいただき、ありがとうございます。", KO, u"피드백을 받았습니다. 감사합니다.", CN, u"收到反馈，谢谢。", TH, u"ได้รับคำติชมแล้ว ขอบคุณครับ");}
 CChar* TFeedbackError() {return MLTC(u"There was an error sending feedback, please try again later.", DE, u"Beim Senden des Feedbacks ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.", FR, u"Une erreur s'est produite lors de l'envoi des commentaires, veuillez réessayer plus tard.", IT, u"Si è verificato un errore durante l'invio del feedback, riprova più tardi.", SP, u"Hubo un error al enviar los comentarios, inténtalo de nuevo más tarde.", PO, u"Ocorreu um erro ao enviar o feedback, tente novamente mais tarde.", PL, u"Wystąpił błąd podczas wysyłania opinii, spróbuj ponownie później.", RU, u"При отправке отзыва произошла ошибка, повторите попытку позже.", JP, u"フィードバックの送信中にエラーが発生しました。しばらくしてからもう一度お試しください。", KO, u"피드백을 보내는 동안 오류가 발생했습니다. 나중에 다시 시도해 주세요.", CN, u"发送反馈时出错，请稍后重试。", TH, u"เกิดข้อผิดพลาดในการส่งความคิดเห็น โปรดลองอีกครั้งในภายหลัง");}
@@ -214,7 +214,8 @@ CChar* TInstallMods() {return MLTC(u"Install Mods", DE, u"Mods Installieren", FR
 CChar* TInvalidEmail() {return MLTC(u"Invalid Email", DE, u"Ungültige Email", FR, u"Email Invalide", IT, u"E-mail Non Valido", SP, u"Email Inválido", PO, u"Email Inválido", PL, u"Błędny Email", RU, u"Неверный адрес электронной почты", JP, u"無効なメール", KO, u"잘못된 이메일", CN, u"不合规电邮", TH, u"อีเมลไม่ถูกต้อง");}
 CChar* TInvalidYouTubeVideoLink() {return MLTC(u"Invalid YouTube video link", DE, u"Ungültiger YouTube-Videolink", FR, u"Lien vidéo YouTube invalide", IT, u"Link al video di YouTube non valido", SP, u"Enlace de video de YouTube no válido", PO, u"Link de vídeo do YouTube inválido", PL, u"Nieprawidłowy link do filmu YouTube", RU, u"Недействительная ссылка на видео YouTube", JP, u"YouTube 動画リンクが無効です", KO, u"잘못된 YouTube 동영상 링크", CN, u"无效的 YouTube 视频链接", TH, u"ลิงก์วิดีโอ YouTube ไม่ถูกต้อง");}
 CChar* TInventory() {return MLTC(u"Inventory", DE, u"Inventar", FR, u"Inventaire", IT, u"Inventario", SP, u"Inventario", PO, u"Inventário", PL, u"Inwentarz", RU, u"Инвентарь", JP, u"在庫", KO, u"목록", CN, u"存货", TH, u"รายการสิ่งของ");}
-CChar* TJanuary() {return MLTC(u"January", DE, u"Januar", FR, u"Janvier", IT, u"Gennaio", SP, u"Enero", PO, u"Janeiro", PL, u"Styczeń", RU, u"январь", JP, u"1月", KO, u"1월", CN, u"一月", TH, u"มกราคม");}
+CChar* TJanuary() {return MLTC(u"January", DE, u"Januar", FR, u"Janvier", IT, u"Gennaio", SP, u"Enero", PO, u"Janeiro", PL, u"Styczeń", RU, u"Январь", JP, u"1月", KO, u"1월", CN, u"一月", TH, u"มกราคม");}
+CChar* TJanuaryShort() {return MLTC(u"Jan", DE, u"Jan", FR, u"Jan", IT, u"Gen", SP, u"Ene", PO, u"Jan", PL, u"Sty", RU, u"Янв", JP, u"1月", KO, u"1월", CN, u"一月", TH, u"มกราคม");}
 CChar* TJuly() {return MLTC(u"July", DE, u"Juli", FR, u"Juillet", IT, u"Luglio", SP, u"Julio", PO, u"Julho", PL, u"Lipiec", RU, u"Июль", JP, u"7月", KO, u"7월", CN, u"七月", TH, u"กรกฎาคม");}
 CChar* TJump() {return MLTC(u"Jump", DE, u"Springen", FR, u"Saut", IT, u"Salto", SP, u"Salto", PO, u"Pular", PL, u"Skok", RU, u"Прыжок", JP, u"ジャンプ", KO, u"도약", CN, u"跳", TH, u"กระโดด");}
 CChar* TJune() {return MLTC(u"June", DE, u"Juni", FR, u"Juin", IT, u"Giugno", SP, u"Junio", PO, u"Junho", PL, u"Czerwiec", RU, u"Июнь", JP, u"6月", KO, u"6월", CN, u"六月", TH, u"มิถุนายน");}
@@ -280,6 +281,25 @@ CChar* TMonthName(Int month)
       case 10: return TOctober();
       case 11: return TNovember();
       case 12: return TDecember();
+   }
+}
+CChar* TMonthNameShort(Int month)
+{
+   switch(month)
+   {
+      default: return null;
+      case  1: return TJanuaryShort();
+      case  2: return TFebruaryShort();
+      case  3: return TMarchShort();
+      case  4: return TAprilShort();
+      case  5: return TMayShort();
+      case  6: return TJuneShort();
+      case  7: return TJulyShort();
+      case  8: return TAugustShort();
+      case  9: return TSeptemberShort();
+      case 10: return TOctoberShort();
+      case 11: return TNovemberShort();
+      case 12: return TDecemberShort();
    }
 }
 CChar* TMoreManaNeeded() {return MLTC(u"More Mana needed", DE, u"Mehr Mana benötigt", FR, u"Plus de Mana nécessaire", IT, u"Più Mana necessario", SP, u"Se necesita más Maná", PO, u"Mais Mana necessária", PL, u"Potrzeba więcej Many", RU, u"Нужно больше Маны", JP, u"もっとマナが必要", KO, u"더 많은 마나가 필요합니다", CN, u"需要更多法力", TH, u"ต้องการมานามากขึ้น");}
