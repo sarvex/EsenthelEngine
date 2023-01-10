@@ -1759,14 +1759,15 @@ Str LanguageSpecific(LANG_TYPE lang)
 {
    switch(lang)
    {
-      case PL        : return u"ĄĆĘŁŃÓŚŻŹąćęłńóśżź";
-      case DE        : return u"äÄëËöÖüÜßẞ";
-      case FR        : return u"àÀáÁâÂãÃäÄåÅæÆçÇèÈéÉêÊëËìÌíÍîÎïÏðÐñÑòÒóÓôÔõÕöÖøØùÙúÚûÛüÜýÝ";
-      case RU        : return u"аАбБвВгГдДеЕёЁжЖзЗиИйЙкКлЛмМнНоОпПрРсСтТуУфФхХцЦчЧшШщЩъЪыЫьЬэЭюЮяЯ";
-      case PO        : return u"áÁàÀâÂãÃçÇéÉêÊíÍóÓõÕôÔúÚ";
-      case SP        : return u"áÁéÉíÍóÓúÚüÜñÑ¿¡";
-      case LANG_GREEK: return u"αΑβΒγΓδΔεΕζΖηΗθΘιΙκΚλΛμΜνΝξΞοΟπΠρΡσΣτΤυΥφΦχΧψΨωΩ";
-      case LANG_THAI : return u"กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛"; // https://en.wikipedia.org/wiki/Thai_alphabet#Unicode
+      case PL             : return u"ĄąĆćĘęŁłŃńÓóŚśŻżŹź";
+      case DE             : return u"ÄäËëÖöÜüẞß";
+      case FR             : return u"ÀàÁáÂâÃãÄäÅåÆæÇçÈèÉéÊêËëÌìÍíÎîÏïÐðÑñÒòÓóÔôÕõÖöØøÙùÚúÛûÜüÝý";
+      case RU             : return u"АаБбВвГгДдЕеЁёЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя";
+      case PO             : return u"ÁáÀàÂâÃãÇçÉéÊêÍíÓóÕõÔôÚú";
+      case SP             : return u"ÁáÉéÍíÓóÚúÜüÑñ¿¡";
+      case LANG_GREEK     : return u"ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩωΆάΈέΉήΊίΌόΎύΏώΐΰΪϊΫϋ";
+      case LANG_THAI      : return u"กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛"; // https://en.wikipedia.org/wiki/Thai_alphabet#Unicode
+      case LANG_VIETNAMESE: return u"ĂăÂâĐđÊêÔôƠơƯư";
 
       case CN:
       {
