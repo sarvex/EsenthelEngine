@@ -223,7 +223,8 @@ void InternetCache::checkPakFileInfo()
    if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)resetPak();
 }
 /******************************************************************************/
-Bool InternetCache::flush()
+Bool InternetCache::flush() {return flush(null, null);}
+Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' is going to get removed then its data will be placed in 'keep_data'
 {
  //if(_downloaded.elms()) always save because we need to save 'access_time' and 'verify_time' which can change without new '_downloaded'
    {
@@ -238,13 +239,15 @@ Bool InternetCache::flush()
       reset:
          // at this point there should be no PAK importers
 
-         PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
+         PostHeader post_header(T); auto &files=post_header.files;
+         Bool keep_removed=false;
+         Long file_size=0;
          FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
          FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
          {
             files.sort(CompareAccessTime);
-            do{file_size-=files.last().compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
+            do{SrcFile &file=files.last(); if(file.downloaded==keep)keep_removed=true; file_size-=file.compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
 
@@ -270,12 +273,14 @@ Bool InternetCache::flush()
                Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
               _threads->wait(calls);
             }
+            if(keep_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
            _downloaded.del();
          }else return false;
       }else
       if(_max_mem_size>=0)
       {
-         Memc<SrcFile> files; files.reserve(_downloaded.elms()); Long size=0;
+         Memc<SrcFile> files; files.reserve(_downloaded.elms());
+         Long size=0;
          FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
          if(size>_max_mem_size) // limit mem size
          {
@@ -285,6 +290,7 @@ Bool InternetCache::flush()
                SrcFile &file=files.last();
                Downloaded &downloaded=*file.downloaded;
                if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+               if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
               _downloaded.removeData(&downloaded); // _downloaded.removeKey(file.name);
                size-=file.compressed_size;
                files.removeLast();
@@ -562,15 +568,16 @@ inline void InternetCache::update()
                if(just_created)downloaded->access_time=downloaded->verify_time;
 
                ImagePtr img; img.find(down.url()); const Bool import=img;
+               Mems<Byte> downloaded_data;
 
                if(_max_mem_size>=0)
                {
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
                   if(  mem_size>_max_mem_size)
                   {
-                     // TODO: if we're going to 'import' then prevent 'downloaded' from being removed in flush: do Downloaded *except=downloaded; or copy memory to importer from 'down'
-                     flush();
-                     downloaded=null;
+                     if(import)flush(downloaded, &downloaded_data); // if we're going to import, then if 'downloaded' is going to get removed, then keep its memory
+                     else      flush();
+                     downloaded=null; // flush deletes '_downloaded' so clear this one, we'll find it again
                   }
                }
 
@@ -582,12 +589,13 @@ inline void InternetCache::update()
                                     downloaded=_downloaded.find(name);
                      if(!downloaded)pf        =_pak       .find(name, false);
                   }
-                  if(downloaded || pf)
+                //if(downloaded || pf) ignore because if it got removed and not found, then data was put in 'downloaded_data'
                   {
                      cancel(img);
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
-                     else          {ii.downloaded=false; ii.data.set(*pf, _pak);}
+                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}else
+                     if(pf        ){ii.downloaded=false; ii.data.set(*pf, _pak);}else
+                                   {ii.downloaded=false; Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());}
                      Swap(ii.image_ptr, img);
                      T.import(ii);
                   }

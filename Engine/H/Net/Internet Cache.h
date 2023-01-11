@@ -85,6 +85,7 @@ private:
    void checkPakFileInfo();
    void resetPak(WriteLockEx *lock=null);
    Bool missing(C Str &name);
+   Bool flush(Downloaded *keep, Mems<Byte> *keep_data);
 #endif
 };
 /******************************************************************************/
