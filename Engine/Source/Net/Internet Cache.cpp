@@ -25,7 +25,7 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
 /******************************************************************************/
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
- //if(!done) not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked below)
+ //if(!done) not needed because PAK/DOWNLOADED are always converted to OTHER before 'done' (except case when 'fail' which is already checked below)
    switch(type)
    {
       case PAK: if(!fail)
@@ -40,7 +40,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(f.size());
          if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
          data.set(temp.data(), temp.elms());
-         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast checks without locking
+         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
       }break;
 
       case DOWNLOADED: if(COPY_DOWNLOADED_MEM)
@@ -48,7 +48,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(data.memory_size);
          CopyFast(temp.data(), data.memory, temp.elms());
          data.set(temp.data(), temp.elms());
-         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast checks without locking
+         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
       }break;
    }
 }
