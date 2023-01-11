@@ -31,6 +31,8 @@ static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, I
    }else ii.fail=true;
          ii.done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'ii' OBJECT CAN GET REMOVED !!
 }
+Bool InternetCache::ImportImage::isPak       ()C {return data.type==DataSource::PAK_FILE;}
+Bool InternetCache::ImportImage::isDownloaded()C {return data.type==DataSource::MEM     ;}
 /******************************************************************************/
 InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
 /******************************************************************************/
@@ -189,8 +191,6 @@ Bool InternetCache::flush()
       {
          checkPakFileInfo(); // check before waiting, because potential 'reset' might create '_import_images' as well, for which we need to wait
 
-         if(_threads)_threads->waitFuncUser(ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
-
          PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
          FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
          FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
@@ -201,11 +201,17 @@ Bool InternetCache::flush()
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
 
+         if(_threads) // wait for Import Threads processing PAK files which we're about to update
+         {
+            Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isPak())calls.New().set(ii, ImportImageFunc, T);}
+           _threads->wait(calls);
+         }
+
          if(((_max_file_size<0 || _pak_size/2<_max_file_size) // if pak size is smaller than 2x limit "_pak_size<_max_file_size*2", allow some tolerance because 'replaceInPlace' does not generate compact paks but they may have holes
            && _pak.replaceInPlace(_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // replace in place
          ||   _pak.replace       (_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // recreate
          {
-           _downloaded.del();
+            getPakFileInfo();
            _pak_files.setNumDiscard(_pak.totalFiles());
             REPA(_pak_files)
             {
@@ -216,7 +222,13 @@ Bool InternetCache::flush()
                   file.verify_time=src->verify_time;
                }else file.zero();
             }
-            getPakFileInfo();
+
+            if(_threads) // wait for Import Threads processing Downloaded files which we're about to delete
+            {
+               Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
+              _threads->wait(calls);
+            }
+           _downloaded.del();
          }else return false;
       }else
       if(_max_mem_size>=0)
@@ -226,11 +238,12 @@ Bool InternetCache::flush()
          if(size>_max_mem_size) // limit mem size
          {
             files.sort(CompareAccessTime);
-            if(_threads)_threads->waitFuncUser(ImportImageFunc, T); // wait until the worker threads finish importing, as they operate on '_downloaded' and '_pak' which we're about to update
             do
             {
                SrcFile &file=files.last();
-              _downloaded.removeKey(file.name);
+               Downloaded *downloaded=_downloaded.find(file.name);
+               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.data.type==DataSource::MEM && ii.data.memory==downloaded->file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+              _downloaded.removeData(downloaded); // _downloaded.removeKey(file.name);
                size-=file.compressed_size;
                files.removeLast();
             }while(size>_max_mem_size && files.elms());

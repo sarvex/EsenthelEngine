@@ -32,6 +32,9 @@ private:
       DataSource data;
       ImagePtr   image_ptr;  // image into which import
       Image      image_temp; // temp image which will have the data
+
+      Bool isPak       ()C;
+      Bool isDownloaded()C;
    };
    struct FileTime
    {
