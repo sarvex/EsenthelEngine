@@ -468,7 +468,8 @@ inline void InternetCache::update()
                   // it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, load it
                   {
-                     cancel(img);
+                     REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
+                     // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
                      if(downloaded)ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());
                      else          ii.data.set(*pf, _pak);
@@ -510,9 +511,9 @@ inline void InternetCache::update()
                   if(downloaded || pf)
                   {
                      ImportImage &ii=_import_images.New();
-                     Swap(ii.image_ptr, img);
                      if(downloaded)ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());
                      else          ii.data.set(*pf, _pak);
+                     Swap(ii.image_ptr, img);
                      import(ii);
                   }
                }
