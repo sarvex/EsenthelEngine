@@ -607,7 +607,7 @@ inline void InternetCache::update()
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
                   if(  mem_size>_max_mem_size)
                   {
-                     if(import)flush(downloaded, &downloaded_data); // if we're going to import, then if 'downloaded' is going to get removed, then keep its memory
+                     if(import)flush(downloaded, &downloaded_data); // if we're going to import, then make sure if 'downloaded' is going to get removed, then we will keep its memory
                      else      flush();
                      downloaded=null; // flush deletes '_downloaded' so clear this one, we'll find it again
                   }
