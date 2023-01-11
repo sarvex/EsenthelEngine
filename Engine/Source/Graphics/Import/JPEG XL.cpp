@@ -36,8 +36,14 @@ Bool _ImportJXL(Image &image, File &f)
 #if SUPPORT_JXL
    uint8_t sig[12]; if(f.getFast(sig) && JXLSigOK(sig, SIZE(sig)) && f.skip(-SIZEI(sig))) // based on 'JxlSignatureCheck' source code we need 12 bytes to make a full check
    {
-      Memt<Byte> data; data.setNumDiscard(f.left());
-      if(f.getFast(data.data(), data.elms()))
+      Memt<Byte> temp;
+      Ptr        data;
+      Int        size=Min(INT_MAX, f.left());
+      if(f._type==FILE_MEM)data=f.memFast();else
+      {
+         data=temp.setNumDiscard(size).data();
+         if(!f.getFast(data, size))goto error;
+      }
       {
          auto runner=JxlResizableParallelRunnerMake(null);
          auto dec   =JxlDecoderMake(null);
@@ -48,7 +54,7 @@ Bool _ImportJXL(Image &image, File &f)
          JxlPixelFormat format; Zero(format);
          format.endianness=JXL_LITTLE_ENDIAN;
 
-         JxlDecoderSetInput  (dec.get(), data.data(), data.elms());
+         JxlDecoderSetInput  (dec.get(), (uint8_t*)data, size);
          JxlDecoderCloseInput(dec.get());
 
          for(;;)switch(JxlDecoderStatus status=JxlDecoderProcessInput(dec.get()))
@@ -112,8 +118,8 @@ Bool _ImportJXL(Image &image, File &f)
             case JXL_DEC_SUCCESS: return true; // All decoding successfully finished. It's not required to call JxlDecoderReleaseInput(dec.get()) here since the decoder will be destroyed.
          }
       }
+   error:;
    }
-error:
 #endif
    image.del(); return false;
 }

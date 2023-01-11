@@ -68,7 +68,7 @@ Bool _ImportAVIF(Image &image, File &f)
          }
          avifDecoderDestroy(decoder);
       }
-      error:;
+   error:;
    }
 #endif
    if(!ok)image.del(); return ok;

@@ -21,39 +21,45 @@ Bool Image::ImportWEBP(File &f)
       UInt size;
       if(f.getFast(size)
       && f.left()>=size
-      && f.getUInt()==CC4('W','E','B','P'))
+      && f.getUInt()==CC4('W','E','B','P')
+      && f.skip(-12))
       {
-         WebPDecoderConfig            config;
-         WebPDecBuffer         *const output_buffer=&config.output;
-         WebPBitstreamFeatures *const bitstream    =&config.input;
+         size+=8; // we have to add 8 for the RIFF+size data
+         Memt<Byte> temp;
+         Ptr        data;
+         if(f._type==FILE_MEM)data=f.memFast();else
+         {
+            data=temp.setNumDiscard(size).data();
+            if(!f.getFast(data, size))goto error;
+         }
+         WebPDecoderConfig         config;
          if(WebPInitDecoderConfig(&config))
          {
-            //config.options.use_threads=1; made no difference in performance
-            Memt<Byte> temp; temp.setNum(size+8); // we have to add 8 for the RIFF+size data
-            if(f.skip(-12) && f.getFast(temp.data(), temp.elms()))
-               if(WebPGetFeatures(temp.data(), temp.elms(), bitstream)==VP8_STATUS_OK)
+          //config.options.use_threads=1; made no difference in performance
+            if(WebPGetFeatures((uint8_t*)data, size, &config.input)==VP8_STATUS_OK)
             {
                IMAGE_TYPE type;
-               if(bitstream->has_alpha)
+               if(config.input.has_alpha)
                {
-                  type                     =IMAGE_R8G8B8A8_SRGB;
-                  output_buffer->colorspace=MODE_RGBA;
+                  type                    =IMAGE_R8G8B8A8_SRGB;
+                  config.output.colorspace=MODE_RGBA;
                }else
                {
-                  type                     =IMAGE_R8G8B8_SRGB;
-                  output_buffer->colorspace=MODE_RGB;
+                  type                    =IMAGE_R8G8B8_SRGB;
+                  config.output.colorspace=MODE_RGB;
                }
-               if(createSoft(bitstream->width, bitstream->height, 1, type))
+               if(createSoft(config.input.width, config.input.height, 1, type))
                {
-                  output_buffer->is_external_memory=true;
-                  output_buffer->u.RGBA.stride=pitch ();
-                  output_buffer->u.RGBA.size  =pitch2();
-                  output_buffer->u.RGBA.rgba  =data  ();
-                  if(WebPDecode(temp.data(), temp.elms(), &config)==VP8_STATUS_OK)ok=true;
+                  config.output.is_external_memory=true;
+                  config.output.u.RGBA.stride=T.pitch ();
+                  config.output.u.RGBA.size  =T.pitch2();
+                  config.output.u.RGBA.rgba  =T.data  ();
+                  if(WebPDecode((uint8_t*)data, size, &config)==VP8_STATUS_OK)ok=true;
                }
             }
-            WebPFreeDecBuffer(output_buffer);
+            WebPFreeDecBuffer(&config.output);
          }
+      error:;
       }
    }
 #endif
