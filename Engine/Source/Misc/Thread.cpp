@@ -1335,7 +1335,7 @@ Threads& Threads::wait()
      _lock_calls     .off ();
      _queued_finished.wait(); // !! wait when lock is off !!
      _lock_calls     .on  ();
-      goto check; // after waiting we have to check 'call' again
+      goto check; // after waiting we have to check again
    check:
                               if(callsLeft())goto wait;
       REPA(_threads)if(_threads[i].call.is())goto wait;
@@ -1359,7 +1359,7 @@ void Threads::_wait(void func(Ptr data, Ptr user, Int thread_index))
      _lock_calls     .off ();
      _queued_finished.wait(); // !! wait when lock is off !!
      _lock_calls     .on  ();
-      goto check; // after waiting we have to check 'call' again
+      goto check; // after waiting we have to check again
    check:
       for(Int i=_calls.elms(); --i>=_calls_pos; )if(  _calls[i].     func==func)goto wait;
                                    REPA(_threads)if(_threads[i].call.func==func)goto wait;
@@ -1382,7 +1382,7 @@ void Threads::_wait(void func(Ptr data, Ptr user, Int thread_index), Ptr user)
      _lock_calls     .off ();
      _queued_finished.wait(); // !! wait when lock is off !!
      _lock_calls     .on  ();
-      goto check; // after waiting we have to check 'call' again
+      goto check; // after waiting we have to check again
    check:
       for(Int i=_calls.elms(); --i>=_calls_pos; )if(  _calls[i].     isFuncUser(func, user))goto wait;
                                    REPA(_threads)if(_threads[i].call.isFuncUser(func, user))goto wait;
@@ -1406,7 +1406,7 @@ void Threads::_wait(Ptr data, void func(Ptr data, Ptr user, Int thread_index), P
      _lock_calls     .off ();
      _queued_finished.wait(); // !! wait when lock is off !!
      _lock_calls     .on  ();
-      goto check; // after waiting we have to check 'call' again
+      goto check; // after waiting we have to check again
    check:
       for(Int i=_calls.elms(); --i>=_calls_pos; )if(  _calls[i]     ==call)goto wait;
                                    REPA(_threads)if(_threads[i].call==call)goto wait;
@@ -1433,7 +1433,7 @@ void Threads::wait(C CMemPtr<Call> &calls)
         _lock_calls     .off ();
         _queued_finished.wait(); // !! wait when lock is off !!
         _lock_calls     .on  ();
-         goto check; // after waiting we have to check 'call' again
+         goto check; // after waiting we have to check the same 'call' again
       check:
          for(Int i=_calls.elms(); --i>=_calls_pos; )if(  _calls[i]     ==call)goto wait;
                                       REPA(_threads)if(_threads[i].call==call)goto wait;
