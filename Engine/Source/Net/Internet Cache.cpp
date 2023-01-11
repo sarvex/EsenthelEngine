@@ -445,7 +445,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
    // we're going to recreate the PAK file, as old one is considered invalid/missing/modified
    Memt<Threads::Call> calls;
    {
-      WriteLock lock(_rws); // stop any further reads, this stops any conversions from 'isPak' until we release the lock
+      WriteLock lock(_rws); // stop any further reads, this stops any conversions from 'isPak' until we release the lock, this is important as we need all isPak/fail to be included in 'calls' below, so we can cancel/wait for threads to finish, as they're going to be removed
       REPA(_import_images){auto &ii=_import_images[i]; if(ii.isPak())ii.fail=true; if(ii.fail)calls.New().set(ii, ImportImageFunc, T);} // force all PAK as fail, we assume that PAK is compromised, this will also force PAK importer to stop importing and return quickly
       if(_threads)_threads->cancel(calls);
    }
