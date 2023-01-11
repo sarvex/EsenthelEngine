@@ -223,6 +223,7 @@ Bool InternetCache::flush()
                }else file.zero();
             }
 
+            // delete '_downloaded' as its data was moved to PAK
             if(_threads) // wait for Import Threads processing Downloaded files which we're about to delete
             {
                Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
