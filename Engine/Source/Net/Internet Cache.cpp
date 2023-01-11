@@ -26,7 +26,7 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
  //if(!done) not needed because PAK/DOWNLOADED are always converted to OTHER before 'done' (except case when 'fail' which is already checked below)
-   switch(type)
+   switch(type) // this reads to 'T.temp'
    {
       case PAK: if(!fail)
       {
@@ -56,7 +56,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
 inline void InternetCache::ImportImage::import(InternetCache &ic)
 {
    Memt<Byte, 768*1024> temp; // 768 KB temp memory, stack is 1 MB, 840 KB still works for ZSTD compression (which has high stack usage)
-   switch(type)
+   switch(type) // this reads to local stack 'temp'
    {
       case PAK: // PAK imports are always loaded to memory first, so when doing 'flush' we can update the PAK quickly without having to wait for entire import to finish, but only until the file data is read to memory
       {
@@ -269,14 +269,14 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          // at this point there should be no PAK importers (for COPY_DOWNLOADED_MEM also no DOWNLOADED importers)
 
          PostHeader post_header(T); auto &files=post_header.files;
-         Bool keep_removed=false;
          Long file_size=0;
+         Bool keep_got_removed=false;
          FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
          FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
          {
             files.sort(CompareAccessTime);
-            do{SrcFile &file=files.last(); if(file.downloaded==keep)keep_removed=true; file_size-=file.compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
+            do{SrcFile &file=files.last(); if(file.downloaded==keep)keep_got_removed=true; file_size-=file.compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
 
@@ -302,7 +302,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
               _threads->wait(calls);
             }
-            if(keep_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
+            if(keep_got_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
            _downloaded.del();
          }else return false;
       }else
