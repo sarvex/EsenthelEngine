@@ -25,64 +25,71 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
 /******************************************************************************/
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
-   if(!fail) // "&& !done" not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked)
-   if(isPak())
+ //if(!done) not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked below)
+   switch(type)
    {
-      File f; if(!f.read(*data.pak_file, *data.pak))
+      case PAK: if(!fail)
       {
-      read_fail:
-         fail=true;
-       //done=true; cannot set this, we can modify this only on the import thread
-         return;
-      }
-      temp.setNumDiscard(f.size());
-      if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
-      data.set(temp.data(), temp.elms());
-    //downloaded=false; no need to adjust because we're converting from PAK which already has this value
-   }else
-   if(COPY_DOWNLOADED_MEM && isDownloaded())
-   {
-      temp.setNumDiscard(data.memory_size);
-      CopyFast(temp.data(), data.memory, temp.elms());
-      data.set(temp.data(), temp.elms());
-      downloaded=false;
+         File f; if(!f.read(*data.pak_file, *data.pak))
+         {
+         read_fail:
+            fail=true;
+          //done=true; cannot set this, we can modify this only on the import thread
+            return;
+         }
+         temp.setNumDiscard(f.size());
+         if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
+         data.set(temp.data(), temp.elms());
+         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast checks without locking
+      }break;
+
+      case DOWNLOADED: if(COPY_DOWNLOADED_MEM)
+      {
+         temp.setNumDiscard(data.memory_size);
+         CopyFast(temp.data(), data.memory, temp.elms());
+         data.set(temp.data(), temp.elms());
+         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast checks without locking
+      }break;
    }
 }
 // !! IF GETTING '__chkstk' ERRORS HERE THEN IT MEANS STACK USAGE IS TOO HIGH, REDUCE 'temp' SIZE !!
 inline void InternetCache::ImportImage::import(InternetCache &ic)
 {
    Memt<Byte, 768*1024> temp; // 768 KB temp memory, stack is 1 MB, 840 KB still works for ZSTD compression (which has high stack usage)
-   if(isPak()) // PAK imports are always loaded to memory first, so when doing 'flush' we can update the PAK quickly without having to wait for entire import to finish, but only until the file data is read to memory
+   switch(type)
    {
-      ReadLock lock(ic._rws);
-
-      if(fail) // if failed to read on the main thread
-         {done=true; return;} // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
-
-      if(isPak())
+      case PAK: // PAK imports are always loaded to memory first, so when doing 'flush' we can update the PAK quickly without having to wait for entire import to finish, but only until the file data is read to memory
       {
-         File f; if(!f.read(*data.pak_file, *data.pak))
+         ReadLock lock(ic._rws);
+         if(isPak()) // check again under lock
          {
-         read_fail:
-            fail=true;
-            done=true; return; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+            if(fail) // if failed to read on the main thread
+               {done=true; return;} // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+
+            File f; if(!f.read(*data.pak_file, *data.pak))
+            {
+            read_fail:
+               fail=true;
+               done=true; return; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+            }
+            temp.setNumDiscard(f.size());
+            if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
+            data.set(temp.data(), temp.elms());
+            type=OTHER; // adjust at the end once everything is ready
          }
-         temp.setNumDiscard(f.size());
-         if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
-         data.set(temp.data(), temp.elms());
-       //downloaded=false; no need to adjust because we're converting from PAK which already has this value
-      }
-   }else
-   if(COPY_DOWNLOADED_MEM && isDownloaded())
-   {
-      ReadLock lock(ic._rws);
-      if(isDownloaded())
+      }break;
+
+      case DOWNLOADED: if(COPY_DOWNLOADED_MEM)
       {
-         temp.setNumDiscard(data.memory_size);
-         CopyFast(temp.data(), data.memory, temp.elms());
-         data.set(temp.data(), temp.elms());
-         downloaded=false;
-      }
+         ReadLock lock(ic._rws);
+         if(isDownloaded()) // check again under lock
+         {
+            temp.setNumDiscard(data.memory_size);
+            CopyFast(temp.data(), data.memory, temp.elms());
+            data.set(temp.data(), temp.elms());
+            type=OTHER; // adjust at the end once everything is ready
+         }
+      }break;
    }
 
    DEBUG_ASSERT(data.type==DataSource::MEM, "data.type should be MEM"); // at this point 'data.type' is DataSource::MEM
@@ -393,7 +400,7 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
          if(get_file)
          {
             ImportImage &ii=_import_images.New();
-            ii.downloaded=(file.type!=DataSource::PAK_FILE);
+            ii.type=(file.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
             Swap(ii.data, file);
             ii.image_ptr=img;
             import(ii);
@@ -513,7 +520,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
          DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // TODO: here we don't want to adjust 'access_time', however doing that would introduce overhead, and since this case is unlikely, just ignore it
          {
             ImportImage &ii=_import_images.New();
-            ii.downloaded=(file.type!=DataSource::PAK_FILE);
+            ii.type=(file.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
             Swap(ii.data, file);
             ii.image_ptr=url;
             import(ii);
@@ -576,8 +583,8 @@ inline void InternetCache::update()
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
-                     else          {ii.downloaded=false; ii.data.set(*pf, _pak);}
+                     if(downloaded){ii.type=ImportImage::DOWNLOADED; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
+                     else          {ii.type=ImportImage::PAK       ; ii.data.set(*pf, _pak);}
                      Swap(ii.image_ptr, img);
                      import(ii);
                   }
@@ -620,9 +627,9 @@ inline void InternetCache::update()
                   {
                      cancel(img);
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}else
-                     if(pf        ){ii.downloaded=false; ii.data.set(*pf, _pak);}else
-                                   {ii.downloaded=false; Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());}
+                     if(downloaded){ii.type=ImportImage::DOWNLOADED; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}else
+                     if(pf        ){ii.type=ImportImage::PAK       ; ii.data.set(*pf, _pak);}else
+                                   {ii.type=ImportImage::OTHER     ; Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());}
                      Swap(ii.image_ptr, img);
                      T.import(ii);
                   }

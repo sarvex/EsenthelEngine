@@ -27,16 +27,23 @@ private:
 #endif
    struct ImportImage
    {
+      enum TYPE : Byte
+      {
+         PAK       , // data comes from Pak File
+         DOWNLOADED, // data comes from 'Downloaded.file_data'
+         OTHER     , // data comes from 'temp' or importer thread stack memory
+      };
       Bool       done=false, // if finished importing
-                 fail=false, // if failed to open file
-                 downloaded;
+                 fail=false; // if failed to open file
+      TYPE       type;
       DataSource data;
       ImagePtr   image_ptr;  // image into which import
       Image      image_temp; // temp image which will have the data
       Mems<Byte> temp;
 
-      Bool isPak       ()C {return data.type==DataSource::PAK_FILE;}
-      Bool isDownloaded()C {return downloaded;} // don't check "data.type==DataSource::MEM" because that could also point to 'temp' or to importer thread stack memory
+      // here don't check for 'data.type' because we need one single variable that's changed at the end once everything is ready
+      Bool isPak       ()C {return type==PAK       ;}
+      Bool isDownloaded()C {return type==DOWNLOADED;}
 
       void lockedRead();
       void import(InternetCache &ic);
