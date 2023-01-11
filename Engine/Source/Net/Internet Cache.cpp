@@ -11,7 +11,7 @@
 #define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
 /******************************************************************************/
 namespace EE{
-/******************************************************************************/
+/******************************************************************************
 static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esenthel.com"
 {
    Bool http =          StartsPath(url, "http://" ) ; if(http )url.remove(0, 7);
@@ -21,6 +21,7 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
    if(http )url.insert(0, "http://" );
    return url;
 }
+/******************************************************************************/
 void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-lock only on the main thread
 {
    if(!fail) // "&& !done" not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked)
@@ -39,10 +40,11 @@ void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-
     //downloaded=false; no need to adjust because we're converting from PAK which already has this value
    }
 }
+// !! IF GETTING '__chkstk' ERRORS HERE THEN IT MEANS STACK USAGE IS TOO HIGH, REDUCE 'temp' SIZE !!
 inline void InternetCache::ImportImage::import(InternetCache &ic)
 {
-   Memt<Byte, 512*1024> temp; // 512 KB temp memory, stack is 1 MB
-   if(isPak())
+   Memt<Byte, 768*1024> temp; // 768 KB temp memory, stack is 1 MB, 840 KB still works for ZSTD compression (which has high stack usage)
+   if(isPak()) // PAK imports are always loaded to memory first, so when doing 'flush' we can update the PAK quickly without having to wait for entire import to finish, but only until the file data is read to memory
    {
       ReadLock lock(ic._rws);
 
