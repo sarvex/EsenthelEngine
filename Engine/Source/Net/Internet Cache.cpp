@@ -36,6 +36,7 @@ void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-
       temp.setNumDiscard(f.size());
       if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
       data.set(temp.data(), temp.elms());
+    //downloaded=false; no need to adjust because we're converting from PAK which already has this value
    }
 }
 inline void InternetCache::ImportImage::import(InternetCache &ic)
@@ -59,6 +60,7 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
          temp.setNumDiscard(f.size());
          if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
          data.set(temp.data(), temp.elms());
+       //downloaded=false; no need to adjust because we're converting from PAK which already has this value
       }
    }
 
@@ -75,15 +77,16 @@ InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_m
 /******************************************************************************/
 struct SrcFile : PakFileData, InternetCache::FileTime
 {
-   UInt compressed_size;
+   UInt                       compressed_size;
+   InternetCache::Downloaded *downloaded;
 
-   SrcFile& set(C Str &name, C InternetCache::Downloaded &src)
+   SrcFile& set(C Str &name, InternetCache::Downloaded &src)
    {
-      type=FSTD_FILE; compress_mode=(Compressable(GetExt(name)) ? COMPRESS_ENABLE : COMPRESS_DISABLE); decompressed_size=compressed_size=src.file_data.elms(); T.name=name; data.set(src.file_data.data(), src.file_data.elms()); modify_time_utc=src.modify_time_utc; access_time=src.access_time; verify_time=src.verify_time; return T;
+      type=FSTD_FILE; compress_mode=(Compressable(GetExt(name)) ? COMPRESS_ENABLE : COMPRESS_DISABLE); decompressed_size=compressed_size=src.file_data.elms(); T.name=name; data.set(src.file_data.data(), src.file_data.elms()); modify_time_utc=src.modify_time_utc; access_time=src.access_time; verify_time=src.verify_time; downloaded=&src; return T;
    }
    SrcFile& set(C Str &name, C Pak &pak, C PakFile &pf, C InternetCache::FileTime &time)
    {
-      type=pf.type(); compress_mode=COMPRESS_KEEP_ORIGINAL; compressed=pf.compression; decompressed_size=pf.data_size; compressed_size=pf.data_size_compressed; T.name=name; data.set(pf, pak); xxHash64_32=pf.data_xxHash64_32; modify_time_utc=pf.modify_time_utc; access_time=time.access_time; verify_time=time.verify_time; return T;
+      type=pf.type(); compress_mode=COMPRESS_KEEP_ORIGINAL; compressed=pf.compression; decompressed_size=pf.data_size; compressed_size=pf.data_size_compressed; T.name=name; data.set(pf, pak); xxHash64_32=pf.data_xxHash64_32; modify_time_utc=pf.modify_time_utc; access_time=time.access_time; verify_time=time.verify_time; downloaded=null; return T;
    }
 };
 
@@ -280,9 +283,9 @@ Bool InternetCache::flush()
             do
             {
                SrcFile &file=files.last();
-               Downloaded *downloaded=_downloaded.find(file.name);
-               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded->file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
-              _downloaded.removeData(downloaded); // _downloaded.removeKey(file.name);
+               Downloaded &downloaded=*file.downloaded;
+               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+              _downloaded.removeData(&downloaded); // _downloaded.removeKey(file.name);
                size-=file.compressed_size;
                files.removeLast();
             }while(size>_max_mem_size && files.elms());
