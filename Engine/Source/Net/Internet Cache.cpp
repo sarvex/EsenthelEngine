@@ -514,21 +514,17 @@ void InternetCache::resetPak(WriteLockEx *lock)
    if(retry.elms())
    {
       Bool enable=false;
-      CACHE_MODE mode=Images.mode(CACHE_DUMMY);
       REPA(retry)
       {
-       C Str &url=retry[i];
-         DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // TODO: here we don't want to adjust 'access_time', however doing that would introduce overhead, and since this case is unlikely, just ignore it
+       C Str &url=retry[i], name=SkipHttpWww(url);
+         // this file was from Pak that failed to load, and it wasn't canceled, it means it's not available locally anymore, try to download
+         if(!missing(name))
          {
-            ImportImage &ii=_import_images.New();
-            ii.type=(file.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-            Swap(ii.data, file);
-            ii.image_ptr=url;
-            import(ii);
-            enable=true;
+            REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto downloading;
+                              if(_to_download.binaryInclude(url, COMPARE))enable=true;
+         downloading:;
          }
       }
-      Images.mode(mode);
       if(enable)T.enable();
    }
 }
