@@ -9,7 +9,7 @@
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
 #define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
-#define COPY_DOWNLOADED_MEM 1
+#define COPY_DOWNLOADED_MEM 1 // allows flush without waiting for import to finish, at the cost of extra memory copy
 /******************************************************************************/
 namespace EE{
 /******************************************************************************
