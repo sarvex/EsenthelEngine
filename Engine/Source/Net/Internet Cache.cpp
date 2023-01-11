@@ -457,7 +457,6 @@ void InternetCache::resetPak(WriteLockEx *lock)
    {
       auto &ii=_import_images[i]; if(ii.fail)
       {
-         DEBUG_ASSERT(ii.done, "importer should've finished");
          if(ii.image_ptr)retry.add(ii.image_ptr.name()); // not canceled, retry
         _import_images.removeValid(i);
       }
