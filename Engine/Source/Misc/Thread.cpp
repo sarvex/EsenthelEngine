@@ -1328,7 +1328,7 @@ Threads& Threads::wait()
 #endif
    {
      _lock_calls.on();
-     _waiting++; // !! can modify '_waiting' only under lock !!
+     _waiting++; // !! can modify '_waiting' only under lock !! add this 'wait' call to the waiting list, have to do this here before checking '_threads[i].call' to make sure that thread processing function will already have this call's '_waiting' after processing the 'thread.call.call' because that one isn't covered by '_lock_calls' lock
 
       goto check;
    wait:
@@ -1352,7 +1352,7 @@ void Threads::_wait(void func(Ptr data, Ptr user, Int thread_index))
 #endif
    {
      _lock_calls.on();
-     _waiting++; // !! can modify '_waiting' only under lock !!
+     _waiting++; // !! can modify '_waiting' only under lock !! add this 'wait' call to the waiting list, have to do this here before checking '_threads[i].call' to make sure that thread processing function will already have this call's '_waiting' after processing the 'thread.call.call' because that one isn't covered by '_lock_calls' lock
 
       goto check;
    wait:
@@ -1375,7 +1375,7 @@ void Threads::_wait(void func(Ptr data, Ptr user, Int thread_index), Ptr user)
 #endif
    {
      _lock_calls.on();
-     _waiting++; // !! can modify '_waiting' only under lock !!
+     _waiting++; // !! can modify '_waiting' only under lock !! add this 'wait' call to the waiting list, have to do this here before checking '_threads[i].call' to make sure that thread processing function will already have this call's '_waiting' after processing the 'thread.call.call' because that one isn't covered by '_lock_calls' lock
 
       goto check;
    wait:
@@ -1399,7 +1399,7 @@ void Threads::_wait(Ptr data, void func(Ptr data, Ptr user, Int thread_index), P
    {
       Call call(data, func, user);
      _lock_calls.on();
-     _waiting++; // !! can modify '_waiting' only under lock !!
+     _waiting++; // !! can modify '_waiting' only under lock !! add this 'wait' call to the waiting list, have to do this here before checking '_threads[i].call' to make sure that thread processing function will already have this call's '_waiting' after processing the 'thread.call.call' because that one isn't covered by '_lock_calls' lock
 
       goto check;
    wait:
@@ -1423,7 +1423,7 @@ void Threads::wait(C CMemPtr<Call> &calls)
 #endif
    {
      _lock_calls.on();
-     _waiting++; // !! can modify '_waiting' only under lock !!
+     _waiting++; // !! can modify '_waiting' only under lock !! add this 'wait' call to the waiting list, have to do this here before checking '_threads[i].call' to make sure that thread processing function will already have this call's '_waiting' after processing the 'thread.call.call' because that one isn't covered by '_lock_calls' lock
 
       REPA(calls)
       {
