@@ -19,12 +19,18 @@ Bool _ImportAVIF(Image &image, File &f)
          Byte data[Elms(sig)];
    if(f.getFast(data) && EqualMem(sig, data) && f.skip(-SIZEI(sig)))
    {
-      Memt<Byte> data; data.setNumDiscard(f.left());
-      if(f.getFast(data.data(), data.elms()))
+      Memt<Byte> temp;
+      Ptr        data;
+      Int        size=Min(INT_MAX, f.left());
+      if(f._type==FILE_MEM)data=f.memFast();else
+      {
+         data=temp.setNumDiscard(size).data();
+         if(!f.getFast(data, size))goto error;
+      }
       if(avifDecoder *decoder=avifDecoderCreate())
       {
          decoder->maxThreads=Cpu.threads();
-         if(avifDecoderSetIOMemory(decoder, data.data(), data.elms())==AVIF_RESULT_OK)
+         if(avifDecoderSetIOMemory(decoder, (uint8_t*)data, size)==AVIF_RESULT_OK)
          if(avifDecoderParse(decoder)==AVIF_RESULT_OK)
          {
             avifRGBImage rgb; avifRGBImageSetDefaults(&rgb, decoder->image);
@@ -62,6 +68,7 @@ Bool _ImportAVIF(Image &image, File &f)
          }
          avifDecoderDestroy(decoder);
       }
+      error:;
    }
 #endif
    if(!ok)image.del(); return ok;
