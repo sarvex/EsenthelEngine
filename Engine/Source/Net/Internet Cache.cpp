@@ -6,6 +6,7 @@
 
 /******************************************************************************/
 #define COMPARE  ComparePathCI
+#define EQUAL   !COMPARE
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
 #define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
@@ -372,8 +373,8 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
    }else
    { // not found
       if(missing(name))return false;
-      REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto downloading;
-                        if(_to_download.binaryInclude(url, COMPARE))enable();
+      REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
+                        if(   _to_download.binaryInclude(url, COMPARE))enable();
    downloading:
       return false;
    }
@@ -383,7 +384,7 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
    if(TIME-*verify_time<=_verify_life)return true; // verification still acceptable
    if(missing(name))return false;
    // verify
-   REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto verifying; // downloading now
+   REPA(_downloading)if(EQUAL       (_downloading[i].url(), url))goto verifying; // downloading now
                      if(_to_download.binaryHas    (url, COMPARE))goto verifying; // will download soon
                      if(_to_verify  .binaryInclude(url, COMPARE))enable();       // verify
 verifying:
@@ -427,7 +428,7 @@ void InternetCache::changed(C Str &url)
          if(C PakFile  *pf  =_pak       .find     (name, true))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
-            Download &down=_downloading[i]; if(EqualPath(down.url(), url))
+            Download &down=_downloading[i]; if(EQUAL(down.url(), url))
             { // restart the download
             #if 1
                down.create(url);
@@ -520,8 +521,8 @@ void InternetCache::resetPak(WriteLockEx *lock)
          // this file was from Pak that failed to load, and it wasn't canceled, it means it's not available locally anymore, try to download
          if(!missing(name))
          {
-            REPA(_downloading)if(EqualPath   (_downloading[i].url(), url))goto downloading;
-                              if(_to_download.binaryInclude(url, COMPARE))enable=true;
+            REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
+                              if(   _to_download.binaryInclude(url, COMPARE))enable=true;
          downloading:;
          }
       }
