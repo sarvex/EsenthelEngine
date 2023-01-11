@@ -234,7 +234,7 @@ Bool InternetCache::flush()
       }else
       if(_max_mem_size>=0)
       {
-         Memc<SrcFile> files; Long size=0;
+         Memc<SrcFile> files; files.reserve(_downloaded.elms()); Long size=0;
          FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
          if(size>_max_mem_size) // limit mem size
          {
@@ -439,7 +439,7 @@ void InternetCache::reset()
       REPA(retry)
       {
        C Str &url=retry[i];
-         DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // always call 'getFile' to adjust 'access_time' and request verification if needed
+         DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // TODO: here we don't want to adjust 'access_time', however doing that would introduce overhead, and since this case is unlikely, just ignore it
          {
             ImportImage &ii=_import_images.New();
             Swap(ii.data, file);
@@ -500,7 +500,7 @@ inline void InternetCache::update()
                {
                  *verify_time=TIME;
                   // it's possible the image was not yet loaded due to CACHE_VERIFY_YES
-                  ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, load it
+                  ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty
                   {
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
