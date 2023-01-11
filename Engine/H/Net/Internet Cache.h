@@ -28,13 +28,18 @@ private:
    struct ImportImage
    {
       Bool       done=false, // if finished importing
-                 fail=false; // if failed to open file
+                 fail=false, // if failed to open file
+                 downloaded;
       DataSource data;
       ImagePtr   image_ptr;  // image into which import
       Image      image_temp; // temp image which will have the data
+      Mems<Byte> temp;
 
-      Bool isPak       ()C;
-      Bool isDownloaded()C;
+      Bool isPak       ()C {return data.type==DataSource::PAK_FILE;}
+      Bool isDownloaded()C {return downloaded;} // don't check "data.type==DataSource::MEM" because that could also point to 'temp' or to importer thread stack memory
+
+      void read();
+      void import(InternetCache &ic);
    };
    struct FileTime
    {
@@ -54,6 +59,7 @@ private:
    Flt                  _verify_life=60*60;
    Long                 _max_file_size=512<<20, _max_mem_size=16<<20;
    Threads             *_threads=null;
+   ReadWriteSync        _rws;
    Pak                  _pak;
    Long                 _pak_size=-1;
    DateTime             _pak_modify_time_utc;
@@ -77,7 +83,7 @@ private:
    FileTime& pakFile(C PakFile &pf) {return _pak_files[_pak.files().index(&pf)];}
    void   getPakFileInfo();
    void checkPakFileInfo();
-   void reset();
+   void resetPak(WriteLockEx *lock=null);
    Bool missing(C Str &name);
 #endif
 };

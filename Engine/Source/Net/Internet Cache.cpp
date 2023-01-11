@@ -21,18 +21,55 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
    if(http )url.insert(0, "http://" );
    return url;
 }
-static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0)
+void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-lock only on the main thread
 {
-   File temp; if(File *src=ii.data.open(temp))
+   if(!fail) // "&& !done" not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked)
+   if(isPak())
    {
-      ThreadMayUseGPUData(); // keep this covering even 'Import' in case the file is Engine 'Image' which can be IMAGE_2D
-      ii.image_temp.Import(*src, -1, IMAGE_2D, ic._image_mip_maps);
-      ThreadFinishedUsingGPUData();
-   }else ii.fail=true;
-         ii.done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'ii' OBJECT CAN GET REMOVED !!
+      File f; if(!f.read(*data.pak_file, *data.pak))
+      {
+      read_fail:
+         fail=true;
+       //done=true; cannot set this, we can modify this only on the import thread
+         return;
+      }
+      temp.setNumDiscard(f.size());
+      if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
+      data.set(temp.data(), temp.elms());
+   }
 }
-Bool InternetCache::ImportImage::isPak       ()C {return data.type==DataSource::PAK_FILE;}
-Bool InternetCache::ImportImage::isDownloaded()C {return data.type==DataSource::MEM     ;}
+inline void InternetCache::ImportImage::import(InternetCache &ic)
+{
+   Memt<Byte, 512*1024> temp; // 512 KB temp memory, stack is 1 MB
+   if(isPak())
+   {
+      ReadLock lock(ic._rws);
+
+      if(fail) // if failed to read on the main thread
+         {done=true; return;} // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+
+      if(isPak())
+      {
+         File f; if(!f.read(*data.pak_file, *data.pak))
+         {
+         read_fail:
+            fail=true;
+            done=true; return; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+         }
+         temp.setNumDiscard(f.size());
+         if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
+         data.set(temp.data(), temp.elms());
+      }
+   }
+
+   DEBUG_ASSERT(data.type==DataSource::MEM, "data.type should be MEM"); // at this point 'data.type' is DataSource::MEM
+   File f(data.memory, data.memory_size);
+   ThreadMayUseGPUData(); // keep this covering even 'Import' in case the file is Engine 'Image' which can be IMAGE_2D
+   image_temp.Import(f, -1, IMAGE_2D, ic._image_mip_maps);
+   ThreadFinishedUsingGPUData();
+   done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
+}
+static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0) {ii.import(ic);}
 /******************************************************************************/
 InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
 /******************************************************************************/
@@ -153,11 +190,11 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
                }break;
             }
          }
-      //_pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear(); ignore because we recreate in 'reset'
+      //_pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear(); ignore because we recreate in 'resetPak'
       }
      _pak.pakFileName(name);
      _pak._file_cipher=cipher;
-      reset();
+      resetPak();
    }
 }
 /******************************************************************************/
@@ -180,7 +217,7 @@ void InternetCache::getPakFileInfo()
 void InternetCache::checkPakFileInfo()
 {
             Long size;                DateTime modify_time_utc; GetFileInfo(_pak.pakFileName(), size, modify_time_utc);
-   if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)reset();
+   if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)resetPak();
 }
 /******************************************************************************/
 Bool InternetCache::flush()
@@ -189,7 +226,14 @@ Bool InternetCache::flush()
    {
       if(_pak.pakFileName().is()) // we want to save data
       {
-         checkPakFileInfo(); // check before waiting, because potential 'reset' might create '_import_images' as well, for which we need to wait
+         // we're going to update PAK so make sure all imports have read PAK FILE data
+         {
+            WriteLockEx lock(_rws);
+            REPA(_import_images){auto &ii=_import_images[i]; ii.read(); if(ii.fail){resetPak(&lock); goto reset;}} // read all, if any failed, then resetPak, it will handle all '_import_images' so stop loop
+         }
+         checkPakFileInfo();
+      reset:
+         // at this point there should be no PAK importers
 
          PostHeader post_header(T); auto &files=post_header.files; Long file_size=0;
          FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
@@ -200,12 +244,6 @@ Bool InternetCache::flush()
             do{file_size-=files.last().compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
-
-         if(_threads) // wait for Import Threads processing PAK files which we're about to update
-         {
-            Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isPak())calls.New().set(ii, ImportImageFunc, T);}
-           _threads->wait(calls);
-         }
 
          if(((_max_file_size<0 || _pak_size/2<_max_file_size) // if pak size is smaller than 2x limit "_pak_size<_max_file_size*2", allow some tolerance because 'replaceInPlace' does not generate compact paks but they may have holes
            && _pak.replaceInPlace(_pak_used_file_ranges, SCAST(Memc<PakFileData>, files), 0, _compress, _compress_level, null, null, &post_header)) // replace in place
@@ -243,7 +281,7 @@ Bool InternetCache::flush()
             {
                SrcFile &file=files.last();
                Downloaded *downloaded=_downloaded.find(file.name);
-               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.data.type==DataSource::MEM && ii.data.memory==downloaded->file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded->file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
               _downloaded.removeData(downloaded); // _downloaded.removeKey(file.name);
                size-=file.compressed_size;
                files.removeLast();
@@ -319,6 +357,7 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
          if(get_file)
          {
             ImportImage &ii=_import_images.New();
+            ii.downloaded=(file.type!=DataSource::PAK_FILE);
             Swap(ii.data, file);
             ii.image_ptr=img;
             import(ii);
@@ -391,7 +430,7 @@ void InternetCache::cancelWait(Ptr data)
    if(data)
    REPA(_import_images)
    {
-      ImportImage &ii=_import_images[i]; if(ii.data.type==DataSource::MEM && ii.data.memory==data)
+      ImportImage &ii=_import_images[i]; if(ii.isDownloaded() && ii.data.memory==data)
       {
          if(!ii.done  // not yet finished
          &&  _threads // have threads
@@ -401,28 +440,25 @@ void InternetCache::cancelWait(Ptr data)
       }
    }
 }
-void InternetCache::reset()
+void InternetCache::resetPak(WriteLockEx *lock)
 {
    // we're going to recreate the PAK file, as old one is considered invalid/missing/modified
-   if(_threads) // cancel and wait for all PAK imports
+   Memt<Threads::Call> calls;
    {
-      Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isPak())calls.New().set(ii, ImportImageFunc, T);}
-     _threads->cancel(calls); // cancel   all PAK
-     _threads->  wait(calls); // wait for all PAK
+      WriteLock lock(_rws); // stop any further reads, this stops any conversions from 'isPak' until we release the lock
+      REPA(_import_images){auto &ii=_import_images[i]; if(ii.isPak())ii.fail=true; if(ii.fail)calls.New().set(ii, ImportImageFunc, T);} // force all PAK as fail, we assume that PAK is compromised, this will also force PAK importer to stop importing and return quickly
+      if(_threads)_threads->cancel(calls);
    }
+   if( lock   ) lock   ->off (); // unlock first
+   if(_threads)_threads->wait(calls); // wait for all failed importers to return, have to wait with lock disabled
+
    Memc<Str> retry;
    REPA(_import_images)
    {
-      ImportImage &ii=_import_images[i]; if(ii.isPak())
+      auto &ii=_import_images[i]; if(ii.fail)
       {
-         if(ii.image_ptr) // not canceled
-         {
-            if(ii.done && !ii.fail) // success
-            {
-               Swap(*ii.image_ptr, ii.image_temp);
-               if(got)got(ii.image_ptr);
-            }else retry.add(ii.image_ptr.name());
-         }
+         DEBUG_ASSERT(ii.done, "importer should've finished");
+         if(ii.image_ptr)retry.add(ii.image_ptr.name()); // not canceled, retry
         _import_images.removeValid(i);
       }
    }
@@ -442,6 +478,7 @@ void InternetCache::reset()
          DataSource file; if(getFile(url, file, CACHE_VERIFY_SKIP)) // TODO: here we don't want to adjust 'access_time', however doing that would introduce overhead, and since this case is unlikely, just ignore it
          {
             ImportImage &ii=_import_images.New();
+            ii.downloaded=(file.type!=DataSource::PAK_FILE);
             Swap(ii.data, file);
             ii.image_ptr=url;
             import(ii);
@@ -459,10 +496,9 @@ inline void InternetCache::update()
    {
       ImportImage &ii=_import_images[i]; if(ii.done)
       {
+         if(ii.fail){resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
          if(ii.image_ptr) // not canceled
          {
-            if(ii.fail){reset(); break;} // if failed to open file, then we have to reset, break because 'reset' will handle '_import_images'
-
             Swap(*ii.image_ptr, ii.image_temp);
             if(got)got(ii.image_ptr);
          }
@@ -505,8 +541,8 @@ inline void InternetCache::update()
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
-                     if(downloaded)ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());
-                     else          ii.data.set(*pf, _pak);
+                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
+                     else          {ii.downloaded=false; ii.data.set(*pf, _pak);}
                      Swap(ii.image_ptr, img);
                      import(ii);
                   }
@@ -523,20 +559,20 @@ inline void InternetCache::update()
                downloaded->verify_time=TIME;
                if(just_created)downloaded->access_time=downloaded->verify_time;
 
-               ImagePtr img; img.find(down.url());
+               ImagePtr img; img.find(down.url()); const Bool import=img;
 
                if(_max_mem_size>=0)
                {
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
                   if(  mem_size>_max_mem_size)
                   {
-                     // TODO: if we're going to reload image if(img) then prevent 'downloaded' from being removed in flush: do Downloaded *except=downloaded; or downloaded.access_time=; or copy memory to importer from 'down'
+                     // TODO: if we're going to 'import' then prevent 'downloaded' from being removed in flush: do Downloaded *except=downloaded; or copy memory to importer from 'down'
                      flush();
                      downloaded=null;
                   }
                }
 
-               if(img) // reload image
+               if(import)
                {
                 C PakFile *pf=null;
                   if(!downloaded)
@@ -548,10 +584,10 @@ inline void InternetCache::update()
                   {
                      cancel(img);
                      ImportImage &ii=_import_images.New();
-                     if(downloaded)ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());
-                     else          ii.data.set(*pf, _pak);
+                     if(downloaded){ii.downloaded=true ; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
+                     else          {ii.downloaded=false; ii.data.set(*pf, _pak);}
                      Swap(ii.image_ptr, img);
-                     import(ii);
+                     T.import(ii);
                   }
                }
                goto next;
