@@ -561,9 +561,9 @@ inline void InternetCache::update()
          case DWNL_DONE: // finished downloading
          {
             Str name=SkipHttpWww(down.url());
-      #if PRECISE_MISSING_ACCESS_TIME
+         #if PRECISE_MISSING_ACCESS_TIME
            _missing.removeKey(name);
-      #endif
+         #endif
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;
