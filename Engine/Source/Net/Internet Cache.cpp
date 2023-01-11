@@ -266,7 +266,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          }
          checkPakFileInfo();
       reset:
-         // at this point there should be no PAK importers
+         // at this point there should be no PAK importers (for COPY_DOWNLOADED_MEM also no DOWNLOADED importers)
 
          PostHeader post_header(T); auto &files=post_header.files;
          Bool keep_removed=false;
@@ -317,6 +317,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             {
                WriteLockEx lock(_rws);
                REPAO(_import_images).lockedRead();
+               // at this point there should be no DOWNLOADED importers
             }
             files.sort(CompareAccessTime);
             do
