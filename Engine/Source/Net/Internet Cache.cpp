@@ -403,24 +403,29 @@ void InternetCache::cancelWait(Ptr data)
 }
 void InternetCache::reset()
 {
-   if(_threads)
+   // we're going to recreate the PAK file, as old one is considered invalid/missing/modified
+   if(_threads) // cancel and wait for all PAK imports
    {
-     _threads->cancelFuncUser(ImportImageFunc, T); // cancel   all
-     _threads->  waitFuncUser(ImportImageFunc, T); // wait for all
+      Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isPak())calls.New().set(ii, ImportImageFunc, T);}
+     _threads->cancel(calls); // cancel   all PAK
+     _threads->  wait(calls); // wait for all PAK
    }
    Memc<Str> retry;
    REPA(_import_images)
    {
-      ImportImage &ii=_import_images[i]; if(ii.image_ptr) // not canceled
+      ImportImage &ii=_import_images[i]; if(ii.isPak())
       {
-         if(ii.done && !ii.fail) // success
+         if(ii.image_ptr) // not canceled
          {
-            Swap(*ii.image_ptr, ii.image_temp);
-            if(got)got(ii.image_ptr);
-         }else retry.add(ii.image_ptr.name());
+            if(ii.done && !ii.fail) // success
+            {
+               Swap(*ii.image_ptr, ii.image_temp);
+               if(got)got(ii.image_ptr);
+            }else retry.add(ii.image_ptr.name());
+         }
+        _import_images.removeValid(i);
       }
    }
-  _import_images.clear();
 
    PostHeader post_header(T);
   _pak.create(CMemPtr<PakFileData>(), _pak.pakFileName(), 0, _pak._file_cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
