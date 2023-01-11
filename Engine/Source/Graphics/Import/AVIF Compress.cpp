@@ -65,7 +65,7 @@ Bool _ExportAVIF(C Image &image, File &f, Flt rgb_quality, Flt alpha_quality, Fl
    if(    alpha_quality>=0)encoder->qualityAlpha=Mid(RoundPos(Lerp(AVIF_QUALITY_WORST, AVIF_QUALITY_BEST ,     alpha_quality)), AVIF_QUALITY_WORST, AVIF_QUALITY_BEST );else encoder->qualityAlpha=encoder->quality;
 
    if(avifEncoderAddImage(encoder, img, 1, AVIF_ADD_IMAGE_FLAG_SINGLE)!=AVIF_RESULT_OK)goto error;
-   if(avifEncoderFinish  (encoder, &output                             )!=AVIF_RESULT_OK)goto error;
+   if(avifEncoderFinish  (encoder, &output                           )!=AVIF_RESULT_OK)goto error;
 
    ok=f.put(output.data, (Int)output.size);
 error:
