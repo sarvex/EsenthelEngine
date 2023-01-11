@@ -315,7 +315,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          {
             if(COPY_DOWNLOADED_MEM)
             {
-               WriteLockEx lock(_rws);
+               WriteLock lock(_rws);
                REPAO(_import_images).lockedRead();
                // at this point there should be no DOWNLOADED importers
             }
@@ -326,7 +326,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                Downloaded &downloaded=*file.downloaded;
                if(!COPY_DOWNLOADED_MEM && _threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
                if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
-              _downloaded.removeData(&downloaded); // _downloaded.removeKey(file.name);
+              _downloaded.removeData(&downloaded);
                size-=file.compressed_size;
                files.removeLast();
             }while(size>_max_mem_size && files.elms());
