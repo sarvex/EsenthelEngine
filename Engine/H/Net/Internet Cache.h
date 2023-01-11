@@ -69,7 +69,8 @@ private:
    void enable();
    void update();
    void import(ImportImage &ii);
-   void cancel(C ImagePtr &image);
+   void cancel    (C ImagePtr &image);
+   void cancelWait(Ptr data);
    FileTime& pakFile(C PakFile &pf) {return _pak_files[_pak.files().index(&pf)];}
    void   getPakFileInfo();
    void checkPakFileInfo();

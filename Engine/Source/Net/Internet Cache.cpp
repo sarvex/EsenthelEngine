@@ -372,6 +372,21 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
       }
    }
 }
+void InternetCache::cancelWait(Ptr data)
+{
+   if(data)
+   REPA(_import_images)
+   {
+      ImportImage &ii=_import_images[i]; if(ii.data.type==DataSource::MEM && ii.data.memory==data)
+      {
+         if(!ii.done  // not yet finished
+         &&  _threads // have threads
+         && !_threads->cancel(ii, ImportImageFunc, T)) // couldn't cancel
+             _threads->wait  (ii, ImportImageFunc, T); // wait for finish
+        _import_images.removeValid(i); // remove
+      }
+   }
+}
 void InternetCache::reset()
 {
    if(_threads)
@@ -483,25 +498,27 @@ inline void InternetCache::update()
             {
                Bool just_created;
                Downloaded *downloaded=_downloaded(name, just_created);
-               downloaded->file_data.setNumDiscard(down.size()).copyFrom((Byte*)down.data());
+               cancelWait(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
+               downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
                if(just_created)downloaded->access_time=downloaded->verify_time;
+
+               ImagePtr img; img.find(down.url());
 
                if(_max_mem_size>=0)
                {
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
                   if(  mem_size>_max_mem_size)
                   {
+                     // TODO: if we're going to reload image if(img) then prevent 'downloaded' from being removed in flush: do Downloaded *except=downloaded; or downloaded.access_time=; or copy memory to importer from 'down'
                      flush();
                      downloaded=null;
                   }
                }
 
-               ImagePtr img; if(img.find(down.url())) // reload image
+               if(img) // reload image
                {
-                  cancel(img);
-
                 C PakFile *pf=null;
                   if(!downloaded)
                   {
@@ -510,6 +527,7 @@ inline void InternetCache::update()
                   }
                   if(downloaded || pf)
                   {
+                     cancel(img);
                      ImportImage &ii=_import_images.New();
                      if(downloaded)ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());
                      else          ii.data.set(*pf, _pak);
