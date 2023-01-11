@@ -9,6 +9,7 @@
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
 #define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
+#define COPY_DOWNLOADED_MEM 1
 /******************************************************************************/
 namespace EE{
 /******************************************************************************
@@ -22,7 +23,7 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
    return url;
 }
 /******************************************************************************/
-void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-lock only on the main thread
+void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
    if(!fail) // "&& !done" not needed because PAK are always converted to MEM before 'done' (except case when 'fail' which is already checked)
    if(isPak())
@@ -38,6 +39,13 @@ void InternetCache::ImportImage::read() // this is called under 'ic._rws' write-
       if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
       data.set(temp.data(), temp.elms());
     //downloaded=false; no need to adjust because we're converting from PAK which already has this value
+   }else
+   if(COPY_DOWNLOADED_MEM && isDownloaded())
+   {
+      temp.setNumDiscard(data.memory_size);
+      CopyFast(temp.data(), data.memory, temp.elms());
+      data.set(temp.data(), temp.elms());
+      downloaded=false;
    }
 }
 // !! IF GETTING '__chkstk' ERRORS HERE THEN IT MEANS STACK USAGE IS TOO HIGH, REDUCE 'temp' SIZE !!
@@ -63,6 +71,17 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
          if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
          data.set(temp.data(), temp.elms());
        //downloaded=false; no need to adjust because we're converting from PAK which already has this value
+      }
+   }else
+   if(COPY_DOWNLOADED_MEM && isDownloaded())
+   {
+      ReadLock lock(ic._rws);
+      if(isDownloaded())
+      {
+         temp.setNumDiscard(data.memory_size);
+         CopyFast(temp.data(), data.memory, temp.elms());
+         data.set(temp.data(), temp.elms());
+         downloaded=false;
       }
    }
 
@@ -235,7 +254,8 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          // we're going to update PAK so make sure all imports have read PAK FILE data
          {
             WriteLockEx lock(_rws);
-            REPA(_import_images){auto &ii=_import_images[i]; ii.read(); if(ii.fail){resetPak(&lock); goto reset;}} // read all, if any failed, then resetPak, it will handle all '_import_images' so stop loop
+            Bool fail=false; REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead(); fail|=ii.fail;} // read all
+            if(  fail){resetPak(&lock); goto reset;} // if any failed then resetPak
          }
          checkPakFileInfo();
       reset:
@@ -270,7 +290,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             }
 
             // delete '_downloaded' as its data was moved to PAK
-            if(_threads) // wait for Import Threads processing Downloaded files which we're about to delete
+            if(!COPY_DOWNLOADED_MEM && _threads) // wait for Import Threads processing Downloaded files which we're about to delete
             {
                Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
               _threads->wait(calls);
@@ -286,12 +306,17 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
          if(size>_max_mem_size) // limit mem size
          {
+            if(COPY_DOWNLOADED_MEM)
+            {
+               WriteLockEx lock(_rws);
+               REPAO(_import_images).lockedRead();
+            }
             files.sort(CompareAccessTime);
             do
             {
                SrcFile &file=files.last();
                Downloaded &downloaded=*file.downloaded;
-               if(_threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+               if(!COPY_DOWNLOADED_MEM && _threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
                if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
               _downloaded.removeData(&downloaded); // _downloaded.removeKey(file.name);
                size-=file.compressed_size;

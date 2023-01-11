@@ -38,7 +38,7 @@ private:
       Bool isPak       ()C {return data.type==DataSource::PAK_FILE;}
       Bool isDownloaded()C {return downloaded;} // don't check "data.type==DataSource::MEM" because that could also point to 'temp' or to importer thread stack memory
 
-      void read();
+      void lockedRead();
       void import(InternetCache &ic);
    };
    struct FileTime
