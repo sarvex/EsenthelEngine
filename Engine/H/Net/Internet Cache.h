@@ -14,10 +14,11 @@ struct InternetCache
    void create(C Str &name, const_mem_addr Threads *threads=null, const_mem_addr Cipher *cipher=null, COMPRESS_TYPE compress=COMPRESS_LZ4, void (*save)(File &f)=null, void (*load)(File &f)=null); // create, 'name'=file name where the cache will be located, 'threads'=worker threads that will import the images (if null then importing will be done on the main thread), 'cipher'=cache file encryption, 'compress'=cache file compression, 'save' 'load' = callbacks allowing to save/load custom data
 
    // operations
-   ImagePtr getImage(C Str &url                  , CACHE_VERIFY verify=CACHE_VERIFY_YES); // get image from the internet, image may be empty at start if it's not yet downloaded, it will be automatically updated once it completes downloading
-   Bool     getFile (C Str &url, DataSource &file, CACHE_VERIFY verify=CACHE_VERIFY_YES); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded
-   void     changed (C Str &url                                                        ); // notify the cache that the file on the internet has just been changed and needs updating
-   Bool     flush   (                                                                  ); // flush updated files to disk, warning: this may invalidate all files obtained using 'getFile', false on fail
+   Bool     loading (C ImagePtr &image                                                 )C; // if image is still downloading or importing
+   ImagePtr getImage(C Str &url                  , CACHE_VERIFY verify=CACHE_VERIFY_YES) ; // get image from the internet, image may be empty at start if it's not yet downloaded, it will be automatically updated once it completes downloading
+   Bool     getFile (C Str &url, DataSource &file, CACHE_VERIFY verify=CACHE_VERIFY_YES) ; // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded
+   void     changed (C Str &url                                                        ) ; // notify the cache that the file on the internet has just been changed and needs updating
+   Bool     flush   (                                                                  ) ; // flush updated files to disk, warning: this may invalidate all files obtained using 'getFile', false on fail
 
   ~InternetCache() {del();}
    InternetCache();

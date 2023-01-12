@@ -351,6 +351,21 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
    return true;
 }
 /******************************************************************************/
+Bool InternetCache::loading(C ImagePtr &image)C
+{
+   if(image)
+   {
+      REPA(_import_images)if(_import_images[i].image_ptr==image)return true; // importing
+      Str url=image.name(); if(url.is())
+      {
+         REPA(_downloading)if(EQUAL(_downloading[i].url(), url))return true;
+         if(_to_verify  .binaryHas(url, COMPARE)
+         || _to_download.binaryHas(url, COMPARE))return true;
+      }
+   }
+   return false;
+}
+/******************************************************************************/
 Bool InternetCache::missing(C Str &name)
 {
    if(FileTime *missing=_missing.find(name))
