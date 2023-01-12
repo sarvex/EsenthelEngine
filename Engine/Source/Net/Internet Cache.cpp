@@ -416,8 +416,7 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
          if(get_file)
          {
             ImportImage &ii=_import_images.New();
-            ii.type=(file.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-            Swap(ii.data, file);
+            Swap(ii.data, file); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
             ii.image_ptr=img;
             import(ii);
             enable();
@@ -502,7 +501,7 @@ void InternetCache::updating(Ptr data) // called when updating 'downloaded'
                if(ii.isDownloaded())
                {
                   ii.data.set(null, 0);
-                  ii.type=ImportImage::OTHER;
+                  ii.type=ImportImage::OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
                }
             }else
             {
@@ -607,8 +606,8 @@ inline void InternetCache::update()
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.type=ImportImage::DOWNLOADED; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}
-                     else          {ii.type=ImportImage::PAK       ; ii.data.set(*pf, _pak);}
+                     if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}
+                     else          {ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
                      import(ii);
                   }
@@ -651,9 +650,9 @@ inline void InternetCache::update()
                   {
                      cancel(img);
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.type=ImportImage::DOWNLOADED; ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms());}else
-                     if(pf        ){ii.type=ImportImage::PAK       ; ii.data.set(*pf, _pak);}else
-                                   {ii.type=ImportImage::OTHER     ; Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());}
+                     if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
+                     if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
+                                   {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
                      Swap(ii.image_ptr, img);
                      T.import(ii);
                   }
@@ -679,7 +678,7 @@ inline void InternetCache::update()
                      if(img->is())
                      {
                         img->del();
-                        if(got)got(img);
+                        if(got)got(img); // notify too because image got modified
                      }
                   }
                }
