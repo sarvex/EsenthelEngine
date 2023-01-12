@@ -118,10 +118,10 @@ struct SrcFile : PakFileData, InternetCache::FileTime
    }
 };
 
-static Int CompareName      (C SrcFile &a, C SrcFile &b) {return COMPARE(a.name       , b.name       );}
-static Int CompareName      (C SrcFile &a, C Str     &b) {return COMPARE(a.name       , b            );}
-static Int CompareAccessTime(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
-static Int CompareAccessTime(InternetCache::FileTime *C &a, InternetCache::FileTime *C &b) {return Compare(b->access_time, a->access_time);} // reverse order to list files with biggest access time first
+static Int CompareName          (C SrcFile &a, C SrcFile &b) {return COMPARE(a.name       , b.name       );}
+static Int CompareName          (C SrcFile &a, C Str     &b) {return COMPARE(a.name       , b            );}
+static Int CompareAccessTimeDesc(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
+static Int CompareAccessTimeAsc (InternetCache::FileTime *C &a, InternetCache::FileTime *C &b) {return Compare(a->access_time, b->access_time);}
 
 struct PostHeader : PakPostHeader
 {
@@ -281,7 +281,8 @@ NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stac
 {
    if(_max_missing>=0 && _missing.elms()>_max_missing)
    {
-      Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTime);
+      Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTimeAsc);
+      REP(_missing.elms()-_max_missing)_missing.removeData(sorted[i]);
    }
 }
 /******************************************************************************/
@@ -312,7 +313,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
 
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
          {
-            files.sort(CompareAccessTime);
+            files.sort(CompareAccessTimeDesc);
             do{SrcFile &file=files.last(); if(file.downloaded==keep)keep_got_removed=true; file_size-=file.compressed_size; files.removeLast();}while(file_size>_max_file_size && files.elms());
          }
          files.sort(CompareName); // needed for 'binaryFind' in 'SavePostHeader' and below
@@ -362,7 +363,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                   REPAO(_import_images).lockedRead();
                   // at this point there should be no DOWNLOADED importers
                }
-               files.sort(CompareAccessTime);
+               files.sort(CompareAccessTimeDesc);
                do
                {
                   SrcFile &file=files.last();
