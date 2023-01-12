@@ -2,8 +2,6 @@
 #include "stdafx.h"
 /******************************************************************************
 
-   TODO: '_missing' is not saved
-
    TODO: '_rws' could potentially by separated into '_rws_pak' and '_rws_downloaded', would it be better?
 
 /******************************************************************************/
@@ -135,6 +133,8 @@ struct PostHeader : PakPostHeader
    {
       f.putMulti(UInt(CC4_INCH), Byte(0)); // version
       Dbl time=Time.curTime(); Long now=DateTime().getUTC().seconds(); // calculate times at same moment
+
+      // _pak_files
       FREPA(pak)
       {
          Flt  access_time; // store as relative to current time, it will be -Inf..0
@@ -149,6 +149,19 @@ struct PostHeader : PakPostHeader
          }
          f.putMulti(access_time, verify_time);
       }
+
+      // _missing
+      f.cmpUIntV(ic._missing.elms());
+      FREPA(ic._missing)
+      {
+       C Str                     &name     =ic._missing.key(i); f<<name;
+       C InternetCache::FileTime &file_time=ic._missing    [i];
+         Flt  access_time=       file_time.access_time-time     ; // store as relative to current time, it will be -Inf..0
+         Long verify_time=RoundL(file_time.verify_time-time)+now; // store as absolute DateTime.seconds
+         f.putMulti(access_time, verify_time);
+      }
+
+      // custom
       if(ic._save)ic._save(f);
    }
 };
@@ -207,21 +220,31 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
             {
                case 0:
                {
-                 _pak_files.setNumDiscard(_pak.totalFiles()); FREPA(_pak_files)
+                 _pak_files.setNumDiscard(_pak.totalFiles()); FREPA(_pak_files) // _pak_files
                   {
                      FileTime &file_time=_pak_files[i];
                      Flt access_time; Long verify_time; f.getMulti(access_time, verify_time);
                      file_time.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
                      file_time.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
                   }
+                  REP(f.decUIntV()) // _missing
+                  {
+                     Str name; if(!name.load(f))goto error;
+                     FileTime &file_time=*_missing(name);
+                     Flt access_time; Long verify_time; f.getMulti(access_time, verify_time);
+                     file_time.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
+                     file_time.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
+                  }
                   if(f.ok())
                   {
-                     if(load)load(f);
+                     if(load)load(f); // custom
                      getPakFileInfo();
                      return;
                   }
                }break;
             }
+         error:
+           _missing.del();
          }
       //_pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear(); ignore because we recreate in 'resetPak'
       }
