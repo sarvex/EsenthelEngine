@@ -238,10 +238,10 @@ CChar* TInventory() {return MLTC(u"Inventory", DE, u"Inventar", FR, u"Inventaire
 CChar* TJanuary() {return MLTC(u"January", DE, u"Januar", FR, u"Janvier", IT, u"Gennaio", SP, u"Enero", PO, u"Janeiro", PL, u"Styczeń", RU, u"Январь", JP, u"1月", KO, u"1월", CN, u"一月", TH, u"มกราคม");}
 CChar* TJanuaryShort() {return MLTC(u"Jan", DE, u"Jan", FR, u"Jan", IT, u"Gen", SP, u"Ene", PO, u"Jan", PL, u"Sty", RU, u"Янв", JP, u"1月", KO, u"1월", CN, u"一月", TH, u"มกราคม");}
 CChar* TJuly() {return MLTC(u"July", DE, u"Juli", FR, u"Juillet", IT, u"Luglio", SP, u"Julio", PO, u"Julho", PL, u"Lipiec", RU, u"Июль", JP, u"7月", KO, u"7월", CN, u"七月", TH, u"กรกฎาคม");}
-CChar* TJulyShort() {return MLTC(u"Jul", DE, u"Jul", FR, u"Juil", IT, u"Lug", SP, u"Jul", PO, u"Jul", PL, u"Lip", RU, u"Июл", JP, u"7月", KO, u"7월", CN, u"七月", TH, u"กรกฎาคม");}
+CChar* TJulyShort() {return MLTC(u"Jul", DE, u"Jul", FR, u"Jul"/*Juil*/, IT, u"Lug", SP, u"Jul", PO, u"Jul", PL, u"Lip", RU, u"Июл", JP, u"7月", KO, u"7월", CN, u"七月", TH, u"กรกฎาคม");}
 CChar* TJump() {return MLTC(u"Jump", DE, u"Springen", FR, u"Saut", IT, u"Salto", SP, u"Salto", PO, u"Pular", PL, u"Skok", RU, u"Прыжок", JP, u"ジャンプ", KO, u"도약", CN, u"跳", TH, u"กระโดด");}
 CChar* TJune() {return MLTC(u"June", DE, u"Juni", FR, u"Juin", IT, u"Giugno", SP, u"Junio", PO, u"Junho", PL, u"Czerwiec", RU, u"Июнь", JP, u"6月", KO, u"6월", CN, u"六月", TH, u"มิถุนายน");}
-CChar* TJuneShort() {return MLTC(u"Jun", DE, u"Jun", FR, u"Juin", IT, u"Giu", SP, u"Jun", PO, u"Jun", PL, u"Cze", RU, u"Июн", JP, u"6月", KO, u"6월", CN, u"六月", TH, u"มิถุนายน");}
+CChar* TJuneShort() {return MLTC(u"Jun", DE, u"Jun", FR, u"Jun"/*Juin*/, IT, u"Giu", SP, u"Jun", PO, u"Jun", PL, u"Cze", RU, u"Июн", JP, u"6月", KO, u"6월", CN, u"六月", TH, u"มิถุนายน");}
 CChar* TKatana() {return MLTC(u"Katana", DE, u"Katana", FR, u"Katana", IT, u"Katana", SP, u"Katana", PO, u"Katana", PL, u"Katana", RU, u"Катана", JP, u"刀", KO, u"카타나", CN, u"武士刀", TH, u"คะตะนะ");}
 CChar* TKeep() {return MLTC(u"Keep", DE, u"Festung", FR, u"Forteresse", IT, u"Fortezza", SP, u"Fortaleza", PO, u"Fortaleza", PL, u"Twierdza", RU, u"Крепость", JP, u"要塞", KO, u"요새", CN, u"堡垒", TH, u"ป้อม");}
 CChar* TKeepEditing() {return MLTC(u"Keep Editing", DE, u"Bearbeiten Sie weiter", FR, u"Continuez à éditer", IT, u"Continua a modificare", SP, u"Seguir editando", PO, u"Continuar Editando", PL, u"Edytuj dalej", RU, u"Продолжайте редактировать", JP, u"編集を続ける", KO, u"계속 수정", CN, u"继续编辑", TH, u"แก้ไขต่อไป");}
