@@ -636,7 +636,12 @@ inline void InternetCache::update()
                downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
-               if(just_created)downloaded->access_time=downloaded->verify_time;
+               if(just_created)
+               {
+                  // set 'access_time'
+                  if(C PakFile *pf=_pak.find(name, false))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
+               }
 
                ImagePtr img; img.find(down.url()); const Bool import=img;
                Mems<Byte> downloaded_data;
@@ -685,7 +690,10 @@ inline void InternetCache::update()
                missing.verify_time=TIME;
                if(just_created)
                {
-                  missing.access_time=missing.verify_time;
+                  // set 'access_time'
+                  if(C Downloaded *downloaded=_downloaded.find(name       ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
+                  if(C PakFile    *pf        =_pak       .find(name, false))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                                                                            missing.access_time=missing     .verify_time;     // set as new
                   ImagePtr img; if(img.find(down.url())) // delete image
                   {
                      cancel(img);
