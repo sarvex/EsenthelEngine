@@ -99,7 +99,7 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
    ThreadFinishedUsingGPUData();
    done=true; // !! DON'T DO ANYTHING AFTER THIS STEP BECAUSE 'this' OBJECT CAN GET REMOVED !!
 }
-static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0) {ii.import(ic);}
+NOINLINE static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0) {ii.import(ic);} // don't inline so we don't use stack memory in calling function
 /******************************************************************************/
 InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
 /******************************************************************************/
