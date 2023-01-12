@@ -298,10 +298,15 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             }
 
             // delete '_downloaded' as its data was moved to PAK
-            if(!COPY_DOWNLOADED_MEM && _threads) // wait for Import Threads processing Downloaded files which we're about to delete
+            if(!COPY_DOWNLOADED_MEM)
             {
-               Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);}
-              _threads->wait(calls);
+               if(_threads) // wait for Import Threads processing Downloaded files which we're about to delete
+               {
+                  Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);} _threads->wait(calls);
+               }else
+               {
+                                             REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())ii.import(T);}
+               }
             }
             if(keep_got_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
            _downloaded.del();
@@ -325,7 +330,15 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             {
                SrcFile &file=files.last();
                Downloaded &downloaded=*file.downloaded;
-               if(!COPY_DOWNLOADED_MEM && _threads)REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data())_threads->wait(ii, ImportImageFunc, T);} // we're going to remove 'downloaded' so wait for any thread using its data to finish
+               if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
+                  REPA(_import_images)
+               {
+                  auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
+                  {
+                     if(_threads)_threads->wait(ii, ImportImageFunc, T); // wait for thread to finish
+                     else        ii.import(T);                           // finish import
+                  }
+               }
                if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
               _downloaded.removeData(&downloaded);
                size-=file.compressed_size;
@@ -450,7 +463,7 @@ void InternetCache::changed(C Str &url)
 /******************************************************************************/
 void InternetCache::import(ImportImage &ii)
 {
-   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T);
+   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ii.import(T);
 }
 Bool InternetCache::busy()C
 {
@@ -464,24 +477,42 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
    {
       ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)
       {
-         if(ii.done                                                                             // finished
-         || _threads && _threads->cancel(ii, ImportImageFunc, T))_import_images.removeValid(i); // canceled, just remove
+         if(ii.done                                    // finished
+         || !_threads                                  // no threads
+         ||  _threads->cancel(ii, ImportImageFunc, T)) // canceled
+             _import_images.removeValid(i); // just remove
          else ii.image_ptr=null; // now processing, clear 'image_ptr' so we will ignore it
       }
    }
 }
-void InternetCache::cancelWait(Ptr data)
+void InternetCache::updating(Ptr data) // called when updating 'downloaded'
 {
    if(data)
    REPA(_import_images)
    {
       ImportImage &ii=_import_images[i]; if(ii.isDownloaded() && ii.data.memory==data)
       {
-         if(!ii.done  // not yet finished
-         &&  _threads // have threads
-         && !_threads->cancel(ii, ImportImageFunc, T)) // couldn't cancel
-             _threads->wait  (ii, ImportImageFunc, T); // wait for finish
-        _import_images.removeValid(i); // remove
+         if(ii.done                                    // finished
+         || !_threads                                  // no threads
+         ||  _threads->cancel(ii, ImportImageFunc, T)) // canceled
+     remove: _import_images.removeValid(i); // just remove
+         else // now processing
+         {
+            if(COPY_DOWNLOADED_MEM)
+            {
+               ii.image_ptr=null; // clear 'image_ptr' so we will ignore it
+               WriteLock lock(_rws);
+               if(ii.isDownloaded())
+               {
+                  ii.data.set(null, 0);
+                  ii.type=ImportImage::OTHER;
+               }
+            }else
+            {
+              _threads->wait(ii, ImportImageFunc, T); // wait for finish
+               goto remove;
+            }
+         }
       }
    }
 }
@@ -593,7 +624,7 @@ inline void InternetCache::update()
             {
                Bool just_created;
                Downloaded *downloaded=_downloaded(name, just_created);
-               cancelWait(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
+               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
                downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
