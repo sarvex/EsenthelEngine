@@ -4,12 +4,13 @@
 
    TODO: '_missing' is not saved
 
+   TODO: '_rws' could potentially by separated into '_rws_pak' and '_rws_downloaded', would it be better?
+
 /******************************************************************************/
 #define COMPARE  ComparePathCI
 #define EQUAL   !COMPARE
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
-#define PRECISE_MISSING_ACCESS_TIME 0 // currently not needed
 #define COPY_DOWNLOADED_MEM 1 // allows flush without waiting for import to finish, at the cost of extra memory copy
 /******************************************************************************/
 namespace EE{
@@ -432,13 +433,9 @@ void InternetCache::changed(C Str &url)
    {
       Str name=SkipHttpWww(url); if(name.is())
       {
-      #if !PRECISE_MISSING_ACCESS_TIME
-                             _missing   .removeKey(name      );
-      #else
-         if(FileTime   *miss=_missing   .find     (name      ))miss       ->verify_time=INT_MIN;
-      #endif
-         if(Downloaded *down=_downloaded.find     (name      ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find     (name, true))pakFile(*pf).verify_time=INT_MIN;
+         if(FileTime   *miss=_missing   .find(name      ))miss       ->verify_time=INT_MIN;
+         if(Downloaded *down=_downloaded.find(name      ))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find(name, true))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
             Download &down=_downloading[i]; if(EQUAL(down.url(), url))
@@ -550,7 +547,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
       {
        C Str &url=retry[i], name=SkipHttpWww(url);
          // this file was from Pak that failed to load, and it wasn't canceled, it means it's not available locally anymore, try to download
-         if(!missing(name))
+         // no need to check 'missing' because once it's detected then all imports for that image are canceled
          {
             REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
                               if(   _to_download.binaryInclude(url, COMPARE))enable=true;
@@ -592,9 +589,7 @@ inline void InternetCache::update()
          case DWNL_DONE: // finished downloading
          {
             Str name=SkipHttpWww(down.url());
-         #if PRECISE_MISSING_ACCESS_TIME
            _missing.removeKey(name);
-         #endif
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;
