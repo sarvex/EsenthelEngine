@@ -282,7 +282,7 @@ NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stac
    if(_max_missing>=0 && _missing.elms()>_max_missing)
    {
       Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTimeAsc);
-      REP(_missing.elms()-_max_missing)_missing.removeData(sorted[i]);
+      REP(_missing.elms()-_max_missing)_missing.removeData(sorted[i]); // elements are sorted here from oldest (index 0) to newest (index last), so remove those at the start (oldest)
    }
 }
 /******************************************************************************/
