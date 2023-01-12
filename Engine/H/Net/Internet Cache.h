@@ -68,6 +68,7 @@ private:
    Byte                 _compress_level=255;
    SByte                _image_mip_maps=0; // number of mip maps to be created when importing images (-1..Inf, -1=keep original value, 0=autodetect)
    Flt                  _verify_life=60*60;
+   Int                  _max_missing=256;
    Long                 _max_file_size=512<<20, _max_mem_size=16<<20;
    Threads             *_threads=null;
    ReadWriteSync        _rws;
@@ -95,6 +96,7 @@ private:
    void   getPakFileInfo();
    void checkPakFileInfo();
    void resetPak(WriteLockEx *lock=null);
+   void cleanMissing();
    Bool flush(Downloaded *keep, Mems<Byte> *keep_data);
 #endif
 };

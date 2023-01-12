@@ -121,6 +121,7 @@ struct SrcFile : PakFileData, InternetCache::FileTime
 static Int CompareName      (C SrcFile &a, C SrcFile &b) {return COMPARE(a.name       , b.name       );}
 static Int CompareName      (C SrcFile &a, C Str     &b) {return COMPARE(a.name       , b            );}
 static Int CompareAccessTime(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
+static Int CompareAccessTime(InternetCache::FileTime *C &a, InternetCache::FileTime *C &b) {return Compare(b->access_time, a->access_time);} // reverse order to list files with biggest access time first
 
 struct PostHeader : PakPostHeader
 {
@@ -276,6 +277,14 @@ void InternetCache::checkPakFileInfo()
    if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)resetPak();
 }
 /******************************************************************************/
+NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stack memory in calling function
+{
+   if(_max_missing>=0 && _missing.elms()>_max_missing)
+   {
+      Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTime);
+   }
+}
+/******************************************************************************/
 Bool InternetCache::flush() {return flush(null, null);}
 Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' is going to get removed then its data will be placed in 'keep_data'
 {
@@ -298,6 +307,9 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          Bool keep_got_removed=false;
          FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
          FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
+
+         cleanMissing();
+
          if(_max_file_size>=0 && file_size>_max_file_size) // limit file size
          {
             files.sort(CompareAccessTime);
@@ -329,46 +341,49 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                   Memt<Threads::Call> calls; REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())calls.New().set(ii, ImportImageFunc, T);} _threads->wait(calls);
                }else
                {
-                                             REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())ii.import(T);}
+                                             REPA(_import_images){auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded())ImportImageFunc(ii, T);} // don't use 'ii.import' because that one is inline
                }
             }
             if(keep_got_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
            _downloaded.del();
          }else return false;
       }else
-      if(_max_mem_size>=0)
       {
-         Memc<SrcFile> files; files.reserve(_downloaded.elms());
-         Long size=0;
-         FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
-         if(size>_max_mem_size) // limit mem size
+         if(_max_mem_size>=0)
          {
-            if(COPY_DOWNLOADED_MEM)
+            Memc<SrcFile> files; files.reserve(_downloaded.elms());
+            Long size=0;
+            FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
+            if(size>_max_mem_size) // limit mem size
             {
-               WriteLock lock(_rws);
-               REPAO(_import_images).lockedRead();
-               // at this point there should be no DOWNLOADED importers
-            }
-            files.sort(CompareAccessTime);
-            do
-            {
-               SrcFile &file=files.last();
-               Downloaded &downloaded=*file.downloaded;
-               if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
-                  REPA(_import_images)
+               if(COPY_DOWNLOADED_MEM)
                {
-                  auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
-                  {
-                     if(_threads)_threads->wait(ii, ImportImageFunc, T); // wait for thread to finish
-                     else        ii.import(T);                           // finish import
-                  }
+                  WriteLock lock(_rws);
+                  REPAO(_import_images).lockedRead();
+                  // at this point there should be no DOWNLOADED importers
                }
-               if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
-              _downloaded.removeData(&downloaded);
-               size-=file.compressed_size;
-               files.removeLast();
-            }while(size>_max_mem_size && files.elms());
+               files.sort(CompareAccessTime);
+               do
+               {
+                  SrcFile &file=files.last();
+                  Downloaded &downloaded=*file.downloaded;
+                  if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
+                     REPA(_import_images)
+                  {
+                     auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
+                     {
+                        if(_threads)_threads->wait(ii, ImportImageFunc   , T); // wait for thread to finish
+                        else                           ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
+                     }
+                  }
+                  if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
+                 _downloaded.removeData(&downloaded);
+                  size-=file.compressed_size;
+                  files.removeLast();
+               }while(size>_max_mem_size && files.elms());
+            }
          }
+         cleanMissing();
       }
    }
    return true;
@@ -495,7 +510,7 @@ void InternetCache::changed(C Str &url)
 /******************************************************************************/
 void InternetCache::import(ImportImage &ii)
 {
-   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ii.import(T);
+   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
 }
 Bool InternetCache::busy()C
 {
