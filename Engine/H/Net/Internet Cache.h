@@ -4,6 +4,9 @@ enum CACHE_VERIFY : Byte
    CACHE_VERIFY_YES  , // always verify before returning cached result
    CACHE_VERIFY_DELAY, // allow returning cached result before verification completed
    CACHE_VERIFY_SKIP , // always skip verification
+#if EE_PRIVATE
+   CACHE_VERIFY_EXPIRED, // internal mode that always treats downloaded file as expired, forcing verification, and preventing from returning downloaded file
+#endif
 };
 struct InternetCache
 {
@@ -92,7 +95,6 @@ private:
    void   getPakFileInfo();
    void checkPakFileInfo();
    void resetPak(WriteLockEx *lock=null);
-   Bool missing(C Str &name);
    Bool flush(Downloaded *keep, Mems<Byte> *keep_data);
 #endif
 };
