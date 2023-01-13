@@ -123,6 +123,7 @@ static Int CompareName          (C SrcFile &a, C Str     &b) {return COMPARE(a.n
 static Int CompareAccessTimeDesc(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
 static Int CompareAccessTimeAsc (InternetCache::FileTime *C &a, InternetCache::FileTime *C &b) {return Compare(a->access_time, b->access_time);}
 
+#pragma pack(push, 4)
 struct SavedFileTime
 {
    Flt  access_time; // relative to current time, it will be -Inf..0
@@ -142,6 +143,7 @@ struct SavedFileTime
    SavedFileTime() {}
    SavedFileTime(C InternetCache::FileTime &ft, Dbl time, Long now) {set(ft, time, now);}
 };
+#pragma pack(pop)
 
 struct PostHeader : PakPostHeader
 {
