@@ -309,7 +309,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          {
             WriteLockEx lock(_rws);
             Bool fail=false; REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead(); fail|=ii.fail;} // read all
-            if(  fail){resetPak(&lock); goto reset;} // if any failed then resetPak
+            if(  fail){resetPak(&lock); goto reset;} // if any failed then 'resetPak'
          }
          checkPakFileInfo();
       reset:
@@ -697,8 +697,8 @@ inline void InternetCache::update()
                if(just_created)
                {
                   // set 'access_time'
-                  if(C PakFile *pf=_pak.find(name, false))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
-                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
+                  if(C PakFile *pf=_pak.find(name, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                                                         downloaded->access_time=downloaded ->verify_time;     // set as new
                }
 
                ImagePtr img; img.find(down.url()); const Bool import=img;
@@ -749,9 +749,9 @@ inline void InternetCache::update()
                if(just_created)
                {
                   // set 'access_time'
-                  if(C Downloaded *downloaded=_downloaded.find(name       ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
-                  if(C PakFile    *pf        =_pak       .find(name, false))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
-                                                                            missing.access_time=missing     .verify_time;     // set as new
+                  if(C Downloaded *downloaded=_downloaded.find(name      ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
+                  if(C PakFile    *pf        =_pak       .find(name, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                                                                           missing.access_time=missing     .verify_time;     // set as new
                   ImagePtr img; if(img.find(down.url())) // delete image
                   {
                      cancel(img);
