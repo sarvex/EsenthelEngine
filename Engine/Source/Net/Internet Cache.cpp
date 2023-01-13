@@ -305,6 +305,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
       if(_pak.pakFileName().is()) // we want to save data
       {
          // we're going to update PAK so make sure all imports have read PAK FILE data
+         // need to do this at the start, because in case of failure, 'resetPak' will recreate the PAK
          {
             WriteLockEx lock(_rws);
             Bool fail=false; REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead(); fail|=ii.fail;} // read all
@@ -371,13 +372,13 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
             if(remove_missing || size>max_size) // limit mem size
             {
+               if(size>max_size)files.sort(CompareAccessTimeDesc);
                if(COPY_DOWNLOADED_MEM)
                {
                   WriteLock lock(_rws);
                   REPAO(_import_images).lockedRead();
                   // at this point there should be no DOWNLOADED importers
                }
-               files.sort(CompareAccessTimeDesc);
                REPA(files)
                {
                   SrcFile &file=files[i];
