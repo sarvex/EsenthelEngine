@@ -418,8 +418,15 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
    if(!url.is())return true;
    Str name=SkipHttpWww(url); if(!name.is())return false;
 
+   // check if it's known to be missing
+   if(FileTime *missing=_missing.find(name))
+   {
+      missing->access_time=TIME;
+      if(TIME-missing->verify_time<=_verify_life)return false; // verification still acceptable
+      verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning true
+   }
+
    // find in cache
-   // !! DO DOWNLOADED/PAK FIRST, SO WE CAN ALWAYS ADJUST 'access_time' FOR THEM EVEN IF MISSING !!
    Flt *verify_time;
    if(Downloaded *down=_downloaded.find(name))
    {
@@ -433,18 +440,16 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
                    time.access_time=TIME;
       verify_time=&time.verify_time;
       file.set(*pf, _pak);
-   }else
-      verify_time=null;
-
-   // now after adjusting 'access_time', check if it's missing (normally this should be checked first, however we want to set 'access_time' everywhere)
-   if(FileTime *missing=_missing.find(name))
+   }else // not found
    {
-      missing->access_time=TIME;
-      if(TIME-missing->verify_time<=_verify_life)return false; // verification still acceptable
-      verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning true
+      REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
+                        if(   _to_download.binaryInclude(url, COMPARE))enable();
+                              _to_verify  .binaryExclude(url, COMPARE);
+   downloading:
+      return false;
    }
 
-   if(verify_time) // found
+   // found
    {
       if(verify==CACHE_VERIFY_SKIP                                      )return true; // verification not   needed
       if(verify!=CACHE_VERIFY_EXPIRED && TIME-*verify_time<=_verify_life)return true; // verification still acceptable
@@ -454,13 +459,6 @@ Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
                         if(_to_verify  .binaryInclude(url, COMPARE))enable();       // verify
    verifying:
       return verify==CACHE_VERIFY_DELAY;
-   }else // not found
-   {
-      REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
-                        if(   _to_download.binaryInclude(url, COMPARE))enable();
-                              _to_verify  .binaryExclude(url, COMPARE);
-   downloading:
-      return false;
    }
 }
 ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
