@@ -367,9 +367,8 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             if(remove_missing || _max_mem_size>=0)
          {
             Long max_size=((_max_mem_size>=0) ? _max_mem_size : LONG_MAX);
-            Memc<SrcFile> files; files.reserve(_downloaded.elms());
-            Long size=0;
-            FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
+            Mems<SrcFile> files(_downloaded.elms()); // don't use 'Memt' because we need a lot of stack memory for 'ImportImageFunc'
+            Long size=0; FREPA(files)size+=files[i].set(_downloaded.key(i), _downloaded[i]).compressed_size;
             if(remove_missing || size>max_size) // limit mem size
             {
                if(size>max_size)files.sort(CompareAccessTimeDesc);
@@ -595,7 +594,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
    if( lock   ) lock   ->off (); // unlock first
    if(_threads)_threads->wait(calls); // wait for all failed importers to return, have to wait with lock disabled
 
-   Memc<Str> retry;
+   Memt<Str> retry;
    REPA(_import_images)
    {
       auto &ii=_import_images[i]; if(ii.fail)
