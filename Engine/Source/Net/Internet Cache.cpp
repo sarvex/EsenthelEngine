@@ -123,6 +123,26 @@ static Int CompareName          (C SrcFile &a, C Str     &b) {return COMPARE(a.n
 static Int CompareAccessTimeDesc(C SrcFile &a, C SrcFile &b) {return Compare(b.access_time, a.access_time);} // reverse order to list files with biggest access time first
 static Int CompareAccessTimeAsc (InternetCache::FileTime *C &a, InternetCache::FileTime *C &b) {return Compare(a->access_time, b->access_time);}
 
+struct SavedFileTime
+{
+   Flt  access_time; // relative to current time, it will be -Inf..0
+   Long verify_time; // absolute DateTime.seconds
+
+   void zero() {access_time=-FLT_MAX; verify_time=0;}
+   void set(C InternetCache::FileTime &ft, Dbl time, Long now)
+   {
+      access_time=       ft.access_time-time;
+      verify_time=RoundL(ft.verify_time-time)+now;
+   }
+   void get(InternetCache::FileTime &ft, Dbl time, Long now)C
+   {
+      ft.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
+      ft.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
+   }
+   SavedFileTime() {}
+   SavedFileTime(C InternetCache::FileTime &ft, Dbl time, Long now) {set(ft, time, now);}
+};
+
 struct PostHeader : PakPostHeader
 {
    Memc<SrcFile>  files;
@@ -138,17 +158,8 @@ struct PostHeader : PakPostHeader
       // _pak_files
       FREPA(pak)
       {
-         Flt  access_time; // store as relative to current time, it will be -Inf..0
-         Long verify_time; // store as absolute DateTime.seconds
-         if(C SrcFile *file=files.binaryFind(pak.fullName(i), CompareName))
-         {
-            access_time=       file->access_time-time;
-            verify_time=RoundL(file->verify_time-time)+now;
-         }else
-         {
-            access_time=-FLT_MAX; verify_time=0;
-         }
-         f.putMulti(access_time, verify_time);
+         SavedFileTime sft; if(C SrcFile *file=files.binaryFind(pak.fullName(i), CompareName))sft.set(*file, time, now);else sft.zero();
+         f<<sft;
       }
 
       // _missing
@@ -157,9 +168,7 @@ struct PostHeader : PakPostHeader
       {
        C Str                     &name     =ic._missing.key(i); f<<name;
        C InternetCache::FileTime &file_time=ic._missing    [i];
-         Flt  access_time=       file_time.access_time-time     ; // store as relative to current time, it will be -Inf..0
-         Long verify_time=RoundL(file_time.verify_time-time)+now; // store as absolute DateTime.seconds
-         f.putMulti(access_time, verify_time);
+         f<<SavedFileTime(file_time, time, now);
       }
 
       // custom
@@ -224,17 +233,13 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
                  _pak_files.setNumDiscard(_pak.totalFiles()); FREPA(_pak_files) // _pak_files
                   {
                      FileTime &file_time=_pak_files[i];
-                     Flt access_time; Long verify_time; f.getMulti(access_time, verify_time);
-                     file_time.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
-                     file_time.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
+                     SavedFileTime sft; f>>sft; sft.get(file_time, time, now);
                   }
                   REP(f.decUIntV()) // _missing
                   {
                      Str name; if(!name.load(f))goto error;
                      FileTime &file_time=*_missing(name);
-                     Flt access_time; Long verify_time; f.getMulti(access_time, verify_time);
-                     file_time.access_time=Min(0, access_time    )     ; // prevent setting to the future in case of corrupt data
-                     file_time.verify_time=Min(0, verify_time-now)+time; // prevent setting to the future in case of corrupt data
+                     SavedFileTime sft; f>>sft; sft.get(file_time, time, now);
                   }
                   if(f.ok())
                   {
