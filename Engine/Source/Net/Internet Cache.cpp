@@ -364,24 +364,26 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                   // at this point there should be no DOWNLOADED importers
                }
                files.sort(CompareAccessTimeDesc);
-               do
+               REPA(files)
                {
-                  SrcFile &file=files.last();
-                  Downloaded &downloaded=*file.downloaded;
-                  if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
-                     REPA(_import_images)
+                  SrcFile &file=files[i];
+                  if(size>_max_mem_size || _missing.find(file.name))
                   {
-                     auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
+                     Downloaded &downloaded=*file.downloaded;
+                     if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
+                        REPA(_import_images)
                      {
-                        if(_threads)_threads->wait(ii, ImportImageFunc   , T); // wait for thread to finish
-                        else                           ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
+                        auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
+                        {
+                           if(_threads)_threads->wait(ii, ImportImageFunc   , T); // wait for thread to finish
+                           else                           ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
+                        }
                      }
+                     if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
+                    _downloaded.removeData(&downloaded);
+                     size-=file.compressed_size;
                   }
-                  if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
-                 _downloaded.removeData(&downloaded);
-                  size-=file.compressed_size;
-                  files.removeLast();
-               }while(size>_max_mem_size && files.elms());
+               }
             }
          }
          cleanMissing();
