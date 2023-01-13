@@ -314,6 +314,7 @@ CChar* TOnServer();
 CChar* TOpen();
 CChar* TOpenModsFolder();
 CChar* TOpponents();
+CChar* TOptional(TRANS_FORM form=TF_NEUTRAL);
 CChar* TOptions();
 CChar* TPainted();
 CChar* TPassword();
