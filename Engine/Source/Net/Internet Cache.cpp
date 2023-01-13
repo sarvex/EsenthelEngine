@@ -40,7 +40,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(f.size());
          if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
          data.set(temp.data(), temp.elms());
-         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
+         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
       }break;
 
       case DOWNLOADED: if(COPY_DOWNLOADED_MEM)
@@ -48,7 +48,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(data.memory_size);
          CopyFast(temp.data(), data.memory, temp.elms());
          data.set(temp.data(), temp.elms());
-         type=OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
+         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
       }break;
    }
 }
@@ -75,7 +75,7 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
             temp.setNumDiscard(f.size());
             if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
             data.set(temp.data(), temp.elms());
-            type=OTHER; // adjust at the end once everything is ready
+            type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !!
          }
       }break;
 
@@ -87,7 +87,7 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
             temp.setNumDiscard(data.memory_size);
             CopyFast(temp.data(), data.memory, temp.elms());
             data.set(temp.data(), temp.elms());
-            type=OTHER; // adjust at the end once everything is ready
+            type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !!
          }
       }break;
    }
@@ -553,13 +553,15 @@ void InternetCache::updating(Ptr data) // called when updating 'downloaded'
          {
             if(COPY_DOWNLOADED_MEM)
             {
-               ii.image_ptr=null; // clear 'image_ptr' so we will ignore it
-               WriteLock lock(_rws);
-               if(ii.isDownloaded())
                {
-                  ii.data.set(null, 0);
-                  ii.type=ImportImage::OTHER; // adjust at the end once everything is ready, important for importer thread which first does fast check without locking
+                  WriteLock lock(_rws);
+                  if(ii.isDownloaded()) // check again under lock
+                  {
+                     ii.data.set(null, 0);
+                     ii.type=ImportImage::OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
+                  }
                }
+               ii.image_ptr=null; // clear 'image_ptr' so we will ignore it
             }else
             {
               _threads->wait(ii, ImportImageFunc, T); // wait for finish
