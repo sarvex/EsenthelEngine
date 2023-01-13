@@ -350,12 +350,15 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          }else return false;
       }else
       {
-         if(_max_mem_size>=0)
+         const Bool remove_missing=true; // this will remove all missing from downloaded, even if we still have free memory
+         if(_downloaded.elms())
+            if(remove_missing || _max_mem_size>=0)
          {
+            Long max_size=((_max_mem_size>=0) ? _max_mem_size : LONG_MAX);
             Memc<SrcFile> files; files.reserve(_downloaded.elms());
             Long size=0;
             FREPA(_downloaded)size+=files.New().set(_downloaded.key(i), _downloaded[i]).compressed_size;
-            if(size>_max_mem_size) // limit mem size
+            if(remove_missing || size>max_size) // limit mem size
             {
                if(COPY_DOWNLOADED_MEM)
                {
@@ -367,8 +370,9 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                REPA(files)
                {
                   SrcFile &file=files[i];
-                  if(size>_max_mem_size || _missing.find(file.name))
-                  {
+                  if(size>max_size // exceeds mem limit
+                  || remove_missing && _missing.find(file.name)) // or this file has gone missing
+                  {  // remove this 'file'
                      Downloaded &downloaded=*file.downloaded;
                      if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
                         REPA(_import_images)
@@ -382,7 +386,8 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                      if(&downloaded==keep)Swap(keep->file_data, *keep_data); // swap before deleting
                     _downloaded.removeData(&downloaded);
                      size-=file.compressed_size;
-                  }
+                  }else
+                  if(!remove_missing)break; // if released enough memory, and we don't need to check missing then we can stop
                }
             }
          }
