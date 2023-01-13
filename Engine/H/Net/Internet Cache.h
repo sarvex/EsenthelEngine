@@ -10,7 +10,7 @@ enum CACHE_VERIFY : Byte
 };
 struct InternetCache
 {
-   void (*got)(C ImagePtr &image)=null; // pointer to custom function called when cache has finished downloading and importing an image
+   void (*got)(C ImagePtr &image); // pointer to custom function called when cache has finished downloading and importing an image
 
    // manage
    void del   (); // delete manually
@@ -64,16 +64,16 @@ private:
       DateTime   modify_time_utc;
    };
 
-   COMPRESS_TYPE        _compress=COMPRESS_NONE;
-   Byte                 _compress_level=255;
-   SByte                _image_mip_maps=0; // number of mip maps to be created when importing images (-1..Inf, -1=keep original value, 0=autodetect)
-   Flt                  _verify_life=60*60;
-   Int                  _max_missing=256;
-   Long                 _max_file_size=512<<20, _max_mem_size=16<<20;
-   Threads             *_threads=null;
+   COMPRESS_TYPE        _compress;
+   Byte                 _compress_level;
+   SByte                _image_mip_maps; // number of mip maps to be created when importing images (-1..Inf, -1=keep original value, 0=autodetect)
+   Flt                  _verify_life;
+   Int                  _max_missing;
+   Long                 _max_file_size, _max_mem_size;
+   Threads             *_threads;
    ReadWriteSync        _rws;
    Pak                  _pak;
-   Long                 _pak_size=-1;
+   Long                 _pak_size;
    DateTime             _pak_modify_time_utc;
    Memb<DataRangeAbs>   _pak_used_file_ranges;
    Mems<FileTime>       _pak_files;
@@ -82,8 +82,8 @@ private:
    Download             _downloading[6];
    Memc<Str>            _to_download, _to_verify;
    Memx<ImportImage>    _import_images; // use 'Memx' to have const_mem_addr needed for threads
-   void               (*_save)(File &f)=null;
-   void               (*_load)(File &f)=null;
+   void               (*_save)(File &f);
+   void               (*_load)(File &f);
 
 #if EE_PRIVATE
    Bool busy  ()C;
@@ -98,6 +98,7 @@ private:
    void resetPak(WriteLockEx *lock=null);
    void cleanMissing();
    Bool flush(Downloaded *keep, Mems<Byte> *keep_data);
+   void zero();
 #endif
 };
 /******************************************************************************/

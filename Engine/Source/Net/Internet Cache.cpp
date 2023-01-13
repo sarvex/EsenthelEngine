@@ -101,7 +101,7 @@ inline void InternetCache::ImportImage::import(InternetCache &ic)
 }
 NOINLINE static void ImportImageFunc(InternetCache::ImportImage &ii, InternetCache &ic, Int thread_index=0) {ii.import(ic);} // don't inline so we don't use stack memory in calling function
 /******************************************************************************/
-InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {_pak_modify_time_utc.zero();}
+InternetCache::InternetCache() : _missing(COMPARE), _downloaded(COMPARE) {zero();}
 /******************************************************************************/
 struct SrcFile : PakFileData, InternetCache::FileTime
 {
@@ -181,34 +181,38 @@ struct PostHeader : PakPostHeader
 static void ICUpdate(InternetCache &ic);
 void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 
+void InternetCache::zero()
+{
+   got=null;
+  _compress=COMPRESS_NONE;
+  _compress_level=255;
+  _image_mip_maps=0;
+  _verify_life=60*60;
+  _max_missing=256;
+  _max_file_size=512<<20;
+  _max_mem_size=16<<20;
+  _threads=null;
+  _pak_size=-1;
+  _pak_modify_time_utc.zero();
+  _save=_load=null;
+}
 void InternetCache::del()
 {
-   REPAO(_downloading).stop();
+   REPAO(_downloading).stop(); // do this first
    if(_threads)_threads->cancelFuncUser(ImportImageFunc, T); // cancel importing
-
    flush();
-
-   if(_threads)
-   {
-     _threads->waitFuncUser(ImportImageFunc, T);
-     _threads=null;
-   }
-
-   got=null;
-  _save=_load=null;
+   if(_threads)_threads->waitFuncUser(ImportImageFunc, T);
   _missing             .del();
   _downloaded          .del();
   _import_images       .del();
   _to_download         .del();
   _to_verify           .del();
   _pak                 .del();
-  _pak_size            =-1;
-  _pak_modify_time_utc .zero();
   _pak_used_file_ranges.del();
   _pak_files           .del();
    App._callbacks.exclude(ICUpdate, T);
-
-   REPAO(_downloading).del();
+   zero();
+   REPAO(_downloading).del(); // at the end because it might need time to delete
 }
 void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRESS_TYPE compress, void (*save)(File &f), void (*load)(File &f))
 {
