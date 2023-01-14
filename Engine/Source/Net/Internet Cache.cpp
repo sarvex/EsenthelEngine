@@ -518,7 +518,6 @@ ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
       Lod lods; if(base_to_url && url_to_base && url_to_base(base_to_url(base, lod), lods).is() && lod==lods.lod)
       {
          Clamp(lod, lods.min, lods.max);
-         Int img_lod=LOD(*img);
 
          DataSource data;
          GET get=NONE;
@@ -534,7 +533,7 @@ ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
             for(file_lod=lod; --file_lod>=lods.min;           )if(getFileEx(base_to_url(base, file_lod), data, verify, false))goto got_file; // if FILE
          }else // got FILE
       got_file:
-         if(file_lod>img_lod) // import only if we might improve quality
+         if(file_lod>LOD(*img)) // import only if we might improve quality
          {
             REPA(_import_images)
             {
@@ -772,8 +771,35 @@ inline void InternetCache::update()
                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
                }
 
-               ImagePtr img    ;                         img    .find(            down.url()      );
-               ImagePtr img_lod; Lod lod; if(url_to_base)img_lod.find(url_to_base(down.url(), lod));
+               ImagePtr img; img.find(down.url());
+               ImagePtr img_lod; Lod lod; if(url_to_base)
+               {
+                  Str base=url_to_base(down.url(), lod); if(img_lod.find(base))
+                  {
+                     Int lod_img=LOD(*img_lod);
+                     if( lod.lod>=lod_img) // always import if just got the file and quality is same (most likely we got newer data) or higher
+                     {
+                     test_import_img_lod:;
+                        check importers
+                        cancel
+                        goto import_img_lod;
+                     }else // if got lower quality, then import only if we have received newer data
+                     {
+                      C DateTime *modify_time=null;
+                        if(base_to_url)
+                        {
+                           Str name=SkipHttpWww(base_to_url(base, lod_img)); // name of data that's already loaded in the image
+                           if(C Downloaded *down=_downloaded.find(name       ))modify_time=&down->modify_time_utc;else
+                           if(C PakFile    *pf  =_pak       .find(name, false))modify_time=&pf  ->modify_time_utc;
+                        }
+                        if(!modify_time // haven't found existing data
+                        ||  downloaded->modify_time_utc>*modify_time // or now received newer data
+                        )goto test_import_img_lod;
+                     }
+                     img_lod.clear(); // don't import
+                  import_img_lod:;
+                  }
+               }
                const Bool import=(img || img_lod);
                Mems<Byte> downloaded_data;
 
@@ -797,26 +823,28 @@ inline void InternetCache::update()
                      if(!downloaded)pf        =_pak       .find(name, false);
                   }
                 //if(downloaded || pf) ignore because if it got removed and not found, then data was put in 'downloaded_data'
-                  if(img)
                   {
-                     cancel(img);
-                     ImportImage &ii=_import_images.New();
-                     if(downloaded){                                                                        ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
-                     if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
-                                   {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
-                     Swap(ii.image_ptr, img);
-                     T.import(ii);
-                  }
-                  if(img_lod)
-                  {
-                     
-                     /*
-                     ImportImage &ii=_import_images.New();
-                     if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
-                     if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
-                                   {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
-                     Swap(ii.image_ptr, img);
-                     T.import(ii);*/
+                     if(img)
+                     {
+                        cancel(img);
+                        ImportImage &ii=_import_images.New();
+                        if(downloaded){                                                                        ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
+                        if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
+                                      {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
+                        Swap(ii.image_ptr, img);
+                        T.import(ii);
+                     }
+                     if(img_lod)
+                     {
+                        /*
+                        ImportImage &ii=_import_images.New();
+                        if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
+                        if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
+                                      {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
+                        ii.lod=lod.lod;
+                        Swap(ii.image_ptr, img);
+                        T.import(ii);*/
+                     }
                   }
                }
                goto next;
