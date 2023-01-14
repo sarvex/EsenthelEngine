@@ -430,10 +430,10 @@ Bool InternetCache::loading(C ImagePtr &image)C
    return false;
 }
 /******************************************************************************/
-Bool               InternetCache::getFile  (C Str &url, DataSource &file, CACHE_VERIFY verify) {return getFileEx(url, file, verify)==FILE;}
-InternetCache::GET InternetCache::getFileEx(C Str &url, DataSource &file, CACHE_VERIFY verify, Bool access_download)
+Bool               InternetCache::getFile  (C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return getFileEx(url, file, verify)==FILE;}
+InternetCache::GET InternetCache::getFileEx(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
 {
-   file.set();
+   file.zero();
    if(!url.is())return FILE;
    Str name=SkipHttpWww(url); if(!name.is())return NONE;
 
@@ -452,6 +452,7 @@ InternetCache::GET InternetCache::getFileEx(C Str &url, DataSource &file, CACHE_
       if(access_download)down->access_time=TIME;
       verify_time=&down->verify_time;
       file.set(down->file_data.data(), down->file_data.elms());
+      file.modify_time_utc=down->modify_time_utc;
    }else
    if(C PakFile *pf=_pak.find(name, false))
    {
@@ -459,6 +460,7 @@ InternetCache::GET InternetCache::getFileEx(C Str &url, DataSource &file, CACHE_
       if(access_download)time.access_time=TIME;
       verify_time=&time.verify_time;
       file.set(*pf, _pak);
+      file.modify_time_utc=pf->modify_time_utc;
    }else // not found
    {
       if(access_download) // download
@@ -490,7 +492,7 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
 {
    ImagePtr img; if(url.is())
    {
-      DataSource file; Bool get_file=getFile(url, file, verify); // always call 'getFile' to adjust 'access_time' and request verification if needed
+      DataSourceTime file; Bool get_file=getFile(url, file, verify); // always call 'getFile' to adjust 'access_time' and request verification if needed
       if(!img.find(url))
       {
          CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=url;
@@ -519,7 +521,7 @@ ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
       {
          Clamp(lod, lods.min, lods.max);
 
-         DataSource data;
+         DataSourceTime data;
          GET get=NONE;
          Int file_lod;
          // start download
@@ -744,14 +746,15 @@ inline void InternetCache::update()
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto importing; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
-                     if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}
-                     else          {ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}
+                     if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
+                     else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
                      import(ii);
                   importing:;
                   }
                   Lod lod; if(url_to_base && img.find(url_to_base(down.url(), lod)))
                   {
+                     // FIXME
                   }
                   goto next;
                }
@@ -777,11 +780,21 @@ inline void InternetCache::update()
                   Str base=url_to_base(down.url(), lod); if(img_lod.find(base))
                   {
                      Int lod_img=LOD(*img_lod);
-                     if( lod.lod>=lod_img) // always import if just got the file and quality is same (most likely we got newer data) or higher
+                     if( lod.lod>=lod_img) // always import if just got the file and quality is higher or same (most likely we got newer data)
                      {
                      test_import_img_lod:;
-                        check importers
-                        cancel
+                        REPA(_import_images)
+                        {
+                           ImportImage &ii=_import_images[i]; if(ii.image_ptr==img_lod) // find import
+                           {
+                              if(downloaded->modify_time_utc> ii.data.modify_time_utc                     // received newer data
+                              || downloaded->modify_time_utc==ii.data.modify_time_utc && lod.lod>=ii.lod) // received same  data but higher/same quality
+                              {
+                                 cancel(ii); goto import_img_lod; // cancel existing import, proceed with new import
+                              }
+                              goto dont_import_img_lod;
+                           }
+                        }
                         goto import_img_lod;
                      }else // if got lower quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
                      {
@@ -796,6 +809,7 @@ inline void InternetCache::update()
                         ||  downloaded->modify_time_utc>*modify_time // or now received newer data
                         )goto test_import_img_lod;
                      }
+                  dont_import_img_lod:;
                      img_lod.clear(); // don't import
                   import_img_lod:;
                   }
@@ -828,22 +842,22 @@ inline void InternetCache::update()
                      {
                         cancel(img);
                         ImportImage &ii=_import_images.New();
-                        if(downloaded){                                                                        ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
-                        if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
-                                      {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
+                        if(downloaded){                                                                        ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}else
+                        if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
+                                      {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.data.modify_time_utc=down      . modifyTimeUTC(); ii.type=ImportImage::OTHER     ;}
                         Swap(ii.image_ptr, img);
                         T.import(ii);
                      }
                      if(img_lod)
                      {
-                        /*
+                      //cancel(img_lod); already done before
                         ImportImage &ii=_import_images.New();
-                        if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
-                        if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
-                                      {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
+                        if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}else
+                        if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
+                                      {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.data.modify_time_utc=down      . modifyTimeUTC(); ii.type=ImportImage::OTHER     ;}
                         ii.lod=lod.lod;
-                        Swap(ii.image_ptr, img);
-                        T.import(ii);*/
+                        Swap(ii.image_ptr, img_lod);
+                        T.import(ii);
                      }
                   }
                }
@@ -874,6 +888,7 @@ inline void InternetCache::update()
                         if(got)got(img); // notify too because image got modified
                      }
                   }
+                  // FIXME try import lower LOD
                }
             }
             next: down.del(); goto again;

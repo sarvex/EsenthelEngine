@@ -221,7 +221,7 @@ struct DataSource
            struct { C PakFile *pak_file; C Pak *pak        ; };    // used when "type==PAK_FILE"
            struct {      CPtr    memory;  Long  memory_size; }; }; // used when "type==MEM"
 
-   DataSource& set   (                                ) {type=NONE    ;                                           return T;} // set NONE     type
+   DataSource& zero  (                                ) {type=NONE    ;                                           return T;} // set NONE     type
    DataSource& set   (    C Str &    name             ) {type=NAME    ; T.    name=     name;                     return T;} // set NAME     type
    DataSource& setStd(    C Str &    name             ) {type=STD     ; T.    name=     name;                     return T;} // set STD      type
    DataSource& set   (     File &    file             ) {type=FILE    ; T.    file=&    file;                     return T;} // set FILE     type
@@ -237,7 +237,7 @@ struct DataSource
    Str       srcName       (          )C;
    FSTD_TYPE fstdType      (          )C;
 
-   DataSource() {set();}
+   DataSource() {zero();}
 };
 /******************************************************************************/
 struct PakFileData // Pak File Data, used for creating or updating Pak's from custom files
@@ -283,7 +283,7 @@ struct PakNode // Pak File Node, used for creating Pak's from custom files
    PakNode& setRemoved(C Str &name, C DateTime &modify_time_utc, FSTD_TYPE type)
    {
       T.type=type; T.exists=false; T.compress_mode=COMPRESS_ENABLE; T.compressed=COMPRESS_NONE; T.decompressed_size=-1;
-      T.name=name; T.data.set(); T.xxHash64_32=0; T.modify_time_utc=modify_time_utc; children.del(); // remove all existing children (they are not needed if this node is marked as removed)
+      T.name=name; T.data.zero(); T.xxHash64_32=0; T.modify_time_utc=modify_time_utc; children.del(); // remove all existing children (they are not needed if this node is marked as removed)
       return T;
    }
    PakNode& set(C Str &name, C PakFileData &pfd)
