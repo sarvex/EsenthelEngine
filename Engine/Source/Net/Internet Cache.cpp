@@ -830,8 +830,8 @@ inline void InternetCache::update()
                         {
                            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img_lod) // find import
                            {
-                              if(downloaded->modify_time_utc> ii.data.modify_time_utc                      // received newer data
-                              || downloaded->modify_time_utc==ii.data.modify_time_utc && down_lod>=ii.lod) // received same  data but higher/same quality
+                              if(down.modifyTimeUTC()> ii.data.modify_time_utc                      // received newer data
+                              || down.modifyTimeUTC()==ii.data.modify_time_utc && down_lod>=ii.lod) // received same  data but higher/same quality
                               {
                                  cancel(ii); goto import_img_lod; // cancel existing import, proceed with new import
                               }
@@ -849,7 +849,7 @@ inline void InternetCache::update()
                            if(C PakFile    *pf  =_pak       .find(link, false))modify_time=&pf  ->modify_time_utc;
                         }
                         if(!modify_time // haven't found existing data
-                        ||  downloaded->modify_time_utc>*modify_time // or now received newer data
+                        ||  down.modifyTimeUTC()>*modify_time // or received newer data
                         )goto test_import_img_lod;
                      }
                   dont_import_img_lod:;
