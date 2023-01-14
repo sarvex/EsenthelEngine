@@ -189,6 +189,8 @@ void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 void InternetCache::zero()
 {
    got=null;
+   base_to_url =null;
+    url_to_base=null;
   _compress=COMPRESS_NONE;
   _compress_level=255;
   _image_mip_maps=0;
@@ -513,41 +515,44 @@ ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
       CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=base;
                       Images.mode(mode       );
 
-      Clamp(lod, min_lod, max_lod);
-      Int img_lod=LOD(*img);
+      Lod lods; if(base_to_url && url_to_base && url_to_base(base_to_url(base, lod), lods).is() && lod==lods.lod)
+      {
+         Clamp(lod, lods.min, lods.max);
+         Int img_lod=LOD(*img);
 
-      DataSource data;
-      GET get=NONE;
-      Int file_lod;
-      // start download
-      for(file_lod=lod;   file_lod<=max_lod; file_lod++)if(get=getFileEx(BaseToURL(base, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
-      for(file_lod=lod; --file_lod>=min_lod;           )if(get=getFileEx(BaseToURL(base, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
-   got:
-      // get any preview
-      if(get!=FILE) // if haven't found any file
-      {
-         for(file_lod=lod;   file_lod<=max_lod; file_lod++)if(getFileEx(BaseToURL(base, file_lod), data, verify, false))goto got_file; // if FILE
-         for(file_lod=lod; --file_lod>=min_lod;           )if(getFileEx(BaseToURL(base, file_lod), data, verify, false))goto got_file; // if FILE
-      }else // got FILE
-   got_file:
-      if(file_lod>img_lod) // import only if we might improve quality
-      {
-         REPA(_import_images)
+         DataSource data;
+         GET get=NONE;
+         Int file_lod;
+         // start download
+         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=getFileEx(base_to_url(base, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
+         for(file_lod=lod; --file_lod>=lods.min;           )if(get=getFileEx(base_to_url(base, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
+      got:
+         // get any preview
+         if(get!=FILE) // if haven't found any file
          {
-            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
+            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(getFileEx(base_to_url(base, file_lod), data, verify, false))goto got_file; // if FILE
+            for(file_lod=lod; --file_lod>=lods.min;           )if(getFileEx(base_to_url(base, file_lod), data, verify, false))goto got_file; // if FILE
+         }else // got FILE
+      got_file:
+         if(file_lod>img_lod) // import only if we might improve quality
+         {
+            REPA(_import_images)
             {
-               if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
-               goto importing; // importing same or better quality, no need to import anything
+               ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
+               {
+                  if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
+                  goto importing; // importing same or better quality, no need to import anything
+               }
             }
+            // import
+            ImportImage &ii=_import_images.New();
+            Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
+            ii.image_ptr=img;
+            ii.lod=file_lod;
+            import(ii);
+            enable();
+         importing:;
          }
-         // import
-         ImportImage &ii=_import_images.New();
-         Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-         ii.image_ptr=img;
-         ii.lod=file_lod;
-         import(ii);
-         enable();
-      importing:;
       }
    }
    return img;
@@ -746,6 +751,9 @@ inline void InternetCache::update()
                      import(ii);
                   importing:;
                   }
+                  Lod lod; if(url_to_base && img.find(url_to_base(down.url(), lod)))
+                  {
+                  }
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
@@ -764,7 +772,9 @@ inline void InternetCache::update()
                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
                }
 
-               ImagePtr img; img.find(down.url()); const Bool import=img;
+               ImagePtr img    ;                         img    .find(            down.url()      );
+               ImagePtr img_lod; Lod lod; if(url_to_base)img_lod.find(url_to_base(down.url(), lod));
+               const Bool import=(img || img_lod);
                Mems<Byte> downloaded_data;
 
                if(_max_mem_size>=0)
@@ -787,14 +797,26 @@ inline void InternetCache::update()
                      if(!downloaded)pf        =_pak       .find(name, false);
                   }
                 //if(downloaded || pf) ignore because if it got removed and not found, then data was put in 'downloaded_data'
+                  if(img)
                   {
                      cancel(img);
+                     ImportImage &ii=_import_images.New();
+                     if(downloaded){                                                                        ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
+                     if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
+                                   {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
+                     Swap(ii.image_ptr, img);
+                     T.import(ii);
+                  }
+                  if(img_lod)
+                  {
+                     
+                     /*
                      ImportImage &ii=_import_images.New();
                      if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}else
                      if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}else
                                    {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.type=ImportImage::OTHER     ;}
                      Swap(ii.image_ptr, img);
-                     T.import(ii);
+                     T.import(ii);*/
                   }
                }
                goto next;
