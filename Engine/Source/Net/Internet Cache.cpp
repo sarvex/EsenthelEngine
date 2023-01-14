@@ -446,8 +446,8 @@ Bool InternetCache::loading(C ImagePtr &image)C
    return false;
 }
 /******************************************************************************/
-Bool               InternetCache::getFile  (C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return getFileEx(url, file, verify)==FILE;}
-InternetCache::GET InternetCache::getFileEx(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
+Bool               InternetCache:: getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return _getFile(url, file, verify)==FILE;}
+InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
 {
    file.zero();
    if(!url.is())return FILE;
@@ -542,14 +542,14 @@ ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
          GET get=NONE;
          Int file_lod;
          // start download
-         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=getFileEx(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
-         for(file_lod=lod; --file_lod>=lods.min;           )if(get=getFileEx(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
+         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
+         for(file_lod=lod; --file_lod>=lods.min;           )if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
       got:
          // get any preview
          if(get!=FILE) // if haven't found any file
          {
-            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(getFileEx(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
-            for(file_lod=lod; --file_lod>=lods.min;           )if(getFileEx(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
+            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(_getFile(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
+            for(file_lod=lod; --file_lod>=lods.min;           )if(_getFile(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
          }else // got FILE
       got_file:
          if(file_lod>LOD(*img)) // import only if we might improve quality
@@ -576,39 +576,58 @@ ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
    return img;
 }
 /******************************************************************************/
+Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never, 0=if referenced, 1=always, return if downloading
+{
+   Str link=SkipHttpWww(url); if(link.is())
+   {
+      Bool ref=false;
+      if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; ref=true;}
+      if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; ref=true;}
+      if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; ref=true;}
+
+      REPA(_downloading)
+      {
+         Download &down=_downloading[i]; if(EQUAL(down.url(), url))
+         { // restart the download
+         #if 1
+            down.create(url);
+         #else
+            down.del(); _to_download.binaryInclude(url, COMPARE);
+         #endif
+            return true;
+         }
+      }
+      if(download+ref>=1)
+      {
+         if(!_to_verify  .binaryHas    (url, COMPARE)           // if not being verified
+         &&  _to_download.binaryInclude(url, COMPARE))enable(); // download
+         return true;
+      }
+   }
+   return false;
+}
 void InternetCache::changed(C Str &url)
 {
    if(url.is())
    {
-      Str link=SkipHttpWww(url); if(link.is())
+      Bool loaded=Images.has(url); // if currently in cache
+
+      Lod lod; if(is_image_lod && is_image_lod(url, lod)) // this is ImageLOD
       {
-         if(FileTime   *miss=_missing   .find(link      ))miss       ->verify_time=INT_MIN;
-         if(Downloaded *down=_downloaded.find(link      ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find(link, true))pakFile(*pf).verify_time=INT_MIN;
-         REPA(_downloading)
+         if(image_lod_to_url)
          {
-            Download &down=_downloading[i]; if(EQUAL(down.url(), url))
-            { // restart the download
-            #if 1
-               down.create(url);
-            #else
-               down.del(); _to_download.binaryInclude(url, COMPARE);
-            #endif
-               return;
+            Bool downloading=false; for(Int l=lod.min; l<=lod.max; l++)downloading|=_changed(image_lod_to_url(url, l), loaded ? 0 : -1);
+            if( !downloading && loaded)
+            {
+               ImagePtr img; if(img.find(url))
+               {
+                  Int l=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(l, ii.lod);}
+                  Clamp(l, lod.min, lod.max);
+                 _to_download.binaryInclude(image_lod_to_url(url, l), COMPARE); enable();
+               }
             }
          }
-         if(_to_verify  .binaryHas(url, COMPARE))return; // it will be checked
-         if(_to_download.binaryHas(url, COMPARE))return; // it will be downloaded
-         if(Images.has(url)) // download if currently referenced
-         {
-           _to_download.binaryInclude(url, COMPARE); enable();
-         }
-      }
-      Lod lod;
-      if(is_image_lod && is_image_lod(url, lod))
-      {
-         // FIXME
-      }
+      }else _changed(url, loaded ? 1 : -1);
    }
 }
 /******************************************************************************/

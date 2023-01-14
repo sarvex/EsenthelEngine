@@ -110,7 +110,8 @@ private:
       DOWNLOADING, // no  file,     downloading
       FILE       , // got file
    };
-   GET  getFileEx(C Str &url, DataSourceTime &file, CACHE_VERIFY verify=CACHE_VERIFY_YES, Bool access_download=true); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded, 'access_download'=if adjust access time and allow download
+   GET  _getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify=CACHE_VERIFY_YES, Bool access_download=true); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded, 'access_download'=if adjust access time and allow download
+   Bool _changed(C Str &url, SByte download);
    Bool busy  ()C;
    void enable();
    void update();
