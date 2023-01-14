@@ -428,53 +428,60 @@ Bool InternetCache::loading(C ImagePtr &image)C
    return false;
 }
 /******************************************************************************/
-Bool InternetCache::getFile(C Str &url, DataSource &file, CACHE_VERIFY verify)
+Bool               InternetCache::getFile  (C Str &url, DataSource &file, CACHE_VERIFY verify) {return getFileEx(url, file, verify)==FILE;}
+InternetCache::GET InternetCache::getFileEx(C Str &url, DataSource &file, CACHE_VERIFY verify, Bool access_download)
 {
    file.set();
-   if(!url.is())return true;
-   Str name=SkipHttpWww(url); if(!name.is())return false;
+   if(!url.is())return FILE;
+   Str name=SkipHttpWww(url); if(!name.is())return NONE;
 
    // check if it's known to be missing
    if(FileTime *missing=_missing.find(name))
    {
-      missing->access_time=TIME;
-      if(TIME-missing->verify_time<=_verify_life)return false; // verification still acceptable
-      verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning true
+      if(access_download)missing->access_time=TIME;
+      if(TIME-missing->verify_time<=_verify_life)return NONE; // verification still acceptable
+      verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning FILE
    }
 
    // find in cache
    Flt *verify_time;
    if(Downloaded *down=_downloaded.find(name))
    {
-                   down->access_time=TIME;
+      if(access_download)down->access_time=TIME;
       verify_time=&down->verify_time;
       file.set(down->file_data.data(), down->file_data.elms());
    }else
    if(C PakFile *pf=_pak.find(name, false))
    {
       FileTime &time=pakFile(*pf);
-                   time.access_time=TIME;
+      if(access_download)time.access_time=TIME;
       verify_time=&time.verify_time;
       file.set(*pf, _pak);
    }else // not found
    {
-      REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
-                        if(   _to_download.binaryInclude(url, COMPARE))enable();
-                              _to_verify  .binaryExclude(url, COMPARE);
-   downloading:
-      return false;
+      if(access_download) // download
+      {
+         REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
+                           if(   _to_download.binaryInclude(url, COMPARE)){enable(); _to_verify.binaryExclude(url, COMPARE);}
+      downloading:
+         return DOWNLOADING;
+      }
+      return NONE;
    }
 
    // found
    {
-      if(verify==CACHE_VERIFY_SKIP                                      )return true; // verification not   needed
-      if(verify!=CACHE_VERIFY_EXPIRED && TIME-*verify_time<=_verify_life)return true; // verification still acceptable
-      // verify
-      REPA(_downloading)if(EQUAL       (_downloading[i].url(), url))goto verifying; // downloading now
-                        if(_to_download.binaryHas    (url, COMPARE))goto verifying; // will download soon
-                        if(_to_verify  .binaryInclude(url, COMPARE))enable();       // verify
-   verifying:
-      return verify==CACHE_VERIFY_DELAY;
+      if(verify==CACHE_VERIFY_SKIP                                      )return FILE; // verification not   needed
+      if(verify!=CACHE_VERIFY_EXPIRED && TIME-*verify_time<=_verify_life)return FILE; // verification still acceptable
+      if(access_download) // verify
+      {
+         REPA(_downloading)if(EQUAL       (_downloading[i].url(), url))goto verifying; // downloading now
+                           if(_to_download.binaryHas    (url, COMPARE))goto verifying; // will download soon
+                           if(_to_verify  .binaryInclude(url, COMPARE))enable();       // verify
+      verifying:;
+         return (verify==CACHE_VERIFY_DELAY) ? FILE : DOWNLOADING;
+      }
+      return (verify==CACHE_VERIFY_DELAY) ? FILE : NONE;
    }
 }
 ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
@@ -494,6 +501,53 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
             import(ii);
             enable();
          }
+      }
+   }
+   return img;
+}
+/******************************************************************************/
+ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
+{
+   ImagePtr img; if(base.is())
+   {
+      CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=base;
+                      Images.mode(mode       );
+
+      Clamp(lod, min_lod, max_lod);
+      Int img_lod=LOD(*img);
+
+      DataSource data;
+      GET get=NONE;
+      Int file_lod;
+      // start download
+      for(file_lod=lod;   file_lod<=max_lod; file_lod++)if(get=getFileEx(BaseToURL(base, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
+      for(file_lod=lod; --file_lod>=min_lod;           )if(get=getFileEx(BaseToURL(base, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
+   got:
+      // get any preview
+      if(get!=FILE) // if haven't found any file
+      {
+         for(file_lod=lod;   file_lod<=max_lod; file_lod++)if(getFileEx(BaseToURL(base, file_lod), data, verify, false))goto got_file; // if FILE
+         for(file_lod=lod; --file_lod>=min_lod;           )if(getFileEx(BaseToURL(base, file_lod), data, verify, false))goto got_file; // if FILE
+      }else // got FILE
+   got_file:
+      if(file_lod>img_lod) // import only if we might improve quality
+      {
+         REPA(_import_images)
+         {
+            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
+            {
+               if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
+               goto importing; // importing same or better quality, no need to import anything
+            }
+         }
+         // import
+         ImportImage &ii=_import_images.New();
+         Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
+         ii.image_ptr=img;
+         ii.lod=file_lod;
+         import(ii);
+         enable();
+      importing:;
       }
    }
    return img;
@@ -530,15 +584,23 @@ void InternetCache::changed(C Str &url)
    }
 }
 /******************************************************************************/
-void InternetCache::import(ImportImage &ii)
-{
-   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
-}
 Bool InternetCache::busy()C
 {
    if(_to_download.elms() || _to_verify.elms() || _import_images.elms())return true;
    REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
    return false;
+}
+void InternetCache::import(ImportImage &ii)
+{
+   if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
+}
+void InternetCache::cancel(ImportImage &ii) // canceling is needed to make sure we won't replace newer data with older
+{
+   if(ii.done                                    // finished
+   || !_threads                                  // no threads
+   ||  _threads->cancel(ii, ImportImageFunc, T)) // canceled
+       _import_images.removeData(&ii); // just remove
+   else ii.image_ptr=null; // now processing, clear 'image_ptr' so we will ignore it
 }
 void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sure we won't replace newer data with older
 {
@@ -546,11 +608,7 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
    {
       ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)
       {
-         if(ii.done                                    // finished
-         || !_threads                                  // no threads
-         ||  _threads->cancel(ii, ImportImageFunc, T)) // canceled
-             _import_images.removeValid(i); // just remove
-         else ii.image_ptr=null; // now processing, clear 'image_ptr' so we will ignore it
+         cancel(ii);
          break; // can break because there can be only one importer for an image
       }
    }
@@ -625,8 +683,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
          // no need to check 'missing' because once it's detected then all imports for that image are canceled
          {
             REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
-                              if(   _to_download.binaryInclude(url, COMPARE))enable=true;
-                                    _to_verify  .binaryExclude(url, COMPARE);
+                              if(   _to_download.binaryInclude(url, COMPARE)){enable=true; _to_verify.binaryExclude(url, COMPARE);}
          downloading:;
          }
       }
@@ -680,13 +737,14 @@ inline void InternetCache::update()
                   // it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty
                   {
-                     REPA(_import_images)if(_import_images[i].image_ptr==img)goto next; // first check if it's importing already, but just not yet finished
+                     REPA(_import_images)if(_import_images[i].image_ptr==img)goto importing; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.type=ImportImage::DOWNLOADED;}
                      else          {ii.data.set(*pf, _pak);                                                  ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
                      import(ii);
+                  importing:;
                   }
                   goto next;
                }

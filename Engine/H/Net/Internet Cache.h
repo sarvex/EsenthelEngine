@@ -28,6 +28,8 @@ struct InternetCache
 
    // do not use
    static Int LOD(C Image &image);
+   ImagePtr getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES);
+
 #if !EE_PRIVATE
 private:
 #endif
@@ -41,6 +43,7 @@ private:
       };
       Bool       done=false, // if finished importing
                  fail=false; // if failed to open file
+      SByte      lod=-1;
       TYPE       type;
       DataSource data;
       ImagePtr   image_ptr;  // image into which import
@@ -88,10 +91,18 @@ private:
    void               (*_load)(File &f);
 
 #if EE_PRIVATE
+   enum GET : Byte
+   {
+      NONE       , // no  file, not downloading
+      DOWNLOADING, // no  file,     downloading
+      FILE       , // got file
+   };
+   GET  getFileEx(C Str &url, DataSource &file, CACHE_VERIFY verify=CACHE_VERIFY_YES, Bool access_download=true); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded, 'access_download'=if adjust access time and allow download
    Bool busy  ()C;
    void enable();
    void update();
-   void import(ImportImage &ii);
+   void import  (ImportImage &ii);
+   void cancel  (ImportImage &ii);
    void cancel  (C ImagePtr &image);
    void updating(Ptr data);
    FileTime& pakFile(C PakFile &pf) {return _pak_files[_pak.files().index(&pf)];}
