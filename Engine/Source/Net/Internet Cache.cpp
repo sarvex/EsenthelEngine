@@ -825,8 +825,8 @@ inline void InternetCache::update()
                if(verify_time)
                {
                  *verify_time=TIME;
-                  // it's possible the image was not yet loaded due to CACHE_VERIFY_YES
-                  ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty
+
+                  ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   {
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto importing; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
@@ -837,6 +837,7 @@ inline void InternetCache::update()
                      import(ii);
                   importing:;
                   }
+
                   ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod); if(img_lod)
                   {
                    //cancel(img_lod); already done in 'received'
@@ -847,6 +848,7 @@ inline void InternetCache::update()
                      Swap(ii.image_ptr, img_lod);
                      import(ii);
                   }
+
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
@@ -855,7 +857,6 @@ inline void InternetCache::update()
                // this must be checked first, before modifying 'downloaded->modify_time_utc', because this will compare with '_downloaded.modify_time_utc'
                ImagePtr img; img.find(down.url());
                ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod);
-               const Bool import=(img || img_lod);
 
                Bool just_created;
                Downloaded *downloaded=_downloaded(link, just_created);
@@ -871,6 +872,7 @@ inline void InternetCache::update()
                }
 
                // flush
+               const Bool import=(img || img_lod);
                Mems<Byte> downloaded_data;
                if(_max_mem_size>=0)
                {
