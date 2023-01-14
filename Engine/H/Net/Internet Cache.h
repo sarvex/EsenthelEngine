@@ -114,6 +114,7 @@ private:
    Bool _changed(C Str &url, SByte download);
    Bool busy  ()C;
    void enable();
+   void received(C Download &down, ImagePtr &image, Int &down_lod);
    void update();
    void import  (ImportImage &ii);
    void cancel  (ImportImage &ii);

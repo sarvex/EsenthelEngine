@@ -739,6 +739,48 @@ void InternetCache::resetPak(WriteLockEx *lock)
    }
 }
 /******************************************************************************/
+void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
+{
+   if(url_to_image_lod)
+   {
+      Str name=url_to_image_lod(down.url(), down_lod); if(image.find(name))
+      {
+         Int lod_img=LOD(*image);
+         if(down_lod>lod_img) // always import if quality is higher
+         {
+         test:
+            REPA(_import_images)
+            {
+               ImportImage &ii=_import_images[i]; if(ii.image_ptr==image) // find import
+               {
+                  if(down.modifyTimeUTC()> ii.data.modify_time_utc                     // received newer data
+                  || down.modifyTimeUTC()==ii.data.modify_time_utc && down_lod>ii.lod) // received same  data but higher quality
+                  {
+                     cancel(ii); goto Import; // cancel existing import, proceed with new import
+                  }
+                  goto dont_import;
+               }
+            }
+            goto Import;
+         }else // if got lower/same quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
+         {
+          C DateTime *modify_time=null;
+            if(image_lod_to_url)
+            {
+               Str link=SkipHttpWww(image_lod_to_url(name, lod_img)); // name of data that's already loaded in the image
+               if(C Downloaded *down=_downloaded.find(link       ))modify_time=&down->modify_time_utc;else
+               if(C PakFile    *pf  =_pak       .find(link, false))modify_time=&pf  ->modify_time_utc;
+            }
+            if(!modify_time // haven't found existing data
+            ||  down.modifyTimeUTC()>*modify_time // or received newer data
+            )goto test;
+         }
+      dont_import:
+         image.clear(); // don't import
+      Import:;
+      }
+   }
+}
 inline void InternetCache::update()
 {
    // update imported images
@@ -795,9 +837,15 @@ inline void InternetCache::update()
                      import(ii);
                   importing:;
                   }
-                  Int down_lod; if(url_to_image_lod && img.find(url_to_image_lod(down.url(), down_lod)))
+                  ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod); if(img_lod)
                   {
-                     // FIXME ii.lod
+                   //cancel(img_lod); already done in 'received'
+                     ImportImage &ii=_import_images.New();
+                     if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
+                     else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
+                     ii.lod=down_lod;
+                     Swap(ii.image_ptr, img_lod);
+                     import(ii);
                   }
                   goto next;
                }
@@ -806,45 +854,7 @@ inline void InternetCache::update()
             {
                // this must be checked first, before modifying 'downloaded->modify_time_utc', because this will compare with '_downloaded.modify_time_utc'
                ImagePtr img; img.find(down.url());
-               ImagePtr img_lod; Int down_lod; if(url_to_image_lod)
-               {
-                  Str name=url_to_image_lod(down.url(), down_lod); if(img_lod.find(name))
-                  {
-                     Int lod_img=LOD(*img_lod);
-                     if(down_lod>=lod_img) // always import if just got the file and quality is higher or same (most likely we got newer data)
-                     {
-                     test_import_img_lod:;
-                        REPA(_import_images)
-                        {
-                           ImportImage &ii=_import_images[i]; if(ii.image_ptr==img_lod) // find import
-                           {
-                              if(down.modifyTimeUTC()> ii.data.modify_time_utc                      // received newer data
-                              || down.modifyTimeUTC()==ii.data.modify_time_utc && down_lod>=ii.lod) // received same  data but higher/same quality
-                              {
-                                 cancel(ii); goto import_img_lod; // cancel existing import, proceed with new import
-                              }
-                              goto dont_import_img_lod;
-                           }
-                        }
-                        goto import_img_lod;
-                     }else // if got lower quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
-                     {
-                      C DateTime *modify_time=null;
-                        if(image_lod_to_url)
-                        {
-                           Str link=SkipHttpWww(image_lod_to_url(name, lod_img)); // name of data that's already loaded in the image
-                           if(C Downloaded *down=_downloaded.find(link       ))modify_time=&down->modify_time_utc;else
-                           if(C PakFile    *pf  =_pak       .find(link, false))modify_time=&pf  ->modify_time_utc;
-                        }
-                        if(!modify_time // haven't found existing data
-                        ||  down.modifyTimeUTC()>*modify_time // or received newer data
-                        )goto test_import_img_lod;
-                     }
-                  dont_import_img_lod:;
-                     img_lod.clear(); // don't import
-                  import_img_lod:;
-                  }
-               }
+               ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod);
                const Bool import=(img || img_lod);
 
                Bool just_created;
@@ -895,7 +905,7 @@ inline void InternetCache::update()
                      }
                      if(img_lod)
                      {
-                      //cancel(img_lod); already done before
+                      //cancel(img_lod); already done in 'received'
                         ImportImage &ii=_import_images.New();
                         if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}else
                         if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
