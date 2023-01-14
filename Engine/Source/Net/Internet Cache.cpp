@@ -783,7 +783,7 @@ inline void InternetCache::update()
                         check importers
                         cancel
                         goto import_img_lod;
-                     }else // if got lower quality, then import only if we have received newer data
+                     }else // if got lower quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
                      {
                       C DateTime *modify_time=null;
                         if(base_to_url)
