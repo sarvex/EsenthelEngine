@@ -616,12 +616,12 @@ void InternetCache::changed(C Str &url)
       {
          if(image_lod_to_url)
          {
-            Bool downloading=false; for(Int l=lod.min; l<=lod.max; l++)downloading|=_changed(image_lod_to_url(url, l), loaded ? 0 : -1);
-            if( !downloading && loaded)
+            Bool downloading=false; for(Int l=lod.min; l<=lod.max; l++)downloading|=_changed(image_lod_to_url(url, l), loaded ? 0 : -1); // for LOD don't download all possible mip-maps, only those that were referenced
+            if( !downloading && loaded) // if none start to download
             {
                ImagePtr img; if(img.find(url))
                {
-                  Int l=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(l, ii.lod);}
+                  Int l=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(l, ii.lod);} // download what we have
                   Clamp(l, lod.min, lod.max);
                  _to_download.binaryInclude(image_lod_to_url(url, l), COMPARE); enable();
                }
