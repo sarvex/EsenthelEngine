@@ -797,26 +797,14 @@ inline void InternetCache::update()
                   }
                   Int down_lod; if(url_to_image_lod && img.find(url_to_image_lod(down.url(), down_lod)))
                   {
-                     // FIXME
+                     // FIXME ii.lod
                   }
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
             }else // move to 'downloaded'
             {
-               Bool just_created;
-               Downloaded *downloaded=_downloaded(link, just_created);
-               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
-               downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
-               downloaded->modify_time_utc=down.modifyTimeUTC();
-               downloaded->verify_time=TIME;
-               if(just_created)
-               {
-                  // set 'access_time'
-                  if(C PakFile *pf=_pak.find(link, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
-                                                         downloaded->access_time=downloaded ->verify_time;     // set as new
-               }
-
+               // this must be checked first, before modifying 'downloaded->modify_time_utc', because this will compare with '_downloaded.modify_time_utc'
                ImagePtr img; img.find(down.url());
                ImagePtr img_lod; Int down_lod; if(url_to_image_lod)
                {
@@ -857,11 +845,23 @@ inline void InternetCache::update()
                   import_img_lod:;
                   }
                }
-
                const Bool import=(img || img_lod);
-               Mems<Byte> downloaded_data;
+
+               Bool just_created;
+               Downloaded *downloaded=_downloaded(link, just_created);
+               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
+               downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
+               downloaded->modify_time_utc=down.modifyTimeUTC();
+               downloaded->verify_time=TIME;
+               if(just_created)
+               {
+                  // set 'access_time'
+                  if(C PakFile *pf=_pak.find(link, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                                                         downloaded->access_time=downloaded ->verify_time;     // set as new
+               }
 
                // flush
+               Mems<Byte> downloaded_data;
                if(_max_mem_size>=0)
                {
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
