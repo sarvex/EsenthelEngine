@@ -23,6 +23,11 @@ static Str EatWWW(Str url) // convert "http://www.esenthel.com" -> "http://esent
    return url;
 }
 /******************************************************************************/
+Int InternetCache::LOD(C Image &image)
+{
+   return image.is() ? BitHi(CeilPow2(image.size3().max())) : -1;
+}
+/******************************************************************************/
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
  //if(!done) not needed because PAK/DOWNLOADED are always converted to OTHER before 'done' (except case when 'fail' which is already checked below)
@@ -546,6 +551,7 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
          ||  _threads->cancel(ii, ImportImageFunc, T)) // canceled
              _import_images.removeValid(i); // just remove
          else ii.image_ptr=null; // now processing, clear 'image_ptr' so we will ignore it
+         break; // can break because there can be only one importer for an image
       }
    }
 }

@@ -597,6 +597,7 @@ Str8 Download::fileHeader(Int i)C
    if(file.name.is())AppendName(h, file.name);else h+=i; // if name is empty then use index
    h+="\"\r\n";
    h+=S8+"Content-Length: "+file.Send()+"\r\n";
+ //h+=S8+"Last-Modified: Thu, 24 Mar 2011 18:35:38 GMT\r\n"; modify time is always ignored, instead have to adjust modify time on PHP
    h+="\r\n";
    return h;
 }

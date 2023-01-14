@@ -26,6 +26,8 @@ struct InternetCache
   ~InternetCache() {del();}
    InternetCache();
 
+   // do not use
+   static Int LOD(C Image &image);
 #if !EE_PRIVATE
 private:
 #endif
