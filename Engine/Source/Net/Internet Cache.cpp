@@ -432,9 +432,10 @@ Bool InternetCache::loading(C ImagePtr &image)C
          if(is_image_lod && url_to_image_lod)
          {
           C Str &name=url; // for ImageLOD 'image.name' is name
-            if(is_image_lod(name)) // check if this is a ImageLOD
+            Lod lod;
+            if(is_image_lod(name, lod)) // check if this is a ImageLOD
             {
-               Lod lod;
+               Int lod;
                REPA(_downloading)if(EQUAL(url_to_image_lod(_downloading[i].url(), lod), name))return true;
                REPA(_to_download)if(EQUAL(url_to_image_lod(_to_download[i]      , lod), name))return true;
                REPA(_to_verify  )if(EQUAL(url_to_image_lod(_to_verify  [i]      , lod), name))return true;
@@ -533,7 +534,7 @@ ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
       CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=name;
                       Images.mode(mode       );
 
-      Lod lods; if(image_lod_to_url && url_to_image_lod && url_to_image_lod(image_lod_to_url(name, lod), lods).is() && lod==lods.lod)
+      Lod lods; if(image_lod_to_url && is_image_lod && is_image_lod(name, lods))
       {
          Clamp(lod, lods.min, lods.max);
 
@@ -603,7 +604,8 @@ void InternetCache::changed(C Str &url)
            _to_download.binaryInclude(url, COMPARE); enable();
          }
       }
-      if(is_image_lod && is_image_lod(url))
+      Lod lod;
+      if(is_image_lod && is_image_lod(url, lod))
       {
          // FIXME
       }
@@ -774,7 +776,7 @@ inline void InternetCache::update()
                      import(ii);
                   importing:;
                   }
-                  Lod lod; if(url_to_image_lod && img.find(url_to_image_lod(down.url(), lod)))
+                  Int down_lod; if(url_to_image_lod && img.find(url_to_image_lod(down.url(), down_lod)))
                   {
                      // FIXME
                   }
@@ -797,20 +799,20 @@ inline void InternetCache::update()
                }
 
                ImagePtr img; img.find(down.url());
-               ImagePtr img_lod; Lod lod; if(url_to_image_lod)
+               ImagePtr img_lod; Int down_lod; if(url_to_image_lod)
                {
-                  Str name=url_to_image_lod(down.url(), lod); if(img_lod.find(name))
+                  Str name=url_to_image_lod(down.url(), down_lod); if(img_lod.find(name))
                   {
                      Int lod_img=LOD(*img_lod);
-                     if( lod.lod>=lod_img) // always import if just got the file and quality is higher or same (most likely we got newer data)
+                     if(down_lod>=lod_img) // always import if just got the file and quality is higher or same (most likely we got newer data)
                      {
                      test_import_img_lod:;
                         REPA(_import_images)
                         {
                            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img_lod) // find import
                            {
-                              if(downloaded->modify_time_utc> ii.data.modify_time_utc                     // received newer data
-                              || downloaded->modify_time_utc==ii.data.modify_time_utc && lod.lod>=ii.lod) // received same  data but higher/same quality
+                              if(downloaded->modify_time_utc> ii.data.modify_time_utc                      // received newer data
+                              || downloaded->modify_time_utc==ii.data.modify_time_utc && down_lod>=ii.lod) // received same  data but higher/same quality
                               {
                                  cancel(ii); goto import_img_lod; // cancel existing import, proceed with new import
                               }
@@ -879,7 +881,7 @@ inline void InternetCache::update()
                         if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}else
                         if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
                                       {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.data.modify_time_utc=down      . modifyTimeUTC(); ii.type=ImportImage::OTHER     ;}
-                        ii.lod=lod.lod;
+                        ii.lod=down_lod;
                         Swap(ii.image_ptr, img_lod);
                         T.import(ii);
                      }

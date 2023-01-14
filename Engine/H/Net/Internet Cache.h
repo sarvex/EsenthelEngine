@@ -36,11 +36,11 @@ struct InternetCache
    static Int LOD(C Image &image);
    struct Lod
    {
-      Int lod, min, max;
+      Int min, max;
    };
    Str (*image_lod_to_url)(C Str &name, Int  lod);
-   Str (*url_to_image_lod)(C Str &url , Lod &lod);
-   Bool(*    is_image_lod)(C Str &name);
+   Str (*url_to_image_lod)(C Str &url , Int &lod);
+   Bool(*    is_image_lod)(C Str &name, Lod &lod);
    ImagePtr getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES);
 
 #if !EE_PRIVATE
