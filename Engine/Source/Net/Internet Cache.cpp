@@ -4,6 +4,8 @@
 
    TODO: '_rws' could potentially by separated into '_rws_pak' and '_rws_downloaded', would it be better?
 
+   Here 'link' means url without "https://www."
+
 /******************************************************************************/
 #define COMPARE  ComparePathCI
 #define EQUAL   !COMPARE
@@ -173,7 +175,7 @@ struct PostHeader : PakPostHeader
       f.cmpUIntV(ic._missing.elms());
       FREPA(ic._missing)
       {
-       C Str                     &name     =ic._missing.key(i); f<<name;
+       C Str                     &link     =ic._missing.key(i); f<<link;
        C InternetCache::FileTime &file_time=ic._missing    [i];
          f<<SavedFileTime(file_time, time, now);
       }
@@ -189,8 +191,9 @@ void InternetCache::enable() {App.includeFuncCall(ICUpdate, T);}
 void InternetCache::zero()
 {
    got=null;
-   base_to_url =null;
-    url_to_base=null;
+   image_lod_to_url=null;
+   url_to_image_lod=null;
+       is_image_lod=null;
   _compress=COMPRESS_NONE;
   _compress_level=255;
   _image_mip_maps=0;
@@ -250,8 +253,8 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
                   }
                   REP(f.decUIntV()) // _missing
                   {
-                     Str name; if(!name.load(f))goto error;
-                     FileTime &file_time=*_missing(name);
+                     Str link; if(!link.load(f))goto error;
+                     FileTime &file_time=*_missing(link);
                      SavedFileTime sft; f>>sft; sft.get(file_time, time, now);
                   }
                   if(f.ok())
@@ -325,8 +328,8 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          PostHeader post_header(T); auto &files=post_header.files;
          Long file_size=0;
          Bool keep_got_removed=false;
-         FREPA(_downloaded)     {C Str &name=_downloaded.key(i); if(                           !_missing.find(name))file_size+=files.New().set(name, _downloaded[i]                   ).compressed_size;}
-         FREPA(_pak       )if(i){  Str  name=_pak  .fullName(i); if(!_downloaded.find(name) && !_missing.find(name))file_size+=files.New().set(name, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
+         FREPA(_downloaded)     {C Str &link=_downloaded.key(i); if(                           !_missing.find(link))file_size+=files.New().set(link, _downloaded[i]                   ).compressed_size;}
+         FREPA(_pak       )if(i){  Str  link=_pak  .fullName(i); if(!_downloaded.find(link) && !_missing.find(link))file_size+=files.New().set(link, _pak, _pak.file(i), _pak_files[i]).compressed_size;} // skip post-header #PostHeaderFileIndex and files already included from '_downloaded'
 
          cleanMissing();
 
@@ -423,8 +426,20 @@ Bool InternetCache::loading(C ImagePtr &image)C
       Str url=image.name(); if(url.is())
       {
          REPA(_downloading)if(EQUAL(_downloading[i].url(), url))return true;
-         if(_to_verify  .binaryHas(url, COMPARE)
-         || _to_download.binaryHas(url, COMPARE))return true;
+         if(_to_download.binaryHas(url, COMPARE)
+         || _to_verify  .binaryHas(url, COMPARE))return true;
+
+         if(is_image_lod && url_to_image_lod)
+         {
+          C Str &name=url; // for ImageLOD 'image.name' is name
+            if(is_image_lod(name)) // check if this is a ImageLOD
+            {
+               Lod lod;
+               REPA(_downloading)if(EQUAL(url_to_image_lod(_downloading[i].url(), lod), name))return true;
+               REPA(_to_download)if(EQUAL(url_to_image_lod(_to_download[i]      , lod), name))return true;
+               REPA(_to_verify  )if(EQUAL(url_to_image_lod(_to_verify  [i]      , lod), name))return true;
+            }
+         }
       }
    }
    return false;
@@ -435,10 +450,10 @@ InternetCache::GET InternetCache::getFileEx(C Str &url, DataSourceTime &file, CA
 {
    file.zero();
    if(!url.is())return FILE;
-   Str name=SkipHttpWww(url); if(!name.is())return NONE;
+   Str link=SkipHttpWww(url); if(!link.is())return NONE;
 
    // check if it's known to be missing
-   if(FileTime *missing=_missing.find(name))
+   if(FileTime *missing=_missing.find(link))
    {
       if(access_download)missing->access_time=TIME;
       if(TIME-missing->verify_time<=_verify_life)return NONE; // verification still acceptable
@@ -447,14 +462,14 @@ InternetCache::GET InternetCache::getFileEx(C Str &url, DataSourceTime &file, CA
 
    // find in cache
    Flt *verify_time;
-   if(Downloaded *down=_downloaded.find(name))
+   if(Downloaded *down=_downloaded.find(link))
    {
       if(access_download)down->access_time=TIME;
       verify_time=&down->verify_time;
       file.set(down->file_data.data(), down->file_data.elms());
       file.modify_time_utc=down->modify_time_utc;
    }else
-   if(C PakFile *pf=_pak.find(name, false))
+   if(C PakFile *pf=_pak.find(link, false))
    {
       FileTime &time=pakFile(*pf);
       if(access_download)time.access_time=TIME;
@@ -488,6 +503,7 @@ InternetCache::GET InternetCache::getFileEx(C Str &url, DataSourceTime &file, CA
       return (verify==CACHE_VERIFY_DELAY) ? FILE : NONE;
    }
 }
+/******************************************************************************/
 ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
 {
    ImagePtr img; if(url.is())
@@ -510,14 +526,14 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
    return img;
 }
 /******************************************************************************/
-ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
+ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
 {
-   ImagePtr img; if(base.is())
+   ImagePtr img; if(name.is())
    {
-      CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=base;
+      CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=name;
                       Images.mode(mode       );
 
-      Lod lods; if(base_to_url && url_to_base && url_to_base(base_to_url(base, lod), lods).is() && lod==lods.lod)
+      Lod lods; if(image_lod_to_url && url_to_image_lod && url_to_image_lod(image_lod_to_url(name, lod), lods).is() && lod==lods.lod)
       {
          Clamp(lod, lods.min, lods.max);
 
@@ -525,14 +541,14 @@ ImagePtr InternetCache::getImageLOD(C Str &base, Int lod, CACHE_VERIFY verify)
          GET get=NONE;
          Int file_lod;
          // start download
-         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=getFileEx(base_to_url(base, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
-         for(file_lod=lod; --file_lod>=lods.min;           )if(get=getFileEx(base_to_url(base, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
+         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=getFileEx(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
+         for(file_lod=lod; --file_lod>=lods.min;           )if(get=getFileEx(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
       got:
          // get any preview
          if(get!=FILE) // if haven't found any file
          {
-            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(getFileEx(base_to_url(base, file_lod), data, verify, false))goto got_file; // if FILE
-            for(file_lod=lod; --file_lod>=lods.min;           )if(getFileEx(base_to_url(base, file_lod), data, verify, false))goto got_file; // if FILE
+            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(getFileEx(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
+            for(file_lod=lod; --file_lod>=lods.min;           )if(getFileEx(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
          }else // got FILE
       got_file:
          if(file_lod>LOD(*img)) // import only if we might improve quality
@@ -563,11 +579,11 @@ void InternetCache::changed(C Str &url)
 {
    if(url.is())
    {
-      Str name=SkipHttpWww(url); if(name.is())
+      Str link=SkipHttpWww(url); if(link.is())
       {
-         if(FileTime   *miss=_missing   .find(name      ))miss       ->verify_time=INT_MIN;
-         if(Downloaded *down=_downloaded.find(name      ))down       ->verify_time=INT_MIN;
-         if(C PakFile  *pf  =_pak       .find(name, true))pakFile(*pf).verify_time=INT_MIN;
+         if(FileTime   *miss=_missing   .find(link      ))miss       ->verify_time=INT_MIN;
+         if(Downloaded *down=_downloaded.find(link      ))down       ->verify_time=INT_MIN;
+         if(C PakFile  *pf  =_pak       .find(link, true))pakFile(*pf).verify_time=INT_MIN;
          REPA(_downloading)
          {
             Download &down=_downloading[i]; if(EQUAL(down.url(), url))
@@ -586,6 +602,10 @@ void InternetCache::changed(C Str &url)
          {
            _to_download.binaryInclude(url, COMPARE); enable();
          }
+      }
+      if(is_image_lod && is_image_lod(url))
+      {
+         // FIXME
       }
    }
 }
@@ -652,6 +672,7 @@ void InternetCache::updating(Ptr data) // called when updating 'downloaded'
       }
    }
 }
+/******************************************************************************/
 void InternetCache::resetPak(WriteLockEx *lock)
 {
    // we're going to recreate the PAK file, as old one is considered invalid/missing/modified
@@ -684,7 +705,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
       Bool enable=false;
       REPA(retry)
       {
-       C Str &url=retry[i], name=SkipHttpWww(url);
+       C Str &url=retry[i];
          // this file was from Pak that failed to load, and it wasn't canceled, it means it's not available locally anymore, try to download
          // no need to check 'missing' because once it's detected then all imports for that image are canceled
          {
@@ -696,6 +717,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
       if(enable)T.enable();
    }
 }
+/******************************************************************************/
 inline void InternetCache::update()
 {
    // update imported images
@@ -727,15 +749,15 @@ inline void InternetCache::update()
 
          case DWNL_DONE: // finished downloading
          {
-            Str name=SkipHttpWww(down.url());
-           _missing.removeKey(name);
+            Str link=SkipHttpWww(down.url());
+           _missing.removeKey(link);
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;
-               Downloaded * downloaded=_downloaded.find(name);
+               Downloaded * downloaded=_downloaded.find(link);
              C PakFile    *         pf=null;
                if(downloaded               ){if(downloaded->file_data.elms()==down.totalSize() && downloaded->modify_time_utc==down.modifyTimeUTC()){verify_time=& downloaded->verify_time;}}else
-               if(pf=_pak.find(name, false)){if(        pf->data_size       ==down.totalSize() &&         pf->modify_time_utc==down.modifyTimeUTC()){verify_time=&pakFile(*pf).verify_time;}}
+               if(pf=_pak.find(link, false)){if(        pf->data_size       ==down.totalSize() &&         pf->modify_time_utc==down.modifyTimeUTC()){verify_time=&pakFile(*pf).verify_time;}}
 
                if(verify_time)
                {
@@ -752,7 +774,7 @@ inline void InternetCache::update()
                      import(ii);
                   importing:;
                   }
-                  Lod lod; if(url_to_base && img.find(url_to_base(down.url(), lod)))
+                  Lod lod; if(url_to_image_lod && img.find(url_to_image_lod(down.url(), lod)))
                   {
                      // FIXME
                   }
@@ -762,7 +784,7 @@ inline void InternetCache::update()
             }else // move to 'downloaded'
             {
                Bool just_created;
-               Downloaded *downloaded=_downloaded(name, just_created);
+               Downloaded *downloaded=_downloaded(link, just_created);
                updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
                downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
@@ -770,14 +792,14 @@ inline void InternetCache::update()
                if(just_created)
                {
                   // set 'access_time'
-                  if(C PakFile *pf=_pak.find(name, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                  if(C PakFile *pf=_pak.find(link, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
                }
 
                ImagePtr img; img.find(down.url());
-               ImagePtr img_lod; Lod lod; if(url_to_base)
+               ImagePtr img_lod; Lod lod; if(url_to_image_lod)
                {
-                  Str base=url_to_base(down.url(), lod); if(img_lod.find(base))
+                  Str name=url_to_image_lod(down.url(), lod); if(img_lod.find(name))
                   {
                      Int lod_img=LOD(*img_lod);
                      if( lod.lod>=lod_img) // always import if just got the file and quality is higher or same (most likely we got newer data)
@@ -799,11 +821,11 @@ inline void InternetCache::update()
                      }else // if got lower quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
                      {
                       C DateTime *modify_time=null;
-                        if(base_to_url)
+                        if(image_lod_to_url)
                         {
-                           Str name=SkipHttpWww(base_to_url(base, lod_img)); // name of data that's already loaded in the image
-                           if(C Downloaded *down=_downloaded.find(name       ))modify_time=&down->modify_time_utc;else
-                           if(C PakFile    *pf  =_pak       .find(name, false))modify_time=&pf  ->modify_time_utc;
+                           Str link=SkipHttpWww(image_lod_to_url(name, lod_img)); // name of data that's already loaded in the image
+                           if(C Downloaded *down=_downloaded.find(link       ))modify_time=&down->modify_time_utc;else
+                           if(C PakFile    *pf  =_pak       .find(link, false))modify_time=&pf  ->modify_time_utc;
                         }
                         if(!modify_time // haven't found existing data
                         ||  downloaded->modify_time_utc>*modify_time // or now received newer data
@@ -814,9 +836,11 @@ inline void InternetCache::update()
                   import_img_lod:;
                   }
                }
+
                const Bool import=(img || img_lod);
                Mems<Byte> downloaded_data;
 
+               // flush
                if(_max_mem_size>=0)
                {
                   Long mem_size=0; REPA(_downloaded)mem_size+=_downloaded[i].file_data.elms();
@@ -824,7 +848,7 @@ inline void InternetCache::update()
                   {
                      if(import)flush(downloaded, &downloaded_data); // if we're going to import, then make sure if 'downloaded' is going to get removed, then we will keep its memory
                      else      flush();
-                     downloaded=null; // flush deletes '_downloaded' so clear this one, we'll find it again
+                     downloaded=null; // flush deletes '_downloaded' so clear 'downloaded', we'll find it again
                   }
                }
 
@@ -833,8 +857,8 @@ inline void InternetCache::update()
                 C PakFile *pf=null;
                   if(!downloaded)
                   {
-                                    downloaded=_downloaded.find(name);
-                     if(!downloaded)pf        =_pak       .find(name, false);
+                                    downloaded=_downloaded.find(link);
+                     if(!downloaded)pf        =_pak       .find(link, false);
                   }
                 //if(downloaded || pf) ignore because if it got removed and not found, then data was put in 'downloaded_data'
                   {
@@ -869,15 +893,15 @@ inline void InternetCache::update()
          {
             if(down.code()==404) // confirmed that file is missing
             {
-               Str name=SkipHttpWww(down.url());
+               Str link=SkipHttpWww(down.url());
                Bool just_created;
-               FileTime &missing=*_missing(name, just_created);
+               FileTime &missing=*_missing(link, just_created);
                missing.verify_time=TIME;
                if(just_created)
                {
                   // set 'access_time'
-                  if(C Downloaded *downloaded=_downloaded.find(name      ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
-                  if(C PakFile    *pf        =_pak       .find(name, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
+                  if(C Downloaded *downloaded=_downloaded.find(link      ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
+                  if(C PakFile    *pf        =_pak       .find(link, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                                            missing.access_time=missing     .verify_time;     // set as new
                   ImagePtr img; if(img.find(down.url())) // delete image
                   {
