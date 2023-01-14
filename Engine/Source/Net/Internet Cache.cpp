@@ -542,7 +542,7 @@ ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
          GET get=NONE;
          Int file_lod;
          // start download
-         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking)
+         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking, this assumes that if one mip is missing, then there won't be any higher mip available than that)
          for(file_lod=lod; --file_lod>=lods.min;           )if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
       got:
          // get any preview
@@ -933,7 +933,18 @@ inline void InternetCache::update()
                         if(got)got(img); // notify too because image got modified
                      }
                   }
-                  // FIXME try import lower LOD
+                  Int down_lod; if(is_image_lod && url_to_image_lod && image_lod_to_url)
+                  {
+                     Lod lod;
+                     Str name=url_to_image_lod(down.url(), down_lod);
+                     if(img.find(name))
+                     if(is_image_lod(name, lod))
+                     if(--down_lod>=lod.min) // if there's possible lower mip
+                     {
+                        DataSourceTime data;
+                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
+                     }
+                  }
                }
             }
             next: down.del(); goto again;
