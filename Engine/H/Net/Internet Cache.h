@@ -42,8 +42,9 @@ struct InternetCache
    Str (*url_to_image_lod)(C Str &url , Int &lod); // convert URL to ImageLOD name+lod
    Bool(*    is_image_lod)(C Str &name, Lod &lod); // if this is ImageLOD
    Bool(* const_image_lod)(C Str &name          ); // if ImageLOD is considered constant throughout its lifetime (its content will never change)
-   ImagePtr getImageLOD(C Str &name                                               ); // this only returns valid ImagePtr but without actually loading anything
-   ImagePtr getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES);
+   ImagePtr getImageLOD(C Str      &name                                               ); // this only returns valid ImagePtr but without actually loading anything
+   ImagePtr getImageLOD(C Str      &name, Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES);
+   void     setImageLOD(C ImagePtr &img , Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES); // request 'lod' for existing ImageLOD
 
 #if !EE_PRIVATE
 private:
@@ -114,6 +115,7 @@ private:
    };
    GET  _getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify=CACHE_VERIFY_YES, Bool access_download=true); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded, 'access_download'=if adjust access time and allow download
    Bool _changed(C Str &url, SByte download);
+   void _setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VERIFY verify);
    Bool busy  ()C;
    Bool verified(Flt time)C;
    void enable();

@@ -559,53 +559,60 @@ ImagePtr InternetCache::getImageLOD(C Str &name)
    }
    return img;
 }
+void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VERIFY verify)
+{
+   Lod lods; if(image_lod_to_url && is_image_lod && is_image_lod(name, lods))
+   {
+      Clamp(lod, lods.min, lods.max);
+
+      DataSourceTime data;
+      GET get=NONE;
+      Int file_lod;
+      // start download
+      for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking, this assumes that if one mip is missing, then there won't be any higher mip available than that)
+      for(file_lod=lod; --file_lod>=lods.min;           )if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
+   got:
+      // get any preview
+      if(get!=FILE) // if haven't found any file
+      {
+         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(_getFile(image_lod_to_url(name, file_lod), data, verify, false, false))goto got_file; // if FILE
+         for(file_lod=lod; --file_lod>=lods.min;           )if(_getFile(image_lod_to_url(name, file_lod), data, verify, false, false))goto got_file; // if FILE
+      }else // got FILE
+   got_file:
+      if(file_lod>LOD(*img)) // import only if we might improve quality
+      {
+         REPA(_import_images)
+         {
+            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
+            {
+               if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
+               goto importing; // importing same or better quality, no need to import anything
+            }
+         }
+         // import
+         ImportImage &ii=_import_images.New();
+         Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
+         ii.image_ptr=img;
+         ii.lod=file_lod;
+         import(ii);
+         enable();
+      importing:;
+      }
+   }
+}
 ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
 {
    ImagePtr img; if(name.is())
    {
       CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=name;
                       Images.mode(mode       );
-
-      Lod lods; if(image_lod_to_url && is_image_lod && is_image_lod(name, lods))
-      {
-         Clamp(lod, lods.min, lods.max);
-
-         DataSourceTime data;
-         GET get=NONE;
-         Int file_lod;
-         // start download
-         for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;else break; // if FILE or DOWNLOADING (if NONE then break and stop looking, this assumes that if one mip is missing, then there won't be any higher mip available than that)
-         for(file_lod=lod; --file_lod>=lods.min;           )if(get=_getFile(image_lod_to_url(name, file_lod), data, verify))goto got;            // if FILE or DOWNLOADING
-      got:
-         // get any preview
-         if(get!=FILE) // if haven't found any file
-         {
-            for(file_lod=lod;   file_lod<=lods.max; file_lod++)if(_getFile(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
-            for(file_lod=lod; --file_lod>=lods.min;           )if(_getFile(image_lod_to_url(name, file_lod), data, verify, false))goto got_file; // if FILE
-         }else // got FILE
-      got_file:
-         if(file_lod>LOD(*img)) // import only if we might improve quality
-         {
-            REPA(_import_images)
-            {
-               ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
-               {
-                  if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
-                  goto importing; // importing same or better quality, no need to import anything
-               }
-            }
-            // import
-            ImportImage &ii=_import_images.New();
-            Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-            ii.image_ptr=img;
-            ii.lod=file_lod;
-            import(ii);
-            enable();
-         importing:;
-         }
-      }
+     _setImageLOD(img, name, lod, verify);
    }
    return img;
+}
+void InternetCache::setImageLOD(C ImagePtr &img, Int lod, CACHE_VERIFY verify)
+{
+   if(img)_setImageLOD(img, img.name(), lod, verify);
 }
 /******************************************************************************/
 Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never, 0=if referenced, 1=always, return if downloading
@@ -828,7 +835,9 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
                if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
                if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
                // there may be another better quality that's still verified
-               // re-verify lod_img
+               // re-verify img_lod
+               // FIXME
+               goto Import;
             }
          }
       dont_import:
