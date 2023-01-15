@@ -897,16 +897,18 @@ inline void InternetCache::update()
                      import(ii);
                   }
 
+                  // after 'received'
                  *verify_time=TIME;
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
             }else // move to 'downloaded'
             {
-               // this must be checked first, before modifying 'downloaded->modify_time_utc', because this will compare with '_downloaded.modify_time_utc'
+               // this must be checked first, before modifying 'downloaded->modify_time_utc', 'downloaded->verify_time', because 'received' will compare with those values
                ImagePtr img; img.find(down.url());
                ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod);
 
+               // after 'received'
                Bool just_created;
                Downloaded *downloaded=_downloaded(link, just_created);
                updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
