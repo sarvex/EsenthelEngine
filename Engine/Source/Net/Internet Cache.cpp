@@ -619,11 +619,13 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
 {
    Str link=SkipHttpWww(url); if(link.is())
    {
+      // set everything as expired
       Bool ref=false;
       if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; ref=true;}
       if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; ref=true;}
       if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; ref=true;}
 
+      // check if downloading now
       REPA(_downloading)
       {
          Download &down=_downloading[i]; if(EQUAL(down.url(), url))
@@ -636,12 +638,9 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
             return true;
          }
       }
-      if(download+ref>=1)
-      {
-         if(!_to_verify  .binaryHas    (url, COMPARE)           // if not being verified
-         &&  _to_download.binaryInclude(url, COMPARE))enable(); // download
-         return true;
-      }
+                          if(_to_verify  .binaryHas    (url, COMPARE))          return true;  // going to being verified
+      if(download+ref>=1){if(_to_download.binaryInclude(url, COMPARE))enable(); return true;} // download
+      else               {if(_to_download.binaryHas    (url, COMPARE))          return true;} // going to being downloaded
    }
    return false;
 }
@@ -651,24 +650,24 @@ void InternetCache::changed(C Str &url)
    {
       if(LOG)LogN(S+"IC.changed "+url);
 
-      Bool loaded=Images.has(url); // if currently in cache
+      ImagePtr img; img.find(url); // check if currently in cache
 
       Lod lod; if(is_image_lod && is_image_lod(url, lod)) // this is ImageLOD
       {
          if(image_lod_to_url)
          {
-            Bool downloading=false; for(Int l=lod.min; l<=lod.max; l++)downloading|=_changed(image_lod_to_url(url, l), loaded ? 0 : -1); // for LOD don't download all possible mip-maps, only those that were referenced
-            if( !downloading && loaded) // if none start to download
+            Int  requested=-1; if(img){requested=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(requested, ii.lod);}} // find highest lod that was requested
+            Bool downloading=false; // if anything is being downloaded so far
+            for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then download all lower as well
+               if(_changed(image_lod_to_url(url, l), ((img && l==lod.min && !downloading) || l==requested) ? 1   // (have image in cache, and this is last lod, and haven't downloaded anything so far) || (this is what we've requested) then always download
+                                                   : (                                       l<=requested) ? 0   // if lower than what was requested, then download if referenced
+                                                   :                                                        -1)) // no need to download
             {
-               ImagePtr img; if(img.find(url))
-               {
-                  Int l=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(l, ii.lod);} // download what we have
-                  Clamp(l, lod.min, lod.max);
-                 _to_download.binaryInclude(image_lod_to_url(url, l), COMPARE); enable();
-               }
+               downloading=true; // found something that's being downloaded
+               MAX(requested, l); // that lod was requested, so download smaller too
             }
          }
-      }else _changed(url, loaded ? 1 : -1);
+      }else _changed(url, img ? 1 : -1);
    }
 }
 /******************************************************************************/
@@ -1035,6 +1034,7 @@ inline void InternetCache::update()
                         DataSourceTime data;
                        _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
                      }
+                     // FIXME
                   }
                }
             }
