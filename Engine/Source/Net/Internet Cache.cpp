@@ -773,16 +773,16 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
    {
       Str name=url_to_image_lod(down.url(), down_lod); if(image.find(name))
       {
-         Int lod_img=LOD(*image);
-         if(down_lod>lod_img) // always import if received higher quality
+         Int img_lod=LOD(*image);
+         if(down_lod>img_lod) // always import if received higher quality
          {
          test:
             REPA(_import_images)
             {
                ImportImage &ii=_import_images[i]; if(ii.image_ptr==image) // find import
                {
-                  if(down_lod> ii.lod                                                                                    // received higher quality
-                  || down_lod==ii.lod && (down.size()!=ii.data.size() || down.modifyTimeUTC()!=ii.data.modify_time_utc)) // received same   quality but different data
+                  if(down_lod> ii.lod                                                                                         // received higher quality
+                  || down_lod==ii.lod && (down.totalSize()!=ii.data.size() || down.modifyTimeUTC()!=ii.data.modify_time_utc)) // received same   quality but different data (check 'totalSize' because 'size' is 0 for verification)
                   {
                      cancel(ii); goto Import; // cancel existing import, proceed with new import
                   }
@@ -797,17 +797,17 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
             Flt       verify_time;
             if(image_lod_to_url)
             {
-               Str link=SkipHttpWww(image_lod_to_url(name, lod_img)); // name of data that's already loaded in the image
+               Str link=SkipHttpWww(image_lod_to_url(name, img_lod)); // name of data that's already loaded in the image
                if(                  !_missing   .find(link       ))
                if(C Downloaded *down=_downloaded.find(link       )){modify_time=&down->modify_time_utc; size=down->file_data.elms(); verify_time=down       ->verify_time;}else
                if(C PakFile    *pf  =_pak       .find(link, false)){modify_time=&pf  ->modify_time_utc; size=pf  ->data_size       ; verify_time=pakFile(*pf).verify_time;}
             }
-            if(down_lod==lod_img) // if same quality
+            if(down_lod==img_lod) // if same quality
             {
                if(modify_time) // found existing data
                {
-                  if(down.size()!=size || down.modifyTimeUTC()!=*modify_time)goto        test; // received different data
-                                                                             goto dont_import; // received same      data
+                  if(down.totalSize()!=size || down.modifyTimeUTC()!=*modify_time)goto        test; // received different data (check 'totalSize' because 'size' is 0 for verification)
+                                                                                  goto dont_import; // received same      data
                }else // haven't found existing data
                {
                   if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
