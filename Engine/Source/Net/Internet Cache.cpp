@@ -1016,28 +1016,29 @@ inline void InternetCache::update()
                   if(C Downloaded *downloaded=_downloaded.find(link      ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
                   if(C PakFile    *pf        =_pak       .find(link, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                                            missing.access_time=missing     .verify_time;     // set as new
-                  ImagePtr img; if(img.find(down.url())) // delete image
+               }
+               // codes below cannot be inside 'just_created' because '_missing' can be created in 'changed'
+               ImagePtr img; if(img.find(down.url())) // delete image
+               {
+                  cancel(img);
+                  if(img->is())
                   {
-                     cancel(img);
-                     if(img->is())
-                     {
-                        img->del();
-                        if(got)got(img); // notify too because image got modified
-                     }
+                     img->del();
+                     if(got)got(img); // notify too because image got modified
                   }
-                  Int down_lod; if(is_image_lod && url_to_image_lod && image_lod_to_url)
+               }
+               Int down_lod; if(is_image_lod && url_to_image_lod && image_lod_to_url)
+               {
+                  Lod lod;
+                  Str name=url_to_image_lod(down.url(), down_lod);
+                  if(img.find(name))
+                  if(is_image_lod(name, lod))
+                  if(--down_lod>=lod.min) // if there's possible lower mip
                   {
-                     Lod lod;
-                     Str name=url_to_image_lod(down.url(), down_lod);
-                     if(img.find(name))
-                     if(is_image_lod(name, lod))
-                     if(--down_lod>=lod.min) // if there's possible lower mip
-                     {
-                        DataSourceTime data;
-                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
-                     }
-                     // FIXME
+                     DataSourceTime data;
+                    _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
                   }
+                  // FIXME
                }
             }
             next: down.del(); goto again;
