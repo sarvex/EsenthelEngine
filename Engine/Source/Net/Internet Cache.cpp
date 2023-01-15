@@ -7,11 +7,15 @@
    Here 'link' means url without "https://www."
 
 /******************************************************************************/
+#define LOG      (DEBUG && 0)
 #define COMPARE  ComparePathCI
 #define EQUAL   !COMPARE
 #define TIME     Time.realTime() // use 'realTime' because sometimes it's mixed with 'curTime'
 #define CC4_INCH CC4('I','N','C','H')
 #define COPY_DOWNLOADED_MEM 1 // allows flush without waiting for import to finish, at the cost of extra memory copy
+#if LOG
+   #pragma message("!! Warning: Use only for testing !!")
+#endif
 /******************************************************************************/
 namespace EE{
 /******************************************************************************
@@ -164,6 +168,8 @@ struct PostHeader : PakPostHeader
       f.putMulti(UInt(CC4_INCH), Byte(0)); // version
       Dbl time=Time.curTime(); Long now=DateTime().getUTC().seconds(); // calculate times at same moment
 
+      if(LOG)LogN(S+"Saving "+pak.totalFiles()+" PakFiles, "+ic._missing.elms()+" Missing");
+
       // _pak_files
       FREPA(pak)
       {
@@ -269,6 +275,7 @@ void InternetCache::create(C Str &name, Threads *threads, Cipher *cipher, COMPRE
            _missing.del();
          }
       //_pak.del(); _pak_used_file_ranges.clear(); _pak_files.clear(); ignore because we recreate in 'resetPak'
+         if(LOG)LogN(S+"IC.load failed");
       }
      _pak.pakFileName(name);
      _pak._file_cipher=cipher;
@@ -295,7 +302,11 @@ void InternetCache::getPakFileInfo()
 void InternetCache::checkPakFileInfo()
 {
             Long size;                DateTime modify_time_utc; GetFileInfo(_pak.pakFileName(), size, modify_time_utc);
-   if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)resetPak();
+   if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)
+   {
+      if(LOG)LogN(S+"IC.checkPakFileInfo FAILED");
+      resetPak();
+   }
 }
 /******************************************************************************/
 NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stack memory in calling function
@@ -310,16 +321,20 @@ NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stac
 Bool InternetCache::flush() {return flush(null, null);}
 Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' is going to get removed then its data will be placed in 'keep_data'
 {
+   Dbl time;
+
  //if(_downloaded.elms()) always save because we need to save 'access_time' and 'verify_time' which can change without new '_downloaded'
    {
       if(_pak.pakFileName().is()) // we want to save data
       {
+         if(LOG){time=Time.curTime(); LogN(S+"IC.flush");}
+
          // we're going to update PAK so make sure all imports have read PAK FILE data
          // need to do this at the start, because in case of failure, 'resetPak' will recreate the PAK
          {
             WriteLockEx lock(_rws);
             Bool fail=false; REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead(); fail|=ii.fail;} // read all
-            if(  fail){resetPak(&lock); goto reset;} // if any failed then 'resetPak'
+            if(  fail){if(LOG)LogN(S+"IC.import FAILED"); resetPak(&lock); goto reset;} // if any failed then 'resetPak'
          }
          checkPakFileInfo();
       reset:
@@ -369,7 +384,12 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             }
             if(keep_got_removed && keep)Swap(keep->file_data, *keep_data); // swap before deleting
            _downloaded.del();
-         }else return false;
+         }else
+         {
+            if(LOG)LogN(S+"IC.flush FAILED "+Flt(Time.curTime()-time));
+            return false;
+         }
+         if(LOG)LogN(S+"IC.flush finished "+Flt(Time.curTime()-time));
       }else
       {
          const Bool remove_missing=true; // this will remove all missing from downloaded, even if we still have free memory
@@ -610,6 +630,8 @@ void InternetCache::changed(C Str &url)
 {
    if(url.is())
    {
+      if(LOG)LogN(S+"IC.changed "+url);
+
       Bool loaded=Images.has(url); // if currently in cache
 
       Lod lod; if(is_image_lod && is_image_lod(url, lod)) // this is ImageLOD
@@ -696,6 +718,8 @@ void InternetCache::updating(Ptr data) // called when updating 'downloaded'
 /******************************************************************************/
 void InternetCache::resetPak(WriteLockEx *lock)
 {
+   if(LOG)LogN(S+"IC.resetPak");
+
    // we're going to recreate the PAK file, as old one is considered invalid/missing/modified
    Memt<Threads::Call> calls;
    {
@@ -788,7 +812,7 @@ inline void InternetCache::update()
    {
       ImportImage &ii=_import_images[i]; if(ii.done)
       {
-         if(ii.fail){resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
+         if(ii.fail){if(LOG)LogN(S+"IC.import FAILED"); resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
          if(ii.image_ptr) // not canceled
          {
             Swap(*ii.image_ptr, ii.image_temp);
@@ -806,12 +830,14 @@ inline void InternetCache::update()
          case DWNL_NONE:
          {
          again:
-            if(_to_download.elms()){down.create(_to_download.last()                   ); _to_download.removeLast();}else
-            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, 0); _to_verify  .removeLast();} // use offset as -1 to encode special mode of verification
+            if(_to_download.elms()){down.create(_to_download.last()                   ); _to_download.removeLast(); if(LOG)LogN(S+"Downloading "+down.url());}else
+            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, 0); _to_verify  .removeLast(); if(LOG)LogN(S+"Downloading "+down.url());} // use offset as -1 to encode special mode of verification
          }break;
 
          case DWNL_DONE: // finished downloading
          {
+            if(LOG)LogN(S+"Download Finished "+down.url());
+
             Str link=SkipHttpWww(down.url());
            _missing.removeKey(link);
             if(down.offset()<0) // if this was verification
@@ -926,6 +952,8 @@ inline void InternetCache::update()
          {
             if(down.code()==404) // confirmed that file is missing
             {
+               if(LOG)LogN(S+"Download FAILED "+down.url());
+
                Str link=SkipHttpWww(down.url());
                Bool just_created;
                FileTime &missing=*_missing(link, just_created);
