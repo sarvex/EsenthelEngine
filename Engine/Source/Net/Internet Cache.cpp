@@ -852,8 +852,6 @@ inline void InternetCache::update()
 
                if(verify_time)
                {
-                 *verify_time=TIME;
-
                   ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   {
                      REPA(_import_images)if(_import_images[i].image_ptr==img)goto importing; // first check if it's importing already, but just not yet finished
@@ -877,6 +875,7 @@ inline void InternetCache::update()
                      import(ii);
                   }
 
+                 *verify_time=TIME;
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
