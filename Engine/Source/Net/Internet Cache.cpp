@@ -596,8 +596,8 @@ void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VE
          ii.lod=file_lod;
          import(ii);
          enable();
-      importing:;
       }
+   importing:;
    }
 }
 ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
@@ -909,8 +909,8 @@ inline void InternetCache::update()
                      else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
                      import(ii);
-                  importing:;
                   }
+               importing:;
 
                   ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod); if(img_lod)
                   {
