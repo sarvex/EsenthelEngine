@@ -200,6 +200,7 @@ void InternetCache::zero()
    image_lod_to_url=null;
    url_to_image_lod=null;
        is_image_lod=null;
+    const_image_lod=null;
   _compress=COMPRESS_NONE;
   _compress_level=255;
   _image_mip_maps=0;
@@ -466,6 +467,8 @@ Bool InternetCache::loading(C ImagePtr &image)C
    return false;
 }
 /******************************************************************************/
+Bool InternetCache::verified(Flt time)C {return TIME-time<=_verify_life;}
+/******************************************************************************/
 Bool               InternetCache:: getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return _getFile(url, file, verify)==FILE;}
 InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
 {
@@ -477,7 +480,7 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
    if(FileTime *missing=_missing.find(link))
    {
       if(access_download)missing->access_time=TIME;
-      if(TIME-missing->verify_time<=_verify_life)return NONE; // verification still acceptable
+      if(verified(missing->verify_time))return NONE; // verification still acceptable
       verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning FILE
    }
 
@@ -511,8 +514,8 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
 
    // found
    {
-      if(verify==CACHE_VERIFY_SKIP                                      )return FILE; // verification not   needed
-      if(verify!=CACHE_VERIFY_EXPIRED && TIME-*verify_time<=_verify_life)return FILE; // verification still acceptable
+      if(verify==CACHE_VERIFY_SKIP                             )return FILE; // verification not   needed
+      if(verify!=CACHE_VERIFY_EXPIRED && verified(*verify_time))return FILE; // verification still acceptable
       if(access_download) // verify
       {
          REPA(_downloading)if(EQUAL       (_downloading[i].url(), url))goto verifying; // downloading now
@@ -771,15 +774,15 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
       Str name=url_to_image_lod(down.url(), down_lod); if(image.find(name))
       {
          Int lod_img=LOD(*image);
-         if(down_lod>lod_img) // always import if quality is higher
+         if(down_lod>lod_img) // always import if received higher quality
          {
          test:
             REPA(_import_images)
             {
                ImportImage &ii=_import_images[i]; if(ii.image_ptr==image) // find import
                {
-                  if(down.modifyTimeUTC()> ii.data.modify_time_utc                     // received newer data
-                  || down.modifyTimeUTC()==ii.data.modify_time_utc && down_lod>ii.lod) // received same  data but higher quality
+                  if(down_lod> ii.lod                                                                                    // received higher quality
+                  || down_lod==ii.lod && (down.size()!=ii.data.size() || down.modifyTimeUTC()!=ii.data.modify_time_utc)) // received same   quality but different data
                   {
                      cancel(ii); goto Import; // cancel existing import, proceed with new import
                   }
@@ -787,18 +790,37 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
                }
             }
             goto Import;
-         }else // if got lower/same quality, then import only if we have received newer data !! FILES ON THE SERVER SHOULD BE SET TO SAME MODIFY TIME FOR ALL LODS OF AN IMAGE !!
+         }else // if got lower/same quality
          {
           C DateTime *modify_time=null;
+            Int       size;
+            Flt       verify_time;
             if(image_lod_to_url)
             {
                Str link=SkipHttpWww(image_lod_to_url(name, lod_img)); // name of data that's already loaded in the image
-               if(C Downloaded *down=_downloaded.find(link       ))modify_time=&down->modify_time_utc;else
-               if(C PakFile    *pf  =_pak       .find(link, false))modify_time=&pf  ->modify_time_utc;
+               if(                  !_missing   .find(link       ))
+               if(C Downloaded *down=_downloaded.find(link       )){modify_time=&down->modify_time_utc; size=down->file_data.elms(); verify_time=down       ->verify_time;}else
+               if(C PakFile    *pf  =_pak       .find(link, false)){modify_time=&pf  ->modify_time_utc; size=pf  ->data_size       ; verify_time=pakFile(*pf).verify_time;}
             }
-            if(!modify_time // haven't found existing data
-            ||  down.modifyTimeUTC()>*modify_time // or received newer data
-            )goto test;
+            if(down_lod==lod_img) // if same quality
+            {
+               if(modify_time) // found existing data
+               {
+                  if(down.size()!=size || down.modifyTimeUTC()!=*modify_time)goto        test; // received different data
+                                                                             goto dont_import; // received same      data
+               }else // haven't found existing data
+               {
+                  if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
+                                                              goto        test; // try import
+               }
+            }else // received lower quality
+            {
+               // import only if existing is considered expired
+               if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
+               if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
+               // there may be another better quality that's still verified
+               // re-verify lod_img
+            }
          }
       dont_import:
          image.clear(); // don't import
@@ -888,7 +910,7 @@ inline void InternetCache::update()
                Bool just_created;
                Downloaded *downloaded=_downloaded(link, just_created);
                updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
-               downloaded->file_data.setNumDiscard(down.done()).copyFrom((Byte*)down.data());
+               downloaded->file_data.setNumDiscard(down.size()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
                if(just_created)
