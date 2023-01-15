@@ -620,10 +620,11 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
    Str link=SkipHttpWww(url); if(link.is())
    {
       // set everything as expired
-      Bool ref=false;
-      if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; ref=true;}
-      if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; ref=true;}
-      if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; ref=true;}
+      Bool referenced=false;
+                                       if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; referenced=true;}
+                                       if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; referenced=true;}
+      if(download>= 0 || !referenced ){if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; referenced=true;}      }else
+      /* download==-1 &&  referenced*/{   FileTime   *miss=_missing        (link      ); miss       ->verify_time=INT_MIN; miss->access_time=TIME;} // if image is referenced (has some data) and want to disable that data from usage "download==-1", always create missing to prevent from using that data with CACHE_VERIFY_DELAY/CACHE_VERIFY_SKIP, here "referenced=true" not needed because it's used only for download=0, but here download=-1
 
       // check if downloading now
       REPA(_downloading)
@@ -638,9 +639,9 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
             return true;
          }
       }
-                          if(_to_verify  .binaryHas    (url, COMPARE))          return true;  // going to being verified
-      if(download+ref>=1){if(_to_download.binaryInclude(url, COMPARE))enable(); return true;} // download
-      else               {if(_to_download.binaryHas    (url, COMPARE))          return true;} // going to being downloaded
+                                 if(_to_verify  .binaryHas    (url, COMPARE))          return true;  // going to being verified
+      if(download+referenced>=1){if(_to_download.binaryInclude(url, COMPARE))enable(); return true;} // download
+      else                      {if(_to_download.binaryHas    (url, COMPARE))          return true;} // going to being downloaded
    }
    return false;
 }
