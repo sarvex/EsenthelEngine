@@ -657,18 +657,17 @@ void InternetCache::changed(C Str &url)
       {
          if(image_lod_to_url)
          {
-            Int  requested=-1; if(img){requested=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(requested, ii.lod);}} // find highest lod that was requested
-            Bool downloading=false; // if anything is being downloaded so far
-            for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then download all lower as well
-               if(_changed(image_lod_to_url(url, l), img ? (                                                        // have image in cache
-                                                               ((l==lod.min && !downloading) || l==requested) ? 1   // (this is last lod, and haven't downloaded anything so far) || (this is what we've requested) then always download
-                                                             : (                                l<=requested) ? 0   // if lower than what was requested, then download if referenced
-                                                             :                                                 -1   // don't download lods higher than requested, because if image was loaded only at small lod, but we would download bigger lod, then it would get loaded in download finish causing image to be loaded at higher lod/res
-                                                           ) :                                                 -1)) // no need to download if image not in cache
+            Int requested=-1;
+            if(img)
             {
-               downloading=true; // found something that's being downloaded
-               MAX(requested, l); // that lod was requested, so download smaller too
+               requested=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(requested, ii.lod);} // find highest lod that was requested
+               Clamp(requested, lod.min, lod.max); // clamp min forces to load smallest lod (at least one) if nothing requested, clamp max is for safety
             }
+            for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then can download all lower as well
+               if(_changed(image_lod_to_url(url, l), (l==requested       ) ? 1   // this is what we've requested                   , then always download
+                                                   : (l<=requested && img) ? 0   // if lower than what was requested and have image, then download if referenced. Don't download lods higher than requested, because if image was loaded only at small lod, but we would download bigger lod, then it would get loaded in download finish causing image to be loaded at higher lod/res. This line is optional, however better to do it, because if highest 'requested' lod is unavailable anymore, then we would have to wait for failed download to proceed to the lower one
+                                                   :                        -1)) // no need to download
+               MAX(requested, l); // that lod was requested, so adjust value
          }
       }else _changed(url, img ? 1 : -1);
    }
