@@ -550,6 +550,15 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
    return img;
 }
 /******************************************************************************/
+ImagePtr InternetCache::getImageLOD(C Str &name)
+{
+   ImagePtr img; if(name.is())
+   {
+      CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=name;
+                      Images.mode(mode       );
+   }
+   return img;
+}
 ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
 {
    ImagePtr img; if(name.is())

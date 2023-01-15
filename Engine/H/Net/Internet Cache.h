@@ -42,6 +42,7 @@ struct InternetCache
    Str (*url_to_image_lod)(C Str &url , Int &lod); // convert URL to ImageLOD name+lod
    Bool(*    is_image_lod)(C Str &name, Lod &lod); // if this is ImageLOD
    Bool(* const_image_lod)(C Str &name          ); // if ImageLOD is considered constant throughout its lifetime (its content will never change)
+   ImagePtr getImageLOD(C Str &name                                               ); // this only returns valid ImagePtr but without actually loading anything
    ImagePtr getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify=CACHE_VERIFY_YES);
 
 #if !EE_PRIVATE
