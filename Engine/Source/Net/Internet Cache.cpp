@@ -168,7 +168,7 @@ struct PostHeader : PakPostHeader
       f.putMulti(UInt(CC4_INCH), Byte(0)); // version
       Dbl time=Time.curTime(); Long now=DateTime().getUTC().seconds(); // calculate times at same moment
 
-      if(LOG)LogN(S+"Saving "+pak.totalFiles()+" PakFiles, "+ic._missing.elms()+" Missing");
+      if(LOG)LogN(S+"IC.save: "+pak.totalFiles()+" PakFiles, "+ic._missing.elms()+" Missing");
 
       // _pak_files
       FREPA(pak)
@@ -386,10 +386,10 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
            _downloaded.del();
          }else
          {
-            if(LOG)LogN(S+"IC.flush FAILED "+Flt(Time.curTime()-time));
+            if(LOG)LogN(S+"IC.flush !FAIL! "+Flt(Time.curTime()-time));
             return false;
          }
-         if(LOG)LogN(S+"IC.flush finished "+Flt(Time.curTime()-time));
+         if(LOG)LogN(S+"IC.flush Finish "+Flt(Time.curTime()-time));
       }else
       {
          const Bool remove_missing=true; // this will remove all missing from downloaded, even if we still have free memory
@@ -661,6 +661,7 @@ Bool InternetCache::busy()C
 }
 void InternetCache::import(ImportImage &ii)
 {
+   if(LOG)LogN(S+"IC.import   Start  "+ii.image_ptr.name());
    if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
 }
 void InternetCache::cancel(ImportImage &ii) // canceling is needed to make sure we won't replace newer data with older
@@ -812,9 +813,10 @@ inline void InternetCache::update()
    {
       ImportImage &ii=_import_images[i]; if(ii.done)
       {
-         if(ii.fail){if(LOG)LogN(S+"IC.import FAILED"); resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
+         if(ii.fail){if(LOG)LogN(S+"IC.import   !FAIL! "+(ii.image_ptr ? ii.image_ptr.name() : S)); resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
          if(ii.image_ptr) // not canceled
          {
+            if(LOG)LogN(S+"IC.import   Finish "+ii.image_ptr.name());
             Swap(*ii.image_ptr, ii.image_temp);
             if(got)got(ii.image_ptr);
          }
@@ -830,13 +832,13 @@ inline void InternetCache::update()
          case DWNL_NONE:
          {
          again:
-            if(_to_download.elms()){down.create(_to_download.last()                   ); _to_download.removeLast(); if(LOG)LogN(S+"Downloading "+down.url());}else
-            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, 0); _to_verify  .removeLast(); if(LOG)LogN(S+"Downloading "+down.url());} // use offset as -1 to encode special mode of verification
+            if(_to_download.elms()){down.create(_to_download.last()                   ); _to_download.removeLast(); if(LOG)LogN(S+"IC.download Start  "+down.url());}else
+            if(_to_verify  .elms()){down.create(_to_verify  .last(), null, null, -1, 0); _to_verify  .removeLast(); if(LOG)LogN(S+"IC.download Start  "+down.url());} // use offset as -1 to encode special mode of verification
          }break;
 
          case DWNL_DONE: // finished downloading
          {
-            if(LOG)LogN(S+"Download Finished "+down.url());
+            if(LOG)LogN(S+"IC.download Finish "+down.url());
 
             Str link=SkipHttpWww(down.url());
            _missing.removeKey(link);
@@ -952,7 +954,7 @@ inline void InternetCache::update()
          {
             if(down.code()==404) // confirmed that file is missing
             {
-               if(LOG)LogN(S+"Download FAILED "+down.url());
+               if(LOG)LogN(S+"IC.download !FAIL! "+down.url());
 
                Str link=SkipHttpWww(down.url());
                Bool just_created;
