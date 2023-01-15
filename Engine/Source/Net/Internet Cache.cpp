@@ -624,7 +624,7 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
                                        if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; referenced=true;}
                                        if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; referenced=true;}
       if(download>= 0 || !referenced ){if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; referenced=true;}      }else
-      /* download==-1 &&  referenced*/{   FileTime   *miss=_missing        (link      ); miss       ->verify_time=INT_MIN; miss->access_time=TIME;} // if image is referenced (has some data) and want to disable that data from usage "download==-1", always create missing to prevent from using that data with CACHE_VERIFY_DELAY/CACHE_VERIFY_SKIP, here "referenced=true" not needed because it's used only for download=0, but here download=-1
+      /* download==-1 &&  referenced*/{   FileTime   *miss=_missing        (link      ); miss       ->verify_time=INT_MIN; miss->access_time=TIME;} // if image is 'referenced' (has some data) and want to disable that data from usage "download==-1", always create missing to prevent from using that data with CACHE_VERIFY_DELAY/CACHE_VERIFY_SKIP, here "referenced=true" not needed because it's used only for download=0, but here download=-1
 
       // check if downloading now
       REPA(_downloading)
@@ -664,10 +664,10 @@ void InternetCache::changed(C Str &url)
                Clamp(requested, lod.min, lod.max); // clamp min forces to load smallest lod (at least one) if nothing requested, clamp max is for safety
             }
             for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then can download all lower as well
-               if(_changed(image_lod_to_url(url, l), (l==requested       ) ? 1   // this is what we've requested                   , then always download
-                                                   : (l<=requested && img) ? 0   // if lower than what was requested and have image, then download if referenced. Don't download lods higher than requested, because if image was loaded only at small lod, but we would download bigger lod, then it would get loaded in download finish causing image to be loaded at higher lod/res. This line is optional, however better to do it, because if highest 'requested' lod is unavailable anymore, then we would have to wait for failed download to proceed to the lower one
-                                                   :                        -1)) // no need to download
-               MAX(requested, l); // that lod was requested, so adjust value
+               if(_changed(image_lod_to_url(url, l), (l==requested) ? 1   // if this is    what was requested, then always download
+                                                   : (l<=requested) ? 0   // if lower than what was requested, then download if referenced. Don't download lods higher than requested, because if image was loaded only at small lod, but we would download bigger lod, then it would get loaded in download finish causing image to be loaded at higher lod/res. This line is optional, however better to do it, because if highest 'requested' lod is unavailable anymore, then we would have to wait for failed download to proceed to the lower one
+                                                   :                 -1)) // no need to download
+                  if(img)MAX(requested, l); // that lod was requested, so adjust value, but only if have 'img' (without 'img' we don't want to download anything)
          }
       }else _changed(url, img ? 1 : -1);
    }
