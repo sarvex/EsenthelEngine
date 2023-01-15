@@ -858,10 +858,18 @@ inline void InternetCache::update()
          {
             if(LOG)LogN(S+"IC.import   Finish "+ii.image_ptr.name());
             Swap(*ii.image_ptr, ii.image_temp);
-            if(got)got(ii.image_ptr);
+            if(got)
+            {
+               ImagePtr temp; Swap(ii.image_ptr, temp);
+              _import_images.removeValid(i); // remove first
+               got(temp); // callback might modify '_import_images', so call after removing element
+               MIN(i, _import_images.elms()); // adjust index to prevent from being out of range
+               goto removed;
+            }
          }
         _import_images.removeValid(i);
       }
+   removed:;
    }
 
    // process downloaded data
