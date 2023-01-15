@@ -659,9 +659,11 @@ void InternetCache::changed(C Str &url)
             Int  requested=-1; if(img){requested=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(requested, ii.lod);}} // find highest lod that was requested
             Bool downloading=false; // if anything is being downloaded so far
             for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then download all lower as well
-               if(_changed(image_lod_to_url(url, l), ((img && l==lod.min && !downloading) || l==requested) ? 1   // (have image in cache, and this is last lod, and haven't downloaded anything so far) || (this is what we've requested) then always download
-                                                   : (                                       l<=requested) ? 0   // if lower than what was requested, then download if referenced
-                                                   :                                                        -1)) // no need to download
+               if(_changed(image_lod_to_url(url, l), img ? (                                                        // have image in cache
+                                                               ((l==lod.min && !downloading) || l==requested) ? 1   // (this is last lod, and haven't downloaded anything so far) || (this is what we've requested) then always download
+                                                             : (                                l<=requested) ? 0   // if lower than what was requested, then download if referenced
+                                                             :                                                 -1   // Don't download if higher, because if image was loaded only at small lod, but we would download bigger lod, then it would get loaded in download finish causing image to be loaded at higher lod/res
+                                                           ) :                                                 -1)) // no need to download if image not in cache
             {
                downloading=true; // found something that's being downloaded
                MAX(requested, l); // that lod was requested, so download smaller too
