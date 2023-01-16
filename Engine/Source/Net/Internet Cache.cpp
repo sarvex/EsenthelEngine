@@ -393,14 +393,13 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          if(LOG)LogN(S+"IC.flush Finish "+Flt(Time.curTime()-time));
       }else
       {
-         const Bool remove_missing=true; // this will remove all missing from downloaded, even if we still have free memory
          if(_downloaded.elms())
-            if(remove_missing || _max_mem_size>=0)
+            if(_max_mem_size>=0 || _missing.elms()) // limit mem size or remove missing
          {
             Long max_size=((_max_mem_size>=0) ? _max_mem_size : LONG_MAX);
             Mems<SrcFile> files(_downloaded.elms()); // don't use 'Memt' because we need a lot of stack memory for 'ImportImageFunc'
             Long size=0; FREPA(files)size+=files[i].set(_downloaded.key(i), _downloaded[i]).compressed_size;
-            if(remove_missing || size>max_size) // limit mem size
+            if(size>max_size || _missing.elms()) // limit mem size or remove missing
             {
                if(size>max_size)files.sort(CompareAccessTimeDesc);
                if(COPY_DOWNLOADED_MEM)
@@ -413,7 +412,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                {
                   SrcFile &file=files[i];
                   if(size>max_size // exceeds mem limit
-                  || remove_missing && _missing.find(file.name)) // or this file has gone missing
+                  || _missing.find(file.name)) // or this file has gone missing
                   {  // remove this 'file'
                      Downloaded &downloaded=*file.downloaded;
                      if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
@@ -429,7 +428,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                     _downloaded.removeData(&downloaded);
                      size-=file.compressed_size;
                   }else
-                  if(!remove_missing)break; // if released enough memory, and we don't need to check missing then we can stop
+                  if(!_missing.elms())break; // if released enough memory, and don't have any missing then we can stop
                }
             }
          }
@@ -1017,7 +1016,7 @@ inline void InternetCache::update()
                   if(C PakFile    *pf        =_pak       .find(link, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                                            missing.access_time=missing     .verify_time;     // set as new
                }
-               // codes below cannot be inside 'just_created' because '_missing' can be created in 'changed'
+               // codes below cannot be inside 'just_created' because expired (not verified) '_missing' can be created in 'changed'
                ImagePtr img; if(img.find(down.url())) // delete image
                {
                   cancel(img);
