@@ -1046,7 +1046,6 @@ inline void InternetCache::update()
                }
                Int down_lod; if(is_image_lod && url_to_image_lod && image_lod_to_url)
                {
-                  Lod lod;
                   Str name=url_to_image_lod(down.url(), down_lod);
                   if(img.find(name))
                   {
@@ -1056,6 +1055,7 @@ inline void InternetCache::update()
                      Bool adjust =(img_lod==down_lod); // if what we have has gone missing, we'll need to adjust existing image (either via import of lower res lod, or deleting), cannot keep the same content, because when lower LOD gets received it could trigger download of this LOD again in an endless loop
                      if(  import && (import->lod==down_lod || adjust)){cancel(*import); import=null;} // cancel import with this LOD, or if we're going to adjust image
 
+                     Lod lod;
                      if(is_image_lod(name, lod))
                         for(Int file_lod=down_lod; --file_lod>=lod.min; ) // make sure we have any lower mip
                      {
