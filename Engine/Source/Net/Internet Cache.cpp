@@ -800,7 +800,7 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
          Flt       verify_time;
          auto      import=findImport(image);
 
-         if(import)
+         if(import) // #ImgLodPriority
          {
             modify_time=&import->data.modify_time_utc;
             size       = import->data.size();
@@ -842,7 +842,7 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
             // import only if existing is considered expired
             if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
             if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
-            if(image_lod_to_url) // in case we requested high lod, and after that also smaller lod, in the meantime high lod expired (but we still want it), smaller lod got received, importing to smaller lod would lower quality, so instead of importing lower, first try to verify/download high lod, and on error downgrade quality there
+            if(image_lod_to_url) // in case we requested high lod, and after that also smaller lod, in the meantime high lod expired (but we still want it), smaller lod got received, importing to smaller lod would lower quality, so instead of importing lower, first try to verify/download high lod, and on error downgrade quality there #ImgLodError
             {
                DataSourceTime data; if(_getFile(image_lod_to_url(name, lod), data, CACHE_VERIFY_YES, false, true)==DOWNLOADING)goto dont_import; // normally this should be DOWNLOADING, because we already know that verification expired, the only other thing is missing, which gets set in download failed, but there image/import (its LOD) get adjusted to lower level
             }
@@ -1031,7 +1031,7 @@ inline void InternetCache::update()
                   if(img->is())
                   {
                      img->del();
-                     if(got)got(img); // notify too because image got modified
+                     if(got)got(img); // notify because image got modified
                   }
                }
                Int down_lod; if(is_image_lod && url_to_image_lod && image_lod_to_url)
@@ -1040,15 +1040,39 @@ inline void InternetCache::update()
                   Str name=url_to_image_lod(down.url(), down_lod);
                   if(img.find(name))
                   {
-                     auto import=findImport(img);
-                     if(import && import->lod==down_lod){cancel(*import); import=null;} // cancel import with this LOD
+                     // #ImgLodError
+                     auto import =findImport(img);
+                     Int  img_lod=(import ? import->lod : LOD(*img)); // need to check before deleting import, because 'import' overrides image 'lod' #ImgLodPriority
+                     Bool adjust =(img_lod==down_lod); // if what we have has gone missing, we'll need to adjust existing image (either via import of lower res lod, or deleting), cannot keep the same content, because when lower LOD gets received it could trigger download of this LOD again in an endless loop
+                     if(  import && (import->lod==down_lod || adjust)){cancel(*import); import=null;} // cancel import with this LOD, or if we're going to adjust image
+
                      if(is_image_lod(name, lod))
-                     if(--down_lod>=lod.min) // if there's possible lower mip
+                        for(Int file_lod=down_lod; --file_lod>=lod.min; ) // make sure we have any lower mip
                      {
-                        DataSourceTime data;
-                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES, false, true); // request lower mip, request verification
+                        DataSourceTime data; if(GET get=_getFile(image_lod_to_url(name, file_lod), data, CACHE_VERIFY_YES, false, true)) // if have FILE or DOWNLOADING we can stop
+                        {
+                           if(adjust) // but if need to adjust existing image, then keep going until we find FILE so we can import it now
+                           {
+                              if(get!=FILE)for(; --file_lod>=lod.min; ){get=_getFile(image_lod_to_url(name, file_lod), data, CACHE_VERIFY_YES, false, false); if(get==FILE)break;} // this time don't download
+                              if(get==FILE)
+                              {
+                                 ImportImage &ii=_import_images.New();
+                                 Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
+                                 ii.lod=file_lod;
+                                 Swap(ii.image_ptr, img);
+                                 T.import(ii);
+                                 adjust=false; // started import, can clear 'adjust', no need to delete image
+                              }
+                           }
+                           break;
+                        }
                      }
-                     // FIXME
+
+                     if(adjust && img->is()) // if failed to request import
+                     {
+                        img->del();
+                        if(got)got(img); // notify because image got modified
+                     }
                   }
                }
             }
