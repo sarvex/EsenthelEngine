@@ -121,6 +121,8 @@ private:
    void enable();
    void received(C Download &down, ImagePtr &image, Int &down_lod);
    void update();
+   ImportImage* findImport(C ImagePtr &image);
+ C ImportImage* findImport(C ImagePtr &image)C {return ConstCast(T).findImport(image);}
    void import  (ImportImage &ii);
    void cancel  (ImportImage &ii);
    void cancel  (C ImagePtr &image);

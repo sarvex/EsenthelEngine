@@ -445,7 +445,7 @@ Bool InternetCache::loading(C ImagePtr &image)C
 {
    if(image)
    {
-      REPA(_import_images)if(_import_images[i].image_ptr==image)return true; // importing
+      if(findImport(image))return true; // importing
       Str url=image.name(); if(url.is())
       {
          REPA(_downloading)if(EQUAL(_downloading[i].url(), url))return true;
@@ -583,13 +583,10 @@ void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VE
    got_file:
       if(file_lod>LOD(*img)) // import only if we might improve quality
       {
-         REPA(_import_images)
+         if(auto import=findImport(img))
          {
-            ImportImage &ii=_import_images[i]; if(ii.image_ptr==img) // find import
-            {
-               if(ii.lod<file_lod){cancel(ii); break;} // importing lower quality
-               goto importing; // importing same or better quality, no need to import anything
-            }
+            if(import->lod>=file_lod)goto importing; // importing same or better quality, no need to import anything
+            cancel(*import);
          }
          // import
          ImportImage &ii=_import_images.New();
@@ -662,7 +659,7 @@ void InternetCache::changed(C Str &url)
             Int requested=-1;
             if(img)
             {
-               requested=LOD(*img); REPA(_import_images){auto &ii=_import_images[i]; if(ii.image_ptr==img)MAX(requested, ii.lod);} // find highest lod that was requested
+               requested=LOD(*img); if(auto import=findImport(img))MAX(requested, import->lod); // find highest lod that was requested
                Clamp(requested, lod.min, lod.max); // clamp min forces to load smallest lod (at least one) if nothing requested, clamp max is for safety
             }
             for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then can download all lower as well
@@ -698,15 +695,7 @@ void InternetCache::cancel(ImportImage &ii) // canceling is needed to make sure 
 }
 void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sure we won't replace newer data with older
 {
-   if(image)
-   REPA(_import_images)
-   {
-      ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)
-      {
-         cancel(ii);
-         break; // can break because there can be only one import for an image
-      }
-   }
+   if(auto import=findImport(image))cancel(*import);
 }
 void InternetCache::updating(Ptr data) // called when updating 'downloaded'
 {
@@ -789,27 +778,30 @@ void InternetCache::resetPak(WriteLockEx *lock)
    }
 }
 /******************************************************************************/
+InternetCache::ImportImage* InternetCache::findImport(C ImagePtr &image)
+{
+   if(image)REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)return &ii;}
+   return null;
+}
 void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
 {
    if(url_to_image_lod)
    {
       Str name=url_to_image_lod(down.url(), down_lod); if(image.find(name))
       {
-         Int img_lod=LOD(*image);
+         Int  img_lod=LOD(*image);
+         auto import=findImport(image);
          if(down_lod>img_lod) // always import if received higher quality
          {
          test:
-            REPA(_import_images)
+            if(import)
             {
-               ImportImage &ii=_import_images[i]; if(ii.image_ptr==image) // find import
+               if(down_lod> import->lod                                                                                                   // received higher quality
+               || down_lod==import->lod && (down.totalSize()!=import->data.size() || down.modifyTimeUTC()!=import->data.modify_time_utc)) // received same   quality but different data (check 'totalSize' because 'size' is 0 for verification)
                {
-                  if(down_lod> ii.lod                                                                                         // received higher quality
-                  || down_lod==ii.lod && (down.totalSize()!=ii.data.size() || down.modifyTimeUTC()!=ii.data.modify_time_utc)) // received same   quality but different data (check 'totalSize' because 'size' is 0 for verification)
-                  {
-                     cancel(ii); goto Import; // cancel existing import, proceed with new import
-                  }
-                  goto dont_import; // (same quality and data) or (lower quality) don't import.
+                  cancel(*import); goto Import; // cancel existing import, proceed with new import
                }
+               goto dont_import; // (same quality and data) or (lower quality) don't import
             }
             goto Import;
          }else // if got lower/same quality
@@ -909,7 +901,7 @@ inline void InternetCache::update()
                {
                   ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   {
-                     REPA(_import_images)if(_import_images[i].image_ptr==img)goto importing; // first check if it's importing already, but just not yet finished
+                     if(findImport(img))goto importing; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
