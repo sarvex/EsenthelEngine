@@ -457,7 +457,7 @@ Bool InternetCache::busy()C
 }
 InternetCache::ImportImage* InternetCache::findImport(C Image &image)
 {
-   REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==&image)return &ii;}
+   REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==&image)return &ii;} // there can be only one import for an image at a time
    return null;
 }
 Bool InternetCache::_loading(C Str &url)C // assumes "url.is"
@@ -791,11 +791,9 @@ void InternetCache::resetPak(WriteLockEx *lock)
        C Str &url=retry[i];
          // this file was from Pak that failed to load, and it wasn't canceled, it means it's not available locally anymore, try to download
          // no need to check 'missing' because once it's detected then all imports for that image are canceled
-         {
-            REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
-                              if(   _to_download.binaryInclude(url, COMPARE)){enable=true; _to_verify.binaryExclude(url, COMPARE);}
-         downloading:;
-         }
+         REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
+                           if(   _to_download.binaryInclude(url, COMPARE)){enable=true; _to_verify.binaryExclude(url, COMPARE);}
+      downloading:;
       }
       if(enable)T.enable();
    }
