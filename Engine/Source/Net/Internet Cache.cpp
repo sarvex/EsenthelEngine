@@ -51,7 +51,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(f.size());
          if(!f.getFast(temp.data(), temp.elms()))goto read_fail;
          data.set(temp.data(), temp.elms());
-         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
+         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for import thread which first does fast check without locking
       }break;
 
       case DOWNLOADED: if(COPY_DOWNLOADED_MEM)
@@ -59,7 +59,7 @@ void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' 
          temp.setNumDiscard(data.memory_size);
          CopyFast(temp.data(), data.memory, temp.elms());
          data.set(temp.data(), temp.elms());
-         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
+         type=OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for import thread which first does fast check without locking
       }break;
    }
 }
@@ -339,7 +339,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          }
          checkPakFileInfo();
       reset:
-         // at this point there should be no PAK importers (for COPY_DOWNLOADED_MEM also no DOWNLOADED importers)
+         // at this point there should be no PAK imports (for COPY_DOWNLOADED_MEM also no DOWNLOADED imports)
 
          PostHeader post_header(T); auto &files=post_header.files;
          Long file_size=0;
@@ -406,7 +406,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                {
                   WriteLock lock(_rws);
                   REPAO(_import_images).lockedRead();
-                  // at this point there should be no DOWNLOADED importers
+                  // at this point there should be no DOWNLOADED imports
                }
                REPA(files)
                {
@@ -418,7 +418,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
                      if(!COPY_DOWNLOADED_MEM) // we're going to remove 'downloaded'
                         REPA(_import_images)
                      {
-                        auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all importers using its data
+                        auto &ii=_import_images[i]; if(!ii.done && ii.isDownloaded() && ii.data.memory==downloaded.file_data.data()) // find all imports using its data
                         {
                            if(_threads)_threads->wait(ii, ImportImageFunc   , T); // wait for thread to finish
                            else                           ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
@@ -620,10 +620,10 @@ Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never,
    {
       // set everything as expired
       Bool referenced=false;
-                                       if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; referenced=true;}
-                                       if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; referenced=true;}
-      if(download>= 0 || !referenced ){if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; referenced=true;}      }else
-      /* download==-1 &&  referenced*/{   FileTime   *miss=_missing        (link      ); miss       ->verify_time=INT_MIN; miss->access_time=TIME;} // if image is 'referenced' (has some data) and want to disable that data from usage "download==-1", always create missing to prevent from using that data with CACHE_VERIFY_DELAY/CACHE_VERIFY_SKIP, here "referenced=true" not needed because it's used only for download=0, but here download=-1
+                       if(Downloaded *down=_downloaded.find(link      )){down       ->verify_time=INT_MIN; referenced=true;}
+                       if(C PakFile  *pf  =_pak       .find(link, true)){pakFile(*pf).verify_time=INT_MIN; referenced=true;}
+      if(!referenced ){if(FileTime   *miss=_missing   .find(link      )){miss       ->verify_time=INT_MIN; referenced=true;}      }else
+      /*  referenced*/{   FileTime   *miss=_missing        (link      ); miss       ->verify_time=INT_MIN; miss->access_time=TIME;} // if image is 'referenced' (has some down/pf data), then disable that data from usage, always create missing to prevent from using that data with CACHE_VERIFY_DELAY/CACHE_VERIFY_SKIP, here "referenced=true" not needed because it's already true
 
       // check if downloading now
       REPA(_downloading)
@@ -669,6 +669,8 @@ void InternetCache::changed(C Str &url)
                   if(img)MAX(requested, l); // that lod was requested, so adjust value, but only if have 'img' (without 'img' we don't want to download anything)
          }
       }else _changed(url, img ? 1 : -1);
+
+      cancel(img); // consider all data expired so cancel any imports
    }
 }
 /******************************************************************************/
@@ -693,12 +695,13 @@ void InternetCache::cancel(ImportImage &ii) // canceling is needed to make sure 
 }
 void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sure we won't replace newer data with older
 {
+   if(image)
    REPA(_import_images)
    {
       ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)
       {
          cancel(ii);
-         break; // can break because there can be only one importer for an image
+         break; // can break because there can be only one import for an image
       }
    }
 }
@@ -722,7 +725,7 @@ void InternetCache::updating(Ptr data) // called when updating 'downloaded'
                   if(ii.isDownloaded()) // check again under lock
                   {
                      ii.data.set(null, 0);
-                     ii.type=ImportImage::OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for importer thread which first does fast check without locking
+                     ii.type=ImportImage::OTHER; // !! ADJUST AT THE END ONCE EVERYTHING IS READY !! important for import thread which first does fast check without locking
                   }
                }
                ii.image_ptr=null; // clear 'image_ptr' so we will ignore it
@@ -744,11 +747,11 @@ void InternetCache::resetPak(WriteLockEx *lock)
    Memt<Threads::Call> calls;
    {
       WriteLock lock(_rws); // stop any further reads, this stops any conversions from 'isPak' until we release the lock, this is important as we need all isPak/fail to be included in 'calls' below, so we can cancel/wait for threads to finish, as they're going to be removed
-      REPA(_import_images){auto &ii=_import_images[i]; if(ii.isPak())ii.fail=true; if(ii.fail)calls.New().set(ii, ImportImageFunc, T);} // force all PAK as fail, we assume that PAK is compromised, this will also force PAK importer to stop importing and return quickly
+      REPA(_import_images){auto &ii=_import_images[i]; if(ii.isPak())ii.fail=true; if(ii.fail)calls.New().set(ii, ImportImageFunc, T);} // force all PAK as fail, we assume that PAK is compromised, this will also force PAK import to stop importing and return quickly
       if(_threads)_threads->cancel(calls);
    }
    if( lock   ) lock   ->off (); // unlock first
-   if(_threads)_threads->wait(calls); // wait for all failed importers to return, have to wait with lock disabled
+   if(_threads)_threads->wait(calls); // wait for all failed imports to return, have to wait with lock disabled
 
    Memt<Str> retry;
    REPA(_import_images)
@@ -937,7 +940,7 @@ inline void InternetCache::update()
                // after 'received'
                Bool just_created;
                Downloaded *downloaded=_downloaded(link, just_created);
-               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no importers are using that data
+               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no imports are using that data
                downloaded->file_data.setNumDiscard(down.size()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
