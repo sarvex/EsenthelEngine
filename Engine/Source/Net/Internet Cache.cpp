@@ -926,8 +926,8 @@ inline void InternetCache::update()
                      ImportImage &ii=_import_images.New();
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
                      else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
-                     ii.lod=down_lod;
                      Swap(ii.image_ptr, img_lod);
+                     ii.lod=down_lod;
                      import(ii);
                   }
 
@@ -998,8 +998,8 @@ inline void InternetCache::update()
                         if(downloaded){                                ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}else
                         if(pf        ){                                ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
                                       {Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.data.modify_time_utc=down      . modifyTimeUTC(); ii.type=ImportImage::OTHER     ;}
-                        ii.lod=down_lod;
                         Swap(ii.image_ptr, img_lod);
+                        ii.lod=down_lod;
                         T.import(ii);
                      }
                   }
@@ -1059,8 +1059,8 @@ inline void InternetCache::update()
                               {
                                  ImportImage &ii=_import_images.New();
                                  Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-                                 ii.lod=file_lod;
                                  Swap(ii.image_ptr, img);
+                                 ii.lod=file_lod;
                                  T.import(ii);
                                  adjust=false; // started import, can clear 'adjust', no need to delete image
                               }
