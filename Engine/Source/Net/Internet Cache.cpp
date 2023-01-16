@@ -1040,13 +1040,16 @@ inline void InternetCache::update()
                   Lod lod;
                   Str name=url_to_image_lod(down.url(), down_lod);
                   if(img.find(name))
-                  if(is_image_lod(name, lod))
-                  if(--down_lod>=lod.min) // if there's possible lower mip
                   {
-                     DataSourceTime data;
-                    _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
+                     if(auto import=findImport(img))if(import->lod==down_lod)cancel(*import); // cancel import with this LOD
+                     if(is_image_lod(name, lod))
+                     if(--down_lod>=lod.min) // if there's possible lower mip
+                     {
+                        DataSourceTime data;
+                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
+                     }
+                     // FIXME
                   }
-                  // FIXME
                }
             }
             next: down.del(); goto again;
