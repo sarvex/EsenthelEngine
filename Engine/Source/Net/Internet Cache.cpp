@@ -573,6 +573,7 @@ ImagePtr InternetCache::getImage(C Str &url, CACHE_VERIFY verify)
             ImportImage &ii=_import_images.New();
             Swap(ii.data, file); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
             ii.image_ptr=img;
+            ii.lod=-1;
             import(ii);
             enable();
          }
@@ -924,6 +925,7 @@ inline void InternetCache::update()
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
                      else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
+                     ii.lod=-1;
                      import(ii);
                   }
 
@@ -996,6 +998,7 @@ inline void InternetCache::update()
                         if(pf        ){                                                                        ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}else
                                       {if(img_lod)ii.temp=downloaded_data;else Swap(ii.temp, downloaded_data); ii.data.set(ii.temp.data(), ii.temp.elms());                             ii.data.modify_time_utc=down      . modifyTimeUTC(); ii.type=ImportImage::OTHER     ;}
                         Swap(ii.image_ptr, img);
+                        ii.lod=-1;
                         T.import(ii);
                      }
                      if(img_lod)

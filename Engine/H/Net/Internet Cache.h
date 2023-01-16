@@ -59,7 +59,7 @@ private:
       };
       Bool           done=false, // if finished importing
                      fail=false; // if failed to open file
-      SByte          lod=-1;
+      SByte          lod;
       TYPE           type;
       DataSourceTime data;
       ImagePtr       image_ptr;  // image into which import
