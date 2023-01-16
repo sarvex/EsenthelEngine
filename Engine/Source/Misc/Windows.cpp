@@ -1,4 +1,4 @@
-/******************************************************************************
+﻿/******************************************************************************
 
    On Linux, windows are organized into up to 3 SysWindow families:
    1. resizable extent (or none if window is not resizable)
