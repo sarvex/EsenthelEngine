@@ -6,6 +6,9 @@
 
    Here 'link' means url without "https://www."
 
+   All imports are considered verified (not expired),
+      on 'changed' all imports are considered expired so they just get deleted.
+
 /******************************************************************************/
 #define LOG      (DEBUG && 0)
 #define COMPARE  ComparePathCI
@@ -670,7 +673,7 @@ void InternetCache::changed(C Str &url)
          }
       }else _changed(url, img ? 1 : -1);
 
-      cancel(img); // consider all data expired so cancel any imports
+      cancel(img); // consider all data expired so cancel any imports, do this at the end because we still check '_import_images' earlier
    }
 }
 /******************************************************************************/
@@ -805,7 +808,7 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
                   {
                      cancel(ii); goto Import; // cancel existing import, proceed with new import
                   }
-                  goto dont_import;
+                  goto dont_import; // (same quality and data) or (lower quality) don't import.
                }
             }
             goto Import;
@@ -825,6 +828,7 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
             {
                if(modify_time) // found existing data
                {
+                  // here ignore 'const_image_lod' because we have precise data to compare, so in case it actually changed, then still import
                   if(down.totalSize()!=size || down.modifyTimeUTC()!=*modify_time)goto        test; // received different data (check 'totalSize' because 'size' is 0 for verification)
                                                                                   goto dont_import; // received same      data
                }else // haven't found existing data
