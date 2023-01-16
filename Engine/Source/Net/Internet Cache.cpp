@@ -489,7 +489,7 @@ Bool InternetCache::loading(C ImagePtr &image)C
 }
 /******************************************************************************/
 Bool               InternetCache:: getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return _getFile(url, file, verify)==FILE;}
-InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
+InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access, Bool download)
 {
    file.zero();
    if(!url.is())return FILE;
@@ -498,7 +498,7 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
    // check if it's known to be missing
    if(FileTime *missing=_missing.find(link))
    {
-      if(access_download)missing->access_time=TIME;
+      if(access)missing->access_time=TIME;
       if(verified(missing->verify_time))return NONE; // verification still acceptable
       verify=CACHE_VERIFY_EXPIRED; // verification expired, however last known state is missing, so try to verify/download, but prevent from returning FILE
    }
@@ -507,7 +507,7 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
    Flt *verify_time;
    if(Downloaded *down=_downloaded.find(link))
    {
-      if(access_download)down->access_time=TIME;
+      if(access)down->access_time=TIME;
       verify_time=&down->verify_time;
       file.set(down->file_data.data(), down->file_data.elms());
       file.modify_time_utc=down->modify_time_utc;
@@ -515,13 +515,13 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
    if(C PakFile *pf=_pak.find(link, false))
    {
       FileTime &time=pakFile(*pf);
-      if(access_download)time.access_time=TIME;
+      if(access)time.access_time=TIME;
       verify_time=&time.verify_time;
       file.set(*pf, _pak);
       file.modify_time_utc=pf->modify_time_utc;
    }else // not found
    {
-      if(access_download) // download
+      if(download) // download
       {
          REPA(_downloading)if(EQUAL(_downloading[i].url(),  url         ))goto downloading;
                            if(   _to_download.binaryInclude(url, COMPARE)){enable(); _to_verify.binaryExclude(url, COMPARE);}
@@ -535,7 +535,7 @@ InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CAC
    {
       if(verify==CACHE_VERIFY_SKIP                             )return FILE; // verification not   needed
       if(verify!=CACHE_VERIFY_EXPIRED && verified(*verify_time))return FILE; // verification still acceptable
-      if(access_download) // verify
+      if(download) // verify
       {
          REPA(_downloading)if(EQUAL       (_downloading[i].url(), url))goto verifying; // downloading now
                            if(_to_download.binaryHas    (url, COMPARE))goto verifying; // will download soon
@@ -842,9 +842,10 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
             // import only if existing is considered expired
             if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
             if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
-            // there may be another better quality that's still verified
-            // re-verify img_lod
-            // FIXME
+            if(image_lod_to_url) // in case we requested high lod, and after that also smaller lod, in the meantime high lod expired (but we still want it), smaller lod got received, importing to smaller lod would lower quality, so instead of importing lower, first try to verify/download high lod, and on error downgrade quality there
+            {
+               DataSourceTime data; if(_getFile(image_lod_to_url(name, lod), data, CACHE_VERIFY_YES, false, true)==DOWNLOADING)goto dont_import; // normally this should be DOWNLOADING, because we already know that verification expired, the only other thing is missing, which gets set in download failed, but there image/import (its LOD) get adjusted to lower level
+            }
             goto Import;
          }
 
@@ -950,8 +951,7 @@ inline void InternetCache::update()
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
                if(just_created)
-               {
-                  // set 'access_time'
+               {  // set 'access_time'
                   if(C PakFile *pf=_pak.find(link, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
                }
@@ -1019,8 +1019,7 @@ inline void InternetCache::update()
                FileTime &missing=*_missing(link, just_created);
                missing.verify_time=TIME;
                if(just_created)
-               {
-                  // set 'access_time'
+               {  // set 'access_time'
                   if(C Downloaded *downloaded=_downloaded.find(link      ))missing.access_time=downloaded ->access_time;else // reuse from 'downloaded'
                   if(C PakFile    *pf        =_pak       .find(link, true))missing.access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                                            missing.access_time=missing     .verify_time;     // set as new
@@ -1041,12 +1040,13 @@ inline void InternetCache::update()
                   Str name=url_to_image_lod(down.url(), down_lod);
                   if(img.find(name))
                   {
-                     if(auto import=findImport(img))if(import->lod==down_lod)cancel(*import); // cancel import with this LOD
+                     auto import=findImport(img);
+                     if(import && import->lod==down_lod){cancel(*import); import=null;} // cancel import with this LOD
                      if(is_image_lod(name, lod))
                      if(--down_lod>=lod.min) // if there's possible lower mip
                      {
                         DataSourceTime data;
-                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES); // request lower mip, request verification
+                       _getFile(image_lod_to_url(name, down_lod), data, CACHE_VERIFY_YES, false, true); // request lower mip, request verification
                      }
                      // FIXME
                   }
