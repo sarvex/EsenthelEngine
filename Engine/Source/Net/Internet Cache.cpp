@@ -702,7 +702,7 @@ void InternetCache::cancel(C ImagePtr &image) // canceling is needed to make sur
 {
    if(auto import=findImport(image))cancel(*import);
 }
-void InternetCache::updating(Ptr data) // called when updating 'downloaded'
+void InternetCache::updatingDownloaded(Ptr data) // called when updating 'downloaded'
 {
    if(data)
    REPA(_import_images)
@@ -845,6 +845,7 @@ void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
       }
    }
 }
+/******************************************************************************/
 inline void InternetCache::update()
 {
    // update imported images
@@ -936,7 +937,7 @@ inline void InternetCache::update()
                // after 'received'
                Bool just_created;
                Downloaded *downloaded=_downloaded(link, just_created);
-               updating(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no imports are using that data
+               updatingDownloaded(downloaded->file_data.data()); // we're going to modify 'downloaded->file_data' so we have to make sure no imports are using that data
                downloaded->file_data.setNumDiscard(down.size()).copyFrom((Byte*)down.data());
                downloaded->modify_time_utc=down.modifyTimeUTC();
                downloaded->verify_time=TIME;
