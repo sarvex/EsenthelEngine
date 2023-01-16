@@ -897,7 +897,6 @@ inline void InternetCache::update()
             if(LOG)LogN(S+"IC.download Finish "+down.url());
 
             Str link=SkipHttpWww(down.url());
-           _missing.removeKey(link);
             if(down.offset()<0) // if this was verification
             {
                Flt        *verify_time=null;
@@ -933,12 +932,13 @@ inline void InternetCache::update()
 
                   // after 'received'
                  *verify_time=TIME;
+                 _missing.removeKey(link);
                   goto next;
                }
                down.create(Str(down.url())); // it's different so download it fully, copy the 'url' because it might get deleted in 'create'
             }else // move to 'downloaded'
             {
-               // this must be checked first, before modifying 'downloaded->modify_time_utc', 'downloaded->verify_time', because 'received' will compare with those values
+               // this must be checked first, before modifying 'downloaded->modify_time_utc', 'downloaded->verify_time', '_missing', because 'received' will compare with those values
                ImagePtr img; img.find(down.url());
                ImagePtr img_lod; Int down_lod; received(down, down_lod, img_lod);
 
@@ -955,6 +955,7 @@ inline void InternetCache::update()
                   if(C PakFile *pf=_pak.find(link, true))downloaded->access_time=pakFile(*pf).access_time;else // reuse from 'pak'
                                                          downloaded->access_time=downloaded ->verify_time;     // set as new
                }
+              _missing.removeKey(link);
 
                // flush
                const Bool import=(img || img_lod);
