@@ -783,65 +783,67 @@ void InternetCache::resetPak(WriteLockEx *lock)
    }
 }
 /******************************************************************************/
-void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
+void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
 {
    if(url_to_image_lod)
    {
       Str name=url_to_image_lod(down.url(), down_lod); if(image.find(name))
       {
-         Int  img_lod=LOD(*image);
-         auto import=findImport(image);
-         if(down_lod>img_lod) // always import if received higher quality
+       C DateTime *modify_time=null;
+         Int       size, lod;
+         Flt       verify_time;
+         auto      import=findImport(image);
+
+         if(import)
          {
-         test:
-            if(import)
-            {
-               if(down_lod> import->lod                                                                                                   // received higher quality
-               || down_lod==import->lod && (down.totalSize()!=import->data.size() || down.modifyTimeUTC()!=import->data.modify_time_utc)) // received same   quality but different data (check 'totalSize' because 'size' is 0 for verification)
-               {
-                  cancel(*import); goto Import; // cancel existing import, proceed with new import
-               }
-               goto dont_import; // (same quality and data) or (lower quality) don't import
-            }
-            goto Import;
-         }else // if got lower/same quality
+            modify_time=&import->data.modify_time_utc;
+            size       = import->data.size();
+            lod        = import->lod;
+            verify_time= TIME;
+         }else
          {
-          C DateTime *modify_time=null;
-            Int       size;
-            Flt       verify_time;
-            if(image_lod_to_url)
+            lod=LOD(*image);
+            if(down_lod>lod)goto Import; // always import if received higher quality
+            if(image_lod_to_url && lod>=0)
             {
-               Str link=SkipHttpWww(image_lod_to_url(name, img_lod)); // name of data that's already loaded in the image
+               Str link=SkipHttpWww(image_lod_to_url(name, lod)); // name of data that's already loaded in the image
                if(                  !_missing   .find(link       ))
                if(C Downloaded *down=_downloaded.find(link       )){modify_time=&down->modify_time_utc; size=down->file_data.elms(); verify_time=down       ->verify_time;}else
                if(C PakFile    *pf  =_pak       .find(link, false)){modify_time=&pf  ->modify_time_utc; size=pf  ->data_size       ; verify_time=pakFile(*pf).verify_time;}
             }
-            if(down_lod==img_lod) // if same quality
-            {
-               if(modify_time) // found existing data
-               {
-                  // here ignore 'const_image_lod' because we have precise data to compare, so in case it actually changed, then still import
-                  if(down.totalSize()!=size || down.modifyTimeUTC()!=*modify_time)goto        test; // received different data (check 'totalSize' because 'size' is 0 for verification)
-                                                                                  goto dont_import; // received same      data
-               }else // haven't found existing data
-               {
-                  if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
-                                                              goto        test; // try import
-               }
-            }else // received lower quality
-            {
-               // import only if existing is considered expired
-               if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
-               if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
-               // there may be another better quality that's still verified
-               // re-verify img_lod
-               // FIXME
-               goto Import;
-            }
          }
+
+         if(down_lod>lod) // always import if received higher quality
+         {
+         Import:
+            if(import)cancel(*import);
+            return;
+         }else
+         if(down_lod==lod) // received same quality
+         {
+            if(modify_time) // found existing data
+            {
+               // here ignore 'const_image_lod' because we have precise data to compare, so in case it actually changed, then still import
+               if(down.totalSize()!=size || down.modifyTimeUTC()!=*modify_time)goto      Import; // received different data (check 'totalSize' because 'size' is 0 for verification)
+                                                                               goto dont_import; // received same      data
+            }else // haven't found existing data
+            {
+               if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
+                                                           goto      Import; // import
+            }
+         }else // received lower quality
+         {
+            // import only if existing is considered expired
+            if(modify_time     && verified(verify_time))goto dont_import; // existing data is still considered verified, no need to import
+            if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
+            // there may be another better quality that's still verified
+            // re-verify img_lod
+            // FIXME
+            goto Import;
+         }
+
       dont_import:
-         image.clear(); // don't import
-      Import:;
+         image.clear();
       }
    }
 }
@@ -912,7 +914,7 @@ inline void InternetCache::update()
                   }
                importing:;
 
-                  ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod); if(img_lod)
+                  ImagePtr img_lod; Int down_lod; received(down, down_lod, img_lod); if(img_lod)
                   {
                    //cancel(img_lod); already done in 'received'
                      ImportImage &ii=_import_images.New();
@@ -932,7 +934,7 @@ inline void InternetCache::update()
             {
                // this must be checked first, before modifying 'downloaded->modify_time_utc', 'downloaded->verify_time', because 'received' will compare with those values
                ImagePtr img; img.find(down.url());
-               ImagePtr img_lod; Int down_lod; received(down, img_lod, down_lod);
+               ImagePtr img_lod; Int down_lod; received(down, down_lod, img_lod);
 
                // after 'received'
                Bool just_created;
