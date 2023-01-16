@@ -592,7 +592,7 @@ ImagePtr InternetCache::getImageLOD(C Str &name)
 }
 void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VERIFY verify)
 {
-   Lod lods; if(image_lod_to_url && is_image_lod && is_image_lod(name, lods))
+   Lod lods; if(is_image_lod && is_image_lod(name, lods) && image_lod_to_url)
    {
       Clamp(lod, lods.min, lods.max);
 
