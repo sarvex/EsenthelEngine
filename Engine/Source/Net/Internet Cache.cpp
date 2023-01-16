@@ -876,8 +876,8 @@ inline void InternetCache::update()
          if(ii.image_ptr) // not canceled
          {
             if(LOG)LogN(S+"IC.import   Finish "+ii.asText());
-            Swap(*ii.image_ptr, ii.image_temp);
-            if(got)
+            Swap(*ii.image_ptr, ii.image_temp); // put imported image into target
+            if(got) // callback
             {
                ImagePtr temp; Swap(ii.image_ptr, temp);
               _import_images.removeValid(i); // remove first
