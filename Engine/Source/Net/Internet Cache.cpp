@@ -803,7 +803,7 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
          }else
          {
             lod=LOD(*image);
-            if(down_lod>lod)goto Import; // always import if received higher quality
+            if(down_lod>lod)goto Import; // always import if received higher quality, to skip codes below
             if(image_lod_to_url && lod>=0)
             {
                Str link=SkipHttpWww(image_lod_to_url(name, lod)); // name of data that's already loaded in the image
