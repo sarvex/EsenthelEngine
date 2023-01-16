@@ -918,17 +918,14 @@ inline void InternetCache::update()
 
                if(verify_time)
                {
-                  ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES
+                  ImagePtr img; if(img.find(down.url()))if(!img->is() && !findImport(*img)) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES, check if empty and not importing already
                   {
-                     if(findImport(*img))goto importing; // first check if it's importing already, but just not yet finished
-                     // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
                      else          {ii.data.set(*pf, _pak);                                                  ii.data.modify_time_utc=pf        ->modify_time_utc; ii.type=ImportImage::PAK       ;}
                      Swap(ii.image_ptr, img);
                      import(ii);
                   }
-               importing:;
 
                   ImagePtr img_lod; Int down_lod; received(down, down_lod, img_lod); if(img_lod)
                   {
