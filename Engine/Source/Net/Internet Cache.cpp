@@ -1049,11 +1049,12 @@ inline void InternetCache::update()
                      if(is_image_lod(name, lod))
                         for(Int file_lod=down_lod; --file_lod>=lod.min; ) // make sure we have any lower mip
                      {
-                        DataSourceTime data; if(GET get=_getFile(image_lod_to_url(name, file_lod), data, CACHE_VERIFY_YES, false, true)) // if have FILE or DOWNLOADING we can stop
+                        CACHE_VERIFY verify=CACHE_VERIFY_DELAY; // this is for temporary preview (it can get replaced with verified data soon, since we're requesting lower LOD download below), CACHE_VERIFY_DELAY might give previous expired results, while CACHE_VERIFY_YES might cause image to disapper (del)
+                        DataSourceTime data; if(GET get=_getFile(image_lod_to_url(name, file_lod), data, verify, false, true)) // if have FILE or DOWNLOADING we can stop
                         {
                            if(adjust) // but if need to adjust existing image, then keep going until we find FILE so we can import it now
                            {
-                              if(get!=FILE)for(; --file_lod>=lod.min; ){get=_getFile(image_lod_to_url(name, file_lod), data, CACHE_VERIFY_YES, false, false); if(get==FILE)break;} // this time don't download
+                              if(get!=FILE)for(; --file_lod>=lod.min; ){get=_getFile(image_lod_to_url(name, file_lod), data, verify, false, false); if(get==FILE)break;} // this time don't download
                               if(get==FILE)
                               {
                                  ImportImage &ii=_import_images.New();
