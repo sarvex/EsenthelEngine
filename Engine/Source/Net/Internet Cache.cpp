@@ -314,7 +314,7 @@ void InternetCache::checkPakFileInfo()
 }
 /******************************************************************************/
 NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stack memory in calling function
-{ // this is called when all downloaded, pak files that have gone missing have been removed already
+{ // this is called when all downloaded/pak files that have gone missing have been removed already
    if(_max_missing>=0 && _missing.elms()>_max_missing)
    {
       Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTimeAsc);
@@ -441,6 +441,19 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
    return true;
 }
 /******************************************************************************/
+Bool InternetCache::verified(Flt time)C {return TIME-time<=_verify_life;}
+
+Bool InternetCache::busy()C
+{
+   if(_to_download.elms() || _to_verify.elms() || _import_images.elms())return true;
+   REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
+   return false;
+}
+InternetCache::ImportImage* InternetCache::findImport(C ImagePtr &image)
+{
+   if(image)REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)return &ii;}
+   return null;
+}
 Bool InternetCache::loading(C ImagePtr &image)C
 {
    if(image)
@@ -468,8 +481,6 @@ Bool InternetCache::loading(C ImagePtr &image)C
    }
    return false;
 }
-/******************************************************************************/
-Bool InternetCache::verified(Flt time)C {return TIME-time<=_verify_life;}
 /******************************************************************************/
 Bool               InternetCache:: getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify) {return _getFile(url, file, verify)==FILE;}
 InternetCache::GET InternetCache::_getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify, Bool access_download)
@@ -674,12 +685,6 @@ void InternetCache::changed(C Str &url)
    }
 }
 /******************************************************************************/
-Bool InternetCache::busy()C
-{
-   if(_to_download.elms() || _to_verify.elms() || _import_images.elms())return true;
-   REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
-   return false;
-}
 void InternetCache::import(ImportImage &ii)
 {
    if(LOG)LogN(S+"IC.import   Start  "+ii.image_ptr.name());
@@ -778,11 +783,6 @@ void InternetCache::resetPak(WriteLockEx *lock)
    }
 }
 /******************************************************************************/
-InternetCache::ImportImage* InternetCache::findImport(C ImagePtr &image)
-{
-   if(image)REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)return &ii;}
-   return null;
-}
 void InternetCache::received(C Download &down, ImagePtr &image, Int &down_lod)
 {
    if(url_to_image_lod)
