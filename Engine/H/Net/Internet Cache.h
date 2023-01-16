@@ -126,7 +126,7 @@ private:
    void import  (ImportImage &ii);
    void cancel  (ImportImage &ii);
    void cancel  (C ImagePtr &image);
-   void updating(Ptr data);
+   void updatingDownloaded(Ptr data);
    FileTime& pakFile(C PakFile &pf) {return _pak_files[_pak.files().index(&pf)];}
    void   getPakFileInfo();
    void checkPakFileInfo();
