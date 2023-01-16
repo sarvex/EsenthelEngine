@@ -66,12 +66,16 @@ private:
       Image          image_temp; // temp image which will have the data
       Mems<Byte>     temp;
 
+   #if EE_PRIVATE
       // here don't check for 'data.type' because we need one single variable that's changed at the end once everything is ready
       Bool isPak       ()C {return type==PAK       ;}
       Bool isDownloaded()C {return type==DOWNLOADED;}
 
+      Str asText()C;
+
       void lockedRead();
       void import(InternetCache &ic);
+   #endif
    };
    struct FileTime
    {
@@ -119,7 +123,7 @@ private:
    Bool busy  ()C;
    Bool verified(Flt time)C;
    void enable();
-   void received(C Download &down, ImagePtr &image, Int &down_lod);
+   void received(C Download &down, Int &down_lod, ImagePtr &image);
    void update();
    ImportImage* findImport(C ImagePtr &image);
  C ImportImage* findImport(C ImagePtr &image)C {return ConstCast(T).findImport(image);}

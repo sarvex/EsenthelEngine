@@ -37,6 +37,12 @@ Int InternetCache::LOD(C Image &image)
    return image.is() ? BitHi(CeilPow2(image.size3().max())) : -1;
 }
 /******************************************************************************/
+Str InternetCache::ImportImage::asText()C
+{
+   Str s=image_ptr.name();
+   if(lod>=0)s.space()+=" Lod:"+lod;
+   return s;
+}
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
 {
  //if(!done) not needed because PAK/DOWNLOADED are always converted to OTHER before 'done' (except case when 'fail' which is already checked below)
@@ -687,7 +693,7 @@ void InternetCache::changed(C Str &url)
 /******************************************************************************/
 void InternetCache::import(ImportImage &ii)
 {
-   if(LOG)LogN(S+"IC.import   Start  "+ii.image_ptr.name());
+   if(LOG)LogN(S+"IC.import   Start  "+ii.asText());
    if(_threads)_threads->queue(ii, ImportImageFunc, T);else ImportImageFunc(ii, T); // don't use 'ii.import' because that one is inline
 }
 void InternetCache::cancel(ImportImage &ii) // canceling is needed to make sure we won't replace newer data with older
@@ -855,10 +861,10 @@ inline void InternetCache::update()
    {
       ImportImage &ii=_import_images[i]; if(ii.done)
       {
-         if(ii.fail){if(LOG)LogN(S+"IC.import   !FAIL! "+(ii.image_ptr ? ii.image_ptr.name() : S)); resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
+         if(ii.fail){if(LOG)LogN(S+"IC.import   !FAIL! "+ii.asText()); resetPak(); break;} // if failed to open file, then we have to reset, break because 'resetPak' will handle '_import_images'
          if(ii.image_ptr) // not canceled
          {
-            if(LOG)LogN(S+"IC.import   Finish "+ii.image_ptr.name());
+            if(LOG)LogN(S+"IC.import   Finish "+ii.asText());
             Swap(*ii.image_ptr, ii.image_temp);
             if(got)
             {
