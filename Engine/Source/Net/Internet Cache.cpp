@@ -311,7 +311,7 @@ void InternetCache::checkPakFileInfo()
 }
 /******************************************************************************/
 NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stack memory in calling function
-{
+{ // this is called when all downloaded, pak files that have gone missing have been removed already
    if(_max_missing>=0 && _missing.elms()>_max_missing)
    {
       Memt<FileTime*> sorted; sorted.setNumDiscard(_missing.elms()); REPAO(sorted)=&_missing[i]; sorted.sort(CompareAccessTimeAsc);
