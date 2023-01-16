@@ -823,7 +823,7 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
             if(image_lod_to_url && lod>=0)
             {
                Str link=SkipHttpWww(image_lod_to_url(name, lod)); // name of data that's already loaded in the image
-               if(                  !_missing   .find(link       ))
+             //if(                  !_missing   .find(link       )) ignore this, it will help when calling 'changed' and receiving new data that's actually the same
                if(C Downloaded *down=_downloaded.find(link       )){modify_time=&down->modify_time_utc; size=down->file_data.elms(); verify_time=down       ->verify_time;}else
                if(C PakFile    *pf  =_pak       .find(link, false)){modify_time=&pf  ->modify_time_utc; size=pf  ->data_size       ; verify_time=pakFile(*pf).verify_time;}
             }
@@ -840,8 +840,8 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
             if(modify_time) // found existing data
             {
                // here ignore 'const_image_lod' because we have precise data to compare, so in case it actually changed, then still import
-               if(down.totalSize()!=size || down.modifyTimeUTC()!=*modify_time)goto      Import; // received different data (check 'totalSize' because 'size' is 0 for verification)
-                                                                               goto dont_import; // received same      data
+               if(down.totalSize()==size && down.modifyTimeUTC()==*modify_time)goto dont_import; // received same      data (check 'totalSize' because 'size' is 0 for verification)
+                                                                               goto      Import; // received different data
             }else // haven't found existing data
             {
                if(const_image_lod && const_image_lod(name))goto dont_import; // ImageLOD is always constant, no need to import
