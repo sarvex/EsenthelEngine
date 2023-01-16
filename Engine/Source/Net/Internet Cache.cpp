@@ -40,7 +40,7 @@ Int InternetCache::LOD(C Image &image)
 Str InternetCache::ImportImage::asText()C
 {
    Str s=image_ptr.name();
-   if(lod>=0)s.space()+=S+" Lod:"+lod;
+   if(lod>=0)s.space()+=S+"Lod:"+lod;
    return s;
 }
 void InternetCache::ImportImage::lockedRead() // this is called under 'ic._rws' write-lock only on the main thread
