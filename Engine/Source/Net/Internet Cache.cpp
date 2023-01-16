@@ -455,9 +455,9 @@ Bool InternetCache::busy()C
    REPA(_downloading)if(_downloading[i].state()!=DWNL_NONE)return true;
    return false;
 }
-InternetCache::ImportImage* InternetCache::findImport(C ImagePtr &image)
+InternetCache::ImportImage* InternetCache::findImport(C Image &image)
 {
-   if(image)REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)return &ii;}
+   REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==&image)return &ii;}
    return null;
 }
 Bool InternetCache::_loading(C Str &url)C // assumes "url.is"
@@ -471,7 +471,7 @@ Bool InternetCache::loading(C ImagePtr &image)C
 {
    if(image)
    {
-      if(findImport(image))return true; // importing
+      if(findImport(*image))return true; // importing
       Str url=image.name(); if(url.is())
       {
          if(_loading(url))return true;
@@ -590,7 +590,7 @@ ImagePtr InternetCache::getImageLOD(C Str &name)
    }
    return img;
 }
-void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VERIFY verify)
+void InternetCache::_setImageLOD(Image &img, C Str &name, Int lod, CACHE_VERIFY verify)
 {
    Lod lods; if(is_image_lod && is_image_lod(name, lods) && image_lod_to_url)
    {
@@ -610,7 +610,7 @@ void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VE
          for(file_lod=lod; --file_lod>=lods.min;           )if(_getFile(image_lod_to_url(name, file_lod), data, verify, false, false))goto got_file; // if FILE
       }else // got FILE
    got_file:
-      if(file_lod>LOD(*img)) // import only if we might improve quality
+      if(file_lod>LOD(img)) // import only if we might improve quality
       {
          if(auto import=findImport(img))
          {
@@ -620,7 +620,7 @@ void InternetCache::_setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VE
          // import
          ImportImage &ii=_import_images.New();
          Swap(ii.data, data); ii.type=(ii.data.type==DataSource::PAK_FILE ? ImportImage::PAK : ImportImage::DOWNLOADED);
-         ii.image_ptr=img;
+         ii.image_ptr=&img;
          ii.lod=file_lod;
          import(ii);
          enable();
@@ -634,13 +634,13 @@ ImagePtr InternetCache::getImageLOD(C Str &name, Int lod, CACHE_VERIFY verify)
    {
       CACHE_MODE mode=Images.mode(CACHE_DUMMY); img=name;
                       Images.mode(mode       );
-     _setImageLOD(img, name, lod, verify);
+     _setImageLOD(*img, name, lod, verify);
    }
    return img;
 }
 void InternetCache::setImageLOD(C ImagePtr &img, Int lod, CACHE_VERIFY verify)
 {
-   if(img)_setImageLOD(img, img.name(), lod, verify);
+   if(img)_setImageLOD(*img, img.name(), lod, verify);
 }
 /******************************************************************************/
 Bool InternetCache::_changed(C Str &url, SByte download) // 'download' -1=never, 0=if referenced, 1=always, return if downloading
@@ -688,7 +688,7 @@ void InternetCache::changed(C Str &url)
             Int requested=-1;
             if(img)
             {
-               requested=LOD(*img); if(auto import=findImport(img))MAX(requested, import->lod); // find highest lod that was requested
+               requested=LOD(*img); if(auto import=findImport(*img))MAX(requested, import->lod); // find highest lod that was requested
                Clamp(requested, lod.min, lod.max); // clamp min forces to load smallest lod (at least one) if nothing requested, clamp max is for safety
             }
             for(Int l=lod.max; l>=lod.min; l--) // start from max, to check highest lod that was requested, if yes, then can download all lower as well
@@ -810,7 +810,7 @@ void InternetCache::received(C Download &down, Int &down_lod, ImagePtr &image)
        C DateTime *modify_time=null;
          Int       size, lod;
          Flt       verify_time;
-         auto      import=findImport(image);
+         auto      import=findImport(*image);
 
          if(import) // #ImgLodPriority
          {
@@ -922,7 +922,7 @@ inline void InternetCache::update()
                {
                   ImagePtr img; if(img.find(down.url()))if(!img->is()) // if image empty, it's possible the image was not yet loaded due to CACHE_VERIFY_YES
                   {
-                     if(findImport(img))goto importing; // first check if it's importing already, but just not yet finished
+                     if(findImport(*img))goto importing; // first check if it's importing already, but just not yet finished
                      // if not yet importing, then import
                      ImportImage &ii=_import_images.New();
                      if(downloaded){ii.data.set(downloaded->file_data.data(), downloaded->file_data.elms()); ii.data.modify_time_utc=downloaded->modify_time_utc; ii.type=ImportImage::DOWNLOADED;}
@@ -1053,7 +1053,7 @@ inline void InternetCache::update()
                   if(img.find(name))
                   {
                      // #ImgLodError
-                     auto import =findImport(img);
+                     auto import =findImport(*img);
                      Int  img_lod=(import ? import->lod : LOD(*img)); // need to check before deleting import, because 'import' overrides image 'lod' #ImgLodPriority
                      Bool adjust =(img_lod==down_lod); // if what we have has gone missing, we'll need to adjust existing image (either via import of lower res lod, or deleting), cannot keep the same content, because when lower LOD gets received it could trigger download of this LOD again in an endless loop
                      if(  import && (import->lod==down_lod || adjust)){cancel(*import); import=null;} // cancel import with this LOD, or if we're going to adjust image

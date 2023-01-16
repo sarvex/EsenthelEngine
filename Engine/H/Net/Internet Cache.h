@@ -119,15 +119,17 @@ private:
    };
    GET  _getFile(C Str &url, DataSourceTime &file, CACHE_VERIFY verify=CACHE_VERIFY_YES, Bool access=true, Bool download=true); // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded, 'access'=if adjust access time, 'download'=if allow download
    Bool _changed(C Str &url, SByte download);
-   void _setImageLOD(C ImagePtr &img, C Str &name, Int lod, CACHE_VERIFY verify);
+   void _setImageLOD(Image &img, C Str &name, Int lod, CACHE_VERIFY verify);
    Bool _loading(C Str &url)C;
    Bool busy  ()C;
    Bool verified(Flt time)C;
    void enable();
    void received(C Download &down, Int &down_lod, ImagePtr &image);
    void update();
-   ImportImage* findImport(C ImagePtr &image);
- C ImportImage* findImport(C ImagePtr &image)C {return ConstCast(T).findImport(image);}
+   ImportImage* findImport(C Image    &image);
+ C ImportImage* findImport(C Image    &image)C {return ConstCast(T).findImport( image);}
+   ImportImage* findImport(C ImagePtr &image)  {return image ?      findImport(*image) : null;}
+ C ImportImage* findImport(C ImagePtr &image)C {return ConstCast(T).findImport( image);}
    void import  (ImportImage &ii);
    void cancel  (ImportImage &ii);
    void cancel  (C ImagePtr &image);
