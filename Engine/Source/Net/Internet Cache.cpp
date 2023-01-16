@@ -344,7 +344,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          {
             WriteLockEx lock(_rws);
             Bool fail=false; REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead(); fail|=ii.fail;} // read all
-            if(  fail){if(LOG)LogN(S+"IC.import FAILED"); resetPak(&lock); goto reset;} // if any failed then 'resetPak'
+            if(  fail){if(LOG)LogN(S+"IC.import FAILED"); resetPak(&lock); goto reset;} // if any failed then 'resetPak', reset while still under lock, it will be unlocked inside
          }
          checkPakFileInfo();
       reset:
@@ -460,6 +460,13 @@ InternetCache::ImportImage* InternetCache::findImport(C ImagePtr &image)
    if(image)REPA(_import_images){ImportImage &ii=_import_images[i]; if(ii.image_ptr==image)return &ii;}
    return null;
 }
+Bool InternetCache::_loading(C Str &url)C // assumes "url.is"
+{
+   REPA(_downloading)if(EQUAL(_downloading[i].url(), url))return true;
+   if(_to_download.binaryHas(url, COMPARE)
+   || _to_verify  .binaryHas(url, COMPARE))return true;
+   return false;
+}
 Bool InternetCache::loading(C ImagePtr &image)C
 {
    if(image)
@@ -467,22 +474,27 @@ Bool InternetCache::loading(C ImagePtr &image)C
       if(findImport(image))return true; // importing
       Str url=image.name(); if(url.is())
       {
-         REPA(_downloading)if(EQUAL(_downloading[i].url(), url))return true;
-         if(_to_download.binaryHas(url, COMPARE)
-         || _to_verify  .binaryHas(url, COMPARE))return true;
-
+         if(_loading(url))return true;
+      #if 1
+         if(is_image_lod && image_lod_to_url)
+         {
+          C Str &name=url; // for ImageLOD 'image.name' is name
+            Lod lod; if(is_image_lod(name, lod)) // check if this is a ImageLOD
+               for(Int l=lod.min; l<=lod.max; l++)if(_loading(image_lod_to_url(name, l)))return true; // check all possible LODs
+         }
+      #else
          if(is_image_lod && url_to_image_lod)
          {
           C Str &name=url; // for ImageLOD 'image.name' is name
-            Lod lod;
-            if(is_image_lod(name, lod)) // check if this is a ImageLOD
+            Lod lod; if(is_image_lod(name, lod)) // check if this is a ImageLOD
             {
-               Int lod;
-               REPA(_downloading)if(EQUAL(url_to_image_lod(_downloading[i].url(), lod), name))return true;
-               REPA(_to_download)if(EQUAL(url_to_image_lod(_to_download[i]      , lod), name))return true;
-               REPA(_to_verify  )if(EQUAL(url_to_image_lod(_to_verify  [i]      , lod), name))return true;
+               Int l;
+               REPA(_downloading)if(EQUAL(url_to_image_lod(_downloading[i].url(), l), name))return true;
+               REPA(_to_download)if(EQUAL(url_to_image_lod(_to_download[i]      , l), name))return true;
+               REPA(_to_verify  )if(EQUAL(url_to_image_lod(_to_verify  [i]      , l), name))return true;
             }
          }
+      #endif
       }
    }
    return false;
