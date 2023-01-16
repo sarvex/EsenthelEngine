@@ -832,7 +832,7 @@ void Application::showError(CChar *error)
          }
       #endif
       }
-      CChar *title=MLTC(u"Error", PL,u"Błąd", RU,u"Ошибка", PO,u"Erro", CN,u"错误");
+      CChar *title=TError();
 
    #if WINDOWS
       OutputDebugString(WChar(error)); OutputDebugStringA("\n"); // first write to console
