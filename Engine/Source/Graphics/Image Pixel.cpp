@@ -201,14 +201,14 @@ static INLINE Flt CubicFastSmooth(Flt x) {return Cubic(x, 1.0f  , 0.000f);} // i
 static INLINE Flt CubicFast      (Flt x) {return Cubic(x, 1.0f/3, 1.0f/3);}
 static INLINE Flt CubicFastMed   (Flt x) {return Cubic(x, 0.0f  , 1.0f/3);}
 static INLINE Flt CubicFastSharp (Flt x) {return Cubic(x, 0.0f  , 0.500f);} // if changing this, then have to recalc 'CW8', 'CWA8'
-static INLINE Flt CubicPlus      (Flt x) {return Cubic(x, 0.0f  , 0.400f);}
+static INLINE Flt CubicPlusMed   (Flt x) {return Cubic(x, 0.0f  , 0.400f);}
 static INLINE Flt CubicPlusSharp (Flt x) {return Cubic(x, 0.0f  , 0.500f);}
 
 static Flt CubicFastSmooth2(Flt xx) {return CubicFastSmooth(SqrtFast(xx));}
 static Flt CubicFast2      (Flt xx) {return CubicFast      (SqrtFast(xx));}
 static Flt CubicFastMed2   (Flt xx) {return CubicFastMed   (SqrtFast(xx));}
 static Flt CubicFastSharp2 (Flt xx) {return CubicFastSharp (SqrtFast(xx));}
-static Flt CubicPlus2      (Flt xx) {return CubicPlus      (SqrtFast(xx));}
+static Flt CubicPlusMed2   (Flt xx) {return CubicPlusMed   (SqrtFast(xx));}
 static Flt CubicPlusSharp2 (Flt xx) {return CubicPlusSharp (SqrtFast(xx));}
 /******************************************************************************/
 #define SINC_RANGE      2
@@ -2446,7 +2446,7 @@ Flt Image::pixelFCubicPlus(Flt x, Flt y, Bool clamp)C
       {
          Flt w=xw[x]+yw[y]; if(w<Sqr(CUBIC_PLUS_RANGE))
          {
-            w=CubicPlus2(w*Sqr(CUBIC_PLUS_SHARPNESS)); v+=p[y][x]*w; weight+=w;
+            w=CubicPlusMed2(w*Sqr(CUBIC_PLUS_SHARPNESS)); v+=p[y][x]*w; weight+=w;
          }
       }
       return v/weight;
@@ -2520,7 +2520,7 @@ Flt Image::pixel3DFCubicPlus(Flt x, Flt y, Flt z, Bool clamp)C
       {
          Flt w=xw[x]+yw[y]+zw[z]; if(w<Sqr(CUBIC_PLUS_RANGE))
          {
-            w=CubicPlus2(w*Sqr(CUBIC_PLUS_SHARPNESS)); v+=p[z][y][x]*w; weight+=w;
+            w=CubicPlusMed2(w*Sqr(CUBIC_PLUS_SHARPNESS)); v+=p[z][y][x]*w; weight+=w;
          }
       }
       return v/weight;
@@ -2597,7 +2597,7 @@ Vec4 Image::colorFCubicPlus(Flt x, Flt y, Bool clamp, Bool alpha_weight)C
       {
          Flt w=xw[x]+yw[y]; if(w<Sqr(CUBIC_PLUS_RANGE))
          {
-            w=CubicPlus2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Add(color, rgb, c[y][x], w, alpha_weight); weight+=w;
+            w=CubicPlusMed2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Add(color, rgb, c[y][x], w, alpha_weight); weight+=w;
          }
       }
       Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_PLUS);
@@ -2677,7 +2677,7 @@ Vec4 Image::color3DFCubicPlus(Flt x, Flt y, Flt z, Bool clamp, Bool alpha_weight
       {
          Flt w=xw[x]+yw[y]+zw[z]; if(w<Sqr(CUBIC_PLUS_RANGE))
          {
-            w=CubicPlus2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Add(color, rgb, c[z][y][x], w, alpha_weight); weight+=w;
+            w=CubicPlusMed2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Add(color, rgb, c[z][y][x], w, alpha_weight); weight+=w;
          }
       }
       Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_PLUS);
@@ -3676,7 +3676,7 @@ Vec4 Image::areaColorFCubicPlus(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool alph
             Flt fx2=Sqr(x*x_mul_add.x + x_mul_add.y), w=fx2+fy2;
             if(w<Sqr(CUBIC_PLUS_RANGE))
             {
-               w=CubicPlus2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Int xi=(clamp ? Mid(x, 0, lw()-1) : Mod(x, lw())); Add(color, rgb, colorF(xi, yi), w, alpha_weight); weight+=w;
+               w=CubicPlusMed2(w*Sqr(CUBIC_PLUS_SHARPNESS)); Int xi=(clamp ? Mid(x, 0, lw()-1) : Mod(x, lw())); Add(color, rgb, colorF(xi, yi), w, alpha_weight); weight+=w;
             }
          }
       }
@@ -5747,7 +5747,7 @@ struct CopyContext
                && src.ld()==1)
                {
                   alpha_limit=(no_alpha_limit ? ALPHA_LIMIT_NONE : (filter==FILTER_CUBIC_PLUS_SHARP) ? ALPHA_LIMIT_CUBIC_PLUS_SHARP : ALPHA_LIMIT_CUBIC_PLUS);
-                  Weight     =(                                    (filter==FILTER_CUBIC_PLUS_SHARP) ? CubicPlusSharp2              : CubicPlus2            ); ASSERT(CUBIC_PLUS_SAMPLES==CUBIC_PLUS_SHARP_SAMPLES && CUBIC_PLUS_RANGE==CUBIC_PLUS_SHARP_RANGE && CUBIC_PLUS_SHARPNESS==CUBIC_PLUS_SHARP_SHARPNESS);
+                  Weight     =(                                    (filter==FILTER_CUBIC_PLUS_SHARP) ? CubicPlusSharp2              : CubicPlusMed2         ); ASSERT(CUBIC_PLUS_SAMPLES==CUBIC_PLUS_SHARP_SAMPLES && CUBIC_PLUS_RANGE==CUBIC_PLUS_SHARP_RANGE && CUBIC_PLUS_SHARPNESS==CUBIC_PLUS_SHARP_SHARPNESS);
                   ImageThreads.init().process(dest.lh()*dest.ld(), UpsizeCubicPlus, T);
                }else
                if((filter==FILTER_CUBIC_FAST || filter==FILTER_CUBIC_FAST_SMOOTH || filter==FILTER_CUBIC_FAST_MED || filter==FILTER_CUBIC_FAST_SHARP) // optimized CubicFast upscale
