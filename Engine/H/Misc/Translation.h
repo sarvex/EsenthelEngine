@@ -148,7 +148,7 @@ CChar* TEdit();
 CChar* TEditProfile();
 CChar* TEditor();
 CChar* TEgyptianTomb();
-inline CChar* TEmail() {return u"Email";}
+CChar* TEmail();
 CChar* TEmailAlreadyUsed();
 CChar* TError();
 CChar* TEquip();
