@@ -4689,7 +4689,7 @@ struct Country
    {"UA", "UKR", "Ukraine"},
    {"AE", "ARE", "United Arab Emirates"},
    {"GB", "GBR", "United Kingdom"},
-   {"US", "USA", "United States"},
+   {"US", "USA", "United States of America"}, // include "America" so searching country names with it can find it
    {"UY", "URY", "Uruguay"},
    {"UZ", "UZB", "Uzbekistan"},
    {"VU", "VUT", "Vanuatu"},
