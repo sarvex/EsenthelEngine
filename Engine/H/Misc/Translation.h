@@ -206,6 +206,7 @@ CChar* TImage();
 CChar* TImprove();
 CChar* TIncreasedSpellLevel();
 CChar* TInstallMods();
+CChar* TInvalidCountry();
 CChar* TInvalidEmail();
 CChar* TInvalidID();
 CChar* TInvalidName();

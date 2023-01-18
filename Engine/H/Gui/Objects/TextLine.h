@@ -37,6 +37,9 @@ const_mem_addr struct TextLine : GuiObj // Gui TextLine !! must be stored in con
    virtual TextLine& rect(C Rect &rect )override;   C Rect& rect()C {return super::rect();} // set/get rectangle
    virtual TextLine& move(C Vec2 &delta)override;                                           // move by delta
 
+   Vec2 overlayScreenPos ()C; // get absolute position  on the screen, if this TextLine is covered by Screen Keyboard, then it's drawn as overlay, this function will return position  of that overlay
+   Rect overlayScreenRect()C; // get absolute rectangle on the screen, if this TextLine is covered by Screen Keyboard, then it's drawn as overlay, this function will return rectangle of that overlay
+
    // operations
    TextLine& selectNone  (); // select no  text
    TextLine& selectAll   (); // select all text
