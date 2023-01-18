@@ -307,11 +307,11 @@ static void GetFileInfo(C Str &name, Long &size, DateTime &modify_time_utc)
 }
 void InternetCache::getPakFileInfo()
 {
-   GetFileInfo(_pak.pakFileName(), _pak_size, _pak_modify_time_utc);
+   GetFileInfo(fileName(), _pak_size, _pak_modify_time_utc);
 }
 void InternetCache::checkPakFileInfo()
 {
-            Long size;                DateTime modify_time_utc; GetFileInfo(_pak.pakFileName(), size, modify_time_utc);
+            Long size;                DateTime modify_time_utc; GetFileInfo(fileName(), size, modify_time_utc);
    if(_pak_size!=size || _pak_modify_time_utc!=modify_time_utc)
    {
       if(LOG)LogN(S+"IC.checkPakFileInfo FAILED");
@@ -335,7 +335,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
 
  //if(_downloaded.elms()) always save because we need to save 'access_time' and 'verify_time' which can change without new '_downloaded'
    {
-      if(_pak.pakFileName().is()) // we want to save data
+      if(fileName().is()) // we want to save data
       {
          if(LOG){time=Time.curTime(); LogN(S+"IC.flush");}
 
@@ -780,7 +780,7 @@ void InternetCache::resetPak(WriteLockEx *lock)
    }
 
    PostHeader post_header(T);
-  _pak.create(CMemPtr<PakFileData>(), _pak.pakFileName(), 0, _pak._file_cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
+  _pak.create(CMemPtr<PakFileData>(), fileName(), 0, _pak._file_cipher, COMPRESS_NONE, 0, null, null, null, _pak_used_file_ranges, &post_header); // create an empty pak
   _pak_files.setNumDiscard(_pak.totalFiles()); REPAO(_pak_files).zero();
    getPakFileInfo();
 

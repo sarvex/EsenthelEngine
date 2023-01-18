@@ -29,6 +29,8 @@ struct InternetCache
    void     changed (C Str &url                                                            ) ; // notify the cache that the file on the internet has just been changed and needs updating
    Bool     flush   (                                                                      ) ; // flush updated files to disk, warning: this may invalidate all files obtained using 'getFile', false on fail
 
+ C Str& fileName()C {return _pak.pakFileName();} // get cache file name
+
   ~InternetCache() {del();}
    InternetCache();
 
