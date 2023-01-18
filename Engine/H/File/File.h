@@ -3,7 +3,6 @@
    Use 'File' to handle binary files management.
 
 /******************************************************************************/
-#if EE_PRIVATE
 enum FILE_TYPE : Byte // File Type
 {
    FILE_NONE     , // none
@@ -13,7 +12,6 @@ enum FILE_TYPE : Byte // File Type
    FILE_MEMB     , // Memb  , always readable+writable
    FILE_STREAM   , // Stream, readable, only forward, no seeking
 };
-#endif
 struct File
 {
    // manage
@@ -81,15 +79,15 @@ struct File
    FSTD_TYPE stdType  (        )C; // get FSTD_TYPE
    Long      fullLeft (        )C{return _full_size-_pos;} // get size left (number of bytes from current position to the end of the file)
 #endif
-   Bool  is     (        )C {return _type!=0    ;} // if  file is opened
-   Bool  pos    (Long pos);                        // set position, false on fail
-   Long  pos    (        )C {return _pos        ;} // get position
-   Long  size   (        )C {return _size       ;} // get size
-   Long  left   (        )C {return _size-_pos  ;} // get size left (number of bytes from current position to the end of the file)
-   Bool  end    (        )C {return _pos>=_size ;} // if  current position is at the end of the file
-   Bool  skip   (Long n  )  {return  pos(_pos+n);} // skip 'n' bytes going forward
-   Bool       ok(        )C {return _ok         ;} // check if no errors occurred during reading/writing. When a new file is opened this will be set to true by default, if any 'put' or 'get' call will fail then this will be set to false
-   File& resetOK(        )  {_ok=true;  return T;} // reset 'ok' status to default
+   Bool  is     (        )C {return _type!=FILE_NONE;} // if  file is opened
+   Bool  pos    (Long pos);                            // set position, false on fail
+   Long  pos    (        )C {return _pos            ;} // get position
+   Long  size   (        )C {return _size           ;} // get size
+   Long  left   (        )C {return _size-_pos      ;} // get size left (number of bytes from current position to the end of the file)
+   Bool  end    (        )C {return _pos>=_size     ;} // if  current position is at the end of the file
+   Bool  skip   (Long n  )  {return  pos(_pos+n)    ;} // skip 'n' bytes going forward
+   Bool       ok(        )C {return _ok             ;} // check if no errors occurred during reading/writing. When a new file is opened this will be set to true by default, if any 'put' or 'get' call will fail then this will be set to false
+   File& resetOK(        )  {_ok=true;      return T;} // reset 'ok' status to default
 
    // put / get
 #if EE_PRIVATE
@@ -283,7 +281,7 @@ struct File
 #if !EE_PRIVATE
 private:
 #endif
-   Byte       _type;
+   FILE_TYPE  _type;
    Bool       _writable, _ok;
    FILE_PATH  _path;
    Int        _buf_pos, _buf_len, _buf_size, _cipher_offset;
