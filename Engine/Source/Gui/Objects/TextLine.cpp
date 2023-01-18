@@ -310,8 +310,8 @@ skip:
    return T;
 }
 /******************************************************************************/
-Vec2 TextLine::overlayScreenPos ()C {return (Gui._overlay_textline==this) ? rect().lu()+Gui._overlay_textline_offset : screenPos ();}
-Rect TextLine::overlayScreenRect()C {return (Gui._overlay_textline==this) ? rect()     +Gui._overlay_textline_offset : screenRect();}
+Vec2 TextLine::overlayScreenPos ()C {return (Gui._overlay_textline==this) ? pos ()+Gui._overlay_textline_offset : screenPos ();}
+Rect TextLine::overlayScreenRect()C {return (Gui._overlay_textline==this) ? rect()+Gui._overlay_textline_offset : screenRect();}
 /******************************************************************************/
 TextLine& TextLine::rect(C Rect &rect)
 {
