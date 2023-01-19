@@ -63,6 +63,7 @@ CChar* TBigSword();
 CChar* TBirthdate();
 CChar* TBlock();
 CChar* TBlocked(TRANS_FORM form=TF_NEUTRAL);
+CChar* TBlocking(TRANS_FORM form=TF_NEUTRAL);
 CChar* TBlockUser();
 CChar* TBlockVerb();
 CChar* TBlood();

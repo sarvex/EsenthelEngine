@@ -26,7 +26,7 @@ static Bool AppendUrlPath(Str8 &text, C Str8 &path)
    FREPA(path)
    {
       Char8 c=path[i];
-      if(U8(c)<=32 || c=='#' || c=='%' || U8(c)>=127)EncodeChar(text, c);else // these are the only symbols that need to be replaced with %XX hex code
+      if(Unsigned(c)<=32 || c=='#' || c=='%' || Unsigned(c)>=127)EncodeChar(text, c);else // these are the only symbols that need to be replaced with %XX hex code
       if(c=='\\') // use Unix style paths
       {
          text.alwaysAppend('/');
@@ -44,7 +44,7 @@ static void AppendParam(Str8 &text, C TextParam &param)
    FREPA(name) // set name
    {
       Char8 c=name[i];
-      if(U8(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || U8(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
+      if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
       else text.alwaysAppend(c);
    }
    text.alwaysAppend('=');
@@ -52,7 +52,7 @@ static void AppendParam(Str8 &text, C TextParam &param)
    FREPA(value) // set value
    {
       Char8 c=value[i];
-      if(U8(c)<=32 || c=='#' || c=='%' || c=='&' || c=='+' || U8(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
+      if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='&' || c=='+' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
       else text.alwaysAppend(c);
    }
 }
