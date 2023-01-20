@@ -380,6 +380,7 @@ CChar* TRegister();
 CChar* TRemove();
 CChar* TRename();
 CChar* TReport();
+CChar* TReportComment();
 CChar* TReportPost();
 CChar* TReportUser();
 CChar* TReset();
