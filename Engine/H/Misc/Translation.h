@@ -129,6 +129,7 @@ CChar* TDecember();
 CChar* TDecemberShort();
 CChar* TDefault();
 CChar* TDelete();
+CChar* TDeleteComment();
 CChar* TDeletePost();
 CChar* TDescription();
 CChar* TDeviceVibration();
