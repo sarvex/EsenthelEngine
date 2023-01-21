@@ -398,7 +398,7 @@ public class EsenthelActivity extends NativeActivity
       else             systemBars(system_bars);        // when restarting, set what last requested (this can happen when opening app when it was closed using 'SysWindow.minimize')
       Window window=activity.getWindow(); if(window!=null)
       {
-         if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
+         if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
          View view=window.getDecorView(); if(view!=null)
          {
             view.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
