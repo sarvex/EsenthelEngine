@@ -2082,7 +2082,7 @@ Str8 UTF8(C Str &text)
    Str8 out; out.reserve(text.length());
    FREPA(text)
    {
-      Char c=text[i];
+      auto c=Unsigned(text[i]);
       if(c<=0x07F) out.alwaysAppend(c);else
       if(c<=0x7FF){out.alwaysAppend(0xC0 | (c>>6)); out.alwaysAppend(0x80 | (c&0x3F));}else
    #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
@@ -2092,7 +2092,7 @@ Str8 UTF8(C Str &text)
          u-=0x10000;
          c0=0xD800+(u>>10);
          c1=0xDC00+(u&0x3FF); */
-         U16 c1=text[++i];
+         auto c1=Unsigned(text[++i]);
          U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
          out.alwaysAppend(0xF0 | (u>>18)); out.alwaysAppend(0x80 | ((u>>12)&0x3F)); out.alwaysAppend(0x80 | ((u>>6)&0x3F)); out.alwaysAppend(0x80 | (u&0x3F));
       }else
