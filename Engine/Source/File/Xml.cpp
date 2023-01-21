@@ -380,7 +380,7 @@ static Char LoadText(FileText &f, Str &t, Char c)
                   default : return ERROR; // invalid char
                }
             }else
-            if(f.ok())t.alwaysAppend(c);
+            if(f.ok())t.alwaysAppend(c); // add all possible characters because this data can be received from server and we need exact match
             else      return ERROR;
          }
          c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
