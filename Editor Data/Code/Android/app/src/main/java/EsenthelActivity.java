@@ -394,14 +394,13 @@ public class EsenthelActivity extends NativeActivity
       startService(new Intent(this, DetectForceKill.class)); // start service that detects force kill
 
       // detect showing nav bar by the user manually in order to hide it automatically
-      if(system_bars<0)system_bars=systemBarsActual(); // when starting  , get what we have
-      else             systemBars(system_bars);        // when restarting, set what last requested (this can happen when opening app when it was closed using 'SysWindow.minimize')
       Window window=activity.getWindow(); if(window!=null)
       {
          if(Build.VERSION.SDK_INT>=28)window.getAttributes().layoutInDisplayCutoutMode=WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES; // allow drawing into cutout areas
          View view=window.getDecorView(); if(view!=null)
          {
-            view.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
+            /* Auto-hide bars after user revealed them - this is not needed because View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY and BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE do the same
+				view.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener()
             {
                @Override public void onSystemUiVisibilityChange(int visibility)
                {
@@ -413,7 +412,7 @@ public class EsenthelActivity extends NativeActivity
                      }, 2000); // after 2 seconds
                   }
                }
-            });
+            });*/
             View root_view=view.getRootView(); if(root_view!=null)
             {
                global_layout_listener=new ViewTreeObserver.OnGlobalLayoutListener()
@@ -808,11 +807,7 @@ public class EsenthelActivity extends NativeActivity
       return (res_id>0) ? getResources().getDimensionPixelSize(res_id) : 0;
    }
 
-          static       int                             system_bars=-1;
-   public static final int statusBar       () {return  system_bars    &(1|2);} // what requested by code
-   public static final int    navBar       () {return (system_bars>>2)&(1|2);} // what requested by code
-   public static final int systemBars      () {return  system_bars          ;} // what requested by code
-   public static final int systemBarsActual()                                  // what we actually have
+   /*public static final int systemBarsActual() // what we actually have
    {
       int result=0; if(activity!=null)
       {
@@ -820,7 +815,8 @@ public class EsenthelActivity extends NativeActivity
          {
             View view=window.getDecorView(); if(view!=null)
             {
-               int v=view.getSystemUiVisibility(), w=window.getAttributes().flags, status, nav;
+					int  v=view.getSystemUiVisibility(), w=window.getAttributes().flags;
+					byte status, nav;
                if((v&View.SYSTEM_UI_FLAG_FULLSCREEN                    )!=0
                || (w&WindowManager.LayoutParams.FLAG_FULLSCREEN        )!=0)status=SYSTEM_BAR_HIDDEN ;else // have to check this too
                if((w&WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)!=0)status=SYSTEM_BAR_OVERLAY;else
@@ -834,10 +830,12 @@ public class EsenthelActivity extends NativeActivity
          }
       }
       return result;
-   }
-   public static final void systemBars(int bars)
+   }*/
+	static byte status_bar=SYSTEM_BAR_HIDDEN, nav_bar=SYSTEM_BAR_VISIBLE; // must match #SystemBar
+   public static final void systemBars(byte status, byte nav, boolean status_color, boolean nav_color)
    {
-      system_bars=bars;
+		status_bar=status;
+		   nav_bar=nav;
       if(activity!=null)activity.runOnUiThread(new Runnable()
       {
          @Override public final void run()
@@ -845,21 +843,24 @@ public class EsenthelActivity extends NativeActivity
             Window window=activity.getWindow(); if(window!=null)
             {
                int v=View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY, w=0;
-               switch(statusBar())
+               switch(status)
                {
                   case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_FULLSCREEN; w|=WindowManager.LayoutParams.FLAG_FULLSCREEN; break;
                   case SYSTEM_BAR_OVERLAY: w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS; break;
                }
-               switch(navBar())
+               switch(nav)
                {
                   case SYSTEM_BAR_HIDDEN : v|=View.SYSTEM_UI_FLAG_HIDE_NAVIGATION; break;
                   case SYSTEM_BAR_OVERLAY: w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION; break;
                }
+					if(!status_color){v|=View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR    ; if(status==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;} // this is for dark status bar on light background, can change color only with SYSTEM_BAR_OVERLAY & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS, however this forces FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS for both status and nav
+					if(!   nav_color){v|=View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR; if(nav   ==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;} // this is for dark nav    bar on light background, can change color only with SYSTEM_BAR_OVERLAY & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS, however this forces FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS for both status and nav
+
                View view=window.getDecorView(); if(view!=null)view.setSystemUiVisibility(v);
-               window.setFlags(w, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION|WindowManager.LayoutParams.FLAG_FULLSCREEN);
+               window.setFlags(w, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION|WindowManager.LayoutParams.FLAG_FULLSCREEN|WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
                /* Alternative:
-               int status=statusBar(), nav=navBar(), w=0;
+               int w=0;
                View view=window.getDecorView(); if(view!=null)
                {
                   WindowInsetsControllerCompat wic=WindowCompat.getInsetsController(window, view); if(wic!=null)
@@ -871,6 +872,7 @@ public class EsenthelActivity extends NativeActivity
                }
                if(status==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
                if(nav   ==SYSTEM_BAR_OVERLAY)w|=WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
+					need to update for status_color, nav_color
                window.setFlags(w, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS|WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
                */
             }
@@ -908,8 +910,8 @@ public class EsenthelActivity extends NativeActivity
                l=ins.left; t=ins.top; r=ins.right; b=ins.bottom;
 
                v=0; // #ImmediateInsets, force setting as visible by using 'getInsetsIgnoringVisibility' if we know they're visible. This is so we can get latest 'D.rectUI' before waiting for Android/Java to process requests on other threads.
-               if(statusBar()!=SYSTEM_BAR_HIDDEN)v|=status;
-               if(   navBar()!=SYSTEM_BAR_HIDDEN)v|=nav   ;
+               if(status_bar!=SYSTEM_BAR_HIDDEN)v|=status;
+               if(   nav_bar!=SYSTEM_BAR_HIDDEN)v|=nav   ;
                if(v!=0)
                {
                   ins=insets_compat.getInsetsIgnoringVisibility(v);

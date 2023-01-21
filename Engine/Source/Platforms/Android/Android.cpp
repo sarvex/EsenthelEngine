@@ -648,6 +648,7 @@ static void CmdCallback(android_app *app, int32_t cmd)
             {
                D.androidOpen();
             }
+            extern void SetSystemBars(); SetSystemBars(); // always reapply system bars on window create (in case initial theme/style is different) and recreate (because it gets reverted) to make sure Android adjusted to what we want
          }
       }break;
 

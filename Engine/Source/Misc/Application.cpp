@@ -80,6 +80,9 @@ Application::Application()
   _style_window=0;
 #endif
 #endif
+  _status_color=_nav_color=true;
+  _status=      SYSTEM_BAR_HIDDEN                      ; // must match #SystemBar
+  _nav   =IOS ? SYSTEM_BAR_OVERLAY : SYSTEM_BAR_VISIBLE; // must match #SystemBar
   _thread_id=GetThreadID();
   _back_text="Running in background";
 }
@@ -196,57 +199,85 @@ Application& Application::backgroundText(C Str &text)
    return T;
 }
 /******************************************************************************/
-#if IOS
-static SYSTEM_BAR StatusBar=SYSTEM_BAR_HIDDEN, NavBar=SYSTEM_BAR_OVERLAY;
-static Bool       StatusBarColor=true;
-SYSTEM_BAR   Application::statusBar     ()C {return StatusBar     ;}
-SYSTEM_BAR   Application::   navBar     ()C {return    NavBar     ;}
-Bool         Application::statusBarColor()C {return StatusBarColor;}
-Application& Application::statusBar     (SYSTEM_BAR bar  ) {if(StatusBar     !=bar  ){StatusBar     =bar  ; if(ViewController) [ViewController setNeedsStatusBarAppearanceUpdate      ];                                                                      } return T;}
-Application& Application::   navBar     (SYSTEM_BAR bar  ) {if(   NavBar     !=bar  ){   NavBar     =bar  ; if(ViewController){[ViewController setNeedsUpdateOfHomeIndicatorAutoHidden]; [ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];}} return T;}
-Application& Application::statusBarColor(Bool       light) {if(StatusBarColor!=light){StatusBarColor=light; if(ViewController) [ViewController setNeedsStatusBarAppearanceUpdate      ];                                                                      } return T;}
-#endif
-Bool Application::getSystemBars(SYSTEM_BAR &status, SYSTEM_BAR &navigation)C
-{
 #if ANDROID
+void SetSystemBars()
+{
    JNI jni;
    if(jni && ActivityClass)
-   if(JMethodID systemBars=jni.staticFunc(ActivityClass, "systemBars", "()I"))
+   if(JMethodID systemBars=jni.staticFunc(ActivityClass, "systemBars", "(BBZZ)V"))
    {
-      UInt bars=jni->CallStaticIntMethod(ActivityClass, systemBars);
-      status    =SYSTEM_BAR( bars    &(1|2));
-      navigation=SYSTEM_BAR((bars>>2)&(1|2));
-      return true;
+      jni->CallStaticVoidMethod(ActivityClass, systemBars, jbyte(App.statusBar()), jbyte(App.navBar()), jboolean(App.statusBarColor()), jboolean(App.navBarColor()));
+      extern void AndroidResized(); AndroidResized(); // immediatelly request size check to call 'D.screenChanged' ASAP. This is so we can get latest 'D.rectUI' before waiting for Android/Java to process requests on other threads. For this we need #ImmediateInsets
    }
-#elif IOS
-   status    =StatusBar;
-   navigation=   NavBar;
-   return true;
-#endif
-   status=navigation=SYSTEM_BAR_HIDDEN;
-   return false;
 }
+#endif
 Application& Application::systemBars(SYSTEM_BAR status, SYSTEM_BAR navigation)
 {
 #if ANDROID
-   JNI jni;
-   if(jni && ActivityClass)
-   if(JMethodID systemBars=jni.staticFunc(ActivityClass, "systemBars", "(I)V"))
+   if(_status!=status || _nav!=navigation)
    {
-      jni->CallStaticVoidMethod(ActivityClass, systemBars, jint(status|(navigation<<2)));
-      extern void AndroidResized(); AndroidResized(); // immediatelly request size check to call 'D.screenChanged' ASAP. This is so we can get latest 'D.rectUI' before waiting for Android/Java to process requests on other threads. For this we need #ImmediateInsets
+     _status=status;
+     _nav   =navigation;
+      SetSystemBars();
    }
-#elif IOS
+#else
    statusBar(status);
       navBar(navigation);
 #endif
    return T;
 }
-#if !IOS
-Bool       Application::statusBarColor()C {return false;}   Application& Application::statusBarColor(Bool light) {return T;}
-SYSTEM_BAR Application::statusBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return status    ;}   Application& Application::statusBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(bar   , navigation); return T;}
-SYSTEM_BAR Application::   navBar()C {SYSTEM_BAR status, navigation; getSystemBars(status, navigation); return navigation;}   Application& Application::   navBar(SYSTEM_BAR bar) {SYSTEM_BAR status, navigation; if(getSystemBars(status, navigation))systemBars(status, bar       ); return T;}
-#endif
+Application& Application::statusBar(SYSTEM_BAR bar)
+{
+   if(_status!=bar)
+   {
+     _status=bar;
+   #if ANDROID
+      SetSystemBars();
+   #elif IOS
+      if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate];
+   #endif
+   }
+   return T;
+}
+Application& Application::navBar(SYSTEM_BAR bar)
+{
+   if(_nav!=bar)
+   {
+     _nav=bar;
+   #if ANDROID
+      SetSystemBars();
+   #elif IOS
+      if(ViewController){[ViewController setNeedsUpdateOfHomeIndicatorAutoHidden]; [ViewController setNeedsUpdateOfScreenEdgesDeferringSystemGestures];}
+   #endif
+   }
+   return T;
+}
+Application& Application::statusBarColor(Bool light)
+{
+   if(_status_color!=light)
+   {
+     _status_color=light;
+   #if ANDROID
+      SetSystemBars();
+   #elif IOS
+      if(ViewController)[ViewController setNeedsStatusBarAppearanceUpdate];
+   #endif
+   }
+   return T;
+}
+Application& Application::navBarColor(Bool light)
+{
+   if(_nav_color!=light)
+   {
+     _nav_color=light;
+   #if ANDROID
+      SetSystemBars();
+   #elif IOS
+      // unsupported
+   #endif
+   }
+   return T;
+}
 /******************************************************************************/
 #if WINDOWS || ANDROID
 Bool Application::minimized()C {return _minimized;}

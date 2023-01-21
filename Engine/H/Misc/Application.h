@@ -117,10 +117,11 @@ struct Application // Application Settings
    Application& backgroundFull(Bool   on      );                           // set if Application is allowed to remain visible on the screen when in fullscreen mode but inactive (if false then application is minimized), default=false
 
    // system bars
-   Bool    getSystemBars    (SYSTEM_BAR &status, SYSTEM_BAR &navigation)C;   Application& systemBars    (SYSTEM_BAR status, SYSTEM_BAR navigation); // get/set system     bars      [Supported Platforms: Android, iOS]
-   SYSTEM_BAR statusBar     (                                          )C;   Application& statusBar     (SYSTEM_BAR bar                          ); // get/set status     bar       [Supported Platforms: Android, iOS]
-   SYSTEM_BAR navBar        (                                          )C;   Application&    navBar     (SYSTEM_BAR bar                          ); // get/set navigation bar       [Supported Platforms: Android, iOS]
-   Bool       statusBarColor(                                          )C;   Application& statusBarColor(Bool       light                        ); // get/set status     bar color [Supported Platforms:          iOS]
+                                                          Application& systemBars    (SYSTEM_BAR status, SYSTEM_BAR navigation); //     set system     bars      [Supported Platforms: Android, iOS]
+   SYSTEM_BAR statusBar     ()C {return _status      ;}   Application& statusBar     (SYSTEM_BAR bar                          ); // get/set status     bar       [Supported Platforms: Android, iOS]
+   SYSTEM_BAR    navBar     ()C {return    _nav      ;}   Application&    navBar     (SYSTEM_BAR bar                          ); // get/set navigation bar       [Supported Platforms: Android, iOS]
+   Bool       statusBarColor()C {return _status_color;}   Application& statusBarColor(Bool       light                        ); // get/set status     bar color [Supported Platforms: Android, iOS]
+   Bool          navBarColor()C {return    _nav_color;}   Application&    navBarColor(Bool       light                        ); // get/set navigation bar color [Supported Platforms: Android     ]
 
    // operations
    Bool renameSelf      (C Str &dest); // rename application executable file to 'dest' location, false on fail
@@ -177,13 +178,14 @@ struct Application // Application Settings
 #if !EE_PRIVATE
 private:
 #endif
-   Bool                _active, _initialized, _minimized, _maximized, _close, _closed, _del_self_at_exit, _elevated, _back_full;
+   Bool                _active, _initialized, _minimized, _maximized, _close, _closed, _del_self_at_exit, _elevated, _back_full, _status_color, _nav_color;
 #if WINDOWS_NEW
    Bool                _waiting;
 #endif
    AWAKE_MODE          _stay_awake;
    DIR_ENUM            _orientation=DIR_UP;
    LANG_TYPE           _lang;
+   SYSTEM_BAR          _status, _nav;
    Int                 _mem_leaks;
    mutable UInt        _parent_process_id;
    UInt                _process_id;
