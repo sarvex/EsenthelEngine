@@ -380,8 +380,8 @@ static Char LoadText(FileText &f, Str &t, Char c)
                   default : return ERROR; // invalid char
                }
             }else
-            if(Unsigned(c)>=32 || c=='\t' || c=='\n')t.alwaysAppend(c);else // valid char, '\n' here is supported as well, but prefer as "~n"
-            if(c!='\r')return ERROR; // skip '\r'
+            if(f.ok())t.alwaysAppend(c);
+            else      return ERROR;
          }
          c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
       }break;
