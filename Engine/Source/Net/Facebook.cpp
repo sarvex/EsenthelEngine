@@ -224,10 +224,10 @@ void Facebook::post(C Str &url, C Str &quote)
 static      Facebook::UserEmail Me;
 static Mems<Facebook::User >    Friends;
 static Bool                     HasMe, HasFriends; // these are needed because 'Swap' is used, to make sure we don't swap 2 times, in case 'Update' is running and waiting for lock, while we receive new data and include one more 'Update'. This way already running 'Update' will get new data, and the next queued 'Update' will swap to old data.
-static Byte                     Result;
+static Facebook::RESULT         Result;
 static void UpdateMe     () {SyncLocker locker(JavaLock); if(HasMe     ){Swap(FB._me     , Me     ); HasMe     =false;}}
 static void UpdateFriends() {SyncLocker locker(JavaLock); if(HasFriends){Swap(FB._friends, Friends); HasFriends=false;}}
-static void CallCallback () {if(void (*callback)(Facebook::RESULT result)=FB.callback)callback(Facebook::RESULT(Result));}
+static void CallCallback () {if(void (*callback)(Facebook::RESULT result)=FB.callback)callback(Result);}
 extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookMe(JNIEnv *env, jclass clazz, jstring id, jstring name, jstring email)
 {
    JNI jni(env);
@@ -274,7 +274,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_esenthel_Native_facebookPost(JNIEnv *
 {
    if(FB.callback)
    {
-      Result=result;
+      Result=(Facebook::RESULT)result;
       App.includeFuncCall(CallCallback);
    }
 }

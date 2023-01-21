@@ -164,47 +164,47 @@ public class EsenthelActivity extends NativeActivity
    }
 
    // !! these must be equal to 'AWAKE_MODE' !!
-   public static final int AWAKE_OFF   =0;
-   public static final int AWAKE_SYSTEM=1;
-   public static final int AWAKE_SCREEN=2;
+   public static final byte AWAKE_OFF   =0;
+   public static final byte AWAKE_SYSTEM=1;
+   public static final byte AWAKE_SCREEN=2;
 
    // !! these must be equal to 'SYSTEM_BAR' !!
-   public static final int SYSTEM_BAR_HIDDEN =0;
-   public static final int SYSTEM_BAR_OVERLAY=1;
-   public static final int SYSTEM_BAR_VISIBLE=2;
+   public static final byte SYSTEM_BAR_HIDDEN =0;
+   public static final byte SYSTEM_BAR_OVERLAY=1;
+   public static final byte SYSTEM_BAR_VISIBLE=2;
 
    // !! these must be equal to 'PlatformStore.RESULT' !!
-   public static final int RES_OK                 =-1; // this is not a 'PlatformStore.RESULT' but a temp value
-   public static final int RES_PURCHASED          =0;
-   public static final int RES_CONSUMED           =1;
-   public static final int RES_REFUND             =2;
-   public static final int RES_WAITING            =3;
-   public static final int RES_USER_CANCELED      =4;
-   public static final int RES_SERVICE_CANCELED   =5;
-   public static final int RES_SERVICE_UNAVAILABLE=6;
-   public static final int RES_ITEM_UNAVAILABLE   =7;
-   public static final int RES_ALREADY_OWNED      =8;
-   public static final int RES_NOT_OWNED          =9;
-   public static final int RES_VERIFICATION_FAIL  =10;
-   public static final int RES_UNKNOWN            =11;
-   public static final int RES_REFRESHED_ITEMS    =12;
-   public static final int RES_REFRESHED_PURCHASES=13;
+   public static final byte RES_OK                 =-1; // this is not a 'PlatformStore.RESULT' but a temp value
+   public static final byte RES_PURCHASED          =0;
+   public static final byte RES_CONSUMED           =1;
+   public static final byte RES_REFUND             =2;
+   public static final byte RES_WAITING            =3;
+   public static final byte RES_USER_CANCELED      =4;
+   public static final byte RES_SERVICE_CANCELED   =5;
+   public static final byte RES_SERVICE_UNAVAILABLE=6;
+   public static final byte RES_ITEM_UNAVAILABLE   =7;
+   public static final byte RES_ALREADY_OWNED      =8;
+   public static final byte RES_NOT_OWNED          =9;
+   public static final byte RES_VERIFICATION_FAIL  =10;
+   public static final byte RES_UNKNOWN            =11;
+   public static final byte RES_REFRESHED_ITEMS    =12;
+   public static final byte RES_REFRESHED_PURCHASES=13;
 
    // !! these must be equal to 'PlatformStore.LICENSE_TEST_RESULT' !!
-   public static final int LTR_NONE   =0;
-   public static final int LTR_WAITING=1;
-   public static final int LTR_OK     =2;
-   public static final int LTR_FAIL   =3;
-   public static final int LTR_RETRY  =4;
-   public static final int LTR_ERROR  =5;
+   public static final byte LTR_NONE   =0;
+   public static final byte LTR_WAITING=1;
+   public static final byte LTR_OK     =2;
+   public static final byte LTR_FAIL   =3;
+   public static final byte LTR_RETRY  =4;
+   public static final byte LTR_ERROR  =5;
 
    // !! these must be equal to 'Facebook.RESULT' !!
-   public static final int POST_ERROR=0;
-   public static final int POST_CANCEL=1;
-   public static final int POST_SUCCESS=2;
+   public static final byte POST_ERROR=0;
+   public static final byte POST_CANCEL=1;
+   public static final byte POST_SUCCESS=2;
 
-   public static final int REQUEST_CODE_IAB=0;
-   public static final int REQUEST_CODE_FILE_PICKER=1;
+   public static final byte REQUEST_CODE_IAB=0;
+   public static final byte REQUEST_CODE_FILE_PICKER=1;
 
    // variables
    static EsenthelActivity     activity;
@@ -808,7 +808,7 @@ public class EsenthelActivity extends NativeActivity
       return (res_id>0) ? getResources().getDimensionPixelSize(res_id) : 0;
    }
 
-   static int system_bars=-1;
+          static       int                             system_bars=-1;
    public static final int statusBar       () {return  system_bars    &(1|2);} // what requested by code
    public static final int    navBar       () {return (system_bars>>2)&(1|2);} // what requested by code
    public static final int systemBars      () {return  system_bars          ;} // what requested by code
@@ -887,10 +887,7 @@ public class EsenthelActivity extends NativeActivity
 
    public final void getRects()
    {
-    /*int status    = system_bars    &(1|2);
-      int navigation=(system_bars>>2)&(1|2);
-
-      int     statusBarHeight=0; if(status    ==SYSTEM_BAR_OVERLAY)    statusBarHeight=statusBarHeight();
+    /*int     statusBarHeight=0; if(status    ==SYSTEM_BAR_OVERLAY)    statusBarHeight=statusBarHeight();
       int navigationBarHeight=0; if(navigation==SYSTEM_BAR_OVERLAY)navigationBarHeight=   navBarHeight();*/
 
       Window window=getWindow(); if(window!=null)
@@ -1127,18 +1124,18 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
 /*ADMOB*\
    // !! these must be equal to 'AdMobClass.BANNER_TYPE' !!
-   public static final int AD_BANNER          =0;
-   public static final int AD_MEDIUM_RECTANGLE=1;
-   public static final int AD_FULL_BANNER     =2;
-   public static final int AD_LEADERBOARD     =3;
-   public static final int AD_SMART_BANNER    =4;
-   public static final int AD_INTERSTITIAL    =5;
+   public static final byte AD_BANNER          =0;
+   public static final byte AD_MEDIUM_RECTANGLE=1;
+   public static final byte AD_FULL_BANNER     =2;
+   public static final byte AD_LEADERBOARD     =3;
+   public static final byte AD_SMART_BANNER    =4;
+   public static final byte AD_INTERSTITIAL    =5;
 
    // !! these must be equal to 'AdMobClass.STATE' !!
-   public static final int AD_NONE   =0;
-   public static final int AD_LOADING=1;
-   public static final int AD_DONE   =2;
-   public static final int AD_ERROR  =3;
+   public static final byte AD_NONE   =0;
+   public static final byte AD_LOADING=1;
+   public static final byte AD_DONE   =2;
+   public static final byte AD_ERROR  =3;
 
    static AdRequest      ad_request;
           AdView         ad_view;
@@ -1147,7 +1144,7 @@ public class EsenthelActivity extends NativeActivity
                          inters_show=false; // if show interstitial once it's loaded
    static String         banner_id, // id of the banner       ad, null for none
                          inters_id; // id of the interstitial ad, null for none
-   static int            banner_type=AD_BANNER, // banner type
+   static byte           banner_type=AD_BANNER, // banner type
                          banner_x=0, banner_y=1; // banner position, -1..1
           InterstitialAd interstitial;
           PopupWindow    popup_window;
@@ -1745,17 +1742,17 @@ public class EsenthelActivity extends NativeActivity
    /******************************************************************************/
 /*CHARTBOOST*\
    // !! these must be equal to 'ChartboostClass.RESULT' !!
-   public static final int INTERSTITIAL_LOADED   =0;
-   public static final int INTERSTITIAL_LOAD_FAIL=1;
-   public static final int INTERSTITIAL_DISPLAYED=2;
-   public static final int INTERSTITIAL_CLOSED   =3;
-   public static final int INTERSTITIAL_CLICKED  =4;
-   public static final int REWARDED_VIDEO_LOADED   =5;
-   public static final int REWARDED_VIDEO_LOAD_FAIL=6;
-   public static final int REWARDED_VIDEO_DISPLAYED=7;
-   public static final int REWARDED_VIDEO_CLOSED   =8;
-   public static final int REWARDED_VIDEO_COMPLETED=9;
-   public static final int REWARDED_VIDEO_CLICKED  =10;
+   public static final byte INTERSTITIAL_LOADED   =0;
+   public static final byte INTERSTITIAL_LOAD_FAIL=1;
+   public static final byte INTERSTITIAL_DISPLAYED=2;
+   public static final byte INTERSTITIAL_CLOSED   =3;
+   public static final byte INTERSTITIAL_CLICKED  =4;
+   public static final byte REWARDED_VIDEO_LOADED   =5;
+   public static final byte REWARDED_VIDEO_LOAD_FAIL=6;
+   public static final byte REWARDED_VIDEO_DISPLAYED=7;
+   public static final byte REWARDED_VIDEO_CLOSED   =8;
+   public static final byte REWARDED_VIDEO_COMPLETED=9;
+   public static final byte REWARDED_VIDEO_CLICKED  =10;
 
    public static final boolean chartboostVisible() {return Chartboost.isAnyViewVisible();}
 
@@ -1802,7 +1799,7 @@ public class EsenthelActivity extends NativeActivity
    }
    public static final String            NOTIFICATION_CHANNEL_ID="BackgroundService";
    public static final String            NOTIFICATION_ID        ="NotificationID";
-   public static final int    BACKGROUND_NOTIFICATION_ID        =-1; // must not be 0 because 'startForeground' does not accept 0, use -1 because 0..+ are used by custom Notifications !! if this is changed then adjust 'Application.backgroundText' !!
+   public static final byte   BACKGROUND_NOTIFICATION_ID        =-1; // must not be 0 because 'startForeground' does not accept 0, use -1 because 0..+ are used by custom Notifications !! if this is changed then adjust 'Application.backgroundText' !!
    public static final void initNotification()
    {
       if(Build.VERSION.SDK_INT>=26)

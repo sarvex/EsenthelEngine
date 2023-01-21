@@ -38,7 +38,7 @@ enum APP_FLAG // Application Flags
 enum AWAKE_MODE : Byte
 {
 #if EE_PRIVATE
-   // !! these enums must be equal to "EsenthelActivity.java" !!
+   // !! THESE ENUMS MUST BE EQUAL TO "EsenthelActivity.java" !!
 #endif
    AWAKE_OFF   , // the system and screen can go to sleep
    AWAKE_SYSTEM, // prevent the system from going to sleep, however the screen can go to sleep
@@ -48,7 +48,7 @@ enum AWAKE_MODE : Byte
 enum SYSTEM_BAR : Byte
 {
 #if EE_PRIVATE
-   // !! these enums must be equal to "EsenthelActivity.java" !!
+   // !! THESE ENUMS MUST BE EQUAL TO "EsenthelActivity.java" !!
 #endif
    SYSTEM_BAR_HIDDEN , // completely hidden
    SYSTEM_BAR_OVERLAY, // semi-transparent drawn on top of the application
