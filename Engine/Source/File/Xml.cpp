@@ -1758,13 +1758,13 @@ static void Save(C Str &text, Str &s, Bool name)
                ULong   u    =(neg ? -cv.i-1 : cv.i); // absolute
                Byte    bytes=Max(1, ByteHi(u)); // how many bytes needed 1..8
                TM_TYPE type =BytesToType(bytes, neg);
-               s.alwaysAppend(type); FREP(bytes)s.alwaysAppend(((Byte*)&u)[i]);
+               s+=Char(type); FREP(bytes)s+=Char(((Byte*)&u)[i]);
                return;
             }
          }
       }
    }
-   s.alwaysAppend(name ? NAME : VALUE);
+   s+=Char(name ? NAME : VALUE);
    Save(text, s);
 }
 static Int Load(Str &text, C Str &s, Int i, Char c)
@@ -1808,9 +1808,9 @@ static void Save(C TextNode &node, Str &s)
    if(node.value.is())Save(node.value, s, false);
    if(node.nodes.elms())
    {
-      s.alwaysAppend(CHILD);
+      s+=Char(CHILD);
       FREPA(node.nodes)Save(node.nodes[i], s);
-      s.alwaysAppend(END);
+      s+=Char(END);
    }
 }
 static Int Load(Memc<TextNode> &nodes, C Str &s, Int i)
@@ -1842,7 +1842,7 @@ void TextMetaElm::save(Str &s)C
    if(data.nodes.elms())
    {
       FREPA(data.nodes)Save(data.nodes[i], s);
-      s.alwaysAppend(END);
+      s+=Char(END);
    }
 }
 void TextMeta::save(  Str &s)C {FREPAO(T).save(s);}
