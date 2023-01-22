@@ -226,7 +226,7 @@ Char FileText::getChar()
 {
    switch(_code)
    {
-      default    : return 0;
+      default    : error: return 0;
       case UTF_16: return _f.getUShort();
 
       case ANSI:
@@ -250,40 +250,42 @@ Char FileText::getChar()
          if(_buf){Char c=_buf; _buf=0; return c;}
 
          Byte b0=_f.getByte();
-         if(b0&(1<<7))
+         if(!(b0&(1<<7)))return b0; // this handles NUL
+         if(!(b0&(1<<6)))goto error; // bit 6 should be always on, here don't skip back, so we can always advance at least 1 char
+
+         const Bool skip_back=false; // if character is invalid, then revert reading it, skip back, so other codes can process it
+         Char c;
+         Byte b1=_f.getByte(); if((b1&((1<<7)|(1<<6)))!=(1<<7)){if(skip_back)_f.skip(-1); goto error;} b1&=0x3F; // bit 7 should be always on, bit 6 always off, this handles NUL
+         if(!(b0&(1<<5)))
          {
-            Byte b1=(_f.getByte()&0x3F);
-            if(FlagAll(b0, (1<<6)|(1<<5)))
+            b0&=0x1F;
+            c=(b1|(b0<<6));
+         }else
+         {
+            Byte b2=_f.getByte(); if((b2&((1<<7)|(1<<6)))!=(1<<7)){if(skip_back)_f.skip(-1); goto error;} b2&=0x3F; // bit 7 should be always on, bit 6 always off, this handles NUL
+            if(!(b0&(1<<4)))
             {
-               Byte b2=(_f.getByte()&0x3F);
-               if(b0&(1<<4))
+               b0&=0x0F;
+               c=(b2|(b1<<6)|(b0<<12));
+            }else
+            {
+               Byte b3=_f.getByte(); if((b3&((1<<7)|(1<<6)))!=(1<<7)){if(skip_back)_f.skip(-1); goto error;} b3&=0x3F; // bit 7 should be always on, bit 6 always off, this handles NUL
+               if(!(b0&(1<<3)))
                {
-                  Byte b3=(_f.getByte()&0x3F);
                   b0&=0x07;
                   UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
                   // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
-                  if(u<=  0xFFFF)return u; // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+                  if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)c=u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
                   if(u<=0x10FFFF)
                   {
-                        u-=0x10000;
-                      _buf= 0xDC00+(u&0x3FF); // #1
-                     return 0xD800+(u>>10  ); // #0
-                  }
-                  return '?'; // unsupported
-               }else
-               {
-                  b0&=0x0F;
-                  return b2|(b1<<6)|(b0<<12);
-               }
-            }else
-            {
-               b0&=0x1F;
-               return b1|(b0<<6);
+                      u-=0x10000;
+                    _buf= 0xDC00+(u&0x3FF); // #1
+                       c= 0xD800+(u>>10  ); // #0
+                  }else c='?'; // unsupported
+               }else c='?'; // unsupported
             }
-         }else
-         {
-            return b0;
          }
+         return c;
       }break;
    }
 }

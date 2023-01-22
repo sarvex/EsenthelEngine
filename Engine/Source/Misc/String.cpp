@@ -2060,27 +2060,27 @@ Str FromUTF8(CChar8 *text)
          if(!(b0&(1<<6)))break; // bit 6 should be always on
 
          Char c;
-         Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+         Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL. Advance after checking if char is valid, so we don't skip past NUL
          if(!(b0&(1<<5)))
          {
             b0&=0x1F;
             c=(b1|(b0<<6));
          }else
          {
-            Byte b2=*text; if((b2&((1<<7)|(1<<6)))!=(1<<7))break; b2&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+            Byte b2=*text; if((b2&((1<<7)|(1<<6)))!=(1<<7))break; b2&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL. Advance after checking if char is valid, so we don't skip past NUL
             if(!(b0&(1<<4)))
             {
                b0&=0x0F;
                c=(b2|(b1<<6)|(b0<<12));
             }else
             {
-               Byte b3=*text; if((b3&((1<<7)|(1<<6)))!=(1<<7))break; b3&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+               Byte b3=*text; if((b3&((1<<7)|(1<<6)))!=(1<<7))break; b3&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL. Advance after checking if char is valid, so we don't skip past NUL
                if(!(b0&(1<<3)))
                {
                   b0&=0x07;
                   UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
                   // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
-                  if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+                  if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)c=u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
                   if(u<=0x10FFFF)
                   {
                      u-=0x10000;
@@ -2096,6 +2096,60 @@ Str FromUTF8(CChar8 *text)
       }
    }
    return out;
+}
+CChar* Str::fromUTF8Safe(CChar *text) // returns pointer where it stopped reading (end or unsafe char)
+{
+   clear();
+   if(text)for(;;)
+   {
+      Byte b0=*text;
+      if(!(b0&(1<<7)))
+      {
+         if(!Safe(b0))break; // Safe/NUL
+         text++;
+         alwaysAppend(b0);
+      }else
+      {
+         text++; // always advance at least 1 byte even if result will be invalid, to self correct
+         if(!(b0&(1<<6)))break; // bit 6 should be always on
+
+         Char c;
+         Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles Safe/NUL. Advance after checking if char is valid, so we don't skip past NUL
+         if(!(b0&(1<<5)))
+         {
+            b0&=0x1F;
+            c=(b1|(b0<<6));
+         }else
+         {
+            Byte b2=*text; if((b2&((1<<7)|(1<<6)))!=(1<<7))break; b2&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles Safe/NUL. Advance after checking if char is valid, so we don't skip past NUL
+            if(!(b0&(1<<4)))
+            {
+               b0&=0x0F;
+               c=(b2|(b1<<6)|(b0<<12));
+            }else
+            {
+               Byte b3=*text; if((b3&((1<<7)|(1<<6)))!=(1<<7))break; b3&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles Safe/NUL. Advance after checking if char is valid, so we don't skip past NUL
+               if(!(b0&(1<<3)))
+               {
+                  b0&=0x07;
+                  UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
+                  // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
+                  if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)c=u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+                  if(u<=0x10FFFF)
+                  {
+                     u-=0x10000;
+                     alwaysAppend(0xD800+(u>>10  )); // #0
+                                c=0xDC00+(u&0x3FF) ; // #1
+                  }else c='?'; // unsupported
+               }else c='?'; // unsupported
+            }
+         }
+
+         if(!Safe(c))break; // Safe/NUL
+         alwaysAppend(c);
+      }
+   }
+   return text;
 }
 Str8 UTF8(C Str &text)
 {
@@ -2122,6 +2176,32 @@ Str8 UTF8(C Str &text)
       }
    }
    return out;
+}
+void Str::appendUTF8Safe(C Str &text) // this ignores unsafe characters
+{
+   reserveAdd(text.length());
+   FREPA(text)
+   {
+      auto c=Unsigned(text[i]);
+      if(Safe(c)) // ignore unsafe characters
+      if(c<=0x07F) alwaysAppend(c);else
+      if(c<=0x7FF){alwaysAppend(0xC0 | (c>>6)); alwaysAppend(0x80 | (c&0x3F));}else
+   #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
+      if(c>=0xD800 && c<=0xDBFF)
+      {
+      /* U32 -> 2x U16 formula:
+         u-=0x10000;
+         c0=0xD800+(u>>10);
+         c1=0xDC00+(u&0x3FF); */
+         auto c1=Unsigned(text[++i]);
+         U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
+         alwaysAppend(0xF0 | (u>>18)); alwaysAppend(0x80 | ((u>>12)&0x3F)); alwaysAppend(0x80 | ((u>>6)&0x3F)); alwaysAppend(0x80 | (u&0x3F));
+      }else
+   #endif
+      {
+         alwaysAppend(0xE0 | (c>>12)); alwaysAppend(0x80 | ((c>>6)&0x3F)); alwaysAppend(0x80 | (c&0x3F));
+      }
+   }
 }
 Str8 MultiByte(Int code_page, C Str &text)
 {

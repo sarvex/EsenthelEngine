@@ -69,6 +69,8 @@ struct Str // Text String (16-bit per character)
    Str(CFStringRef s);   Str& operator=(CFStringRef s);   Str& operator+=(CFStringRef s);   Str operator+(CFStringRef s)C;
 #endif
    void alwaysAppend(Char c);
+   void appendUTF8Safe(C Str &text);
+   CChar* fromUTF8Safe(CChar *text);
    explicit Str(C Str8 &s, UInt extra_length);
    explicit Str(C Str  &s, UInt extra_length);
 #endif
