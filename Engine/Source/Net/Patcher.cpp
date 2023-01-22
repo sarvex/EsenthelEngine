@@ -247,7 +247,7 @@ DWNL_STATE Patcher::indexState()
 }
 C Pak* Patcher::index() {return (indexState()==DWNL_DONE) ? &_pak : null;}
 /******************************************************************************/
-static Str ServerPath(Str path, bool file=true) // !! this needs to be in sync with "Uploader" tool !!
+static Str ServerPath(Str path, bool file=true) // !! THIS NEEDS TO BE IN SYNC WITH "Uploader" TOOL !!
 {
    Str out; if(file){Str ext=GetExt(path); if(ext=="pl" || ext=="php" || ext=="old" || ext=="dat" || ext=="dll" || ext=="bat" || ext=="cmd")path+='_';} // these file formats can't be downloaded normally, because they're treated as scripts or some can be blocked by servers
    for(;;)

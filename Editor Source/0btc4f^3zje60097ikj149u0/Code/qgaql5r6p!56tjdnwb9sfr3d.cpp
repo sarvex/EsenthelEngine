@@ -83,13 +83,13 @@ const OS_VER InstallerPlatform[]=
 const COMPRESS_TYPE Compression=COMPRESS_LZMA;
 const int           CompressionLevel=9;
 /******************************************************************************/
-Str ServerPath(Str path, bool file=true) // !! this needs to be in sync with 'Patcher' class !!
+Str ServerPath(Str path, bool file=true) // !! THIS NEEDS TO BE IN SYNC WITH 'Patcher' CLASS !!
 {
    Str out; if(file){Str ext=GetExt(path); if(ext=="pl" || ext=="php" || ext=="old" || ext=="dat" || ext=="dll" || ext=="bat" || ext=="cmd")path+='_';} // these file formats can't be downloaded normally, because they're treated as scripts or some can be blocked by servers
    for(;;)
    {
       Str base=GetBase(path); if(!base.is())break;
-      out =S + (file ? "f-" : "d-") + CaseDown(base) + (out.is() ? '/' : '\0') + out;
+      out =S + (file ? "f-" : "d-") + CaseDown(base) + (out.is() ? "/" : null) + out;
       path=GetPath(path);
       file=false;
    }
