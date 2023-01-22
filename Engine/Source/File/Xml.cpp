@@ -476,8 +476,8 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
    return c;
 }
 /******************************************************************************/
-static Bool     YAMLNameStart(Char c) {return c>' ' && c!='-';}
-static Bool     YAMLName     (Char c) {return c>' ' && c!=':';}
+static Bool     YAMLNameStart(Char c) {return Unsigned(c)>' ' && c!='-';}
+static Bool     YAMLName     (Char c) {return Unsigned(c)>' ' && c!=':';}
 static Char LoadYAMLName     (FileText &f, Str &t, Char c)
 {
    t=c; // we've already read the first character
@@ -489,8 +489,8 @@ static Char LoadYAMLName     (FileText &f, Str &t, Char c)
    }
    return c;
 }
-static Bool     YAMLValueStart(Char c) {return c> ' ';}
-static Bool     YAMLValue     (Char c) {return c>=' ';}
+static Bool     YAMLValueStart(Char c) {return Unsigned(c)> ' ';}
+static Bool     YAMLValue     (Char c) {return Unsigned(c)>=' ';}
 static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
 {
    if(c=='"') // string
@@ -1679,7 +1679,7 @@ Str FileParams::Merge(C Str &a, C Str &b)
 /******************************************************************************/
 // TEXT META
 /******************************************************************************/
-enum TM_TYPE : Byte
+enum TM_TYPE : Char8
 {
    END     = 0,
    NAME    = 1, // Str8 Safe chars only

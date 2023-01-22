@@ -10,7 +10,7 @@ static void GetLine(Str8 &line, File &f)
 	{
 		Char8 c; f>>c;
 		if(c=='\n' || !c)return;
-		line.alwaysAppend(c);
+		line+=c;
 	}
 }
 static void RGBEToRGB(C Byte (&rgbe)[4], Vec &rgb)

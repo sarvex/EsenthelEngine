@@ -2706,7 +2706,7 @@ Str CleanFileName(C Str &name)
       case '<' :
       case '>' :
       case '|' : break;
-      default  : if(Unsigned(c)>31)temp.alwaysAppend(c); break;
+      default  : if(Unsigned(c)>31)temp+=c; break;
    }
    temp.removeOuterWhiteChars(); // on Windows names can't end with spaces (but they can start with spaces), on Windows names can start with spaces (but remove them anyway, because it's a non-standard naming convention to start with a space)
    REPA(temp)if(temp[i]!='.' && temp[i]!=' ')return temp; // on Windows name must contain at least one character which is not space or dot (".", "..", ". .", "......", ". . ." - all of these are invalid names)
@@ -2797,7 +2797,7 @@ void EncodeFileName(Str &dest, CPtr src, Int size)
       UInt u, max;
       REP(UInt(size)/4)
       {
-         for(u=*(UInt*)s, max=UINT_MAX; ; ){dest.alwaysAppend(CleanFileNameArray[u%CleanFileNameElms]); max/=CleanFileNameElms; if(!max)break; u/=CleanFileNameElms;}
+         for(u=*(UInt*)s, max=UINT_MAX; ; ){dest+=CleanFileNameArray[u%CleanFileNameElms]; max/=CleanFileNameElms; if(!max)break; u/=CleanFileNameElms;}
          s+=4;
       }
       switch(size&3)
@@ -2807,7 +2807,7 @@ void EncodeFileName(Str &dest, CPtr src, Int size)
          case  3: u=*(U16*)s|(s[2]<<16); max=0xFFFFFF; break;
          default: goto end;
       }
-      for(;;){dest.alwaysAppend(CleanFileNameArray[u%CleanFileNameElms]); max/=CleanFileNameElms; if(!max)break; u/=CleanFileNameElms;}
+      for(;;){dest+=CleanFileNameArray[u%CleanFileNameElms]; max/=CleanFileNameElms; if(!max)break; u/=CleanFileNameElms;}
    end:;
    }
 }
@@ -2828,7 +2828,7 @@ void EncodeFileName64(Str &dest, CPtr src, Int size)
       ULong u, max;
       REP(ULong(size)/SIZE(ULong))
       {
-         for(u=*(ULong*)s, max=ULONG_MAX; ; ){dest.alwaysAppend(CleanFileName64Array[u%CleanFileName64Elms]); max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
+         for(u=*(ULong*)s, max=ULONG_MAX; ; ){dest+=CleanFileName64Array[u%CleanFileName64Elms]; max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
          s+=SIZE(ULong);
       }
       switch(size&7)
@@ -2842,7 +2842,7 @@ void EncodeFileName64(Str &dest, CPtr src, Int size)
          case  7: u=*(U32*)s|(U64(*(U16*)(s+4))<<32)|(U64(s[6])<<48); max=0xFFFFFFFFFFFFFF; break;
          default: goto end;
       }
-      for(;;){dest.alwaysAppend(CleanFileName64Array[u%CleanFileName64Elms]); max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
+      for(;;){dest+=CleanFileName64Array[u%CleanFileName64Elms]; max/=CleanFileName64Elms; if(!max)break; u/=CleanFileName64Elms;}
    end:;
    }
 }
@@ -3001,7 +3001,7 @@ Str ShortEmail(C Str &email)
       Str e; e.reserve(email.length());
       for(Int len=email.length()-gmail_len, i=0; i<len; i++)
       {
-         Char c=email()[i]; if(c!='.')e.alwaysAppend(c);
+         Char c=email()[i]; if(c!='.')e+=c;
       }
       e+="@gmail.com";
       return e;

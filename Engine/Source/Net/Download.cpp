@@ -63,15 +63,15 @@ static void AppendParamBin(Str8 &text, C TextParam &param) // don't convert 'par
    {
       Char8 c=name[i];
       if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
-      else text.alwaysAppend(c);
+      else text+=c;
    }
-   text.alwaysAppend('=');
+   text+='=';
  C Str  &value=param.value;
    FREPA(value) // set value
    {
       Char8 c=value[i];
       if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='&' || c=='+' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
-      else text.alwaysAppend(c);
+      else text+=c;
    }
 }
 static void AppendName(Str8 &text, C Str &name)
@@ -80,7 +80,7 @@ static void AppendName(Str8 &text, C Str &name)
    {
       Char8 c=name8[i];
       if(c=='"')text+="\\\"";else
-      if(c>=' ')text.alwaysAppend(c);
+      if(Unsigned(c)>=32)text+=c;
    }
 }
 static Str8 GetRange(C Download &down)
