@@ -357,7 +357,7 @@ static Char LoadText(FileText &f, Str &t, Char c)
          for(;;)
          {
             c=f.getChar();
-            if(SimpleChar(c))t.alwaysAppend(c); // valid name char
+            if(SimpleChar(c))t+=c; // valid name char
                else break;
          }
       }break;
@@ -372,19 +372,19 @@ static Char LoadText(FileText &f, Str &t, Char c)
             {
                switch(c=f.getChar())
                {
-                  case '0': t.alwaysAppend('\0'); break;
-                  case 'n': t.alwaysAppend('\n'); break;
-                  case 't': t.alwaysAppend('\t'); break; // just in case it was written as special char
-                  case '`': t.alwaysAppend('`' ); break;
-                  case '~': t.alwaysAppend('~' ); break;
+                  case '0': t+='\0'; break;
+                  case 'n': t+='\n'; break;
+                  case 't': t+='\t'; break; // just in case it was written as special char
+                  case '`': t+='`' ; break;
+                  case '~': t+='~' ; break;
                   default : return ERROR; // invalid char
                }
             }else
          #if 1 // don't allow special characters, ignore '\r'
-            if(Safe(c))t.alwaysAppend(c);else // valid char, '\n' here is supported as well
+            if(Safe(c))t+=c;else // valid char, '\n' here is supported as well
             if(c!='\r')return ERROR; // skip '\r'
          #else // allow all characters
-            if(f.ok())t.alwaysAppend(c); // add all possible characters because this data can be received from server and we need exact match
+            if(f.ok())t+=c; // add all possible characters because this data can be received from server and we need exact match
             else      return ERROR;
          #endif
          }
@@ -403,8 +403,8 @@ static Char LoadText(FileText &f, Str &t, Char c)
             if(c==BINARY_ZERO)
             {
                if(src_elms!=0)return ERROR; // BINARY_ZERO can occur only at the start of a chunk
-               t.alwaysAppend(Char(0));
-               t.alwaysAppend(Char(0));
+               t+=Char(0);
+               t+=Char(0);
                continue;
             }
          #endif
@@ -414,8 +414,8 @@ static Char LoadText(FileText &f, Str &t, Char c)
             {
                if(DecodeText(src, src_elms, out))
                {
-                  t.alwaysAppend(Char(out&0xFFFF));
-                  t.alwaysAppend(Char(out>>   16));
+                  t+=Char(out&0xFFFF);
+                  t+=Char(out>>   16);
                }else return ERROR; // invalid input (this also handles '\0' chars)
                src_elms=0; // clear buffer
             }
@@ -424,8 +424,8 @@ static Char LoadText(FileText &f, Str &t, Char c)
          {
             if(DecodeText(src, src_elms, out)) // process leftovers
             {
-                              t.alwaysAppend(Char(out&0xFFFF)); // 1..3 chars correspond to 2 bytes
-               if(src_elms>=4)t.alwaysAppend(Char(out>>16   )); // 4    chars correspond to 3 bytes
+                              t+=Char(out&0xFFFF); // 1..3 chars correspond to 2 bytes
+               if(src_elms>=4)t+=Char(out>>16   ); // 4    chars correspond to 3 bytes
             }else return ERROR; // invalid input (this also handles '\0' chars)
          }
          c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
@@ -445,21 +445,21 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
          if(c=='\\') // special char
          {
             c=f.getChar();
-            if(c=='0' )t.alwaysAppend('\0');else
-            if(c=='n' )t.alwaysAppend('\n');else
-            if(c=='t' )t.alwaysAppend('\t');else // just in case
-            if(c=='"' )t.alwaysAppend('"' );else
-            if(c=='\\')t.alwaysAppend('\\');else
+            if(c=='0' )t+='\0';else
+            if(c=='n' )t+='\n';else
+            if(c=='t' )t+='\t';else // just in case
+            if(c=='"' )t+='"' ;else
+            if(c=='\\')t+='\\';else
             if(c=='u' || c=='U')
             {
                Byte a=CharInt(f.getChar());
                Byte b=CharInt(f.getChar());
                Byte c=CharInt(f.getChar());
                Byte d=CharInt(f.getChar());
-               t.alwaysAppend(Char((a<<12)|(b<<8)|(c<<4)|d));
+               t+=Char((a<<12)|(b<<8)|(c<<4)|d);
             }else continue; // invalid char, just skip it
          }else
-         if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char, '\n' here is NOT supported
+         if(Unsigned(c)>=32 || c=='\t')t+=c;else // valid char, '\n' here is NOT supported
             return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -469,7 +469,7 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
       for(;;)
       {
          c=f.getChar();
-         if(SimpleCharJSON(c))t.alwaysAppend(c);else // valid name char
+         if(SimpleCharJSON(c))t+=c;else // valid name char
          if(c!='\r')break; // skip '\r'
       }
    }
@@ -484,7 +484,7 @@ static Char LoadYAMLName     (FileText &f, Str &t, Char c)
    for(;;)
    {
       c=f.getChar();
-      if(YAMLName(c))t.alwaysAppend(c);else // valid name char
+      if(YAMLName(c))t+=c;else // valid name char
       if(c!='\r')break;
    }
    return c;
@@ -504,18 +504,18 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          if(c=='\\') // special char
          {
             c=f.getChar();
-            if(c=='0' )t.alwaysAppend('\0');else
-            if(c=='n' )t.alwaysAppend('\n');else
-            if(c=='t' )t.alwaysAppend('\t');else // just in case
-            if(c=='"' )t.alwaysAppend('"' );else
-            if(c=='\\')t.alwaysAppend('\\');else
+            if(c=='0' )t+='\0';else
+            if(c=='n' )t+='\n';else
+            if(c=='t' )t+='\t';else // just in case
+            if(c=='"' )t+='"' ;else
+            if(c=='\\')t+='\\';else
             if(c=='u' || c=='U')
             {
                Byte a=CharInt(f.getChar());
                Byte b=CharInt(f.getChar());
                Byte c=CharInt(f.getChar());
                Byte d=CharInt(f.getChar());
-               t.alwaysAppend(Char((a<<12)|(b<<8)|(c<<4)|d));
+               t+=Char((a<<12)|(b<<8)|(c<<4)|d);
             }else
                continue; // invalid char, just skip it
          }else
@@ -523,7 +523,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process;}
          }else
-         if(Safe(c))t.alwaysAppend(c);else // valid char
+         if(Safe(c))t+=c;else // valid char
          if(c!='\r')return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -538,31 +538,31 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          if(c=='\'')
          {
             c=f.getChar();
-            if(c=='\'')t.alwaysAppend('\'');else
+            if(c=='\'')t+='\'';else
                return c;
          }else
        /*if(c=='\\') // special char
          {
             c=f.getChar();
-            if(c=='0' )t.alwaysAppend('\0');else
-            if(c=='n' )t.alwaysAppend('\n');else
-            if(c=='t' )t.alwaysAppend('\t');else // just in case
-            if(c=='"' )t.alwaysAppend('"' );else
-            if(c=='\\')t.alwaysAppend('\\');else
+            if(c=='0' )t+='\0';else
+            if(c=='n' )t+='\n';else
+            if(c=='t' )t+='\t';else // just in case
+            if(c=='"' )t+='"' ;else
+            if(c=='\\')t+='\\';else
             if(c=='u' || c=='U')
             {
                Byte a=CharInt(f.getChar());
                Byte b=CharInt(f.getChar());
                Byte c=CharInt(f.getChar());
                Byte d=CharInt(f.getChar());
-               t.alwaysAppend(Char((a<<12)|(b<<8)|(c<<4)|d));
+               t+=Char((a<<12)|(b<<8)|(c<<4)|d);
             }else continue; // invalid char, just skip it
          }else*/
          if(c=='\n')
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process2;}
          }else
-         if(Safe(c))t.alwaysAppend(c);else // valid char
+         if(Safe(c))t+=c;else // valid char
          if(c!='\r')return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -572,7 +572,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
       for(;;)
       {
          c=f.getChar();
-         if(YAMLValue(c))t.alwaysAppend(c);else // valid name char
+         if(YAMLValue(c))t+=c;else // valid name char
          if(c!='\r')break;
       }
    }
@@ -584,7 +584,7 @@ static Char LoadYAMLInlineValue(FileText &f, Str &t, Char c, Char end)
    for(;;)
    {
       c=f.getChar();
-      if(YAMLValue(c) && c!=',' && c!=end)t.alwaysAppend(c);else // valid name char
+      if(YAMLValue(c) && c!=',' && c!=end)t+=c;else // valid name char
          break;
    }
    return c;
@@ -1184,7 +1184,7 @@ static Bool LoadXmlValue(FileText &f, Str &value)
          value=DecodeXmlString(value);
          return true;
       }
-      if(Unsigned(c)>=32 || c=='\t')value.alwaysAppend(c);
+      if(Unsigned(c)>=32 || c=='\t')value+=c;
    }
 }
 static Char LoadXmlData(FileText &f, Str &data, Char c)
@@ -1193,7 +1193,7 @@ static Char LoadXmlData(FileText &f, Str &data, Char c)
    for(;;)
    {
       c=f.getChar(); if(!c || WhiteChar(c) || c=='<')break;
-      if(Safe(c))data.alwaysAppend(c);
+      if(Safe(c))data+=c;
    }
    data=DecodeXmlString(data);
    return c;
@@ -1522,7 +1522,7 @@ static Char LoadTextFileParams(FileText &f, Str &t, Char c, Bool param_name)
       for(;;)
       {
          c=f.getChar();
-         if(SimpleCharFileParams(c, param_name))t.alwaysAppend(c); // valid name char
+         if(SimpleCharFileParams(c, param_name))t+=c; // valid name char
             else break;
       }
    }else
@@ -1536,15 +1536,15 @@ static Char LoadTextFileParams(FileText &f, Str &t, Char c, Bool param_name)
          {
             switch(c=f.getChar())
             {
-               case '0': t.alwaysAppend('\0'); break;
-               case 'n': t.alwaysAppend('\n'); break;
-               case 't': t.alwaysAppend('\t'); break; // just in case it was written as special char
-               case '"': t.alwaysAppend('"' ); break;
-               case '?': t.alwaysAppend('?' ); break;
+               case '0': t+='\0'; break;
+               case 'n': t+='\n'; break;
+               case 't': t+='\t'; break; // just in case it was written as special char
+               case '"': t+='"' ; break;
+               case '?': t+='?' ; break;
                default : return ERROR; // invalid char
             }
          }else
-         if(Safe(c))t.alwaysAppend(c);else // valid char, '\n' here is supported as well
+         if(Safe(c))t+=c;else // valid char, '\n' here is supported as well
          if(c!='\r')return ERROR; // skip '\r'
       }
       c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
@@ -1727,7 +1727,7 @@ static void Save(C Str &text, Str &s)
    FREPA(text)
    {
       Char c=text[i];
-      if(Safe(c))s.alwaysAppend(c);
+      if(Safe(c))s+=c;
    }
 }
 static Int Load(Str &text, C Str &s, Int i)
@@ -1735,7 +1735,7 @@ static Int Load(Str &text, C Str &s, Int i)
    for(; i<s.length(); i++)
    {
       Char c=s[i];
-      if(Safe(c))text.alwaysAppend(c);else break;
+      if(Safe(c))text+=c;else break;
    }
    return i;
 }
