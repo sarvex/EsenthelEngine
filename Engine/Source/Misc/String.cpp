@@ -2159,8 +2159,8 @@ Str8 UTF8(C Str &text)
    FREPA(text)
    {
       auto c=Unsigned(text[i]);
-      if(c<=0x07F) out.alwaysAppend(c);else
-      if(c<=0x7FF){out.alwaysAppend(0xC0 | (c>>6)); out.alwaysAppend(0x80 | (c&0x3F));}else
+      if(c<=0x07F) out+=Char8(c);else
+      if(c<=0x7FF){out+=Char8(0xC0 | (c>>6)); out+=Char8(0x80 | (c&0x3F));}else
    #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
       if(c>=0xD800 && c<=0xDBFF)
       {
@@ -2170,11 +2170,11 @@ Str8 UTF8(C Str &text)
          c1=0xDC00+(u&0x3FF); */
          auto c1=Unsigned(text[++i]);
          U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
-         out.alwaysAppend(0xF0 | (u>>18)); out.alwaysAppend(0x80 | ((u>>12)&0x3F)); out.alwaysAppend(0x80 | ((u>>6)&0x3F)); out.alwaysAppend(0x80 | (u&0x3F));
+         out+=Char8(0xF0 | (u>>18)); out+=Char8(0x80 | ((u>>12)&0x3F)); out+=Char8(0x80 | ((u>>6)&0x3F)); out+=Char8(0x80 | (u&0x3F));
       }else
    #endif
       {
-         out.alwaysAppend(0xE0 | (c>>12)); out.alwaysAppend(0x80 | ((c>>6)&0x3F)); out.alwaysAppend(0x80 | (c&0x3F));
+         out+=Char8(0xE0 | (c>>12)); out+=Char8(0x80 | ((c>>6)&0x3F)); out+=Char8(0x80 | (c&0x3F));
       }
    }
    return out;
@@ -2186,8 +2186,8 @@ void Str::appendUTF8Safe(C Str &text) // this ignores unsafe characters
    {
       auto c=Unsigned(text[i]);
       if(Safe(c)) // ignore unsafe characters
-      if(c<=0x07F) alwaysAppend(c);else
-      if(c<=0x7FF){alwaysAppend(0xC0 | (c>>6)); alwaysAppend(0x80 | (c&0x3F));}else
+      if(c<=0x07F) T+=Char(c);else
+      if(c<=0x7FF){T+=Char(0xC0 | (c>>6)); T+=Char(0x80 | (c&0x3F));}else
    #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
       if(c>=0xD800 && c<=0xDBFF)
       {
@@ -2197,11 +2197,11 @@ void Str::appendUTF8Safe(C Str &text) // this ignores unsafe characters
          c1=0xDC00+(u&0x3FF); */
          auto c1=Unsigned(text[++i]);
          U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
-         alwaysAppend(0xF0 | (u>>18)); alwaysAppend(0x80 | ((u>>12)&0x3F)); alwaysAppend(0x80 | ((u>>6)&0x3F)); alwaysAppend(0x80 | (u&0x3F));
+         T+=Char(0xF0 | (u>>18)); T+=Char(0x80 | ((u>>12)&0x3F)); T+=Char(0x80 | ((u>>6)&0x3F)); T+=Char(0x80 | (u&0x3F));
       }else
    #endif
       {
-         alwaysAppend(0xE0 | (c>>12)); alwaysAppend(0x80 | ((c>>6)&0x3F)); alwaysAppend(0x80 | (c&0x3F));
+         T+=Char(0xE0 | (c>>12)); T+=Char(0x80 | ((c>>6)&0x3F)); T+=Char(0x80 | (c&0x3F));
       }
    }
 }
@@ -3164,7 +3164,9 @@ Str & Str ::line() {if(is() && last()!='\n')T+='\n'; return T;}
 
 Str8& Str8::insert(Int i, Char8 c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Clamp(i, 0, length());
       Int size=StrSizeAdd(length(), 1); if(size>_d.elms())
@@ -3185,7 +3187,9 @@ Str8& Str8::insert(Int i, Char8 c)
 }
 Str& Str::insert(Int i, Char c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Clamp(i, 0, length());
       Int size=StrSizeAdd(length(), 1); if(size>_d.elms())
@@ -3345,20 +3349,28 @@ Str & Str ::replace(Char  src, Char  dest) {if(src && src!=dest)REPA(T)if(_d[i]=
 
 Str8& Str8::setChar(Int i, Char8 c)
 {
+#if !NUL_CHAR
    if(c)
    {
+#endif
       if(InRange(i, T))_d[i]=c;else
-      if(i==length()  )alwaysAppend(c);
+      if(i==length()  )T+=c;
+#if !NUL_CHAR
    }else clip(i);
+#endif
    return T;
 }
 Str& Str::setChar(Int i, Char c)
 {
+#if !NUL_CHAR
    if(c)
    {
+#endif
       if(InRange(i, T))_d[i]=c;else
-      if(i==length()  )alwaysAppend(c);
+      if(i==length()  )T+=c;
+#if !NUL_CHAR
    }else clip(i);
+#endif
    return T;
 }
 
