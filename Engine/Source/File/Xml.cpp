@@ -1721,6 +1721,7 @@ static Int TypeToBytes(TM_TYPE type, bool &neg)
       neg=bytes2&1;
    return bytes2/2;
 }
+static Int Left(C Str &s, Int i) {return s.length()-i;}
 /******************************************************************************/
 static void Save(C Str &text, Str &s)
 {
@@ -1793,19 +1794,22 @@ static Int Load(Str &text, C Str &s, Int i, Char c)
       case VALUE_I8:
       {
          Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg);
-         ULong u=0; FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
-         if(neg)text=-Long(u)-1;
-         else   text=      u   ;
-         return i+bytes;
-      }
+         if(bytes<=Left(s, i))
+         {
+            ULong u=0; FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
+            if(neg)text=-Long(u)-1;
+            else   text=      u   ;
+            return i+bytes;
+         }
+      }break;
    }
    return -1;
 }
 /******************************************************************************/
 static void Save(C TextNode &node, Str &s)
 {
-                      Save(node.name , s, true);
-   if(node.value.is())Save(node.value, s, false);
+                        Save(node.name , s, true);
+   if(node.value.is  ())Save(node.value, s, false);
    if(node.nodes.elms())
    {
       s+=Char(CHILD);
