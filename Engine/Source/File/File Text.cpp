@@ -279,8 +279,8 @@ Char FileText::getChar()
                   if(u<=0x10FFFF)
                   {
                       u-=0x10000;
-                    _buf= 0xDC00+(u&0x3FF); // #1
                        c= 0xD800+(u>>10  ); // #0
+                    _buf= 0xDC00+(u&0x3FF); // #1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }
