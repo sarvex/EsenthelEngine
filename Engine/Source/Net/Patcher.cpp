@@ -253,7 +253,7 @@ static Str ServerPath(Str path, bool file=true) // !! this needs to be in sync w
    for(;;)
    {
       Str base=GetBase(path); if(!base.is())break;
-      out =S + (file ? "f-" : "d-") + CaseDown(base) + (out.is() ? '/' : '\0') + out;
+      out =S + (file ? "f-" : "d-") + CaseDown(base) + (out.is() ? "/" : null) + out;
       path=GetPath(path);
       file=false;
    }
