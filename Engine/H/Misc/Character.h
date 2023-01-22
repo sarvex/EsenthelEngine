@@ -128,6 +128,8 @@ INLINE Char8 Char16To8Fast(Char  c) {return           _Char16To8[Unsigned(c)]   
 INLINE UInt CharFlagFast(Char  c) {return _CharFlag[Unsigned(c)];}
 INLINE UInt CharFlagFast(Char8 c) {return  CharFlagFast(Char8To16Fast(c));}
 
+Bool Safe(Char c); // if character is safe
+
 Int CharInt(Char c); // get character as integer, '0'->0, '1'->1, .., 'a/A'->10, 'b/B'->11, .., ?->-1
 
 CChar8* CharName(Char c); // get character name, sample usage: CharName(' ') -> "Space"

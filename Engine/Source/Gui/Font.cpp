@@ -59,12 +59,12 @@ UInt Font::memUsage()C
    UInt   size=0; REPA(_images)size+=_images[i].memUsage();
    return size;
 }
-Bool Font:: hasChar (Char8 c)C {UInt index=_char_to_font[U8 (c)]; return InRange(index, _chrs) ?       true         : false;}
-Bool Font:: hasChar (Char  c)C {UInt index=_wide_to_font[U16(c)]; return InRange(index, _chrs) ?       true         : false;}
-Int  Font::charIndex(Char8 c)C {UInt index=_char_to_font[U8 (c)]; return InRange(index, _chrs) ?       index        :    -1;}
-Int  Font::charIndex(Char  c)C {UInt index=_wide_to_font[U16(c)]; return InRange(index, _chrs) ?       index        :    -1;}
-Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[U16(c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
-Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[U8 (c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
+Bool Font:: hasChar (Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       true         : false;}
+Bool Font:: hasChar (Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       true         : false;}
+Int  Font::charIndex(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       index        :    -1;}
+Int  Font::charIndex(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       index        :    -1;}
+Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
+Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
 /******************************************************************************/
 Int Font::charWidth(Char8 c0, Char8 c1, SPACING_MODE spacing)C
 {
@@ -353,8 +353,8 @@ Font& Font::replace(Char src, Char dest, Bool permanent)
       }else
       {
          Char8 c=Char16To8Fast(src); if(Char8To16Fast(c)!=src)c=0; // take 8-bit char, set zero if there's no 1:1 mapping, we can assume that Str was already initialized
-         if(c  )_char_to_font[U8 (c  )]=dest_i;
-         if(src)_wide_to_font[U16(src)]=dest_i;
+         if(c  )_char_to_font[Unsigned(c  )]=dest_i;
+         if(src)_wide_to_font[Unsigned(src)]=dest_i;
       }
    }
    return T;
@@ -368,8 +368,8 @@ void Font::setRemap()
    REPA(_chrs)if(Char w=_chrs[i].chr)
    {
       Char8 c=Char16To8Fast(w); if(Char8To16Fast(c)!=w)c=0; // take 8-bit char, set zero if there's no 1:1 mapping, we can assume that Str was already initialized
-      if(c)_char_to_font[U8 (c)]=i;
-      if(w)_wide_to_font[U16(w)]=i;
+      if(c)_char_to_font[Unsigned(c)]=i;
+      if(w)_wide_to_font[Unsigned(w)]=i;
       switch(w)
       {
          case u'�': invalid[0]=i; break;
@@ -391,7 +391,7 @@ void Font::setRemap()
          break; // stop on first found
       }
    }
-   if(space>=0)_wide_to_font[U16(Nbsp)]=space; // draw NBSP as space
+   if(space>=0)_wide_to_font[Unsigned(Nbsp)]=space; // draw NBSP as space
 }
 /******************************************************************************/
 // FONT IO

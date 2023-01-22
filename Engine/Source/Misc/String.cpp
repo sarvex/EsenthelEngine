@@ -260,6 +260,11 @@ Bool Equal(Char8 a, Char  b, Bool case_sensitive) {return case_sensitive ? Equal
 Bool Equal(Char  a, Char8 b, Bool case_sensitive) {return case_sensitive ? EqualCS(a, b) : EqualCI(a, b);}
 Bool Equal(Char  a, Char  b, Bool case_sensitive) {return case_sensitive ? EqualCS(a, b) : EqualCI(a, b);}
 
+Bool Safe(Char c)
+{
+   return Unsigned(c)>=32 || c=='\t' || c=='\n';
+}
+
 Int CharInt(Char c)
 {
    if(c>='0' && c<='9')return c-'0';

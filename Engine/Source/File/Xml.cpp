@@ -286,7 +286,7 @@ static void SaveText(FileText &f, C Str &t)
           //case '\t': f.putChar('~').putChar('t'); break; // we can encode tab below normally instead
             case '`' : f.putChar('~').putChar('`'); break;
             case '~' : f.putChar('~').putChar('~'); break;
-            default  : if(Unsigned(c)>=32 || c=='\t' || c=='\n')f.putChar(c); break; // '\n' here is supported as well, but prefer as "~n"
+            default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is supported as well, but prefer as "~n"
          }
          f.putChar(QUOTE_END);
       }break;
@@ -326,12 +326,12 @@ static void SaveTextJSON(FileText &f, C Str &t)
    f.putChar('"');
    FREPA(t)switch(Char c=t()[i]) // () avoids range check
    {
-      case '\0': f.putChar('\\').putChar('0'); break;
-      case '\n': f.putChar('\\').putChar('n'); break;
-    //case '\t': f.putChar('\\').putChar('t'); break; // we can encode tab below normally instead
-      case '"' : f.putChar('\\').putChar('"'); break;
+      case '\0': f.putChar('\\').putChar('0' ); break;
+      case '\n': f.putChar('\\').putChar('n' ); break;
+    //case '\t': f.putChar('\\').putChar('t' ); break; // we can encode tab below normally instead
+      case '"' : f.putChar('\\').putChar('"' ); break;
       case '\\': f.putChar('\\').putChar('\\'); break;
-      default  : if(Unsigned(c)>=32 || c=='\t')f.putChar(c); break;
+      default  : if(Safe(c)   )f.putChar( c  ); break; // '\n' here is NOT supported however it's already handled above
    }
    f.putChar('"');
 }
@@ -381,7 +381,7 @@ static Char LoadText(FileText &f, Str &t, Char c)
                }
             }else
          #if 1 // don't allow special characters, ignore '\r'
-            if(Unsigned(c)>=32 || c=='\t' || c=='\n')t.alwaysAppend(c);else // valid char, '\n' here is supported as well
+            if(Safe(c))t.alwaysAppend(c);else // valid char, '\n' here is supported as well
             if(c!='\r')return ERROR; // skip '\r'
          #else // allow all characters
             if(f.ok())t.alwaysAppend(c); // add all possible characters because this data can be received from server and we need exact match
@@ -459,7 +459,7 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
                t.alwaysAppend(Char((a<<12)|(b<<8)|(c<<4)|d));
             }else continue; // invalid char, just skip it
          }else
-         if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char
+         if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char, '\n' here is NOT supported
             return c; // skip '\r', invalid char (return this one)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -519,11 +519,11 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
             }else
                continue; // invalid char, just skip it
          }else
-         if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char
          if(c=='\n')
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process;}
          }else
+         if(Safe(c))t.alwaysAppend(c);else // valid char
          if(c!='\r')return c; // skip '\r', invalid char (return this one)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -558,11 +558,11 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
                t.alwaysAppend(Char((a<<12)|(b<<8)|(c<<4)|d));
             }else continue; // invalid char, just skip it
          }else*/
-         if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char
          if(c=='\n')
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process2;}
          }else
+         if(Safe(c))t.alwaysAppend(c);else // valid char
          if(c!='\r')return c; // skip '\r', invalid char (return this one)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
@@ -1184,7 +1184,7 @@ static Bool LoadXmlValue(FileText &f, Str &value)
          value=DecodeXmlString(value);
          return true;
       }
-      if(Unsigned(c)>=32 || c=='\t')value+=c;
+      if(Unsigned(c)>=32 || c=='\t')value.alwaysAppend(c);
    }
 }
 static Char LoadXmlData(FileText &f, Str &data, Char c)
@@ -1193,7 +1193,7 @@ static Char LoadXmlData(FileText &f, Str &data, Char c)
    for(;;)
    {
       c=f.getChar(); if(!c || WhiteChar(c) || c=='<')break;
-      if(Unsigned(c)>=32 || c=='\t' || c=='\n')data+=c;
+      if(Safe(c))data.alwaysAppend(c);
    }
    data=DecodeXmlString(data);
    return c;
@@ -1507,7 +1507,7 @@ static void SaveTextFileParams(FileText &f, C Str &t, Bool param_name)
        //case '\t': f.putChar('?').putChar('t'); break; // we can encode tab below normally instead
          case '"' : f.putChar('?').putChar('"'); break;
          case '?' : f.putChar('?').putChar('?'); break;
-         default  : if(Unsigned(c)>=32 || c=='\t' || c=='\n')f.putChar(c); break; // '\n' here is supported as well, but prefer as "?n"
+         default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is supported as well, but prefer as "?n"
       }
       f.putChar('"');
       return;
@@ -1544,7 +1544,7 @@ static Char LoadTextFileParams(FileText &f, Str &t, Char c, Bool param_name)
                default : return ERROR; // invalid char
             }
          }else
-         if(Unsigned(c)>=32 || c=='\t' || c=='\n')t.alwaysAppend(c);else // valid char, '\n' here is supported as well, but prefer as "?n"
+         if(Safe(c))t.alwaysAppend(c);else // valid char, '\n' here is supported as well
          if(c!='\r')return ERROR; // skip '\r'
       }
       c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case

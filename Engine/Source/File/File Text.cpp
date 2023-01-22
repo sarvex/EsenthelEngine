@@ -302,7 +302,7 @@ FileText& FileText::fullLine(Str &s)
    {
       Char c=getChar();
       if(  c=='\n')break;
-      if(U16(c)>=32 || c=='\t')s+=c;
+      if(Safe(c))s.alwaysAppend(c);
    }
    return T;
 }
@@ -313,10 +313,10 @@ FileText& FileText::getLine(Str &s)
    {
       Char c=getChar();
       if(  c=='\n')break;
-      if(U16(c)>=32 || c=='\t')
+      if(Safe(c))
       {
          if(c!=' ' && c!='\t')start=false;
-         if(!start)s+=c;
+         if(!start)s.alwaysAppend(c);
       }
    }
    return T;
@@ -328,10 +328,10 @@ FileText& FileText::getLine(Str8 &s)
    {
       Char c=getChar();
       if(  c=='\n')break;
-      if(U16(c)>=32 || c=='\t')
+      if(Safe(c))
       {
          if(c!=' ' && c!='\t')start=false;
-         if(!start)s+=c;
+         if(!start)s.alwaysAppend(c);
       }
    }
    return T;
@@ -352,16 +352,16 @@ FileText& FileText::getAll(Str &s)
             Int length=s.length(); CChar *t=s();
             FREP(length)
             {
-               Char c=t[i]; if(!(U16(c)>=32 || c=='\t' || c=='\n')) // found invalid char
+               Char c=t[i]; if(!Safe(c)) // found invalid char
                {
                   Str temp; temp.reserve(length);
                   CopyFastN(temp._d.data(), t, i); temp._length+=i; // copy everything up to this point
                #if 0 // simple iteration (slower)
-                  for(; ++i<length; ){Char c=t[i]; if(U16(c)>=32 || c=='\t' || c=='\n')temp._d[temp._length++]=c;}
+                  for(; ++i<length; ){Char c=t[i]; if(Safe(c))temp._d[temp._length++]=c;}
                #else // batched copying
                   Int last_ok=i+1; for(; ++i<length; )
                   {
-                     Char c=t[i]; if(!(U16(c)>=32 || c=='\t' || c=='\n'))
+                     Char c=t[i]; if(!Safe(c))
                      {
                         Int copy=i-last_ok; CopyFastN(temp._d.data()+temp._length, t+last_ok, copy); temp._length+=copy;
                         last_ok=i+1;
@@ -383,7 +383,7 @@ FileText& FileText::getAll(Str &s)
             FREP(length)
             {
                Char8 c=t8[i];
-               if(U8(c)>=32 || c=='\t' || c=='\n')
+               if(Safe(c))
                {
                #if WINDOWS // Code Pages are used on Windows
                   if(c&0x80) // this may be a 2-character multi-byte wide char
@@ -404,7 +404,7 @@ FileText& FileText::getAll(Str &s)
             for(; !end(); )
             {
                Char c=getChar();
-               if(U16(c)>=32 || c=='\t' || c=='\n')*t++=c;
+               if(Safe(c))*t++=c;
             }
             s._length=t-s._d.data();
          }break;
@@ -477,10 +477,10 @@ C Str& FileTextEx::getWord()
       Char c=getChar();
       if( !c)break;
       if(  c=='\t' || c=='\n' || c==' ')if(start)continue;else break;
-      if(U16(c)>32)
+      if(Safe(c))
       {
          start=false;
-         text+=c;
+         text.alwaysAppend(c);
       }
    }
    return text;
@@ -498,7 +498,7 @@ C Str& FileTextEx::getName()
          {
             Char c=getChar();
             if( !c || c=='\n' || c=='"')break;
-            if(U16(c)>=32 || c=='\t')text+=c;
+            if(Safe(c))text.alwaysAppend(c);
          }
          break;
       }
