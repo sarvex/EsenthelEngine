@@ -15,9 +15,9 @@ namespace EE{
 /******************************************************************************/
 static void EncodeChar(Str8 &text, Char8 c)
 {
-   text.alwaysAppend('%');
-   text.alwaysAppend(Digits16[Unsigned(c)>>4]);
-   text.alwaysAppend(Digits16[Unsigned(c)&15]);
+   text+='%';
+   text+=Digits16[Unsigned(c)>>4];
+   text+=Digits16[Unsigned(c)&15];
 }
 static Bool AppendUrlPath(Str8 &text, C Str8 &path)
 {
@@ -29,11 +29,11 @@ static Bool AppendUrlPath(Str8 &text, C Str8 &path)
       if(Unsigned(c)<=32 || c=='#' || c=='%' || Unsigned(c)>=127)EncodeChar(text, c);else // these are the only symbols that need to be replaced with %XX hex code
       if(c=='\\') // use Unix style paths
       {
-         text.alwaysAppend('/');
+         text+='/';
       }else
       {
          if(c=='?')has_params=true;
-         text.alwaysAppend(c);
+         text+=c;
       }
    }
    return has_params;
@@ -45,15 +45,15 @@ static void AppendParam(Str8 &text, C TextParam &param)
    {
       Char8 c=name[i];
       if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
-      else text.alwaysAppend(c);
+      else text+=c;
    }
-   text.alwaysAppend('=');
+   text+='=';
  C Str8 &value=UTF8(param.value);
    FREPA(value) // set value
    {
       Char8 c=value[i];
       if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='&' || c=='+' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
-      else text.alwaysAppend(c);
+      else text+=c;
    }
 }
 static void AppendParamBin(Str8 &text, C TextParam &param) // don't convert 'param.value'
@@ -802,8 +802,8 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
       {
        C HTTPParam &param=params[i]; switch(param.type)
          {
-            case HTTP_POST    : if(added)prefix.alwaysAppend('&'); AppendParam   (prefix, param); added=true; break;
-            case HTTP_POST_BIN: if(added)prefix.alwaysAppend('&'); AppendParamBin(prefix, param); added=true; break;
+            case HTTP_POST    : if(added)prefix+='&'; AppendParam   (prefix, param); added=true; break;
+            case HTTP_POST_BIN: if(added)prefix+='&'; AppendParamBin(prefix, param); added=true; break;
          }
       }
      _send+="Content-type: application/x-www-form-urlencoded\r\n";

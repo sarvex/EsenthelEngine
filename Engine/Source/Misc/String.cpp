@@ -3767,19 +3767,6 @@ Str& Str::operator+=(Char c)
    return T;
 }
 /******************************************************************************/
-void Str8::alwaysAppend(Char8 c)
-{
-   Reserve(T, 1);
-  _d[_length++]=c;
-  _d[_length  ]='\0';
-}
-void Str::alwaysAppend(Char c)
-{
-   Reserve(T, 1);
-  _d[_length++]=c;
-  _d[_length  ]='\0';
-}
-/******************************************************************************/
 Str8& Str8::operator+=(C BStr &s)
 {
    if(s.is())

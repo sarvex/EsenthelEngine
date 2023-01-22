@@ -304,7 +304,7 @@ FileText& FileText::fullLine(Str &s)
    {
       Char c=getChar();
       if(  c=='\n')break;
-      if(Safe(c))s.alwaysAppend(c);
+      if(Safe(c))s+=c;
    }
    return T;
 }
@@ -318,7 +318,7 @@ FileText& FileText::getLine(Str &s)
       if(Safe(c))
       {
          if(c!=' ' && c!='\t')start=false;
-         if(!start)s.alwaysAppend(c);
+         if(!start)s+=c;
       }
    }
    return T;
@@ -333,7 +333,7 @@ FileText& FileText::getLine(Str8 &s)
       if(Safe(c))
       {
          if(c!=' ' && c!='\t')start=false;
-         if(!start)s.alwaysAppend(c);
+         if(!start)s+=c;
       }
    }
    return T;
@@ -482,7 +482,7 @@ C Str& FileTextEx::getWord()
       if(Safe(c))
       {
          start=false;
-         text.alwaysAppend(c);
+         text+=c;
       }
    }
    return text;
@@ -500,7 +500,7 @@ C Str& FileTextEx::getName()
          {
             Char c=getChar();
             if( !c || c=='\n' || c=='"')break;
-            if(Safe(c))text.alwaysAppend(c);
+            if(Safe(c))text+=c;
          }
          break;
       }
