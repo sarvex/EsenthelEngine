@@ -331,7 +331,7 @@ static void SaveTextJSON(FileText &f, C Str &t)
     //case '\t': f.putChar('\\').putChar('t' ); break; // we can encode tab below normally instead
       case '"' : f.putChar('\\').putChar('"' ); break;
       case '\\': f.putChar('\\').putChar('\\'); break;
-      default  : if(Safe(c)   )f.putChar( c  ); break; // '\n' here is NOT supported however it's already handled above
+      default  : if(Unsigned(c)>=32 || c=='\t')f.putChar(c); break; // '\n' here is NOT supported
    }
    f.putChar('"');
 }
@@ -460,7 +460,7 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
             }else continue; // invalid char, just skip it
          }else
          if(Unsigned(c)>=32 || c=='\t')t.alwaysAppend(c);else // valid char, '\n' here is NOT supported
-            return c; // skip '\r', invalid char (return this one)
+            return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else // simple name
@@ -524,7 +524,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process;}
          }else
          if(Safe(c))t.alwaysAppend(c);else // valid char
-         if(c!='\r')return c; // skip '\r', invalid char (return this one)
+         if(c!='\r')return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else
@@ -563,7 +563,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process2;}
          }else
          if(Safe(c))t.alwaysAppend(c);else // valid char
-         if(c!='\r')return c; // skip '\r', invalid char (return this one)
+         if(c!='\r')return c; // skip '\r', invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else // simple name
