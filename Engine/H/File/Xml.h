@@ -272,3 +272,21 @@ struct FileParams
    static Str              Merge (C Str                 &a, C Str &b); // merge  'a' 'b' strings
 };
 /******************************************************************************/
+struct TextMetaElm
+{
+   Str      text;
+   TextData data;
+
+#if EE_PRIVATE
+   void save(Str &s)C;
+
+   Bool operator==(C TextMetaElm &e)C {return text==e.text && data==e.data;}
+   Bool operator!=(C TextMetaElm &e)C {return text!=e.text || data!=e.data;}
+#endif
+};
+struct TextMeta : Memc<TextMetaElm> // text mixed with meta data
+{
+   void save(  Str &s)C;
+   Bool load(C Str &s);
+};
+/******************************************************************************/

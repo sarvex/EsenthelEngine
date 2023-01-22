@@ -1677,5 +1677,193 @@ Str FileParams::Merge(C Str &a, C Str &b)
    return a.is() ? b.is() ? a+'\n'+b : a : b;
 }
 /******************************************************************************/
+// TEXT META
+/******************************************************************************/
+enum TM_TYPE : Byte
+{
+   END     = 0,
+   NAME    = 1, // Str8 Safe chars only
+   CHILD   = 2,
+ //TAB     = 9, '\t'
+ //LINE    =10, '\n'
+   VALUE   =15, // Str8 Safe chars only
+   VALUE_U1=16, //    Byte
+   VALUE_I1=17, // -  Byte
+   VALUE_U2=18, //    UShort
+   VALUE_I2=19, // -  UShort
+   VALUE_U3=20, //  3xByte
+   VALUE_I3=21, // -3xByte
+   VALUE_U4=22, //    UInt
+   VALUE_I4=23, // -  UInt
+   VALUE_U5=24, //  5xByte
+   VALUE_I5=25, // -5xByte
+   VALUE_U6=26, //  6xByte
+   VALUE_I6=27, // -6xByte
+   VALUE_U7=28, //  7xByte
+   VALUE_I7=29, // -7xByte
+   VALUE_U8=30, //    ULong
+   VALUE_I8=31, // -  ULong
+};
+/******************************************************************************/
+static Bool IsValue(Char c)
+{
+   return c>=VALUE && c<=VALUE_I8;
+}
+static TM_TYPE BytesToType(Byte bytes, Bool neg) // assumes bytes 1..8
+{
+   DEBUG_ASSERT(bytes>=1 && bytes<=8, "BytesToType");
+ //if(bytes>8)return END; MAX(bytes, 1); safety checks
+   return TM_TYPE((VALUE_U1-2)+bytes*2+neg);
+}
+static Int TypeToBytes(TM_TYPE type, bool &neg)
+{
+   Byte   bytes2=type-(VALUE_U1-2);
+      neg=bytes2&1;
+   return bytes2/2;
+}
+/******************************************************************************/
+static void Save(C Str &text, Str &s)
+{
+   FREPA(text)
+   {
+      Char c=text[i];
+      if(Safe(c))s.alwaysAppend(c);
+   }
+}
+static Int Load(Str &text, C Str &s, Int i)
+{
+   for(; i<s.length(); i++)
+   {
+      Char c=s[i];
+      if(Safe(c))text.alwaysAppend(c);else break;
+   }
+   return i;
+}
+/******************************************************************************/
+static void Save(C Str &text, Str &s, Bool name)
+{
+   if(!name) // value
+   {
+      Char c=text.first();
+      Bool neg=(c=='-'); // negative number
+      if(neg || (c>='0' && c<='9')) // possible number
+      {
+         CalcValue cv; TextValue(text, cv, false); if(cv.type==CVAL_INT) // got a number
+         {
+            Char8 temp[256]; CChar8 *i;
+            if(neg)i=TextInt(       cv.i, temp);
+            else   i=TextInt((ULong)cv.i, temp);
+            if(Equal(i, text)) // text->number->text == text, conversion gives exact same results
+            {
+               ULong   u    =(neg ? -cv.i-1 : cv.i); // absolute
+               Byte    bytes=Max(1, ByteHi(u)); // how many bytes needed 1..8
+               TM_TYPE type =BytesToType(bytes, neg);
+               s.alwaysAppend(type); FREP(bytes)s.alwaysAppend(((Byte*)&u)[i]);
+               return;
+            }
+         }
+      }
+   }
+   s.alwaysAppend(name ? NAME : VALUE);
+   Save(text, s);
+}
+static Int Load(Str &text, C Str &s, Int i, Char c)
+{
+   switch(c)
+   {
+      case NAME:
+      case VALUE:
+         return Load(text, s, i);
+
+      case VALUE_U1:
+      case VALUE_I1:
+      case VALUE_U2:
+      case VALUE_I2:
+      case VALUE_U3:
+      case VALUE_I3:
+      case VALUE_U4:
+      case VALUE_I4:
+      case VALUE_U5:
+      case VALUE_I5:
+      case VALUE_U6:
+      case VALUE_I6:
+      case VALUE_U7:
+      case VALUE_I7:
+      case VALUE_U8:
+      case VALUE_I8:
+      {
+         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg);
+         ULong u=0; FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
+         if(neg)text=-Long(u)-1;
+         else   text=      u   ;
+         return i+bytes;
+      }
+   }
+   return -1;
+}
+/******************************************************************************/
+static void Save(C TextNode &node, Str &s)
+{
+                      Save(node.name , s, true);
+   if(node.value.is())Save(node.value, s, false);
+   if(node.nodes.elms())
+   {
+      s.alwaysAppend(CHILD);
+      FREPA(node.nodes)Save(node.nodes[i], s);
+      s.alwaysAppend(END);
+   }
+}
+static Int Load(Memc<TextNode> &nodes, C Str &s, Int i)
+{
+   Char c=s[i++];
+check:
+   if(c==NAME)
+   {
+      TextNode &node=nodes.New();
+      i=Load(node.name, s, i, c); if(!InRange(i, s))return -1; c=s[i++];
+      if(IsValue(c))
+      {
+         i=Load(node.value, s, i, c); if(!InRange(i, s))return -1; c=s[i++];
+      }
+      if(c==CHILD)
+      {
+                                   if(!InRange(i, s))return -1;
+         i=Load(node.nodes, s, i); if(!InRange(i, s))return -1; c=s[i++];
+      }
+      goto check;
+   }else
+   if(c==END)return i;
+   return -1;
+}
+/******************************************************************************/
+void TextMetaElm::save(Str &s)C
+{
+   s.appendUTF8Safe(text); // cannot add unsafe characters so they don't get mixed up with TM_TYPE
+   if(data.nodes.elms())
+   {
+      FREPA(data.nodes)Save(data.nodes[i], s);
+      s.alwaysAppend(END);
+   }
+}
+void TextMeta::save(  Str &s)C {FREPAO(T).save(s);}
+Bool TextMeta::load(C Str &s)
+{
+   clear();
+   if(s.is())
+   {
+      Int i=0;
+   next:
+      TextMetaElm &elm=New();
+      CChar *src=s()+i; i+=elm.text.fromUTF8Safe(src)-src;
+      if(InRange(i, s))
+      {
+         i=Load(elm.data.nodes, s, i);
+         if(InRange(i, s))goto next;
+         if(i<0)return false;
+      }
+   }
+   return true;
+}
+/******************************************************************************/
 }
 /******************************************************************************/
