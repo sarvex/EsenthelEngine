@@ -2050,18 +2050,18 @@ Str FromUTF8(CChar8 *text)
       U+0800  U+FFFF   1110xxxx 10xxxxxx 10xxxxxx          61440
       U+10000 U+10FFFF 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 1048576 */
 
+      Char c;
       Byte b0=*text;
       if(!(b0&(1<<7)))
       {
          if(!b0)break; // NUL
          text++;
-         out.alwaysAppend(b0);
+         c=b0;
       }else
       {
          text++; // always advance at least 1 byte even if result will be invalid, to self correct
          if(!(b0&(1<<6)))break; // bit 6 should be always on
 
-         Char c;
          Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL. Advance after checking if char is valid, so we don't skip past NUL
          if(!(b0&(1<<5)))
          {
@@ -2094,8 +2094,8 @@ Str FromUTF8(CChar8 *text)
          }
 
          if(!c)break; // NUL
-         out.alwaysAppend(c);
       }
+      out+=c;
    }
    return out;
 }
@@ -2104,18 +2104,18 @@ CChar* Str::fromUTF8Safe(CChar *text) // returns pointer where it stopped readin
    clear();
    if(text)for(;;)
    {
+      Char c;
       Byte b0=*text;
       if(!(b0&(1<<7)))
       {
          if(!Safe(b0))break; // Safe/NUL
          text++;
-         alwaysAppend(b0);
+         c=b0;
       }else
       {
          text++; // always advance at least 1 byte even if result will be invalid, to self correct
          if(!(b0&(1<<6)))break; // bit 6 should be always on
 
-         Char c;
          Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles Safe/NUL. Advance after checking if char is valid, so we don't skip past NUL
          if(!(b0&(1<<5)))
          {
@@ -2140,16 +2140,16 @@ CChar* Str::fromUTF8Safe(CChar *text) // returns pointer where it stopped readin
                   if(u<=0x10FFFF)
                   {
                      u-=0x10000;
-                     alwaysAppend(0xD800+(u>>10  )); // #0
-                                c=0xDC00+(u&0x3FF) ; // #1
+                     T+=Char(0xD800+(u>>10  )); // #0
+                     c =     0xDC00+(u&0x3FF) ; // #1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }
          }
 
          if(!Safe(c))break; // Safe/NUL
-         alwaysAppend(c);
       }
+      T+=c;
    }
    return text;
 }
