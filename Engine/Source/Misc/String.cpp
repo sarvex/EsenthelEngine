@@ -2042,43 +2042,58 @@ Str FromUTF8(CChar8 *text)
    Str out;
    if(text)for(;;)
    {
-      Char c;
-      Byte b0=(*text++);
-      if(b0&(1<<7))
+   /* First   Last     Byte 0   Byte 1   Byte 2   Byte 3   Codes
+      U+0000  U+007F   0xxxxxxx                            128
+      U+0080  U+07FF   110xxxxx 10xxxxxx                   1920
+      U+0800  U+FFFF   1110xxxx 10xxxxxx 10xxxxxx          61440
+      U+10000 U+10FFFF 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 1048576 */
+
+      Byte b0=*text;
+      if(!(b0&(1<<7)))
       {
-         Byte b1=((*text++)&0x3F);
-         if(FlagAll(b0, (1<<6)|(1<<5)))
-         {
-            Byte b2=((*text++)&0x3F);
-            if(b0&(1<<4))
-            {
-               Byte b3=((*text++)&0x3F);
-               b0&=0x07;
-               UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
-               // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
-               if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
-               if(u<=0x10FFFF)
-               {
-                  u-=0x10000;
-                  out.alwaysAppend(0xD800+(u>>10  )); // #0
-                                 c=0xDC00+(u&0x3FF) ; // #1
-               }else c='?'; // unsupported
-            }else
-            {
-               b0&=0x0F;
-               c=(b2|(b1<<6)|(b0<<12));
-            }
-         }else
+         if(!b0)break; // NUL
+         text++;
+         out.alwaysAppend(b0);
+      }else
+      {
+         text++; // always advance at least 1 byte even if result will be invalid, to self correct
+         if(!(b0&(1<<6)))break; // bit 6 should be always on
+
+         Char c;
+         Byte b1=*text; if((b1&((1<<7)|(1<<6)))!=(1<<7))break; b1&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+         if(!(b0&(1<<5)))
          {
             b0&=0x1F;
             c=(b1|(b0<<6));
+         }else
+         {
+            Byte b2=*text; if((b2&((1<<7)|(1<<6)))!=(1<<7))break; b2&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+            if(!(b0&(1<<4)))
+            {
+               b0&=0x0F;
+               c=(b2|(b1<<6)|(b0<<12));
+            }else
+            {
+               Byte b3=*text; if((b3&((1<<7)|(1<<6)))!=(1<<7))break; b3&=0x3F; text++; // bit 7 should be always on, bit 6 always off, this handles NUL
+               if(!(b0&(1<<3)))
+               {
+                  b0&=0x07;
+                  UInt u=(b3|(b2<<6)|(b1<<12)|(b0<<18));
+                  // since we return Char, then we must convert 'u' to UTF-16 - https://en.wikipedia.org/wiki/UTF-16#Description
+                  if(u<=  0xFFFF)c=u;else // if(u<=0xD7FF || u>=0xE000 && u<=0xFFFF)return u; ranges U+0000 to U+D7FF and U+E000 to U+FFFF are represented natively
+                  if(u<=0x10FFFF)
+                  {
+                     u-=0x10000;
+                     out.alwaysAppend(0xD800+(u>>10  )); // #0
+                                    c=0xDC00+(u&0x3FF) ; // #1
+                  }else c='?'; // unsupported
+               }else c='?'; // unsupported
+            }
          }
-      }else
-      {
-         c=b0;
-      }
 
-      if(c)out.alwaysAppend(c);else break;
+         if(!c)break; // NUL
+         out.alwaysAppend(c);
+      }
    }
    return out;
 }
