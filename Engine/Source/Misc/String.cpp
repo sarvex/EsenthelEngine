@@ -1846,10 +1846,10 @@ void SplitURLParams(MemPtr<TextParam> params, C Str &url)
             if(++i>=url.length())return;
             Char c=url[i];
             if(c=='&')goto next_param;
-            param.value.alwaysAppend(c);
+            param.value+=c;
          }
          if(c=='&')goto next_param;
-         param.name.alwaysAppend(c);
+         param.name+=c;
       }
    }
 }
@@ -2086,8 +2086,8 @@ Str FromUTF8(CChar8 *text)
                   if(u<=0x10FFFF)
                   {
                      u-=0x10000;
-                     out.alwaysAppend(0xD800+(u>>10  )); // #0
-                                    c=0xDC00+(u&0x3FF) ; // #1
+                     out+=Char(0xD800+(u>>10  )); // #0
+                        c=     0xDC00+(u&0x3FF) ; // #1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }

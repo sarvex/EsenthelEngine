@@ -109,17 +109,6 @@ static Str8 GetHeaders(C Str8 &url, CChar8 *request)
 }
 static CChar8* FileSuffix   () {return "\r\n";}
 static Int     FileSuffixLen() {return 2;} // Length(FileSuffix())
-/******************************************************************************
-static Str8 Encode(C CMemPtr<HTTPParam> &params); // encode 'params' array into string
-Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
-{
-   Str8 s; FREPA(params)
-   {
-      if(i)s.alwaysAppend('&');
-      AppendParam(s, params[i]);
-   }
-   return s;
-}
 /******************************************************************************/
 #if WEB
 struct JSDownload
@@ -713,7 +702,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
 
          case HTTP_GET:
          {
-           _url_full.alwaysAppend(url_has_params ? '&' : '?'); // first param must be started with '?', others with '&'
+           _url_full+=(url_has_params ? '&' : '?'); // first param must be started with '?', others with '&'
             url_has_params=true;
             AppendParam(_url_full, param);
          }break;
@@ -735,7 +724,7 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
    if(files)
    {
       // sub header
-      const Int boundary_len=70; Str8 boundary; boundary.reserve(boundary_len); REP(boundary_len)boundary.alwaysAppend(Random.elm(BoundaryChars)); // 'boundary' must not be present in the file data !! otherwise the upload will fail !! up to 70 characters - https://www.rfc-editor.org/rfc/rfc2046#section-5.1
+      const Int boundary_len=70; Str8 boundary; boundary.reserve(boundary_len); REP(boundary_len)boundary+=Random.elm(BoundaryChars); // 'boundary' must not be present in the file data !! otherwise the upload will fail !! up to 70 characters - https://www.rfc-editor.org/rfc/rfc2046#section-5.1
 
       FREPA(params) // params
       {
