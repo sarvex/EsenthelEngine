@@ -3,6 +3,8 @@
 
 #define USE_STD WINDOWS // 'iswalpha' on Apple/Linux supports only ASCII, on Android it works on more characters but not the same as on Windows, we need consistent results across all platforms, so use 'iswalpha' on Windows, and 'Alphas' on other platforms (which was pre-computed from 'iswalpha' on Windows)
 
+#define NUL_CHAR 1 // allow appending NUL char
+
 namespace EE{
 /******************************************************************************/
 static Int StrSize(Int new_size, Int old_size)
@@ -3056,10 +3058,17 @@ end:
 /******************************************************************************/
 Str8::Str8(            ) {   _length=         0 ;}
 Str ::Str (            ) {   _length=         0 ;}
+#if NUL_CHAR
+Str8::Str8(Char8   c   ) {   _length=         1 ; _d.setNum(         2); _d[0]=          c ; _d[1]='\0';}
+Str ::Str (Char    c   ) {   _length=         1 ; _d.setNum(         2); _d[0]=          c ; _d[1]='\0';}
+Str8::Str8(Char    c   ) {   _length=         1 ; _d.setNum(         2); _d[0]=Char16To8(c); _d[1]='\0';}
+Str ::Str (Char8   c   ) {   _length=         1 ; _d.setNum(         2); _d[0]=Char8To16(c); _d[1]='\0';}
+#else
 Str8::Str8(Char8   c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=          c ; _d[1]='\0';       }}
 Str ::Str (Char    c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=          c ; _d[1]='\0';       }}
 Str8::Str8(Char    c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=Char16To8(c); _d[1]='\0';       }}
 Str ::Str (Char8   c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=Char8To16(c); _d[1]='\0';       }}
+#endif
 Str8::Str8(CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t,  _d.elms());}}
 Str ::Str (CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t,  _d.elms());}}
 Str8::Str8(CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t,  _d.elms());}}
@@ -3479,7 +3488,9 @@ Str& Str::operator=(C Str &s)
 /******************************************************************************/
 Str8& Str8::operator=(Char8 c)
 {
+#if !NUL_CHAR
    if(!c)clear();else
+#endif
    {
      _d.minNumDiscard(2);
      _d[0]  =c;
@@ -3490,7 +3501,9 @@ Str8& Str8::operator=(Char8 c)
 }
 Str8& Str8::operator=(Char c)
 {
+#if !NUL_CHAR
    if(!c)clear();else
+#endif
    {
      _d.minNumDiscard(2);
      _d[0]  =Char16To8(c);
@@ -3501,7 +3514,9 @@ Str8& Str8::operator=(Char c)
 }
 Str& Str::operator=(Char8 c)
 {
+#if !NUL_CHAR
    if(!c)clear();else
+#endif
    {
      _d.minNumDiscard(2);
      _d[0]  =Char8To16(c);
@@ -3512,7 +3527,9 @@ Str& Str::operator=(Char8 c)
 }
 Str& Str::operator=(Char c)
 {
+#if !NUL_CHAR
    if(!c)clear();else
+#endif
    {
      _d.minNumDiscard(2);
      _d[0]  =c;
@@ -3703,7 +3720,9 @@ void Str8::appendRaw(C Str &s)
 /******************************************************************************/
 Str8& Str8::operator+=(Char8 c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Reserve(T, 1);
      _d[_length++]=c;
@@ -3713,7 +3732,9 @@ Str8& Str8::operator+=(Char8 c)
 }
 Str8& Str8::operator+=(Char c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Reserve(T, 1);
      _d[_length++]=Char16To8(c);
@@ -3723,7 +3744,9 @@ Str8& Str8::operator+=(Char c)
 }
 Str& Str::operator+=(Char8 c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Reserve(T, 1);
      _d[_length++]=Char8To16(c);
@@ -3733,7 +3756,9 @@ Str& Str::operator+=(Char8 c)
 }
 Str& Str::operator+=(Char c)
 {
+#if !NUL_CHAR
    if(c)
+#endif
    {
       Reserve(T, 1);
      _d[_length++]=c;
