@@ -715,7 +715,7 @@ void Copy24To32(Ptr dest, CPtr src, Int elms)
 void Copy16To8(Ptr dest, CPtr src, Int elms)
 {
    if(U8  *d=(U8 *)dest)
-   if(U16 *s=(U16*)src )FREP(elms)d[i]=s[i];
+   if(U16 *s=(U16*)src )FREP(elms)d[i]=s[i]&0xFF;
 }
 void Copy32To8(Ptr dest, CPtr src, Int elms)
 {

@@ -40,6 +40,7 @@ struct Str8 // Text String (8-bit per character)
 
 #if EE_PRIVATE
    void alwaysAppend(Char8 c);
+   void appendRaw(C Str &s); // append 's' treating every character as Char8 without performing any conversions
    explicit Str8(C Str8 &s, UInt extra_length);
 #endif
    Str8(           );

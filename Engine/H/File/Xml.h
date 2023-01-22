@@ -12,6 +12,8 @@ struct TextParam
        value; // parameter value
 
    // set / get
+   Bool is()C {return name.is() || value.is();} // if has any data
+
    TextParam& setName(C Str &name=S) {T.name=name; return T;}
 
    TextParam& setValue(C Str   &value=S) {T.value=         value           ; return T;}   void getValue(Str   &value)C {value=asText ();}
@@ -112,6 +114,8 @@ struct TextNode : TextParam
    Memc<TextNode> nodes;
 
    // get / set
+   Bool is()C {return super::is() || nodes.elms();} // if has any data
+
    TextNode* findNode(C Str &name, Int i=0) ; // find i-th node which name is equal to 'name', null on fail (if not found)
  C TextNode* findNode(C Str &name, Int i=0)C; // find i-th node which name is equal to 'name', null on fail (if not found)
    TextNode&  getNode(C Str &name         ) ; // get       node which name is equal to 'name', New  on fail (if not found)

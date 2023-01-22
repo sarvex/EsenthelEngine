@@ -37,8 +37,8 @@ constexpr UInt CC4(Byte a, Byte b, Byte c, Byte d) {return a | (b<<8) | (c<<16) 
 
 Bool WhiteChar(Char c); // if char is a white char - ' ', '\t', '\n', '\r'
 
-constexpr Byte   Unsigned(Char8  x) {return x;}
-constexpr UShort Unsigned(Char   x) {return x;}
+constexpr Byte   Unsigned(Char8 x) {return x;}
+constexpr UShort Unsigned(Char  x) {return x;}
 
 Char8 Char16To8(Char  c); // convert 16-bit to  8-bit character
 Char  Char8To16(Char8 c); // convert  8-bit to 16-bit character

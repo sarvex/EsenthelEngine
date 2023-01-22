@@ -47,17 +47,16 @@ enum DWNL_STATE : Byte // Download States
 /******************************************************************************/
 enum HTTP_TYPE : Byte // HTTP Parameter Type
 {
-   HTTP_GET   , // get    parameter
-   HTTP_POST  , // post   parameter
-   HTTP_HEADER, // header parameter
+   HTTP_GET     , // get    parameter
+   HTTP_POST    , // post   parameter
+   HTTP_POST_BIN, // post   parameter treated as binary data, where every 'TextParam.value' Char is treated as 1 Byte
+   HTTP_HEADER  , // header parameter
 };
 struct HTTPParam : TextParam // optional parameter that can be passed to the 'Download'
 {
    HTTP_TYPE type=HTTP_GET; // parameter type
 
    HTTPParam& set(C Str &name, C Str &value, HTTP_TYPE type=HTTP_GET) {super::set(name, value); T.type=type; return T;}
-
-   static Str8 Encode(C CMemPtr<HTTPParam> &params); // encode 'params' array into string
 };
 struct HTTPFile : File
 {

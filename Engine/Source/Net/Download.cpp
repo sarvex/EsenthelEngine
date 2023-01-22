@@ -16,8 +16,8 @@ namespace EE{
 static void EncodeChar(Str8 &text, Char8 c)
 {
    text.alwaysAppend('%');
-   text.alwaysAppend(Digits16[Byte(c)>>4]);
-   text.alwaysAppend(Digits16[Byte(c)&15]);
+   text.alwaysAppend(Digits16[Unsigned(c)>>4]);
+   text.alwaysAppend(Digits16[Unsigned(c)&15]);
 }
 static Bool AppendUrlPath(Str8 &text, C Str8 &path)
 {
@@ -49,6 +49,24 @@ static void AppendParam(Str8 &text, C TextParam &param)
    }
    text.alwaysAppend('=');
  C Str8 &value=UTF8(param.value);
+   FREPA(value) // set value
+   {
+      Char8 c=value[i];
+      if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='&' || c=='+' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
+      else text.alwaysAppend(c);
+   }
+}
+static void AppendParamBin(Str8 &text, C TextParam &param) // don't convert 'param.value'
+{
+ C Str8 &name=UTF8(param.name);
+   FREPA(name) // set name
+   {
+      Char8 c=name[i];
+      if(Unsigned(c)<=32 || c=='#' || c=='%' || c=='=' || c=='&' || Unsigned(c)>=127)EncodeChar(text, c); // these are the only symbols that need to be replaced with %XX hex code
+      else text.alwaysAppend(c);
+   }
+   text.alwaysAppend('=');
+ C Str  &value=param.value;
    FREPA(value) // set value
    {
       Char8 c=value[i];
@@ -91,7 +109,8 @@ static Str8 GetHeaders(C Str8 &url, CChar8 *request)
 }
 static CChar8* FileSuffix   () {return "\r\n";}
 static Int     FileSuffixLen() {return 2;} // Length(FileSuffix())
-/******************************************************************************/
+/******************************************************************************
+static Str8 Encode(C CMemPtr<HTTPParam> &params); // encode 'params' array into string
 Str8 HTTPParam::Encode(C CMemPtr<HTTPParam> &params)
 {
    Str8 s; FREPA(params)
@@ -688,8 +707,11 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
    {
     C HTTPParam &param=params[i]; switch(param.type)
       {
-         case HTTP_POST: has_post_params=true; break;
-         case HTTP_GET :
+         case HTTP_POST:
+         case HTTP_POST_BIN:
+            has_post_params=true; break;
+
+         case HTTP_GET:
          {
            _url_full.alwaysAppend(url_has_params ? '&' : '?'); // first param must be started with '?', others with '&'
             url_has_params=true;
@@ -717,18 +739,35 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
 
       FREPA(params) // params
       {
-       C HTTPParam &param=params[i]; if(param.type==HTTP_POST)
+       C HTTPParam &param=params[i]; switch(param.type)
          {
-          C Str8 &value=UTF8(param.value);
-            prefix+=S8+"--"+boundary+"\r\n";
-            prefix+="Content-Disposition: form-data; name=\"";
-            AppendName(prefix, param.name);
-            prefix+="\"\r\n";
-            prefix+="Content-Type: form-data\r\n";
-            prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
-            prefix+="\r\n";
-            prefix+=value;
-            prefix+="\r\n";
+            case HTTP_POST:
+            {
+             C Str8 &value=UTF8(param.value);
+               prefix+=S8+"--"+boundary+"\r\n";
+               prefix+="Content-Disposition: form-data; name=\"";
+               AppendName(prefix, param.name);
+               prefix+="\"\r\n";
+               prefix+="Content-Type: form-data\r\n";
+               prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
+               prefix+="\r\n";
+               prefix+=value;
+               prefix+="\r\n";
+            }break;
+
+            case HTTP_POST_BIN:
+            {
+             C Str &value=param.value;
+               prefix+=S8+"--"+boundary+"\r\n";
+               prefix+="Content-Disposition: form-data; name=\"";
+               AppendName(prefix, param.name);
+               prefix+="\"\r\n";
+               prefix+="Content-Type: form-data\r\n";
+               prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
+               prefix+="\r\n";
+               prefix.appendRaw(value);
+               prefix+="\r\n";
+            }break;
          }
       }
 
@@ -761,11 +800,10 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
       Bool added=false;
       FREPA(params)
       {
-       C HTTPParam &param=params[i]; if(param.type==HTTP_POST)
+       C HTTPParam &param=params[i]; switch(param.type)
          {
-            if(added)prefix.alwaysAppend('&');
-            AppendParam(prefix, param);
-            added=true;
+            case HTTP_POST    : if(added)prefix.alwaysAppend('&'); AppendParam   (prefix, param); added=true; break;
+            case HTTP_POST_BIN: if(added)prefix.alwaysAppend('&'); AppendParamBin(prefix, param); added=true; break;
          }
       }
      _send+="Content-type: application/x-www-form-urlencoded\r\n";

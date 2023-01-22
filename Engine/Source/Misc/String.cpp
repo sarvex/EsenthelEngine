@@ -3591,6 +3591,16 @@ Str& Str::operator+=(C Str8 &s)
    return T;
 }
 /******************************************************************************/
+void Str8::appendRaw(C Str &s)
+{
+   if(s.is())
+   {
+      Reserve(T, s.length());
+      Copy16To8(_d.data()+length(), s(), s.length()+1);
+     _length+=s.length();
+   }
+}
+/******************************************************************************/
 Str8& Str8::operator+=(Char8 c)
 {
    if(c)
