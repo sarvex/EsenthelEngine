@@ -1144,8 +1144,8 @@ bool  UndoID(  UID &id, C UID &src_id) {if(NewerID(src_id, id)){id=src_id; retur
                                    nodes.New().set   ("Linear"            , linear());
       if(rootMove()               )nodes.New().setRaw("RootMove"          , root_move);
       if(rootRot ()               )nodes.New().setRaw("RootRot"           , root_rot );
-      if(flag&ROOT_DEL_POS        )nodes.New().set   ("RootDelPos"        , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_POS_Z) ? 'Z' : '\0'));
-      if(flag&ROOT_DEL_ROT        )nodes.New().set   ("RootDelRot"        , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? 'X' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Y) ? 'Y' : '\0')+(FlagOn(flag, ROOT_DEL_ROT_Z) ? 'Z' : '\0'));
+      if(flag&ROOT_DEL_POS        )nodes.New().set   ("RootDelPos"        , FlagAll(flag, ROOT_DEL_POS) ? S : S+(FlagOn(flag, ROOT_DEL_POS_X) ? "X" : null)+(FlagOn(flag, ROOT_DEL_POS_Y) ? "Y" : null)+(FlagOn(flag, ROOT_DEL_POS_Z) ? "Z" : null));
+      if(flag&ROOT_DEL_ROT        )nodes.New().set   ("RootDelRot"        , FlagAll(flag, ROOT_DEL_ROT) ? S : S+(FlagOn(flag, ROOT_DEL_ROT_X) ? "X" : null)+(FlagOn(flag, ROOT_DEL_ROT_Y) ? "Y" : null)+(FlagOn(flag, ROOT_DEL_ROT_Z) ? "Z" : null));
       if(flag&ROOT_SMOOTH_ROT     )nodes.New().set   ("RootSmoothRot"     );
       if(flag&ROOT_SMOOTH_POS     )nodes.New().set   ("RootSmoothPos"     );
       if(fps>0                    )nodes.New().set   ("FPS"               , fps);

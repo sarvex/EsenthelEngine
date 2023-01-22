@@ -610,15 +610,15 @@ bool ImportImage(Image &image, C Str &name, int type, int mode, int mip_maps, bo
    return false;
 }
 /******************************************************************************/
-char IndexChannel(int i)
+cchar8* IndexChannel(int i)
 {
    switch(i)
    {
-      case  0: return 'r';
-      case  1: return 'g';
-      case  2: return 'b';
-      case  3: return 'a';
-      default: return '\0';
+      case  0: return "r";
+      case  1: return "g";
+      case  2: return "b";
+      case  3: return "a";
+      default: return null;
    }
 }
 int ChannelIndex(char c)
@@ -2798,8 +2798,10 @@ Str NameToEnum(C Str &name)
    return e;
 }
 Str TimeAgo(C DateTime &date) {DateTime now; now.getUTC(); return TimeText(now-date, TIME_NAME_MED)+" ago";}
-char CountS(int n) {return (n==1) ? '\0' : 's';}
-Str  Plural(Str name) // convert to plural name
+
+cchar8* CountS(int n) {return (n==1) ? null : "s";}
+
+Str Plural(Str name) // convert to plural name
 {
    bool case_up=Equal(CaseUp(name), name, true);
    char last   =CaseDown(name.last());

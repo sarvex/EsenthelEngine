@@ -182,7 +182,7 @@ class CompareProjects : PropWin
          }else switch(result)
          {
             case LOAD_NEWER : Gui.msgBox(S, S+"Project \""+proj.name+"\" requires newer engine version."); return;
-            case LOAD_ERROR : Gui.msgBox(S, S+"Project \""+proj.name+"\" failed to load."+(error.is() ? '\n' : '\0')+error); return;
+            case LOAD_ERROR : Gui.msgBox(S, S+"Project \""+proj.name+"\" failed to load."+(error.is() ? "\n" : null)+error); return;
             case LOAD_LOCKED: Gui.msgBox(S, S+"Project \""+proj.name+"\" is locked."); return;
          }
       }

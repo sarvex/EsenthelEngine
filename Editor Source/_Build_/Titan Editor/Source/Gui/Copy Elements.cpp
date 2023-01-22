@@ -227,7 +227,7 @@ void DrawCopyElms()
 
             if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again.");else
             if(result==LOAD_LOCKED       )Gui.msgBox(S,   "Target project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first.");else
-            if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? '\n' : '\0')+error);else
+            if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? "\n" : null)+error);else
             if(CopyElms.dest->needUpdate())Gui.msgBox(S,   "Target project needs to be updated first.\nPlease first open the target project normally in order to update it.");else
             {
                if(result==LOAD_EMPTY)CopyElms.dest->initSettings(*CopyElms.src); // if dest project didn't exist yet, then copy all settings from source
@@ -271,7 +271,7 @@ void DrawCopyElms()
 
          if(result==LOAD_NEWER        )Gui.msgBox(S,   "Target project was created with a newer version of " ENGINE_NAME " Engine.\nPlease upgrade your " ENGINE_NAME " software and try again.");else
          if(result==LOAD_LOCKED       )Gui.msgBox(S,   "Target project appears to be already opened in another instance of the Editor.\nIf it isn't, then please try re-opening it manually first.");else
-         if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? '\n' : '\0')+error);else
+         if(result==LOAD_ERROR        )Gui.msgBox(S, S+"Target project failed to load."+(error.is() ? "\n" : null)+error);else
          if(CopyElms.dest->needUpdate())Gui.msgBox(S,   "Target project needs to be updated first.\nPlease first open the target project normally in order to update it.");else
          {
             data.clear();
