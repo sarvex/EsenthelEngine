@@ -1645,7 +1645,7 @@ Bool CodeEditor::generateVSProj(Int version)
                Int len=TextPosI(dest()+pos, ';'); if(len<0)len=dest.length()-pos;
                Str lib; FREP(len)lib+=dest[pos+i];
                dest.remove(pos, len+1);
-               Char8 quote=(Contains(lib, "Android") ? '\0' : '"'); // compile for Android will fail if "" is present
+               CChar8 *quote=(Contains(lib, "Android") ? null : "\""); // compile for Android will fail if "" is present
                dest.insert(0, S+quote+bin_path_rel+lib+quote+";");
             }
             Memc<Str> *libs=&libs_win;

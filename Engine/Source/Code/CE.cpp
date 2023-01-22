@@ -1154,7 +1154,7 @@ Str CodeEditor::title()
    if(cur())
    {
       Str path=cur()->loc.asText();
-      if( path.is())return S+'"'+path+(cur()->modified() ? '*' : '\0')+'"'+(cur()->Const ? " (Read Only)" : null);
+      if( path.is())return S+'"'+path+(cur()->modified() ? "*" : null)+'"'+(cur()->Const ? " (Read Only)" : null);
    }
    return S;
 }
