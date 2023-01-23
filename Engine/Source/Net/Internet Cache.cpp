@@ -328,17 +328,27 @@ NOINLINE void InternetCache::cleanMissing() // don't inline so we don't use stac
    }
 }
 /******************************************************************************/
+void InternetCache::delFile()
+{
+   Dbl time; if(LOG){time=Time.curTime(); LogN(S+"IC.delFile");}
+   if(fileName().is()) // we have file
+   {
+      WriteLockEx lock(_rws);
+      REPA(_import_images){auto &ii=_import_images[i]; ii.lockedRead();} // read all
+      resetPak(&lock); // 'resetPak', reset while still under lock, it will be unlocked inside
+   }
+   if(LOG)LogN(S+"IC.delFile Finish "+Flt(Time.curTime()-time));
+}
+/******************************************************************************/
 Bool InternetCache::flush() {return flush(null, null);}
 Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' is going to get removed then its data will be placed in 'keep_data'
 {
-   Dbl time;
+   Dbl time; if(LOG){time=Time.curTime(); LogN(S+"IC.flush");}
 
  //if(_downloaded.elms()) always save because we need to save 'access_time' and 'verify_time' which can change without new '_downloaded'
    {
       if(fileName().is()) // we want to save data
       {
-         if(LOG){time=Time.curTime(); LogN(S+"IC.flush");}
-
          // we're going to update PAK so make sure all imports have read PAK FILE data
          // need to do this at the start, because in case of failure, 'resetPak' will recreate the PAK
          {
@@ -399,7 +409,6 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
             if(LOG)LogN(S+"IC.flush !FAIL! "+Flt(Time.curTime()-time));
             return false;
          }
-         if(LOG)LogN(S+"IC.flush Finish "+Flt(Time.curTime()-time));
       }else
       {
          if(_downloaded.elms())
@@ -444,6 +453,7 @@ Bool InternetCache::flush(Downloaded *keep, Mems<Byte> *keep_data) // if 'keep' 
          cleanMissing();
       }
    }
+   if(LOG)LogN(S+"IC.flush Finish "+Flt(Time.curTime()-time));
    return true;
 }
 /******************************************************************************/

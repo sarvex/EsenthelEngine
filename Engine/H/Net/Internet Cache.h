@@ -28,6 +28,7 @@ struct InternetCache
    Bool     getFile (C Str &url, DataSourceTime &file, CACHE_VERIFY verify=CACHE_VERIFY_YES) ; // get file  from the internet, 'file' will contain a way to access this file, false is returned if file is not yet available and will be downloaded
    void     changed (C Str &url                                                            ) ; // notify the cache that the file on the internet has just been changed and needs updating
    Bool     flush   (                                                                      ) ; // flush updated files to disk, warning: this may invalidate all files obtained using 'getFile', false on fail
+   void     delFile (                                                                      ) ; // delete cache file to free disk space, but keep existing data in memory
 
  C Str& fileName()C {return _pak.pakFileName();} // get cache file name
 
