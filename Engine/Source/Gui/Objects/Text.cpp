@@ -111,6 +111,21 @@ Vec2 Text::textSize()C
    }
    return 0;
 }
+Int Text::textIndex(C Vec2 &screen_pos, TEXT_INDEX_MODE index_mode)C
+{
+   if(TextStyle *text_style=getTextStyle())
+   {
+   #if DEFAULT_FONT_FROM_CUSTOM_SKIN
+      TextStyleParams ts=*text_style; if(!ts.font())if(GuiSkin *skin=getSkin())ts.font(skin->font()); // adjust font in case it's empty and the custom skin has a different font than the 'Gui.skin'
+   #else
+    C TextStyle &ts=*text_style;
+   #endif
+
+      Vec2 local=screen_pos-screenPos();
+      Bool eol; return ts.textIndex(text, extra.data(), extra.elms(), local.x, local.y, index_mode, rect().size(), auto_line, eol);
+   }
+   return 0;
+}
 /******************************************************************************/
 void Text::draw(C GuiPC &gpc)
 {
@@ -126,7 +141,7 @@ void Text::draw(C GuiPC &gpc)
          TextStyleParams ts=*text_style; ts.font(skin->font()); D.text(ts, rect, text, extra.data(), extra.elms(), auto_line);
       }else
    #endif
-         D.text(*text_style, rect, text, extra.data(), extra.elms(), auto_line);
+         D.text(*text_style, rect, text, extra.data(), extra.elms(), auto_line, &NoTemp(T.rect().w()));
    }
 }
 /******************************************************************************/

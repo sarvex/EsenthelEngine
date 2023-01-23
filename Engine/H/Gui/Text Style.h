@@ -171,10 +171,11 @@ struct TextStyleParams // Text Style Params
    Flt textWidth(CChar8 *text, Int max_length=-1         )C; // get width of one line 'text' text
    Flt textWidth(CChar  *text, C StrData *data, Int datas)C; // get width of one line 'text' text
 
-   Int textIndex(CChar  *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                      )C; // get index of character at 'x'   position, returns "0 .. Length(text)"
-   Int textIndex(CChar8 *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                      )C; // get index of character at 'x'   position, returns "0 .. Length(text)"
-   Int textIndex(CChar  *text,                             Flt x, Flt y, TEXT_INDEX_MODE index_mode, Flt width, Bool auto_line, Bool &eol)C; // get index of character at 'x,y' position, returns "0 .. Length(text)"
-   Int textIndex(CChar  *text, C StrData *data, Int datas, Flt x, Flt y, TEXT_INDEX_MODE index_mode, Flt width, Bool auto_line, Bool &eol)C; // get index of character at 'x,y' position, returns "0 .. Length(text)"
+   Int textIndex(CChar  *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                         )C; // get index of character at 'x'   position, returns "0 .. Length(text)"
+   Int textIndex(CChar8 *text,                             Flt x,        TEXT_INDEX_MODE index_mode                                         )C; // get index of character at 'x'   position, returns "0 .. Length(text)"
+   Int textIndex(CChar  *text,                             Flt x, Flt y, TEXT_INDEX_MODE index_mode,   Flt  width, Bool auto_line, Bool &eol)C; // get index of character at 'x,y' position, returns "0 .. Length(text)"
+   Int textIndex(CChar  *text, C StrData *data, Int datas, Flt x, Flt y, TEXT_INDEX_MODE index_mode,   Flt  width, Bool auto_line, Bool &eol)C; // get index of character at 'x,y' position, returns "0 .. Length(text)"
+   Int textIndex(CChar  *text, C StrData *data, Int datas, Flt x, Flt y, TEXT_INDEX_MODE index_mode, C Vec2 &size, Bool auto_line, Bool &eol)C; // get index of character at 'x,y' position, returns "0 .. Length(text)", this function uses 'align'
 
    Vec2 textPos(CChar *text,                             Int index, Flt width, Bool auto_line)C; // get position of character at 'index' location
    Vec2 textPos(CChar *text, C StrData *data, Int datas, Int index, Flt width, Bool auto_line)C; // get position of character at 'index' location
