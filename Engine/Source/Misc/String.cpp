@@ -1757,7 +1757,8 @@ Str Replace(C Str &text, Char from, Char to)
    Str s; s.reserve(text.length()); FREPA(text)
    {
       Char c=text()[i]; // () avoids range checks
-      s+=((c==from) ? to : c);
+      if(c!=from)s+=c ;else
+      if(to     )s+=to;
    }
    return s;
 }
