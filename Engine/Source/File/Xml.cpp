@@ -1868,6 +1868,7 @@ void TextMetaElm::save(Str &s)C
       s+=Char(END);
    }
 }
+Str  TextMeta::save(        )C {Str s; save(s); return s;}
 void TextMeta::save(  Str &s)C {FREPAO(T).save(s);}
 Bool TextMeta::load(C Str &s)
 {

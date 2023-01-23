@@ -286,6 +286,7 @@ struct TextMetaElm
 };
 struct TextMeta : Memc<TextMetaElm> // text mixed with meta data
 {
+   Str  save(        )C;
    void save(  Str &s)C;
    Bool load(C Str &s);
 };
