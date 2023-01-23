@@ -241,7 +241,7 @@ Bool DecodeTextReal(CChar* &src, Dbl &real)
 #define BINARY_END   '>'
 #define BINARY_ZERO  '?' // optimization to store UInt(0) as only one character
 #define BINARY_TRIM   0  // because binary data comes from Str and will be loaded into Str, then it will always be aligned to 2 bytes (size of wide Char), this will enable optimizations to reduce the binary size, however it works on assumption that this data will be loaded into Str, if in the future that would be changed, then binary data length may not be preserved
-#define    RAW_BEGIN '\1'
+#define    RAW_BEGIN '\1' // used only when receiving data from server, assumes data is saved per-byte (not per-char)
 #define    RAW_END   '\1'
 #define  ERROR       '\2' // avoid '\0' because that one means end of file and success
 
@@ -435,6 +435,20 @@ static Char LoadText(FileText &f, Str &t, Char c)
 
       case RAW_BEGIN:
       {
+         UInt size; f._f.decUIntV(size); if(f.ok())
+         {
+            Int  max_size=Min(f._f.left(), INT_MAX); // what we can still read
+            Bool ok=(size<=max_size); if(!ok)size=max_size;
+            if(size>0)
+            {
+               t.reserve(size);
+               f._f.get (t._d.data(),              size);
+               Copy8To16(t._d.data(), t._d.data(), size); // expand 8-bit binary data to 16-bit characters
+               t._d[t._length=size]='\0';
+            }
+            if(ok && f.ok() && f.getChar()==RAW_END)return f.getChar();
+         }
+         return ERROR;
       }break;
    }
    return c;
