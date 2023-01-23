@@ -1681,28 +1681,29 @@ Str FileParams::Merge(C Str &a, C Str &b)
 /******************************************************************************/
 enum TM_TYPE : Char8
 {
-   END     = 0,
-   NAME    = 1, // Str8 Safe chars only
-   CHILD   = 2,
- //TAB     = 9, '\t'
- //LINE    =10, '\n'
-   VALUE   =15, // Str8 Safe chars only
-   VALUE_U1=16, //    Byte
-   VALUE_I1=17, // -  Byte
-   VALUE_U2=18, //    UShort
-   VALUE_I2=19, // -  UShort
-   VALUE_U3=20, //  3xByte
-   VALUE_I3=21, // -3xByte
-   VALUE_U4=22, //    UInt
-   VALUE_I4=23, // -  UInt
-   VALUE_U5=24, //  5xByte
-   VALUE_I5=25, // -5xByte
-   VALUE_U6=26, //  6xByte
-   VALUE_I6=27, // -6xByte
-   VALUE_U7=28, //  7xByte
-   VALUE_I7=29, // -7xByte
-   VALUE_U8=30, //    ULong
-   VALUE_I8=31, // -  ULong
+   END      = 0,
+   NAME     = 1, // Str8 Safe chars only
+   CHILD    = 2,
+ //TAB      = 9, '\t'
+ //LINE     =10, '\n'
+   VALUE    =14, // Str8 Safe chars only
+   VALUE_UID=15, //    UID
+   VALUE_U1 =16, //    Byte
+   VALUE_I1 =17, // -  Byte
+   VALUE_U2 =18, //    UShort
+   VALUE_I2 =19, // -  UShort
+   VALUE_U3 =20, //  3xByte
+   VALUE_I3 =21, // -3xByte
+   VALUE_U4 =22, //    UInt
+   VALUE_I4 =23, // -  UInt
+   VALUE_U5 =24, //  5xByte
+   VALUE_I5 =25, // -5xByte
+   VALUE_U6 =26, //  6xByte
+   VALUE_I6 =27, // -6xByte
+   VALUE_U7 =28, //  7xByte
+   VALUE_I7 =29, // -7xByte
+   VALUE_U8 =30, //    ULong
+   VALUE_I8 =31, // -  ULong
 };
 /******************************************************************************/
 static Bool IsValue(Char c)
@@ -1754,7 +1755,7 @@ static void Save(C Str &text, Str &s, Bool name)
             Char8 temp[256]; CChar8 *i;
             if(neg)i=TextInt(       cv.i, temp);
             else   i=TextInt((ULong)cv.i, temp);
-            if(Equal(i, text)) // text->number->text == text, conversion gives exact same results
+            if(Equal(i, text, true)) // text->number->text == text, conversion gives exact same results
             {
                ULong   u    =(neg ? -cv.i-1 : cv.i); // absolute
                Byte    bytes=Max(1, ByteHi(u)); // how many bytes needed 1..8
@@ -1762,6 +1763,15 @@ static void Save(C Str &text, Str &s, Bool name)
                s+=Char(type); FREP(bytes)s+=Char(((Byte*)&u)[i]);
                return;
             }
+         }
+      }
+      if(text.length()==UIDFileNameLen)
+      {
+         UID id; if(id.fromFileName(text) && Equal(_EncodeFileName(id), text, true))
+         {
+            Int bytes=SIZE(UID);
+            s+=Char(VALUE_UID); FREP(bytes)s+=Char(id.b[i]);
+            return;
          }
       }
    }
@@ -1775,6 +1785,16 @@ static Int Load(Str &text, C Str &s, Int i, Char c)
       case NAME:
       case VALUE:
          return Load(text, s, i);
+
+      case VALUE_UID:
+      {
+         Int bytes=SIZE(UID); if(bytes<=Left(s, i))
+         {
+            UID  id; Copy16To8(&id, s()+i, bytes); // FREPD(j, bytes)id.b[j]=s[i+j];
+            text=id.asFileName();
+            return i+bytes;
+         }
+      }break;
 
       case VALUE_U1:
       case VALUE_I1:
@@ -1793,10 +1813,9 @@ static Int Load(Str &text, C Str &s, Int i, Char c)
       case VALUE_U8:
       case VALUE_I8:
       {
-         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg);
-         if(bytes<=Left(s, i))
+         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg); if(bytes<=Left(s, i))
          {
-            ULong u=0; FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
+            ULong u=0; Copy16To8(&u, s()+i, bytes); // FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
             if(neg)text=-Long(u)-1;
             else   text=      u   ;
             return i+bytes;
