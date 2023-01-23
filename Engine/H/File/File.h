@@ -87,7 +87,8 @@ struct File
    Bool  end    (        )C {return _pos>=_size     ;} // if  current position is at the end of the file
    Bool  skip   (Long n  )  {return  pos(_pos+n)    ;} // skip 'n' bytes going forward
    Bool       ok(        )C {return _ok             ;} // check if no errors occurred during reading/writing. When a new file is opened this will be set to true by default, if any 'put' or 'get' call will fail then this will be set to false
-   File& resetOK(        )  {_ok=true;      return T;} // reset 'ok' status to default
+   File& resetOK(        )  {_ok= true;     return T;} // reset 'ok' status to default
+   File&   error(        )  {_ok=false;     return T;} //   set 'ok' status to ERROR
 
    // put / get
 #if EE_PRIVATE

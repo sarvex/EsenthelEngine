@@ -59,6 +59,7 @@ struct FileText
    // operations
    FileText& rewind ();                        // reset to starting position, this can be useful when wanting to read previously written data
    Bool      ok     ()C {return _f.ok     ();} // check if no errors occurred during reading/writing. When a new file is opened this will be set to true by default, if any read/write call will fail then this will be set to false
+   void      error  ()  {       _f.error  ();} // set 'ok' status to ERROR
    Bool      flush  ()  {return _f.flush  ();} // flush all buffered data to the disk, false on fail
    Bool      flushOK()  {return _f.flushOK();} // flush all buffered data to the disk and check if no other errors occurred before - "flush() && ok()", false on fail
    Bool      copy   (File &dest);              // copy the entire contents (from start to end) of this FileText into 'dest' file, including byte order mark (BOM) if present, false on fail

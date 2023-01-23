@@ -347,7 +347,7 @@ FileText& FileText::getAll(Str &s)
       {
          case UTF_16:
          {
-            s._length=_f.getReturnSize(s._d.data(), chars*SIZEI(Char))/SIZEI(Char); if(s.length()!=chars)_f._ok=false;
+            s._length=_f.getReturnSize(s._d.data(), chars*SIZEI(Char))/SIZEI(Char); if(s.length()!=chars)_f.error();
       #if WINDOWS
          utf_16:
       #endif
@@ -380,7 +380,7 @@ FileText& FileText::getAll(Str &s)
          case ANSI:
          {
             Str8 s8; s8.reserve(chars);
-            Int length=s8._length=_f.getReturnSize(s8._d.data(), chars); if(length!=chars)_f._ok=false;
+            Int length=s8._length=_f.getReturnSize(s8._d.data(), chars); if(length!=chars)_f.error();
             Char *t=s._d.data(); CChar8 *t8=s8();
             FREP(length)
             {

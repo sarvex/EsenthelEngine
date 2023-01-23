@@ -747,7 +747,7 @@ Bool File::pos(Long pos)
          {
             //return false; alternative approach is to just return false, however since 'pos' was called, then we take it with higher priority, and try to do what was requested
          #if ALLOW_REFLUSH
-           _ok=false; // error occurred
+            error(); // error occurred
             clearBuf(); // if we're allowing re-flush then it means some data could be left in the buffer, however because we're seeking, then we need to always discard it, so it's not saved at a different position
          #endif
          }
@@ -1207,7 +1207,7 @@ Bool File::flushDo()
    if(written>0)_pos+=written; // this avoids errors (<0) and when no data was written (==0)
   _pos-=_buf_len; // normally '_pos' is located already ahead at '_buf_len' position (assumes that everything was written), but if we've written less, then we need to set it back to what was lost
   _buf_len=0; // discard data
-  _ok=false; // data was lost
+   error(); // data was lost
 #endif
    return false;
 }
@@ -1269,7 +1269,7 @@ Bool File::size(Long size)
 {
    if(size==T.size())return true;
    if(size<0 || _offset)return false;
-   if(!flush() && ALLOW_REFLUSH)_ok=false; // if flush failed, then set as ok=false, because the data will be discarded
+   if(!flush() && ALLOW_REFLUSH)error(); // if flush failed, then set as ok=false, because the data will be discarded
    switch(_type)
    {
       case FILE_STD_READ :
@@ -1479,20 +1479,20 @@ Int File::putReturnSize(CPtr data, Int size)
 Bool File::getFast(Ptr data, Int size)
 {
    if(getReturnSize(data, size)==size)return true;
-  _ok=false; return false; // set error
+   error(); return false; // set error
 }
 Bool File::get(Ptr data, Int size)
 {
    Int read=getReturnSize(data, size);
    if( read==size)return true; // check this first because this is what's most likely going to happen
    if( data && size>read)ZeroFast((Byte*)data+read, size-read); // zero unread data, this is important because methods such as f.getInt, f.decUIntV, .. don't check for status, however they're expected to return zeros
-  _ok=false; return false; // set error
+   error(); return false; // set error
 }
 Bool File::put(CPtr data, Int size)
 {
    Int written=putReturnSize(data, size);
    if( written==size)return true; // check this first because this is what's most likely going to happen
-  _ok=false; return false; // set error
+   error(); return false; // set error
 }
 /******************************************************************************/
 File& File::putStr(CChar8 *t)
@@ -1566,7 +1566,7 @@ File& File::skipStr()
    else                       length*=SIZE(Char8);
    if(left()<length) // length too long
    {
-     _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+      error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
    }else skip(length);
    return T;
 }
@@ -1593,7 +1593,7 @@ File& File::getStr(Str8 &s) // warning: this must handle having '\0' chars in th
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    s.clear(); return T;
@@ -1622,7 +1622,7 @@ File& File::getStr(Str &s) // warning: this must handle having '\0' chars in the
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    s.clear(); return T;
@@ -1658,7 +1658,7 @@ File& File::getStr(Char8 *t, Int t_elms)
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    if(t && t_elms>0)t[0]='\0'; return T;
@@ -1695,7 +1695,7 @@ File& File::getStr(Char *t, Int t_elms)
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    if(t && t_elms>0)t[0]='\0'; return T;
@@ -1813,7 +1813,7 @@ Bool File::discardBuf(Bool flush)
    if(_buf_pos || _buf_len) // if there's any data in the buffer
    {
       Long pos=T.pos(); // remember current position before doing any operation
-      if(flush && !T.flush() && ALLOW_REFLUSH)_ok=false; // !! do this after remembering position because this method may change it !! if we had some data to save which failed, then only disable '_ok', but still proceed because here the priority is to set correct file position
+      if(flush && !T.flush() && ALLOW_REFLUSH)error(); // !! do this after remembering position because this method may change it !! if we had some data to save which failed, then only disable '_ok', but still proceed because here the priority is to set correct file position
       T._pos=posFile(); // set actual position, so calling "T.pos(pos)" will proceed because current position is different than desired
       clearBuf(); // !! do this after calling 'posFile' !! always clear buffer (in case read mode or in case write mode flush fail)
       return T.pos(pos); // set remembered position
@@ -2003,7 +2003,7 @@ File& File::_getStr1(Str &s) // warning: this must handle having '\0' chars in t
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    s.clear(); return T;
@@ -2031,7 +2031,7 @@ File& File::_getStr1(Str8 &s) // warning: this must handle having '\0' chars in 
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    s.clear(); return T;
@@ -2067,7 +2067,7 @@ File& File::_getStr1(Char8 *t, Int t_elms)
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    if(t && t_elms>0)t[0]='\0'; return T;
@@ -2104,7 +2104,7 @@ File& File::_getStr1(Char *t, Int t_elms)
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    if(t && t_elms>0)t[0]='\0'; return T;
@@ -2220,7 +2220,7 @@ File& File::_getStr(Char *t, Int t_elms)
    goto error;
 
 length_too_long:
-  _ok=false; pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
+   error(); pos(size()); // if the length was too long then go at the end of file, in case the user will try to read more data after this call, this is important so that the partially available string data is not treated as something else
 
 error:
    if(t && t_elms>0)t[0]='\0'; return T;
