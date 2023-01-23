@@ -35,10 +35,11 @@ struct FileText
    Bool      append  (C Str &name,       ENCODING encoding=UTF_8, const_mem_addr Cipher *cipher=null); // append     stdio file, 'cipher' must point to object in constant memory address (only pointer is stored through which the object can be later accessed)
 
    // get
-   Bool     end     ()C;                    // if  current position is at the end of the file
-   Long     size    ()C {return _f.size();} // get file size
-   Long     pos     ()C {return _f.pos ();} // get file position
-   ENCODING encoding()C {return _code    ;} // get file encoding
+   Bool     end      ()C;                    // if  current position is at the end of the file
+   Long     charsLeft()C;                    // get how many characters are left (for UTF_8 this is approximation)
+   Long     size     ()C {return _f.size();} // get file size
+   Long     pos      ()C {return _f.pos ();} // get file position
+   ENCODING encoding ()C {return _code    ;} // get file encoding
 
    // read
    FileText& skipLine(       );                                                  // skip text until end of line found

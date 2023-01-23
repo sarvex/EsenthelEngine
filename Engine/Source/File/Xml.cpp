@@ -235,13 +235,15 @@ Bool DecodeTextReal(CChar* &src, Dbl &real)
 }
 #endif
 /******************************************************************************/
-#define  ERROR       '\1' // avoid '\0' because that one means end of file and success
 #define  QUOTE_BEGIN '`'
 #define  QUOTE_END   '`'
 #define BINARY_BEGIN '<'
 #define BINARY_END   '>'
 #define BINARY_ZERO  '?' // optimization to store UInt(0) as only one character
 #define BINARY_TRIM   0  // because binary data comes from Str and will be loaded into Str, then it will always be aligned to 2 bytes (size of wide Char), this will enable optimizations to reduce the binary size, however it works on assumption that this data will be loaded into Str, if in the future that would be changed, then binary data length may not be preserved
+#define    RAW_BEGIN '\1'
+#define    RAW_END   '\1'
+#define  ERROR       '\2' // avoid '\0' because that one means end of file and success
 
 static Bool SimpleChar    (Char c) {return CharType(c)==CHART_CHAR || c=='-' || c=='.';} // allow - and . for storing negative numbers and floats without the quotes
 static Bool SimpleCharJSON(Char c) {return CharType(c)==CHART_CHAR || c=='-' || c=='.';} // JSON treats both - and . as simple chars to allow storing numbers - http://json.org/
@@ -429,6 +431,10 @@ static Char LoadText(FileText &f, Str &t, Char c)
             }else return ERROR; // invalid input (this also handles '\0' chars)
          }
          c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
+      }break;
+
+      case RAW_BEGIN:
+      {
       }break;
    }
    return c;
@@ -830,7 +836,7 @@ Char TextNode::load(FileText &f, Bool just_values, Char c)
       {
          for(c=f.getChar(); ; )
          {
-            if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN)c=nodes.New().load(f, false, c);else
+            if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN)c=nodes.New().load(f, false, c);else
             if( WhiteChar(c)){c=f.getChar();       }else
             if(c=='}'       ){c=f.getChar(); break;}else
                              {c=      ERROR; break;}
@@ -840,13 +846,13 @@ Char TextNode::load(FileText &f, Bool just_values, Char c)
       {
          for(c=f.getChar(); ; )
          {
-            if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c=='{' || c=='[')c=nodes.New().load(f, true, c);else
+            if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN || c=='{' || c=='[')c=nodes.New().load(f, true, c);else
             if( WhiteChar(c)){c=f.getChar();       }else
             if(c==']'       ){c=f.getChar(); break;}else
                              {c=      ERROR; break;}
          }
       }else
-      if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN) // value
+      if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN) // value
          c=LoadText(f, value, c);
    }
    return c;
@@ -987,7 +993,7 @@ Bool TextData::load(FileText &f)
    clear();
    for(Char c=f.getChar(); ; )
    {
-      if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN)c=nodes.New().load(f, false, c);else
+      if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN)c=nodes.New().load(f, false, c);else
       if( WhiteChar(c))c=f.getChar();else
       if(!c)return true ;else // don't check for 'f.ok' because methods stop on null char and not on 'f.end'
             return false;

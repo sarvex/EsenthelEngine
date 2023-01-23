@@ -119,6 +119,11 @@ FileText& FileText::readMem(C Str &data)
    return T;
 }
 /******************************************************************************/
+Long FileText::charsLeft()C
+{
+   return (_code==UTF_16) ? _f.left()/SIZEI(Char) : _f.left();
+}
+/******************************************************************************/
 FileText& FileText::startLine()
 {
    if(indent)REP(depth)if(indent==INDENT_TABS)putChar('\t');else putText("   ");
@@ -341,7 +346,7 @@ FileText& FileText::getLine(Str8 &s)
 FileText& FileText::getAll(Str &s)
 {
    s.clear();
-   Int chars=((_code==UTF_16) ? _f.left()/SIZEI(Char) : _f.left()); if(chars>0)
+   Int chars=charsLeft(); if(chars>0)
    {
       s.reserve(chars); switch(_code)
       {
