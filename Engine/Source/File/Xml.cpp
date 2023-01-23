@@ -1742,7 +1742,7 @@ static Int TypeToBytes(TM_TYPE type, bool &neg)
       neg=bytes2&1;
    return bytes2/2;
 }
-static Int Left(C Str &s, Int i) {return s.length()-i;}
+static Int Left(C Str &s, Int si) {return s.length()-si;}
 /******************************************************************************/
 static void Save(C Str &text, Str &s)
 {
@@ -1752,14 +1752,14 @@ static void Save(C Str &text, Str &s)
       if(Safe(c))s+=c;
    }
 }
-static Int Load(Str &text, C Str &s, Int i)
+static Int Load(Str &text, C Str &s, Int si)
 {
-   for(; i<s.length(); i++)
+   for(; si<s.length(); si++)
    {
-      Char c=s[i];
+      Char c=s[si];
       if(Safe(c))text+=c;else break;
    }
-   return i;
+   return si;
 }
 /******************************************************************************/
 static void Save(C Str &text, Str &s, Bool name)
@@ -1798,21 +1798,21 @@ static void Save(C Str &text, Str &s, Bool name)
    s+=Char(name ? NAME : VALUE);
    Save(text, s);
 }
-static Int Load(Str &text, C Str &s, Int i, Char c)
+static Int Load(Str &text, C Str &s, Int si, Char c)
 {
    switch(c)
    {
       case NAME:
       case VALUE:
-         return Load(text, s, i);
+         return Load(text, s, si);
 
       case VALUE_UID:
       {
-         Int bytes=SIZE(UID); if(bytes<=Left(s, i))
+         Int bytes=SIZE(UID); if(bytes<=Left(s, si))
          {
-            UID  id; Copy16To8(&id, s()+i, bytes); // FREPD(j, bytes)id.b[j]=s[i+j];
+            UID  id; Copy16To8(&id, s()+si, bytes); // FREPD(j, bytes)id.b[j]=s[si+j];
             text=id.asFileName();
-            return i+bytes;
+            return si+bytes;
          }
       }break;
 
@@ -1833,12 +1833,12 @@ static Int Load(Str &text, C Str &s, Int i, Char c)
       case VALUE_U8:
       case VALUE_I8:
       {
-         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg); if(bytes<=Left(s, i))
+         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg); if(bytes<=Left(s, si))
          {
-            ULong u=0; Copy16To8(&u, s()+i, bytes); // FREPD(j, bytes)((Byte*)&u)[j]=s[i+j];
+            ULong u=0; Copy16To8(&u, s()+si, bytes); // FREPD(j, bytes)((Byte*)&u)[j]=s[si+j];
             if(neg)text=-Long(u)-1;
             else   text=      u   ;
-            return i+bytes;
+            return si+bytes;
          }
       }break;
    }
@@ -1856,26 +1856,26 @@ static void Save(C TextNode &node, Str &s)
       s+=Char(END);
    }
 }
-static Int Load(Memc<TextNode> &nodes, C Str &s, Int i)
+static Int Load(Memc<TextNode> &nodes, C Str &s, Int si)
 {
-   Char c=s[i++];
+   Char c=s[si++];
 check:
    if(c==NAME)
    {
       TextNode &node=nodes.New();
-      i=Load(node.name, s, i, c); if(!InRange(i, s))return -1; c=s[i++];
+      si=Load(node.name, s, si, c); if(!InRange(si, s))return -1; c=s[si++];
       if(IsValue(c))
       {
-         i=Load(node.value, s, i, c); if(!InRange(i, s))return -1; c=s[i++];
+         si=Load(node.value, s, si, c); if(!InRange(si, s))return -1; c=s[si++];
       }
       if(c==CHILD)
       {
-                                   if(!InRange(i, s))return -1;
-         i=Load(node.nodes, s, i); if(!InRange(i, s))return -1; c=s[i++];
+                                     if(!InRange(si, s))return -1;
+         si=Load(node.nodes, s, si); if(!InRange(si, s))return -1; c=s[si++];
       }
       goto check;
    }else
-   if(c==END)return i;
+   if(c==END)return si;
    return -1;
 }
 /******************************************************************************/
@@ -1895,15 +1895,15 @@ Bool TextMeta::load(C Str &s)
    clear();
    if(s.is())
    {
-      Int i=0;
+      Int si=0;
    next:
       TextMetaElm &elm=New();
-      CChar *src=s()+i; i+=elm.text.fromUTF8Safe(src)-src;
-      if(InRange(i, s))
+      CChar *src=s()+si; si+=elm.text.fromUTF8Safe(src)-src;
+      if(InRange(si, s))
       {
-         i=Load(elm.data.nodes, s, i);
-         if(InRange(i, s))goto next;
-         if(i<0)return false;
+         si=Load(elm.data.nodes, s, si);
+         if(InRange(si, s))goto next;
+         if(si<0)return false;
       }
    }
    return true;
