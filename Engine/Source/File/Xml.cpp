@@ -1699,6 +1699,17 @@ Str FileParams::Merge(C Str &a, C Str &b)
 /******************************************************************************/
 // TEXT META
 /******************************************************************************/
+void TextMeta::operator+=(Char c)
+{
+   if(!elms() || last().data.nodes.elms())New(); // create new element if don't have any, or last ends with meta data
+   last().text+=c;
+}
+void TextMeta::operator+=(C Str &s)
+{
+   if(!elms() || last().data.nodes.elms())New(); // create new element if don't have any, or last ends with meta data
+   last().text+=s;
+}
+/******************************************************************************/
 enum TM_TYPE : Char8
 {
    END      = 0,
