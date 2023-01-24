@@ -776,6 +776,7 @@ void CopyEngineDebugWindowsUniversal64DX11   () {Copy(EnginePath+"EngineDebugUni
 void CopyEngineDebugWindowsUniversal32DX11   () {Copy(EnginePath+"EngineDebugUniversal32DX11.lib"   , EditorPath+"Bin/EngineUniversal32DX11.lib");}
 void CopyEngineDebugWindowsUniversalArm32DX11() {Copy(EnginePath+"EngineDebugUniversalArm32DX11.lib", EditorPath+"Bin/EngineUniversalArm32DX11.lib");}
 void CopyEngineDebugWindowsUniversalArm64DX11() {Copy(EnginePath+"EngineDebugUniversalArm64DX11.lib", EditorPath+"Bin/EngineUniversalArm64DX11.lib");}
+void CopyEngineDebugAndroid                  () {Copy(EnginePath+"EngineDebugAndroid.a"             , EditorPath+"Bin/EngineAndroid.a");}
 void CopyEngineDebugNintendoSwitch           () {Copy(EnginePath+"EngineDebugNintendoSwitch.a"      , EditorPath+"Bin/EngineNintendoSwitch.a");}
 
 void CompileEngineWindows64GL              () {CompileVS(EnginePath+VSEngineProject, "Release GL"            , "1) 64 bit" , CopyEngineWindows64GL);}
@@ -790,13 +791,14 @@ void CompileEngineAndroid                  () {CompileVS(EnginePath+VSEngineProj
 void CompileEngineNintendoSwitch           () {if(CheckNintendoSwitch())CompileVS(EnginePath+VSEngineProject, "Release DX11"          , "5) Nintendo Switch", CopyEngineNintendoSwitch);}
 void CompileEngineWeb                      () {CompileVS(EnginePath+VSEngineProject, "Release GL"            , "4) Web");}
 
-void CompileEngineDebugWindows64DX9             () {CompileVS(EnginePath+VSEngineProject, "Debug DX9"           , "1) 64 bit", CopyEngineDebugWindows64DX9);}
-void CompileEngineDebugWindows32DX9             () {CompileVS(EnginePath+VSEngineProject, "Debug DX9"           , "2) 32 bit", CopyEngineDebugWindows32DX9);}
-void CompileEngineDebugWindows64DX11            () {CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "1) 64 bit", CopyEngineDebugWindows64DX11);}
-void CompileEngineDebugWindows32DX11            () {CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "2) 32 bit", CopyEngineDebugWindows32DX11);}
-void CompileEngineDebugWindowsUniversal64DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "1) 64 bit", CopyEngineDebugWindowsUniversal64DX11);}
-void CompileEngineDebugWindowsUniversal32DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "2) 32 bit", CopyEngineDebugWindowsUniversal32DX11);}
-void CompileEngineDebugWindowsUniversalArm32DX11() {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "3) ARM"   , CopyEngineDebugWindowsUniversalArm32DX11);}
+void CompileEngineDebugWindows64DX9             () {CompileVS(EnginePath+VSEngineProject, "Debug DX9"           , "1) 64 bit" , CopyEngineDebugWindows64DX9);}
+void CompileEngineDebugWindows32DX9             () {CompileVS(EnginePath+VSEngineProject, "Debug DX9"           , "2) 32 bit" , CopyEngineDebugWindows32DX9);}
+void CompileEngineDebugWindows64DX11            () {CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "1) 64 bit" , CopyEngineDebugWindows64DX11);}
+void CompileEngineDebugWindows32DX11            () {CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "2) 32 bit" , CopyEngineDebugWindows32DX11);}
+void CompileEngineDebugWindowsUniversal64DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "1) 64 bit" , CopyEngineDebugWindowsUniversal64DX11);}
+void CompileEngineDebugWindowsUniversal32DX11   () {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "2) 32 bit" , CopyEngineDebugWindowsUniversal32DX11);}
+void CompileEngineDebugWindowsUniversalArm32DX11() {CompileVS(EnginePath+VSEngineProject, "Debug Universal DX11", "3) ARM"    , CopyEngineDebugWindowsUniversalArm32DX11);}
+void CompileEngineDebugAndroid                  () {CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "6) Android", CopyEngineDebugAndroid);}
 void CompileEngineDebugNintendoSwitch           () {if(CheckNintendoSwitch())CompileVS(EnginePath+VSEngineProject, "Debug DX11"          , "5) Nintendo Switch", CopyEngineDebugNintendoSwitch);}
 
 void  DelEditorExe          () {FDelFile(EditorSourcePath+ENGINE_NAME " Editor.exe");} // VS has a bug that it won't rebuild the EXE if no changes were made in source (so if EXE was built with DX9 lib, and then we're compiling for DX11, then it may not be relinked)
@@ -926,6 +928,7 @@ TaskBase TaskBases[]=
    {"Make Android Libs"         , "Make the Engine Android Libs from the compilation result to the Editor Bin folder"  , AndroidLibs                , ANDROID_DEFAULT},*/
 #if WINDOWS
    {"Compile Android"              , "Compile the Engine in Release mode for Android"                                  , CompileEngineAndroid            , false},
+   {"Compile Android Debug"        , "Compile the Engine in Debug mode for Android"                                    , CompileEngineDebugAndroid       , false},
    {"Compile Nintendo Switch"      , "Compile the Engine in Release mode for Nintendo Switch"                          , CompileEngineNintendoSwitch     , false},
    {"Compile Nintendo Switch Debug", "Compile the Engine in Debug mode for Nintendo Switch"                            , CompileEngineDebugNintendoSwitch, false},
    {"Clean Web"                 , "Clean temporary files generated during Engine compilation for the Web"              ,   CleanEngineWeb                , false},
