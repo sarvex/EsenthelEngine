@@ -1148,6 +1148,7 @@ Image& Image::del()
       #endif
          if(D.created())
          {
+            DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
             glDeleteTextures     (1, &_txtr);
             glDeleteRenderbuffers(1, &_rb  );
          }
@@ -1640,6 +1641,7 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       #elif GL
          case IMAGE_2D:
          {
+            DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
             glGenTextures(1, &_txtr); if(_txtr)
             {
                glGetError (); // clear any previous errors
@@ -2722,6 +2724,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                      Alloc(_data, CeilGL(pitch2));
                      if(lock!=LOCK_WRITE) // get from GPU
                      {
+                        DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                         glGetError(); // clear any previous errors
                                              D.texBind(GL_TEXTURE_2D, _txtr);
                         if(!compressed())glGetTexImage(GL_TEXTURE_2D, mip_map, SourceGLFormat(hwType()), SourceGLType(hwType()), data());
@@ -2936,6 +2939,7 @@ Image& Image::unlock()
                   }else
                #endif
                   {
+                     DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                     _lock_count++; locker.off(); // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
                                          D.texBind(GL_TEXTURE_2D, _txtr);
                      if(!compressed())glTexImage2D(GL_TEXTURE_2D, lMipMap(), hwTypeInfo().format, Max(1, hwW()>>lMipMap()), Max(1, hwH()>>lMipMap()), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data());

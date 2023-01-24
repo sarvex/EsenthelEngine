@@ -742,6 +742,8 @@ inline DisplayClass &Display=D; // 'Display' alias ('Display' can be used the sa
    }extern
       MainContext;
 
+   Ptr GetCurrentContext();
+
    extern UInt FBO, VAO;
    #if IOS
       extern UInt FBO1;

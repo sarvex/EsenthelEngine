@@ -239,7 +239,7 @@ static void glewSafe()
 // GL CONTEXT
 /******************************************************************************/
 #if GL
-static Ptr GetCurrentContext()
+Ptr GetCurrentContext()
 {
 #if WINDOWS
    return wglGetCurrentContext();
