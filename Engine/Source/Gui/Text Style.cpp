@@ -2182,7 +2182,7 @@ Int TextStyleParams::textIndex(CChar *text, C StrData *data, Int datas, Flt x, F
 //end:
    eol=false; return 0;
 }
-Int TextStyleParams::textIndex(CChar *text, C StrData *data, Int datas, Flt x, Flt y, TEXT_INDEX_MODE index_mode, C Vec2 &size, Bool auto_line, Bool &eol)C
+Int TextStyleParams::textIndexAlign(CChar *text, C StrData *data, Int datas, Flt x, Flt y, TEXT_INDEX_MODE index_mode, C Vec2 &size, Bool auto_line, Bool clamp, Bool &eol)C
 {
    Flt width=size.x;
    TextDrawer tp; if(tp.initSplit(T, width))
@@ -2196,34 +2196,46 @@ Int TextStyleParams::textIndex(CChar *text, C StrData *data, Int datas, Flt x, F
          x-=p_x;
       }
       Flt h=lineHeight();
+      Int lines=-1; // unknown
       if(!Equal(align.y, -1))
       {
-         Int lines=textLines(text, data, datas, size.x, auto_line); // here use 'size.x' instead of 'width' because 'width' got adjusted
+         lines=textLines(text, data, datas, size.x, auto_line); // here use 'size.x' instead of 'width' because 'width' got adjusted
          Flt p_y=Lerp(-size.y+(lines-1)*h, 0, align.y*-0.5f+0.5f) + T.size.y*tp.y_align_mul;
           y-=p_y;
       }
+      Int line;
+      if(clamp)line=Max(Trunc(-y/h), 0);
+      else    {line=    Floor(-y/h); if(line<0 || (lines>=0 && line>=lines))goto end;} // if line is out of range, >= check only if 'lines' are known, yes this must check "line>=" and not "line>"
+           lines=0;
+      Int offset=0;
       TextSrc ts=(text ? text : u""); // same as ts.fix();
-      Int offset=0, lines=0, line=Max(0, Trunc(-y/h));
       TextSplit split;
    next:
-      if(!tp.splitNext(split, T, width, auto_line, ts, data, datas, offset)
-      || line==lines)
+      Bool next=tp.splitNext(split, T, width, auto_line, ts, data, datas, offset);
+      if( !next && clamp // last line
+      ||   line==lines)
       {
          Flt ax=x;
          if(align_x)
          {
             Flt total_width=tp.width(split);
             ax-=total_width*tp.x_align_mul;
+            if(!clamp && ax>total_width)goto end;
          }
+         if(!clamp && ax<0)goto end;
          Int i=tp.textIndex(T, ax, index_mode, split.text, split.data, split.datas, split.font, split.panel);
          split.fixLength();
-         if(eol=(i>=split.length))i=split.length; // yes this must check ">=" and not ">"
+         if(eol=(i>=split.length)) // yes this must check ">=" and not ">"
+         {
+            if(!clamp)goto end;
+            i=split.length;
+         }
          return i+split.offset;
       }
-      lines++; goto next;
-    //eol=true; split.fixLength(); return split.end();
+      if(next){lines++; goto next;}
    }
-   eol=false; return 0;
+end:
+   eol=false; return -1;
 }
 /******************************************************************************/
 Vec2 TextStyleParams::textPos(CChar *text, Int index, Flt width, Bool auto_line)C

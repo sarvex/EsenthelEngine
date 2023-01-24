@@ -122,7 +122,7 @@ Int Text::textIndex(C Vec2 &screen_pos, TEXT_INDEX_MODE index_mode)C
    #endif
 
       Vec2 local=screen_pos-screenPos();
-      Bool eol; return ts.textIndex(text, extra.data(), extra.elms(), local.x, local.y, index_mode, rect().size(), auto_line, eol);
+      Bool eol; return ts.textIndexAlign(text, extra.data(), extra.elms(), local.x, local.y, index_mode, rect().size(), auto_line, false, eol);
    }
    return 0;
 }
