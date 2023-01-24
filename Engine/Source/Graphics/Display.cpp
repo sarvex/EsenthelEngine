@@ -1773,10 +1773,13 @@ void ThreadMayUseGPUData()
       ContextLock.on();
       for(;;)
       {
-         REPA(SecondaryContexts)if(!SecondaryContexts[i].locked)
+         REPA(SecondaryContexts)
          {
-            SecondaryContexts[i].lock();
-            goto context_locked;
+            GLContext &ctx=SecondaryContexts[i]; if(!ctx.locked)
+            {
+               ctx.lock();
+               goto context_locked;
+            }
          }
          if(!SecondaryContexts.elms())Exit("No secondary OpenGL contexts have been created");
          ContextLock.off(); ContextUnlocked.wait(); // wait until any other context is unlocked
@@ -1793,10 +1796,13 @@ void ThreadFinishedUsingGPUData()
    if(Ptr context=GetCurrentContext())
    {
       ContextLock.on();
-      REPA(SecondaryContexts)if(SecondaryContexts[i].context==context)
+      REPA(SecondaryContexts)
       {
-         SecondaryContexts[i].unlock();
-         goto context_unlocked;
+         GLContext &ctx=SecondaryContexts[i]; if(ctx.context==context)
+         {
+            ctx.unlock();
+            goto context_unlocked;
+         }
       }
    context_unlocked:
       ContextLock.off();
