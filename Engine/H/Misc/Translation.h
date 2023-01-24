@@ -343,6 +343,7 @@ CChar* TPlayerScreen();
 CChar* TPleaseCheckYourEmail();
 CChar* TPleaseCheckYourEmailForVerificationLink();
 CChar* TPleaseEnterYouTubeVideoLink();
+CChar* TPleaseSelectYourInterests();
 CChar* TPleaseSpecifyTheProblem();
 CChar* TPleaseRegister();
 CChar* TPleaseVerifyYourEmailFirst();
