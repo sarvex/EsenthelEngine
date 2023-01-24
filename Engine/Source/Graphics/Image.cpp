@@ -3061,6 +3061,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
                case IMAGE_RT:
                case IMAGE_DS:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                                       D.texBind(GL_TEXTURE_2D, _txtr);
                   if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
                   else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, softPitch2(mip_map), data);
@@ -3138,6 +3139,7 @@ Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_fa
                case IMAGE_RT:
                case IMAGE_DS:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                                       D.texBind(GL_TEXTURE_2D, _txtr);
                   if(!compressed())glTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
                   else   glCompressedTexImage2D(GL_TEXTURE_2D, mip_map, format, size.x, size.y, 0, img_pitch2, data);
