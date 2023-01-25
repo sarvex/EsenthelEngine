@@ -1449,7 +1449,13 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
    #if GPU_LOCK // lock not needed for 'D3D'
       SyncLockerEx locker(D._lock, hw);
    #endif
-      if(hw && !D.created())goto error; // device not yet created, check this after lock
+      if(hw)
+      {
+         if(!D.created())goto error; // device not yet created, check this after lock
+      #if GL
+         DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
+      #endif
+      }
 
       // do a quick check, check this after 'D.created()'
       if(!ImageSupported(type, mode, samples))goto error;
@@ -1641,7 +1647,6 @@ Bool Image::createEx(Int w, Int h, Int d, IMAGE_TYPE type, IMAGE_MODE mode, Int 
       #elif GL
          case IMAGE_2D:
          {
-            DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
             glGenTextures(1, &_txtr); if(_txtr)
             {
                glGetError (); // clear any previous errors
@@ -2741,6 +2746,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                         Alloc(_data, CeilGL(pitch2));
                         if(lock!=LOCK_WRITE && mip_map==0) // get from GPU
                         {
+                           DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                            ImageRT *rt[Elms(Renderer._cur)], *ds;
                            Bool     restore_viewport=!D._view_active.full;
                            REPAO(rt)=Renderer._cur[i];
@@ -2802,6 +2808,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                   Alloc(_data, CeilGL(pitch2*ld));
                   if(lock!=LOCK_WRITE) // get from GPU
                   {
+                     DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                      glGetError(); // clear any previous errors
                                           D.texBind(GL_TEXTURE_3D, _txtr);
                      if(!compressed())glGetTexImage(GL_TEXTURE_3D, mip_map, SourceGLFormat(hwType()), SourceGLType(hwType()), data());
@@ -2836,6 +2843,7 @@ Bool Image::lock(LOCK_MODE lock, Int mip_map, DIR_ENUM cube_face)
                   Alloc(_data, CeilGL(pitch2));
                   if(lock!=LOCK_WRITE) // get from GPU
                   {
+                     DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                      glGetError(); // clear any previous errors
                                           D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                      if(!compressed())glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, SourceGLFormat(hwType()), SourceGLType(hwType()), data());
