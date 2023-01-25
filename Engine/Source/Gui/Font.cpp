@@ -63,8 +63,8 @@ Bool Font:: hasChar (Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return In
 Bool Font:: hasChar (Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) && _chrs[index].chr==              c ;} // check character in case it's remapped to '?'
 Int  Font::charIndex(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?        index        :    -1;}
 Int  Font::charIndex(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?        index        :    -1;}
-Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width :     0;}
-Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width :     0;}
+Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width : (SUPPORT_EMOJI && c) ? height() : 0;}
+Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width : (SUPPORT_EMOJI && c) ? height() : 0;}
 /******************************************************************************/
 Int Font::charWidth(Char8 c0, Char8 c1, SPACING_MODE spacing)C
 {
@@ -96,6 +96,7 @@ Int Font::charWidth(Char8 c0, Char8 c1, SPACING_MODE spacing)C
             }
             return width;
          }
+         if(SUPPORT_EMOJI && c0)return height();
       } // here on purpose no break, to fall down and return 0
       default: return 0;
    }
@@ -130,6 +131,7 @@ Int Font::charWidth(Char c0, Char c1, SPACING_MODE spacing)C
             }
             return width;
          }
+         if(SUPPORT_EMOJI && c0)return height();
       } // here on purpose no break, to fall down and return 0
       default: return 0;
    }
@@ -150,7 +152,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_l
             spcs++;
          combining:
             Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto combining;
+            if(CharFlagFast(next)&CHARF_SKIP)goto combining;
             width+=charWidth(c, next, spacing);
             c=next; goto next;
          }
@@ -166,7 +168,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_l
             if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c);}else // for the last character we need to process only its width and ignore the spacing between the next one
             {
                Char8 next=*++text;
-               if(CharFlagFast(next)&CHARF_COMBINING)goto combining1;
+               if(CharFlagFast(next)&CHARF_SKIP)goto combining1;
                width+=charWidth(c, next, spacing);
                c=next; goto next1;
             }
@@ -185,7 +187,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_l
             spcs++;
          combining2:
             Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto combining2;
+            if(CharFlagFast(next)&CHARF_SKIP)goto combining2;
             c=next; goto next2;
          }
       }else
@@ -200,7 +202,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar8 *text, Int max_l
             if(--max_length)
             {
                Char8 next=*++text;
-               if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
+               if(CharFlagFast(next)&CHARF_SKIP)goto combining3;
                c=next; goto next3;
             }
          }
@@ -223,7 +225,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_le
             spcs++;
          combining:
             Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto combining;
+            if(CharFlagFast(next)&CHARF_SKIP)goto combining;
             width+=charWidth(c, next, spacing);
             c=next; goto next;
          }
@@ -239,7 +241,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_le
             if(!--max_length){/*if(spacing!=SPACING_CONST)*/width+=charWidth(c);}else // for the last character we need to process only its width and ignore the spacing between the next one
             {
                Char next=*++text;
-               if(CharFlagFast(next)&CHARF_COMBINING)goto combining1;
+               if(CharFlagFast(next)&CHARF_SKIP)goto combining1;
                width+=charWidth(c, next, spacing);
                c=next; goto next1;
             }
@@ -258,7 +260,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_le
             spcs++;
          combining2:
             Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto combining2;
+            if(CharFlagFast(next)&CHARF_SKIP)goto combining2;
             c=next; goto next2;
          }
       }else
@@ -273,7 +275,7 @@ Int Font::textWidth(Int &spacings, SPACING_MODE spacing, CChar *text, Int max_le
             if(--max_length)
             {
                Char next=*++text;
-               if(CharFlagFast(next)&CHARF_COMBINING)goto combining3;
+               if(CharFlagFast(next)&CHARF_SKIP)goto combining3;
                c=next; goto next3;
             }
          }
@@ -386,9 +388,11 @@ void Font::setRemap()
    FREPA(invalid)
    {
       Int inv=invalid[i]; if(inv>=0)
-      {
-         REPA(_char_to_font)if(_char_to_font[i]==0xFFFF && i)_char_to_font[i]=inv;
-         REPA(_wide_to_font)if(_wide_to_font[i]==0xFFFF && i)_wide_to_font[i]=inv;
+      {  // never replace '\0' (start from 1) and CHARF_MULTI0 (because that one needs to be processed in special way)
+         Int multi0=Min(0xD800, Elms(_wide_to_font));
+         for(Int i=     1; i<Elms(_char_to_font); i++)if(_char_to_font[i]==0xFFFF)_char_to_font[i]=inv;
+         for(Int i=     1; i<multi0             ; i++)if(_wide_to_font[i]==0xFFFF)_wide_to_font[i]=inv;
+         for(Int i=0xDC00; i<Elms(_wide_to_font); i++)if(_wide_to_font[i]==0xFFFF)_wide_to_font[i]=inv;
          break; // stop on first found
       }
    }
@@ -1371,14 +1375,6 @@ void DisplayDraw::textBackgroundReset(ShaderParam *&sp,   Vec &col) {sp=Sh.FontL
 void DisplayDraw::textBackgroundSet  (ShaderParam * sp, C Vec &col) {SPSet("FontLum", col   ); Sh.FontLum=sp;}
 void DisplayDraw::textBackgroundBlack(                            ) {SPSet("FontLum", Vec(1)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
 void DisplayDraw::textBackgroundWhite(                            ) {SPSet("FontLum", Vec(0)); Sh.FontLum=&Sh.Dummy;} // set dummy to disable changing
-/******************************************************************************/
-// MAIN
-/******************************************************************************/
-void ShutFont()
-{
-   TextStyles.del();
-   Fonts     .del();
-}
 /******************************************************************************/
 }
 /******************************************************************************/

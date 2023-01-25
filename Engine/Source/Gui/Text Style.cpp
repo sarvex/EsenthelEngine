@@ -7,6 +7,43 @@ namespace EE{
 static const Color DefaultSelectionColor(51, 153, 255, 64);
 DEFINE_CACHE(TextStyle, TextStyles, TextStylePtr, "Text Style");
 /******************************************************************************/
+#if SUPPORT_EMOJI
+struct EmojiKey
+{
+   union
+   {
+      UInt u;
+      Char c[2];
+   };
+
+      EmojiKey() {}
+      EmojiKey(Char c) {u=c;}
+   void append(Char c) {T.c[1]=c;}
+};
+struct Emoji
+{
+   ImagePtr img;
+};
+static Int  Compare(C EmojiKey &a, C EmojiKey &b) {return Compare(a.u, b.u);}
+static Bool Create (Emoji &emoji, C EmojiKey &key, Ptr user)
+{
+   Char name[3];
+   name[0]=key.c[0];
+   name[1]=key.c[1];
+   name[2]='\0';
+   if(Paks.find(name))emoji.img=name; // load only if in Paks, in that case require
+   return true; // always succeed to avoid loading again and again the same emoji on fail, in that case just have null image
+}
+static Map<EmojiKey, Emoji> Emojis(Compare, Create);
+static inline C ImagePtr& FindEmoji(C EmojiKey &key)
+{
+ C Emoji *emoji=Emojis.get(key);
+ //if(emoji) always succeeds so can skip "if"
+      return emoji->img;
+   return ImageNull;
+}
+#endif
+/******************************************************************************/
 static Bool Separatable(Char c)
 {
    return Unsigned(c)>=3585; // starting from Thai, Korean=0x1100, see 'LanguageSpecific', careful this range also includes German 'ẞ'
@@ -482,7 +519,7 @@ struct TextProcessor
          combining:
             Char n=text.n();
             if(!--max_length)goto end; // check after advancing 'text' pointer
-            if(CharFlagFast(n)&CHARF_COMBINING)goto combining;
+            if(CharFlagFast(n)&CHARF_SKIP)goto combining;
 
             chr=n; goto loop;
          }
@@ -643,7 +680,7 @@ struct TextProcessor
          {
          combining:
             Char n=text.n();
-            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+            if(CharFlagFast(n)&CHARF_SKIP){chars++; goto combining;}
 
             chr=n; goto loop;
          }
@@ -821,7 +858,7 @@ struct TextProcessor
             Int chars=1;
          combining:
             Char n=text.n();
-            if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+            if(CharFlagFast(n)&CHARF_SKIP){chars++; goto combining;}
             offset+=chars;
             // 'text' and 'offset' are now after ('chr' and combined)
 
@@ -1029,7 +1066,7 @@ struct TextProcessor
                Int chars=1;
             combining:
                Char n=text.n();
-               if(CharFlagFast(n)&CHARF_COMBINING){chars++; goto combining;}
+               if(CharFlagFast(n)&CHARF_SKIP){chars++; goto combining;}
                offset+=chars;
                // 'text' and 'offset' are now after ('chr' and combined)
 
@@ -1422,12 +1459,57 @@ struct TextDrawerHW : TextDrawer
                   chr=n; goto loop;
                }
             }
+         #if SUPPORT_EMOJI
+            // if character not present in font, try to find emoji
+            EmojiKey key(chr);
+            if(CharFlagFast(chr)&CHARF_MULTI0) // first check if it's multi-char
+            {
+               if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
+               Char n=text.n(); // this should be CHARF_MULTI1
+
+               // update positions
+               if(cur==offset){cur_x=pos.x; cur_w=xsize*charWidth(chr);}
+               if(sel==offset){sel_x=pos.x;}
+                       offset++;
+
+               if(!n)goto end; // safety check
+               key.append(n);
+            }
+            Flt w=xsize*charWidth(chr);
+            if(C ImagePtr &image=FindEmoji(key))
+            {
+               VI.flush();
+               VI.shader(null);
+
+               image->draw(Rect_LU(spacingConst() ? pos.x+space_2-w/2 : pos.x, pos.y, w, size.y));
+
+               VI.shader(shader);
+             //VI.color (color); not needed, 'image->draw' doesn't change it
+            }else
+            {
+               font_index=font->_wide_to_font['\1']; if(InRange(font_index, font->_chrs)) // if haven't found emoji, try drawing as invalid/unknown
+               {
+                C Font::Chr &fc=font->_chrs[font_index];
+                  Vec2 chr_pos=pos;
+                  if(spacingConst())chr_pos.x+=space_2-xsize_2*                 fc.width  ; // move back by half of the character width
+                  else              chr_pos.x+=    w/2-xsize_2*                 fc.width  ; // adjust here because we have spacing based on square size
+                                    chr_pos.x+=                 font_offset.x             ;
+                                    chr_pos.y+=        ysize  *(font_offset_i_y-fc.offset);
+                  if(style.pixel_align)D.alignScreenXToPixel(chr_pos.x);
+
+                  Rect_LU rect(chr_pos, xsize*fc.width_padd, ysize*fc.height_padd);
+                  VI.imageConditional(&font->_images[fc.image], *shader_image);
+                  if(sub_pixel)VI.imagePart(rect, fc.tex);
+                  else         VI.font     (rect, fc.tex);
+               }
+            }
+         #endif
          }
 
       skip_combining:
          if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
          Char n=text.n();
-         if(CharFlagFast(n)&CHARF_COMBINING)
+         if(CharFlagFast(n)&CHARF_SKIP)
          {
             // update positions
             if(cur==offset){cur_x=pos.x; cur_w=xsize*charWidth(chr);}
@@ -1872,12 +1954,15 @@ struct TextDrawerSoft : TextDrawer
                   chr=n; goto loop;
                }
             }
+         #if SUPPORT_EMOJI
+            // FIXME #TextSoft
+         #endif
          }
 
       skip_combining:
          if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
          Char n=text.n();
-         if(CharFlagFast(n)&CHARF_COMBINING)goto skip_combining;
+         if(CharFlagFast(n)&CHARF_SKIP)goto skip_combining;
          chr=n; goto loop;
       }
    end:
@@ -2063,13 +2148,13 @@ Int TextStyleParams::textIndex(CChar8 *text, Flt x, TEXT_INDEX_MODE index_mode)C
          pos=Trunc(x);
       #if 0 // fast
          Clamp(pos, 0, Length(text));
-      #else // CHARF_COMBINING
+      #else // CHARF_SKIP
          CChar8 *start=text; for(Int base_chars=0; ; base_chars++)
          {
             Char8 c=*text; if(!c || base_chars>=pos){pos=text-start; break;}
          skip:
             Char8 next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip;
+            if(CharFlagFast(next)&CHARF_SKIP)goto skip;
          }
       #endif
       }else
@@ -2079,7 +2164,7 @@ Int TextStyleParams::textIndex(CChar8 *text, Flt x, TEXT_INDEX_MODE index_mode)C
          CChar8 *start=text;
       skip1:
          Char8 next=*++text;
-         if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
+         if(CharFlagFast(next)&CHARF_SKIP)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
          if(x<((index_mode==TEXT_INDEX_DEFAULT) ? w/2 : (index_mode==TEXT_INDEX_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_INDEX_FIT make sure that the 'c' fully fits
          x-=w+space;
@@ -2101,13 +2186,13 @@ Int TextStyleParams::textIndex(CChar *text, Flt x, TEXT_INDEX_MODE index_mode)C
          pos=Trunc(x);
       #if 0 // fast
          Clamp(pos, 0, Length(text));
-      #else // CHARF_COMBINING
+      #else // CHARF_SKIP
          CChar *start=text; for(Int base_chars=0; ; base_chars++)
          {
             Char c=*text; if(!c || base_chars>=pos){pos=text-start; break;}
          skip:
             Char next=*++text;
-            if(CharFlagFast(next)&CHARF_COMBINING)goto skip;
+            if(CharFlagFast(next)&CHARF_SKIP)goto skip;
          }
       #endif
       }else
@@ -2117,7 +2202,7 @@ Int TextStyleParams::textIndex(CChar *text, Flt x, TEXT_INDEX_MODE index_mode)C
          CChar *start=text;
       skip1:
          Char next=*++text;
-         if(CharFlagFast(next)&CHARF_COMBINING)goto skip1;
+         if(CharFlagFast(next)&CHARF_SKIP)goto skip1;
          Flt w=font->charWidth(c, next, spacing)*xsize;
          if(x<((index_mode==TEXT_INDEX_DEFAULT) ? w/2 : (index_mode==TEXT_INDEX_OVERWRITE) ? w+space_2 : xsize*font->charWidth(c)))break; // for TEXT_INDEX_FIT make sure that the 'c' fully fits
          x-=w+space;
@@ -2601,6 +2686,17 @@ void TextStyle::operator=(C Str &name)
 {
    if(!load(name))Exit(MLT(S+"Can't load Text Style \""         +name+"\"",
                        PL,S+u"Nie można wczytać stylu tekstu \""+name+"\""));
+}
+/******************************************************************************/
+// MAIN
+/******************************************************************************/
+void ShutFont()
+{
+#if SUPPORT_EMOJI
+   Emojis    .del();
+#endif
+   TextStyles.del();
+   Fonts     .del();
 }
 /******************************************************************************/
 }
