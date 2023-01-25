@@ -31,7 +31,7 @@ static Bool Create (Emoji &emoji, C EmojiKey &key, Ptr user)
    name[0]=key.c[0];
    name[1]=key.c[1];
    name[2]='\0';
-   if(Paks.find(name))emoji.img=name; // load only if in Paks, in that case require
+   if(EmojiPak && EmojiPak->find(name, false))emoji.img=name; // load only if in 'EmojiPak', in that case require
    return true; // always succeed to avoid loading again and again the same emoji on fail, in that case just have null image
 }
 static Map<EmojiKey, Emoji> Emojis(Compare, Create);

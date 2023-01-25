@@ -1030,6 +1030,21 @@ Bool    PakSet::addMemTry( CPtr  data, Int size, Cipher *cipher, Bool auto_rebui
 PakSet& PakSet::add      (C Str &name,           Cipher *cipher, Bool auto_rebuild                 ) {          if(     !addTry   (name,       cipher, auto_rebuild            )             )Exit(S+"Can't load Pak \""+name+'"'); return T;}
 PakSet& PakSet::addMem   ( CPtr  data, Int size, Cipher *cipher, Bool auto_rebuild                 ) {          if(     !addMemTry(data, size, cipher, auto_rebuild            )             )Exit(S+"Can't load Pak from memory"); return T;}
 
+Pak* EmojiPak;
+Bool AddEmojiPak(C Str &name, Bool auto_rebuild)
+{
+#if SUPPORT_EMOJI
+   SyncLocker locker(Paks._lock);
+   if(EmojiPak)Exit("EmojiPak already added");
+   if(Paks.addTry(name, null, auto_rebuild))
+   {
+      EmojiPak=&Paks._paks.lastData();
+      return true;
+   }
+#endif
+   return false;
+}
+
 Bool PakSet::remove(C Str &name/*, Long pak_offset*/) // keep 'pak_offset' in case we make this functionality available in the future
 {
    if(name.is())
