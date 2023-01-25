@@ -364,7 +364,7 @@ void Font::setRemap()
 {
    SetMem(_char_to_font, 0xFF, SIZE(_char_to_font));
    SetMem(_wide_to_font, 0xFF, SIZE(_wide_to_font));
-   Int invalid[5]={-1, -1, -1, -1, -1}, space=-1;
+   Int invalid[6]={-1, -1, -1, -1, -1, -1}, space=-1;
    REPA(_chrs)if(Char w=_chrs[i].chr)
    {
       Char8 c=Char16To8Fast(w); if(Char8To16Fast(c)!=w)c=0; // take 8-bit char, set zero if there's no 1:1 mapping, we can assume that Str was already initialized
@@ -372,11 +372,12 @@ void Font::setRemap()
       if(w)_wide_to_font[Unsigned(w)]=i;
       switch(w)
       {
-         case u'�': invalid[0]=i; break;
-         case  '?': invalid[1]=i; break;
-         case  '*': invalid[2]=i; break;
-         case  '#': invalid[3]=i; break;
-         case  '.': invalid[4]=i; break;
+         case u'⍰': invalid[0]=i; break;
+         case u'�': invalid[1]=i; break;
+         case  '?': invalid[2]=i; break;
+         case  '*': invalid[3]=i; break;
+         case  '#': invalid[4]=i; break;
+         case  '.': invalid[5]=i; break;
          case  ' ': space     =i; break;
       }
    }
