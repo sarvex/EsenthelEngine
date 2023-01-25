@@ -2977,6 +2977,7 @@ Image& Image::unlock()
             {
                if(_lock_mode!=LOCK_READ && D.created())
                {
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                  _lock_count++; locker.off(); // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
                                       D.texBind(GL_TEXTURE_3D, _txtr);
                   if(!compressed())glTexImage3D(GL_TEXTURE_3D, lMipMap(), hwTypeInfo().format, Max(1, hwW()>>lMipMap()), Max(1, hwH()>>lMipMap()), Max(1, hwD()>>lMipMap()), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data());
@@ -3004,6 +3005,7 @@ Image& Image::unlock()
             {
                if(_lock_mode!=LOCK_READ && D.created())
                {
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                  _lock_count++; locker.off(); // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
                                       D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                   if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+lCubeFace(), lMipMap(), hwTypeInfo().format, Max(1, hwW()>>lMipMap()), Max(1, hwH()>>lMipMap()), 0, SourceGLFormat(hwType()), SourceGLType(hwType()), data());
@@ -3079,6 +3081,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
 
                case IMAGE_3D:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                                       D.texBind(GL_TEXTURE_3D, _txtr);
                   if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, gl_format, gl_type, data);
                   else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, softFaceSize(mip_map), data);
@@ -3088,6 +3091,7 @@ void Image::lockedSetMipData(CPtr data, Int mip_map)
                case IMAGE_CUBE:
                case IMAGE_RT_CUBE:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                   Int pitch2=softPitch2(mip_map);
                   D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                   FREPD(face, 6)
@@ -3158,6 +3162,7 @@ Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_fa
 
                case IMAGE_3D:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                                       D.texBind(GL_TEXTURE_3D, _txtr);
                   if(!compressed())glTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, gl_format, gl_type, data);
                   else   glCompressedTexImage3D(GL_TEXTURE_3D, mip_map, format, size.x, size.y, size.z, 0, img_pitch2*size.z, data);
@@ -3168,6 +3173,7 @@ Bool Image::setFaceData(CPtr data, Int data_pitch, Int mip_map, DIR_ENUM cube_fa
                case IMAGE_CUBE:
                case IMAGE_RT_CUBE:
                { // OpenGL has per-thread context states, which means we don't need to be locked during following calls, this is important as following calls can be slow
+                  DEBUG_ASSERT(GetCurrentContext(), "No GL Ctx");
                                       D.texBind(GL_TEXTURE_CUBE_MAP, _txtr);
                   if(!compressed())glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, format, size.x, size.y, 0, gl_format, gl_type, data);
                   else   glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+cube_face, mip_map, format, size.x, size.y, 0, img_pitch2, data);
