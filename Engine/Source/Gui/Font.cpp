@@ -59,12 +59,12 @@ UInt Font::memUsage()C
    UInt   size=0; REPA(_images)size+=_images[i].memUsage();
    return size;
 }
-Bool Font:: hasChar (Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       true         : false;}
-Bool Font:: hasChar (Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       true         : false;}
-Int  Font::charIndex(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       index        :    -1;}
-Int  Font::charIndex(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?       index        :    -1;}
-Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
-Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ? _chrs[index].width :     0;}
+Bool Font:: hasChar (Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) && _chrs[index].chr==Char8To16Fast(c);} // check character in case it's remapped to '?'
+Bool Font:: hasChar (Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) && _chrs[index].chr==              c ;} // check character in case it's remapped to '?'
+Int  Font::charIndex(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?        index        :    -1;}
+Int  Font::charIndex(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?        index        :    -1;}
+Int  Font::charWidth(Char  c)C {UInt index=_wide_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width :     0;}
+Int  Font::charWidth(Char8 c)C {UInt index=_char_to_font[Unsigned(c)]; return InRange(index, _chrs) ?  _chrs[index].width :     0;}
 /******************************************************************************/
 Int Font::charWidth(Char8 c0, Char8 c1, SPACING_MODE spacing)C
 {
