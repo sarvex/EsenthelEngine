@@ -1311,7 +1311,7 @@ struct TextDrawerHW : TextDrawer
 
       if(max_length)
       {
-         Char chr=text.c();
+         Char n, chr=text.c();
       loop:
          if(!chr)
          {
@@ -1416,9 +1416,12 @@ struct TextDrawerHW : TextDrawer
 
                   // combining
                   if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
-                  Char n=text.n();
-                  UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
+                  n=text.n();
+                  UInt flag=CharFlagFast(n); if(flag&(CHARF_COMBINING|(SUPPORT_EMOJI?0:CHARF_MULTI1))) // without SUPPORT_EMOJI also check CHARF_MULTI1
                   {
+                  #if !SUPPORT_EMOJI
+                     if(flag&CHARF_MULTI1)goto skip_multi1;
+                  #endif
                      chr_pos.x+=xsize_2*fc.width ; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
                      chr_pos.y+=ysize  *fc.offset; // reset Y pos
                      Bool skipped_bottom_shadow_padding=false;
@@ -1465,7 +1468,7 @@ struct TextDrawerHW : TextDrawer
             if(CharFlagFast(chr)&CHARF_MULTI0) // first check if it's multi-char
             {
                if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
-               Char n=text.n(); // this should be CHARF_MULTI1
+               n=text.n(); // this should be CHARF_MULTI1
 
                // update positions
                if(cur==offset){cur_x=pos.x; cur_w=xsize*charWidth(chr);}
@@ -1508,9 +1511,10 @@ struct TextDrawerHW : TextDrawer
 
       skip_combining:
          if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
-         Char n=text.n();
+         n=text.n();
          if(CharFlagFast(n)&CHARF_SKIP)
          {
+         skip_multi1:
             // update positions
             if(cur==offset){cur_x=pos.x; cur_w=xsize*charWidth(chr);}
             if(sel==offset){sel_x=pos.x;}
@@ -1836,7 +1840,7 @@ struct TextDrawerSoft : TextDrawer
 
       if(max_length)
       {
-         Char chr=text.c();
+         Char n, chr=text.c();
       loop:
          if(!chr)
          {
@@ -1918,7 +1922,7 @@ struct TextDrawerSoft : TextDrawer
 
                   // combining
                   if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
-                  Char n=text.n();
+                  n=text.n();
                   UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
                   {
                      chr_pos.x+=xsize_2*fc.width ; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
@@ -1961,7 +1965,7 @@ struct TextDrawerSoft : TextDrawer
 
       skip_combining:
          if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
-         Char n=text.n();
+         n=text.n();
          if(CharFlagFast(n)&CHARF_SKIP)goto skip_combining;
          chr=n; goto loop;
       }

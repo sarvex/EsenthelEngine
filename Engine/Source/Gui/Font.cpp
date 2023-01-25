@@ -388,8 +388,8 @@ void Font::setRemap()
    FREPA(invalid)
    {
       Int inv=invalid[i]; if(inv>=0)
-      {  // never replace '\0' (start from 1) and CHARF_MULTI0 (because that one needs to be processed in special way)
-         Int multi0=Min(0xD800, Elms(_wide_to_font));
+      {  // never replace '\0' (start from 1) and CHARF_MULTI0 (because that one needs to be processed in special way) (however when SUPPORT_EMOJI is disabled, then replace CHARF_MULTI0 as well, because without SUPPORT_EMOJI their width would be 0)
+         Int multi0=Min(SUPPORT_EMOJI ? 0xD800 : 0xDC00, Elms(_wide_to_font));
          for(Int i=     1; i<Elms(_char_to_font); i++)if(_char_to_font[i]==0xFFFF)_char_to_font[i]=inv;
          for(Int i=     1; i<multi0             ; i++)if(_wide_to_font[i]==0xFFFF)_wide_to_font[i]=inv;
          for(Int i=0xDC00; i<Elms(_wide_to_font); i++)if(_wide_to_font[i]==0xFFFF)_wide_to_font[i]=inv;
