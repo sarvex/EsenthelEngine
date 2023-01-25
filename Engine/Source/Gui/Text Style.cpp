@@ -1514,7 +1514,9 @@ struct TextDrawerHW : TextDrawer
          n=text.n();
          if(CharFlagFast(n)&CHARF_SKIP)
          {
+      #if !SUPPORT_EMOJI
          skip_multi1:
+      #endif
             // update positions
             if(cur==offset){cur_x=pos.x; cur_w=xsize*charWidth(chr);}
             if(sel==offset){sel_x=pos.x;}
