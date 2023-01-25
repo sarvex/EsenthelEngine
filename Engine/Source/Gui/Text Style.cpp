@@ -1923,8 +1923,11 @@ struct TextDrawerSoft : TextDrawer
                   // combining
                   if(!--max_length)goto end; // !! THIS CAN CHECK BEFORE ADVANCING 'text' AS LONG AS WE'RE NOT GOING TO USE IT AFTERWARD !!
                   n=text.n();
-                  UInt flag=CharFlagFast(n); if(flag&CHARF_COMBINING)
+                  UInt flag=CharFlagFast(n); if(flag&(CHARF_COMBINING|(SUPPORT_EMOJI?0:CHARF_MULTI1))) // without SUPPORT_EMOJI also check CHARF_MULTI1
                   {
+                  #if !SUPPORT_EMOJI
+                     if(flag&CHARF_MULTI1)goto skip_combining;
+                  #endif
                      chr_pos.x+=xsize_2*fc.width ; // after 'chr_pos' was pixel aligned, move by half of the character width to put it at centerX of 'chr' character
                      chr_pos.y+=ysize  *fc.offset; // reset Y pos
                      Bool skipped_bottom_shadow_padding=false;
