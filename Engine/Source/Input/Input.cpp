@@ -435,9 +435,9 @@ static Bool TextSelRem(Str &str, TextEdit &edit) // assumes that 'sel' and 'cur'
    }
    return true;
 }
-static void SkipCombiningLeft (C Str &str, TextEdit &edit) {for(; CharFlagFast(str[edit.cur])&CHARF_COMBINING && edit.cur>0; )edit.cur--;}
-static void SkipCombiningRight(C Str &str, TextEdit &edit) {for(; CharFlagFast(str[edit.cur])&CHARF_COMBINING              ; )edit.cur++;}
-static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey &key, Bool &changed)
+static void SkipLeft (C Str &str, TextEdit &edit) {for(; CharFlagFast(str[edit.cur])&CHARF_SKIP && edit.cur>0; )edit.cur--;}
+static void SkipRight(C Str &str, TextEdit &edit) {for(; CharFlagFast(str[edit.cur])&CHARF_SKIP              ; )edit.cur++;}
+static Bool Processed(  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey &key, Bool &changed)
 {
    if(!key.winCtrl())
    {
@@ -463,7 +463,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             if(edit.cur)
             {
                if(key.shift() && edit.sel<0)edit.sel=edit.cur; // start selection from cursor
-               edit.cur--; SkipCombiningLeft(str, edit);
+               edit.cur--; SkipLeft(str, edit);
                if(key.ctrlCmd())
                   if(edit.password)edit.cur=0;else
                   for(CHAR_TYPE ct=CharType(str[edit.cur]); edit.cur; )
@@ -471,7 +471,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
                   CHAR_TYPE nt=CharType(str[edit.cur-1]);
                   if(ct==CHART_SPACE)ct=nt;
                   if(ct!=nt)break;
-                  edit.cur--; SkipCombiningLeft(str, edit);
+                  edit.cur--; SkipLeft(str, edit);
                }
             }
             return true;
@@ -483,14 +483,14 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
             if(edit.cur<str.length())
             {
                if(key.shift() && edit.sel<0)edit.sel=edit.cur; // start selection from cursor
-               edit.cur++; SkipCombiningRight(str, edit);
+               edit.cur++; SkipRight(str, edit);
                if(key.ctrlCmd())
                   if(edit.password)edit.cur=str.length();else
                   for(CHAR_TYPE ct=CharType(str[edit.cur-1]); edit.cur<str.length(); )
                {
                   CHAR_TYPE nt=CharType(str[edit.cur]);
                   if(ct!=nt){for(; edit.cur<str.length() && str[edit.cur]==' '; )edit.cur++; break;}
-                  edit.cur++; SkipCombiningRight(str, edit);
+                  edit.cur++; SkipRight(str, edit);
                }
             }
             return true;
@@ -597,7 +597,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
                      TextSelRem(str, edit);
                   }else
                   {
-                     Int num=1; for(; CharFlagFast(str[edit.cur+num])&CHARF_COMBINING; )num++; // del all combining characters after deleted one
+                     Int num=1; for(; CharFlagFast(str[edit.cur+num])&CHARF_SKIP; )num++; // del all combining characters after deleted one
                      str.remove(edit.cur, num);
                   }
                   changed=true;
@@ -626,7 +626,7 @@ static Bool Processed         (  Str &str, TextEdit &edit, Bool multi_line, C Ke
          if(edit.sel>=0)changed|=TextSelRem(str, edit);
          if(edit.overwrite && edit.cur<str.length())
          {
-            Int num=0; for(; CharFlagFast(str[edit.cur+1+num])&CHARF_COMBINING; )num++; str.remove(edit.cur+1, num); // del all combining characters after replaced one
+            Int num=0; for(; CharFlagFast(str[edit.cur+1+num])&CHARF_SKIP; )num++; str.remove(edit.cur+1, num); // del all combining characters after replaced one
                str._d[edit.cur]=key.c;
          }else str.insert(edit.cur, key.c);
          edit.cur++;

@@ -14,6 +14,9 @@ enum CHAR_FLAG // Character Flag
    CHARF_COMBINING =1<< 9, // if combining character
    CHARF_STACK     =1<<10, // if stack on top of each other
    CHARF_FONT_SPACE=1<<11, // if adjust font spacing
+   CHARF_MULTI0    =1<<12, // high surrogate W1
+   CHARF_MULTI1    =1<<13, // low  surrogate W2
+   CHARF_SKIP      =CHARF_COMBINING|CHARF_MULTI1,
 #endif
 
    CHARF_DIG=CHARF_DIG10,
