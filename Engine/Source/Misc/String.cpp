@@ -2154,6 +2154,16 @@ CChar* Str::fromUTF8Safe(CChar *text) // returns pointer where it stopped readin
    }
    return text;
 }
+void Str::appendUnicode(UInt u)
+{
+   if(u<=  0xFFFF)T+=Char(u);else
+   if(u<=0x10FFFF)
+   {
+      u-=0x10000;
+      T+=Char(0xD800+(u>>10  )); // #0
+      T+=Char(0xDC00+(u&0x3FF)); // #1
+   }//else unsupported
+}
 Str8 UTF8(C Str &text)
 {
    Str8 out; out.reserve(text.length());
