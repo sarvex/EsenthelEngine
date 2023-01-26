@@ -264,8 +264,7 @@ Bool Equal(Char  a, Char  b, Bool case_sensitive) {return case_sensitive ? Equal
 
 Bool Safe(Char c)
 {
-   return (Unsigned(c)>=32 && Unsigned(c)<0xFE00 || Unsigned(c)>0xFE0F) // 0xFE00..0xFE0F useless character occurring in emojis causing "?" https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)
-       || c=='\t' || c=='\n';
+   return (Unsigned(c)>=32 && Unsigned(c)<0xFE00) || c=='\n' || c=='\t' || Unsigned(c)>0xFE0F; // 0xFE00..0xFE0F useless character occurring in emojis causing "?" https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)
 }
 Bool Skip(Char c)
 {

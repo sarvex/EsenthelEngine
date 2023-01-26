@@ -333,7 +333,7 @@ static void SaveTextJSON(FileText &f, C Str &t)
     //case '\t': f.putChar('\\').putChar('t' ); break; // we can encode tab below normally instead
       case '"' : f.putChar('\\').putChar('"' ); break;
       case '\\': f.putChar('\\').putChar('\\'); break;
-      default  : if(Unsigned(c)>=32 || c=='\t')f.putChar(c); break; // '\n' here is NOT supported
+      default  : if(Safe(c) && c!='\n')f.putChar(c); break; // '\n' here is NOT allowed
    }
    f.putChar('"');
 }
@@ -496,8 +496,8 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
    return c;
 }
 /******************************************************************************/
-static Bool     YAMLNameStart(Char c) {return Unsigned(c)>' ' && c!='-';}
-static Bool     YAMLName     (Char c) {return Unsigned(c)>' ' && c!=':';}
+static Bool     YAMLNameStart(Char c) {return Unsigned(c)>' ' && c!='-' && Safe(c);}
+static Bool     YAMLName     (Char c) {return Unsigned(c)>' ' && c!=':' && Safe(c);}
 static Char LoadYAMLName     (FileText &f, Str &t, Char c)
 {
    t=c; // we've already read the first character
@@ -505,12 +505,12 @@ static Char LoadYAMLName     (FileText &f, Str &t, Char c)
    {
       c=f.getChar();
       if(YAMLName(c))t+=c;else // valid name char
-      if(c!='\r')break;
+      if(   !Skip(c))break;
    }
    return c;
 }
-static Bool     YAMLValueStart(Char c) {return Unsigned(c)> ' ';}
-static Bool     YAMLValue     (Char c) {return Unsigned(c)>=' ';}
+static Bool     YAMLValueStart(Char c) {return Unsigned(c)> ' ' && Safe(c);}
+static Bool     YAMLValue     (Char c) {return Unsigned(c)>=' ' && Safe(c);}
 static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
 {
    if(c=='"') // string
@@ -541,7 +541,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          }else
          if(c=='\n')
          {
-            t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process;}
+            t.space(); for(;;){c=f.getChar(); if(c!=' ' && !Skip(c))goto process;}
          }else
          if( Safe(c))t+=c;else //   valid char
          if(!Skip(c))return c; // invalid char (return it)
@@ -580,7 +580,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          }else*/
          if(c=='\n')
          {
-            t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process2;}
+            t.space(); for(;;){c=f.getChar(); if(c!=' ' && !Skip(c))goto process2;}
          }else
          if( Safe(c))t+=c;else //   valid char
          if(!Skip(c))return c; // invalid char (return it)
@@ -593,7 +593,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
       {
          c=f.getChar();
          if(YAMLValue(c))t+=c;else // valid name char
-         if(c!='\r')break;
+         if(    !Skip(c))break;
       }
    }
    return c;
@@ -905,26 +905,26 @@ Char TextNode::loadYAML(FileText &f, Bool just_values, Char c, const Int node_sp
 {
    if(just_values)goto just_values;
    c=LoadYAMLName(f, name, c);
-   for(; c==' ' || c=='\r'; c=f.getChar()); // skip spaces after name
+   for(; c==' ' || Skip(c); c=f.getChar()); // skip spaces after name
    if(c==':') // has value specified
    {
-      for(c=f.getChar(); c==' ' || c=='\r'; c=f.getChar()); // skip spaces after ':'
+      for(c=f.getChar(); c==' ' || Skip(c); c=f.getChar()); // skip spaces after ':'
       if(c=='{') // inline children
          for(;;)
       {
          c=f.getChar();
       process_a:
-         if(c==' ' || c=='\n' || c=='\r'){}else
+         if(c==' ' || c=='\n' || Skip(c)){}else
          if(c==','                      )nodes.New();else
          if(c=='}'                      ){c=f.getChar(); break;}else
          if(YAMLNameStart(c))
          {
             TextNode &child=nodes.New();
             c=LoadYAMLName(f, child.name, c);
-            for(; c==' ' || c=='\r'; c=f.getChar()); // skip spaces after name
+            for(; c==' ' || Skip(c); c=f.getChar()); // skip spaces after name
             if(c==':') // has value specified
             {
-               for(c=f.getChar(); c==' ' || c=='\r'; c=f.getChar()); // skip spaces after ':'
+               for(c=f.getChar(); c==' ' || Skip(c); c=f.getChar()); // skip spaces after ':'
                if(YAMLValueStart(c))c=LoadYAMLInlineValue(f, child.value, c, '}');
             }
             if(c==',')c=' '; // eat this
@@ -937,7 +937,7 @@ Char TextNode::loadYAML(FileText &f, Bool just_values, Char c, const Int node_sp
       {
          c=f.getChar();
       process_b:
-         if(c==' ' || c=='\n' || c=='\r'){}else
+         if(c==' ' || c=='\n' || Skip(c)){}else
          if(c==',')nodes.New();else
          if(c==']'){c=f.getChar(); break;}else
          if(YAMLValueStart(c))
@@ -959,7 +959,7 @@ Char TextNode::loadYAML(FileText &f, Bool just_values, Char c, const Int node_sp
             if(c==' ' ){cur_spaces++;               c=f.getChar();}else
             if(c=='\n'){cur_spaces=0;               c=f.getChar();}else
             if(c=='#' ){cur_spaces=0; f.skipLine(); c=f.getChar();}else // comment
-            if(c=='\r'){                            c=f.getChar();}else
+            if(Skip(c)){                            c=f.getChar();}else
             if(YAMLNameStart(c))
             {
                if(cur_spaces>node_spaces)
@@ -1034,7 +1034,7 @@ Bool TextData::loadYAML(FileText &f)
       if(c=='\n'){spaces=0;               c=f.getChar();}else
       if(c=='#' ){spaces=0; f.skipLine(); c=f.getChar();}else // comment
       if(c=='-' ){spaces=0; f.skipLine(); c=f.getChar();}else
-      if(c=='\r'){                        c=f.getChar();}else
+      if(Skip(c)){                        c=f.getChar();}else
       if(YAMLNameStart(c))c=nodes.New().loadYAML(f, false, c, spaces, spaces);else
       if(!c)return true ;else // don't check for 'f.ok' because methods stop on null char and not on 'f.end'
             return false;
@@ -1204,7 +1204,7 @@ static Bool LoadXmlValue(FileText &f, Str &value)
          value=DecodeXmlString(value);
          return true;
       }
-      if(Unsigned(c)>=32 || c=='\t')value+=c;
+      if(Safe(c) && c!='\n')value+=c;
    }
 }
 static Char LoadXmlData(FileText &f, Str &data, Char c)
@@ -1635,7 +1635,7 @@ static Char Load(FileParams &fp, FileText &f, Char c) // !! does not call 'clear
    skip_empty:
       c=f.getChar();
    next:
-      if(c==' ' || c=='\t' || c=='\r' || c=='\n')goto skip_empty;
+      if(c==' ' || c=='\t' || c=='\n' || Skip(c))goto skip_empty;
       if(c=='>')c=SkipSpace(f, f.getChar());else
       if(c)
       {
