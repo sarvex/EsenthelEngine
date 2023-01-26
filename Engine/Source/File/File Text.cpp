@@ -322,8 +322,8 @@ FileText& FileText::getLine(Str &s)
       if(  c=='\n')break;
       if(Safe(c))
       {
-         if(c!=' ' && c!='\t')start=false;
-         if(!start)s+=c;
+         if(!WhiteChar(c))start=false;
+         if(!start       )s+=c;
       }
    }
    return T;
@@ -337,8 +337,8 @@ FileText& FileText::getLine(Str8 &s)
       if(  c=='\n')break;
       if(Safe(c))
       {
-         if(c!=' ' && c!='\t')start=false;
-         if(!start)s+=c;
+         if(!WhiteChar(c))start=false;
+         if(!start       )s+=c;
       }
    }
    return T;
