@@ -226,7 +226,7 @@ Bool WhiteChar(Char c)
       case '\n':
       case '\r':
       case FullWidthSpace:
-      case Nbsp:
+    //case Nbsp: this should not be included because we need to treat this as regular character
          return true;
       default: return false;
    }

@@ -483,8 +483,8 @@ C Str& FileTextEx::getWord()
    {
       Char c=getChar();
       if( !c)break;
-      if(  c=='\t' || c=='\n' || c==' ')if(start)continue;else break;
-      if(Safe(c))
+      if(WhiteChar(c))if(start)continue;else break;
+      if(Safe     (c))
       {
          start=false;
          text+=c;

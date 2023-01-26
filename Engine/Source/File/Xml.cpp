@@ -266,7 +266,8 @@ static TEXT_TYPE TextType(C Str &t)
        //|| c=='\0' even though '\0' can be encoded in TEXT_QUOTE, it will always use 2 characters, so prefer TEXT_BINARY, because this character can occur frequently when encoding raw memory of 0.0f value
          || c=='\n' || c=='\t'
          || CharFlagFast(c)&(CHARF_ALPHA|CHARF_SPACE|CHARF_SIGN|CHARF_SIGN2)
-         )simple=false;else return TEXT_BINARY;
+         )simple=false;else
+            return TEXT_BINARY;
       }
    }
    return simple ? TEXT_SIMPLE : TEXT_QUOTE;
@@ -288,7 +289,7 @@ static void SaveText(FileText &f, C Str &t)
           //case '\t': f.putChar('~').putChar('t'); break; // we can encode tab below normally instead
             case '`' : f.putChar('~').putChar('`'); break;
             case '~' : f.putChar('~').putChar('~'); break;
-            default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is supported as well, but prefer as "~n"
+            default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is allowed, but prefer as "~n"
          }
          f.putChar(QUOTE_END);
       }break;
@@ -383,7 +384,7 @@ static Char LoadText(FileText &f, Str &t, Char c)
                }
             }else
          #if 1 // don't allow special characters
-            if( Safe(c))t+=c;else     //   valid char, '\n' here is supported as well
+            if( Safe(c))t+=c;else     //   valid char, '\n' here is allowed
             if(!Skip(c))return ERROR; // invalid char
          #else // allow all characters
             if(f.ok())t+=c; // add all possible characters because this data can be received from server and we need exact match
@@ -536,8 +537,7 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
                Byte c=CharInt(f.getChar());
                Byte d=CharInt(f.getChar());
                t+=Char((a<<12)|(b<<8)|(c<<4)|d);
-            }else
-               continue; // invalid char, just skip it
+            }else continue; // invalid char, just skip it
          }else
          if(c=='\n')
          {
@@ -1527,7 +1527,7 @@ static void SaveTextFileParams(FileText &f, C Str &t, Bool param_name)
        //case '\t': f.putChar('?').putChar('t'); break; // we can encode tab below normally instead
          case '"' : f.putChar('?').putChar('"'); break;
          case '?' : f.putChar('?').putChar('?'); break;
-         default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is supported as well, but prefer as "?n"
+         default  : if(Safe(c)  )f.putChar( c ); break; // '\n' here is allowed, but prefer as "?n"
       }
       f.putChar('"');
       return;
@@ -1564,7 +1564,7 @@ static Char LoadTextFileParams(FileText &f, Str &t, Char c, Bool param_name)
                default : return ERROR; // invalid char
             }
          }else
-         if( Safe(c))t+=c;else     //   valid char, '\n' here is supported as well
+         if( Safe(c))t+=c;else     //   valid char, '\n' here is allowed
          if(!Skip(c))return ERROR; // invalid char
       }
       c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
@@ -1635,7 +1635,7 @@ static Char Load(FileParams &fp, FileText &f, Char c) // !! does not call 'clear
    skip_empty:
       c=f.getChar();
    next:
-      if(c==' ' || c=='\t' || c=='\n' || Skip(c))goto skip_empty;
+      if(WhiteChar(c))goto skip_empty;
       if(c=='>')c=SkipSpace(f, f.getChar());else
       if(c)
       {

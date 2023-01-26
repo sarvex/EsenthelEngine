@@ -1102,10 +1102,10 @@ struct FontCreate : FontCreateBase
       {
          Char c=src.characters[i];
          ASSERT(SPECIAL_CHARS==3); // skip SPECIAL_CHARS, they will be manually inserted later
-         if(c!=' '
-         && c!=FullWidthSpace
-         && c!='\t'
-         && c!=Nbsp // no need to add nbsp because it's always drawn as space
+         if(c!=' '            // added automatically
+         && c!=FullWidthSpace // added automatically
+         && c!='\t'           // added automatically
+         && c!=Nbsp           // always drawn as space
          && !Contains(chars, c) // don't add same characters multiple times
          )chars+=c;
       }
