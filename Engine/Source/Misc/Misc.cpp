@@ -1124,10 +1124,13 @@ Bool ClipSet(C Str &text)
    return true;
 #endif
 }
+static void Clean(Str &s)
+{
+   REPA(s)if(!Safe(s()[i]))s.remove(i);
+}
 Str ClipGet()
 {
    Str s;
-   const Bool fix_new_line=true;
 #if WINDOWS_OLD
    if(IsClipboardFormatAvailable(CF_UNICODETEXT) && OpenClipboard(null))
    {
@@ -1135,7 +1138,7 @@ Str ClipGet()
       {
          s=(Char*)GlobalLock  (hData);
                   GlobalUnlock(hData);
-         if(fix_new_line)s.replace('\r', '\0');
+         Clean(s);
       }
       CloseClipboard();
    }
@@ -1180,16 +1183,19 @@ Str ClipGet()
          if(status==Windows::Foundation::AsyncStatus::Completed)
          {
             s=op->GetResults()->Data();
+            Clean(s);
          }
          event.on();
       });
       App.wait(event);
-      if(fix_new_line)s.replace('\r', '\0');
    }
 #elif MAC
    #if 1
-      if(NSPasteboard *pasteboard=[NSPasteboard generalPasteboard])
-         return [pasteboard stringForType:NSPasteboardTypeString]; // don't release this as it will crash
+      if(NSPasteboard *pasteboard=[NSPasteboard generalPasteboard]) // don't release this as it will crash
+      {
+         s=[pasteboard stringForType:NSPasteboardTypeString];
+         Clean(s);
+      }
    #else // this does not properly support new lines (when accessed from Xcode for example)
       Bool found=false;
       PasteboardSynchronize(Pasteboard);
@@ -1209,7 +1215,7 @@ Str ClipGet()
                CFDataRef flavorData; PasteboardCopyItemFlavorData(Pasteboard, itemID, flavorType, &flavorData);
                CFIndex   flavorDataSize=CFDataGetLength(flavorData);
                Char     *src           =(Char*)CFDataGetBytePtr(flavorData);
-               REP(flavorDataSize/SIZE(Char))s+=*src++;
+               REP(flavorDataSize/SIZE(Char))s+=*src++; Clean(s);
                if(flavorData)CFRelease(flavorData);
             }
          }
@@ -1243,12 +1249,19 @@ Str ClipGet()
       unsigned long  items=0;
       unsigned long  overflow=0;
       unsigned char *data=null;
-      if(!XGetWindowProperty(XDisplay, owner, selection, 0, INT_MAX/4, false, UTF8_STRING, &type, &format, &items, &overflow, &data))
-         if(type==UTF8_STRING)s=FromUTF8((char*)data);
+      if(!XGetWindowProperty(XDisplay, owner, selection, 0, INT_MAX/4, false, UTF8_STRING, &type, &format, &items, &overflow, &data))if(type==UTF8_STRING)
+      {
+         s=FromUTF8((char*)data);
+         Clean(s);
+      }
       if(data)XFree(data);
    }
 #elif IOS
-   if(UIPasteboard *pasteboard=[UIPasteboard generalPasteboard])return pasteboard.string;
+   if(UIPasteboard *pasteboard=[UIPasteboard generalPasteboard])
+   {
+      s=pasteboard.string;
+      Clean(s);
+   }
 #elif ANDROID
    JNI jni;
    if( jni && ClipboardManager) // system clipboard supported
@@ -1256,7 +1269,11 @@ Str ClipGet()
    #if 1
       if(JMethodID getText=jni.func(ClipboardManagerClass, "getText", "()Ljava/lang/CharSequence;"))
       if(JString text=JString(jni, jni->CallObjectMethod(ClipboardManager, getText)))
-         return text.str();
+      {
+         s=text.str();
+         Clean(s);
+         goto end;
+      }
    #else
       if(JClass ClipDataClass=JClass(jni, "android/content/ClipData"))
       if(JMethodID getPrimaryClip=jni.func(ClipboardManagerClass, "getPrimaryClip", "()Landroid/content/ClipData;"))
@@ -1266,10 +1283,15 @@ Str ClipGet()
       if(JClass ClipDataItemClass=JClass(jni, ClipDataItem))
       if(JMethodID getText=jni.func(ClipDataItemClass, "getText", "()Ljava/lang/CharSequence;"))
       if(JString text=JString(jni, jni->CallObjectMethod(ClipDataItem, getText)))
-         return text.str();
+      {
+         s=text.str();
+         Clean(s);
+         goto end;
+      }
    #endif
    }
    return Clipboard;
+end:
 #else
 	return Clipboard;
 #endif

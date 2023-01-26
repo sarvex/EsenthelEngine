@@ -382,9 +382,9 @@ static Char LoadText(FileText &f, Str &t, Char c)
                   default : return ERROR; // invalid char
                }
             }else
-         #if 1 // don't allow special characters, ignore '\r'
-            if(Safe(c))t+=c;else // valid char, '\n' here is supported as well
-            if(c!='\r')return ERROR; // skip '\r'
+         #if 1 // don't allow special characters
+            if( Safe(c))t+=c;else     //   valid char, '\n' here is supported as well
+            if(!Skip(c))return ERROR; // invalid char
          #else // allow all characters
             if(f.ok())t+=c; // add all possible characters because this data can be received from server and we need exact match
             else      return ERROR;
@@ -479,8 +479,8 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
                t+=Char((a<<12)|(b<<8)|(c<<4)|d);
             }else continue; // invalid char, just skip it
          }else
-         if(Unsigned(c)>=32 || c=='\t')t+=c;else // valid char, '\n' here is NOT supported
-            return c; // skip '\r', invalid char (return it)
+         if( Safe(c) && c!='\n')t+=c;else //   valid char, '\n' here is NOT allowed
+         if(!Skip(c)           )return c; // invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else // simple name
@@ -490,7 +490,7 @@ static Char LoadTextJSON(FileText &f, Str &t, Char c)
       {
          c=f.getChar();
          if(SimpleCharJSON(c))t+=c;else // valid name char
-         if(c!='\r')break; // skip '\r'
+         if(!Skip(c))break;
       }
    }
    return c;
@@ -543,8 +543,8 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process;}
          }else
-         if(Safe(c))t+=c;else // valid char
-         if(c!='\r')return c; // skip '\r', invalid char (return it)
+         if( Safe(c))t+=c;else //   valid char
+         if(!Skip(c))return c; // invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else
@@ -582,8 +582,8 @@ static Char LoadYAMLValue     (FileText &f, Str &t, Char c)
          {
             t.space(); for(;;){c=f.getChar(); if(c!=' ' && c!='\r')goto process2;}
          }else
-         if(Safe(c))t+=c;else // valid char
-         if(c!='\r')return c; // skip '\r', invalid char (return it)
+         if( Safe(c))t+=c;else //   valid char
+         if(!Skip(c))return c; // invalid char (return it)
       }
       c=f.getChar(); // read next char after the string, so we're at the same situation as with the "simple name" case
    }else // simple name
@@ -1564,8 +1564,8 @@ static Char LoadTextFileParams(FileText &f, Str &t, Char c, Bool param_name)
                default : return ERROR; // invalid char
             }
          }else
-         if(Safe(c))t+=c;else // valid char, '\n' here is supported as well
-         if(c!='\r')return ERROR; // skip '\r'
+         if( Safe(c))t+=c;else     //   valid char, '\n' here is supported as well
+         if(!Skip(c))return ERROR; // invalid char
       }
       c=f.getChar(); // read next char after the name, so we're at the same situation as with the "simple name" case
    }
