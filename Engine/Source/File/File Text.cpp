@@ -133,11 +133,11 @@ FileText& FileText::endLine()
 {
    switch(_code)
    {
-      case ANSI       :
-      case UTF_8      :
-      case UTF_8_NAKED: _f.putByte(0x0A); break;
+      case ANSI       : _f.putByte  (  0x0A); break;
+      case UTF_16     : _f.putUShort(0x000A); break;
 
-      case UTF_16: _f.putUShort(0x000A); break;
+      case UTF_8      :
+      case UTF_8_NAKED: _f.putByte(0x0A); _put='\0'; break; // MULTI1 must be in range 0xDC00..0xDFFF, but here we have '\n' so just clear any '_put'
    }
    return T;
 }
@@ -151,9 +151,17 @@ FileText& FileText::putChar(Char8 c)
       case UTF_8      :
       case UTF_8_NAKED:
       {
+        _put='\0'; // MULTI1 must be in range 0xDC00..0xDFFF, but here we have Char8 that will never convert to that range, so just clear any '_put'
+      #if 0 // can use this if there's direct 1:1 mapping for 'Char8To16Fast'
          U8 u=c;
          if(u<=0x7F)_f.putByte (u);
          else       _f.putMulti(Byte(0xC0 | (u>>6)), Byte(0x80 | (u&0x3F)));
+      #else
+         U16 u=Char8To16Fast(c);
+         if(u<=0x07F)_f.putByte (u);else
+         if(u<=0x7FF)_f.putMulti(Byte(0xC0 | (u>> 6)), Byte(0x80 | ( u    &0x3F)));else
+                     _f.putMulti(Byte(0xE0 | (u>>12)), Byte(0x80 | ((u>>6)&0x3F)), Byte(0x80 | (u&0x3F)));
+      #endif
       }break;
    }
    return T;
@@ -168,6 +176,16 @@ FileText& FileText::putChar(Char c)
       case UTF_8      :
       case UTF_8_NAKED:
       {
+         if(_put) // check if we have MULTI0
+         {
+            if(c>=0xDC00 && c<=0xDFFF) // MULTI1 must be in range 0xDC00..0xDFFF
+            {
+               U32 u=(((Unsigned(_put)-0xD800)<<10)|(Unsigned(c)-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
+              _f.putMulti(Byte(0xF0 | (u>>18)), Byte(0x80 | ((u>>12)&0x3F)), Byte(0x80 | ((u>>6)&0x3F)), Byte(0x80 | (u&0x3F)));
+            }
+           _put='\0'; break;
+         }
+         if(c>=0xD800 && c<=0xDBFF){_put=c; break;} // MULTI0, needs to have MULTI1 so put to buffer and writer later
          U16 u=c;
          if(u<=0x07F)_f.putByte (u);else
          if(u<=0x7FF)_f.putMulti(Byte(0xC0 | (u>> 6)), Byte(0x80 | ( u    &0x3F)));else
@@ -192,7 +210,9 @@ FileText& FileText::putText(C Str &text)
       #else // faster
                Char8  temp[65536];
          const Int    temp_elms=Elms(temp)-3; // use size -3 because we may be writing 4 characters in one step
-         for(Int i=0, temp_pos=0; ; )
+         Int i=0, temp_pos=0;
+         if(_put && text.is())putChar(text()[i++]); // check if we have MULTI0, then save MULTI1 manually, () avoids range checks
+         for(;;)
          {
             Bool end=(i>=text.length());
             if(  end || !InRange(temp_pos, temp_elms)) // if finished, or there's no more room in the buffer
@@ -204,12 +224,12 @@ FileText& FileText::putText(C Str &text)
             if(c<=0x07F) temp[temp_pos++]=c;else
             if(c<=0x7FF){temp[temp_pos++]=(0xC0 | (c>>6)); temp[temp_pos++]=(0x80 | (c&0x3F));}else
          #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
-            if(c>=0xD800 && c<=0xDBFF)
+            if(c>=0xD800 && c<=0xDBFF) // MULTI0
             {
             /* U32 -> 2x U16 formula:
                u-=0x10000;
-               c0=0xD800+(u>>10);
-               c1=0xDC00+(u&0x3FF); */
+               c0=0xD800+(u>>10  ); MULTI0
+               c1=0xDC00+(u&0x3FF); MULTI1 */
                U16 c1=text[i++];
                U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
                temp[temp_pos++]=(0xF0 | (u>>18)); temp[temp_pos++]=(0x80 | ((u>>12)&0x3F)); temp[temp_pos++]=(0x80 | ((u>>6)&0x3F)); temp[temp_pos++]=(0x80 | (u&0x3F));
@@ -284,8 +304,8 @@ Char FileText::getChar()
                   if(u<=0x10FFFF)
                   {
                       u-=0x10000;
-                       c= 0xD800+(u>>10  ); // #0
-                    _get= 0xDC00+(u&0x3FF); // #1
+                       c= 0xD800+(u>>10  ); // MULTI0
+                    _get= 0xDC00+(u&0x3FF); // MULTI1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }

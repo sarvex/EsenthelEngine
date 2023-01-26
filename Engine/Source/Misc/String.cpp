@@ -2092,8 +2092,8 @@ Str FromUTF8(CChar8 *text)
                   if(u<=0x10FFFF)
                   {
                      u-=0x10000;
-                     out+=Char(0xD800+(u>>10  )); // #0
-                        c=     0xDC00+(u&0x3FF) ; // #1
+                     out+=Char(0xD800+(u>>10  )); // MULTI0
+                        c=     0xDC00+(u&0x3FF) ; // MULTI1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }
@@ -2146,8 +2146,8 @@ CChar* Str::fromUTF8Safe(CChar *text) // returns pointer where it stopped readin
                   if(u<=0x10FFFF)
                   {
                      u-=0x10000;
-                     T+=Char(0xD800+(u>>10  )); // #0
-                     c =     0xDC00+(u&0x3FF) ; // #1
+                     T+=Char(0xD800+(u>>10  )); // MULTI0
+                     c =     0xDC00+(u&0x3FF) ; // MULTI1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }
@@ -2165,8 +2165,8 @@ void Str::appendUnicode(UInt u)
    if(u<=0x10FFFF)
    {
       u-=0x10000;
-      T+=Char(0xD800+(u>>10  )); // #0
-      T+=Char(0xDC00+(u&0x3FF)); // #1
+      T+=Char(0xD800+(u>>10  )); // MULTI0
+      T+=Char(0xDC00+(u&0x3FF)); // MULTI1
    }//else unsupported
 }
 Str8 UTF8(C Str &text)
@@ -2178,12 +2178,12 @@ Str8 UTF8(C Str &text)
       if(c<=0x07F) out+=Char8(c);else
       if(c<=0x7FF){out+=Char8(0xC0 | (c>>6)); out+=Char8(0x80 | (c&0x3F));}else
    #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
-      if(c>=0xD800 && c<=0xDBFF)
+      if(c>=0xD800 && c<=0xDBFF) // MULTI0
       {
       /* U32 -> 2x U16 formula:
          u-=0x10000;
-         c0=0xD800+(u>>10);
-         c1=0xDC00+(u&0x3FF); */
+         c0=0xD800+(u>>10  ); MULTI0
+         c1=0xDC00+(u&0x3FF); MULTI1 */
          auto c1=Unsigned(text[++i]);
          U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
          out+=Char8(0xF0 | (u>>18)); out+=Char8(0x80 | ((u>>12)&0x3F)); out+=Char8(0x80 | ((u>>6)&0x3F)); out+=Char8(0x80 | (u&0x3F));
@@ -2205,12 +2205,12 @@ void Str::appendUTF8Safe(C Str &text) // this ignores unsafe characters
       if(c<=0x07F) T+=Char(c);else
       if(c<=0x7FF){T+=Char(0xC0 | (c>>6)); T+=Char(0x80 | (c&0x3F));}else
    #if 1 // since we operate on Char we must treat it as UTF-16, there 0xD800..0xDBFF are used to encode 2 Chars
-      if(c>=0xD800 && c<=0xDBFF)
+      if(c>=0xD800 && c<=0xDBFF) // MULTI0
       {
       /* U32 -> 2x U16 formula:
          u-=0x10000;
-         c0=0xD800+(u>>10);
-         c1=0xDC00+(u&0x3FF); */
+         c0=0xD800+(u>>10  ); MULTI0
+         c1=0xDC00+(u&0x3FF); MULTI1 */
          auto c1=Unsigned(text[++i]);
          U32 u=(((c-0xD800)<<10)|(c1-0xDC00))+0x10000; // decode U16 c c1 -> U32 u
          T+=Char(0xF0 | (u>>18)); T+=Char(0x80 | ((u>>12)&0x3F)); T+=Char(0x80 | ((u>>6)&0x3F)); T+=Char(0x80 | (u&0x3F));
