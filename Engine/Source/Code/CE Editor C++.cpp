@@ -1590,11 +1590,11 @@ Bool CodeEditor::generateVSProj(Int version)
             {
                XmlNode &sub=node.nodes[i]; if(sub.name=="Media")if(XmlParam *include=sub.findParam("Include"))if(include->value=="Engine.pak")
                {
-                  include->value=bin_path_rel+"Universal\\Engine.pak"; goto found_engine_pak2;
+                  include->value=bin_path_rel+"Universal\\Engine.pak"; goto found_engine_pak_f;
                }
             }
          }
-      found_engine_pak2:
+      found_engine_pak_f:
 
          // project name
          for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)

@@ -610,6 +610,7 @@ void UpdateHeaders()
 /******************************************************************************/
 // ENGINE PAK
 /******************************************************************************/
+// !! IF CHANGING ANYTHING HERE THEN ADJUST 'CreateEngineEmbedPak' !!
 static Bool DesktopEnginePakFilter(C Str &full)
 {
    Str name=SkipStartPath(full, EngineDataPath), base=GetBase(name), path=GetPath(name);
