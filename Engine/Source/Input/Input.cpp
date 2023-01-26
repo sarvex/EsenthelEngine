@@ -516,7 +516,9 @@ static Bool Processed(  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey
                   TextSelRem(str, edit);
                }else
                {
-                  str.remove(--edit.cur);
+                  Int end=edit.cur--;
+                  for(; CharFlagFast(str[edit.cur])&CHARF_MULTI1 && edit.cur>0; )edit.cur--; // here check only MULTI1 to delete full multi-character, don't check CHARF_COMBINING to allow removing only combining while leaving base and other combining
+                  str.remove(edit.cur, end-edit.cur);
                }
                changed=true;
             }
@@ -530,7 +532,7 @@ static Bool Processed(  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey
             else*/                                     str.insert(edit.cur, '\t');
             edit.cur++;
             changed=true;
-            return true;
+            return  true;
          }break;
 
          case KB_ENTER: if(multi_line || key.shift() && !key.ctrl() && !key.alt()) // allow adding new line only in multi_line 'TextBox', or 'TextLine' too but only if Shift is pressed without Ctrl/Alt
@@ -540,7 +542,7 @@ static Bool Processed(  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey
             else*/                                     str.insert(edit.cur, '\n');
             edit.cur++;
             changed=true;
-            return true;
+            return  true;
          }break;
 
          case KB_INS:
@@ -631,7 +633,7 @@ static Bool Processed(  Str &str, TextEdit &edit, Bool multi_line, C KeyboardKey
          }else str.insert(edit.cur, key.c);
          edit.cur++;
          changed=true;
-         return true;
+         return  true;
       }
    }
    return false;
