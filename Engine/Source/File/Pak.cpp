@@ -681,7 +681,11 @@ PAK_LOAD Pak::loadEx(C Str &name, Cipher *cipher, Long pak_offset, Long *expecte
             case PAK_LOAD_INCOMPLETE_DATA:
             case PAK_LOAD_OK             :
             {
-              _file_name=(f._pak ? f._pak->_file_name : NormalizePath(MakeFullPath(name, f._path))); // if file comes from another Pak then remember that Pak's name, otherwise remember full path in case the path is relative and 'CurDir' or 'DataPath' will be changed later making that relative path no longer valid
+               if(C Pak *pak=f._pak) // if file comes from another Pak then remember that Pak data/name
+               {
+                     _data     =pak->_data;
+                     _file_name=pak->_file_name;
+               }else _file_name=NormalizePath(MakeFullPath(name, f._path)); // otherwise remember full path in case the path is relative and 'CurDir' or 'DataPath' will be changed later making that relative path no longer valid
                if(_file_cipher && !cipher)_cipher_per_file=false; // if there is a cipher, but it comes from parent file/container and not this Pak, then we always have to disable '_cipher_per_file', because that cipher was used to encrypt entire Pak as a one file, so when decrypting, we have to treat it the same, that the cipher affects entire Pak and its content continuously and not per Pak's files, here the Pak is one big file
             }return result;
          }

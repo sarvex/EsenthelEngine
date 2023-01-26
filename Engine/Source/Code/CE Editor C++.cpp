@@ -1016,12 +1016,14 @@ static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, Bool 
       FREPA(*src_pak)Add(files, *src_pak, src_pak->file(i)); // add all files
    }else // 2D only
    {
-      // add folders to preserve modification times
+      // !! ADD FOLDERS TO PRESERVE MODIFICATION TIMES !!
+      Add    (files, *src_pak, src_pak->find("Emoji"));
+      Add    (files, *src_pak, src_pak->find("Gui"));
       Add    (files, *src_pak, src_pak->find("Shader"));
       Add    (files, *src_pak, src_pak->find("Shader/4"));
       Add    (files, *src_pak, src_pak->find("Shader/GL"));
       Add    (files, *src_pak, src_pak->find("Shader/GL SPIR-V"));
-      Add    (files, *src_pak, src_pak->find("Gui"));
+
       AddFile(files, *src_pak, src_pak->find("Shader/4/Early Z"));
       AddFile(files, *src_pak, src_pak->find("Shader/4/Main"));
       AddFile(files, *src_pak, src_pak->find("Shader/4/Position"));
@@ -1032,6 +1034,7 @@ static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, Bool 
       AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Main"));
       AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Position"));
       
+      AddChildren(files, *src_pak, src_pak->find("Emoji"));
       AddChildren(files, *src_pak, src_pak->find("Gui"));
       FREP(src_pak->rootFiles())AddFile(files, *src_pak, src_pak->file(i)); // add all root files (gui files)
    }
@@ -1841,8 +1844,7 @@ Bool CodeEditor::generateXcodeProj()
    // embed engine data
    if(cei().appEmbedEngineData())
    {
-      mac_assets.New().name="Assets/EngineEmbed.pak";
-      if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true))return false;
+      mac_assets.New().name="Assets/EngineEmbed.pak"; if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true))return false; // this is Mac only
    }
 
    // app data

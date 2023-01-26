@@ -319,11 +319,10 @@ Bool CPakEqual(C CMemPtr<PakFileData> &files, C Str &pak_name, Cipher *pak_ciphe
 inline Int Elms(C Pak    &pak ) {return pak .totalFiles();}
 inline Int Elms(C PakSet &paks) {return paks.totalFiles();}
 
-// Emoji Pak
-Bool AddEmojiPak(C Str &name, Bool auto_rebuild=true); // add pak containing emojis, false on fail
-
 #if EE_PRIVATE
+// Emoji Pak
 extern Pak* EmojiPak;
+Bool AddEmojiPak(C Str &name, Bool auto_rebuild=true); // add pak containing emojis, false on fail
 
 Bool Equal(C PakFile     *a  , C PakFile *b ); // test if both PakFile's are of the same version
 Bool Equal(C PakFileData *pfd, C PakFile *pf); // test if both PakFile's are of the same version

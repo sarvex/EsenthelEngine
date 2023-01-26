@@ -1490,7 +1490,7 @@ struct TextDrawerHW : TextDrawer
              //VI.color (color); not needed, 'image->draw' doesn't change it
             }else
             {
-               font_index=font->_wide_to_font['\1']; if(InRange(font_index, font->_chrs)) // if haven't found emoji, try drawing as invalid/unknown
+               font_index=font->_wide_to_font[Unsigned('\1')]; if(InRange(font_index, font->_chrs)) // if haven't found emoji, try drawing as invalid/unknown
                {
                 C Font::Chr &fc=font->_chrs[font_index];
                   Vec2 chr_pos=pos;
