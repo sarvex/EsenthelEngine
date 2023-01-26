@@ -614,6 +614,7 @@ static Bool DesktopEnginePakFilter(C Str &full)
 {
    Str name=SkipStartPath(full, EngineDataPath), base=GetBase(name), path=GetPath(name);
    if(!SUPPORT_MLAA && base=="MLAA Area.img")return false;
+   if(EqualPath(name, "Emoji/ETC2.pak"))return false;
    return true;
 }
 static Bool UniversalEnginePakFilter(C Str &full)
@@ -622,6 +623,7 @@ static Bool UniversalEnginePakFilter(C Str &full)
    if(!SUPPORT_MLAA && base=="MLAA Area.img")return false;
    if(EqualPath(name, "Shader/GL")
    || EqualPath(name, "Shader/GL SPIR-V")
+   || EqualPath(name, "Emoji/ETC2.pak")
    || base=="World Editor"
    )return false;
    return true;
@@ -631,6 +633,7 @@ static Bool MobileEnginePakFilter(C Str &full)
    Str name=SkipStartPath(full, EngineDataPath), base=GetBase(name), path=GetPath(name);
    if(!SUPPORT_MLAA && base=="MLAA Area.img")return false;
    if(EqualPath(name, "Shader/4")
+   || EqualPath(name, "Emoji/BC7.pak")
    || base=="World Editor"
    )return false;
    return true;

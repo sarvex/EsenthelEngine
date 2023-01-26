@@ -2702,6 +2702,7 @@ void TextStyle::operator=(C Str &name)
 void ShutFont()
 {
 #if SUPPORT_EMOJI
+   EmojiPak=null;
    Emojis    .del();
 #endif
    TextStyles.del();

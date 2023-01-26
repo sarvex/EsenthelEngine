@@ -746,6 +746,8 @@ void GUI::create()
 {
    if(LogInit)LogN("GUI.create");
 
+   AddEmojiPak(DESKTOP ? "Emoji/BC7.pak" : "Emoji/ETC2.pak"); // !! NEED TO LOAD BEFORE LOADING ANY FONTS !!
+
    if(D.created()) // needed for APP_ALLOW_NO_GPU/APP_ALLOW_NO_XDISPLAY
       if(skin=default_skin)
    {
