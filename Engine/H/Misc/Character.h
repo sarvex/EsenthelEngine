@@ -4,18 +4,19 @@ enum CHAR_FLAG // Character Flag
    CHARF_DIG2 =1<<0, // if binary  digit 01
    CHARF_DIG10=1<<1, // if decimal digit 0123456789
    CHARF_DIG16=1<<2, // if hex     digit 0123456789ABCDEFabcdef
-   CHARF_SIGN =1<<3, // if sign          `~!@#$%^&-+*=()[]{}<>;:'",./|\?
-   CHARF_ALPHA=1<<4, // if alphabetic
-   CHARF_UNDER=1<<5, // if underline
-   CHARF_UP   =1<<6, // if upper case
-   CHARF_SPACE=1<<7, // if space character (including Nbsp, FullWidthSpace, Tab)
+   CHARF_SIGN =1<<3, // if sign          `~!@#$%^&_-+*=()[]{}<>;:'",./|\?
+   CHARF_UNDER=1<<4, // if underline
+   CHARF_ALPHA=1<<5, // if alphabetic
+   CHARF_SPACE=1<<6, // if space, nbsp, FullWidthSpace, Tab
+   CHARF_NBSP =1<<7, // if nbsp
+   CHARF_UP   =1<<8, // if upper case
 #if EE_PRIVATE
-   CHARF_SIGN2     =1<< 8, // if sign2
-   CHARF_COMBINING =1<< 9, // if combining character
-   CHARF_STACK     =1<<10, // if stack on top of each other
-   CHARF_FONT_SPACE=1<<11, // if adjust font spacing
-   CHARF_MULTI0    =1<<12, // high surrogate W1
-   CHARF_MULTI1    =1<<13, // low  surrogate W2
+   CHARF_SIGN2     =1<< 9, // if sign2
+   CHARF_COMBINING =1<<10, // if combining character
+   CHARF_STACK     =1<<11, // if stack on top of each other
+   CHARF_FONT_SPACE=1<<12, // if adjust font spacing
+   CHARF_MULTI0    =1<<13, // high surrogate W1
+   CHARF_MULTI1    =1<<14, // low  surrogate W2
    CHARF_SKIP      =CHARF_COMBINING|CHARF_MULTI1,
 #endif
 
@@ -28,8 +29,8 @@ UInt CharFlag(Char8 c); // get CHAR_FLAG
 enum CHAR_TYPE : Byte // Character Type
 {
    CHART_NONE , // none/unknown
-   CHART_CHAR , // alphabetic, digit or underline
-   CHART_SPACE, // space
+   CHART_CHAR , // alphabetic, digit, underline, nbsp
+   CHART_SPACE, // space, FullWidthSpace, Tab
    CHART_SIGN , // symbol
 };
 

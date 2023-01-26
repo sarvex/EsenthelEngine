@@ -177,10 +177,10 @@ INLINE Char8 CaseUpFast  (Char8 c) {return  Char16To8Fast(CaseUpFast  (Char8To16
 CHAR_TYPE CharTypeFast(Char c) // don't INLINE because it's not a simple function
 {
    UInt f=CharFlagFast(c);
-   if(  f&(CHARF_ALPHA|CHARF_DIG|CHARF_UNDER))return CHART_CHAR ; // check this first in case '_' is both CHARF_UNDER and CHARF_SIGN
-   if(  f& CHARF_SPACE                       )return CHART_SPACE;
-   if(  f& CHARF_SIGN                        )return CHART_SIGN ;
-                                              return CHART_NONE ;
+   if(  f&(CHARF_ALPHA|CHARF_DIG|CHARF_UNDER|CHARF_NBSP))return CHART_CHAR ; // check this first in case '_' is both CHARF_UNDER and CHARF_SIGN, and Nbsp is both CHARF_NBSP and CHARF_SPACE
+   if(  f& CHARF_SPACE                                  )return CHART_SPACE;
+   if(  f& CHARF_SIGN                                   )return CHART_SIGN ;
+                                                         return CHART_NONE ;
 }
 INLINE CHAR_TYPE CharTypeFast(Char8 c) {return CharTypeFast(Char8To16Fast(c));}
 
@@ -4464,9 +4464,9 @@ static void InitStr()
       // set custom
    #define SET(c, f) _CharFlag[Unsigned(c)]|=f;
                                  SET(' '           , CHARF_SPACE);
-                                 SET(Nbsp          , CHARF_SPACE);
                                  SET(FullWidthSpace, CHARF_SPACE);
                                  SET('\t'          , CHARF_SPACE);
+                                 SET(Nbsp          , CHARF_SPACE|CHARF_NBSP);
                                  SET('_'           , CHARF_UNDER);
                                  SET('0'           , CHARF_DIG2|CHARF_DIG10|CHARF_DIG16);
                                  SET('1'           , CHARF_DIG2|CHARF_DIG10|CHARF_DIG16);
