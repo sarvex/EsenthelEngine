@@ -23,7 +23,7 @@
 
    'KeyCharacterMapGet' does not convert meta to accents, what we would need are accented characters to be used with 'getDeadChar'.
       However NDK input does not provide COMBINING_ACCENT and COMBINING_ACCENT_MASK for key codes.
-      I still need to use 'KeyCharacterMap' instead of converting buttons to characters, because on Swiftkey Android 2.3 pressing '(' results in 'k' character, and 'KeyCharacterMap' fixes that.
+      I still need to use 'KeyCharacterMap' instead of converting buttons to characters, because on SwiftKey Android 2.3 pressing '(' results in 'k' character, and 'KeyCharacterMap' fixes that.
 
    Type Signature Java Type
    Z              boolean
@@ -460,7 +460,7 @@ static int32_t InputCallback(android_app *app, AInputEvent *event)
 
             if(KeyCharacterMap)
             {
-               FlagDisable(meta, Int(AMETA_CTRL_ON|AMETA_CTRL_LEFT_ON|AMETA_CTRL_RIGHT_ON)); // disable CTRL in meta because if it would be present then 'chr' would be zero, we can't remove LALT yet because Swiftkey Android 2.3 relies on it
+               FlagDisable(meta, Int(AMETA_CTRL_ON|AMETA_CTRL_LEFT_ON|AMETA_CTRL_RIGHT_ON)); // disable CTRL in meta because if it would be present then 'chr' would be zero, we can't remove LALT yet because SwiftKey Android 2.3 relies on it
                chr=Jni->CallIntMethod(KeyCharacterMap, KeyCharacterMapGet, jint(code), jint(meta));
                if(!chr && (meta&AMETA_ALT_LEFT_ON))
                {

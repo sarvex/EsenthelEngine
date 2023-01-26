@@ -1246,38 +1246,33 @@ void KeyboardClass::update()
 #if ANDROID
    if(InputTextIs)
    {
-      Int enters=0; // enter workaround
+      Bool reset=false;
+      Int  enters=0; // enter workaround
       {
          SyncLocker locker(InputTextLock);
-         if(Gui.kb())switch(Gui.kb()->type())
+         if(Gui.kb())
          {
-            default:
+            Bool remove_enters=Gui.kb()->isTextLine(); // some soft keyboards (GBoard) may generate enter keys as characters, this is a workaround for that, it will remove for 'TextLine'. For 'TextBox' not needed because we allow enters there as characters
+            REPA(InputTextData.text)
             {
-               // no need to apply Enter fix for 'TextBox', because we allow enters there as characters
-               ScreenKeyboard::Set(InputTextData.text);
-               ScreenKeyboard::Set(InputTextData.cur.y, InputTextData.cur.x);
-            }break;
-
-            case GO_TEXTLINE:
-            {
-               // some soft keyboards (GBoard) may generate enter keys as characters, this is a workaround for that
+               Char c=InputTextData.text[i];
+               if(!Safe(c)
+               || c=='\n' && remove_enters)
                {
-                  REPA(InputTextData.text)if(InputTextData.text[i]=='\n')
-                  {
-                     enters++; // increase enter counter
-                     InputTextData.text.remove(i); // remove this character
-                     if(InputTextData.cur.x>i)InputTextData.cur.x--; // adjust cursor
-                     if(InputTextData.cur.y>i)InputTextData.cur.y--; // adjust cursor
-                  }
+                  reset=true;
+                  if(c=='\n')enters++; // increase enter counter
+                  InputTextData.text.remove(i); // remove this character
+                  if(InputTextData.cur.x>i)InputTextData.cur.x--; // adjust cursor
+                  if(InputTextData.cur.y>i)InputTextData.cur.y--; // adjust cursor
                }
-               if(ScreenKeyboard::Set(InputTextData.text) || !enters) // adjust cursor only if we've changed some text or didn't process the enter workaround (this is to avoid when pressing just enter key, changes the cursor position on GBoard)
-                  ScreenKeyboard::Set(InputTextData.cur.y, InputTextData.cur.x);
-            }break;
+            }
+            if(ScreenKeyboard::Set(InputTextData.text) || !enters) // adjust cursor only if we've changed some text or didn't process the enter workaround (this is to avoid when pressing just enter key, changes the cursor position on GBoard)
+               ScreenKeyboard::Set(InputTextData.cur.y, InputTextData.cur.x);
          }
         _key_buffer_len=0; // this is a workaround for a bug in Google/Samsung Keyboard (but not SwiftKey) when Backspace key is triggered even though it shouldn't, when tapping Back key on the soft keyboard (when last character is space, or sometimes when just typed something), in that case 2 Back's are processed (one from EditText Java_com_esenthel_Native_text and one AINPUT_EVENT_TYPE_KEY), this code removes all queued keys to remove KB_BACK
          InputTextIs=false;
       }
-      if(enters) // call after we got out of sync lock in case this method would trigger 'Java_com_esenthel_Native_text' and introduce some sort of deadlock
+      if(reset) // call after we got out of sync lock in case this method would trigger 'Java_com_esenthel_Native_text' and introduce some sort of deadlock
       {
          REP(enters)queue(KB_ENTER, u'\n');
          resetTextInput();
