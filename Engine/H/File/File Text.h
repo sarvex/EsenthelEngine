@@ -75,7 +75,7 @@ struct FileText
 private:
 #endif
    ENCODING _code;
-   Char     _buf;
+   Char     _get, _put;
    File     _f;
    NO_COPY_CONSTRUCTOR(FileText);
 };

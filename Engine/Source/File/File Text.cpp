@@ -29,11 +29,11 @@ static void SaveEncoding(File &f, ENCODING encoding)
    }
 }
 /******************************************************************************/
-void      FileText::zero    () {indent=INDENT_TABS; depth=0; _code=ANSI; _buf=0;}
+void      FileText::zero    () {indent=INDENT_TABS; depth=0; _code=ANSI; _get=_put='\0';}
 FileText& FileText::del     () {_f.del(); zero(); return T;}
           FileText::FileText() {zero();}
 
-Bool FileText::end()C {return _f.end() && !_buf;}
+Bool FileText::end()C {return _f.end() && !_get;}
 
 FileText& FileText::writeMem(ENCODING encoding, Cipher *cipher)
 {
@@ -252,7 +252,7 @@ Char FileText::getChar()
       case UTF_8      :
       case UTF_8_NAKED:
       {
-         if(_buf){Char c=_buf; _buf=0; return c;}
+         if(_get){Char c=_get; _get='\0'; return c;}
 
          Byte b0=_f.getByte();
          if(!(b0&(1<<7)))return b0; // this handles NUL
@@ -285,7 +285,7 @@ Char FileText::getChar()
                   {
                       u-=0x10000;
                        c= 0xD800+(u>>10  ); // #0
-                    _buf= 0xDC00+(u&0x3FF); // #1
+                    _get= 0xDC00+(u&0x3FF); // #1
                   }else c='?'; // unsupported
                }else c='?'; // unsupported
             }
@@ -423,7 +423,7 @@ FileText& FileText::getAll(Str &s)
 FileText& FileText::rewind()
 {
    depth=0;
-  _buf=0;
+  _get=_put='\0';
   _f.pos(0);
    LoadEncoding(_f); // we already know the encoding, but we need to skip the byte order mark at start, don't set it to '_code' because 'UTF_8_NAKED' may had been used
    return T;
@@ -431,7 +431,7 @@ FileText& FileText::rewind()
 Bool FileText::copy(File &dest)
 {
    depth=0;
-  _buf=0;
+  _get=_put='\0';
    if(!_f.pos(0))return false;
    return _f.copy(dest);
 }

@@ -1337,6 +1337,7 @@ struct TextDrawerHW : TextDrawer
                   {
                      VI.flush();
                      VI.shader(null);
+                     // TODO: this should handle adjusting/restoring D.alpha for sub_pixel, however that would introduce overhead
 
                      Flt w=size.y*image->aspect();
                      if(cur==offset){cur_x=pos.x; cur_w=w;}
@@ -1364,6 +1365,7 @@ struct TextDrawerHW : TextDrawer
                   {
                      VI.flush();
                      VI.shader(null);
+                     // TODO: this should handle adjusting/restoring D.alpha for sub_pixel, however that would introduce overhead
 
                      processPanel(text, data, datas, max_length);
 
@@ -1483,6 +1485,7 @@ struct TextDrawerHW : TextDrawer
             {
                VI.flush();
                VI.shader(null);
+               // TODO: this should handle adjusting/restoring D.alpha for sub_pixel, however that would introduce overhead
 
                image->draw(Rect_LU(spacingConst() ? pos.x+space_2-w/2 : pos.x, pos.y, w, size.y));
 
