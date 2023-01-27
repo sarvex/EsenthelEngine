@@ -2222,6 +2222,7 @@ namespace Edit
    T1(TYPE) C TYPE& Unaligned(              C TYPE &src) {return src;}
    T1(TYPE)   void  Unaligned(TYPE   &dest, C TYPE &src) {  dest=src;}
    T1(TYPE)   void _Unaligned(Byte   &dest, C TYPE &src) {  dest=src;}
+   T1(TYPE)   void _Unaligned(Short  &dest, C TYPE &src) {  dest=src;}
    T1(TYPE)   void _Unaligned(UShort &dest, C TYPE &src) {  dest=src;}
    T1(TYPE)   void _Unaligned(Int    &dest, C TYPE &src) {  dest=src;}
    T1(TYPE)   void _Unaligned(UInt   &dest, C TYPE &src) {  dest=src;}
@@ -2229,6 +2230,7 @@ namespace Edit
    T1(TYPE)   TYPE  Unaligned(              C TYPE &src) {if(SIZE(TYPE)==1)return src;else{TYPE temp; CopyFast(Ptr(&temp), CPtr(&src), SIZE(TYPE)); return temp;}} // !! these functions must casted to 'Ptr', because without it, compiler may try to inline the 'memcpy' when it detects that both params are of the same type and in that case it will assume that they are memory aligned and crash will occur !!
    T1(TYPE)   void  Unaligned(TYPE   &dest, C TYPE &src) {if(SIZE(TYPE)==1)  dest=src;else{           CopyFast(Ptr(&dest), CPtr(&src), SIZE(TYPE));             }} // !! these functions must casted to 'Ptr', because without it, compiler may try to inline the 'memcpy' when it detects that both params are of the same type and in that case it will assume that they are memory aligned and crash will occur !!
    T1(TYPE)   void _Unaligned(Byte   &dest, C TYPE &src) {                   dest=Unaligned(src) ;                                                               }
+   T1(TYPE)   void _Unaligned(Short  &dest, C TYPE &src) {Unaligned(dest, (Short )Unaligned(src));                                                               }
    T1(TYPE)   void _Unaligned(UShort &dest, C TYPE &src) {Unaligned(dest, (UShort)Unaligned(src));                                                               }
    T1(TYPE)   void _Unaligned(Int    &dest, C TYPE &src) {Unaligned(dest, (Int   )Unaligned(src));                                                               }
    T1(TYPE)   void _Unaligned(UInt   &dest, C TYPE &src) {Unaligned(dest, (UInt  )Unaligned(src));                                                               }

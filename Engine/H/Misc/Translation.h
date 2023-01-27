@@ -133,6 +133,7 @@ CChar* TDamageL();
 CChar* TDamageR();
 CChar* TDark(TRANS_FORM form=TF_NEUTRAL);
 CChar* TDash();
+CChar* TDating();
 CChar* TDay();
 CChar* TDecember();
 CChar* TDecemberShort();

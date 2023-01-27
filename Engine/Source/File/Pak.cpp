@@ -146,6 +146,29 @@ Pak& Pak::del()
 }
 Pak::Pak() {zero();}
 /******************************************************************************/
+#pragma pack(push, 4)
+struct DateTimeI
+{
+   Byte second, // 0..59
+        minute, // 0..59
+        hour  , // 0..23
+        day   , // 1..31
+        month ; // 1..12
+   Int  year  ;
+
+   operator DateTime()C
+   {
+      DateTime dt;
+      dt.second=second;
+      dt.minute=minute;
+      dt.hour  =hour  ;
+      dt.day   =day   ;
+      dt.month =month ;
+      dt.year  =year  ;
+      return dt;
+   }
+};
+#pragma pack(pop)
 #pragma pack(push, 1) // use 1 because there are usually many files and any useless bytes contribute to bigger PAK headers, also we need the PAK headers hashes to always be the same, while gaps between members could result in undefined values which could make the hashes different
 struct PakFile4
 {
@@ -164,56 +187,56 @@ struct PakFile4
                  hour                ,
                  day                 ,
                  month               ;
-   U16           year                ;
+   Short         year                ;
 };
 struct PakFile3
 {
-   Byte     flag                ;
-   Int      name_offset         ,
-            parent              ,
-            children_offset     ,
-            children_num        ;
-   ULong    data_offset         ;
-   UInt     data_size           ,
-            data_size_compressed,
-            data_xxHash32       ;
-   DateTime modify_time_utc     ;
+   Byte      flag                ;
+   Int       name_offset         ,
+             parent              ,
+             children_offset     ,
+             children_num        ;
+   ULong     data_offset         ;
+   UInt      data_size           ,
+             data_size_compressed,
+             data_xxHash32       ;
+   DateTimeI modify_time_utc     ;
 };
 #pragma pack(pop)
 #pragma pack(push, 4)
 struct PakFile2
 {
-   Byte     flag                ;
-   Int      name_offset         ,
-            parent              ,
-            children_offset     ,
-            children_num        ;
-   ULong    data_offset         ;
-   UInt     data_size           ,
-            data_size_compressed,
-            data_crc32          ;
-   DateTime modify_time_utc     ;
+   Byte      flag                ;
+   Int       name_offset         ,
+             parent              ,
+             children_offset     ,
+             children_num        ;
+   ULong     data_offset         ;
+   UInt      data_size           ,
+             data_size_compressed,
+             data_crc32          ;
+   DateTimeI modify_time_utc     ;
 };
 struct PakFile1
 {
-   Byte     flag           ;
-   Int      name_offset    ,
-            parent         ,
-            children_offset,
-            children_num   ;
-   ULong    data_offset    ,
-            data_size      ;
-   DateTime modify_time_utc;
+   Byte      flag           ;
+   Int       name_offset    ,
+             parent         ,
+             children_offset,
+             children_num   ;
+   ULong     data_offset    ,
+             data_size      ;
+   DateTimeI modify_time_utc;
 };
 struct PakFile0
 {
-   Int      name_offset    ,
-            parent         ,
-            children_offset,
-            children_num   ,
-            data_offset    ,
-            data_size      ;
-   DateTime modify_time_utc;
+   Int       name_offset    ,
+             parent         ,
+             children_offset,
+             children_num   ,
+             data_offset    ,
+             data_size      ;
+   DateTimeI modify_time_utc;
 };
 #pragma pack(pop)
 Byte GetOldFlag(Byte flag)
@@ -441,7 +464,7 @@ PAK_LOAD Pak::loadHeader(File &f, Long *expected_size, Long *actual_size, MemPtr
                   Unaligned(dest.modify_time_utc.hour  , src.hour                );
                   Unaligned(dest.modify_time_utc.day   , src.day                 );
                   Unaligned(dest.modify_time_utc.month , src.month               );
-                 _Unaligned(dest.modify_time_utc.year  , src.year                );
+                  Unaligned(dest.modify_time_utc.year  , src.year                );
 
                   MAX(data_size, dest.data_offset+dest.data_size_compressed);
                }
@@ -480,7 +503,7 @@ PAK_LOAD Pak::loadHeader(File &f, Long *expected_size, Long *actual_size, MemPtr
                   Unaligned(dest.data_size           , src.data_size           );
                   Unaligned(dest.data_size_compressed, src.data_size_compressed);
                  _Unaligned(dest.data_xxHash64_32    ,                        0); // src.data_xxHash32 - this version used xxHash32
-                  Unaligned(dest.modify_time_utc     , src.modify_time_utc     );
+                            dest.modify_time_utc     = src.modify_time_utc      ;
 
                   MAX(data_size, dest.data_offset+dest.data_size_compressed);
                }

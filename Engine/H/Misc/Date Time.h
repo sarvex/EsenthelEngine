@@ -29,12 +29,12 @@ struct Date
 };
 struct DateTime
 {
-   Byte second, // 0..59
-        minute, // 0..59
-        hour  , // 0..23
-        day   , // 1..31
-        month ; // 1..12
-   Int  year  ;
+   Byte  second, // 0..59
+         minute, // 0..59
+         hour  , // 0..23
+         day   , // 1..31
+         month ; // 1..12
+   Short year  ;
 
    // get
    Bool valid      (                         )C; // if  current date time is valid

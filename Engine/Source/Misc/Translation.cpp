@@ -157,6 +157,7 @@ CChar* TDamageL() {return MLTC(u"DamageL", DE, u"AttackeL", FR, u"DommageL", IT,
 CChar* TDamageR() {return MLTC(u"DamageR", DE, u"AttackeR", FR, u"DommageD", IT, u"DannoD", SP, u"DañoD", PO, u"DanoC", PL, u"AtakP", RU, u"АтакаВ", JP, u"攻撃権", KO, u"오른쪽 공격", CN, u"攻击权", TH, u"โจมตีขวา");}
 CChar* TDark(TRANS_FORM form) {return MLTC(u"Dark", DE, u"Dunkel", FR, u"Sombre", IT, u"Scuro", SP, u"Oscuro", PO, u"Escuro", PL, (form==TF_MALE) ? u"Ciemny" : (form==TF_FEMALE) ? u"Ciemna" : u"Ciemno", RU, u"Темнота", JP, u"暗い", KO, u"어두운", CN, u"黑暗的", TH, u"มืด");}
 CChar* TDash() {return MLTC(u"Dash", DE, u"Sprint", FR, u"Sprint", IT, u"Sprint", SP, u"Pique", PO, u"Corrida", PL, u"Sprint", RU, u"Спринт", JP, u"ダッシュ", KO, u"대시", CN, u"短跑", TH, u"วิ่ง");}
+CChar* TDating() {return MLTC(u"Dating", DE, u"Partnersuche", FR, u"Sortir Ensemble", IT, u"Datazione", SP, u"Tener una cita", PO, u"Namoro", PL, u"Randki", RU, u"Знакомства", JP, u"デート", KO, u"데이트", CN, u"约会", TH, u"ออกเดท");}
 CChar* TDay() {return MLTC(u"Day", DE, u"Tag", FR, u"Jour", IT, u"Giorno", SP, u"Día", PO, u"Dia", PL, u"Dzień", RU, u"День", JP, u"日", KO, u"요일", CN, u"天", TH, u"วัน");}
 CChar* TDecember() {return MLTC(u"December", DE, u"Dezember", FR, u"Décembre", IT, u"Dicembre", SP, u"Diciembre", PO, u"Dezembro", PL, u"Grudzień", RU, u"Декабрь", JP, u"12月", KO, u"12월", CN, u"十二月", TH, u"ธันวาคม");}
 CChar* TDecemberShort() {return MLTC(u"Dec", DE, u"Dez", FR, u"Déc", IT, u"Dic", SP, u"Dic", PO, u"Dez", PL, u"Gru", RU, u"Дек", JP, u"12月", KO, u"12월", CN, u"十二月", TH, u"ธันวาคม");}
