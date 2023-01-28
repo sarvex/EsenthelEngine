@@ -327,6 +327,7 @@ CChar* TNoHeroSelected();
 CChar* TNoMapSelected();
 CChar* TNone(TRANS_FORM form=TF_NEUTRAL);
 CChar* TNormal(TRANS_FORM form=TF_NEUTRAL);
+CChar* TNotFound();
 CChar* TNovember();
 CChar* TNovemberShort();
 CChar* TNowUnderMaintenancePleaseTryAgainLater();
