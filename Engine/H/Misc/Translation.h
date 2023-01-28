@@ -229,6 +229,7 @@ CChar* TInvalidCountry();
 CChar* TInvalidEmail();
 CChar* TInvalidID();
 CChar* TInvalidName();
+CChar* TInvalidParameter();
 CChar* TInvalidPassword();
 CChar* TInvalidUser();
 CChar* TInvalidYouTubeVideoLink();
