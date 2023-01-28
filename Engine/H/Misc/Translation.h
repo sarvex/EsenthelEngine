@@ -373,6 +373,7 @@ CChar* TPostVerb();
 CChar* TPostHasBeenDeleted();
 CChar* TPostHasBeenReported();
 CChar* TPostLinkHasBeenCopiedToClipboard();
+CChar* TPostNotFound();
 CChar* TPotion();
 CChar* TPoweredBy();
 Str    TPoweredBy(CChar *name);
