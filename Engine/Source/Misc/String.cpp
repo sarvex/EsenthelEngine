@@ -4107,16 +4107,16 @@ void StrLibrary::create(C CMemPtr<Str> &strings, Bool case_sensitive, Bool paths
 
    REPA(cleaned)
    {
-      if(HasUnicode(cleaned[i]))_size+=SIZE(Char )*(cleaned[i].length()+1);
-      else                      _size+=SIZE(Char8)*(cleaned[i].length()+1);
+      if(HasWide(cleaned[i]))_size+=SIZE(Char )*(cleaned[i].length()+1);
+      else                   _size+=SIZE(Char8)*(cleaned[i].length()+1);
    }
   _elms=cleaned.elms();
    alloc();
    UInt data_pos=0;
    FREPA(cleaned) // go from start
    {
-      if(HasUnicode(cleaned[i])){Set((Char *)(_data+data_pos), cleaned[i], cleaned[i].length()+1); _index[i]=data_pos^SIGN_BIT; data_pos+=SIZE(Char )*(cleaned[i].length()+1);}
-      else                      {Set((Char8*)(_data+data_pos), cleaned[i], cleaned[i].length()+1); _index[i]=data_pos         ; data_pos+=SIZE(Char8)*(cleaned[i].length()+1);}
+      if(HasWide(cleaned[i])){Set((Char *)(_data+data_pos), cleaned[i], cleaned[i].length()+1); _index[i]=data_pos^SIGN_BIT; data_pos+=SIZE(Char )*(cleaned[i].length()+1);}
+      else                   {Set((Char8*)(_data+data_pos), cleaned[i], cleaned[i].length()+1); _index[i]=data_pos         ; data_pos+=SIZE(Char8)*(cleaned[i].length()+1);}
    }
 }
 StrLibrary::StrLibrary(                                                        )                {Zero(T);}
