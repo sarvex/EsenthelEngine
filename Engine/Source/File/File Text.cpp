@@ -145,23 +145,16 @@ FileText& FileText::putChar(Char8 c)
 {
    switch(_code)
    {
-      case ANSI  : _f.putByte  (              c ); break;
-      case UTF_16: _f.putUShort(Char8To16Fast(c)); break; // we can assume that Str was already initialized
+      case ANSI  : _f.putByte  (          c ); break;
+      case UTF_16: _f.putUShort(Char8To16(c)); break;
 
       case UTF_8      :
       case UTF_8_NAKED:
       {
         _put='\0'; // MULTI1 must be in range 0xDC00..0xDFFF, but here we have Char8 that will never convert to that range, so just clear any '_put'
-      #if 0 // can use this if there's direct 1:1 mapping for 'Char8To16Fast'
          U8 u=c;
          if(u<=0x7F)_f.putByte (u);
          else       _f.putMulti(Byte(0xC0 | (u>>6)), Byte(0x80 | (u&0x3F)));
-      #else
-         U16 u=Char8To16Fast(c);
-         if(u<=0x07F)_f.putByte (u);else
-         if(u<=0x7FF)_f.putMulti(Byte(0xC0 | (u>> 6)), Byte(0x80 | ( u    &0x3F)));else
-                     _f.putMulti(Byte(0xE0 | (u>>12)), Byte(0x80 | ((u>>6)&0x3F)), Byte(0x80 | (u&0x3F)));
-      #endif
       }break;
    }
    return T;
@@ -170,8 +163,8 @@ FileText& FileText::putChar(Char c)
 {
    switch(_code)
    {
-      case ANSI  : _f.putByte  (Char16To8Fast(c)); break; // we can assume that Str was already initialized
-      case UTF_16: _f.putUShort(              c ); break;
+      case ANSI  : _f.putByte  (Char16To8(c)); break;
+      case UTF_16: _f.putUShort(          c ); break;
 
       case UTF_8      :
       case UTF_8_NAKED:

@@ -168,8 +168,8 @@ UInt CharFlagFast(Char  a, Char  b) {return CharFlagFast(a)|CharFlagFast(b);}
 
 INLINE Char  CaseDownFast(Char  c) {return _CaseDown[Unsigned(c)];}
 INLINE Char  CaseUpFast  (Char  c) {return _CaseUp  [Unsigned(c)];}
-INLINE Char8 CaseDownFast(Char8 c) {return  Char16To8Fast(CaseDownFast(Char8To16Fast(c)));}
-INLINE Char8 CaseUpFast  (Char8 c) {return  Char16To8Fast(CaseUpFast  (Char8To16Fast(c)));}
+INLINE Char8 CaseDownFast(Char8 c) {return  Char16To8(CaseDownFast(Char8To16(c)));}
+INLINE Char8 CaseUpFast  (Char8 c) {return  Char16To8(CaseUpFast  (Char8To16(c)));}
 
 CHAR_TYPE CharTypeFast(Char c) // don't INLINE because it's not a simple function
 {
@@ -179,7 +179,7 @@ CHAR_TYPE CharTypeFast(Char c) // don't INLINE because it's not a simple functio
    if(  f& CHARF_SIGN                                   )return CHART_SIGN ;
                                                          return CHART_NONE ;
 }
-INLINE CHAR_TYPE CharTypeFast(Char8 c) {return CharTypeFast(Char8To16Fast(c));}
+INLINE CHAR_TYPE CharTypeFast(Char8 c) {return CharTypeFast(Char8To16(c));}
 
 INLINE Bool IsDigit(CChar8 c) {return c>='0' && c<='9';}
 INLINE Bool IsDigit(CChar  c) {return c>='0' && c<='9';}
