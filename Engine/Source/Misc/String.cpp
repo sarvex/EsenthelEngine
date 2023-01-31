@@ -3702,7 +3702,7 @@ Str8& Str8::operator+=(C Str &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      FREP(s.length()+1)_d[length()+i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
+      Copy16To8(_d.data()+length(), s(), s.length()+1);
      _length+=s.length();
    }
    return T;
@@ -3712,7 +3712,7 @@ Str& Str::operator+=(C Str8 &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      FREP(s.length()+1)_d[length()+i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
+      Copy8To16(_d.data()+length(), s(), s.length()+1);
      _length+=s.length();
    }
    return T;
@@ -3782,7 +3782,7 @@ Str8& Str8::operator+=(C BStr &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      FREPA(s)_d[length()+i]=Char16To8Fast(s()[i]); // () to avoid range checks
+      Copy16To8(_d.data()+length(), s(), s.length());
      _length+=s.length();
       /*if(_d.elms())*/_d[length()]='\0'; // "if" not needed since we already know 's.is'
    }
