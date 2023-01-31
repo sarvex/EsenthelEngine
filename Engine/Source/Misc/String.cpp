@@ -3067,18 +3067,18 @@ Str ::Str (Char    c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]= 
 Str8::Str8(Char    c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=Char16To8(c); _d[1]='\0';       }}
 Str ::Str (Char8   c   ) {if(_length=  (c!='\0')){_d.setNum(length()+1); _d[0]=Char8To16(c); _d[1]='\0';       }}
 #endif
-Str8::Str8(CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t,  _d.elms());}}
-Str ::Str (CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t,  _d.elms());}}
-Str8::Str8(CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t,  _d.elms());}}
-Str8::Str8(C wchar_t *t) {if(_length=  Length(t)){_d.setNum(length()+1);_Set      (_d.data(),   t,  _d.elms());}}
-Str ::Str (C wchar_t *t) {if(_length=  Length(t)){_d.setNum(length()+1);_Set      (_d.data(),   t,  _d.elms());}}
-Str ::Str (CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t,  _d.elms());}}
-Str8::Str8(C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(),  _d.elms());}}
-Str ::Str (C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(),  _d.elms());}}
-Str8::Str8(C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREPA(    _d  )_d[i]=Char16To8Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
-Str ::Str (C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREPA(    _d  )_d[i]=Char8To16Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
-Str8::Str8(C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREP (length())_d[i]=Char16To8Fast(s()[i]); _d[length()]='\0';}} // don't use 'Set' to allow copying '\0' chars in the middle, borrowed string may not be null-terminated, use () to avoid range checks
-Str ::Str (C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(), length()  );           _d[length()]='\0';}} // don't use 'Set' to allow copying '\0' chars in the middle, borrowed string may not be null-terminated
+Str8::Str8(CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t, _d.elms());}}
+Str ::Str (CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); CopyFastN(_d.data(),   t, _d.elms());}}
+Str8::Str8(CChar  *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t, _d.elms());}}
+Str8::Str8(C wchar_t *t) {if(_length=  Length(t)){_d.setNum(length()+1);_Set      (_d.data(),   t, _d.elms());}}
+Str ::Str (C wchar_t *t) {if(_length=  Length(t)){_d.setNum(length()+1);_Set      (_d.data(),   t, _d.elms());}}
+Str ::Str (CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t, _d.elms());}}
+Str8::Str8(C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(), _d.elms());}}
+Str ::Str (C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(), _d.elms());}}
+Str8::Str8(C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); Copy16To8(_d.data(), s(), _d.elms());}}
+Str ::Str (C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); Copy8To16(_d.data(), s(), _d.elms());}}
+Str8::Str8(C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); Copy16To8(_d.data(), s(),  length()); _d[length()]='\0';}} // borrowed string may not be null-terminated
+Str ::Str (C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(),  length()); _d[length()]='\0';}} // borrowed string may not be null-terminated
 Str8::Str8(Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 Str ::Str (Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 

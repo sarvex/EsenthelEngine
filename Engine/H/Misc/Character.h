@@ -44,8 +44,8 @@ Bool WhiteChar(Char c); // if char is a white char - ' ', '\t', '\n', '\r'
 constexpr Byte   Unsigned(Char8 x) {return x;}
 constexpr UShort Unsigned(Char  x) {return x;}
 
-constexpr Char8 Char16To8(Char  c) {return          c ;} // convert 16-bit to  8-bit character
-constexpr Char  Char8To16(Char8 c) {return Unsigned(c);} // convert  8-bit to 16-bit character
+constexpr Char8 Char16To8(Char  c) {return          c&0xFF;} // convert 16-bit to  8-bit character
+constexpr Char  Char8To16(Char8 c) {return Unsigned(c)    ;} // convert  8-bit to 16-bit character
 
 Char  CaseDown(Char  c); // return lower case 'c'
 Char8 CaseDown(Char8 c); // return lower case 'c'
