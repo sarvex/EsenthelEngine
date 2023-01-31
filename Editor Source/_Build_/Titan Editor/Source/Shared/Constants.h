@@ -53,7 +53,6 @@ extern const cchar8 *ElmNameMesh,
              *ElmNamePhys;
 extern const MESH_FLAG EditMeshFlagAnd, // TanBin are not needed in Edit because they're always re-created if needed
                 GameMeshFlagAnd;
-extern const    ImagePtr    ImageNull;
 extern const MaterialPtr MaterialNull;
 extern bool          IsServer;
 extern ReadWriteSync WorldAreaSync;

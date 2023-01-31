@@ -91,7 +91,6 @@ const cchar8 *ElmNameMesh="mesh",
 const MESH_FLAG EditMeshFlagAnd=~(VTX_DUP|EDGE_ALL|FACE_NRM|ADJ_ALL|VTX_TAN_BIN), // TanBin are not needed in Edit because they're always re-created if needed
                 GameMeshFlagAnd=~(VTX_DUP|EDGE_ALL|FACE_NRM|ADJ_ALL);
 
-const    ImagePtr    ImageNull;
 const MaterialPtr MaterialNull;
 
 bool          IsServer=false;
