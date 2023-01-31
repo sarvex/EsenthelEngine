@@ -1320,7 +1320,7 @@ void KeyboardKey::eat()C
       Kb.k.k=KB_NONE;
    }
 }
-void KeyboardClass::eat(Char8 c) {eat(Char8To16Fast(c));}
+void KeyboardClass::eat(Char8 c) {eat(Char8To16(c));}
 void KeyboardClass::eat(Char  c)
 {
    if(T.k(c) && c)

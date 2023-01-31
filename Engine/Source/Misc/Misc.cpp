@@ -3690,7 +3690,7 @@ struct QChar
    
    ushort  unicode()C {return _;}
    ushort& unicode()  {return (ushort&)_;} ASSERT(SIZE(Char)==SIZE(ushort));
-   Char8   toAscii()C {return Char16To8Fast(_);} // we can assume that Str was already initialized
+   Char8   toAscii()C {return Char16To8(_);}
 
    bool operator==(C QChar &c)C {return _==c._;}
    bool operator!=(C QChar &c)C {return _!=c._;}

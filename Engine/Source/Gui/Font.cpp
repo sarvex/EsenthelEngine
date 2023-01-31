@@ -354,7 +354,7 @@ Font& Font::replace(Char src, Char dest, Bool permanent)
          }
       }else
       {
-         Char8 c=Char16To8Fast(src); if(Char8To16Fast(c)!=src)c=0; // take 8-bit char, set zero if there's no 1:1 mapping, we can assume that Str was already initialized
+         Char8 c=Char16To8(src); if(Char8To16(c)!=src)c=0; // take 8-bit char, set zero if there's no 1:1 mapping
          if(c  )_char_to_font[Unsigned(c  )]=dest_i;
          if(src)_wide_to_font[Unsigned(src)]=dest_i;
       }
@@ -369,7 +369,7 @@ void Font::setRemap()
    Int invalid[6]={-1, -1, -1, -1, -1, -1}, space=-1;
    REPA(_chrs)if(Char w=_chrs[i].chr)
    {
-      Char8 c=Char16To8Fast(w); if(Char8To16Fast(c)!=w)c=0; // take 8-bit char, set zero if there's no 1:1 mapping, we can assume that Str was already initialized
+      Char8 c=Char16To8(w); if(Char8To16(c)!=w)c=0; // take 8-bit char, set zero if there's no 1:1 mapping
       if(c)_char_to_font[Unsigned(c)]=i;
       if(w)_wide_to_font[Unsigned(w)]=i;
       switch(w)

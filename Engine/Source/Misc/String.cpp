@@ -184,11 +184,6 @@ INLINE CHAR_TYPE CharTypeFast(Char8 c) {return CharTypeFast(Char8To16(c));}
 INLINE Bool IsDigit(CChar8 c) {return c>='0' && c<='9';}
 INLINE Bool IsDigit(CChar  c) {return c>='0' && c<='9';}
 
-INLINE Bool EqualCSFast(Char8 a, Char8 b) {return a==b;}
-INLINE Bool EqualCSFast(Char8 a, Char  b) {return Char8To16Fast(a)==b;}
-INLINE Bool EqualCSFast(Char  a, Char8 b) {return a==Char8To16Fast(b);}
-INLINE Bool EqualCSFast(Char  a, Char  b) {return a==b;}
-
 INLINE Bool EqualCIFast(Char8 a, Char8 b) {return CharOrderFast(a)==CharOrderFast(b);}
 INLINE Bool EqualCIFast(Char8 a, Char  b) {return CharOrderFast(a)==CharOrderFast(b);}
 INLINE Bool EqualCIFast(Char  a, Char8 b) {return CharOrderFast(a)==CharOrderFast(b);}
@@ -199,9 +194,6 @@ INLINE Bool CharWholeWord(Char8 c, WHOLE_WORD mask) {return FlagOn(CharFlagFast(
 /******************************************************************************/
 Int CharOrder(Char8 c) {I(); return CharOrderFast(c);}
 Int CharOrder(Char  c) {I(); return CharOrderFast(c);}
-
-Char  Char8To16(Char8 c) {I(); return Char8To16Fast(c);}
-Char8 Char16To8(Char  c) {I(); return Char16To8Fast(c);}
 
 UInt CharFlag(Char  c) {I(); return CharFlagFast(c);}
 UInt CharFlag(Char8 c) {I(); return CharFlagFast(c);}
@@ -243,11 +235,6 @@ Int Compare(Char8 a, Char8 b, Bool case_sensitive) {return case_sensitive ? Comp
 Int Compare(Char8 a, Char  b, Bool case_sensitive) {return case_sensitive ? CompareCS(a, b) : CompareCI(a, b);}
 Int Compare(Char  a, Char8 b, Bool case_sensitive) {return case_sensitive ? CompareCS(a, b) : CompareCI(a, b);}
 Int Compare(Char  a, Char  b, Bool case_sensitive) {return case_sensitive ? CompareCS(a, b) : CompareCI(a, b);}
-
-Bool EqualCS(Char8 a, Char8 b) {I(); return EqualCSFast(a, b);}
-Bool EqualCS(Char8 a, Char  b) {I(); return EqualCSFast(a, b);}
-Bool EqualCS(Char  a, Char8 b) {I(); return EqualCSFast(a, b);}
-Bool EqualCS(Char  a, Char  b) {I(); return EqualCSFast(a, b);}
 
 Bool EqualCI(Char8 a, Char8 b) {I(); return EqualCIFast(a, b);}
 Bool EqualCI(Char8 a, Char  b) {I(); return EqualCIFast(a, b);}
@@ -329,7 +316,7 @@ Char8* Set(Char8 *dest, CChar *src, Int dest_elms)
    Char8 *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(I(); --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
      *dest='\0';
    }
    return ret;
@@ -339,7 +326,7 @@ Char* Set(Char *dest, CChar8 *src, Int dest_elms)
    Char *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(I(); --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
      *dest='\0';
    }
    return ret;
@@ -359,7 +346,7 @@ Char8* _Set(Char8 *dest, C wchar_t *src, Int dest_elms)
    Char8 *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(I(); --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
      *dest='\0';
    }
    return ret;
@@ -435,7 +422,7 @@ Char* Append(Char *dest, CChar8 *src, Int dest_elms)
       dest     +=length;
       if(dest_elms>1 && src)
       {
-         for(I(); --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
+         for(; --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
          *dest='\0';
       }
    }
@@ -451,7 +438,7 @@ Char8* Append(Char8 *dest, CChar *src, Int dest_elms)
       dest     +=length;
       if(dest_elms>1 && src)
       {
-         for(I(); --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+         for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
          *dest='\0';
       }
    }
@@ -504,17 +491,16 @@ Int Compare(CChar8 *a, CChar *b, Bool case_sensitive)
 {
    if(a && b)
    {
-      I();
       if(case_sensitive)
          for(; ; a++, b++)
       {
-         auto a_order=Unsigned(Char8To16Fast(*a)),
-              b_order=Unsigned(              *b );
+         auto a_order=Unsigned(Char8To16(*a)),
+              b_order=Unsigned(          *b );
          if(a_order<b_order)return -1;
          if(a_order>b_order)return +1;
          if(!*a            )return  0;
       }else
-         for(; ; a++, b++)
+         for(I(); ; a++, b++)
       {
          Int a_order=CharOrderFast(*a),
              b_order=CharOrderFast(*b);
@@ -531,17 +517,16 @@ Int Compare(CChar *a, CChar8 *b, Bool case_sensitive)
 {
    if(a && b)
    {
-      I();
       if(case_sensitive)
          for(; ; a++, b++)
       {
-         auto a_order=Unsigned(              *a ),
-              b_order=Unsigned(Char8To16Fast(*b));
+         auto a_order=Unsigned(          *a ),
+              b_order=Unsigned(Char8To16(*b));
          if(a_order<b_order)return -1;
          if(a_order>b_order)return +1;
          if(!*a            )return  0;
       }else
-         for(; ; a++, b++)
+         for(I(); ; a++, b++)
       {
          Int a_order=CharOrderFast(*a),
              b_order=CharOrderFast(*b);
@@ -639,12 +624,11 @@ Int ComparePath(CChar *a, CChar8 *b, Bool case_sensitive)
 {
    if(a && b)
    {
-      I();
       if(case_sensitive)
          for(; ; a++, b++)
       {
-         auto a_order=Unsigned(             (*a)),
-              b_order=Unsigned(Char8To16Fast(*b));
+         auto a_order=Unsigned(         (*a)),
+              b_order=Unsigned(Char8To16(*b));
          if(  a_order!=b_order)
          {
             Bool as=IsSlash(a[0]),
@@ -664,7 +648,7 @@ Int ComparePath(CChar *a, CChar8 *b, Bool case_sensitive)
          }
          if(!*a)return 0;
       }else
-         for(; ; a++, b++)
+         for(I(); ; a++, b++)
       {
          Int a_order=CharOrderFast(*a),
              b_order=CharOrderFast(*b);
@@ -694,12 +678,11 @@ Int ComparePath(CChar8 *a, CChar *b, Bool case_sensitive)
 {
    if(a && b)
    {
-      I();
       if(case_sensitive)
          for(; ; a++, b++)
       {
-         auto a_order=Unsigned(Char8To16Fast(*a)),
-              b_order=Unsigned(             (*b));
+         auto a_order=Unsigned(Char8To16(*a)),
+              b_order=Unsigned(         (*b));
          if(  a_order!=b_order)
          {
             Bool as=IsSlash(a[0]),
@@ -719,7 +702,7 @@ Int ComparePath(CChar8 *a, CChar *b, Bool case_sensitive)
          }
          if(!*a)return 0;
       }else
-         for(; ; a++, b++)
+         for(I(); ; a++, b++)
       {
          Int a_order=CharOrderFast(*a),
              b_order=CharOrderFast(*b);
@@ -1044,7 +1027,7 @@ Bool Starts(CChar8 *t, CChar8 *start, Bool case_sensitive, WHOLE_WORD whole_word
             if(whole_word && CharWholeWord(last_start, whole_word))return !CharWholeWord(t[0], whole_word);
             return true;
          }
-         if(!EqualCSFast(*t, *start))return false; last_start=*start;
+         if(!EqualCS(*t, *start))return false; last_start=*start;
       }else
          for(; ; t++, start++)
       {
@@ -1073,7 +1056,7 @@ Bool Starts(CChar *t, CChar8 *start, Bool case_sensitive, WHOLE_WORD whole_word)
             if(whole_word && CharWholeWord(last_start, whole_word))return !CharWholeWord(t[0], whole_word);
             return true;
          }
-         if(!EqualCSFast(*t, *start))return false; last_start=*start;
+         if(!EqualCS(*t, *start))return false; last_start=*start;
       }else
          for(; ; t++, start++)
       {
@@ -1102,7 +1085,7 @@ Bool Starts(CChar8 *t, CChar *start, Bool case_sensitive, WHOLE_WORD whole_word)
             if(whole_word && CharWholeWord(last_start, whole_word))return !CharWholeWord(t[0], whole_word);
             return true;
          }
-         if(!EqualCSFast(*t, *start))return false; last_start=*start;
+         if(!EqualCS(*t, *start))return false; last_start=*start;
       }else
          for(; ; t++, start++)
       {
@@ -1131,7 +1114,7 @@ Bool Starts(CChar *t, CChar *start, Bool case_sensitive, WHOLE_WORD whole_word)
             if(whole_word && CharWholeWord(last_start, whole_word))return !CharWholeWord(t[0], whole_word);
             return true;
          }
-         if(!EqualCSFast(*t, *start))return false; last_start=*start;
+         if(!EqualCS(*t, *start))return false; last_start=*start;
       }else
          for(; ; t++, start++)
       {
@@ -1165,13 +1148,13 @@ Bool StartsSkipSpace(CChar *t, CChar *start, Int &match_length, Bool case_sensit
          }
          last_start=*start;
          Char c=*t;
-         if(!EqualCSFast(c, last_start))
+         if(!EqualCS(c, last_start))
          {
             if(c==' ')for(t++; ; t++)
             {
                c=*t;
                if(c==' ')continue;
-               if(!EqualCSFast(c, last_start)
+               if(!EqualCS(c, last_start)
                || CharWholeWord(last_t, whole_word_sub) && CharWholeWord(c, whole_word_sub))break; // if both are chars, then we can't merge
                goto next_cs;
             }
@@ -3092,16 +3075,16 @@ Str ::Str (C wchar_t *t) {if(_length=  Length(t)){_d.setNum(length()+1);_Set    
 Str ::Str (CChar8 *t   ) {if(_length=  Length(t)){_d.setNum(length()+1); Set      (_d.data(),   t,  _d.elms());}}
 Str8::Str8(C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(),  _d.elms());}}
 Str ::Str (C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(),  _d.elms());}}
-Str8::Str8(C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); I(); FREPA(    _d  )_d[i]=Char16To8Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
-Str ::Str (C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); I(); FREPA(    _d  )_d[i]=Char8To16Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
-Str8::Str8(C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); I(); FREP (length())_d[i]=Char16To8Fast(s()[i]); _d[length()]='\0';}} // don't use 'Set' to allow copying '\0' chars in the middle, borrowed string may not be null-terminated, use () to avoid range checks
+Str8::Str8(C Str  &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREPA(    _d  )_d[i]=Char16To8Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
+Str ::Str (C Str8 &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREPA(    _d  )_d[i]=Char8To16Fast(s()[i]);                   }} // don't use 'Set' to allow copying '\0' chars in the middle
+Str8::Str8(C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); FREP (length())_d[i]=Char16To8Fast(s()[i]); _d[length()]='\0';}} // don't use 'Set' to allow copying '\0' chars in the middle, borrowed string may not be null-terminated, use () to avoid range checks
 Str ::Str (C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFastN(_d.data(), s(), length()  );           _d[length()]='\0';}} // don't use 'Set' to allow copying '\0' chars in the middle, borrowed string may not be null-terminated
 Str8::Str8(Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 Str ::Str (Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 
 Str8::Str8(C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length());            _d[length()]='\0';}} // always set NUL manually because 's' can be null
 Str ::Str (C Str  &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length());            _d[length()]='\0';}} // always set NUL manually because 's' can be null
-Str ::Str (C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); I(); FREP(length())_d[i]=Char8To16Fast(s()[i]); _d[length()]='\0';}} // always set NUL manually because 's' can be null, don't use 'Set' to allow copying '\0' chars in the middle, use () to avoid range checks
+Str ::Str (C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); FREP(length())_d[i]=Char8To16Fast(s()[i]); _d[length()]='\0';}} // always set NUL manually because 's' can be null, don't use 'Set' to allow copying '\0' chars in the middle, use () to avoid range checks
 
 Str8::Str8(SByte i) : Str8(TextInt(    Int(i), NoTemp(TempChar8<256>()).c)) {}
 Str ::Str (SByte i) : Str (TextInt(    Int(i), NoTemp(TempChar8<256>()).c)) {}
@@ -3491,7 +3474,7 @@ Str8& Str8::operator=(C Str &s)
 {
    if(!s.is())clear();else
    {
-      Int l=(_length=s.length())+1; _d.minNumDiscard(l); I(); FREP(l)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
+      Int l=(_length=s.length())+1; _d.minNumDiscard(l); FREP(l)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
    }
    return T;
 }
@@ -3499,7 +3482,7 @@ Str& Str::operator=(C Str8 &s)
 {
    if(!s.is())clear();else
    {
-      Int l=(_length=s.length())+1; _d.minNumDiscard(l); I(); FREP(l)_d[i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
+      Int l=(_length=s.length())+1; _d.minNumDiscard(l); FREP(l)_d[i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
    }
    return T;
 }
@@ -3571,7 +3554,7 @@ Str8& Str8::operator=(C BStr &s)
    if(!s.is())clear();else
    {
      _d.minNumDiscard((_length=s.length())+1);
-      I(); FREPA(T)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle and because 'BStr' may not end with '\0', () to avoid range checks
+      FREPA(T)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle and because 'BStr' may not end with '\0', () to avoid range checks
       /*if(_d.elms())*/_d[length()]='\0'; // "if" not needed since we already know 's.is'
    }
    return T;
@@ -3719,7 +3702,7 @@ Str8& Str8::operator+=(C Str &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      I(); FREP(s.length()+1)_d[length()+i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
+      FREP(s.length()+1)_d[length()+i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
      _length+=s.length();
    }
    return T;
@@ -3729,7 +3712,7 @@ Str& Str::operator+=(C Str8 &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      I(); FREP(s.length()+1)_d[length()+i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
+      FREP(s.length()+1)_d[length()+i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle - Set(_d.data()+length(), s(), s.length()+1)
      _length+=s.length();
    }
    return T;
@@ -3799,7 +3782,7 @@ Str8& Str8::operator+=(C BStr &s)
    if(s.is())
    {
       Reserve(T, s.length());
-      I(); FREPA(s)_d[length()+i]=Char16To8Fast(s()[i]); // () to avoid range checks
+      FREPA(s)_d[length()+i]=Char16To8Fast(s()[i]); // () to avoid range checks
      _length+=s.length();
       /*if(_d.elms())*/_d[length()]='\0'; // "if" not needed since we already know 's.is'
    }
@@ -4233,11 +4216,11 @@ BStr& BStr::extend(Int l) {if(!_custom)_length+=l; return T;}
 
 Bool BStr::operator==(CChar   c)C {return _length==1 && _d[0]==          c ;}
 Bool BStr::operator==(CChar8  c)C {return _length==1 && _d[0]==Char8To16(c);}
-Bool BStr::operator==(CChar  *t)C {if(t){     FREP(_length)if(_d[i]!=              *t++ )return false; return *t=='\0';} return _length==0;}
-Bool BStr::operator==(CChar8 *t)C {if(t){I(); FREP(_length)if(_d[i]!=Char8To16Fast(*t++))return false; return *t=='\0';} return _length==0;}
-Bool BStr::operator==(C Str  &s)C {if(_length!=s.length())return false;      FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
-Bool BStr::operator==(C Str8 &s)C {if(_length!=s.length())return false; I(); FREP(_length)if(_d[i]!=Char8To16Fast(s()[i]))return false; return true;}
-Bool BStr::operator==(C BStr &s)C {if(_length!=s.length())return false;      FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
+Bool BStr::operator==(CChar  *t)C {if(t){FREP(_length)if(_d[i]!=              *t++ )return false; return *t=='\0';} return _length==0;}
+Bool BStr::operator==(CChar8 *t)C {if(t){FREP(_length)if(_d[i]!=Char8To16Fast(*t++))return false; return *t=='\0';} return _length==0;}
+Bool BStr::operator==(C Str  &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
+Bool BStr::operator==(C Str8 &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=Char8To16Fast(s()[i]))return false; return true;}
+Bool BStr::operator==(C BStr &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
 
 BStr& BStr::operator=(C BStr &src)
 {
@@ -4305,26 +4288,26 @@ static void InitStr()
 #endif
 
    // Char 8<->16 conversions
+#if 0
+   SetMem(_Char16To8, '?', SIZE(_Char16To8));
+   REP(256)
    {
-      SetMem(_Char16To8, '?', SIZE(_Char16To8));
-      REP(256)
-      {
-         Char8 c=i;
-      #if WINDOWS
-         wchar_t w;
-         MultiByteToWideChar(CP_ACP, 0, &c, 1, &w, 1);
-         // many 'c' characters can point to the same 'w', however we need "Char16To8(Char8To16(c))==c", so the characters that get repeated, we need to store them as original, these are:
-         if(w=='?'             // occurs in Chinese Traditional
-         || Unsigned(w)==12539 // occurs in Japanese
-         )w=c;
-        _Char8To16[Unsigned(c)]=w;
-        _Char16To8[Unsigned(w)]=c;
-      #else // on other platforms accented characters use UTF8 (one accented character may use multiple chars, so single char of value >=128 does not have a code page like on Windows), just use direct copy, this is needed for 'CreateShortcut' Linux version where UTF8 is saved using 'Str'
-        _Char8To16[Unsigned(c)]=c;
-        _Char16To8[Unsigned(c)]=c;
-      #endif
-      }
+      Char8 c=i;
+   #if WINDOWS
+      wchar_t w;
+      MultiByteToWideChar(CP_ACP, 0, &c, 1, &w, 1);
+      // many 'c' characters can point to the same 'w', however we need "Char16To8(Char8To16(c))==c", so the characters that get repeated, we need to store them as original, these are:
+      if(w=='?'             // occurs in Chinese Traditional
+      || Unsigned(w)==12539 // occurs in Japanese
+      )w=c;
+     _Char8To16[Unsigned(c)]=w;
+     _Char16To8[Unsigned(w)]=c;
+   #else // on other platforms accented characters use UTF8 (one accented character may use multiple chars, so single char of value >=128 does not have a code page like on Windows), just use direct copy, this is needed for 'CreateShortcut' Linux version where UTF8 is saved using 'Str'
+     _Char8To16[Unsigned(c)]=c;
+     _Char16To8[Unsigned(c)]=c;
+   #endif
    }
+#endif
 
    // Case Up/Down
    {

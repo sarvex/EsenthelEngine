@@ -1975,7 +1975,7 @@ File& File::_getStr1(Str &s) // warning: this must handle having '\0' chars in t
       s.reserve(length);
       Char8 *temp=(Char8*)s._d.data(); getN(temp, length); // we can re-use the string memory because it uses Char which has 2x Char8 capacity
       s._d[s._length=length]=0; // because we're processing from the end, then start with the end too
-      REP(length)s._d[i]=Char8To16Fast(temp[i]); // need to process from the end to not overwrite the source, we can assume that Str was already initialized
+      REP(length)s._d[i]=Char8To16(temp[i]); // need to process from the end to not overwrite the source
    }
 
    if(ok())return T;
@@ -1997,7 +1997,7 @@ File& File::_getStr1(Str8 &s) // warning: this must handle having '\0' chars in 
       if(left()<length*SIZEI(Char))goto length_too_long;
       s.reserve(length);
       Memt<Char> temp; temp.setNum(length); getN(temp.data(), length);
-      FREPA(temp)s._d[i]=Char16To8Fast(temp[i]); s._d[s._length=length]=0; // we can assume that Str was already initialized
+      FREPA(temp)s._d[i]=Char16To8(temp[i]); s._d[s._length=length]=0;
    }else
    if(length)
    {
@@ -2026,7 +2026,7 @@ File& File::_getStr1(Char8 *t, Int t_elms)
       {
          Int read=Min(length, t_elms-1);
          Memt<Char> temp; temp.setNum(read); getN(temp.data(), read);
-         FREP(read)t[i]=Char16To8Fast(temp[i]); t[read]=0; // we can assume that Str was already initialized
+         FREP(read)t[i]=Char16To8(temp[i]); t[read]=0;
          length-=read;
       }
       length*=SIZE(Char);
@@ -2073,7 +2073,7 @@ File& File::_getStr1(Char *t, Int t_elms)
          Int read=Min(length, t_elms-1);
          Char8 *temp=(Char8*)t; getN(temp, read); // we can re-use the char array memory because it uses Char which has 2x Char8 capacity
          t[read]=0; // because we're processing from the end, then start with the end too
-         REP(read)t[i]=Char8To16Fast(temp[i]); // need to process from the end to not overwrite the source, we can assume that Str was already initialized
+         REP(read)t[i]=Char8To16(temp[i]); // need to process from the end to not overwrite the source
          length-=read;
       }
    }
@@ -2096,8 +2096,8 @@ File& File::_putStr(C Str8 &s) // warning: this must handle having '\0' chars in
    putUInt(unicode ? length^SIGN_BIT : length);
    if(length)
    {
-      if(unicode){Memt<Char> temp; temp.setNum(length); FREPAO(temp)=Char8To16Fast(s[i]); putN(temp.data(), length);} // we can assume that Str was already initialized
-      else       {                                                                        putN(        s(), length);}
+      if(unicode){Memt<Char> temp; temp.setNum(length); FREPAO(temp)=Char8To16(s[i]); putN(temp.data(), length);}
+      else       {                                                                    putN(        s(), length);}
    }
    return T;
 }
@@ -2109,8 +2109,8 @@ File& File::_putStr(C Str &s) // warning: this must handle having '\0' chars in 
    putUInt(unicode ? length^SIGN_BIT : length);
    if(length)
    {
-      if(unicode){                                                                         putN(        s(), length);}
-      else       {Memt<Char8> temp; temp.setNum(length); FREPAO(temp)=Char16To8Fast(s[i]); putN(temp.data(), length);} // we can assume that Str was already initialized
+      if(unicode){                                                                     putN(        s(), length);}
+      else       {Memt<Char8> temp; temp.setNum(length); FREPAO(temp)=Char16To8(s[i]); putN(temp.data(), length);}
    }
    return T;
 }
@@ -2125,7 +2125,7 @@ File& File::_getStr(Str8 &s) // warning: this must handle having '\0' chars in t
       {
          s.reserve(length);
          Memt<Char> temp; temp.setNum(length); getN(temp.data(), length);
-         FREPA(temp)s._d[i]=Char16To8Fast(temp[i]); // we can assume that Str was already initialized
+         FREPA(temp)s._d[i]=Char16To8(temp[i]);
          s._d[s._length=length]=0;
       }
    }else
@@ -2161,7 +2161,7 @@ File& File::_getStr(Str &s)                                // warning: this must
       {
          s.reserve(length);
          Memt<Char8> temp; temp.setNum(length); getN(temp.data(), length);
-         FREPA(temp)s._d[i]=Char8To16Fast(temp[i]); // we can assume that Str was already initialized
+         FREPA(temp)s._d[i]=Char8To16(temp[i]);
          s._d[s._length=length]=0;
       }
    }
@@ -2189,7 +2189,7 @@ File& File::_getStr(Char *t, Int t_elms)
          Int read=Min(length, t_elms-1);
          Char8 *temp=(Char8*)t; getN(temp, read); // we can re-use the char array memory because it uses Char which has 2x Char8 capacity
          t[read]=0; // because we're processing from the end, then start with the end too
-         REP(read)t[i]=Char8To16Fast(temp[i]); // need to process from the end to not overwrite the source, we can assume that Str was already initialized
+         REP(read)t[i]=Char8To16(temp[i]); // need to process from the end to not overwrite the source
          length-=read;
       }
    }

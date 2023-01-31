@@ -62,10 +62,10 @@ Bool Equal(Char  a, Char8 b, Bool case_sensitive=false); // if characters are th
 Bool Equal(Char8 a, Char  b, Bool case_sensitive=false); // if characters are the same
 Bool Equal(Char8 a, Char8 b, Bool case_sensitive=false); // if characters are the same
 
-Bool EqualCS(Char  a, Char  b); // if characters are the same, case sensitive
-Bool EqualCS(Char  a, Char8 b); // if characters are the same, case sensitive
-Bool EqualCS(Char8 a, Char  b); // if characters are the same, case sensitive
-Bool EqualCS(Char8 a, Char8 b); // if characters are the same, case sensitive
+constexpr Bool EqualCS(Char8 a, Char8 b) {return           a ==          b ;} // if characters are the same, case sensitive
+constexpr Bool EqualCS(Char8 a, Char  b) {return Char8To16(a)==          b ;} // if characters are the same, case sensitive
+constexpr Bool EqualCS(Char  a, Char8 b) {return           a ==Char8To16(b);} // if characters are the same, case sensitive
+constexpr Bool EqualCS(Char  a, Char  b) {return           a ==          b ;} // if characters are the same, case sensitive
 
 Char RemoveAccent(Char c); // convert accented character to one without an accent, for example RemoveAccent('ą') -> 'a', if character is not accented then it will be returned without any modifications, RemoveAccent('a') -> 'a'
 

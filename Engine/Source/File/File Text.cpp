@@ -259,7 +259,7 @@ Char FileText::getChar()
            _f.skip(-1); // otherwise, go back the extra byte that we've read, because we want to get only 1 char at this time
          }
       #endif
-         return Char8To16Fast(c[0]); // we can assume that Str was already initialized
+         return Char8To16(c[0]);
       }break;
 
       case UTF_8      :
@@ -412,7 +412,7 @@ FileText& FileText::getAll(Str &s)
                      goto utf_16; // we've converted to 16-bit so process as UTF-16
                   }
                #endif
-                 *t++=Char8To16Fast(c); // we can assume that Str was already initialized
+                 *t++=Char8To16(c);
                }
             }
             s._length=t-s._d.data();

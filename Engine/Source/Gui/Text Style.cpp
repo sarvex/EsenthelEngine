@@ -359,8 +359,8 @@ struct TextSrc
 
    void fix() {if(!t16 && !t8)t16=u"";} // don't allow null so we can assume "t8 || t16" in 'c' 'n', prefer 't16' to avoid 'Char8To16Fast'
 
-   Char c()C {return t8 ? Char8To16Fast(*  t8) : *  t16;} // assumes that Str was already initialized and "t8 || t16"
-   Char n()  {return t8 ? Char8To16Fast(*++t8) : *++t16;} // assumes that Str was already initialized and "t8 || t16"
+   Char c()C {return t8 ? Char8To16(*  t8) : *  t16;} // assumes that "t8 || t16"
+   Char n()  {return t8 ? Char8To16(*++t8) : *++t16;} // assumes that "t8 || t16"
 
    void operator+=(Int i) {if(t8)t8+=i;else t16+=i;} // assumes that "t8 || t16"
    void operator-=(Int i) {if(t8)t8-=i;else t16-=i;} // assumes that "t8 || t16"
