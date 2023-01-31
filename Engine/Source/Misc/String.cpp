@@ -60,9 +60,6 @@ const Str8 S8;
 
 const Char8 Digits16[]={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-Char  _Char8To16[  256];
-Char8 _Char16To8[65536];
-
 static U16 CharOrder8 [  256],
            CharOrder16[65536];
 

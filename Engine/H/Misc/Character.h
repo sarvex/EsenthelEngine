@@ -44,8 +44,8 @@ Bool WhiteChar(Char c); // if char is a white char - ' ', '\t', '\n', '\r'
 constexpr Byte   Unsigned(Char8 x) {return x;}
 constexpr UShort Unsigned(Char  x) {return x;}
 
-Char8 Char16To8(Char  c); // convert 16-bit to  8-bit character
-Char  Char8To16(Char8 c); // convert  8-bit to 16-bit character
+constexpr Char8 Char16To8(Char  c) {return          c ;} // convert 16-bit to  8-bit character
+constexpr Char  Char8To16(Char8 c) {return Unsigned(c);} // convert  8-bit to 16-bit character
 
 Char  CaseDown(Char  c); // return lower case 'c'
 Char8 CaseDown(Char8 c); // return lower case 'c'
@@ -123,18 +123,12 @@ const Char  CharBullet    =u'•',
             CharPermil    =u'‰'; // 1/1000
 /******************************************************************************/
 #if EE_PRIVATE
-extern Char  _Char8To16[];
-extern Char8 _Char16To8[];
-
 extern U16 _CharFlag[];
 
 extern const Char8 Digits16[]; // '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
 
-INLINE Char  Char8To16Fast(Char8 c) {return WINDOWS ? _Char8To16[Unsigned(c)] : Char(Unsigned(c));} // only Windows uses code pages, other platforms always have direct mapping
-INLINE Char8 Char16To8Fast(Char  c) {return           _Char16To8[Unsigned(c)]                    ;}
-
-INLINE UInt CharFlagFast(Char  c) {return _CharFlag[Unsigned(c)];}
-INLINE UInt CharFlagFast(Char8 c) {return  CharFlagFast(Char8To16Fast(c));}
+INLINE UInt CharFlagFast(Char  c) {return _CharFlag    [Unsigned (c)];}
+INLINE UInt CharFlagFast(Char8 c) {return  CharFlagFast(Char8To16(c));}
 
 Bool Safe(Char c); // if character is     safe
 Bool Skip(Char c); // if character can be skipped

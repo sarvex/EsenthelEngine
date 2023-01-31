@@ -101,7 +101,7 @@ struct Expr : BStr
    Flt   asFlt  (Compiler &compiler);
    Dbl   asDbl  (Compiler &compiler);
    Char  asChar (Compiler &compiler);
-   Char8 asChar8(Compiler &compiler) {return Char16To8Fast(asChar(compiler));} // we can assume that Str was already initialized
+   Char8 asChar8(Compiler &compiler) {return Char16To8(asChar(compiler));}
    Str   asText (Compiler &compiler); // may have '\0' characters inside
    U64   asRaw  (Compiler &compiler); // use U64 to fit all types of variables
 
