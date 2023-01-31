@@ -317,6 +317,7 @@ CChar* TNeedMoreTime();
 CChar* TNever();
 CChar* TNew();
 CChar* TNewMap();
+CChar* TNewPassword();
 CChar* TNews();
 CChar* TNext();
 CChar* TNextItem();
