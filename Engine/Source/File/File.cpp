@@ -1497,72 +1497,48 @@ Bool File::put(CPtr data, Int size)
 /******************************************************************************/
 File& File::putStr(CChar8 *t)
 {
-   Int  length =Length    (t);
-   Bool unicode=HasUnicode(t);
-
-   cmpIntV(unicode ? -length : length);
-   if(length)
-   {
-      if(unicode)
-      {
-         Memt<Char> temp; temp.setNum(length+1); Set(temp.data(), t, temp.elms());
-         putN(temp.data(), length);
-      }else
-      {
-         putN(t, length);
-      }
-   }
-   return T;
-}
-File& File::putStr(CChar *t)
-{
-   Int  length =Length    (t);
-   Bool unicode=HasUnicode(t);
-
-   cmpIntV(unicode ? -length : length);
-   if(length)
-   {
-      if(unicode)
-      {
-         putN(t, length);
-      }else
-      {
-         Memt<Char8> temp; temp.setNum(length+1); Set(temp.data(), t, temp.elms());
-         putN(temp.data(), length);
-      }
-   }
+   Int length=Length(t);
+   cmpIntV(length);
+   if(length)putN(t, length);
    return T;
 }
 File& File::putStr(C Str8 &s) // keep this function to allow having '\0' chars in the middle
 {
-   Int  length =s.length();
-   Bool unicode=HasUnicode(s);
-
-   cmpIntV(unicode ? -length : length);
+   Int length=s.length();
+   cmpIntV(length);
+   if(length)putN(s(), length);
+   return T;
+}
+/******************************************************************************/
+File& File::putStr(CChar *t)
+{
+   Int  length=Length (t);
+   Bool wide  =HasWide(t);
+   cmpIntV(wide ? -length : length);
    if(length)
    {
-      if(unicode){Memt<Char> temp; temp.setNum(length); FREPAO(temp)=Char8To16Fast(s[i]); putN(temp.data(), length);} // we can assume that Str was already initialized
-      else       {                                                                        putN(        s(), length);}
+      if(wide){                                                                               putN(t          , length);}
+      else    {Memt<Char8> temp; temp.setNum(length); Copy16To8(temp.data(), t, temp.elms()); putN(temp.data(), length);}
    }
    return T;
 }
 File& File::putStr(C Str &s) // keep this function to allow having '\0' chars in the middle
 {
-   Int  length =s.length();
-   Bool unicode=HasUnicode(s);
-
-   cmpIntV(unicode ? -length : length);
+   Int  length=s.length();
+   Bool wide  =HasWide(s);
+   cmpIntV(wide ? -length : length);
    if(length)
    {
-      if(unicode){                                                                         putN(        s(), length);}
-      else       {Memt<Char8> temp; temp.setNum(length); FREPAO(temp)=Char16To8Fast(s[i]); putN(temp.data(), length);} // we can assume that Str was already initialized
+      if(wide){                                                                                 putN(        s(), length);}
+      else    {Memt<Char8> temp; temp.setNum(length); Copy16To8(temp.data(), s(), temp.elms()); putN(temp.data(), length);}
    }
    return T;
 }
+/******************************************************************************/
 File& File::skipStr()
 {
    Int length; decIntV(length);
-   if( length<0){CHS(length); length*=SIZE(Char );} // unicode
+   if( length<0){CHS(length); length*=SIZE(Char );} // wide
    else                       length*=SIZE(Char8);
    if(left()<length) // length too long
    {
@@ -1570,17 +1546,19 @@ File& File::skipStr()
    }else skip(length);
    return T;
 }
+/******************************************************************************/
 File& File::getStr(Str8 &s) // warning: this must handle having '\0' chars in the middle
 {
    s.clear(); // always 'clear' even for 'reserve' to avoid copying old data in 'setNum'
    Int length; decIntV(length);
-   if( length<0) // unicode
+   if( length<0) // wide
    {
       CHS(length);
       if(left()<length*SIZEI(Char))goto length_too_long;
       s.reserve(length);
       Memt<Char> temp; temp.setNum(length); getN(temp.data(), length);
-      FREPA(temp)s._d[i]=Char16To8Fast(temp[i]); s._d[s._length=length]=0; // we can assume that Str was already initialized
+      Copy16To8(s._d.data(), temp.data(), length);
+      s._d[s._length=length]=0; // because we're processing from the start, then write end at the end
    }else
    if(length)
    {
@@ -1602,7 +1580,7 @@ File& File::getStr(Str &s) // warning: this must handle having '\0' chars in the
 {
    s.clear(); // always 'clear' even for 'reserve' to avoid copying old data in 'setNum'
    Int length; decIntV(length);
-   if( length<0) // unicode
+   if( length<0) // wide
    {
       CHS(length);
       if(left()<length*SIZEI(Char))goto length_too_long;
@@ -1614,8 +1592,8 @@ File& File::getStr(Str &s) // warning: this must handle having '\0' chars in the
       if(left()<length*SIZEI(Char8))goto length_too_long;
       s.reserve(length);
       Char8 *temp=(Char8*)s._d.data(); getN(temp, length); // we can re-use the string memory because it uses Char which has 2x Char8 capacity
-      s._d[s._length=length]=0; // because we're processing from the end, then start with the end too
-      REP(length)s._d[i]=Char8To16Fast(temp[i]); // need to process from the end to not overwrite the source, we can assume that Str was already initialized
+      s._d[s._length=length]=0; // because we're processing from the end, then start with the end
+      Copy8To16(s._d.data(), temp, length);
    }
 
    if(ok())return T;
@@ -1630,7 +1608,7 @@ error:
 File& File::getStr(Char8 *t, Int t_elms)
 {
    Int length; decIntV(length);
-   if( length<0) // unicode
+   if( length<0) // wide
    {
       CHS(length);
       if(left()<length*SIZEI(Char))goto length_too_long;
@@ -1638,7 +1616,8 @@ File& File::getStr(Char8 *t, Int t_elms)
       {
          Int read=Min(length, t_elms-1);
          Memt<Char> temp; temp.setNum(read); getN(temp.data(), read);
-         FREP(read)t[i]=Char16To8Fast(temp[i]); t[read]=0; // we can assume that Str was already initialized
+         Copy16To8(t, temp.data(), read);
+         t[read]=0; // because we're processing from the start, then write end at the end
          length-=read;
       }
       length*=SIZE(Char);
@@ -1666,7 +1645,7 @@ error:
 File& File::getStr(Char *t, Int t_elms)
 {
    Int length; decIntV(length);
-   if( length<0) // unicode
+   if( length<0) // wide
    {
       CHS(length);
       if(left()<length*SIZEI(Char))goto length_too_long;
@@ -1684,8 +1663,8 @@ File& File::getStr(Char *t, Int t_elms)
       {
          Int read=Min(length, t_elms-1);
          Char8 *temp=(Char8*)t; getN(temp, read); // we can re-use the char array memory because it uses Char which has 2x Char8 capacity
-         t[read]=0; // because we're processing from the end, then start with the end too
-         REP(read)t[i]=Char8To16Fast(temp[i]); // need to process from the end to not overwrite the source, we can assume that Str was already initialized
+         t[read]=0; // because we're processing from the end, then start with the end
+         Copy8To16(t, temp, read);
          length-=read;
       }
    }

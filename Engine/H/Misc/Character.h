@@ -69,8 +69,12 @@ Bool EqualCS(Char8 a, Char8 b); // if characters are the same, case sensitive
 
 Char RemoveAccent(Char c); // convert accented character to one without an accent, for example RemoveAccent('ą') -> 'a', if character is not accented then it will be returned without any modifications, RemoveAccent('a') -> 'a'
 
-inline Bool HasUnicode(Char  c) {return Unsigned(c)>=128;} // if character is a unicode character
-inline Bool HasUnicode(Char8 c) {return Unsigned(c)>=128;} // if character is a unicode character
+inline Bool HasUnicode(Char  c) {return Unsigned(c)>127;} // if character is a unicode character
+inline Bool HasUnicode(Char8 c) {return Unsigned(c)>127;} // if character is a unicode character
+#if EE_PRIVATE
+inline Bool HasWide(Char  c) {return Unsigned(c)>255;} // if character is a wide character
+inline Bool HasWide(Char8 c) {return false          ;} // if character is a wide character
+#endif
 /******************************************************************************/
 const Char8 CharNull      ='\0',
             CharTab       ='\t',

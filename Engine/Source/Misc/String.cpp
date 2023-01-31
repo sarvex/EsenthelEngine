@@ -314,6 +314,8 @@ Bool HasUnicode(CChar  *t) {if(t)for(; *t; )if(HasUnicode(*t++))return true; ret
 Bool HasUnicode(CChar8 *t) {if(t)for(; *t; )if(HasUnicode(*t++))return true; return false;}
 Bool HasUnicode(C Str  &s) {FREPA(s)        if(HasUnicode(s[i]))return true; return false;} // keep this function to allow having '\0' chars in the middle
 Bool HasUnicode(C Str8 &s) {FREPA(s)        if(HasUnicode(s[i]))return true; return false;} // keep this function to allow having '\0' chars in the middle
+Bool HasWide   (CChar  *t) {if(t)for(; *t; )if(HasWide   (*t++))return true; return false;}
+Bool HasWide   (C Str  &s) {FREPA(s)        if(HasWide   (s[i]))return true; return false;} // keep this function to allow having '\0' chars in the middle
 /******************************************************************************/
 Char8* Set(Char8 *dest, CChar8 *src, Int dest_elms)
 {
@@ -4638,7 +4640,7 @@ Font& Font::removeAccent(Bool permanent)
 #if APPLE
 static Bool HasUnicode(NSString *str)
 {
-   if(str)REP([str length])if(Unsigned([str characterAtIndex:i])>=128)return true;
+   if(str)REP([str length])if(Unsigned([str characterAtIndex:i])>127)return true;
    return false;
 }
 /******************************************************************************/

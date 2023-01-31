@@ -805,6 +805,7 @@ private:
 };
 /******************************************************************************/
 DECLARE_CACHE(Image, Images, ImagePtr); // 'Images' cache storing 'Image' objects which can be accessed by 'ImagePtr' pointer
+extern const ImagePtr ImageNull;
 /******************************************************************************/
 struct ImageHeader
 {
@@ -865,8 +866,6 @@ Vec      CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert im
 #if EE_PRIVATE
 #define MAX_MIP_MAPS 32
 INLINE Bool CheckMipNum(Int mips) {return InRange(mips, MAX_MIP_MAPS+1);} // +1 because this checks number of elements
-
-extern const ImagePtr ImageNull;
 
 // pointers to class method
 typedef Flt  (Image::*PtrImagePixel    )(Flt x, Flt y,        Bool clamp)C;

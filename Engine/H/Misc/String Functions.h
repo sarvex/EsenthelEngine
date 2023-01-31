@@ -22,8 +22,13 @@ inline Bool Is        (CChar8 *t) {return t && t[0];} // if  text has any data
        Bool HasUnicode(C Str  &s);                    // if  text contains unicode characters
        Bool HasUnicode(C Str8 &s);                    // if  text contains unicode characters
 #if EE_PRIVATE
-Int    SetReturnLength(Char  *dest, CChar  *src, Int dest_elms); // set text, return written length, 'dest_elms'=maximum available elements in the 'dest' pointer
-Int    SetReturnLength(Char8 *dest, CChar8 *src, Int dest_elms); // set text, return written length, 'dest_elms'=maximum available elements in the 'dest' pointer
+       Bool HasWide(CChar  *t);                // if text contains wide characters
+inline Bool HasWide(CChar8 *t) {return false;} // if text contains wide characters
+       Bool HasWide(C Str  &s);                // if text contains wide characters
+inline Bool HasWide(C Str8 &s) {return false;} // if text contains wide characters
+
+Int  SetReturnLength(Char  *dest, CChar  *src, Int dest_elms); // set text, return written length, 'dest_elms'=maximum available elements in the 'dest' pointer
+Int  SetReturnLength(Char8 *dest, CChar8 *src, Int dest_elms); // set text, return written length, 'dest_elms'=maximum available elements in the 'dest' pointer
 
 void MergePath(Char  *dest, CChar  *first, CChar  *second, Int dest_elms); // merge paths: dest=first; dest.tailSlash(true); dest+=second;
 void MergePath(Char8 *dest, CChar8 *first, CChar8 *second, Int dest_elms); // merge paths: dest=first; dest.tailSlash(true); dest+=second;
