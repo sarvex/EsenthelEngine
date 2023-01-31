@@ -345,6 +345,7 @@ CChar* TOptional(TRANS_FORM form=TF_NEUTRAL);
 CChar* TOptions();
 CChar* TPainted();
 CChar* TPassword();
+CChar* TPasswordChanged();
 CChar* TPetHealth();
 CChar* TPetLevelUp();
 CChar* TPetScreen();
