@@ -731,30 +731,26 @@ Download& Download::create(C Str &url, C CMemPtr<HTTPParam> &params, MemPtr<HTTP
        C HTTPParam &param=params[i]; switch(param.type)
          {
             case HTTP_POST:
-            {
-             C Str8 &value=UTF8(param.value);
-               prefix+=S8+"--"+boundary+"\r\n";
-               prefix+="Content-Disposition: form-data; name=\"";
-               AppendName(prefix, param.name);
-               prefix+="\"\r\n";
-               prefix+="Content-Type: form-data\r\n";
-               prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
-               prefix+="\r\n";
-               prefix+=value;
-               prefix+="\r\n";
-            }break;
-
             case HTTP_POST_BIN:
             {
-             C Str &value=param.value;
                prefix+=S8+"--"+boundary+"\r\n";
                prefix+="Content-Disposition: form-data; name=\"";
                AppendName(prefix, param.name);
                prefix+="\"\r\n";
                prefix+="Content-Type: form-data\r\n";
-               prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
-               prefix+="\r\n";
-               prefix.appendRaw(value);
+               if(param.type==HTTP_POST)
+               {
+                C Str8 &value=UTF8(param.value);
+                  prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
+                  prefix+="\r\n";
+                  prefix+=value;
+               }else
+               {
+                C Str &value=param.value;
+                  prefix+=S8+"Content-Length: "+value.length()+"\r\n"; // data length
+                  prefix+="\r\n";
+                  prefix+=value;
+               }
                prefix+="\r\n";
             }break;
          }
