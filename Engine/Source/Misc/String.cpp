@@ -316,7 +316,7 @@ Char8* Set(Char8 *dest, CChar *src, Int dest_elms)
    Char8 *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char16To8(*src++);
      *dest='\0';
    }
    return ret;
@@ -326,7 +326,7 @@ Char* Set(Char *dest, CChar8 *src, Int dest_elms)
    Char *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(; --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char8To16(*src++);
      *dest='\0';
    }
    return ret;
@@ -346,7 +346,7 @@ Char8* _Set(Char8 *dest, C wchar_t *src, Int dest_elms)
    Char8 *ret=dest;
    if(dest && dest_elms>0)
    {
-      if(src)for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+      if(src)for(; --dest_elms && *src; )*dest++=Char16To8(*src++);
      *dest='\0';
    }
    return ret;
@@ -422,7 +422,7 @@ Char* Append(Char *dest, CChar8 *src, Int dest_elms)
       dest     +=length;
       if(dest_elms>1 && src)
       {
-         for(; --dest_elms && *src; )*dest++=Char8To16Fast(*src++);
+         for(; --dest_elms && *src; )*dest++=Char8To16(*src++);
          *dest='\0';
       }
    }
@@ -438,7 +438,7 @@ Char8* Append(Char8 *dest, CChar *src, Int dest_elms)
       dest     +=length;
       if(dest_elms>1 && src)
       {
-         for(; --dest_elms && *src; )*dest++=Char16To8Fast(*src++);
+         for(; --dest_elms && *src; )*dest++=Char16To8(*src++);
          *dest='\0';
       }
    }
@@ -1306,14 +1306,14 @@ Bool StartsPath(CChar *t, CChar *start)
    return false;
 }
 /****************************************************************************/
-Bool Contains(C Str8 &src, Char8 c) {                                                 FREPA(src)if(src()[i]==c)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check
-Bool Contains(C Str  &src, Char  c) {                                                 FREPA(src)if(src()[i]==c)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check
-Bool Contains(C Str  &src, Char8 c) {Char  a=Char8To16Fast(c);                        FREPA(src)if(src()[i]==a)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check, we can assume that Str was already initialized
-Bool Contains(C Str8 &src, Char  c) {Char8 a=Char16To8Fast(c); if(Char8To16Fast(a)==c)FREPA(src)if(src()[i]==a)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check, we can assume that Str was already initialized, 'Char16To8Fast' may not support all characters, so we have to check if it's a direct mapping in both ways
-Bool Contains(CChar8 *src, Char8 c) {                                                 if(src)for(;;){Char8 s=*src++; if(!s)break; if(s==c)return true;} return false;} // break before checking to prevent returning true for '\0' chars
-Bool Contains(CChar  *src, Char  c) {                                                 if(src)for(;;){Char  s=*src++; if(!s)break; if(s==c)return true;} return false;} // break before checking to prevent returning true for '\0' chars
-Bool Contains(CChar  *src, Char8 c) {Char  a=Char8To16Fast(c);                        if(src)for(;;){Char  s=*src++; if(!s)break; if(s==a)return true;} return false;} // break before checking to prevent returning true for '\0' chars, we can assume that Str was already initialized
-Bool Contains(CChar8 *src, Char  c) {Char8 a=Char16To8Fast(c); if(Char8To16Fast(a)==c)if(src)for(;;){Char8 s=*src++; if(!s)break; if(s==a)return true;} return false;} // break before checking to prevent returning true for '\0' chars, we can assume that Str was already initialized, 'Char16To8Fast' may not support all characters, so we have to check if it's a direct mapping in both ways
+Bool Contains(C Str8 &src, Char8 c) {                                         FREPA(src)if(src()[i]==c)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check
+Bool Contains(C Str  &src, Char  c) {                                         FREPA(src)if(src()[i]==c)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check
+Bool Contains(C Str  &src, Char8 c) {Char  a=Char8To16(c);                    FREPA(src)if(src()[i]==a)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check
+Bool Contains(C Str8 &src, Char  c) {Char8 a=Char16To8(c); if(Char8To16(a)==c)FREPA(src)if(src()[i]==a)return true; return false;} // keep this function to allow having '\0' chars in the middle, () avoids range check, 'Char16To8' may not support all characters, so we have to check if it's a direct mapping in both ways
+Bool Contains(CChar8 *src, Char8 c) {                                         if(src)for(;;){Char8 s=*src++; if(!s)break; if(s==c)return true;} return false;} // break before checking to prevent returning true for '\0' chars
+Bool Contains(CChar  *src, Char  c) {                                         if(src)for(;;){Char  s=*src++; if(!s)break; if(s==c)return true;} return false;} // break before checking to prevent returning true for '\0' chars
+Bool Contains(CChar  *src, Char8 c) {Char  a=Char8To16(c);                    if(src)for(;;){Char  s=*src++; if(!s)break; if(s==a)return true;} return false;} // break before checking to prevent returning true for '\0' chars
+Bool Contains(CChar8 *src, Char  c) {Char8 a=Char16To8(c); if(Char8To16(a)==c)if(src)for(;;){Char8 s=*src++; if(!s)break; if(s==a)return true;} return false;} // break before checking to prevent returning true for '\0' chars, 'Char16To8' may not support all characters, so we have to check if it's a direct mapping in both ways
 /****************************************************************************/
 Bool Contains(CChar8 *src, CChar8 *t, Bool case_sensitive, WHOLE_WORD whole_word)
 {
@@ -4216,11 +4216,11 @@ BStr& BStr::extend(Int l) {if(!_custom)_length+=l; return T;}
 
 Bool BStr::operator==(CChar   c)C {return _length==1 && _d[0]==          c ;}
 Bool BStr::operator==(CChar8  c)C {return _length==1 && _d[0]==Char8To16(c);}
-Bool BStr::operator==(CChar  *t)C {if(t){FREP(_length)if(_d[i]!=              *t++ )return false; return *t=='\0';} return _length==0;}
-Bool BStr::operator==(CChar8 *t)C {if(t){FREP(_length)if(_d[i]!=Char8To16Fast(*t++))return false; return *t=='\0';} return _length==0;}
-Bool BStr::operator==(C Str  &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
-Bool BStr::operator==(C Str8 &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=Char8To16Fast(s()[i]))return false; return true;}
-Bool BStr::operator==(C BStr &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=              s()[i] )return false; return true;}
+Bool BStr::operator==(CChar  *t)C {if(t){FREP(_length)if(_d[i]!=          *t++ )return false; return *t=='\0';} return _length==0;}
+Bool BStr::operator==(CChar8 *t)C {if(t){FREP(_length)if(_d[i]!=Char8To16(*t++))return false; return *t=='\0';} return _length==0;}
+Bool BStr::operator==(C Str  &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=          s()[i] )return false; return true;}
+Bool BStr::operator==(C Str8 &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=Char8To16(s()[i]))return false; return true;}
+Bool BStr::operator==(C BStr &s)C {if(_length!=s.length())return false; FREP(_length)if(_d[i]!=          s()[i] )return false; return true;}
 
 BStr& BStr::operator=(C BStr &src)
 {
@@ -4438,7 +4438,7 @@ static void InitStr()
       for(Int i=1; i<Elms(CharOrder16); i++)if(!CharOrder16[i])CharOrder16[i]=o++; // if the character doesn't have order set, then set (skip 0 '\0')
 
       // Char8
-      REPAO(CharOrder8)=CharOrderFast(Char8To16Fast(i));
+      REPAO(CharOrder8)=CharOrderFast(Char8To16(i)); // !! CAN'T USE "CharOrderFast(Char8(i))" BECAUSE THAT GETS 'CharOrder8' WHICH WE'RE SETTING NOW !!
    }
 
    // Char Flag
