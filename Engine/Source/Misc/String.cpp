@@ -3082,9 +3082,9 @@ Str ::Str (C BStr &s   ) {if(_length=s.length( )){_d.setNum(length()+1); CopyFas
 Str8::Str8(Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 Str ::Str (Bool    b   ) {   _length=         1 ; _d.setNum(         2); _d[0]=(b ? '1' : '0'); _d[1]='\0';}
 
-Str8::Str8(C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length());            _d[length()]='\0';}} // always set NUL manually because 's' can be null
-Str ::Str (C Str  &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length());            _d[length()]='\0';}} // always set NUL manually because 's' can be null
-Str ::Str (C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); FREP(length())_d[i]=Char8To16Fast(s()[i]); _d[length()]='\0';}} // always set NUL manually because 's' can be null, don't use 'Set' to allow copying '\0' chars in the middle, use () to avoid range checks
+Str8::Str8(C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length()); _d[length()]='\0';}} // always set NUL manually because 's' can be null
+Str ::Str (C Str  &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); CopyFastN(_d.data(), s(), length()); _d[length()]='\0';}} // always set NUL manually because 's' can be null
+Str ::Str (C Str8 &s, UInt extra_length) {_length=s.length(); if(Int size=NewStrSize(length(), extra_length)){_d.setNum(size); Copy8To16(_d.data(), s(), length()); _d[length()]='\0';}} // always set NUL manually because 's' can be null
 
 Str8::Str8(SByte i) : Str8(TextInt(    Int(i), NoTemp(TempChar8<256>()).c)) {}
 Str ::Str (SByte i) : Str (TextInt(    Int(i), NoTemp(TempChar8<256>()).c)) {}
@@ -3474,7 +3474,7 @@ Str8& Str8::operator=(C Str &s)
 {
    if(!s.is())clear();else
    {
-      Int l=(_length=s.length())+1; _d.minNumDiscard(l); FREP(l)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
+      Int l=(_length=s.length())+1; _d.minNumDiscard(l); Copy16To8(_d.data(), s(), l);
    }
    return T;
 }
@@ -3482,7 +3482,7 @@ Str& Str::operator=(C Str8 &s)
 {
    if(!s.is())clear();else
    {
-      Int l=(_length=s.length())+1; _d.minNumDiscard(l); FREP(l)_d[i]=Char8To16Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle
+      Int l=(_length=s.length())+1; _d.minNumDiscard(l); Copy8To16(_d.data(), s(), l);
    }
    return T;
 }
@@ -3554,7 +3554,7 @@ Str8& Str8::operator=(C BStr &s)
    if(!s.is())clear();else
    {
      _d.minNumDiscard((_length=s.length())+1);
-      FREPA(T)_d[i]=Char16To8Fast(s()[i]); // don't use 'Set' to allow copying '\0' chars in the middle and because 'BStr' may not end with '\0', () to avoid range checks
+      Copy16To8(_d.data(), s(), length()); // 'BStr' may not end with '\0'
       /*if(_d.elms())*/_d[length()]='\0'; // "if" not needed since we already know 's.is'
    }
    return T;
