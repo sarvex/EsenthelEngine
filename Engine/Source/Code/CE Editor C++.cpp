@@ -1826,7 +1826,7 @@ Bool CodeEditor::generateXcodeProj()
    Str str, add; Int pos;
    U64 file_id=0xEEC0C0A000000000;
    Node<BuildFileElm> tree;
-   Memc<XcodeFile   > mac_assets, ios_images, mac_frameworks, ios_frameworks, mac_dylibs;
+   Memc<XcodeFile   > mac_assets, ios_assets, ios_images, mac_frameworks, ios_frameworks, mac_dylibs;
    FileText src; if(!src.read("Code/Apple/project.pbxproj"))return ErrorRead("Code/Apple/project.pbxproj"); src.getAll(str);
 
    build_project_file=build_path+"Project.xcodeproj";
@@ -1842,10 +1842,20 @@ Bool CodeEditor::generateXcodeProj()
              dirs_ios=GetFiles(cei().appDirsiOS());
 
    // embed engine data
-   if(cei().appEmbedEngineData())
+   Int embed_engine=cei().appEmbedEngineData();
+   if( embed_engine) // Mac
    {
-      mac_assets.New().name="Assets/EngineEmbed.pak"; if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true))return false; // this is Mac only
+      if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true))return false;
+      mac_assets.New().name="Assets/EngineEmbed.pak";
    }
+   // iOS
+   if(embed_engine==1) // 2D only
+   {
+      FCreateDirs(build_path+"Assets/EmbedMobile");
+      Str src=bin_path+"Mobile/Engine.pak", dest=build_path+"Assets/EmbedMobile/Engine.pak";
+      if(!CreateEngineEmbedPak(src, dest, false))return false;
+         ios_assets.New().name="Assets/EmbedMobile/Engine.pak"; 
+   }else ios_assets.New().name=   bin_path+"Mobile/Engine.pak";
 
    // app data
    Bool exists; if(!CreateAppPak(build_path+"Assets/App.pak", exists))return false;
@@ -2047,7 +2057,6 @@ Bool CodeEditor::generateXcodeProj()
    str=Replace(str, "path = \"Engine Mac.a\""          , UnixPath(S+"path = \""+bin_path+"Engine Mac.a\""          ));
    str=Replace(str, "path = \"Engine iOS.a\""          , UnixPath(S+"path = \""+bin_path+"Engine iOS.a\""          ));
    str=Replace(str, "path = \"Engine iOS Simulator.a\"", UnixPath(S+"path = \""+bin_path+"Engine iOS Simulator.a\""));
-   str=Replace(str, "path = \"Engine.pak\""            , UnixPath(S+"path = \""+bin_path+"Mobile/Engine.pak\""     ));
    str=Replace(str, "/* ESENTHEL FRAMEWORK DIRS */"    , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
    str=Replace(str, "/* ESENTHEL LIBRARY DIRS */"      , S+'"'+CString(S+'"'+UnixPath(bin_path)+'"')+"\",");
    str=Replace(str, "PRODUCT_BUNDLE_IDENTIFIER = \"\";", S+"PRODUCT_BUNDLE_IDENTIFIER = \""+CString(app_package       )+"\";");
@@ -2116,6 +2125,13 @@ Bool CodeEditor::generateXcodeProj()
       file.build=file_id++;
       add+=S+"\t\t"+XcodeID(file.file)+" /* "+file.name+" */ = {isa = PBXFileReference; lastKnownFileType = file; name = \""+CString(GetBase(file.name))+"\"; path = \""+CString(UnixPath(file.name))+"\"; sourceTree = \"<group>\"; };\n";
    }
+   REPA(ios_assets)
+   {
+      XcodeFile &file=ios_assets[i];
+      file.file =file_id++;
+      file.build=file_id++;
+      add+=S+"\t\t"+XcodeID(file.file)+" /* "+file.name+" */ = {isa = PBXFileReference; lastKnownFileType = file; name = \""+CString(GetBase(file.name))+"\"; path = \""+CString(UnixPath(file.name))+"\"; sourceTree = \"<group>\"; };\n";
+   }
    REPA(ios_images)
    {
       XcodeFile &file=ios_images[i];
@@ -2158,6 +2174,11 @@ Bool CodeEditor::generateXcodeProj()
       XcodeFile &file=mac_assets[i];
       add+=S+"\t\t"+XcodeID(file.build)+" /* Mac: "+file.name+" */ = {isa = PBXBuildFile; fileRef = "+XcodeID(file.file)+" /* "+file.name+" */; };\n";
    }
+   REPA(ios_assets)
+   {
+      XcodeFile &file=ios_assets[i];
+      add+=S+"\t\t"+XcodeID(file.build)+" /* iOS: "+file.name+" */ = {isa = PBXBuildFile; fileRef = "+XcodeID(file.file)+" /* "+file.name+" */; };\n";
+   }
    REPA(ios_images)
    {
       XcodeFile &file=ios_images[i];
@@ -2187,13 +2208,13 @@ Bool CodeEditor::generateXcodeProj()
    REPA(mac_frameworks)
    {
       XcodeFile &file=mac_frameworks[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
    }
    REPA(mac_dylibs)
    {
       XcodeFile &file=mac_dylibs[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
@@ -2203,7 +2224,7 @@ Bool CodeEditor::generateXcodeProj()
    REPA(ios_frameworks)
    {
       XcodeFile &file=ios_frameworks[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
@@ -2213,19 +2234,19 @@ Bool CodeEditor::generateXcodeProj()
    REPA(mac_frameworks)
    {
       XcodeFile &file=mac_frameworks[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.file)+" /* "+file.name+" */,\n";
    }
    REPA(mac_dylibs)
    {
       XcodeFile &file=mac_dylibs[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.file)+" /* "+file.name+" */,\n";
    }
    REPA(ios_frameworks)
    {
       XcodeFile &file=ios_frameworks[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.file)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
@@ -2236,7 +2257,7 @@ Bool CodeEditor::generateXcodeProj()
    REPA(mac_dylibs)
    {
       XcodeFile &file=mac_dylibs[i];
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.copy)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
@@ -2271,6 +2292,11 @@ Bool CodeEditor::generateXcodeProj()
       XcodeFile &file=mac_assets[i];
       add+=S+"\t\t\t\t"+XcodeID(file.file)+" /* "+file.name+" */,\n";
    }
+   REPA(ios_assets)
+   {
+      XcodeFile &file=ios_assets[i];
+      add+=S+"\t\t\t\t"+XcodeID(file.file)+" /* "+file.name+" */,\n";
+   }
    REPA(ios_images)
    {
       XcodeFile &file=ios_images[i];
@@ -2284,18 +2310,25 @@ Bool CodeEditor::generateXcodeProj()
    {
       XcodeFile &file=mac_assets[i];
 // Sample:
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
 
    if(!GetXcodeProjTextPos(str, pos, "/* ESENTHEL IOS EMBED */"))return false;
    add.clear();
+   REPA(ios_assets)
+   {
+      XcodeFile &file=ios_assets[i];
+// Sample:
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
+      add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
+   }
    REPA(ios_images)
    {
       XcodeFile &file=ios_images[i];
 // Sample:
-//            0B9F062816CD7C2B006A0106 /* Engine.pak in Resources */,
+//            0B9F062816CD7C2B006A0106 /* FileName.ext in Resources */,
       add+=S+"\t\t\t\t"+XcodeID(file.build)+" /* "+file.name+" */,\n";
    }
    str.insert(pos, add);
