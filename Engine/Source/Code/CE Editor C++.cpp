@@ -8,6 +8,7 @@ static Int Compare(C Edit::CodeEditor::BuildFile &a, C Edit::CodeEditor::BuildFi
 namespace Edit{
 /******************************************************************************/
 #define MERGE_HEADERS 0 // this made almost no difference on an SSD Disk
+#define ANDROID_ADAPTIVE_ICON 1
 /******************************************************************************/
 // TODO: VSRun doesn't include build configuration, Debug/Release, DX10+/GL, 32/64bit
   void CodeEditor::VS     (C Str &command,   Bool console,   Bool hidden              ) {if(console ? !build_process.create(devenv_path, command, hidden) : !Run(devenv_path, command, hidden))Error(S+"Error launching:\n\""+devenv_path+'"');}
@@ -1697,6 +1698,18 @@ Bool CodeEditor::generateVSProj(Int version)
             prop->getNode("AndroidExtraGradleArgs").data.add(Contains(condition->value, "Debug", false, WHOLE_WORD_STRICT) ? "bundleDebug" : "bundleRelease"); // enable bundle generation !! WILL BE IGNORED IF APK IS UP TO DATE !!
          }*/
 
+         // Android MinSDK
+         Int min_sdk=0;
+         if(ANDROID_ADAPTIVE_ICON)min_sdk=26;
+         if(min_sdk)
+         for(Int i=0; XmlNode *prop=proj->findNode("PropertyGroup", i); i++)
+            if(C XmlParam *condition=prop->findParam("Condition"))
+               if(Contains(condition->value, "Android", false, WHOLE_WORD_STRICT))
+         {
+            Str &s=prop->getNode("AndroidMinSdkVersion").data.setNum(1).first();
+            s=Max(min_sdk, TextInt(s));
+         }
+
          // Platform toolset #VisualStudio
          CChar8 *platform_toolset=null, *platform_toolset_xp=null;
          if(version==10) platform_toolset=platform_toolset_xp="v100";else
@@ -2453,19 +2466,47 @@ Bool CodeEditor::generateAndroidProj()
       Str name;
 
       // list images starting from the smallest
-      name=res+"drawable-ldpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 36,  36);
-      name=res+"drawable-mdpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 48,  48);
-      name=res+"drawable-hdpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 72,  72);
-      name=res+"drawable-xhdpi/icon.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 96,  96);
-      name=res+"drawable-xxhdpi/icon.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(144, 144);
+      if(ANDROID_ADAPTIVE_ICON)
+      {
+      #if 0
+         name=res+"mipmap-ldpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 81,  81);
+         name=res+"mipmap-mdpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(108, 108);
+         name=res+"mipmap-hdpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(162, 162);
+         name=res+"mipmap-xhdpi/icon_f.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(216, 216);
+         name=res+"mipmap-xxhdpi/icon_f.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(324, 324);
+       //name=res+"mipmap-xxxhdpi/icon_f.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(432, 432);
+      #else
+         name=res+"mipmap-ldpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 54,  54).crop( 81,  81);
+         name=res+"mipmap-mdpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 72,  72).crop(108, 108);
+         name=res+"mipmap-hdpi/icon_f.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(108, 108).crop(162, 162);
+         name=res+"mipmap-xhdpi/icon_f.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(144, 144).crop(216, 216);
+         name=res+"mipmap-xxhdpi/icon_f.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(216, 216).crop(324, 324);
+       //name=res+"mipmap-xxxhdpi/icon_f.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(288, 288).crop(432, 432);
+      #endif
+
+         XmlData xml;
+         XmlNode &node=xml.nodes.New().setName("adaptive-icon");
+         node.params.New().set("xmlns:android", "http://schemas.android.com/apk/res/android");
+       //XmlNode &background=node.nodes.New().setName("background"); background.params.New().set("android:drawable", "@mipmap/icon_b");
+         XmlNode &foreground=node.nodes.New().setName("foreground"); foreground.params.New().set("android:drawable", "@mipmap/icon_f");
+         if(!OverwriteOnChangeLoud(xml, dest_path+"app/src/main/res/mipmap/icon.xml"))return false;
+      }
+      // classic icons AND also needed for notification 'setLargeIcon' in Java
+      name=res+"drawable-ldpi/icon.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 36,  36);
+      name=res+"drawable-mdpi/icon.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 48,  48);
+      name=res+"drawable-hdpi/icon.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 72,  72);
+      name=res+"drawable-xhdpi/icon.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize( 96,  96);
+      name=res+"drawable-xxhdpi/icon.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(144, 144);
+    //name=res+"drawable-xxxhdpi/icon.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, icon_time))convert.New().set(name, icon, icon_time).resize(192, 192);
 
       // https://developer.android.com/guide/practices/ui_guidelines/icon_design_status_bar.html
       GetNotificationIcon(notification_icon, notification_icon_time, icon, icon_time);
-      name=res+"drawable-ldpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(18, 18);
-      name=res+"drawable-mdpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(24, 24);
-      name=res+"drawable-hdpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(36, 36);
-      name=res+"drawable-xhdpi/notification.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(48, 48);
-      name=res+"drawable-xxhdpi/notification.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(72, 72);
+      name=res+"drawable-ldpi/notification.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(18, 18);
+      name=res+"drawable-mdpi/notification.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(24, 24);
+      name=res+"drawable-hdpi/notification.png"   ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(36, 36);
+      name=res+"drawable-xhdpi/notification.png"  ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(48, 48);
+      name=res+"drawable-xxhdpi/notification.png" ; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(72, 72);
+    //name=res+"drawable-xxxhdpi/notification.png"; if(CompareFile(FileInfoSystem(name).modify_time_utc, notification_icon_time))convert.New().set(name, notification_icon, notification_icon_time).resize(96, 96);
 
       convert.reverseOrder(); // start working from the biggest ones because they take the most time, yes this is correct
       MultiThreadedCall(convert, ImageConvert::Func);
@@ -2489,7 +2530,7 @@ Bool CodeEditor::generateAndroidProj()
       manifest->getParam("android:installLocation").value=((cei().appPreferredStorage()==STORAGE_EXTERNAL) ? "preferExternal" : (cei().appPreferredStorage()==STORAGE_AUTO) ? "auto" : "internalOnly");
       XmlNode &application=manifest->getNode("application");
       {
-         if(icon.is())application.getParam("android:icon" ).value="@drawable/icon";
+         if(icon.is())application.getParam("android:icon" ).value=(ANDROID_ADAPTIVE_ICON ? "@mipmap/icon" : "@drawable/icon");
                       application.getParam("android:label").value=cstr_app_name;
 
          // iterate activities
