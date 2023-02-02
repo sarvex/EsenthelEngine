@@ -160,6 +160,8 @@ CChar* TDwarvenMine();
 CChar* TEasy(TRANS_FORM form=TF_NEUTRAL);
 CChar* TEdgeSoftening();
 CChar* TEdit();
+CChar* TEditComment();
+CChar* TEditPost();
 CChar* TEditProfile();
 CChar* TEditor();
 CChar* TEgyptianTomb();
