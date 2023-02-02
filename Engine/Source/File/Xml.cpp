@@ -643,11 +643,11 @@ C TextParam* CFindParam(C CMemPtr<TextParam> &params, C Str &name, Int i)
    }
    return null;
 }
-C TextNode* CFindNode(C CMemPtr<TextNode> &nodes, C Str &name, Int i)
+C TextNode* CFindNode(C CMemPtr<TextNode> &nodes, C Str &name, Int i, Bool case_sensitive)
 {
    if(InRange(i, nodes))FREPAD(n, nodes) // process in order
    {
-    C TextNode &node=nodes[n]; if(node.name==name)
+    C TextNode &node=nodes[n]; if(Equal(node.name, name, case_sensitive))
       {
          if(i==0)return &node; i--;
       }

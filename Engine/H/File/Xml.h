@@ -240,9 +240,9 @@ struct XmlData // Xml Data
   TextParam*  FindParam(   MemPtr<TextParam>  params, C Str &name, Int i=0); // find i-th param which name is equal to 'name', null on fail (if not found)
 C TextParam* CFindParam(C CMemPtr<TextParam> &params, C Str &name, Int i=0); // find i-th param which name is equal to 'name', null on fail (if not found)
 
-  TextNode*  FindNode(   MemPtr<TextNode>  nodes, C Str &name, Int i=0); // find i-th node which name is equal to 'name', null on fail (if not found)
-C TextNode* CFindNode(C CMemPtr<TextNode> &nodes, C Str &name, Int i=0); // find i-th node which name is equal to 'name', null on fail (if not found)
-  TextNode&   GetNode(   MemPtr<TextNode>  nodes, C Str &name         ); // get       node which name is equal to 'name', New  on fail (if not found)
+  TextNode*  FindNode(   MemPtr<TextNode>  nodes, C Str &name, Int i=0                           ); // find i-th node which name is equal to 'name', null on fail (if not found)
+C TextNode* CFindNode(C CMemPtr<TextNode> &nodes, C Str &name, Int i=0, Bool case_sensitive=false); // find i-th node which name is equal to 'name', null on fail (if not found)
+  TextNode&   GetNode(   MemPtr<TextNode>  nodes, C Str &name                                    ); // get       node which name is equal to 'name', New  on fail (if not found)
 
 XmlNode* FindNode(MemPtr<XmlNode> nodes, C Str &name, Int i=0); // find i-th node which name is equal to 'name', null on fail (if not found)
 XmlNode&  GetNode(MemPtr<XmlNode> nodes, C Str &name         ); // get       node which name is equal to 'name', New  on fail (if not found)
