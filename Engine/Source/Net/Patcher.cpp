@@ -212,7 +212,6 @@ DWNL_STATE Patcher::installerState()
    }
    return state;
 }
-// Can't do this because this date is at the moment of FTP upload, and not modify time of file    C DateTime&        installerModifyTimeUTC()C {return _inst_download.modifyTimeUTC();} // get modification time in UTC time zone for installer download
 File* Patcher::installer() {return (installerState()==DWNL_DONE) ? &_inst : null;}
 /******************************************************************************/
 Patcher& Patcher::downloadIndex()
