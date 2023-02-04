@@ -988,7 +988,7 @@ static void AddFile    (Memb<PakFileData> &files,           C PaksFile *pf) {if(
 static void Add        (Memb<PakFileData> &files, Pak &pak, C PakFile  *pf) {if(pf)Add    (files,      pak, *pf      );}
 static void AddChildren(Memb<PakFileData> &files,           C PaksFile *pf) {if(pf)FREP(pf->children_num)AddFile(files,     &Paks.file(pf->children_offset+i));}
 static void AddChildren(Memb<PakFileData> &files, Pak &pak, C PakFile  *pf) {if(pf)FREP(pf->children_num)AddFile(files, pak, pak .file(pf->children_offset+i));}
-static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, Bool *changed=null)
+static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, EXE_TYPE exe_type, Bool *changed=null)
 {
    if(changed)*changed=false;
 
@@ -1012,53 +1012,60 @@ static Bool CreateEngineEmbedPak(C Str &src, C Str &dest, Bool use_cipher, Bool 
    }
    if(!src_pak)return Error("Can't find \"Engine.pak\"");
 
+   Bool dx=(exe_type==EXE_EXE || exe_type==EXE_DLL || exe_type==EXE_LIB || exe_type==EXE_UWP),
+        gl=!dx;
+
    if(CE.cei().appEmbedEngineData()>1) // full
    {
       FREPA(*src_pak)Add(files, *src_pak, src_pak->file(i)); // add all files
    }else // 2D only
    {
       // !! ADD FOLDERS TO PRESERVE MODIFICATION TIMES !!
-      Add    (files, *src_pak, src_pak->find("Emoji"));
-      Add    (files, *src_pak, src_pak->find("Gui"));
-      Add    (files, *src_pak, src_pak->find("Shader"));
-      Add    (files, *src_pak, src_pak->find("Shader/4"));
-      Add    (files, *src_pak, src_pak->find("Shader/GL"));
-      Add    (files, *src_pak, src_pak->find("Shader/GL SPIR-V"));
-
-      AddFile(files, *src_pak, src_pak->find("Shader/4/Early Z"));
-      AddFile(files, *src_pak, src_pak->find("Shader/4/Main"));
-      AddFile(files, *src_pak, src_pak->find("Shader/4/Position"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL/Early Z"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL/Main"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL/Position"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Early Z"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Main"));
-      AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Position"));
-      
+      Add        (files, *src_pak, src_pak->find("Emoji"));
       AddChildren(files, *src_pak, src_pak->find("Emoji"));
+      Add        (files, *src_pak, src_pak->find("Gui"));
       AddChildren(files, *src_pak, src_pak->find("Gui"));
+      Add        (files, *src_pak, src_pak->find("Shader"));
+      if(dx)
+      {
+         Add    (files, *src_pak, src_pak->find("Shader/4"));
+         AddFile(files, *src_pak, src_pak->find("Shader/4/Early Z"));
+         AddFile(files, *src_pak, src_pak->find("Shader/4/Main"));
+         AddFile(files, *src_pak, src_pak->find("Shader/4/Position"));
+      }
+      if(gl)
+      {
+         Add    (files, *src_pak, src_pak->find("Shader/GL"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL/Early Z"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL/Main"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL/Position"));
+         Add    (files, *src_pak, src_pak->find("Shader/GL SPIR-V"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Early Z"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Main"));
+         AddFile(files, *src_pak, src_pak->find("Shader/GL SPIR-V/Position"));
+      }
       FREP(src_pak->rootFiles())AddFile(files, *src_pak, src_pak->file(i)); // add all root files (gui files)
    }
 
    Cipher *cipher=(use_cipher ? CE.cei().appEmbedCipher() : null);
-   if(CompareFile(FileInfoSystem(dest).modify_time_utc, CE.cei().appEmbedSettingsTime(CE.build_exe_type))>0 && PakEqual(files, dest, cipher))return true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
+   if(CompareFile(FileInfoSystem(dest).modify_time_utc, CE.cei().appEmbedSettingsTime(exe_type))>0 && PakEqual(files, dest, cipher))return true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
    if(changed)*changed=true;
-   if(!PakCreate(files, dest, 0, cipher, CE.cei().appEmbedCompress(CE.build_exe_type), CE.cei().appEmbedCompressLevel(CE.build_exe_type)))return Error("Can't create Embedded Engine Pak");
+   if(!PakCreate(files, dest, 0, cipher, CE.cei().appEmbedCompress(exe_type), CE.cei().appEmbedCompressLevel(exe_type)))return Error("Can't create Embedded Engine Pak");
    return true;
 }
-static Bool CreateAppPak(C Str &name, Bool &exists, Bool *changed=null)
+static Bool CreateAppPak(C Str &name, Bool &exists, EXE_TYPE exe_type, Bool *changed=null)
 {
    Bool ok=false;
    exists=false;
    if(changed)*changed=false;
 
-   Memb<PakFileData> files; CE.cei().appSpecificFiles(files, CE.build_exe_type);
+   Memb<PakFileData> files; CE.cei().appSpecificFiles(files, exe_type);
    if(files.elms())
    {
       exists=true;
       Cipher *cipher=CE.cei().appEmbedCipher();
-      if(CompareFile(FileInfoSystem(name).modify_time_utc, CE.cei().appEmbedSettingsTime(CE.build_exe_type))>0 && PakEqual(files, name, cipher))ok=true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
-      else {if(changed)*changed=true; ok=PakCreate(files, name, 0, cipher, CE.cei().appEmbedCompress(CE.build_exe_type), CE.cei().appEmbedCompressLevel(CE.build_exe_type));}
+      if(CompareFile(FileInfoSystem(name).modify_time_utc, CE.cei().appEmbedSettingsTime(exe_type))>0 && PakEqual(files, name, cipher))ok=true; // if existing Pak time is newer than settings (compression/encryption) and Pak is what we want, then use it
+      else {if(changed)*changed=true; ok=PakCreate(files, name, 0, cipher, CE.cei().appEmbedCompress(exe_type), CE.cei().appEmbedCompressLevel(exe_type));}
    }else
    {
       ok=true;
@@ -1259,14 +1266,14 @@ Bool CodeEditor::generateVSProj(Int version)
    // embed engine data, generate always because it may be used by WINDOWS_OLD
    if(cei().appEmbedEngineData())
    {
-      Bool changed; if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true, &changed))return false;
+      Bool changed; if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true, EXE_EXE, &changed))return false; // used only on WINDOWS_OLD
       resource_rc.putLine(S+(resource_id++)+" PAK         \"EngineEmbed.pak\"");
       resource_changed|=changed;
    }
 
    // app data, generate always because it may be used by WINDOWS_OLD
    {
-      Bool exists, changed; if(!CreateAppPak(build_path+"Assets/App.pak", exists, &changed))return false;
+      Bool exists, changed; if(!CreateAppPak(build_path+"Assets/App.pak", exists, EXE_EXE, &changed))return false; // used only on WINDOWS_OLD
       if(exists)resource_rc.putLine(S+(resource_id++)+" PAK         \"App.pak\"");
       resource_changed|=changed;
    }
@@ -1453,7 +1460,7 @@ Bool CodeEditor::generateVSProj(Int version)
       Str src=bin_path+"Mobile/Engine.pak", dest=data+"Engine.pak";
       if(cei().appEmbedEngineData()==1) // 2D only
       {
-         if(!CreateEngineEmbedPak(src, dest, false))return false;
+         if(!CreateEngineEmbedPak(src, dest, false, EXE_NS))return false;
       }else
          if(!CopyFile(src, dest))return false;
 
@@ -1858,7 +1865,7 @@ Bool CodeEditor::generateXcodeProj()
    Int embed_engine=cei().appEmbedEngineData();
    if( embed_engine) // Mac
    {
-      if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true))return false;
+      if(!CreateEngineEmbedPak(S, build_path+"Assets/EngineEmbed.pak", true, EXE_MAC))return false;
       mac_assets.New().name="Assets/EngineEmbed.pak";
    }
    // iOS
@@ -1866,12 +1873,12 @@ Bool CodeEditor::generateXcodeProj()
    {
       FCreateDirs(build_path+"Assets/EmbedMobile");
       Str src=bin_path+"Mobile/Engine.pak", dest=build_path+"Assets/EmbedMobile/Engine.pak";
-      if(!CreateEngineEmbedPak(src, dest, false))return false;
+      if(!CreateEngineEmbedPak(src, dest, false, EXE_IOS))return false;
          ios_assets.New().name="Assets/EmbedMobile/Engine.pak"; 
    }else ios_assets.New().name=   bin_path+"Mobile/Engine.pak";
 
    // app data
-   Bool exists; if(!CreateAppPak(build_path+"Assets/App.pak", exists))return false;
+   Bool exists; if(!CreateAppPak(build_path+"Assets/App.pak", exists, EXE_MAC))return false;
    if(  exists)mac_assets.New().name="Assets/App.pak";
 
    // Steam
@@ -2419,7 +2426,7 @@ Bool CodeEditor::generateAndroidProj()
       Str src=bin_path+"Mobile/Engine.pak", dest=assets+"Engine.pak";
       if(cei().appEmbedEngineData()==1) // 2D only
       {
-         if(!CreateEngineEmbedPak(src, dest, false))return false;
+         if(!CreateEngineEmbedPak(src, dest, false, EXE_APK))return false;
       }else
          if(!CopyFile(src, dest))return false;
    }
@@ -3040,10 +3047,10 @@ Bool CodeEditor::generateLinuxMakeProj()
    if(cei().appEmbedEngineData())
    {
       BuildEmbed &be=build_embed.New().set(CC4('P', 'A', 'K', 0), build_path+"Assets/EngineEmbed.pak");
-      if(!CreateEngineEmbedPak(S, be.path, true))return false;
+      if(!CreateEngineEmbedPak(S, be.path, true, EXE_LINUX))return false;
    }
    Str  app_pak_path=build_path+"Assets/App.pak";
-   Bool exists; if(!CreateAppPak(app_pak_path, exists))return false;
+   Bool exists; if(!CreateAppPak(app_pak_path, exists, EXE_LINUX))return false;
    if(  exists)build_embed.New().set(CC4('P', 'A', 'K', 0), app_pak_path);
 
    // we need to recreate the exe everytime in case we're embedding app resources manually
