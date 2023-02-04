@@ -430,10 +430,11 @@ Dialog& GUI::getMsgBox(CPtr id)
    if(id)if(MsgBox *mb=MsgBox::Find(id))return *mb;
    return MsgBox::MsgBoxs.New().create(S, S, null, id); // always create to set the 'id' and 'Window.level'
 }
-Dialog* GUI::   findMsgBox(CPtr id) {if(id){SyncLocker locker(_lock); return MsgBox::Find(id);} return null;}
-void    GUI::    delMsgBox(CPtr id) {if(id){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))MsgBox::MsgBoxs.removeData(mb);}}
-void    GUI::fadeOutMsgBox(CPtr id) {if(id){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))mb->fadeOut();}}
-void    GUI::  closeMsgBox(CPtr id) {if(id){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))MsgBox::Close(*mb);}}
+// if 'SyncLock' is not safe then crash may occur when trying to lock, to prevent that, check if we have any elements (this means cache was already initialized)
+Dialog* GUI::   findMsgBox(CPtr id) {if(id && (SYNC_LOCK_SAFE || MsgBox::MsgBoxs.elms())){SyncLocker locker(_lock); return MsgBox::Find(id);} return null;}
+void    GUI::    delMsgBox(CPtr id) {if(id && (SYNC_LOCK_SAFE || MsgBox::MsgBoxs.elms())){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))MsgBox::MsgBoxs.removeData(mb);}}
+void    GUI::fadeOutMsgBox(CPtr id) {if(id && (SYNC_LOCK_SAFE || MsgBox::MsgBoxs.elms())){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))mb->fadeOut();}}
+void    GUI::  closeMsgBox(CPtr id) {if(id && (SYNC_LOCK_SAFE || MsgBox::MsgBoxs.elms())){SyncLocker locker(_lock); if(MsgBox *mb=MsgBox::Find(id))MsgBox::Close(*mb);}}
 /******************************************************************************/
 GUI& GUI::passwordChar(Char c) // Warning: this is not thread-safe
 {
