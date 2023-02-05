@@ -515,6 +515,7 @@ CChar* TUnlockedCharacter();
 CChar* TUnsupportedFileType();
 CChar* TUp();
 CChar* TUpdated();
+CChar* TUpdateVerb();
 CChar* TUpload();
 CChar* TUpscaleFiltering();
 CChar* TUseItem();
