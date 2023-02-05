@@ -1753,7 +1753,8 @@ static Int TypeToBytes(TM_TYPE type, bool &neg)
       neg=bytes2&1;
    return bytes2/2;
 }
-static Int Left(C Str &s, Int si) {return s.length()-si;}
+static Int Left(C Str  &s, Int si) {return s.length()-si;}
+static Int Left(C Str8 &s, Int si) {return s.length()-si;}
 /******************************************************************************/
 static void Save(C Str &text, Str &s)
 {
