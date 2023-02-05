@@ -1772,6 +1772,15 @@ static Int Load(Str &text, C Str &s, Int si)
    }
    return si;
 }
+static Int Load(Str &text, C Str8 &s, Int si)
+{
+   for(; si<s.length(); si++)
+   {
+      Char8 c=s[si];
+      if(Safe(c))text+=c;else break;
+   }
+   return si;
+}
 /******************************************************************************/
 static void Save(C Str &text, Str &s, Bool name)
 {
@@ -1855,6 +1864,52 @@ static Int Load(Str &text, C Str &s, Int si, Char c)
    }
    return -1;
 }
+static Int Load(Str &text, C Str8 &s, Int si, Char c)
+{
+   switch(c)
+   {
+      case NAME:
+      case VALUE:
+         return Load(text, s, si);
+
+      case VALUE_UID:
+      {
+         Int bytes=SIZE(UID); if(bytes<=Left(s, si))
+         {
+            UID  id; CopyFast(&id, s()+si, bytes); // FREPD(j, bytes)id.b[j]=s[si+j];
+            text=id.asFileName();
+            return si+bytes;
+         }
+      }break;
+
+      case VALUE_U1:
+      case VALUE_I1:
+      case VALUE_U2:
+      case VALUE_I2:
+      case VALUE_U3:
+      case VALUE_I3:
+      case VALUE_U4:
+      case VALUE_I4:
+      case VALUE_U5:
+      case VALUE_I5:
+      case VALUE_U6:
+      case VALUE_I6:
+      case VALUE_U7:
+      case VALUE_I7:
+      case VALUE_U8:
+      case VALUE_I8:
+      {
+         Bool neg; Int bytes=TypeToBytes(TM_TYPE(c), neg); if(bytes<=Left(s, si))
+         {
+            ULong u=0; CopyFast(&u, s()+si, bytes); // FREPD(j, bytes)((Byte*)&u)[j]=s[si+j];
+            if(neg)text=-Long(u)-1;
+            else   text=      u   ;
+            return si+bytes;
+         }
+      }break;
+   }
+   return -1;
+}
 /******************************************************************************/
 static void Save(C TextNode &node, Str &s)
 {
@@ -1870,6 +1925,28 @@ static void Save(C TextNode &node, Str &s)
 static Int Load(Memc<TextNode> &nodes, C Str &s, Int si)
 {
    Char c=s[si++];
+check:
+   if(c==NAME)
+   {
+      TextNode &node=nodes.New();
+      si=Load(node.name, s, si, c); if(!InRange(si, s))return -1; c=s[si++];
+      if(IsValue(c))
+      {
+         si=Load(node.value, s, si, c); if(!InRange(si, s))return -1; c=s[si++];
+      }
+      if(c==CHILD)
+      {
+                                     if(!InRange(si, s))return -1;
+         si=Load(node.nodes, s, si); if(!InRange(si, s))return -1; c=s[si++];
+      }
+      goto check;
+   }else
+   if(c==END)return si;
+   return -1;
+}
+static Int Load(Memc<TextNode> &nodes, C Str8 &s, Int si)
+{
+   Char8 c=s[si++];
 check:
    if(c==NAME)
    {
@@ -1910,6 +1987,24 @@ Bool TextMeta::load(C Str &s)
    next:
       TextMetaElm &elm=New();
       CChar *src=s()+si; si+=elm.text.fromUTF8Safe(src)-src;
+      if(InRange(si, s))
+      {
+         si=Load(elm.data.nodes, s, si);
+         if(InRange(si, s))goto next;
+         if(si<0)return false;
+      }
+   }
+   return true;
+}
+Bool TextMeta::load(C Str8 &s)
+{
+   clear();
+   if(s.is())
+   {
+      Int si=0;
+   next:
+      TextMetaElm &elm=New();
+      CChar8 *src=s()+si; si+=elm.text.fromUTF8Safe(src)-src;
       if(InRange(si, s))
       {
          si=Load(elm.data.nodes, s, si);
