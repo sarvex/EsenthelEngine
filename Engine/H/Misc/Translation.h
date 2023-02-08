@@ -54,6 +54,7 @@ CChar* TAreYouSureYouWantToDiscardThisPost();
 CChar* TAreYouSureYouWantToUnblockThisUser();
 CChar* TArmor();
 CChar* TArrow();
+CChar* TArt();
 CChar* TAttack();
 CChar* TAugust();
 CChar* TAugustShort();
