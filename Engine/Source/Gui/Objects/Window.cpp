@@ -156,7 +156,7 @@ static Rect ResizedRect(C Rect &src, C Rect &dest, UInt mask)
 }
 static Rect MaximizedRect(C Window &window)
 {
-   if(GuiObj *parent=window.parent())return parent->localClientRect();
+   if(GuiObj *parent=window.parent())return parent->localClientRectUI();
    return D.rectUI();
 }
 Bool    Window::maximized()C {return InsideEps(ResizedRect(rect(), MaximizedRect(T), resize_mask), rect());}
@@ -496,7 +496,7 @@ void Window::update(C GuiPC &gpc)
    {
       if(gpc.enabled)
       {
-         Bool have_client_rect=false; Rect client_rect; if(parent()){have_client_rect=true; client_rect=parent()->localClientRect();}
+         Bool have_client_rect=false; Rect client_rect; if(parent()){have_client_rect=true; client_rect=parent()->localClientRectUI();}
          if(Gui.ms()==this)
          {
             if(Ms.b(0) && _resize)
