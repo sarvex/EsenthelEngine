@@ -32,6 +32,7 @@ enum TRANS_FORM : Byte // Translation Form
 CChar* T1Player();
 CChar* T2Players();
 CChar* TAbout();
+CChar* TAccept();
 CChar* TAction();
 CChar* TAddImage();
 CChar* TAddYouTubeVideo();
