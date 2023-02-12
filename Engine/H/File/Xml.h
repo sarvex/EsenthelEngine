@@ -102,8 +102,8 @@ struct TextParam
    TextParam& clear() {name.clear(); value.clear(); return T;}
    TextParam& del  () {name.del  (); value.del  (); return T;}
 
-   Bool operator==(C TextParam &tp)C {return name==tp.name && value==tp.value;}
-   Bool operator!=(C TextParam &tp)C {return name!=tp.name || value!=tp.value;}
+   Bool operator==(C TextParam &tp)C {return name==tp.name &&  Equal(value, tp.value, true);}
+   Bool operator!=(C TextParam &tp)C {return name!=tp.name || !Equal(value, tp.value, true);}
 
             TextParam() {}
    explicit TextParam(C Str &name, C Str &value=S) {set(name, value);}
