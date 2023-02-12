@@ -275,6 +275,18 @@ StrEx& StrEx::space()
    }
    return T;
 }
+StrEx& StrEx::nbsp()
+{
+   REPA(T)
+   {
+      StrData &d=T[i]; switch(d.type)
+      {
+         case StrData::TEXT : if(d.text.is()){if(!WhiteChar(d.text.last()))ins: T+=Nbsp; return T;} break; // process only if not empty
+         case StrData::IMAGE: goto ins;
+      }
+   }
+   return T;
+}
 StrEx& StrEx::line()
 {
    REPA(T)

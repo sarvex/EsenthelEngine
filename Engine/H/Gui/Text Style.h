@@ -130,6 +130,7 @@ struct StrEx : Mems<StrData> // Extended String, which can hold: Text, Images, C
    StrEx& panelImage(C PanelImagePtr &panel, C ImagePtr &image); // add image inside a panel, same as "T.panel(panel); T+=image; T.panel(null);"
 
    StrEx& space(); // add a space if string isn't empty and does not end with a new line or space
+   StrEx& nbsp (); // add a nbsp  if string isn't empty and does not end with a new line or space
    StrEx& line (); // add a line  if string isn't empty and does not end with a new line
 
    // io
