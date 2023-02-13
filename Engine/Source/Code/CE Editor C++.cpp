@@ -2555,12 +2555,12 @@ Bool CodeEditor::generateAndroidProj()
                      Bool landscape=FlagOn(flag, DIRF_X),
                           portrait =FlagOn(flag, DIRF_Y);
                      CChar8    *orn=null;
-                     if( flag==(DIRF_X|DIRF_UP)  )orn="sensor"         ;else // up/left/right no down
+                     if( flag==(DIRF_X|DIRF_UP)  )orn="user"           ;else // up/left/right no down, use instead of "sensor" because that one ignores "auto-rotate" option
                      if((flag&DIRF_X)==DIRF_RIGHT)orn="landscape"      ;else // only one horizontal
                      if((flag&DIRF_Y)==DIRF_UP   )orn="portrait"       ;else // only one vertical
                      if( landscape && !portrait  )orn="sensorLandscape";else
                      if(!landscape &&  portrait  )orn="sensorPortrait" ;else
-                                                  orn="fullSensor"     ;
+                                                  orn="fullUser"       ; // use instead of "fullSensor" because that one ignores "auto-rotate" option
                      node.getParam("android:screenOrientation").value=orn;
                   }
                }
