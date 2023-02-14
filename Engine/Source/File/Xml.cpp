@@ -1,7 +1,7 @@
 ﻿/******************************************************************************/
 #include "stdafx.h"
 namespace EE{
-#define TEXTDATA_NAMELESS_SUB  0 // if allow saving/loading {} without name if it's empty
+#define TEXTDATA_NAMELESS_SUB  1 // if allow saving/loading {} without name if it's empty
 #define XML_NODE_DATA_SUB_NODE 1 // if keep 'XmlNode.data' as a sub-node when converting it to 'TextNode'
 #define FILE_PARAMS_INLINE     1 // if store simple children inline
 /******************************************************************************/
@@ -741,9 +741,20 @@ static Bool HasChildren(C Memc<TextNode> &nodes)
 /******************************************************************************/
 Bool TextNode::save(FileText &f, Bool just_values)C
 {
+   Bool has_children;
    if(!just_values)
    {
-      f.startLine(); SaveText(f, name);
+      f.startLine();
+      if(TEXTDATA_NAMELESS_SUB && !name.is() && nodes.elms()) // allow nameless sub, it's nameless, has sub
+      {
+         if(EmptyNames(nodes))
+         {
+            if(has_children=HasChildren(nodes))f.depth++;
+            goto nameless_sub_values;
+         }
+         goto nameless_sub;
+      }
+      SaveText(f, name);
    }
    if(value.is() || nodes.elms())
    {
@@ -751,9 +762,11 @@ Bool TextNode::save(FileText &f, Bool just_values)C
       if(!nodes.elms())SaveText(f, value);else // just 'value' is present (save this only when there are no nodes, because they have the priority)
       if(EmptyNames(nodes)) // store just the values
       {
-         Bool has_children=HasChildren(nodes);
-         if(  has_children)f.endLine().startLine().depth++;else
-         if(  just_values )f.endLine().startLine();
+            has_children=HasChildren(nodes);
+         if(has_children)f.endLine().startLine().depth++;else
+         if(just_values )f.endLine().startLine();
+
+      nameless_sub_values:
          f.putChar('[');
          Bool after_elm=false;
          FREPA(nodes)
@@ -773,7 +786,9 @@ Bool TextNode::save(FileText &f, Bool just_values)C
          f.putChar(']');
       }else
       {
-         f.endLine().startLine().putChar('{').endLine(); f.depth++;
+         f.endLine().startLine();
+      nameless_sub:
+         f.putChar('{').endLine(); f.depth++;
          FREPA(nodes)if(!nodes[i].save(f, false))return false;
          f.depth--; f.startLine().putChar('}');
       }
