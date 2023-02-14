@@ -1,6 +1,7 @@
 ﻿/******************************************************************************/
 #include "stdafx.h"
 namespace EE{
+#define TEXTDATA_NAMELESS_SUB  0 // if allow saving/loading {} without name if it's empty
 #define XML_NODE_DATA_SUB_NODE 1 // if keep 'XmlNode.data' as a sub-node when converting it to 'TextNode'
 #define FILE_PARAMS_INLINE     1 // if store simple children inline
 /******************************************************************************/
@@ -851,6 +852,7 @@ Char TextNode::load(FileText &f, Bool just_values, Char c)
          for(c=f.getChar(); ; )
          {
             if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN)c=nodes.New().load(f, false, c);else
+            if(TEXTDATA_NAMELESS_SUB && (c=='{' || c=='[')                       )c=nodes.New().load(f, true , c);else
             if( WhiteChar(c)){c=f.getChar();       }else
             if(c=='}'       ){c=f.getChar(); break;}else
                              {c=      ERROR; break;}
@@ -1008,6 +1010,7 @@ Bool TextData::load(FileText &f)
    for(Char c=f.getChar(); ; )
    {
       if(SimpleChar(c) || c==QUOTE_BEGIN || c==BINARY_BEGIN || c==RAW_BEGIN)c=nodes.New().load(f, false, c);else
+      if(TEXTDATA_NAMELESS_SUB && (c=='{' || c=='[')                       )c=nodes.New().load(f, true , c);else
       if( WhiteChar(c))c=f.getChar();else
       if(!c)return true ;else // don't check for 'f.ok' because methods stop on null char and not on 'f.end'
             return false;
