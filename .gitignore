@@ -86,16 +86,3 @@ Lock
 !/Extra
 
 !.gitignore
-ThirdPartyLibs/JpegXL/Windows/tools/cjxl_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/color_encoding_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/conformance/INSTALL.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/conformance/RUN_TESTS.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/decode_basic_info_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/djxl_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/fields_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/icc_codec_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/INSTALL.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/jxl_tool.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/rans_fuzzer_runner.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/RUN_TESTS.vcxproj
-ThirdPartyLibs/JpegXL/Windows/tools/set_from_bytes_fuzzer_runner.vcxproj
