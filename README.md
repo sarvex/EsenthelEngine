@@ -50,7 +50,7 @@ https://esenthel.com or https://github.com/Esenthel/EsenthelEngine
 Your Engine and any Games/Apps created with it are also covered under this License,
 therefore income generated from: your engine, engine related services (including but not limited to:
 donations, license sales, adding features, providing support), games/apps created with your engine,
-is also subject to the same royalty payment mentioned earlier.
+is also subject to the same royalty fee mentioned earlier.
 
 SHARING
 Titan Engine creator is allowed to publicly share that you are using Titan Engine,
