@@ -26,6 +26,8 @@ You can create unlimited number of games/apps using Titan Engine.
 You can redistribute Titan Engine source code.
 You can make changes to Titan Engine source code.
 You don't have to make code changes public, but it would be great if you could.
+
+COST
 There's a 5% royalty fee - calculated from the total amount of game/app income,
 and not from the amount that online digital store has transferred to you.
 Example: when selling on Steam, Valve share is 30%, Esenthel share is 5%, Your share is 65%.
