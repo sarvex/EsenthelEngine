@@ -46,10 +46,11 @@ GAME ENGINES
 You may NOT integrate the source code into other game engines, that are not based on Titan Engine. 
 You can create your own game engines based on Titan, however they must clearly state that they're
 "based on Titan Engine" with the text linking to:
-https://esenthel.com or https://github.com/Esenthel/EsenthelEngine and 5% of income generated from
-your engine and engine related services (including but not limited to: donations, license sales,
-adding features, providing support) must be shared with Titan Engine creator.
-Games/apps created with your engine are also covered under this license and are subject to royalties.
+https://esenthel.com or https://github.com/Esenthel/EsenthelEngine
+Your Engine and any Games/Apps created with it are also covered under this License,
+therefore income generated from: your engine, engine related services (including but not limited to:
+donations, license sales, adding features, providing support), games/apps created with your engine,
+is also subject to the same royalty payment mentioned earlier.
 
 SHARING
 Titan Engine creator is allowed to publicly share that you are using Titan Engine,
