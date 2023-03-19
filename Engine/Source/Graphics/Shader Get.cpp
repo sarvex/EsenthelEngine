@@ -115,7 +115,7 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    valid    =true;
  T.heightmap=heightmap;
    materials=1;
-   tex      =FlagOn(mesh_flag, VTX_TEX0 );
+   uv       =FlagOn(mesh_flag, VTX_TEX0 );
    normal   =FlagOn(mesh_flag, VTX_NRM  );
    color    =FlagOn(mesh_flag, VTX_COLOR);
    size     =FlagOn(mesh_flag, VTX_SIZE );
@@ -143,13 +143,13 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    if(!D.texMacro    ()                       || lod_index<=0 || skin || !heightmap)macro =false; // disable macro  for LODs=0, skin, !heightmaps
    if(!D.texDetailLOD() && !m->detail_all_lod && lod_index> 0                      )detail=false; // disable detail for LODs>0
    if(                                           lod_index> 0 || layout<2          )MIN(bump, SBUMP_NORMAL); // limit to normal mapping for LODs>0 and layout<2 (no bump channel)
-   if(!tex                                                                         ){layout=0; detail=macro=false; MIN(emissive, 1);} // disable all textures if we don't have texcoords
+   if(!uv                                                                          ){layout=0; detail=macro=false; MIN(emissive, 1);} // disable all textures if we don't have UV
    if(!normal || !D.envMap()                                                       )reflect=false; // reflection requires vtx normals
    if(materials>1                                                                  )MAX(layout, 1); // multi-materials currently don't support 0 textures
    if(materials>1 || heightmap                                                     )emissive=0; // multi-materials and heightmaps currently don't support emissive
 
    skin                =(FlagAll(mesh_flag, VTX_SKIN)           && materials==1 &&              !heightmap                             );
-   fur                 =(normal && tex                          && materials==1 &&              !heightmap && m->technique==MTECH_FUR  ); // this requires tex coordinates, but not a material texture, we can do fur with just material color and 'FurCol'
+   fur                 =(normal && uv                           && materials==1 &&              !heightmap && m->technique==MTECH_FUR  ); // this requires UV, but not a material texture, we can do fur with just material color and 'FurCol'
    grass               =(normal                        && !skin && materials==1 && layout>=1 && !heightmap && m->hasGrass            ());
    leaf                =(normal && (mesh_flag&VTX_HLP) && !skin && materials==1 && layout>=1 && !heightmap && m->hasLeaf             () && D.bendLeafs());
    alpha               =(                                          materials==1 && layout>=1 && !heightmap && m->hasAlpha            ()); // this is about having alpha channel in material textures so we need a texture
@@ -161,10 +161,11 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    tesselate           =(normal && (lod_index<=0) && D.shaderModel()>=SM_5 && D.tesselation() && (!heightmap || D.tesselationHeightmap()));
    fx                  =(grass ? (m->hasGrass2D() ? FX_GRASS_2D : FX_GRASS_3D) : leaf ? (m->hasLeaf2D() ? (size ? FX_LEAFS_2D : FX_LEAF_2D) : (size ? FX_LEAFS_3D : FX_LEAF_3D)) : FX_NONE); // don't set FX_CLEAR_COAT here, because only Deferred shader supports it, and it's processed manually there
    clear_coat          =(m->technique==MTECH_CLEAR_COAT && normal && materials==1 && !heightmap);
+   uv_scale            =(heightmap || materials>1 || (uv && !Equal(m->uv_scale, 1) && layout && !skin && !alpha_test));
 
-   if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=heightmap=false; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
-   if(fx){detail=macro=tesselate=false; MIN(bump, SBUMP_NORMAL);} // shaders with effects currently don't support detail/macro/tesselate/fancy bump
-   if(clear_coat){detail=macro=false; MIN(bump, SBUMP_NORMAL);} // shaders with clear coat currently don't support detail/macro/fancy bump
+   if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=uv_scale=heightmap=false; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
+   if(fx        ){uv_scale=detail=macro=tesselate=false; MIN(bump, SBUMP_NORMAL);} // shaders with effects    currently don't support uv_scale/detail/macro/tesselate/fancy bump
+   if(clear_coat){uv_scale=detail=macro=          false; MIN(bump, SBUMP_NORMAL);} // shaders with clear coat currently don't support uv_scale/detail/macro/fancy bump
 }
 Shader* DefaultShaders::EarlyZ()C
 {
@@ -180,7 +181,7 @@ Shader* DefaultShaders::Opaque(Bool mirror)C
       // !! Never return the same shader for Multi-Materials as Single-Materials !!
       //if(fur)return ShaderFiles("Fur")->get(ShaderFurBase(skin, size, layout>0)); don't use FurBase because it's unfinished (doesn't use smooth/rough/normal maps) and the only difference is being affected by FurCol however difference is minimal
       Bool detail=T.detail, tesselate=T.tesselate; Byte bump=T.bump; if(mirror){detail=tesselate=false; MIN(bump, SBUMP_NORMAL);} // disable detail, tesselation and fancy bump for mirror
-      return ShaderFiles("Deferred")->get(ShaderDeferred(skin, materials, layout, bump, alpha_test, detail, macro, color, mtrl_blend, heightmap, clear_coat ? FX_CLEAR_COAT : fx, tesselate));
+      return ShaderFiles("Deferred")->get(ShaderDeferred(skin, materials, layout, bump, alpha_test, detail, macro, color, mtrl_blend, uv_scale, heightmap, clear_coat ? FX_CLEAR_COAT : fx, tesselate));
    }
    return null;
 }
@@ -257,6 +258,7 @@ FRST* DefaultShaders::Frst()C
       key.color       =color;
       key.mtrl_blend  =mtrl_blend;
       key.fx          =fx;
+      key.uv_scale    =uv_scale;
       key.heightmap   =heightmap;
       key.tesselate   =(tesselate && SUPPORT_FORWARD_TESSELATE);
       return Frsts(key);
@@ -282,6 +284,7 @@ BLST* DefaultShaders::Blst()C
       key.reflect     =reflect;
       key.emissive_map=(emissive>1);
       key.skin        =skin;
+      key.uv_scale    =uv_scale;
       key.fx          =fx;
       return Blsts(key);
    }

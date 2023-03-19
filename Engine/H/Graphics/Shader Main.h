@@ -515,9 +515,9 @@ void Create2DSampler    ();
 void CreateFontSampler  ();
 void CreateRenderSampler();
 
-Str8 ShaderDeferred   (Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int detail, Int macro, Int color, Int mtrl_blend, Int heightmap, Int fx, Int tesselate);
-Str8 ShaderForward    (Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int reflect, Int emissive_map, Int detail, Int color, Int mtrl_blend, Int heightmap, Int fx, Int per_pixel,   Int light_dir, Int light_dir_shd, Int light_dir_shd_num,   Int light_point, Int light_point_shd,   Int light_linear, Int light_linear_shd,   Int light_cone, Int light_cone_shd,   Int tesselate);
-Str8 ShaderBlendLight (Int skin, Int color    , Int layout, Int bump_mode, Int alpha_test, Int alpha, Int reflect, Int emissive_map, Int fx, Int per_pixel, Int shadow_maps, Int tesselate);
+Str8 ShaderDeferred   (Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int detail, Int macro, Int color, Int mtrl_blend, Int uv_scale, Int heightmap, Int fx, Int tesselate);
+Str8 ShaderForward    (Int skin, Int materials, Int layout, Int bump_mode, Int alpha_test, Int reflect, Int emissive_map, Int detail, Int color, Int mtrl_blend, Int uv_scale, Int heightmap, Int fx, Int per_pixel,   Int light_dir, Int light_dir_shd, Int light_dir_shd_num,   Int light_point, Int light_point_shd,   Int light_linear, Int light_linear_shd,   Int light_cone, Int light_cone_shd,   Int tesselate);
+Str8 ShaderBlendLight (Int skin, Int color    , Int layout, Int bump_mode, Int alpha_test, Int alpha, Int reflect, Int emissive_map, Int uv_scale, Int fx, Int per_pixel, Int shadow_maps, Int tesselate);
 Str8 ShaderPosition   (Int skin, Int color, Int alpha_test, Int test_blend, Int fx, Int tesselate);
 Str8 ShaderBlend      (Int skin, Int color, Int layout, Int bump_mode, Int reflect, Int emissive_map);
 Str8 ShaderSetColor   (Int skin, Int color, Int alpha_test, Int tesselate);
@@ -534,8 +534,8 @@ struct DefaultShaders
    Bool valid,
         detail, macro, reflect,
         mtrl_blend,
-        heightmap,
-        tex, normal, color, size,
+        uv_scale, heightmap,
+        uv, normal, color, size,
         fur, grass, leaf,
         alpha, alpha_blend, alpha_blend_no_light, alpha_blend_light,
         skin,
