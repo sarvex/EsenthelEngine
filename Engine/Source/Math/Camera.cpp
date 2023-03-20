@@ -61,7 +61,7 @@ Camera& Camera::setSpherical()
 Camera& Camera::setFromAt(C VecD &from, C VecD &at, Flt roll)
 {
    matrix.z=at-from; dist=matrix.z.normalize();
-   matrix.x=Cross(Vec(0, 1, 0), matrix.z);
+   matrix.x=CrossUp(matrix.z);
    if(!dist || !matrix.x.normalize())matrix.identity();else
    {
       matrix.x*=Matrix3().setRotate(matrix.z, -roll);

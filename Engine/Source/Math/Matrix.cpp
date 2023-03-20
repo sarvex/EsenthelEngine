@@ -2713,6 +2713,12 @@ MatrixD3& MatrixD3::setRotation(C VecD &dir_from, C VecD &dir_to) // !! Warning:
    return T;
 }
 
+Matrix3& Matrix3::setRotationUp(C Vec &dir_to)
+{
+   Vec cross=CrossUp(dir_to); if(Flt sin=cross.normalize())setRotateCosSin(cross, dir_to.y, sin);else identity();
+   return T;
+}
+
 Matrix3& Matrix3::setRotation(C Vec &dir_from, C Vec &dir_to, Flt blend) // !! Warning: this will give identity if directions are opposite "dir_from==-dir_to" !!
 {
    Vec cross=Cross(dir_from, dir_to); if(Flt sin=cross.normalize())setRotate(cross, ACosSin(Dot(dir_from, dir_to), sin)*blend);else identity();
