@@ -1645,6 +1645,35 @@ Vec HsbToRgb(Vec hsb)
           return Vec(v, p, q);
 }
 /******************************************************************************/
+// BLEND
+/******************************************************************************/
+Flt     BlendAlpha(          Flt base_a,            Flt color_a) {return base_a + color_a*(1-base_a);}
+Vec     BlendAlpha(          Vec base_a,            Vec color_a) {return base_a + color_a*(1-base_a);}
+Vec FastBlendColor(Vec base, Vec base_a, Vec color, Vec color_a) {return base*(1-color_a) + color*color_a;}
+Vec     BlendColor(Vec base, Vec base_a, Vec color, Vec color_a)
+{
+   base_a*=1-color_a;
+   Vec ret, sum=base_a+color_a;
+   if(sum.r){base_a.r/=sum.r; color_a.r=1-base_a.r; ret.r=base.r*base_a.r + color.r*color_a.r;}else ret.r=0;
+   if(sum.g){base_a.g/=sum.g; color_a.g=1-base_a.g; ret.g=base.g*base_a.g + color.g*color_a.g;}else ret.g=0;
+   if(sum.b){base_a.b/=sum.b; color_a.b=1-base_a.b; ret.b=base.b*base_a.b + color.b*color_a.b;}else ret.b=0;
+   return ret;
+}
+Vec MergeBlendColor(Vec base, Vec base_a, Vec color, Vec color_a)
+{
+   base_a*=1-color_a;
+   Vec sum=base_a+color_a;
+#if 1
+   return sum ? (base*base_a+color)/sum : 0;
+#else
+   Vec ret;
+   if(sum.r)ret.r=(base.r*base_a.r + color.r)/sum.r;else ret.r=0;
+   if(sum.g)ret.g=(base.g*base_a.g + color.g)/sum.g;else ret.g=0;
+   if(sum.b)ret.b=(base.b*base_a.b + color.b)/sum.b;else ret.b=0;
+   return ret;
+#endif
+}
+/******************************************************************************/
 // ALPHA TEST
 /******************************************************************************/
 void MaterialAlphaTest(Half alpha)
