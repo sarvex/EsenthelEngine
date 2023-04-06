@@ -235,16 +235,27 @@ VecH4 PS
    Vec2 posXY=   UVToPosXY(uv);
 #endif
 
-   // distance
-#if MULTI_SAMPLE<=1
-   Vec pos=GetPosPix(pix, posXY);
-#else
-   Vec pos=GetPosMS(pix, index, posXY);
-#endif
+   VecH4 col;
+   const Int samples=((MULTI_SAMPLE==1) ? MS_SAMPLES : 1);
+   UNROLL for(Int i=0; i<samples; i++)
+   {
+      // distance
+   #if   MULTI_SAMPLE==0
+      Vec pos=GetPosPix(pix, posXY);
+   #elif MULTI_SAMPLE==1
+      Vec pos=GetPosMS(pix, i, posXY);
+   #else
+      Vec pos=GetPosMS(pix, index, posXY);
+   #endif
 
-   Flt   len=Length(pos);
-   Vec   dir=Transform3(pos/len, CamMatrix); // convert to ball space
-   VecH4 col=RayMarchScattering(AtmosphereViewPos, len, dir, AtmosphereLightPos);
+      Flt   len=Length(pos);
+      Vec   dir=Transform3(pos/len, CamMatrix); // convert to ball space
+      VecH4 c=RayMarchScattering(AtmosphereViewPos, Min(len, Viewport.range), dir, AtmosphereLightPos);
+
+      if(MULTI_SAMPLE!=1)col =c        ;else
+      if(i==0           )col =c/samples;else
+                         col+=c/samples;
+   }
 
    if(DITHER && MULTI_SAMPLE!=2)ApplyDither(col.rgb, pixel.xy); // skip dither for MS because it won't be noticeable
 

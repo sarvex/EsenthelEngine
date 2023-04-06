@@ -326,7 +326,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
    }
    { // LIGHT APPLY
       ShaderCompiler::Source &src=compiler.New(src_path+"Light Apply.cpp");
-      REPD(multi_sample, ms ? 3 : 1)
+      REPD(multi_sample, ms ? 4 : 1)
       REPD(reflect_mode, 3) // None, Reflect, Reflect+ClearCoat
       REPD(ao          , 2)
       REPD(  cel_shade , 2)

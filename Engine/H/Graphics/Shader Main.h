@@ -353,7 +353,7 @@ struct MainShaderClass
 
    // APPLY LIGHT
    Shader
-      *ApplyLight[3][3][2][2][2][2]; // [MultiSample] [ReflectMode] [AmbientOcclusion] [CelShade] [NightShade] [Glow]
+      *ApplyLight[4][3][2][2][2][2]; // [MultiSample] [ReflectMode] [AmbientOcclusion] [CelShade] [NightShade] [Glow]
    Shader* getApplyLight(Int multi_sample, Int reflect_mode, Bool ao, Bool cel_shade, Bool night_shade, Bool glow);
 
    // BLOOM

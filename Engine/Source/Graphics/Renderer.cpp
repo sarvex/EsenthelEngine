@@ -1658,14 +1658,14 @@ void RendererClass::light()
          Sh.ImgXYMS ->set(_ext );
          if(hasStencilAttached())
          {
-            D.stencil   (STENCIL_MSAA_TEST, 0); GetApplyLight(1, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // 1 sample
-            if(Sky.isActual())D.depth2DOff();                                                                             // multi-sampled always fill fully when sky will be rendered
-            D.stencilRef(STENCIL_REF_MSAA    ); GetApplyLight(2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
+            D.stencil   (STENCIL_MSAA_TEST, 0); GetApplyLight(                     1, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // 1 sample
+            if(Sky.isActual())D.depth2DOff();                                                                                                  // multi-sampled always fill fully when sky will be rendered (so we don't skip background sub-pixels)
+            D.stencilRef(STENCIL_REF_MSAA    ); GetApplyLight(Sky.isActual() ? 3 : 2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
             D.stencil   (STENCIL_NONE        );
          }else
          {
-            if(Sky.isActual())D.depth2DOff();                                         // multi-sampled always fill fully when sky will be rendered
-            GetApplyLight(2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
+            if(Sky.isActual())D.depth2DOff();                                                              // multi-sampled always fill fully when sky will be rendered (so we don't skip background sub-pixels)
+            GetApplyLight(Sky.isActual() ? 3 : 2, reflect_mode, ao, cel_shade, night_shade, glow)->draw(); // n samples
          }
       }
       D.depth2DOff();

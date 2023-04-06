@@ -829,8 +829,8 @@ void MainShaderClass::getTechniques()
                        }
       }
 
-      // COL LIGHT
-      REPD(multi_sample, (D.shaderModel()>=SM_4_1) ? 3 : 1)
+      // APPLY LIGHT
+      REPD(multi_sample, (D.shaderModel()>=SM_4_1) ? 4 : 1)
       REPD(reflect_mode, 3)
       REPD(ao          , 2)
       REPD(  cel_shade , 2)
