@@ -374,6 +374,8 @@ Shader* MainShaderClass::getSunRays(Bool alpha, Bool dither, Bool jitter, Bool g
 
 Shader* MainShaderClass::getSky(Int multi_sample, Bool flat, Bool density, Int textures, Bool stars, Bool dither, Bool per_vertex, Bool cloud) {return get(S8+"Sky"+multi_sample+flat+density+textures+stars+dither+per_vertex+cloud);}
 
+Shader* MainShaderClass::getAtmosphere(Int multi_sample, Bool flat, Bool dither) {return get(S8+"Atmosphere"+multi_sample+flat+dither+GL_ES);}
+
 Shader* MainShaderClass::getSkyTF(                  Int  textures  ,                           Bool dither, Bool cloud) {Int multi_sample=0;                 Bool flat=true , density=false, stars=false, per_vertex=false; return getSky(multi_sample, flat, density, textures, stars, dither, per_vertex, cloud);}
 Shader* MainShaderClass::getSkyT (Int multi_sample, Int  textures  ,                           Bool dither, Bool cloud) {                                    Bool flat=false, density=false, stars=false, per_vertex=false; return getSky(multi_sample, flat, density, textures, stars, dither, per_vertex, cloud);}
 Shader* MainShaderClass::getSkyAF(                  Bool per_vertex,               Bool stars, Bool dither, Bool cloud) {Int multi_sample=0; Int textures=0; Bool flat=true , density=false                               ; return getSky(multi_sample, flat, density, textures, stars, dither, per_vertex, cloud);}
@@ -750,6 +752,24 @@ void MainShaderClass::getTechniques()
    REPD(gamma , 2)
       SunRays[alpha][dither][jitter][gamma]=getSunRays(alpha, dither, jitter, gamma);
  //SunRaysSoft=get("SunRaysSoft");
+#endif
+
+   // ATMOSPHERE
+   AtmosphereViewPos      =GetShaderParam("AtmosphereViewPos");
+   AtmosphereLightPos     =GetShaderParam("AtmosphereLightPos");
+   AtmospherePlanetRadius =GetShaderParam("AtmospherePlanetRadius");
+ //AtmosphereHeight       =GetShaderParam("AtmosphereHeight");
+   AtmosphereRadius       =GetShaderParam("AtmosphereRadius");
+   AtmosphereAltScaleRay  =GetShaderParam("AtmosphereAltScaleRay");
+   AtmosphereAltScaleMie  =GetShaderParam("AtmosphereAltScaleMie");
+   AtmosphereLightScale   =GetShaderParam("AtmosphereLightScale");
+   AtmosphereFogReduce    =GetShaderParam("AtmosphereFogReduce");
+   AtmosphereFogReduceDist=GetShaderParam("AtmosphereFogReduceDist");
+#if !SLOW_SHADER_LOAD
+   REPD(multi_sample, (D.shaderModel()>=SM_4_1) ? 3 : (D.shaderModel()>=SM_4) ? 2 : 1)
+   REPD(flat        , 2)
+   REPD(dither      , 2)
+      Atmosphere[multi_sample][flat][dither]=getAtmosphere(multi_sample, flat, dither);
 #endif
 
    // SHADOWS

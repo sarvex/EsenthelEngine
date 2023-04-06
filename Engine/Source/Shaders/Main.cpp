@@ -580,7 +580,7 @@ VecH4 ColorLUT_PS(NOPERSP Vec2 uv:UV,
 // DUMMY - used only to obtain info about ConstantBuffers/ShaderParams
 /******************************************************************************/
 Flt Params0_PS():TARGET {return Highlight.x+FurVel[0].x+FurStep.x+Material.color.a+MultiMaterial0.color.a+MultiMaterial1.color.a+MultiMaterial2.color.a+MultiMaterial3.color.a+TexLod(FurCol, 0).x+TexLod(FurLight, 0).x;}
-Flt Params1_PS():TARGET {return CamMatrix[0].x+AmbientContrast2+HdrBrightness+LocalFogColor.x+OverlayOpaqueFrac()+BehindBias+Step+TransformPosPrev(0);}
+Flt Params1_PS():TARGET {return CamMatrix[0].x+AmbientContrast2+HdrBrightness+LocalFogColor.x+OverlayOpaqueFrac()+BehindBias+Step+TransformPosPrev(0)/*+TexLod(SkyA, 0).x+TexLod(SkyB, 0).x*/;}
 Flt Params2_PS():TARGET {return NightShadeColor.x+ToneMapMonitorMaxLum;}
 /******************************************************************************/
 #if GL // #WebSRGB

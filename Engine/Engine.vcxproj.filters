@@ -2177,6 +2177,9 @@
     <ClCompile Include="Source\Graphics\Import\AVIF Compress.cpp">
       <Filter>Source\Graphics\Import</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Shaders\Atmosphere.cpp">
+      <Filter>Source\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Source\Platforms\Mac\MyApplication.mm">

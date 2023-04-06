@@ -298,6 +298,8 @@ void RendererClass::create()
    Clouds.create();
    Water .create();
 
+ //if(_sky_a  .load("Img/Sky A.img"          ))GetShaderImage("SkyA"    )->set(_sky_a  );
+ //if(_sky_b  .load("Img/Sky B.img"          ))GetShaderImage("SkyB"    )->set(_sky_b  );
    if(_env_dfg.load("Img/Environment DFG.img"))GetShaderImage("EnvDFG"  )->set(_env_dfg);
    if(_noise  .load("Img/Blue Noise 128.img" ))GetShaderImage("ImgNoise")->set(_noise  ); ASSERT(NOISE_IMAGE_RES==128);
 #if GL
@@ -667,7 +669,8 @@ void RendererClass::cleanup()
   _ao        .clear();
   _mirror_rt .clear();
   _outline_rt.clear();
-   Lights.clear();
+   Lights     .clear();
+   Atmospheres.clear();
    ClearInstances();
 }
 void RendererClass::cleanup1()

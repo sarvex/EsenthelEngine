@@ -136,6 +136,17 @@ struct MainShaderClass
       *SkySunHighlight=&Dummy,
       *SkySunPos      =&Dummy,
 
+      *AtmosphereViewPos,
+      *AtmosphereLightPos,
+      *AtmospherePlanetRadius,
+    //*AtmosphereHeight,
+      *AtmosphereRadius,
+      *AtmosphereAltScaleRay,
+      *AtmosphereAltScaleMie,
+      *AtmosphereLightScale,
+      *AtmosphereFogReduce,
+      *AtmosphereFogReduceDist,
+
       *FogColor       ,
       *FogDensity     ,
       *LocalFogColor  ,
@@ -372,6 +383,10 @@ struct MainShaderClass
    Shader* getSkyA (Int multi_sample, Bool per_vertex, Bool density, Bool stars, Bool dither, Bool cloud);
 
    Shader* getSky(Int multi_sample, Bool flat, Bool density, Int textures, Bool stars, Bool dither, Bool per_vertex, Bool cloud);
+
+   Shader
+      *Atmosphere[3][2][2]; // [MultiSample] [Flat] [Dither]
+   Shader* getAtmosphere(Int multi_sample, Bool flat, Bool dither);
 }extern
    Sh;
 

@@ -3,6 +3,7 @@
 namespace EE{
 /******************************************************************************/
 SkyClass Sky;
+Memc<Atmosphere> Atmospheres;
 /******************************************************************************/
 static inline Vec4 SkyNightLightColor(Vec4 srgb_col) {srgb_col.xyz*=NightLightFactor(Sky.nightLight()); if(LINEAR_GAMMA)srgb_col.xyz=SRGBToLinear(srgb_col.xyz); return srgb_col;}
 
@@ -141,7 +142,47 @@ INLINE Shader* SkyTF(                  Int  textures  ,                         
 INLINE Shader* SkyT (Int multi_sample, Int  textures  ,                           Bool dither, Bool cloud) {Shader* &s=Sh.SkyT [multi_sample][textures-1]                [dither][cloud]; if(SLOW_SHADER_LOAD && !s)s=Sh.getSkyT (multi_sample, textures  ,                 dither, cloud); return s;}
 INLINE Shader* SkyAF(                  Bool per_vertex,               Bool stars, Bool dither, Bool cloud) {Shader* &s=Sh.SkyAF              [per_vertex]         [stars][dither][cloud]; if(SLOW_SHADER_LOAD && !s)s=Sh.getSkyAF(              per_vertex,          stars, dither, cloud); return s;}
 INLINE Shader* SkyA (Int multi_sample, Bool per_vertex, Bool density, Bool stars, Bool dither, Bool cloud) {Shader* &s=Sh.SkyA [multi_sample][per_vertex][density][stars][dither][cloud]; if(SLOW_SHADER_LOAD && !s)s=Sh.getSkyA (multi_sample, per_vertex, density, stars, dither, cloud); return s;}
+/******************************************************************************/
+// ATMOSPHERE
+/******************************************************************************/
+INLINE Shader* AtmosphereShader(Bool flat, Bool dither, Int multi_sample) {Shader* &s=Sh.Atmosphere[multi_sample][flat][dither]; if(SLOW_SHADER_LOAD && !s)s=Sh.getAtmosphere(multi_sample, flat, dither); return s;}
+inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
+{
+   Flt  draw_r=r/SKY_MESH_MIN_DIST;
+   Flt  dist2 =Dist2(ActiveCam.matrix.pos, pos); // use 'ActiveCam' instead of 'CamMatrix' because it's not affected by eyes
+   Bool flat  =(dist2<=Sqr(draw_r+FrustumMain.view_quad_max_dist+D.eyeDistance_2())); // use flat if camera intersects with mesh
 
+   MatrixM matrix; if(!flat)
+   {
+      matrix.setScalePos(-draw_r, pos); // reverse faces because 'Sky._mshr' is reversed
+      Sky._mshr.set();
+      D.depth(true);
+      D.cull (true);
+   }//else D.depth(false); already handled in "shader->draw" below
+
+   Sh.AtmospherePlanetRadius ->set(planet_radius);
+ //Sh.AtmosphereHeight       ->set(height);
+   Sh.AtmosphereRadius       ->set(r);
+
+   Sh.AtmosphereLightPos     ->set(Sun.pos);
+   Sh.AtmosphereAltScaleRay  ->set((-50/8.0f)/height); // - because of Exp, 50 was chosen to fill entire sphere with some color, 8.0 real physical value, 'height' proportional to atmosphere height
+   Sh.AtmosphereAltScaleMie  ->set((-50/1.2f)/height); // - because of Exp, 50 was chosen to fill entire sphere with some color, 1.2 real physical value, 'height' proportional to atmosphere height
+   Sh.AtmosphereLightScale   ->set(light_scale);
+   Sh.AtmosphereFogReduce    ->set(fog_reduce);
+   Sh.AtmosphereFogReduceDist->set(fog_reduce_dist);
+
+   Shader *shader      =                AtmosphereShader(flat, dither,            0),
+          *shader_multi=(multi_sample ? AtmosphereShader(flat, dither, multi_sample) : null);
+
+   REPS(Renderer._eye, Renderer._eye_num)
+   {
+      Renderer.setEyeViewportCam();
+      Sh.AtmosphereViewPos->set(CamMatrix.pos-pos); if(!flat)SetFastMatrix(matrix); // set these after 'setEyeViewportCam'
+      if(shader_multi){D.depth((multi_sample==1) ? false : !flat); D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA); if(flat)shader_multi->draw();else{shader_multi->begin(); Sky._mshr.draw();} D.stencilRef(0); D.depth(!flat);} // MS edges for deferred must not use depth testing, call this first to set stencil, reset stencil ref and depth for call below
+                                                                                                                   if(flat)shader      ->draw();else{shader      ->begin(); Sky._mshr.draw();} // call this next
+   }
+}
+/******************************************************************************/
 void SkyClass::draw()
 {
    if(isActual())
@@ -205,7 +246,7 @@ void SkyClass::draw()
          if(sky_ball_mesh_size*SKY_MESH_MIN_DIST<=Frustum.view_quad_max_dist){sky_ball_mesh_size=to; ds=false;} // if the closest point on the mesh surface is in touch with the view quad, it means that the ball would not render fully, we have to render it with full size and with depth test disabled
       }else sky_ball_mesh_size=to;
    #if !REVERSE_DEPTH // for low precision depth we need to make sure that sky ball mesh is slightly smaller than view range, to avoid mesh clipping, this was observed on OpenGL with viewFrom=0.05, viewRange=1024, Cam.yaw=0, Cam.pitch=PI_2
-      MIN(sky_ball_mesh_size, to*EPS_SKY_MIN_VIEW_RANGE); // alternatively we could try using D3DRS_CLIPPING, DepthClipEnable, GL_DEPTH_CLAMP
+      MIN(sky_ball_mesh_size, to*EPS_SKY_MIN_VIEW_RANGE); // alternatively we could try using 'D.depthClip'
    #endif
       // !! THIS MUST NOT MODIFY 'Renderer._alpha' BECAUSE THAT WOULD DISABLE SUN RAYS !!
       Renderer.set(Renderer._col, Renderer._ds, true, blend ? NEED_DEPTH_READ : NO_DEPTH_READ); // specify correct mode because without it the sky may cover everything completely
@@ -223,6 +264,29 @@ void SkyClass::draw()
       D.depthOnWriteFunc(false, true, FUNC_DEFAULT);
       D.stencil         (STENCIL_NONE);
    }
+
+   if(Atmospheres.elms())
+      if(AstrosDraw && Sun.is()) // only if have Sun (light)
+   {
+      Renderer.set(Renderer._col, Renderer._ds, true, NEED_DEPTH_READ);
+      D.alpha(ALPHA_RENDER_MERGE);
+      D.depthWriteFunc(false, FUNC_LESS);
+      SetMatrixCount(); // needed for drawing mesh
+
+      Int  multi_sample=(Renderer._col->multiSample() ? ((Renderer._cur_type==RT_DEFERRED) ? 1 : 2) : 0);
+      Bool dither      =(D.dither() && !Renderer._col->highPrecision());
+      REPAO(Atmospheres).drawDo(multi_sample, dither);
+
+      // restore default
+      D.depthOnWriteFunc(false, true, FUNC_DEFAULT);
+      D.stencil(STENCIL_NONE);
+   }
+}
+/******************************************************************************/
+void Atmosphere::draw()C
+{
+   DEBUG_ASSERT(Renderer()==RM_PREPARE, "'Atmosphere.draw' called outside of RM_PREPARE");
+   if(Frustum(T) && Renderer.firstPass())Atmospheres.add(T);
 }
 /******************************************************************************/
 }

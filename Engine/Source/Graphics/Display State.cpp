@@ -180,6 +180,7 @@ Bool DisplayState::depthWrite      (         Bool write           ) {Bool last=D
 void DisplayState::depthFunc       (                     UInt func) {                          if(                                         D._depth_func!=func){                                   D._depth_func=func; SetDS();}}
 void DisplayState::depthOnWrite    (Bool on, Bool write           ) {                          if(D._depth!=on || D._depth_write!=write                       ){D._depth=on; D._depth_write=write;                     SetDS();}} // this ignores '_depth_lock'
 void DisplayState::depthOnWriteFunc(Bool on, Bool write, UInt func) {                          if(D._depth!=on || D._depth_write!=write || D._depth_func!=func){D._depth=on; D._depth_write=write; D._depth_func=func; SetDS();}} // this ignores '_depth_lock'
+void DisplayState::depthWriteFunc  (         Bool write, UInt func) {                          if(                D._depth_write!=write || D._depth_func!=func){             D._depth_write=write; D._depth_func=func; SetDS();}} // this ignores '_depth_lock'
 void DisplayState::stencilRef      (                   Byte ref   ) {                          if(D._stencil_ref!=ref                                         ){D._stencil_ref=ref ;                                   SetDS();}}
 void DisplayState::stencil         (STENCIL_MODE mode, Byte ref   ) {                          if(D._stencil_ref!=ref || D._stencil!=mode                     ){D._stencil_ref=ref ; D._stencil=mode;                  SetDS();}}
 #elif GL
@@ -219,6 +220,7 @@ void DisplayState::depthAllow(Bool on)
 }
 void DisplayState::depthOnWrite    (Bool on, Bool write           ) {D.depth(on); D.depthWrite(write);}
 void DisplayState::depthOnWriteFunc(Bool on, Bool write, UInt func) {D.depth(on); D.depthWrite(write); D.depthFunc(func);}
+void DisplayState::depthWriteFunc  (         Bool write, UInt func) {             D.depthWrite(write); D.depthFunc(func);}
 #endif
 /******************************************************************************/
 void DisplayState::depth2DOn(UInt func)

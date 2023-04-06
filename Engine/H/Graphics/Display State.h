@@ -112,6 +112,7 @@ struct DisplayState // Display States Control, this class methods can be called 
    static void depthBias       (BIAS_MODE bias  );
    static void depthOnWrite    (Bool      on, Bool write);
    static void depthOnWriteFunc(Bool      on, Bool write, UInt func);
+   static void depthWriteFunc  (              Bool write, UInt func);
    static void    frontFace    (Bool      ccw   );
    static void setFrontFace    (                );
    static void wire            (Bool      on    );

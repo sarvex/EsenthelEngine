@@ -524,6 +524,7 @@ ImageH2   ImgXY, ImgXY1, ImgXY2, EnvDFG;
 ImageCube Env, Cub, Cub1;
 Image3D   Vol;
 Image3DH2 VolXY, VolXY1;
+//Image     SkyA, SkyB;
 
 Texture2DMS<VecH4, MS_SAMPLES> ImgMS, ImgMS1, ImgMS2, ImgMS3;
 Texture2DMS<Half , MS_SAMPLES> ImgXMS;

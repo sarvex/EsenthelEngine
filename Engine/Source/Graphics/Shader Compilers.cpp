@@ -212,6 +212,14 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       src.New("Params1", S, "Params1_PS").dummy=true;
       src.New("Params2", S, "Params2_PS").dummy=true;
    }
+   { // ATMOSPHERE
+      ShaderCompiler::Source &src=compiler.New(src_path+"Atmosphere.cpp");
+      REPD(multi_sample, ms ? 3 : 1)
+      REPD(flat        , 2)
+      REPD(dither      , 2)
+      REPD(gl_es       , (api==API_GL) ? 2 : 1) // GL ES doesn't support NOPERSP
+         src.New("Atmosphere")("MULTI_SAMPLE", multi_sample)("FLAT", flat)("DITHER", dither)("GL_ES", gl_es).multiSample(multi_sample>=2);
+   }
    { // BLOOM
       ShaderCompiler::Source &src=compiler.New(src_path+"Bloom.cpp");
       REPD(view_full, 2)
