@@ -178,8 +178,8 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    {
       Renderer.setEyeViewportCam();
       Sh.AtmosphereViewPos->set(CamMatrix.pos-pos); if(!flat)SetFastMatrix(matrix); // set these after 'setEyeViewportCam'
-      if(shader_multi){if(!flat && multi_sample==1)D.depth(false); D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA); if(flat)shader_multi->draw();else{shader_multi->begin(); Sky._mshr.draw();} D.stencilRef(0); if(!flat)D.depth(true);} // MS edges for deferred must not use depth testing, call this first to set stencil, reset stencil ref and depth for call below
-                                                                                                                   if(flat)shader      ->draw();else{shader      ->begin(); Sky._mshr.draw();} // call this next
+      if(shader_multi){D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA); if(flat)shader_multi->draw();else{shader_multi->begin(); Sky._mshr.draw();} D.stencilRef(0);} // call this first to set stencil, reset stencil ref for call below
+                                                                       if(flat)shader      ->draw();else{shader      ->begin(); Sky._mshr.draw();} // call this next
    }
 }
 /******************************************************************************/
