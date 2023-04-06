@@ -1404,8 +1404,8 @@ void RendererClass::resolveDepth()
       D.alpha(ALPHA_NONE);
 
       // set multi-sampled '_ds' MSAA
-      if(_cur_type==RT_DEFERRED                             // for     deferred set it always (needed for lighting)
-      || Fog.draw || Sky.isActual() || processAlphaFinal()) // for non-deferred it will be used only for fog, sky and alpha
+      if(_cur_type==RT_DEFERRED                                                   // for     deferred set it always (needed for lighting)
+      || Fog.draw || Sky.isActual() || Atmospheres.elms() || processAlphaFinal()) // for non-deferred it will be used only for fog, sky, atmospheres and alpha
       {
          D.stencil(STENCIL_MSAA_SET, STENCIL_REF_MSAA);
          set(null, _ds, true);
