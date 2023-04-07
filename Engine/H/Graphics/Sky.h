@@ -72,8 +72,12 @@ struct Atmosphere : BallM // BallM.r = total radius of the atmosphere = planet r
    Atmosphere() {}
    Atmosphere(C VecD &pos, Flt planet_radius, Flt height, Flt light_scale) {T.pos=pos; T.planet_radius=planet_radius; T.height=height; T.r=planet_radius+height; T.light_scale=light_scale; T.fog_reduce=0.8f; T.fog_reduce_dist=height;}
 
+   Vec calcCol(Flt angle                             )C; // calculate sky color when standing on ground surface                       , when looking at direction based on 'angle' (0..PI/2, 0=look up, PI/2=look forward), at noon                                           , this ignores 'light_scale', 'fog_reduce' and Mie scattering
+   Vec calcCol(C Vec &pos, C Vec &ray, C Vec &sun_pos)C; // calculate sky color when standing on 'pos' position relative to atmosphere, when looking at 'ray' direction (must be normalized)                              , with sun located at 'sun_pos' (must be normalized), this ignores 'light_scale', 'fog_reduce' and Mie scattering
+
    void draw()C; // draw this Atmosphere object, this should be called only in RM_PREPARE mode
 #if EE_PRIVATE
+   void scattering(Flt height, Vec &rayleigh_scattering, Flt &mie_scattering, Vec &extinction)C;
    void drawDo(Int multi_sample, Bool dither)C;
    Bool toScreenRect(Rect &rect)C {return ToFullScreenRect(T, rect);}
 #endif

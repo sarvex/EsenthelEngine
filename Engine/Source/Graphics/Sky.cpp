@@ -146,6 +146,8 @@ INLINE Shader* SkyA (Int multi_sample, Bool per_vertex, Bool density, Bool stars
 // ATMOSPHERE
 /******************************************************************************/
 INLINE Shader* AtmosphereShader(Bool flat, Bool dither, Int multi_sample) {Shader* &s=Sh.Atmosphere[multi_sample][flat][dither]; if(SLOW_SHADER_LOAD && !s)s=Sh.getAtmosphere(multi_sample, flat, dither); return s;}
+static inline Flt AtmosphereAltScaleRay(Flt height) {return (-50/8.0f)/height;} // - because of Exp, 50 was chosen to fill entire sphere with some color, 8.0 real physical value, 'height' proportional to atmosphere height
+static inline Flt AtmosphereAltScaleMie(Flt height) {return (-50/1.2f)/height;} // - because of Exp, 50 was chosen to fill entire sphere with some color, 1.2 real physical value, 'height' proportional to atmosphere height
 inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
 {
    Flt  draw_r=r/SKY_MESH_MIN_DIST;
@@ -165,8 +167,8 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    Sh.AtmosphereRadius       ->set(r);
 
    Sh.AtmosphereLightPos     ->set(Sun.pos);
-   Sh.AtmosphereAltScaleRay  ->set((-50/8.0f)/height); // - because of Exp, 50 was chosen to fill entire sphere with some color, 8.0 real physical value, 'height' proportional to atmosphere height
-   Sh.AtmosphereAltScaleMie  ->set((-50/1.2f)/height); // - because of Exp, 50 was chosen to fill entire sphere with some color, 1.2 real physical value, 'height' proportional to atmosphere height
+   Sh.AtmosphereAltScaleRay  ->set(AtmosphereAltScaleRay(height));
+   Sh.AtmosphereAltScaleMie  ->set(AtmosphereAltScaleMie(height));
    Sh.AtmosphereLightScale   ->set(light_scale);
    Sh.AtmosphereFogReduce    ->set(fog_reduce);
    Sh.AtmosphereFogReduceDist->set(fog_reduce_dist);
@@ -287,6 +289,114 @@ void Atmosphere::draw()C
 {
    DEBUG_ASSERT(Renderer()==RM_PREPARE, "'Atmosphere.draw' called outside of RM_PREPARE");
    if(Frustum(T) && Renderer.firstPass())Atmospheres.add(T);
+}
+/******************************************************************************/
+const Vec RayleighScattering=Vec(5.2091275314786692e-06, 1.2171661977460255e-05, 2.9715971624658822e-05); // Vec(5.802, 13.558, 33.1)*0.000001;
+const Flt MieScattering=3.996*0.000001;
+/******************************************************************************/
+Flt RayleighPhase(Flt angle_cos)
+{
+   return 3/(16*PI)*(1+angle_cos*angle_cos);
+}
+Flt MiePhase(Flt angle_cos)
+{
+   const Flt g=0.8;
+
+   Flt   num=3/(8*PI)*(1-g*g)*(1+angle_cos*angle_cos);
+   Flt denom=(2+g*g)*Pow(1 + g*g - 2*g*angle_cos, 1.5f);
+
+   return num/denom;
+}
+/******************************************************************************/
+void Atmosphere::scattering(Flt height, Vec &rayleigh_scattering, Flt &mie_scattering, Vec &extinction)C
+{
+   Flt altitude        =Max(0, height-planet_radius);
+   Flt rayleigh_density=Exp(altitude*AtmosphereAltScaleRay(T.height));
+   Flt      mie_density=Exp(altitude*AtmosphereAltScaleMie(T.height));
+
+       rayleigh_scattering=RayleighScattering*rayleigh_density;
+ //Flt rayleigh_absorption=RayleighAbsorption*rayleigh_density;
+
+       mie_scattering=MieScattering*mie_density;
+ //Flt mie_absorption=MieAbsorption*mie_density;
+
+ //extinction=rayleigh_scattering+(rayleigh_absorption+mie_scattering+mie_absorption);
+   extinction=rayleigh_scattering+mie_scattering; // looked better when using just one mie_scattering or mie_absorption, since mie_scattering has to be calculated anyway, then just use that one
+
+ //Vec ozone_absorption=OzoneAbsorption*Max(0, 1-Abs(altitude_km-25)/15); extinction+=ozone_absorption;
+}
+/******************************************************************************/
+// !! THIS IGNORES 'light_scale', 'fog_reduce' AND MIE SCATTERING  !!
+Vec Atmosphere::calcCol(C Vec &pos, C Vec &ray, C Vec &sun)C
+{
+   Flt start, end;
+ //Flt fog_factor; // fake factor that removes fog and mie highlights on objects (this is faster than shadow testing per sample)
+   {
+      Flt b=Dot(pos, ray);
+      Flt c=pos.length2()-Sqr(T.r);
+      Flt d=b*b-c;
+      Flt atmos_start=-b-Sqrt(d),
+          atmos_end  =-b+Sqrt(d);
+      start=Max(       0, atmos_start);
+      end  =              atmos_end   ;
+      if(d<=0 || end<=start)return 0; // no atmosphere intersection
+    //Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_pos_cam_dist to atmos_end
+    //fog_factor=1-fog_reduce*(1-factor)*Sat(1-end/fog_reduce_dist);
+   }
+
+   Flt      angle_cos=Dot(ray, sun);
+   Flt rayleigh_phase=RayleighPhase(angle_cos);
+   Flt      mie_phase=     MiePhase(angle_cos);
+
+   const Int steps=16; // 16 is smallest value that looks as good as 256
+   Vec lum=0, transmittance=1;
+   Flt t0=start, mul=end-start;
+   for(Int i=1; i<=steps; i++)
+   {
+      Flt t1=Flt(i)/steps;
+      if(1)t1*=t1; // focus on samples closer to camera, this increases precision
+      t1=t1*mul+start;
+      Flt t=Avg(t0, t1), dt=t1-t0; t0=t1;
+
+      Vec sample_pos=pos+t*ray;
+      Flt height=sample_pos.length();
+
+      Vec rayleigh_scattering, extinction;
+      Flt      mie_scattering;
+      scattering(height, rayleigh_scattering, mie_scattering, extinction);
+
+   #if 1
+      Flt sun_zenith_angle_cos=Dot(sun, sample_pos)/height; // Dot(sun, sample_pos/height)
+      Flt sun_transmittance   =Sqr(sun_zenith_angle_cos*0.5+0.5);
+      Vec scattering          =(rayleigh_scattering*rayleigh_phase/* + mie_scattering*mie_phase*/)*sun_transmittance;
+   #else
+      Vec  up=sample_pos/height;
+      Flt  sun_zenith_angle_cos=Dot(sun, up);
+      Vec2 uv=Vec2(sun_zenith_angle_cos*0.5+0.5, (height-AtmospherePlanetRadius)/AtmosphereHeight);
+
+      Vec sun_transmittance=TexLod(SkyA, uv).rgb; // Lod needed for clamp
+      Vec psiMS            =TexLod(SkyB, uv).rgb; // Lod needed for clamp
+
+      Vec rayleighInScattering=  rayleigh_scattering*(rayleigh_phase*sun_transmittance+psiMS);
+      Vec      mieInScattering=       mie_scattering*(     mie_phase*sun_transmittance+psiMS);
+      Vec           scattering=rayleighInScattering+mieInScattering;
+   #endif
+
+      Vec sample_transmittance=Exp(-dt*extinction);
+   #if 1 // faster but may have issues in certain cases with low 'steps', have to test if results are satisfactory
+      lum+=transmittance*scattering*dt;
+   #else
+      Vec scattering_integral=(scattering-scattering*sample_transmittance)/extinction;
+      lum+=transmittance*scattering_integral;
+   #endif
+      transmittance*=sample_transmittance;
+   }
+ //lum*=fog_factor*light_scale;
+   return lum;
+}
+Vec Atmosphere::calcCol(Flt angle)C
+{
+   return calcCol(Vec(0, planet_radius, 0), Vec(0, Cos(angle), Sin(angle)), Vec(0, 1, 0));
 }
 /******************************************************************************/
 }

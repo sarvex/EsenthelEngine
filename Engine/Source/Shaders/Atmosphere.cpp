@@ -56,10 +56,10 @@ Flt MiePhase(Flt angle_cos)
    return num/denom;
 }
 /******************************************************************************/
-void ScatteringValues(Flt height,
-                  out Vec rayleigh_scattering,
-                  out Flt      mie_scattering,
-                  out Vec extinction)
+void Scattering(Flt height,
+            out Vec rayleigh_scattering,
+            out Flt      mie_scattering,
+            out Vec extinction)
 {
    Flt altitude        =Max(0, height-AtmospherePlanetRadius);
    Flt rayleigh_density=Exp(altitude*AtmosphereAltScaleRay);
@@ -121,7 +121,7 @@ VecH4 RayMarchScattering(Vec pos,
 
       Vec rayleigh_scattering, extinction;
       Flt      mie_scattering;
-      ScatteringValues(height, rayleigh_scattering, mie_scattering, extinction);
+      Scattering(height, rayleigh_scattering, mie_scattering, extinction);
 
       Flt sun_zenith_angle_cos=Dot(sun, sample_pos)/height; // Dot(sun, sample_pos/height)
       Flt sun_transmittance   =Sqr(sun_zenith_angle_cos*0.5+0.5);
@@ -153,7 +153,7 @@ VecH4 RayMarchScattering(Vec pos,
 
       Vec rayleigh_scattering, extinction;
       Flt      mie_scattering;
-      ScatteringValues(height, rayleigh_scattering, mie_scattering, extinction);
+      Scattering(height, rayleigh_scattering, mie_scattering, extinction);
 
    #if 1
       Flt sun_zenith_angle_cos=Dot(sun, sample_pos)/height; // Dot(sun, sample_pos/height)
