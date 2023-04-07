@@ -765,6 +765,7 @@ void MainShaderClass::getTechniques()
    AtmosphereLightScale   =GetShaderParam("AtmosphereLightScale");
    AtmosphereFogReduce    =GetShaderParam("AtmosphereFogReduce");
    AtmosphereFogReduceDist=GetShaderParam("AtmosphereFogReduceDist");
+   AtmosphereDarken       =GetShaderParam("AtmosphereDarken");
 #if !SLOW_SHADER_LOAD
    REPD(multi_sample, (D.shaderModel()>=SM_4_1) ? 3 : (D.shaderModel()>=SM_4) ? 2 : 1)
    REPD(flat        , 2)

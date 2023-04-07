@@ -146,6 +146,7 @@ struct MainShaderClass
       *AtmosphereLightScale,
       *AtmosphereFogReduce,
       *AtmosphereFogReduceDist,
+      *AtmosphereDarken,
 
       *FogColor       ,
       *FogDensity     ,

@@ -13,6 +13,7 @@ BUFFER(Atmosphere)
    Flt AtmosphereLightScale; // 0..Inf
    Flt AtmosphereFogReduce, // 0..1 = 1-MaxFog
        AtmosphereFogReduceDist; // 0..Inf
+   Flt AtmosphereDarken; // 0..Inf
 BUFFER_END
 #include "!Set Prec Default.h"
 /******************************************************************************
@@ -77,10 +78,11 @@ void Scattering(Flt height,
  //Vec ozone_absorption=OzoneAbsorption*Max(0, 1-Abs(altitude_km-25)/15); extinction+=ozone_absorption;
 }
 /******************************************************************************/
-VecH4 RayMarchScattering(Vec pos,
-                         Flt pixel_dist,
-                         Vec ray,
-                         Vec sun)
+VecH4 RayMarchScattering(Vec  pos,
+                         Flt  pixel_dist,
+                         Bool back,
+                         Vec  ray,
+                         Vec  sun)
 {
    Flt start, end;
    Flt fog_factor; // fake factor that removes fog and mie highlights on objects (this is faster than shadow testing per sample)
@@ -182,9 +184,10 @@ VecH4 RayMarchScattering(Vec pos,
       transmittance*=sample_transmittance;
    }
    lum*=fog_factor*AtmosphereLightScale;
-   Flt alpha=1-Min(transmittance);
-   return VecH4(lum, alpha);
+ //Flt alpha=1-Min(transmittance);
+   Flt alpha=back ? 1-Sqr(1-Sat(Max(lum)*AtmosphereDarken)) : 0;
  //return VecH4(alpha.rrr, 1); // show alpha
+   return VecH4(lum, alpha);
 }
 /******************************************************************************/
 void VS(VtxInput vtx,
@@ -240,17 +243,21 @@ VecH4 PS
    UNROLL for(Int i=0; i<samples; i++)
    {
       // distance
+      Flt z;
    #if   MULTI_SAMPLE==0
-      Vec pos=GetPosPix(pix, posXY);
+      z=Depth[pix];
    #elif MULTI_SAMPLE==1
-      Vec pos=GetPosMS(pix, i, posXY);
+      z=TexSample(DepthMS, pix, i).x;
    #else
-      Vec pos=GetPosMS(pix, index, posXY);
+      z=TexSample(DepthMS, pix, index).x;
    #endif
+      Bool back=DEPTH_BACKGROUND(z);
+      z=LinearizeDepth(z);
+      Vec pos=GetPos(z, posXY);
 
       Flt   len=Length(pos);
       Vec   dir=Transform3(pos/len, CamMatrix); // convert to ball space
-      VecH4 c=RayMarchScattering(AtmosphereViewPos, Min(len, Viewport.range), dir, AtmosphereLightPos);
+      VecH4 c=RayMarchScattering(AtmosphereViewPos, Min(len, Viewport.range), back, dir, AtmosphereLightPos);
 
       if(MULTI_SAMPLE!=1)col =c              ;else
       if(i==0           )col =c/(Half)samples;else

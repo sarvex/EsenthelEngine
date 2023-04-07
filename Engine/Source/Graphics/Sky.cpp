@@ -172,6 +172,7 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    Sh.AtmosphereLightScale   ->set(light_scale);
    Sh.AtmosphereFogReduce    ->set(fog_reduce);
    Sh.AtmosphereFogReduceDist->set(fog_reduce_dist);
+   Sh.AtmosphereDarken       ->set(darken);
 
    Shader *shader      =                AtmosphereShader(flat, dither,            0),
           *shader_multi=(multi_sample ? AtmosphereShader(flat, dither, multi_sample) : null);
