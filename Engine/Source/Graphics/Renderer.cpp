@@ -1268,7 +1268,11 @@ start:
                if(clear_ext)D.clearCol(2,                                EXT_CLEAR);
                if(clear_vel)D.clearCol(3, D.signedVelRT() ? SVEL_CLEAR : VEL_CLEAR);
             }else
-            if(clear_col || clear_nrm || clear_ext || clear_vel)Sh.ClearDeferred->draw();
+            if(clear_col || clear_nrm || clear_ext || clear_vel)
+            {
+               if(clear_vel)SetViewToViewPrev();
+               Sh.ClearDeferred->draw();
+            }
          }
          if(clear_ds){temporalCheck(); D.clearDS();} // 'temporalCheck' and 'D.clearDS' are paired to make sure 'temporalCheck' is called only once
       }break;
