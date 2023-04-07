@@ -1224,13 +1224,13 @@ Vec GetBoneVel(VecH local_pos, Vec view_pos, VecU bone, VecH weight) // no need 
           +GetCamAngVel( view_pos);
 }
 /******************************************************************************/
-VecH2 GetMotionUV(Vec projected_prev_pos_xyw, Vec2 uv)
+VecH2 GetMotionUV(Vec projected_prev_pos_xyw, Vec2 uv, Bool geom=true) // 'geom'=if generated using 3D geometry, which could result in position being behind the camera
 {
-   projected_prev_pos_xyw.z=Max(projected_prev_pos_xyw.z, Viewport.from); // prevent division by <=0 (needed for previous positions that are behind the camera)
+   if(geom)projected_prev_pos_xyw.z=Max(projected_prev_pos_xyw.z, Viewport.from); // prevent division by <=0 (needed for previous positions that are behind the camera)
    VecH2  vel=uv-ProjectedPosXYWToUV(projected_prev_pos_xyw); // cur-prev #MotionDir
    return vel;
 }
-VecH2 GetMotion(Vec projected_prev_pos_xyw, Vec4 pixel) {return GetMotionUV(projected_prev_pos_xyw, PixelToUV(pixel));}
+VecH2 GetMotion(Vec projected_prev_pos_xyw, Vec4 pixel, Bool geom=true) {return GetMotionUV(projected_prev_pos_xyw, PixelToUV(pixel), geom);}
 /******************************************************************************/
 // DEPTH
 /******************************************************************************/
@@ -2418,6 +2418,7 @@ struct DeferredOutput // use this structure in Pixel Shader for setting the outp
    void reflect(Half reflect) {out2.y=reflect;}
 
    void motion    (Vec projected_prev_pos_xyw, Vec4 pixel) {out3.xy=GetMotion(projected_prev_pos_xyw, pixel);}
+   void motion2D  (Vec projected_prev_pos_xyw, Vec4 pixel) {out3.xy=GetMotion(projected_prev_pos_xyw, pixel, false);} // use this only for 2D flat calculations that are known to be in front of camera
    void motionZero(                                      ) {out3.xy=0;}
 };
 /******************************************************************************/
