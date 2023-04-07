@@ -394,9 +394,9 @@ Vec Atmosphere::calcCol(C Vec &pos, C Vec &ray, C Vec &sun)C
  //lum*=fog_factor*light_scale;
    return lum;
 }
-Vec Atmosphere::calcCol(Flt angle)C
+Vec Atmosphere::calcCol(Flt look_angle)C
 {
-   return calcCol(Vec(0, planet_radius, 0), Vec(0, Cos(angle), Sin(angle)), Vec(0, 1, 0));
+   return calcCol(Vec(0, planet_radius, 0), Vec(0, Cos(look_angle), Sin(look_angle)), Vec(0, 1, 0));
 }
 /******************************************************************************/
 }
