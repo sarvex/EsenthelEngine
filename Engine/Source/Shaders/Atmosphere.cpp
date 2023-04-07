@@ -34,13 +34,13 @@ Dbl  kc=ParticlePolarisabilityConstant();
 VecD wave=VecD(680, 550, 440)*1e-9;
 VecD coef=RayleighScatteringCoefficient(kc, wave);
 /******************************************************************************/
-  const Vec RayleighScattering=Vec(5.2091275314786692e-06, 1.2171661977460255e-05, 2.9715971624658822e-05); // Vec(5.802, 13.558, 33.1)*0.000001;
-//const Flt RayleighAbsorption=*0.000001;
+  static const Vec RayleighScattering=Vec(5.2091275314786692e-06, 1.2171661977460255e-05, 2.9715971624658822e-05); // Vec(5.802, 13.558, 33.1)*0.000001;
+//static const Flt RayleighAbsorption=*0.000001;
 
-  const Flt MieScattering=3.996*0.000001;
-//const Flt MieAbsorption=4.4*0.000001; it's unclear if this is absorption or extinction (extinction=scattering+absorption)
+  static const Flt MieScattering=3.996*0.000001;
+//static const Flt MieAbsorption=4.4*0.000001; it's unclear if this is absorption or extinction (extinction=scattering+absorption)
 
-//const Vec OzoneAbsorption=Vec(0.650, 1.881, 0.085)*0.000001;
+//static const Vec OzoneAbsorption=Vec(0.650, 1.881, 0.085)*0.000001;
 /******************************************************************************/
 Flt RayleighPhase(Flt angle_cos)
 {
@@ -93,7 +93,7 @@ VecH4 RayMarchScattering(Vec pos,
           obstacle   =pixel_dist; // *AtmosphereScale
       start=Max(       0, atmos_start);
       end  =Min(obstacle, atmos_end  );
-      if(d<=0 || end<=start)return Vec4(0, 0, 0, 0); // no atmosphere intersection
+      if(d<=0 || end<=start)return VecH4(0, 0, 0, 0); // no atmosphere intersection
       Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_pos_cam_dist to atmos_end
       fog_factor=1-AtmosphereFogReduce*(1-factor)*Sat(1-end/AtmosphereFogReduceDist);
    }
@@ -252,9 +252,9 @@ VecH4 PS
       Vec   dir=Transform3(pos/len, CamMatrix); // convert to ball space
       VecH4 c=RayMarchScattering(AtmosphereViewPos, Min(len, Viewport.range), dir, AtmosphereLightPos);
 
-      if(MULTI_SAMPLE!=1)col =c        ;else
-      if(i==0           )col =c/samples;else
-                         col+=c/samples;
+      if(MULTI_SAMPLE!=1)col =c              ;else
+      if(i==0           )col =c/(Half)samples;else
+                         col+=c/(Half)samples;
    }
 
    if(DITHER && MULTI_SAMPLE!=2)ApplyDither(col.rgb, pixel.xy); // skip dither for MS because it won't be noticeable
