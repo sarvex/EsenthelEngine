@@ -170,11 +170,11 @@ VecH4 RayMarchScattering(Vec pos,
       Vec2 uv=Vec2(sun_zenith_angle_cos*0.5+0.5, (height-AtmospherePlanetRadius)/AtmosphereHeight);
 
       Vec sun_transmittance=TexLod(SkyA, uv).rgb; // Lod needed for clamp
-      Vec psiMS            =TexLod(SkyB, uv).rgb; // Lod needed for clamp
+      Vec multi_scatter    =TexLod(SkyB, uv).rgb; // Lod needed for clamp
 
-      Vec rayleighInScattering=  rayleigh_scattering*(rayleigh_phase*sun_transmittance+psiMS);
-      Vec      mieInScattering=       mie_scattering*(     mie_phase*sun_transmittance+psiMS);
-      Vec           scattering=rayleighInScattering+mieInScattering;
+      Vec rayleigh_scattering_1=rayleigh_scattering*(rayleigh_phase*sun_transmittance+multi_scatter);
+      Vec      mie_scattering_1=     mie_scattering*(     mie_phase*sun_transmittance+multi_scatter);
+      Vec          scattering  =rayleigh_scattering_1+mie_scattering_1;
    #endif
 
       Vec sample_transmittance=Exp(-dt*extinction);

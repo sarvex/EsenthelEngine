@@ -347,8 +347,8 @@ Vec Atmosphere::calcCol(C Vec &pos, C Vec &ray, C Vec &sun)C
       Flt d=b*b-c;
       Flt atmos_start=-b-Sqrt(d),
           atmos_end  =-b+Sqrt(d);
-      start=Max(       0, atmos_start);
-      end  =              atmos_end   ;
+      start=Max(atmos_start, 0);
+      end  =    atmos_end      ;
       if(d<=0 || end<=start)return 0; // no atmosphere intersection
     //Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_pos_cam_dist to atmos_end
     //fog_factor=1-fog_reduce*(1-factor)*Sat(1-end/fog_reduce_dist);
@@ -385,11 +385,11 @@ Vec Atmosphere::calcCol(C Vec &pos, C Vec &ray, C Vec &sun)C
       Vec2 uv=Vec2(sun_zenith_angle_cos*0.5+0.5, (height-AtmospherePlanetRadius)/AtmosphereHeight);
 
       Vec sun_transmittance=TexLod(SkyA, uv).rgb; // Lod needed for clamp
-      Vec psiMS            =TexLod(SkyB, uv).rgb; // Lod needed for clamp
+      Vec multi_scatter    =TexLod(SkyB, uv).rgb; // Lod needed for clamp
 
-      Vec rayleighInScattering=  rayleigh_scattering*(rayleigh_phase*sun_transmittance+psiMS);
-      Vec      mieInScattering=       mie_scattering*(     mie_phase*sun_transmittance+psiMS);
-      Vec           scattering=rayleighInScattering+mieInScattering;
+      Vec rayleigh_scattering_1=rayleigh_scattering*(rayleigh_phase*sun_transmittance+multi_scatter);
+      Vec      mie_scattering_1=     mie_scattering*(     mie_phase*sun_transmittance+multi_scatter);
+      Vec          scattering  =rayleigh_scattering_1+mie_scattering_1;
    #endif
 
       Vec sample_transmittance=Exp(-dt*extinction);
