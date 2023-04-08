@@ -99,7 +99,7 @@ VecH4 RayMarchScattering(Vec pos,
       end  =Min(atmos_end  , AtmosphereViewRange);
       end  =Lerp(Min(pixel_dist, end), end, back);
       if(d<=0 || end<=start)return VecH4(0, 0, 0, 0); // no atmosphere intersection
-      Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_pos_cam_dist to atmos_end
+      Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_dist to atmos_end
       fog_factor=1-AtmosphereFogReduce*(1-factor)*Sat(1-end/AtmosphereFogReduceDist);
    }
 
@@ -188,7 +188,7 @@ VecH4 RayMarchScattering(Vec pos,
    }
    lum*=fog_factor*AtmosphereLightScale;
  //Flt alpha=1-Min(transmittance);
-   Flt alpha=back*(1-Sqr(1-Sat(Max(lum)*AtmosphereDarken)));
+   Flt alpha=1-Sqr(1-back*Sat(Max(lum)*AtmosphereDarken)); // putting 'back' inside 'Sqr' rather than outside, helps to reduce white highlights on objects at view range
  //return VecH4(alpha.rrr, 1); // show alpha
    return VecH4(lum, alpha);
 }
