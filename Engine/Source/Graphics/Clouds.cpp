@@ -647,7 +647,7 @@ void VolumetricClouds::draw()
       Renderer.set(Renderer._col, Renderer._alpha, null, null, null, true);// #RTOutput.Blend
       D.alpha(ALPHA_RENDER_BLEND);
 
-      Flt to=D.viewRange(), from=Min(to*Sky.frac(), to-0.01f);
+      Flt to=D.viewRange(), from=Min(to*Sky.frac(), to-EPS_SKY_MIN_LERP_DIST);
       Vec2 mul_add; mul_add.x=1/(to-from); mul_add.y=-from*mul_add.x;
       Sh.SkyFracMulAdd->set(mul_add);
 

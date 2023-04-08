@@ -756,6 +756,7 @@ void MainShaderClass::getTechniques()
 
    // ATMOSPHERE
    AtmosphereViewPos      =GetShaderParam("AtmosphereViewPos");
+   AtmosphereViewRange    =GetShaderParam("AtmosphereViewRange");
    AtmosphereLightPos     =GetShaderParam("AtmosphereLightPos");
    AtmospherePlanetRadius =GetShaderParam("AtmospherePlanetRadius");
  //AtmosphereHeight       =GetShaderParam("AtmosphereHeight");

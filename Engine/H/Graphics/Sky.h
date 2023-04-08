@@ -63,6 +63,8 @@ private:
 /******************************************************************************/
 struct Atmosphere : BallM // BallM.r = total radius of the atmosphere = planet radius + atmosphere height, BallM.pos = world-space position
 {
+   static Flt ViewRange; // View Range for rendering Atmosphere, 0..Inf, this value is used inside the Atmosphere shader, and can be larger than 'D.viewRange', to allow drawing full atmosphere in Planetary View, while limiting terrain and objects to 'D.viewRange'
+
    Flt planet_radius  , // planet radius, excluding atmosphere, 0..Inf
        height         , // height of the atmosphere itself, excluding 'planet_radius', for the total atmosphere radius please see 'BallM.r' = planet_radius+height, 0..Inf
        light_scale    , // light scale, 0..Inf

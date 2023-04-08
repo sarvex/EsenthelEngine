@@ -1,10 +1,12 @@
 /******************************************************************************/
 #include "!Header.h"
+#include "Sky.h"
 // MULTI_SAMPLE, FLAT, DITHER, GL_ES
 /******************************************************************************/
 #include "!Set Prec Struct.h"
 BUFFER(Atmosphere)
    Vec AtmosphereViewPos;
+   Flt AtmosphereViewRange;
    Vec AtmosphereLightPos;
    Flt AtmospherePlanetRadius; // 0..Inf
  //Flt AtmosphereHeight; // 0..Inf
@@ -78,11 +80,11 @@ void Scattering(Flt height,
  //Vec ozone_absorption=OzoneAbsorption*Max(0, 1-Abs(altitude_km-25)/15); extinction+=ozone_absorption;
 }
 /******************************************************************************/
-VecH4 RayMarchScattering(Vec  pos,
-                         Flt  pixel_dist,
-                         Bool back,
-                         Vec  ray,
-                         Vec  sun)
+VecH4 RayMarchScattering(Vec pos,
+                         Flt pixel_dist,
+                         Flt back,
+                         Vec ray,
+                         Vec sun)
 {
    Flt start, end;
    Flt fog_factor; // fake factor that removes fog and mie highlights on objects (this is faster than shadow testing per sample)
@@ -91,10 +93,10 @@ VecH4 RayMarchScattering(Vec  pos,
       Flt c=Length2(pos)-Sqr(AtmosphereRadius);
       Flt d=b*b-c;
       Flt atmos_start=-b-Sqrt(d),
-          atmos_end  =-b+Sqrt(d),
-          obstacle   =pixel_dist; // *AtmosphereScale
-      start=Max(       0, atmos_start);
-      end  =Min(obstacle, atmos_end  );
+          atmos_end  =-b+Sqrt(d);
+      start=Max(atmos_start,                   0);
+      end  =Min(atmos_end  , AtmosphereViewRange);
+      end  =Lerp(Min(pixel_dist, end), end, back);
       if(d<=0 || end<=start)return VecH4(0, 0, 0, 0); // no atmosphere intersection
       Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_pos_cam_dist to atmos_end
       fog_factor=1-AtmosphereFogReduce*(1-factor)*Sat(1-end/AtmosphereFogReduceDist);
@@ -185,7 +187,7 @@ VecH4 RayMarchScattering(Vec  pos,
    }
    lum*=fog_factor*AtmosphereLightScale;
  //Flt alpha=1-Min(transmittance);
-   Flt alpha=back ? 1-Sqr(1-Sat(Max(lum)*AtmosphereDarken)) : 0;
+   Flt alpha=back*(1-Sqr(1-Sat(Max(lum)*AtmosphereDarken)));
  //return VecH4(alpha.rrr, 1); // show alpha
    return VecH4(lum, alpha);
 }
@@ -251,13 +253,14 @@ VecH4 PS
    #else
       z=TexSample(DepthMS, pix, index).x;
    #endif
-      Bool back=DEPTH_BACKGROUND(z);
+      Bool back_b=DEPTH_BACKGROUND(z);
       z=LinearizeDepth(z);
       Vec pos=GetPos(z, posXY);
 
-      Flt   len=Length(pos);
-      Vec   dir=Transform3(pos/len, CamMatrix); // convert to ball space
-      VecH4 c=RayMarchScattering(AtmosphereViewPos, Min(len, Viewport.range), back, dir, AtmosphereLightPos);
+      Flt   dist=Length(pos);
+      Flt   back=back_b ? 1 : Sat(dist*SkyFracMulAdd.x + SkyFracMulAdd.y);
+      Vec   dir=Transform3(pos/dist, CamMatrix); // convert to ball space
+      VecH4 c=RayMarchScattering(AtmosphereViewPos, dist, back, dir, AtmosphereLightPos);
 
       if(MULTI_SAMPLE!=1)col =c              ;else
       if(i==0           )col =c/(Half)samples;else

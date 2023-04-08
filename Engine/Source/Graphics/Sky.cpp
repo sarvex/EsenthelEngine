@@ -3,6 +3,7 @@
 namespace EE{
 /******************************************************************************/
 SkyClass Sky;
+Flt Atmosphere::ViewRange=10000;
 Memc<Atmosphere> Atmospheres;
 /******************************************************************************/
 static inline Vec4 SkyNightLightColor(Vec4 srgb_col) {srgb_col.xyz*=NightLightFactor(Sky.nightLight()); if(LINEAR_GAMMA)srgb_col.xyz=SRGBToLinear(srgb_col.xyz); return srgb_col;}
@@ -275,6 +276,15 @@ void SkyClass::draw()
       D.alpha(ALPHA_RENDER_MERGE);
       D.depthWriteFunc(false, FUNC_LESS);
       SetMatrixCount(); // needed for drawing mesh
+
+      Flt to  =    D.viewRange(),
+          from=Min(D.viewRange()*frac(), to-EPS_SKY_MIN_LERP_DIST);
+      //Flt sky_opacity=Length(O.pos)*MulAdd.x+MulAdd.y;
+      //              0=       from  *MulAdd.x+MulAdd.y;
+      //              1=       to    *MulAdd.x+MulAdd.y;
+      Vec2 mul_add; mul_add.x=1/(to-from); mul_add.y=-from*mul_add.x;
+      Sh.SkyFracMulAdd->set(mul_add);
+      Sh.AtmosphereViewRange->set(Atmosphere::ViewRange);
 
       Int  multi_sample=(Renderer._col->multiSample() ? ((Renderer._cur_type==RT_DEFERRED) ? 1 : 2) : 0);
       Bool dither      =(D.dither() && !Renderer._col->highPrecision());
