@@ -799,7 +799,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       REPD(macro     , (!skin  &&                  heightmap) ? 2 : 1)
       REPD(tesselate , tess ? 2 : 1)
       REPD(detail    , 2)
-      for(Int uv_scale=((heightmap || materials>1) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
+      for(Int uv_scale=(((heightmap || materials>1) && layout) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
          src.New().deferred(skin, materials, layout, bump_mode, alpha_test, detail, macro, color, mtrl_blend, uv_scale, heightmap, FX_NONE, tesselate);
 
       // grass + leaf, 1 material, 1-2 tex
@@ -836,7 +836,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       REPD(alpha_test  , layout    ? 2 : 1)
       REPD(alpha       , layout    ? 2 : 1) // BlendLight doesn't support ALPHA_TEST_DITHER
       REPD(emissive_map, 2)
-      for(Int uv_scale=((heightmap || materials>1) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
+      for(Int uv_scale=(((heightmap || materials>1) && layout) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
          src.New().blendLight(skin, color, layout, bump_mode ? SBUMP_NORMAL : SBUMP_FLAT, alpha_test, alpha, reflect, emissive_map, uv_scale, FX_NONE, per_pixel, shadow_maps);
 
       // grass+leaf, 1 material, 1-2 tex
@@ -872,7 +872,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       REPD(tesselate   , (tess && SUPPORT_FORWARD_TESSELATE   ) ? 2 : 1)
       REPD(detail      , (        SUPPORT_FORWARD_DETAIL      ) ? 2 : 1)
       REPD(reflect     , 2)
-      for(Int uv_scale=((heightmap || materials>1) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
+      for(Int uv_scale=(((heightmap || materials>1) && layout) ? 1 : 0), uv_scale_max=((layout && !skin && !alpha_test) ? 1 : 0); uv_scale<=uv_scale_max; uv_scale++) // always apply UV-Scale for heightmap or multi-materials
          src.forwardLight(skin, materials, layout, bump_mode ? SBUMP_NORMAL : SBUMP_FLAT, alpha_test, reflect, emissive_map, detail, color, mtrl_blend, uv_scale, heightmap, FX_NONE, per_pixel, tesselate);
 
       // grass + leaf, 1 material, 1-2 tex

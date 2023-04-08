@@ -161,7 +161,7 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    tesselate           =(normal && (lod_index<=0) && D.shaderModel()>=SM_5 && D.tesselation() && (!heightmap || D.tesselationHeightmap()));
    fx                  =(grass ? (m->hasGrass2D() ? FX_GRASS_2D : FX_GRASS_3D) : leaf ? (m->hasLeaf2D() ? (size ? FX_LEAFS_2D : FX_LEAF_2D) : (size ? FX_LEAFS_3D : FX_LEAF_3D)) : FX_NONE); // don't set FX_CLEAR_COAT here, because only Deferred shader supports it, and it's processed manually there
    clear_coat          =(m->technique==MTECH_CLEAR_COAT && normal && materials==1 && !heightmap);
-   uv_scale            =(heightmap || materials>1 || (uv && !Equal(m->uv_scale, 1) && layout && !skin && !alpha_test));
+   uv_scale            =((heightmap || materials>1 || (uv && !Equal(m->uv_scale, 1))) && (layout && !skin && !alpha_test));
 
    if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=uv_scale=heightmap=false; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
    if(fx        ){uv_scale=detail=macro=tesselate=false; MIN(bump, SBUMP_NORMAL);} // shaders with effects    currently don't support uv_scale/detail/macro/tesselate/fancy bump
