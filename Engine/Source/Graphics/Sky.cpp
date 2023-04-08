@@ -193,7 +193,6 @@ static Int Compare(C Atmosphere &a, C Atmosphere &b)
 }
 void SkyClass::draw()
 {
-   Atmospheres.sort(Compare); // sort from closest (i=0 first), to farthest (last)
    if(isActual())
    {
       Shader *shader, *shader_multi=null;
@@ -276,6 +275,7 @@ void SkyClass::draw()
 
    if(Atmospheres.elms())
    {
+      Atmospheres.sort(Compare); // sort from closest (i=0 first), to farthest (last)
       Renderer.set(Renderer._col, Renderer._ds, true, NEED_DEPTH_READ);
       D.alpha(ALPHA_RENDER_MERGE);
       D.depthWriteFunc(false, FUNC_LESS);
