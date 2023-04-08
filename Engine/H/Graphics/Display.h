@@ -178,7 +178,7 @@ struct DisplayClass : DisplayState, DisplayDraw // Display Control
    Flt             browserZoom    ()C;                          // get current browser zoom level (1.0=100%, 2.0=200%, etc), this is valid only for the WEB platform (other platforms always return 1.0)
 
    // settings
-   DisplayClass& mode  (Int w=-1, Int h=-1, Int  full=-1, Bool auto_full  =true );                 // set    Display Resolution  Mode, 'w'=width in pixels, 'h'=height in pixels, 'full'=if fullscreen (true/false), 'auto_full'=if allow forcing fullscreen when mode covers entire screen, -1=keep current value, if the method fails then previous mode is restored, if previous mode can't be restored then Exit is called
+   DisplayClass& mode  (Int w=-1, Int h=-1, Int  full=-1, Bool auto_full  =true );                 // set    Display Resolution  Mode, 'w'=width in pixels, 'h'=height in pixels, 'full'=if fullscreen (true/false), 'auto_full'=if allow forcing fullscreen when mode covers entire screen. Specifying -1 for any parameter means keep current value, if the method fails then previous mode is restored, if previous mode can't be restored then 'Exit' is called
    DisplayClass& toggle(                                  Bool window_size=false);                 // toggle Fullscreen/Windowed Mode, 'window_size'=if when switching to fullscreen want to set resolution from current window size instead of desktop size
    DisplayClass& full  (                    Bool full   , Bool window_size=false);                 // set    Fullscreen Mode         , 'window_size'=if when switching to fullscreen want to set resolution from current window size instead of desktop size
    Bool          full  (                                                        )C {return _full;} // if in  Fullscreen Mode (true/false, default=false)
@@ -649,8 +649,8 @@ private:
    static void         ResetFailed(RESET_RESULT New, RESET_RESULT old);
           RESET_RESULT ResetTry   (Bool set=false);
           void         Reset      ();
-          RESET_RESULT modeTry    (Int w=-1, Int h=-1, Int full=-1, Bool auto_full=true, Bool set=false); // try setting Display Mode, -1=keep original value, 'auto_full'=if allow forcing fullscreen when mode covers entire screen
-          void         modeSet    (Int w=-1, Int h=-1, Int full=-1                                     ); //     set     Display Mode, -1=keep original value
+          RESET_RESULT modeTry    (Int w=-1, Int h=-1, Int full=-1, Bool auto_full=true, Bool set=false); // try setting Display Mode, specifying -1 for any parameter means keep current value, 'auto_full'=if allow forcing fullscreen when mode covers entire screen
+          void         modeSet    (Int w=-1, Int h=-1, Int full=-1                                     ); //     set     Display Mode, specifying -1 for any parameter means keep current value
 
           Bool findMode      (Bool auto_full=true); // 'auto_full'=if allow forcing fullscreen when mode covers entire screen
           void getGamma      ();
