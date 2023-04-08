@@ -3,7 +3,8 @@
 namespace EE{
 /******************************************************************************/
 SkyClass Sky;
-Flt Atmosphere::ViewRange=10000;
+Flt  Atmosphere::ViewRange=10000;
+VecD Atmosphere::SunPos;
 Memc<Atmosphere> Atmospheres;
 /******************************************************************************/
 static inline Vec4 SkyNightLightColor(Vec4 srgb_col) {srgb_col.xyz*=NightLightFactor(Sky.nightLight()); if(LINEAR_GAMMA)srgb_col.xyz=SRGBToLinear(srgb_col.xyz); return srgb_col;}
@@ -166,8 +167,7 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    Sh.AtmospherePlanetRadius ->set(planet_radius);
  //Sh.AtmosphereHeight       ->set(height);
    Sh.AtmosphereRadius       ->set(r);
-
-   Sh.AtmosphereLightPos     ->set(Sun.pos);
+   Sh.AtmosphereLightPos     ->set(!(SunPos-pos));
    Sh.AtmosphereAltScaleRay  ->set(AtmosphereAltScaleRay(height));
    Sh.AtmosphereAltScaleMie  ->set(AtmosphereAltScaleMie(height));
    Sh.AtmosphereLightScale   ->set(light_scale);
@@ -270,7 +270,6 @@ void SkyClass::draw()
    }
 
    if(Atmospheres.elms())
-      if(AstrosDraw && Sun.is()) // only if have Sun (light)
    {
       Renderer.set(Renderer._col, Renderer._ds, true, NEED_DEPTH_READ);
       D.alpha(ALPHA_RENDER_MERGE);
