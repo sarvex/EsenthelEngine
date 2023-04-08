@@ -86,6 +86,7 @@ VecH4 RayMarchScattering(Vec pos,
                          Vec ray,
                          Vec sun)
 {
+   back*=back; // Sqr, helps for both 'end' (more smooth fade) and for "darken" (pixels at the back don't get darkened too much, but with the right balance)
    Flt start, end;
    Flt fog_factor; // fake factor that removes fog and mie highlights on objects (this is faster than shadow testing per sample)
    {
