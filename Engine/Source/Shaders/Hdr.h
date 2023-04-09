@@ -39,7 +39,7 @@ BUFFER_END
 void DarkenDarks(inout VecH x)
 {
    VecH step=Sat(x/ToneMapDarkenRange);
-   x=Lerp(Pow(step, ToneMapDarkenExp)*ToneMapDarkenRange, x, Sqr(step)); // alternative: LerpCube(step), but it's more expensive and only a small difference, not necessarily better
+   x=Lerp(Pow(step, ToneMapDarkenExp)*ToneMapDarkenRange, x, Sqr(step)); // alternative: SmoothCube(step), but it's more expensive and only a small difference, not necessarily better
 }
 /******************************************************************************/
 Half TonemapLum(VecH x) {return LinearLumOfLinearColor(x);} // could also be "Avg(x)" to darken bright blue skies
@@ -378,7 +378,7 @@ VecH _TonemapUchimura(VecH x, Half P, Half a, Half m, Half l, Half c, Half b) //
    VecH w1 = 1 - w0 - w2;
 
    VecH T = m * Pow(x / m, c) + b;
-   VecH S = P - (P - S1) * exp(CP * (x - S0));
+   VecH S = P - (P - S1) * Exp(CP * (x - S0));
    VecH L = m + a * (x - m);
 
    return T * w0 + L * w1 + S * w2;

@@ -651,7 +651,7 @@ Flt SmoothPinch(Flt x, Flt pinch)
 Flt gd(Flt x) {return Atan(sinhf(x));}
 Dbl gd(Dbl x) {return Atan(sinh (x));}
 
-Flt SigmoidExp    (Flt x) {return 2/(1+expf(-x))-1;}
+Flt SigmoidExp    (Flt x) {return 2/(1+Exp(-x))-1;}
 Flt SigmoidDiv    (Flt x) {return x/(1+x);}
 Flt SigmoidAtan   (Flt x) {return Atan(PI_2*x)*2/PI;}
 Flt SigmoidSqrt   (Flt x) {return x/SqrtFast(1+x*x);}
@@ -677,7 +677,7 @@ Flt BlendSmoothSqr(Flt x)
 Flt BlendSmoothCube(Flt x) // !! avoid changing this formula, but if it's changed, then adjust 'BlendSmoothCubeSum' and 'BlendSmoothCubeSumHalf' !!
 {
    ABS(x);
-   return (x<1) ? 1-(3-2*x)*x*x : 0;
+   return (x<1) ? 1-(3-2*x)*x*x : 0; // 1-_SmoothCube(x)
 }
 Flt BlendSmoothSextic(Flt x)
 {
@@ -692,7 +692,7 @@ Flt BlendSmoothSin(Flt x)
 /******************************************************************************/
 Flt Gaussian(Flt x)
 {
-    return expf(-x*x);
+    return Exp(-x*x);
 }
 /******************************************************************************/
 // EQUATIONS

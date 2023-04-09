@@ -438,7 +438,7 @@ Flt BlendSmoothSin   (Flt x); // get smooth sine   blend value (0..1), basing on
 constexpr Int BlendSmoothCubeSum    (Int range) {return range          ;} // get sum of all weights for all "-range..range" steps, calculated using "Flt weight=0; for(Int dist=-range; dist<=range; dist++)weight+=BlendSmoothCube(dist/Flt(range));"
 constexpr Flt BlendSmoothCubeSumHalf(Int range) {return range*0.5f+0.5f;} // get sum of all weights for all "     0..range" steps, calculated using "Flt weight=0; for(Int dist=     0; dist<=range; dist++)weight+=BlendSmoothCube(dist/Flt(range));"
 
-Flt Gaussian(Flt x); // get the Probability Density Function (PDF) of the Normal (Gaussian) distribution "expf(-x*x)", this function returns highest value of 1 at "x==0" and drops towards zero when 'x' becomes more away from the '0' position, theoretically it never reaches zero value, however due to floating point numerical precision zero will be reached for 'x' values far from '0' position
+Flt Gaussian(Flt x); // get the Probability Density Function (PDF) of the Normal (Gaussian) distribution "Exp(-x*x)", this function returns highest value of 1 at "x==0" and drops towards zero when 'x' becomes more away from the '0' position, theoretically it never reaches zero value, however due to floating point numerical precision zero will be reached for 'x' values far from '0' position
 
 Flt  SmoothOffset(Flt  &offset, Flt max_length);
 Vec2 SmoothOffset(Vec2 &offset, Flt max_length);

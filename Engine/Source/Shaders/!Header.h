@@ -1566,31 +1566,24 @@ VecH4 Lerp4(VecH4 v0, VecH4 v1, VecH4 v2, VecH4 v3, Half s)
         + v3 * (   TAN*(s3-s2)                           );
 }
 /******************************************************************************/
-Half LerpCube(Half s) {return (3-2*s)*s*s;}
-Flt  LerpCube(Flt  s) {return (3-2*s)*s*s;}
-VecH LerpCube(VecH s) {return (3-2*s)*s*s;}
+Half SmoothCube(Half s) {return (3-2*s)*s*s;}
+Flt  SmoothCube(Flt  s) {return (3-2*s)*s*s;}
+VecH SmoothCube(VecH s) {return (3-2*s)*s*s;}
 
-Half LerpCube(Half from, Half to, Half s) {return Lerp(from, to, LerpCube(s));}
-Flt  LerpCube(Flt  from, Flt  to, Flt  s) {return Lerp(from, to, LerpCube(s));}
-
-/*Flt LerpSmoothPow(Flt s, Flt p)
-{
-   s=Sat(s);
-   if(s<=0.5)return   0.5*Pow(  2*s, p);
-             return 1-0.5*Pow(2-2*s, p);
-}*/
+Half SmoothCube(Half from, Half to, Half s) {return Lerp(from, to, SmoothCube(s));}
+Flt  SmoothCube(Flt  from, Flt  to, Flt  s) {return Lerp(from, to, SmoothCube(s));}
 
 Half BlendSqr(Half x) {return Sat(1-x*x);}
 Flt  BlendSqr(Flt  x) {return Sat(1-x*x);}
 
-Half BlendSmoothCube(Half x) {x=Sat(Abs(x)); return 1-LerpCube(x);}
-Flt  BlendSmoothCube(Flt  x) {x=Sat(Abs(x)); return 1-LerpCube(x);}
+Half BlendSmoothCube(Half x) {x=Sat(Abs(x)); return 1-SmoothCube(x);}
+Flt  BlendSmoothCube(Flt  x) {x=Sat(Abs(x)); return 1-SmoothCube(x);}
 
 Half BlendSmoothSin(Half x) {x=Sat(Abs(x)); return Cos(x*PI)*0.5+0.5;}
 Flt  BlendSmoothSin(Flt  x) {x=Sat(Abs(x)); return Cos(x*PI)*0.5+0.5;}
 
-Half Gaussian(Half x) {return exp(-x*x);}
-Flt  Gaussian(Flt  x) {return exp(-x*x);}
+Half Gaussian(Half x) {return Exp(-x*x);}
+Flt  Gaussian(Flt  x) {return Exp(-x*x);}
 
 Half ScaleFactor (Half x) {return (x>=0) ? (1+x) : (1/(1-x));}
 Flt  ScaleFactor (Flt  x) {return (x>=0) ? (1+x) : (1/(1-x));}

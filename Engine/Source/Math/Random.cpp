@@ -235,12 +235,12 @@ Flt Randomizer::alignTargetNormalF(Flt min, Flt max, Flt target, Flt sharpness)
    if(bias<-0.5f)bias+=Cube(bias+0.5f)*9;
 
    // for sharpness=2 -> E, sharpness=1 -> 2
- //bias=powf(E, bias*2); for sharpness=2 which is bias=expf(bias*2);
+ //bias=powf(E, bias*2); for sharpness=2 which is bias=Exp(bias*2);
  //bias=powf(2, bias*2); for sharpness=1
    const Flt scale=E-2, add=2-scale, base=Min(E, sharpness*scale+add);
    bias=Pow(base, bias*2);
 
-   return min+(max-min)*bias/(bias+expf(normal()/sharpness));
+   return min+(max-min)*bias/(bias+Exp(normal()/sharpness));
 }
 /******************************************************************************/
 Flt Randomizer::normal()
