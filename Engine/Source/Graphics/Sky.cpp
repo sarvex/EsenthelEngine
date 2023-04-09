@@ -382,8 +382,9 @@ Vec Atmosphere::calcCol(C Vec &pos, C Vec &ray, C Vec &sun)C
 
    #if 1
       Flt sun_zenith_angle_cos=Dot(sun, sample_pos)/height; // Dot(sun, sample_pos/height)
-      Flt sun_transmittance   =Sqr(sun_zenith_angle_cos*0.5+0.5);
-      Vec scattering          =(rayleigh_scattering*rayleigh_phase/* + mie_scattering*mie_phase*/)*sun_transmittance;
+      Flt x=sun_zenith_angle_cos*0.5+0.5;
+      Flt sun_transmittance=SmoothCube(x); // !! IF CHANGING FORMULA THEN ALSO CHANGE ON CPU #AtmosphereFormula !!
+      Vec scattering=(rayleigh_scattering*rayleigh_phase/* + mie_scattering*mie_phase*/)*sun_transmittance;
    #else
       Vec  up=sample_pos/height;
       Flt  sun_zenith_angle_cos=Dot(sun, up);
