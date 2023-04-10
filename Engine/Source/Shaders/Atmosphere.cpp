@@ -86,7 +86,6 @@ VecH4 RayMarchScattering(Vec pos,
                          Vec ray,
                          Vec sun)
 {
-   back*=back; // Sqr, helps for both 'end' (more smooth fade) and for "darken" (pixels at the back don't get darkened too much, but with the right balance)
    Flt start, end;
    Flt fog_factor; // fake factor that removes fog and mie highlights on objects (this is faster than shadow testing per sample)
    {
@@ -97,7 +96,7 @@ VecH4 RayMarchScattering(Vec pos,
           atmos_end  =-b+Sqrt(d);
       start=Max(atmos_start,                   0);
       end  =Min(atmos_end  , AtmosphereViewRange);
-      end  =Lerp(Min(pixel_dist, end), end, back);
+      end  =Lerp(Min(pixel_dist, end), end, 1-Pow(1-back, 1.0/2.5)); // gives similar results to Lerp between ground and sky
       if(d<=0 || end<=start)return VecH4(0, 0, 0, 0); // no atmosphere intersection
       Flt factor=1 ? (end-start)/(atmos_end-start) : end/atmos_end; // proportion of pixel_dist to atmos_end
       fog_factor=1-AtmosphereFogReduce*(1-factor)*Sat(1-end/AtmosphereFogReduceDist);
@@ -188,9 +187,9 @@ VecH4 RayMarchScattering(Vec pos,
       transmittance*=sample_transmittance;
    }
    lum*=fog_factor*AtmosphereLightScale;
- //Flt alpha=1-Min(transmittance);
    Flt darken=Sat(Max(lum)*AtmosphereDarken);
-   Flt alpha=1-Sqr(1-back*darken); // putting 'back' inside 'Sqr' rather than outside, helps to reduce white highlights on objects at view range
+   Flt alpha=Sqr(back)*(1-Sqr(1-darken));
+ //Flt alpha=1-Min(transmittance);
  //return VecH4(alpha.rrr, 1); // show alpha
    return VecH4(lum, alpha);
 }
