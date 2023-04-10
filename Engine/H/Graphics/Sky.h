@@ -71,10 +71,11 @@ struct Atmosphere : BallM // BallM.r = total radius of the atmosphere = planet r
        light_scale    , // light scale, 0..Inf
        fog_reduce     , // fog reduction = 1-MaxFog, 0..1
        fog_reduce_dist, // fog reduction distance  , 0..Inf
-       darken         ; // how much to darken space background based on light intensity, 0..Inf
+       darken         , // how much to darken space background based on light intensity, 0..Inf
+       mie_extinction ; // Mie extinction=scattering+absorption, 0..Inf
 
    Atmosphere() {}
-   Atmosphere(C VecD &pos, Flt planet_radius, Flt height, Flt light_scale) {T.pos=pos; T.planet_radius=planet_radius; T.height=height; T.r=planet_radius+height; T.light_scale=light_scale; T.fog_reduce=1.0f; T.fog_reduce_dist=height; T.darken=15;}
+   Atmosphere(C VecD &pos, Flt planet_radius, Flt height, Flt light_scale) {T.pos=pos; T.planet_radius=planet_radius; T.height=height; T.r=planet_radius+height; T.light_scale=light_scale; T.fog_reduce=1.0f; T.fog_reduce_dist=height; T.darken=14; T.mie_extinction=0.00128f;}
 
    Vec calcCol(Flt look_angle                        )C; // calculate sky color when standing on ground surface                       , when looking at direction based on 'look_angle' (0..PI/2, 0=look up, PI/2=look forward), at noon                                                                  , this ignores 'light_scale', 'fog_reduce' and Mie scattering
    Vec calcCol(C Vec &pos, C Vec &ray, C Vec &sun_pos)C; // calculate sky color when standing on 'pos' position relative to atmosphere, when looking at 'ray' direction (must be normalized)                                   , with sun located at 'sun_pos' relative to atmosphere (must be normalized), this ignores 'light_scale', 'fog_reduce' and Mie scattering

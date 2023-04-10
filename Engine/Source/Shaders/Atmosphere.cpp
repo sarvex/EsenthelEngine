@@ -12,6 +12,7 @@ BUFFER(Atmosphere)
  //Flt AtmosphereHeight; // 0..Inf
    Flt AtmosphereRadius; // AtmospherePlanetRadius+AtmosphereHeight
    Flt AtmosphereAltScaleRay, AtmosphereAltScaleMie; // 0..Inf
+   Flt AtmosphereMieExtinction; // 0..Inf, extinction=scattering+absorption
    Flt AtmosphereLightScale; // 0..Inf
    Flt AtmosphereFogReduce, // 0..1 = 1-MaxFog
        AtmosphereFogReduceDist; // 0..Inf
@@ -38,10 +39,9 @@ VecD wave=VecD(680, 550, 440)*1e-9;
 VecD coef=RayleighScatteringCoefficient(kc, wave);
 /******************************************************************************/
   static const Vec RayleighScattering=Vec(5.2091275314786692e-06, 1.2171661977460255e-05, 2.9715971624658822e-05); // Vec(5.802, 13.558, 33.1)*0.000001;
-//static const Flt RayleighAbsorption=*0.000001;
+//static const Flt RayleighAbsorption=0*0.000001;
 
   static const Flt MieScattering=3.996*0.000001;
-//static const Flt MieAbsorption=4.4*0.000001; it's unclear if this is absorption or extinction (extinction=scattering+absorption)
 
 //static const Vec OzoneAbsorption=Vec(0.650, 1.881, 0.085)*0.000001;
 /******************************************************************************/
@@ -71,11 +71,11 @@ void Scattering(Flt height,
        rayleigh_scattering=RayleighScattering*rayleigh_density;
  //Flt rayleigh_absorption=RayleighAbsorption*rayleigh_density;
 
-       mie_scattering=MieScattering*mie_density;
- //Flt mie_absorption=MieAbsorption*mie_density;
+       mie_scattering=          MieScattering*mie_density;
+   Flt mie_extinction=AtmosphereMieExtinction*mie_density;
 
  //extinction=rayleigh_scattering+(rayleigh_absorption+mie_scattering+mie_absorption);
-   extinction=rayleigh_scattering+mie_scattering; // looked better when using just one mie_scattering or mie_absorption, since mie_scattering has to be calculated anyway, then just use that one
+   extinction=rayleigh_scattering+mie_extinction;
 
  //Vec ozone_absorption=OzoneAbsorption*Max(0, 1-Abs(altitude_km-25)/15); extinction+=ozone_absorption;
 }
@@ -189,7 +189,8 @@ VecH4 RayMarchScattering(Vec pos,
    }
    lum*=fog_factor*AtmosphereLightScale;
  //Flt alpha=1-Min(transmittance);
-   Flt alpha=1-Sqr(1-back*Sat(Max(lum)*AtmosphereDarken)); // putting 'back' inside 'Sqr' rather than outside, helps to reduce white highlights on objects at view range
+   Flt darken=Sat(Max(lum)*AtmosphereDarken);
+   Flt alpha=1-Sqr(1-back*darken); // putting 'back' inside 'Sqr' rather than outside, helps to reduce white highlights on objects at view range
  //return VecH4(alpha.rrr, 1); // show alpha
    return VecH4(lum, alpha);
 }

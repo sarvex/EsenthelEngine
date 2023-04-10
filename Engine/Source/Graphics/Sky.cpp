@@ -170,6 +170,7 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    Sh.AtmosphereLightPos     ->set(!(SunPos-pos));
    Sh.AtmosphereAltScaleRay  ->set(AtmosphereAltScaleRay(height));
    Sh.AtmosphereAltScaleMie  ->set(AtmosphereAltScaleMie(height));
+   Sh.AtmosphereMieExtinction->set(mie_extinction);
    Sh.AtmosphereLightScale   ->set(light_scale);
    Sh.AtmosphereFogReduce    ->set(fog_reduce);
    Sh.AtmosphereFogReduceDist->set(fog_reduce_dist);
@@ -332,11 +333,11 @@ void Atmosphere::scattering(Flt height, Vec &rayleigh_scattering, Flt &mie_scatt
        rayleigh_scattering=RayleighScattering*rayleigh_density;
  //Flt rayleigh_absorption=RayleighAbsorption*rayleigh_density;
 
-       mie_scattering=MieScattering*mie_density;
- //Flt mie_absorption=MieAbsorption*mie_density;
+       mie_scattering=   MieScattering*mie_density;
+   Flt mie_extinction=T.mie_extinction*mie_density;
 
  //extinction=rayleigh_scattering+(rayleigh_absorption+mie_scattering+mie_absorption);
-   extinction=rayleigh_scattering+mie_scattering; // looked better when using just one mie_scattering or mie_absorption, since mie_scattering has to be calculated anyway, then just use that one
+   extinction=rayleigh_scattering+mie_extinction;
 
  //Vec ozone_absorption=OzoneAbsorption*Max(0, 1-Abs(altitude_km-25)/15); extinction+=ozone_absorption;
 }

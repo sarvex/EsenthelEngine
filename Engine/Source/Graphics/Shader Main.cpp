@@ -763,6 +763,7 @@ void MainShaderClass::getTechniques()
    AtmosphereRadius       =GetShaderParam("AtmosphereRadius");
    AtmosphereAltScaleRay  =GetShaderParam("AtmosphereAltScaleRay");
    AtmosphereAltScaleMie  =GetShaderParam("AtmosphereAltScaleMie");
+   AtmosphereMieExtinction=GetShaderParam("AtmosphereMieExtinction");
    AtmosphereLightScale   =GetShaderParam("AtmosphereLightScale");
    AtmosphereFogReduce    =GetShaderParam("AtmosphereFogReduce");
    AtmosphereFogReduceDist=GetShaderParam("AtmosphereFogReduceDist");

@@ -144,6 +144,7 @@ struct MainShaderClass
       *AtmosphereRadius,
       *AtmosphereAltScaleRay,
       *AtmosphereAltScaleMie,
+      *AtmosphereMieExtinction,
       *AtmosphereLightScale,
       *AtmosphereFogReduce,
       *AtmosphereFogReduceDist,
