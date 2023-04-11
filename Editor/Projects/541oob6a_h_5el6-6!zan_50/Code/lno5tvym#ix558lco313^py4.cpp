@@ -34,6 +34,7 @@ bool Init()
 
    Sky.skybox(UID(540301137, 1134104252, 1741669259, 1349485002));
 
+   Atmos.mie_extinction=3/Atmos.height;
    Atmos.light_scale=0.3/Atmos.calcCol(0).max(); // auto-calculate light-scale
    Atmos.darken=1; // this could be adjusted based on camera distance to the planet surface, to darken space/stars when only standing on the surface
 
