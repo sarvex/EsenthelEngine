@@ -1594,16 +1594,17 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
          *hrf=(h_rf ? &h_rf->_height : null);
 
    // constants
-   const Int  res1    =res-1,
-              step    =(1<<quality),
-              ao_step =3,
-              ao_range=2*ao_step;
-   const Flt  nrm_y   =2.00f/res1,
-              ao_mul  =0.19f*res1;
    const Bool ambient_occlusion=FlagOn(flag, HM_AO),
               soft             =FlagOn(flag, HM_SOFT),
               build_null_mtrl  =FlagOn(flag, HM_BUILD_NULL_MTRL),
               nrm_f            =(!VTX_COMPRESS || soft || sphere); // if calculate float high precision normals
+   const Int  res1    =res-1,
+              step    =(1<<quality),
+              ao_step =3,
+              ao_range=2*ao_step;
+   const Flt  nrm_y   =sphere ? (sphere->planet_radius*4)/(sphere->areas*res1) // best results are with 4 and not PI
+                              : 2.00f/res1,
+              ao_mul  =0.19f*res1;
 
    // vars
    Flt     sharpness=0; Int sharpness_count=0;
