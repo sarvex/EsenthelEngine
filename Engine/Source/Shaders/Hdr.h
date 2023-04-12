@@ -417,7 +417,7 @@ VecH TonemapACES_HDR_Narkowicz(VecH x) // returns 0 .. 12.5 (0..1000 nits), Krzy
    Half c=1.2;
    Half d=5.92;
    Half e=1.9;
-   return (x*(a*x+b))/(x*(c*x+d)+e);
+   return (x*(a*x+b))/(x*(c*x+d)+e); // ((x*0.7)*(15.8*(x*0.7)+2.12))/((x*0.7)*(1.2*(x*0.7)+5.92)+1.9)
 }
 /******************************************************************************
 #define MUL (2*0.8) // to match 'TonemapACES_LDR_Narkowicz'
