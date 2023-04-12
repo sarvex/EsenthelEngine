@@ -3662,7 +3662,7 @@ DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
          if(dir.z>=0){xy.set( dir.x/div, -dir.y/div); return DIR_FORWARD;}
                      {xy.set(-dir.x/div, -dir.y/div); return DIR_BACK   ;}
 }
-DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy)
+DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy) // this matches exact same results as drawing Cube on GPU, 'xy' has to be passed to 'Image.colorFLinear' (for exact results Image also needs to have linear gamma)
 {
    // Vec n=dir/Abs(dir).max();
    // xy.x=(n.x+1)/2*res-0.5
@@ -3687,7 +3687,7 @@ DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy)
          if(dir.z>=0){xy.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
                      {xy.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
 }
-Vec CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+Vec CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
 {
    // x=(dir.x+1)/2*res-0.5
    // (x+0.5)*2/res-1=dir.x
