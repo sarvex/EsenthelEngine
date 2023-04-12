@@ -3642,37 +3642,37 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
    }
 #endif
 }
-DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &tex)
+DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy)
 {
    // Vec n=dir/Abs(dir).max();
-   // tex.x=(n.x+1)/2*res-0.5
-   // tex.x=(n.x+1)*res/2-0.5
-   // tex.x=n.x*res/2 + res/2-0.5
+   // xy.x=(n.x+1)/2*res-0.5
+   // xy.x=(n.x+1)*res/2-0.5
+   // xy.x=n.x*res/2 + res/2-0.5
    Flt mul=res*0.5f, add=mul-0.5f;
    Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
       if(abs.x>=abs.y)
       {
-         if( !abs.x ){tex.zero(                             ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         if( !abs.x ){xy.zero(                             ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
          mul/=abs.x;
-         if(dir.x>=0){tex.set(-dir.z*mul+add, -dir.y*mul+add); return DIR_RIGHT;}
-                     {tex.set( dir.z*mul+add, -dir.y*mul+add); return DIR_LEFT ;}
+         if(dir.x>=0){xy.set(-dir.z*mul+add, -dir.y*mul+add); return DIR_RIGHT;}
+                     {xy.set( dir.z*mul+add, -dir.y*mul+add); return DIR_LEFT ;}
       }
       Y: mul/=abs.y;
-         if(dir.y>=0){tex.set( dir.x*mul+add,  dir.z*mul+add); return DIR_UP   ;}
-                     {tex.set( dir.x*mul+add, -dir.z*mul+add); return DIR_DOWN ;}
+         if(dir.y>=0){xy.set( dir.x*mul+add,  dir.z*mul+add); return DIR_UP   ;}
+                     {xy.set( dir.x*mul+add, -dir.z*mul+add); return DIR_DOWN ;}
    }
       if(abs.y>=abs.z)goto Y;
          mul/=abs.z;
-         if(dir.z>=0){tex.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
-                     {tex.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
+         if(dir.z>=0){xy.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
+                     {xy.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
 }
 Vec CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
 {
-   // tex.x=(dir.x+1)/2*res-0.5
-   // (tex.x+0.5)*2/res-1=dir.x
-   // dir.x=tex.x*2/res + 0.5*2/res - 1
-   // dir.x=tex.x*2/res + 1/res-1
+   // x=(dir.x+1)/2*res-0.5
+   // (x+0.5)*2/res-1=dir.x
+   // dir.x=x*2/res + 0.5*2/res - 1
+   // dir.x=x*2/res + 1/res-1
    if(res>0)
    {
       Flt inv_res=1.0f/res, mul=2*inv_res, add=inv_res-1;
