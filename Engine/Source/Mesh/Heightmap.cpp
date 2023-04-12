@@ -1602,8 +1602,8 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
               step    =(1<<quality),
               ao_step =3,
               ao_range=2*ao_step;
-   const Flt  nrm_y   =sphere ? (sphere->planet_radius*4)/(sphere->areas*res1) // best results are with 4 and not PI
-                              : 2.00f/res1,
+   const Flt  nrm_y   =sphere ? (sphere->planet_radius*4)/(sphere->areas*res1) // best results are with 4 and not PI or PI2
+                              : 2.0f/res1,
               ao_mul  =0.19f*res1;
 
    // vars
