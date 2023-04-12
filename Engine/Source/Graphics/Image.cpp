@@ -3642,6 +3642,26 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
    }
 #endif
 }
+DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
+{
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
+   {
+      if(abs.x>=abs.y)
+      {
+         Flt div=abs.x;
+         if(!div    ){xy.zero(                     ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         if(dir.x>=0){xy.set(-dir.z/div, -dir.y/div); return DIR_RIGHT;}
+                     {xy.set( dir.z/div, -dir.y/div); return DIR_LEFT ;}
+      }
+      Y: Flt div=abs.y;
+         if(dir.y>=0){xy.set( dir.x/div,  dir.z/div); return DIR_UP   ;}
+                     {xy.set( dir.x/div, -dir.z/div); return DIR_DOWN ;}
+   }
+      if(abs.y>=abs.z)goto Y;
+         Flt div=abs.z;
+         if(dir.z>=0){xy.set( dir.x/div, -dir.y/div); return DIR_FORWARD;}
+                     {xy.set(-dir.x/div, -dir.y/div); return DIR_BACK   ;}
+}
 DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy)
 {
    // Vec n=dir/Abs(dir).max();

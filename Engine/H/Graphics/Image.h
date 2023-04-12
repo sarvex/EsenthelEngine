@@ -860,7 +860,8 @@ IMAGE_TYPE ImageTypeUncompressed(IMAGE_TYPE type); // convert 'type' to the most
 IMAGE_TYPE ImageTypeForMode(IMAGE_TYPE type, IMAGE_MODE mode); // convert 'type' to the most similar IMAGE_TYPE that can be used for 'mode'
 
 DIR_ENUM DirToCubeFace(C Vec &dir                   ); // convert vector direction (doesn't need to be normalized) to cube face
-DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to cube face and image coordinates, 'res'=cube image resolution, 'xy'=image coordinates (0..res-1)
+DIR_ENUM DirToCubeFace(C Vec &dir,          Vec2 &xy); // convert vector direction (doesn't need to be normalized) to cube face and image coordinates,                              'xy'=      coordinates (-1..1)
+DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to cube face and image coordinates, 'res'=cube image resolution, 'xy'=image coordinates ( 0..res-1)
 Vec      CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert image coordinates, 'x,y'=image coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 /******************************************************************************/
 #if EE_PRIVATE
