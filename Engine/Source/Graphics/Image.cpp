@@ -3625,37 +3625,47 @@ Bool Image::compatible(C Image &image)C
 /******************************************************************************/
 DIR_ENUM DirToCubeFace(C Vec &dir)
 {
-   if(Flt f=Abs(dir).max())
+#if 1 // faster
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
-      Vec n=dir/f;
-      const Flt one=1-FLT_EPS; // have to use epsilon, because just "1" failed in some cases
-    //if(n.x>= one)return DIR_RIGHT; already listed at the bottom
-      if(n.x<=-one)return DIR_LEFT;
-      if(n.y>= one)return DIR_UP;
-      if(n.y<=-one)return DIR_DOWN;
-      if(n.z>= one)return DIR_FORWARD;
-      if(n.z<=-one)return DIR_BACK;
+      if(abs.x>=abs.y)return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT;
+                   Y: return (dir.y>=0) ? DIR_UP      : DIR_DOWN;
    }
-   return DIR_RIGHT;
+      if(abs.y>=abs.z)goto Y;
+                      return (dir.z>=0) ? DIR_FORWARD : DIR_BACK;
+#else
+   switch(Abs(dir).maxI())
+   {
+      case 0: return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT;
+      case 1: return (dir.y>=0) ? DIR_UP      : DIR_DOWN;
+      case 2: return (dir.z>=0) ? DIR_FORWARD : DIR_BACK;
+   }
+#endif
 }
 DIR_ENUM DirToCubeFace(C Vec &dir, Int res, Vec2 &tex)
 {
-   if(Flt f=Abs(dir).max())
+   // Vec n=dir/Abs(dir).max();
+   // tex.x=(n.x+1)/2*res-0.5
+   // tex.x=(n.x+1)*res/2-0.5
+   // tex.x=n.x*res/2 + res/2-0.5
+   Flt mul=res*0.5f, add=mul-0.5f;
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
-      Vec n=dir/f;
-      const Flt one=1-FLT_EPS; // have to use epsilon, because just "1" failed in some cases
-      // tex.x=(n.x+1)/2*res-0.5
-      // tex.x=(n.x+1)*res/2-0.5
-      // tex.x=n.x*res/2 + res/2-0.5
-      Flt mul=res*0.5f, add=mul-0.5f;
-      if(n.x>= one){tex.set(-n.z*mul+add, -n.y*mul+add); return DIR_RIGHT  ;}
-      if(n.x<=-one){tex.set( n.z*mul+add, -n.y*mul+add); return DIR_LEFT   ;}
-      if(n.y>= one){tex.set( n.x*mul+add,  n.z*mul+add); return DIR_UP     ;}
-      if(n.y<=-one){tex.set( n.x*mul+add, -n.z*mul+add); return DIR_DOWN   ;}
-      if(n.z>= one){tex.set( n.x*mul+add, -n.y*mul+add); return DIR_FORWARD;}
-      if(n.z<=-one){tex.set(-n.x*mul+add, -n.y*mul+add); return DIR_BACK   ;}
+      if(abs.x>=abs.y)
+      {
+         if( !abs.x ){tex.zero(                             ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         mul/=abs.x;
+         if(dir.x>=0){tex.set(-dir.z*mul+add, -dir.y*mul+add); return DIR_RIGHT;}
+                     {tex.set( dir.z*mul+add, -dir.y*mul+add); return DIR_LEFT ;}
+      }
+      Y: mul/=abs.y;
+         if(dir.y>=0){tex.set( dir.x*mul+add,  dir.z*mul+add); return DIR_UP   ;}
+                     {tex.set( dir.x*mul+add, -dir.z*mul+add); return DIR_DOWN ;}
    }
-   tex.zero(); return DIR_RIGHT;
+      if(abs.y>=abs.z)goto Y;
+         mul/=abs.z;
+         if(dir.z>=0){tex.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
+                     {tex.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
 }
 Vec CubeFaceToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
 {
