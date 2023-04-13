@@ -1606,7 +1606,8 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
    }
 #endif
 }
-/*DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
+/******************************************************************************
+DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
 {
    Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
@@ -1651,6 +1652,28 @@ DIR_ENUM DirToCubeFacePixel(C Vec &dir, Int res, Vec2 &xy) // this matches exact
          if(dir.z>=0){xy.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
                      {xy.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
 }
+DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy)
+{
+   Flt mul=res/PI_2, add=res*0.5f;
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
+   {
+      if(abs.x>=abs.y)
+      {
+         if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         Flt y=Atan(dir.y/abs.x)*mul, z=Atan(dir.z/abs.x)*mul;
+         if(dir.x>=0){xy.set( z+add,  y+add); return DIR_RIGHT;}
+                     {xy.set(-z+add,  y+add); return DIR_LEFT ;}
+      }
+      Y: Flt x=Atan(dir.x/abs.y)*mul, z=Atan(dir.z/abs.y)*mul;
+         if(dir.y>=0){xy.set( x+add,  z+add); return DIR_UP   ;}
+                     {xy.set( x+add, -z+add); return DIR_DOWN ;}
+   }
+      if(abs.y>=abs.z)goto Y;
+         Flt x=Atan(dir.x/abs.z)*mul, y=Atan(dir.y/abs.z)*mul;
+         if(dir.z>=0){xy.set(-x+add, y+add); return DIR_FORWARD;}
+                     {xy.set( x+add, y+add); return DIR_BACK   ;}
+}
+/******************************************************************************/
 Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
 {
    // x=(dir.x+1)/2*res-0.5
@@ -1670,6 +1693,25 @@ Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matche
          case DIR_DOWN   : return Vec( x, -1, -y);
          case DIR_FORWARD: return Vec( x, -y,  1);
          case DIR_BACK   : return Vec(-x, -y, -1);
+      }
+   }
+   return VecZero;
+}
+Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+{
+   if(res>0)
+   {
+      Flt mul=PI_2/res, add=-PI_4;
+      x=Tan(x*mul+add);
+      y=Tan(y*mul+add);
+      switch(cube_face)
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
       }
    }
    return VecZero;
