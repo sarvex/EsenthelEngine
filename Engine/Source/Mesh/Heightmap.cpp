@@ -1604,7 +1604,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
               ao_range=2*ao_step;
    const Flt  nrm_y   =sphere ? (sphere->planet_radius*4)/(sphere->areas*res1) // best results are with 4 and not PI or PI2
                               : 2.0f/res1,
-              ao_mul  =0.19f*res1;
+              ao_mul  =(0.19f*2)/nrm_y; // "0.19*res1" for flat
 
    // vars
    Flt     sharpness=0; Int sharpness_count=0;
@@ -1698,31 +1698,35 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
             for(Int dy=-ao_range; dy<=ao_range; dy+=ao_step)
             for(Int dx=-ao_range; dx<=ao_range; dx+=ao_step)
             {
-               Int tx=x+dx,
-                   ty=y+dy;
-               Flt th;
-               if(tx<0)
+               Flt dist=Dist(dx, dy),
+                   p=Lerp(0.3f, 1.0f, BlendSqr(dist/ao_range));
+             //if(p>0)
                {
-                  if(ty<   0){if(hlb)th=hlb->pixF(tx+res1, ty+res1);else th=h                  +(_height.pixF(0,    0)-_height.pixF(1,      1))*Dist(dx, dy);}else
-                  if(ty>=res){if(hlf)th=hlf->pixF(tx+res1, ty-res1);else th=h                  +(_height.pixF(0, res1)-_height.pixF(1, res1-1))*Dist(dx, dy);}else
-                             {if(hl )th=hl ->pixF(tx+res1, ty     );else th=_height.pixF(x, ty)-(_height.pixF(0,   ty)-_height.pixF(1,     ty))*dx;} // here 'dx' is negative
-               }else
-               if(tx>=res)
-               {
-                  if(ty<   0){if(hrb)th=hrb->pixF(tx-res1, ty+res1);else th=h                  +(_height.pixF(res1,    0)-_height.pixF(res1-1,      1))*Dist(dx, dy);}else
-                  if(ty>=res){if(hrf)th=hrf->pixF(tx-res1, ty-res1);else th=h                  +(_height.pixF(res1, res1)-_height.pixF(res1-1, res1-1))*Dist(dx, dy);}else
-                             {if(hr )th=hr ->pixF(tx-res1, ty     );else th=_height.pixF(x, ty)+(_height.pixF(res1,   ty)-_height.pixF(res1-1,     ty))*dx;} // here 'dx' is positive
-               }else
-               {
-                  if(ty<   0){if(hb)th=hb->pixF(tx, ty+res1);else th=_height.pixF(tx, y)-(_height.pixF(tx,    0)-_height.pixF(tx,      1))*dy;}else // here 'dy' is negative
-                  if(ty>=res){if(hf)th=hf->pixF(tx, ty-res1);else th=_height.pixF(tx, y)+(_height.pixF(tx, res1)-_height.pixF(tx, res1-1))*dy;}else // here 'dy' is positive
-                                    th=_height.pixF(tx, ty);
+                  Int tx=x+dx,
+                      ty=y+dy;
+                  Flt th;
+                  if(tx<0)
+                  {
+                     if(ty<   0){if(hlb)th=hlb->pixF(tx+res1, ty+res1);else th=h                  +(_height.pixF(0,    0)-_height.pixF(1,      1))*dist;}else
+                     if(ty>=res){if(hlf)th=hlf->pixF(tx+res1, ty-res1);else th=h                  +(_height.pixF(0, res1)-_height.pixF(1, res1-1))*dist;}else
+                                {if(hl )th=hl ->pixF(tx+res1, ty     );else th=_height.pixF(x, ty)-(_height.pixF(0,   ty)-_height.pixF(1,     ty))*dx;} // here 'dx' is negative
+                  }else
+                  if(tx>=res)
+                  {
+                     if(ty<   0){if(hrb)th=hrb->pixF(tx-res1, ty+res1);else th=h                  +(_height.pixF(res1,    0)-_height.pixF(res1-1,      1))*dist;}else
+                     if(ty>=res){if(hrf)th=hrf->pixF(tx-res1, ty-res1);else th=h                  +(_height.pixF(res1, res1)-_height.pixF(res1-1, res1-1))*dist;}else
+                                {if(hr )th=hr ->pixF(tx-res1, ty     );else th=_height.pixF(x, ty)+(_height.pixF(res1,   ty)-_height.pixF(res1-1,     ty))*dx;} // here 'dx' is positive
+                  }else
+                  {
+                     if(ty<   0){if(hb)th=hb->pixF(tx, ty+res1);else th=_height.pixF(tx, y)-(_height.pixF(tx,    0)-_height.pixF(tx,      1))*dy;}else // here 'dy' is negative
+                     if(ty>=res){if(hf)th=hf->pixF(tx, ty-res1);else th=_height.pixF(tx, y)+(_height.pixF(tx, res1)-_height.pixF(tx, res1-1))*dy;}else // here 'dy' is positive
+                                       th=_height.pixF(tx, ty);
+                  }
+                  Flt d=th - h - dx*ddh.x - dy*ddh.y,
+                      o=Sat(d*ao_mul);
+                  occl +=p*o;
+                  power+=p;
                }
-               Flt d=th - h - dx*ddh.x - dy*ddh.y,
-                   o=Sat(d*ao_mul),
-                   p=Lerp(0.3f, 1.0f, BlendSqr(Dist(dx, dy)/ao_range));
-               occl +=p*o;
-               power+=p;
             }
             builder.occlusion[y][x]=FltToByte(1-occl/power);
          }
