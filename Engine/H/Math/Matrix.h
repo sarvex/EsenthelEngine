@@ -179,7 +179,7 @@ struct Matrix3 // Matrix 3x3 (orientation + scale)
    Matrix3& setRotateCosSin(C Vec &axis, Flt cos, Flt sin); // set as rotated by vector identity, 'axis' must be normalized
 #endif
 
-   Matrix3& setOrient  (DIR_ENUM dir                       ); // set as identity orientation from DIR_ENUM
+   Matrix3& setOrient  (DIR_ENUM dir                       ); // set as orientation from DIR_ENUM
    Matrix3& setRight   (C Vec &right                       ); // set as x='right'       and calculate correct y,z, 'right'            must be normalized
    Matrix3& setUp      (C Vec &up                          ); // set as y='up'          and calculate correct x,z, 'up'               must be normalized
    Matrix3& setDir     (C Vec &dir                         ); // set as z='dir'         and calculate correct x,y, 'dir'              must be normalized
@@ -189,6 +189,8 @@ struct Matrix3 // Matrix 3x3 (orientation + scale)
    Matrix3& setRotation(C Vec &dir_from, C Vec &dir_to, Flt blend          ); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value                          , 'dir_from' 'dir_to' must be normalized
    Matrix3& setRotation(C Vec &dir_from, C Vec &dir_to, Flt blend, Flt roll); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value and additional roll angle, 'dir_from' 'dir_to' must be normalized
    Matrix3& setRotationUp(               C Vec &dir_to                     ); // set as matrix which rotates Vec(0,1,0) to 'dir_to',                                                         'dir_to' must be normalized
+
+   Matrix3& setTerrainOrient(DIR_ENUM dir); // set as orientation from DIR_ENUM to be used for drawing spherical terrain heightmaps
 
    // get
    Flt  determinant()C;
@@ -323,7 +325,7 @@ struct MatrixD3 // Matrix 3x3 (orientation + scale, double precision)
    MatrixD3& setRotateCosSin(C VecD &axis, Dbl cos, Dbl sin); // set as rotated by vector identity, 'axis' must be normalized
 #endif
 
-   MatrixD3& setOrient  (DIR_ENUM dir                          ); // set as identity orientation from DIR_ENUM
+   MatrixD3& setOrient  (DIR_ENUM dir                          ); // set as orientation from DIR_ENUM
    MatrixD3& setRight   (C VecD &right                         ); // set as x='right'       and calculate correct y,z, 'right'            must be normalized
    MatrixD3& setUp      (C VecD &up                            ); // set as y='up'          and calculate correct x,z, 'up'               must be normalized
    MatrixD3& setDir     (C VecD &dir                           ); // set as z='dir'         and calculate correct x,y, 'dir'              must be normalized

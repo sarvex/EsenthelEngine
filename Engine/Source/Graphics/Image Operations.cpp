@@ -3200,7 +3200,7 @@ struct BlurCube
                
       REPD(x, dest_res)
       {
-         //dir_f=CubeFaceToDir(x, y, dest_res, DIR_FORWARD);
+         //dir_f=CubeFacePixelToDir(x, y, dest_res, DIR_FORWARD);
          dir_f.x=x*dest_CubeFaceToDir_mul+dest_CubeFaceToDir_add;
          Vec dir_fn=dir_f; dir_fn.normalize();
          Flt dir_angle_x=Atan(dir_f.x), // Angle(dir_f.z, dir_f.x); dir_f.z==1
@@ -3253,7 +3253,7 @@ struct BlurCube
             for(Int tx=0; tx<src_res; tx++)
             {
                Vec dir_test(tx*src_CubeFaceToDir_mul+src_CubeFaceToDir_add, -ty*src_CubeFaceToDir_mul-src_CubeFaceToDir_add, 1); dir_test.normalize();
-             //Vec dir_test=CubeFaceToDir(tx, ty, src_res, DIR_FORWARD); dir_test.normalize();
+             //Vec dir_test=CubeFacePixelToDir(tx, ty, src_res, DIR_FORWARD); dir_test.normalize();
                Bool cone=(Dot(dir_fn, dir_test)>=cos_min);
              //Bool cone=(AbsAngleBetweenN(dir_fn, dir_test)<=angle);
                Bool rect=tex_rect.includes(VecI2(tx, ty));
@@ -3284,7 +3284,7 @@ struct BlurCube
          }
          if(check_other_faces)
          {
-            Vec dir=CubeFaceToDir(x, y, dest_res, f); dir.normalize();
+            Vec dir=CubeFacePixelToDir(x, y, dest_res, f); dir.normalize();
             FREPD(f1, 6)if(f1!=f)
             {
                Flt dot=Dot(VecDir[f1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
@@ -3328,16 +3328,16 @@ struct BlurCube
                         // test top and bottom horizontal neighbor lines
                         for(Int tx=test_rect.min.x; tx<=test_rect.max.x; tx++)
                         {
-                           Vec dir_test=CubeFaceToDir(tx, test_rect.min.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail1");
-                               dir_test=CubeFaceToDir(tx, test_rect.max.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail1");
+                           Vec dir_test=CubeFacePixelToDir(tx, test_rect.min.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail1");
+                               dir_test=CubeFacePixelToDir(tx, test_rect.max.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail1");
                         }
                         // test left and right vertical neighbor lines
                         Flt dir_x0=test_rect.min.x*src_CubeFaceToDir_mul+src_CubeFaceToDir_add;
                         Flt dir_x1=test_rect.max.x*src_CubeFaceToDir_mul+src_CubeFaceToDir_add;
                         for(Int ty=test_rect.min.y; ty<=test_rect.max.y; ty++)
                         {
-                           Vec dir_test=CubeFaceToDir(test_rect.min.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail1");
-                               dir_test=CubeFaceToDir(test_rect.max.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail1");
+                           Vec dir_test=CubeFacePixelToDir(test_rect.min.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail1");
+                               dir_test=CubeFacePixelToDir(test_rect.max.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail1");
                         }
                      }
                   #endif
@@ -3346,7 +3346,7 @@ struct BlurCube
                      {
                         for(Int x=tex_rect1.min.x; x<=tex_rect1.max.x; x++)
                         {
-                           Vec dir_test=CubeFaceToDir(x, y, src_res, DIR_ENUM(f1)); dir_test.normalize();
+                           Vec dir_test=CubeFacePixelToDir(x, y, src_res, DIR_ENUM(f1)); dir_test.normalize();
                            Flt cos=Dot(dir, dir_test); if(cos>cos_min)
                            {
                               Flt a=Acos(cos), w=Weight(a/angle);

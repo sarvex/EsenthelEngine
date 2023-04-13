@@ -1690,7 +1690,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
                                    (-fy-area._xz.y)*tex_scale);
       #endif
 
-         if(ambient_occlusion)
+         if(ambient_occlusion) // FIXME: TODO: formula could be improved to use Tan..
          {
             Flt occl=0, power=EPS; // EPS prevents division by zero
             ddh*=-0.5f;

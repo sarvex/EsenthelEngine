@@ -2650,7 +2650,7 @@ Matrix3& Matrix3::setOrient(DIR_ENUM dir)
 {
    Zero(T); switch(dir)
    {
-      default       : x.x= 1; y.y= 1; z.z= 1; break;
+      default       : x.x= 1; y.y= 1; z.z= 1; break; // DIR_FORWARD identity
       case DIR_BACK : x.x=-1; y.y= 1; z.z=-1; break;
       case DIR_UP   : x.x= 1; y.z=-1; z.y= 1; break;
       case DIR_DOWN : x.x= 1; y.z= 1; z.y=-1; break;
@@ -2663,12 +2663,25 @@ MatrixD3& MatrixD3::setOrient(DIR_ENUM dir)
 {
    Zero(T); switch(dir)
    {
-      default       : x.x= 1; y.y= 1; z.z= 1; break;
+      default       : x.x= 1; y.y= 1; z.z= 1; break; // DIR_FORWARD identity
       case DIR_BACK : x.x=-1; y.y= 1; z.z=-1; break;
       case DIR_UP   : x.x= 1; y.z=-1; z.y= 1; break;
       case DIR_DOWN : x.x= 1; y.z= 1; z.y=-1; break;
       case DIR_RIGHT: x.z=-1; y.y= 1; z.x= 1; break;
       case DIR_LEFT : x.z= 1; y.y= 1; z.x=-1; break;
+   }
+   return T;
+}
+Matrix3& Matrix3::setTerrainOrient(DIR_ENUM dir) // this assumes that terrain mesh is located on the XZ plane, and Y=up height
+{
+   Zero(T); switch(dir)
+   {
+      case DIR_FORWARD: x.x=-1; y.z= 1; z.y= 1; break;
+      case DIR_BACK   : x.x= 1; y.z=-1; z.y= 1; break;
+      default         : x.x= 1; y.y= 1; z.z= 1; break; // DIR_UP identity
+      case DIR_DOWN   : x.x= 1; y.y=-1; z.z=-1; break;
+      case DIR_RIGHT  : x.z= 1; y.x= 1; z.y= 1; break;
+      case DIR_LEFT   : x.z=-1; y.x=-1; z.y= 1; break;
    }
    return T;
 }
