@@ -1592,17 +1592,17 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
 #if 1 // faster
    Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
-      if(abs.x>=abs.y)return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT;
-                   Y: return (dir.y>=0) ? DIR_UP      : DIR_DOWN;
+      if(abs.x>=abs.y)return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT; // X
+                   Y: return (dir.y>=0) ? DIR_UP      : DIR_DOWN; // Y
    }
       if(abs.y>=abs.z)goto Y;
-                      return (dir.z>=0) ? DIR_FORWARD : DIR_BACK;
+                      return (dir.z>=0) ? DIR_FORWARD : DIR_BACK; // Z
 #else
    switch(Abs(dir).maxI())
    {
-      case 0: return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT;
-      case 1: return (dir.y>=0) ? DIR_UP      : DIR_DOWN;
-      case 2: return (dir.z>=0) ? DIR_FORWARD : DIR_BACK;
+      case 0: return (dir.x>=0) ? DIR_RIGHT   : DIR_LEFT; // X
+      case 1: return (dir.y>=0) ? DIR_UP      : DIR_DOWN; // Y
+      case 2: return (dir.z>=0) ? DIR_FORWARD : DIR_BACK; // Z
    }
 #endif
 }
