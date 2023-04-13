@@ -1654,7 +1654,7 @@ DIR_ENUM DirToCubeFacePixel(C Vec &dir, Int res, Vec2 &xy) // this matches exact
 }
 DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy)
 {
-   Flt mul=res/PI_2, add=res*0.5f;
+   Flt mul=res/PI_2, add=res*0.5f; // ((Atan(..)+PI_4)/PI_2)*res = (Atan(..)/PI_2+0.5)*res = Atan(..)*(res/PI_2)+(res*0.5)
    Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
       if(abs.x>=abs.y)
