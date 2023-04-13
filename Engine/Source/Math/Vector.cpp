@@ -1660,18 +1660,18 @@ DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy)
       if(abs.x>=abs.y)
       {
          if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
-         Flt y=Atan(dir.y/abs.x)*mul, z=Atan(dir.z/abs.x)*mul;
-         if(dir.x>=0){xy.set( z+add,  y+add); return DIR_RIGHT;}
-                     {xy.set(-z+add,  y+add); return DIR_LEFT ;}
+         Flt y=Atan(dir.y/abs.x), z=Atan(dir.z/abs.x);
+         if(dir.x>=0){xy.set( z*mul+add,  y*mul+add); return DIR_RIGHT;}
+                     {xy.set(-z*mul+add,  y*mul+add); return DIR_LEFT ;}
       }
-      Y: Flt x=Atan(dir.x/abs.y)*mul, z=Atan(dir.z/abs.y)*mul;
-         if(dir.y>=0){xy.set( x+add,  z+add); return DIR_UP   ;}
-                     {xy.set( x+add, -z+add); return DIR_DOWN ;}
+      Y: Flt x=Atan(dir.x/abs.y), z=Atan(dir.z/abs.y);
+         if(dir.y>=0){xy.set( x*mul+add,  z*mul+add); return DIR_UP   ;}
+                     {xy.set( x*mul+add, -z*mul+add); return DIR_DOWN ;}
    }
       if(abs.y>=abs.z)goto Y;
-         Flt x=Atan(dir.x/abs.z)*mul, y=Atan(dir.y/abs.z)*mul;
-         if(dir.z>=0){xy.set(-x+add, y+add); return DIR_FORWARD;}
-                     {xy.set( x+add, y+add); return DIR_BACK   ;}
+         Flt x=Atan(dir.x/abs.z), y=Atan(dir.y/abs.z);
+         if(dir.z>=0){xy.set(-x*mul+add,  y*mul+add); return DIR_FORWARD;}
+                     {xy.set( x*mul+add,  y*mul+add); return DIR_BACK   ;}
 }
 /******************************************************************************/
 Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
