@@ -39,7 +39,7 @@ static void AdjustSharpness(Flt &sharpness, Int count)
 }
 static Flt GetLodDist(Int lod_index, Flt sharpness)
 {
-   return (1<<lod_index) * ((lod_index==3) ? 1.5f : 1.0f) * sharpness;
+   return (1<<lod_index) * ((lod_index>=3) ? 1.5f : 1.0f) * sharpness;
 }
 static VecB ColorB(C Image &image, Int x, Int y) // !! assumes that 'x, y' are in range !!
 {
