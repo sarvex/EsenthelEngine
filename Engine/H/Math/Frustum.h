@@ -55,7 +55,8 @@ struct FrustumClass // Frustum
    void draw(C Color &color=WHITE)C; // this relies on active object matrix which can be set using 'SetMatrix' function
 #endif
 
-   void getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, Bool distance_check, Bool sort_by_distance, Bool extend, C RectI *clamp=null)C; // get 'area_pos' coordinates of areas intersecting with this Frustum, 'area_size'=size of a single area, 'distance_check'=list only areas within frustum range, 'sort_by_distance'=if sort areas by distance from camera, 'extend'=if extend frustum by half of 'area_size', 'clamp'=optionally process areas only within this inclusive rectangle, this assumes that areas are located on flat XZ plane, so only XZ coordinates of all 3D vectors are processed and Y is ignored
+   void getIntersectingAreas      (MemPtr<VecI2     > area_pos,   Flt     area_size, Bool distance_check, Bool sort_by_distance, Bool extend, C RectI *clamp=null)C; // get 'area_pos' coordinates of areas intersecting with this Frustum, 'area_size'=size of a single area   , 'distance_check'=list only areas within frustum range, 'sort_by_distance'=if sort areas by distance from camera, 'extend'=if extend frustum by half of 'area_size', 'clamp'=optionally process areas only within this inclusive rectangle, this assumes that areas are located on flat XZ plane, so only XZ coordinates of all 3D vectors are processed and Y is ignored
+   void getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend                     )C; // get 'area_pos' coordinates of areas intersecting with this Frustum, 'sc'=precalculated sphere conversion, 'distance_check'=list only areas within frustum range, 'sort_by_distance'=if sort areas by distance from camera, 'extend'=if extend frustum by half of 'area_size', this assumes that areas are located on a sphere
 
 #if !EE_PRIVATE
 private:

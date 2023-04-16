@@ -2672,7 +2672,7 @@ MatrixD3& MatrixD3::setOrient(DIR_ENUM dir)
    }
    return T;
 }
-Matrix3& Matrix3::setTerrainOrient(DIR_ENUM dir) // this assumes that terrain mesh is located on the XZ plane, and Y=up height
+Matrix3& Matrix3::setTerrainOrient(DIR_ENUM dir) // this assumes that terrain mesh is located on the XZ plane, and Y=up height #TerrainOrient
 {
    Zero(T); switch(dir)
    {

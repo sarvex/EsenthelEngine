@@ -768,7 +768,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    REPA(convex_points)
    {
       VecD2 &p=convex_points[i]; p/=area_size;
-      Int    y=Floor(extend ? p.y-0.5f : p.y);
+      Int    y=Floor(extend ? p.y-0.5 : p.y);
       rect.includeY(y);
    }
    if(extend )rect.max.y++;
@@ -873,6 +873,173 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
       }
    }
 }
+/******************************************************************************/
+#if 0
+void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend)C
+{
+   area_pos.clear();
+
+   Memt<VecD2> convex_points;
+   Memt<VecI2> row_min_max_x;
+ //Memt<VecD2> temp;
+
+   Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
+
+   SpherePixelWalker walker(sc);
+   SphereArea        ap;
+   for(ap.side=DIR_ENUM(0); ; )
+   {
+      {
+         VecD2 point_xy[ELMS(point)];
+         Dbl   point_z [ELMS(point)];
+         switch(ap.side) // #TerrainOrient
+         {
+            case DIR_RIGHT  : REP(points){C auto &s=point[i]; point_xy[i].set( s.z,  s.y); point_z[i]= s.x;} break;
+            case DIR_LEFT   : REP(points){C auto &s=point[i]; point_xy[i].set(-s.z,  s.y); point_z[i]=-s.x;} break;
+            case DIR_UP     : REP(points){C auto &s=point[i]; point_xy[i].set( s.x,  s.z); point_z[i]= s.y;} break;
+            case DIR_DOWN   : REP(points){C auto &s=point[i]; point_xy[i].set( s.x, -s.z); point_z[i]=-s.y;} break;
+            case DIR_FORWARD: REP(points){C auto &s=point[i]; point_xy[i].set(-s.x,  s.y); point_z[i]= s.z;} break;
+            case DIR_BACK   : REP(points){C auto &s=point[i]; point_xy[i].set( s.x,  s.y); point_z[i]=-s.z;} break;
+         }
+         // FIXME div XY by Z to put on plane Z=1, but if under then check edge and clip
+         CreateConvex2D(convex_points, point_xy, points); if(!convex_points.elms())goto next;
+
+         RectI rect;
+
+         /*FIXME
+         Bool    mask_do;
+         RectI   mask; // inclusive
+         CircleM circle;
+         if(extraBall())
+         {
+            circle.pos.x=extra_ball.pos.x/area_size;
+            circle.pos.y=extra_ball.pos.z/area_size;
+            circle.r    =extra_ball.r    /area_size; if(extend)circle.r+=half;
+            RectI r(Floor(circle.pos.x-circle.r), Floor(circle.pos.y-circle.r),
+                    Floor(circle.pos.x+circle.r), Floor(circle.pos.y+circle.r));
+            if(mask_do)mask&=r;else{mask=r; mask_do=true;}
+         }*/
+
+         // set min_y..max_y visibility
+         rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
+         REPA(convex_points)
+         {
+            VecD2 &p=convex_points[i];
+            Int    y=sc.posToCellI(extend ? p.y-half : p.y); // don't use 'posToCellIMid', instead do 'clampY' below just one time
+            rect.includeY(y);
+         }
+         if(extend )rect.max.y++;
+         rect.clampY(0, sc.res-1);
+       //if(mask_do)rect.clampY(mask.min.y, mask.max.y); FIXME
+         if(!rect.validY())goto next;
+
+         // clamp convex edges, so 'PixelWalker' doesn't have to walk too much
+         /*FIXME
+         if(mask_do)
+         {
+            PlaneD2 plane;
+            plane.pos=mask.min  ; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
+                                  plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
+            plane.pos=mask.max+1; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
+                                  plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
+         }*/
+
+         // set min_x..max_x per row in 'row_min_max_x'
+         row_min_max_x.setNumDiscard(rect.h()+1); // +1 because it's inclusive
+         REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("max<min")
+
+         REPA(convex_points) // warning: this needs to work as well for "convex_points.elms()==1"
+         {
+            VecD2 start=convex_points[i], end=convex_points[(i+1)%convex_points.elms()];
+            if(extend)
+            {
+               // add corner point first as a 2x2 block (needs to process 2x2 because just 1 corner didn't cover all areas, the same was for Avg of 2 Perps)
+               auto  cell=sc.posToCell(start);
+               RectI corner; corner.min=Floor(cell); VecI2 pos;
+               if(cell.x-corner.min.x<0.5f)corner.max.x=corner.min.x--;else corner.max.x=corner.min.x+1; // if point is on the left   side (frac<0.5f), then process from pos-1..pos, otherwise from pos..pos+1, here use 0.5 instead of 'half', because this is in cell space and not real space
+               if(cell.y-corner.min.y<0.5f)corner.max.y=corner.min.y--;else corner.max.y=corner.min.y+1; // if point is on the bottom side (frac<0.5f), then process from pos-1..pos, otherwise from pos..pos+1, here use 0.5 instead of 'half', because this is in cell space and not real space
+               for(pos.y=corner.min.y; pos.y<=corner.max.y; pos.y++)
+               for(pos.x=corner.min.x; pos.x<=corner.max.x; pos.x++)ProcessPos(pos, rect, row_min_max_x);
+
+               VecD2 perp=Perp(start-end); if(Dbl max=Abs(perp).max()){perp*=half/max; start+=perp; end+=perp;} // use "Abs(perp).max()" instead of "perp.length()" because we need to extend orthogonally (because we're using extend for the purpose of detecting objects from neighborhood areas that extend over to other areas, and this extend is allowed orthogonally)
+            }
+            for(walker.start(start, end); walker.active(); walker.step())ProcessPos(walker.posi(), rect, row_min_max_x);
+         }
+
+         // set min_x..max_x visibility (this is more precise than what can be calculated from just 'convex_points', because here, we've clipped the edges to min_y..max_y range)
+         rect.setX(INT_MAX, INT_MIN); // set invalid "max<min"
+         REPA(row_min_max_x)
+         {
+            VecI2 &min_max_x=row_min_max_x[i];
+            if(min_max_x.y>=min_max_x.x) // if valid
+               rect.includeX(min_max_x.x, min_max_x.y);
+         }
+         rect.clampX(0, sc.res-1);
+       //if(mask_do)rect.clampX(mask.min.x, mask.max.x); FIXME
+         if(!rect.validX())goto next;
+
+       /*FIXME
+         const Bool fast=true; // if use ~2x faster 'Dist2PointSquare' instead of 'Dist2(Vec2 point, RectI rect)'
+
+         VecD2 distance_pos;
+         Flt   distance_range2;
+         if(   distance_check&=persp) // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center, so it can't be used as 'distance_pos')
+         { // convert to area space
+            distance_pos   =matrix.pos.xz()/area_size; if(fast  )distance_pos   -=half; // since in fast mode we're testing against a square of radius half, instead of setting each square as "pos+half", we offset the 'distance_pos' by the negative (this was tested and works OK - the same results as when 'fast'=false)
+            distance_range2=          range/area_size; if(extend)distance_range2+=half; distance_range2*=distance_range2;
+         }
+         if(extraBall())
+         {
+            if(fast)circle.pos-=half; // since in fast mode we're testing against a square of radius 0.5, instead of setting each square as "pos+0.5", we offset the 'circle.pos' by the negative (this was tested and works OK - the same results as when 'fast'=false)
+            SQR(circle.r);
+         }*/
+
+         // set areas for drawing
+         if(sort_by_distance) // in look order (from camera/foreground to background)
+         {
+            Vec2  look_dir=matrix.z.xz(); // FIXME
+            Flt   max     =Abs(look_dir).max();
+            VecI2 dir     =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
+                  perp    =Perp(dir);                                 // parallel to direction
+            if((dir.x== 1 && dir.y== 1)
+            || (dir.x== 1 && dir.y== 0)
+            || (dir.x==-1 && dir.y==-1)
+            || (dir.x== 0 && dir.y==-1))perp.chs();
+
+            for(VecI2 edge((dir.x<0) ? rect.max.x : rect.min.x, (dir.y<0) ? rect.max.y : rect.min.y); ; )
+            {
+               for(ap=edge; ; )
+               {
+                  VecI2 &min_max_x=row_min_max_x[ap.y-rect.min.y];
+                  if(ap.x>=min_max_x.x && ap.x<=min_max_x.y)
+                   //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
+                   //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
+                        area_pos.add(ap); // add to array
+
+                  ap+=perp; if(!rect.includes(ap))break; // go along the parallel until you can't
+               }
+               if(dir.x && rect.includesX(edge.x+dir.x))edge.x+=dir.x;else        // first travel on the x-edge until you can't
+               if(dir.y && rect.includesY(edge.y+dir.y))edge.y+=dir.y;else break; // then  travel on the y-edge until you can't, after that get out of the loop
+            }
+         }else
+         {
+            for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
+            {
+               VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
+               MAX(min_max_x.x, rect.min.x);
+               MIN(min_max_x.y, rect.max.x);
+               for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
+                //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
+                //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
+                     area_pos.add(ap); // add to array
+            }
+         }
+      }
+   next:
+      if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
+   }
+}
+#endif
 /******************************************************************************/
 void FrustumClass::draw(C Color &col)C
 {

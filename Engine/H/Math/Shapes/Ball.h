@@ -120,6 +120,12 @@ struct SphereConvert
    void drawCell(C VecI2 &cell, C Color &color)C;
 #endif
 };
+struct SphereArea : VecI2
+{
+   DIR_ENUM side;
+
+   SphereArea& operator=(C VecI2 &xy) {super::operator=(xy); return T;}
+};
 /******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 
