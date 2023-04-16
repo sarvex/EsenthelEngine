@@ -890,19 +890,30 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
-         VecD2 point_xy[ELMS(point)];
-         Dbl   point_z [ELMS(point)];
+         VecD oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
+         Bool oriented_point_ok[ELMS(point)];
          switch(ap.side) // #TerrainOrient
          {
-            case DIR_RIGHT  : REP(points){C auto &s=point[i]; point_xy[i].set( s.z,  s.y); point_z[i]= s.x;} break;
-            case DIR_LEFT   : REP(points){C auto &s=point[i]; point_xy[i].set(-s.z,  s.y); point_z[i]=-s.x;} break;
-            case DIR_UP     : REP(points){C auto &s=point[i]; point_xy[i].set( s.x,  s.z); point_z[i]= s.y;} break;
-            case DIR_DOWN   : REP(points){C auto &s=point[i]; point_xy[i].set( s.x, -s.z); point_z[i]=-s.y;} break;
-            case DIR_FORWARD: REP(points){C auto &s=point[i]; point_xy[i].set(-s.x,  s.y); point_z[i]= s.z;} break;
-            case DIR_BACK   : REP(points){C auto &s=point[i]; point_xy[i].set( s.x,  s.y); point_z[i]=-s.z;} break;
+            case DIR_RIGHT  : REP(points){C auto &s=point[i]; oriented_point[i].set( s.z,  s.y,  s.x);} break;
+            case DIR_LEFT   : REP(points){C auto &s=point[i]; oriented_point[i].set(-s.z,  s.y, -s.x);} break;
+            case DIR_UP     : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x,  s.z,  s.y);} break;
+            case DIR_DOWN   : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x, -s.z, -s.y);} break;
+            case DIR_FORWARD: REP(points){C auto &s=point[i]; oriented_point[i].set(-s.x,  s.y,  s.z);} break;
+            case DIR_BACK   : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x,  s.y, -s.z);} break;
          }
-         // FIXME div XY by Z to put on plane Z=1, but if under then check edge and clip
-         CreateConvex2D(convex_points, point_xy, points); if(!convex_points.elms())goto next;
+         VecD2 projected_point[ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
+         Int   projected_points=0;
+   const Dbl   min_height=1; // require points to be at least above 1 meter, if they're not, then detect intersections on edges at 1m height
+         REP(points)
+         {
+          C auto &src=oriented_point[i];
+            if(oriented_point_ok[i]=(src.z>=min_height))projected_point[projected_points++]=src.xy/src.z; // project onto XY plane with Z=1
+         }
+         if(projected_points<points) // not all points got projected, then check edges
+         {
+            // FIXME
+         }
+         CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
 
          RectI rect;
 
