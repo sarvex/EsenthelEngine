@@ -210,6 +210,32 @@ void Ball::draw2(C Color &color, Bool fill, Int resolution)C
    VI.end();
 }
 /******************************************************************************/
+void SphereConvert::init(Int res)
+{
+   T.res=res;
+   pos_to_cell_mul=res/PI_2; pos_to_cell_add=res*0.5f;
+   cell_to_pos_mul=PI_2/res; //cell_to_pos_add=-PI_4;
+   tans.setNumDiscard(res+1); REPAO(tans)=cellToPos(i);
+}
+void SphereConvert::draw()C
+{
+   REPA(tans)
+   {
+      D.lineX(GREY, tans[i], -1, 1);
+      D.lineY(GREY, tans[i], -1, 1);
+   }
+   Rect(-1,-1,1,1).draw(WHITE, false);
+}
+void SphereConvert::drawCell(C VecI2 &cell, C Color &color)C
+{
+   if(InRange(cell.x, res))
+   if(InRange(cell.y, res))
+   {
+      Rect r(_cellToPos(cell), _cellToPos(cell+1));
+      r.draw(color, false);
+   }
+}
+/******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b) {return Ball(Avg(a.r, b.r), Avg(a.pos, b.pos));}
 /******************************************************************************/
 Flt Dist(C Vec &point, C Ball &ball)

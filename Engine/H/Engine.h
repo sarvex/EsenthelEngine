@@ -202,12 +202,12 @@ namespace EE // Esenthel Engine namespace
    // MATH
    /******************************************************************************/
    #include "Math/Shapes/Plane.h"
+   #include "Math/Shapes/Ball.h"
    #include "Math/Shapes/Edge.h"
    #include "Math/Shapes/Triangle.h"
    #include "Math/Shapes/Quad.h"
    #include "Math/Shapes/Box.h"
    #include "Math/Shapes/Circle.h"
-   #include "Math/Shapes/Ball.h"
    #include "Math/Shapes/Capsule.h"
    #include "Math/Shapes/Tube.h"
    #include "Math/Shapes/Cone.h"

@@ -93,6 +93,34 @@ struct BallD // Ball Shape (double precision)
    BallD(Dbl r, C VecD &pos=VecDZero) {set(r, pos);}
 };
 /******************************************************************************/
+struct SphereConvert
+{
+   Int       res;
+   Flt       pos_to_cell_mul, pos_to_cell_add, cell_to_pos_mul/*, cell_to_pos_add=-PI_4*/;
+   Mems<Flt> tans;
+
+   void init(Int res);
+
+   Flt   posToCell    (  Flt   pos)C {return Atan(pos)*pos_to_cell_mul+pos_to_cell_add;}
+   Int   posToCellI   (  Flt   pos)C {return     Floor(posToCell (pos));}
+   Int   posToCellIMid(  Flt   pos)C {return Mid(Trunc(posToCell (pos)), 0, res-1);}
+   Vec2  posToCell    (C Vec2 &pos)C {return Vec2 (posToCell    (pos.x), posToCell    (pos.y));}
+   VecI2 posToCellI   (C Vec2 &pos)C {return VecI2(posToCellI   (pos.x), posToCellI   (pos.y));}
+   VecI2 posToCellIMid(C Vec2 &pos)C {return VecI2(posToCellIMid(pos.x), posToCellIMid(pos.y));}
+
+   Flt   cellToPos(  Flt    cell)C {return Tan (cell*cell_to_pos_mul+(-PI_4));}
+   Flt   cellToPos(  Int    cell)C {return Tan (cell*cell_to_pos_mul+(-PI_4));}
+   Flt  _cellToPos(  Int    cell)C {return tans[cell];} // !! 'cell' MUST BE IN RANGE "0..res" !!
+   Vec2  cellToPos(C Vec2  &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
+   Vec2  cellToPos(C VecI2 &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
+   Vec2 _cellToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res" !!
+
+#if EE_PRIVATE
+   void draw()C;
+   void drawCell(C VecI2 &cell, C Color &color)C;
+#endif
+};
+/******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 
 // distance

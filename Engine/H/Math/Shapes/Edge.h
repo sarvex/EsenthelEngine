@@ -335,7 +335,7 @@ private:
    RectI _mask;
 };
 /******************************************************************************/
-struct PixelWalkerEdge // iterates through pixels of a rasterized line and returns intersections with the edges
+struct PixelEdgeWalker // iterates through pixels of a rasterized edge and returns intersections with the edges
 {
    // get
    Bool  active()C {return _active;} // if  walker still active
@@ -347,8 +347,8 @@ struct PixelWalkerEdge // iterates through pixels of a rasterized line and retur
    // operations
    void step(); // make a single step
 
-   PixelWalkerEdge(                          ) {_active=false;}
-   PixelWalkerEdge(C Vec2 &start, C Vec2 &end) {T.start(start, end);}
+   PixelEdgeWalker(                          ) {_active=false;}
+   PixelEdgeWalker(C Vec2 &start, C Vec2 &end) {T.start(start, end);}
 
 #if !EE_PRIVATE
 private:
@@ -357,7 +357,7 @@ private:
    Int  _steps, _pos;
    Vec2 _posr, _pos_next, _step, _pos_end;
 };
-struct PixelWalkerEdgeMask : PixelWalkerEdge // iterates through pixels of a rasterized line and returns intersections with the edges only within a specified mask
+struct PixelEdgeWalkerMask : PixelEdgeWalker // iterates through pixels of a rasterized edge and returns intersections with the edges only within a specified mask
 {
    // set
    void start(C Vec2 &start, C Vec2 &end, C RectI &mask); // start walking from 'start' to 'end', 'mask'=process pixels only within this inclusive rectangle
@@ -365,11 +365,62 @@ struct PixelWalkerEdgeMask : PixelWalkerEdge // iterates through pixels of a ras
    // operations
    void step(); // make a single step
 
-   PixelWalkerEdgeMask(                                         ) {}
-   PixelWalkerEdgeMask(C Vec2 &start, C Vec2 &end, C RectI &mask) {T.start(start, end, mask);}
+   PixelEdgeWalkerMask(                                         ) {}
+   PixelEdgeWalkerMask(C Vec2 &start, C Vec2 &end, C RectI &mask) {T.start(start, end, mask);}
 
 private:
    Rect _mask;
+};
+/******************************************************************************/
+struct SpherePixelWalker // iterates through pixels of a rasterized edge on a spherical grid
+{
+   // get
+   Bool   active()C {return _active;} // if  walker still active
+ C VecI2& posi  ()C {return _posi  ;} // get current position in pixel coordinates
+ C Vec2 & posr  ()C {return _posr  ;} // get current position in real  coordinates, this will be set to 'start', then at each edge intersection, this will not return 'end'
+
+   // set
+   void start(C Vec2 &start, C Vec2 &end); // start walking from 'start' to 'end'
+
+   // operations
+   void step(); // make a single step
+
+   SpherePixelWalker(C SphereConvert &sc                            ) : _sc(sc) {_active=false;}
+   SpherePixelWalker(C SphereConvert &sc, C Vec2 &start, C Vec2 &end) : _sc(sc) {T.start(start, end);}
+
+#if !EE_PRIVATE
+private:
+#endif
+   Bool   _active;
+   VecSB2 _sign, _sign_pos;
+   VecI2  _posi, _endi;
+   Vec2   _posr, _delta;
+ C SphereConvert &_sc;
+};
+struct SpherePixelWalker1 // iterates through pixels of a rasterized edge on a spherical grid, this returns one extra step with 'posr' set to 'end'
+{
+   // get
+   Bool   active()C {return _active!=0;} // if  walker still active
+ C VecI2& posi  ()C {return _posi     ;} // get current position in pixel coordinates
+ C Vec2 & posr  ()C {return _posr     ;} // get current position in real  coordinates, this will be set to 'start', then at each edge intersection, then 'end'
+
+   // set
+   void start(C Vec2 &start, C Vec2 &end); // start walking from 'start' to 'end'
+
+   // operations
+   void step(); // make a single step
+
+   SpherePixelWalker1(C SphereConvert &sc                            ) : _sc(sc) {_active=0;}
+   SpherePixelWalker1(C SphereConvert &sc, C Vec2 &start, C Vec2 &end) : _sc(sc) {T.start(start, end);}
+
+#if !EE_PRIVATE
+private:
+#endif
+   Byte   _active;
+   VecSB2 _sign, _sign_pos;
+   VecI2  _posi, _endi;
+   Vec2   _posr, _endr, _delta;
+ C SphereConvert &_sc;
 };
 /******************************************************************************/
 struct VoxelWalker // iterates through voxels of a rasterized edge

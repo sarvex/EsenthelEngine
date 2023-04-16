@@ -257,7 +257,7 @@ void PixelWalkerMask::step()
    if(!_mask.includes(T.pos()))_active=false; // have to check mask in each step, because there's no easy way to prevent the end from going out of range, can't just decrease '_steps' because last valid pixel could be a side step before a position that is out of range
 }
 /******************************************************************************/
-void PixelWalkerEdge::start(C Vec2 &start, C Vec2 &end)
+void PixelEdgeWalker::start(C Vec2 &start, C Vec2 &end)
 {
    VecI2 pos=Floor(start), endi=Floor(end), delta=endi-pos;
 
@@ -308,7 +308,7 @@ void PixelWalkerEdge::start(C Vec2 &start, C Vec2 &end)
    }
    step();
 }
-void PixelWalkerEdge::step()
+void PixelEdgeWalker::step()
 {
    if(_active)
    {
@@ -367,7 +367,7 @@ void PixelWalkerEdge::step()
    }
 }
 /******************************************************************************/
-void PixelWalkerEdgeMask::start(C Vec2 &start, C Vec2 &end, C RectI &mask)
+void PixelEdgeWalkerMask::start(C Vec2 &start, C Vec2 &end, C RectI &mask)
 {
 //_mask.set(mask.min, mask.max+1).extend(EPS); // extend to make sure we will process positions at the borders, due to numerical precision issues
   _mask.set(mask.min-EPS, mask.max+(1+EPS)); // extend to make sure we will process positions at the borders, due to numerical precision issues
@@ -381,10 +381,130 @@ void PixelWalkerEdgeMask::start(C Vec2 &start, C Vec2 &end, C RectI &mask)
       for(; !_mask.includes(T.pos()) && _active; )super::step(); // if not at the start, have to check multiple times in case we hit the mask rect at the edge, but it needs multiple steps to cross that border
    }else _active=false;
 }
-void PixelWalkerEdgeMask::step()
+void PixelEdgeWalkerMask::step()
 {
    super::step();
    if(!_mask.includes(T.pos()))_active=false; // have to check mask in each step, because there's no easy way to prevent the end from going out of range, can't just decrease '_steps' because last valid pixel could be a side step before a position that is out of range
+}
+/******************************************************************************/
+// SPHERE PIXEL WALKER
+/******************************************************************************/
+void SpherePixelWalker::start(C Vec2 &start, C Vec2 &end)
+{
+   Edge2 edge(start, end); if(Clip(edge, Rect(-1, 1)))
+   {
+    C Vec2 &start=edge.p[0], &end=edge.p[1];
+
+     _active=true;
+
+     _posr =start;            _posi=_sc.posToCellIMid(start);
+                              _endi=_sc.posToCellIMid(end  );
+     _delta=end-start; VecI2 deltai=_endi-_posi;
+
+     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+   }else
+     _active=false;
+}
+void SpherePixelWalker::step()
+{
+   if(_active)
+   {
+      VecB2 move;
+      Vec2  dist;
+
+      switch(_sign.x)
+      {
+         default: move.x=false; goto no_x;
+         case  1: move.x=(_posi.x<_endi.x); break;
+         case -1: move.x=(_posi.x>_endi.x); break;
+      }
+      if(move.x){Flt dest=_sc.tans[_posi.x+_sign_pos.x]; dist.x=(dest-_posr.x)/_delta.x;}
+   no_x:
+
+      switch(_sign.y)
+      {
+         default: move.y=false; goto no_y;
+         case  1: move.y=(_posi.y<_endi.y); break;
+         case -1: move.y=(_posi.y>_endi.y); break;
+      }
+      if(move.y){Flt dest=_sc.tans[_posi.y+_sign_pos.y]; dist.y=(dest-_posr.y)/_delta.y;}
+   no_y:
+
+      if(move.x) // move in X axis
+      {
+         if(move.y && dist.y<dist.x)goto Y; // Y is closer
+        _posi.x+=_sign.x;
+        _posr  +=_delta*dist.x;
+      }else
+      if(move.y) // move in Y axis
+      {Y:
+        _posi.y+=_sign.y;
+        _posr  +=_delta*dist.y;
+      }else _active=false; // finish
+   }
+}
+/******************************************************************************/
+void SpherePixelWalker1::start(C Vec2 &start, C Vec2 &end)
+{
+   Edge2 edge(start, end); if(Clip(edge, Rect(-1, 1)))
+   {
+    C Vec2 &start=edge.p[0], &end=edge.p[1];
+
+     _active=2;
+
+     _posr =start    ;        _posi=_sc.posToCellIMid(start);
+     _endr =end      ;        _endi=_sc.posToCellIMid(end  );
+     _delta=end-start; VecI2 deltai=_endi-_posi;
+
+     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+   }else
+     _active=0;
+}
+void SpherePixelWalker1::step()
+{
+   if(_active==2) // most common case
+   {
+      VecB2 move;
+      Vec2  dist;
+
+      switch(_sign.x)
+      {
+         default: move.x=false; goto no_x;
+         case  1: move.x=(_posi.x<_endi.x); break;
+         case -1: move.x=(_posi.x>_endi.x); break;
+      }
+      if(move.x){Flt dest=_sc.tans[_posi.x+_sign_pos.x]; dist.x=(dest-_posr.x)/_delta.x;}
+   no_x:
+
+      switch(_sign.y)
+      {
+         default: move.y=false; goto no_y;
+         case  1: move.y=(_posi.y<_endi.y); break;
+         case -1: move.y=(_posi.y>_endi.y); break;
+      }
+      if(move.y){Flt dest=_sc.tans[_posi.y+_sign_pos.y]; dist.y=(dest-_posr.y)/_delta.y;}
+   no_y:
+
+      if(move.x) // move in X axis
+      {
+         if(move.y && dist.y<dist.x)goto Y; // Y is closer
+        _posi.x+=_sign.x;
+        _posr  +=_delta*dist.x;
+      }else
+      if(move.y) // move in Y axis
+      {Y:
+        _posi.y+=_sign.y;
+        _posr  +=_delta*dist.y;
+      }else // proceed to 'end'
+      {
+        _active=1;
+        _posr=_endr;
+      //_posi=_endi; should already be set to this value
+      }
+   }else
+   if(_active)_active=0; // finish
 }
 /******************************************************************************/
 // VOXEL WALKER
