@@ -102,8 +102,8 @@ struct SphereConvert
    void init(Int res);
 
    Flt   posToCell    (  Flt   pos)C {return Atan(pos)*pos_to_cell_mul+pos_to_cell_add;}
-   Int   posToCellI   (  Flt   pos)C {return     Floor(posToCell (pos));}
-   Int   posToCellIMid(  Flt   pos)C {return Mid(Trunc(posToCell (pos)), 0, res-1);}
+   Int   posToCellI   (  Flt   pos)C {return     Floor(posToCell(pos));}
+   Int   posToCellIMid(  Flt   pos)C {return Mid(Trunc(posToCell(pos)), 0, res-1);}
    Vec2  posToCell    (C Vec2 &pos)C {return Vec2 (posToCell    (pos.x), posToCell    (pos.y));}
    VecI2 posToCellI   (C Vec2 &pos)C {return VecI2(posToCellI   (pos.x), posToCellI   (pos.y));}
    VecI2 posToCellIMid(C Vec2 &pos)C {return VecI2(posToCellIMid(pos.x), posToCellIMid(pos.y));}
