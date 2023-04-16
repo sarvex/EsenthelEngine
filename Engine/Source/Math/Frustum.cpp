@@ -997,10 +997,18 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
          // set areas for drawing
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
-            Vec2  look_dir=matrix.z.xz(); // FIXME
-            Flt   max     =Abs(look_dir).max();
-            VecI2 dir     =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
-                  perp    =Perp(dir);                                 // parallel to direction
+            Vec2 look_dir; C auto &s=matrix.z; switch(ap.side) // #TerrainOrient
+            {
+               case DIR_RIGHT  : look_dir.set( s.z,  s.y); break;
+               case DIR_LEFT   : look_dir.set(-s.z,  s.y); break;
+               case DIR_UP     : look_dir.set( s.x,  s.z); break;
+               case DIR_DOWN   : look_dir.set( s.x, -s.z); break;
+               case DIR_FORWARD: look_dir.set(-s.x,  s.y); break;
+               case DIR_BACK   : look_dir.set( s.x,  s.y); break;
+            }
+            Flt   max =Abs(look_dir).max();
+            VecI2 dir =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
+                  perp=Perp(dir);                                 // parallel to direction
             if((dir.x== 1 && dir.y== 1)
             || (dir.x== 1 && dir.y== 0)
             || (dir.x==-1 && dir.y==-1)
