@@ -874,7 +874,6 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    }
 }
 /******************************************************************************/
-#if 0
 void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend)C
 {
    area_pos.clear();
@@ -909,9 +908,14 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
           C auto &src=oriented_point[i];
             if(oriented_point_ok[i]=(src.z>=min_height))projected_point[projected_points++]=src.xy/src.z; // project onto XY plane with Z=1
          }
-         if(projected_points<points) // not all points got projected, then check edges
+         if(projected_points<points)REP(edges) // not all points got projected, then check edges
          {
-            // FIXME
+            VecI2 edge=T.edge[i];
+            if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min height and one under)
+            {
+             C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y];
+               // FIXME
+            }
          }
          CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
 
@@ -1058,7 +1062,6 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
 }
-#endif
 /******************************************************************************/
 void FrustumClass::draw(C Color &col)C
 {
