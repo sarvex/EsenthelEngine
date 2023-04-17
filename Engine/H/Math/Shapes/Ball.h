@@ -93,6 +93,12 @@ struct BallD // Ball Shape (double precision)
    BallD(Dbl r, C VecD &pos=VecDZero) {set(r, pos);}
 };
 /******************************************************************************/
+struct SphereArea : VecI2
+{
+   DIR_ENUM side;
+
+   SphereArea& operator=(C VecI2 &xy) {super::operator=(xy); return T;}
+};
 struct SphereConvert
 {
    Int       res;
@@ -115,17 +121,20 @@ struct SphereConvert
    Vec2  cellToPos(C VecI2 &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
    Vec2 _cellToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res" !!
 
+   DIR_ENUM dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy            )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1)
+   Vec      sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
+
 #if EE_PRIVATE
    void draw()C;
    void drawCell(C VecI2 &cell, C Color &color)C;
 #endif
 };
-struct SphereArea : VecI2
-{
-   DIR_ENUM side;
 
-   SphereArea& operator=(C VecI2 &xy) {super::operator=(xy); return T;}
-};
+DIR_ENUM DirToCubeFace          (C Vec &dir                               ); // convert vector direction (doesn't need to be normalized) to cube face
+DIR_ENUM DirToCubeFacePixel     (C Vec &dir, Int res, Vec2 &xy            ); // convert vector direction (doesn't need to be normalized) to cube face and image             coordinates, 'res'=cube image resolution, 'xy'=image pixel coordinates (0..res-1)
+DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy            ); // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'res'=terrain    resolution, 'xy'=image pixel coordinates (0..res-1)
+Vec           CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert        cube image coordinates to vector direction, 'x,y'=image   pixel coordinates (0..res-1)  , 'res'=cube image resolution, 'cube_face'=image   cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
+Vec      SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'res'=terrain    resolution, 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 /******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 
