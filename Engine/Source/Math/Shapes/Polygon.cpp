@@ -631,7 +631,7 @@ void ClipPoly(C CMemPtr<Vec> &poly, C Plane &plane, MemPtr<Vec> output)
          {
           C Vec &next     =poly[i];
             Flt  next_dist=Dist(next, plane);
-            if(    prev_dist<0)
+            if(  prev_dist<0)
             {
                output.add(prev);
                if(next_dist>=0) // change of side
