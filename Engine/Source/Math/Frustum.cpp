@@ -913,8 +913,8 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
             VecI2 edge=T.edge[i];
             if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min height and one under)
             {
-             C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y];
-               Dbl hit=1, delta=b.z-a.z, frac=(hit-a.z)/delta; // calculate Lerp frac to intersect at value Z=1
+             C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y]; // Edge a->b
+               Dbl hit=1, delta=b.z-a.z, frac=(hit-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=1
                projected_point[projected_points++]=Lerp(a.xy, b.xy, frac); // add point XY at Z=1 to projected points
             }
          }
