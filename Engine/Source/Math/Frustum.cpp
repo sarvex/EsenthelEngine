@@ -874,7 +874,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    }
 }
 /******************************************************************************/
-void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend)C
+void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend, Flt min_radius)C
 {
    area_pos.clear();
 
@@ -883,6 +883,7 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
  //Memt<VecD2> temp;
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
+   Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
 
    SpherePixelWalker walker(sc);
    SphereArea        ap;
@@ -902,7 +903,6 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
          }
          VecD2 projected_point[ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
          Int   projected_points=0;
-   const Dbl   min_height=1; // require points to be at least above 1 meter, if they're not, then detect intersections on edges at 1m height
          REP(points)
          {
           C auto &src=oriented_point[i];
@@ -914,8 +914,8 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
             if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min height and one under)
             {
              C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y]; // Edge a->b
-               Dbl hit=1, delta=b.z-a.z, frac=(hit-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=1
-               projected_point[projected_points++]=Lerp(a.xy, b.xy, frac); // add point XY at Z=1 to projected points
+               Dbl delta=b.z-a.z, frac=(min_height-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=min_height
+               projected_point[projected_points++]=Lerp(a.xy, b.xy, frac)/min_height; // project point from Z=min_height to Z=1
             }
          }
          CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
