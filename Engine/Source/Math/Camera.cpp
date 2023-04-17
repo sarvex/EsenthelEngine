@@ -513,11 +513,11 @@ Bool ToScreenRect(C Ball &ball, Rect &rect)
    }
    return true;
 #elif 1
-   Flt  l, sin, cos;
+   Flt  len, sin, cos;
    Vec2 screen;
    Vec  zd, d, z=ball.pos-CamMatrix.pos; // no need for 'VecD'
 
-   zd=PointOnPlane(z, CamMatrix.y); l=zd.normalize(); sin=ball.r/l;
+   zd=PointOnPlane(z, CamMatrix.y); len=zd.normalize(); sin=ball.r/len;
    if(sin>=1)rect.setX(D.viewRect().min.x, D.viewRect().max.x);else
    {
       cos=CosSin(sin); d=Cross(CamMatrix.y, zd); d.setLength(cos*ball.r); zd*=-sin*ball.r; zd+=ball.pos; if(Renderer.mirror())d.chs();
@@ -526,7 +526,7 @@ Bool ToScreenRect(C Ball &ball, Rect &rect)
       if(!rect.validX())return false;
    }
 
-   zd=PointOnPlane(z, CamMatrix.x); l=zd.normalize(); sin=ball.r/l;
+   zd=PointOnPlane(z, CamMatrix.x); len=zd.normalize(); sin=ball.r/len;
    if(sin>=1)rect.setY(D.viewRect().min.y, D.viewRect().max.y);else
    {
       cos=CosSin(sin); d=Cross(CamMatrix.x, zd); d.setLength(cos*ball.r); zd*=-sin*ball.r; zd+=ball.pos; if(Renderer.mirror())d.chs();
