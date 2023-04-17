@@ -290,7 +290,7 @@ DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy) // #TerrainOrien
    {
       if(abs.x>=abs.y)
       {
-         if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         if( !abs.x ){xy.zero(); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
          Flt y=Atan(dir.y/abs.x), z=Atan(dir.z/abs.x);
          if(dir.x>=0){xy.set( z*mul+add,  y*mul+add); return DIR_RIGHT;}
                      {xy.set(-z*mul+add,  y*mul+add); return DIR_LEFT ;}
@@ -306,23 +306,29 @@ DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy) // #TerrainOrien
 }
 DIR_ENUM SphereConvert::dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy)C
 {
+   Flt x, y; DIR_ENUM ret;
    Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
       if(abs.x>=abs.y)
       {
-         if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
-         Flt y=Atan(dir.y/abs.x), z=Atan(dir.z/abs.x);
-         if(dir.x>=0){xy.set( z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_RIGHT;}
-                     {xy.set(-z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_LEFT ;}
+         if( !abs.x ){xy.zero(); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         x=dir.z/abs.x; y=dir.y/abs.x;
+         if(dir.x>=0){        ret=DIR_RIGHT;}
+         else        {CHS(x); ret=DIR_LEFT ;}
+      }else
+      {
+      Y: x=dir.x/abs.y; y=dir.z/abs.y;
+         if(dir.y>=0){        ret=DIR_UP   ;}
+         else        {CHS(y); ret=DIR_DOWN ;}
       }
-      Y: Flt x=Atan(dir.x/abs.y), z=Atan(dir.z/abs.y);
-         if(dir.y>=0){xy.set( x*pos_to_cell_mul+pos_to_cell_add,  z*pos_to_cell_mul+pos_to_cell_add); return DIR_UP   ;}
-                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add, -z*pos_to_cell_mul+pos_to_cell_add); return DIR_DOWN ;}
-   }
+   }else
+   {
       if(abs.y>=abs.z)goto Y;
-         Flt x=Atan(dir.x/abs.z), y=Atan(dir.y/abs.z);
-         if(dir.z>=0){xy.set(-x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_FORWARD;}
-                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_BACK   ;}
+         x=dir.x/abs.z; y=dir.y/abs.z;
+         if(dir.z>=0){CHS(x); ret=DIR_FORWARD;}
+         else        {        ret=DIR_BACK   ;}
+   }
+   xy.set(posToCell(x), posToCell(y)); return ret;
 }
 /******************************************************************************/
 Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
