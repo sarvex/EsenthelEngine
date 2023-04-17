@@ -217,59 +217,6 @@ void SphereConvert::init(Int res)
    cell_to_pos_mul=PI_2/res; //cell_to_pos_add=-PI_4;
    tans.setNumDiscard(res+1); REPAO(tans)=cellToPos(i);
 }
-DIR_ENUM SphereConvert::dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy)C
-{
-   Vec abs=Abs(dir); if(abs.x>=abs.z)
-   {
-      if(abs.x>=abs.y)
-      {
-         if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
-         Flt y=Atan(dir.y/abs.x), z=Atan(dir.z/abs.x);
-         if(dir.x>=0){xy.set( z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_RIGHT;}
-                     {xy.set(-z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_LEFT ;}
-      }
-      Y: Flt x=Atan(dir.x/abs.y), z=Atan(dir.z/abs.y);
-         if(dir.y>=0){xy.set( x*pos_to_cell_mul+pos_to_cell_add,  z*pos_to_cell_mul+pos_to_cell_add); return DIR_UP   ;}
-                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add, -z*pos_to_cell_mul+pos_to_cell_add); return DIR_DOWN ;}
-   }
-      if(abs.y>=abs.z)goto Y;
-         Flt x=Atan(dir.x/abs.z), y=Atan(dir.y/abs.z);
-         if(dir.z>=0){xy.set(-x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_FORWARD;}
-                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_BACK   ;}
-}
-Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
-{
-   x=cellToPos(x);
-   y=cellToPos(y);
-   switch(cube_face)
-   {
-      case DIR_RIGHT  : return Vec( 1,  y,  x);
-      case DIR_LEFT   : return Vec(-1,  y, -x);
-      case DIR_UP     : return Vec( x,  1,  y);
-      case DIR_DOWN   : return Vec( x, -1, -y);
-      case DIR_FORWARD: return Vec(-x,  y,  1);
-      case DIR_BACK   : return Vec( x,  y, -1);
-      default         : return VecZero;
-   }
-}
-void SphereConvert::draw()C
-{
-   REPA(tans)
-   {
-      D.lineX(GREY, tans[i], -1, 1);
-      D.lineY(GREY, tans[i], -1, 1);
-   }
-   Rect(-1,-1,1,1).draw(WHITE, false);
-}
-void SphereConvert::drawCell(C VecI2 &cell, C Color &color)C
-{
-   if(InRange(cell.x, res))
-   if(InRange(cell.y, res))
-   {
-      Rect r(_cellToPos(cell), _cellToPos(cell+1));
-      r.draw(color, false);
-   }
-}
 /******************************************************************************/
 DIR_ENUM DirToCubeFace(C Vec &dir)
 {
@@ -357,6 +304,26 @@ DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy) // #TerrainOrien
          if(dir.z>=0){xy.set(-x*mul+add,  y*mul+add); return DIR_FORWARD;}
                      {xy.set( x*mul+add,  y*mul+add); return DIR_BACK   ;}
 }
+DIR_ENUM SphereConvert::dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy)C
+{
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
+   {
+      if(abs.x>=abs.y)
+      {
+         if( !abs.x ){xy.zero(    ); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         Flt y=Atan(dir.y/abs.x), z=Atan(dir.z/abs.x);
+         if(dir.x>=0){xy.set( z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_RIGHT;}
+                     {xy.set(-z*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_LEFT ;}
+      }
+      Y: Flt x=Atan(dir.x/abs.y), z=Atan(dir.z/abs.y);
+         if(dir.y>=0){xy.set( x*pos_to_cell_mul+pos_to_cell_add,  z*pos_to_cell_mul+pos_to_cell_add); return DIR_UP   ;}
+                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add, -z*pos_to_cell_mul+pos_to_cell_add); return DIR_DOWN ;}
+   }
+      if(abs.y>=abs.z)goto Y;
+         Flt x=Atan(dir.x/abs.z), y=Atan(dir.y/abs.z);
+         if(dir.z>=0){xy.set(-x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_FORWARD;}
+                     {xy.set( x*pos_to_cell_mul+pos_to_cell_add,  y*pos_to_cell_mul+pos_to_cell_add); return DIR_BACK   ;}
+}
 /******************************************************************************/
 Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
 {
@@ -399,6 +366,40 @@ Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // #Terra
       }
    }
    return VecZero;
+}
+Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
+{
+   x=cellToPos(x);
+   y=cellToPos(y);
+   switch(cube_face)
+   {
+      case DIR_RIGHT  : return Vec( 1,  y,  x);
+      case DIR_LEFT   : return Vec(-1,  y, -x);
+      case DIR_UP     : return Vec( x,  1,  y);
+      case DIR_DOWN   : return Vec( x, -1, -y);
+      case DIR_FORWARD: return Vec(-x,  y,  1);
+      case DIR_BACK   : return Vec( x,  y, -1);
+      default         : return VecZero;
+   }
+}
+/******************************************************************************/
+void SphereConvert::draw()C
+{
+   REPA(tans)
+   {
+      D.lineX(GREY, tans[i], -1, 1);
+      D.lineY(GREY, tans[i], -1, 1);
+   }
+   Rect(-1,-1,1,1).draw(WHITE, false);
+}
+void SphereConvert::drawCell(C VecI2 &cell, C Color &color)C
+{
+   if(InRange(cell.x, res))
+   if(InRange(cell.y, res))
+   {
+      Rect r(_cellToPos(cell), _cellToPos(cell+1));
+      r.draw(color, false);
+   }
 }
 /******************************************************************************/
 // BALL
