@@ -884,6 +884,21 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
    Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
+   /*               *
+               *         *
+            *               *
+          *                   *
+          \                  /
+           \                /
+            \              /
+min_height - \------------/
+           |  \          /
+           |   \        /
+           |    \      /
+           |     \    /
+           |      \  /
+           -       \/
+   */
 
    SpherePixelWalker walker(sc);
    SphereArea        ap;
@@ -911,11 +926,11 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
          if(projected_points<points)REP(edges) // not all points got projected, then check edges
          {
             VecI2 edge=T.edge[i];
-            if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min height and one under)
+            if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min_height and one under)
             {
              C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y]; // Edge a->b
                Dbl delta=b.z-a.z, frac=(min_height-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=min_height
-               projected_point[projected_points++]=Lerp(a.xy, b.xy, frac)/min_height; // project point from Z=min_height to Z=1
+               projected_point[projected_points++]=Lerp(a.xy, b.xy, frac)/min_height; // project point from Z=min_height to Z=1 (this Lerp generates point at intersection Z=min_height)
             }
          }
          CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
