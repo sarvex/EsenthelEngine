@@ -364,7 +364,7 @@ Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matche
    // (x+0.5)*2/res-1=dir.x
    // dir.x=x*2/res + 0.5*2/res - 1
    // dir.x=x*2/res + 1/res-1
-   if(res>0)
+ //if(res>0)
    {
       Flt inv_res=1.0f/res, mul=2*inv_res, add=inv_res-1;
       x=x*mul+add;
@@ -383,7 +383,7 @@ Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matche
 }
 Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // #TerrainOrient
 {
-   if(res>0)
+ //if(res>0)
    {
       Flt mul=PI_2/res, add=-PI_4;
       x=Tan(x*mul+add);
@@ -402,18 +402,21 @@ Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // #Terra
 }
 Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
 {
-   x=cellToPos(x);
-   y=cellToPos(y);
-   switch(cube_face)
+ //if(res>0)
    {
-      case DIR_RIGHT  : return Vec( 1,  y,  x);
-      case DIR_LEFT   : return Vec(-1,  y, -x);
-      case DIR_UP     : return Vec( x,  1,  y);
-      case DIR_DOWN   : return Vec( x, -1, -y);
-      case DIR_FORWARD: return Vec(-x,  y,  1);
-      case DIR_BACK   : return Vec( x,  y, -1);
-      default         : return VecZero;
+      x=cellToPos(x);
+      y=cellToPos(y);
+      switch(cube_face)
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
+      }
    }
+   return VecZero;
 }
 /******************************************************************************/
 void SphereConvert::draw()C
