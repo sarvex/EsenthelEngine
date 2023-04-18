@@ -905,19 +905,11 @@ min_height - \------------/
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
-         VecD oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
-         Bool oriented_point_ok[ELMS(point)];
-         switch(ap.side) // #TerrainOrient
-         {
-            case DIR_RIGHT  : REP(points){C auto &s=point[i]; oriented_point[i].set( s.z,  s.y,  s.x);} break;
-            case DIR_LEFT   : REP(points){C auto &s=point[i]; oriented_point[i].set(-s.z,  s.y, -s.x);} break;
-            case DIR_UP     : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x,  s.z,  s.y);} break;
-            case DIR_DOWN   : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x, -s.z, -s.y);} break;
-            case DIR_FORWARD: REP(points){C auto &s=point[i]; oriented_point[i].set(-s.x,  s.y,  s.z);} break;
-            case DIR_BACK   : REP(points){C auto &s=point[i]; oriented_point[i].set( s.x,  s.y, -s.z);} break;
-         }
-         VecD2 projected_point[ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
+         VecD  oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
+         Bool  oriented_point_ok[ELMS(point)];
+         VecD2 projected_point  [ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
          Int   projected_points=0;
+         PosToSphereTerrainPos(ap.side, oriented_point, point, points);
          REP(points)
          {
           C auto &src=oriented_point[i];
@@ -1028,15 +1020,7 @@ min_height - \------------/
          // set areas for drawing
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
-            Vec2 look_dir; C auto &s=matrix.z; switch(ap.side) // #TerrainOrient
-            {
-               case DIR_RIGHT  : look_dir.set( s.z,  s.y); break;
-               case DIR_LEFT   : look_dir.set(-s.z,  s.y); break;
-               case DIR_UP     : look_dir.set( s.x,  s.z); break;
-               case DIR_DOWN   : look_dir.set( s.x, -s.z); break;
-               case DIR_FORWARD: look_dir.set(-s.x,  s.y); break;
-               case DIR_BACK   : look_dir.set( s.x,  s.y); break;
-            }
+            Vec2  look_dir; PosToSphereTerrainPos(ap.side, look_dir, matrix.z);
             Flt   max =Abs(look_dir).max();
             VecI2 dir =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
                   perp=Perp(dir);                                 // parallel to direction

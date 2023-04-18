@@ -237,6 +237,43 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
    }
 #endif
 }
+/******************************************************************************/
+void PosToSphereTerrainPos(DIR_ENUM dir, Vec2 &dest, C Vec &src)
+{
+   switch(dir) // #TerrainOrient
+   {
+      case DIR_RIGHT  : dest.set( src.z,  src.y); break;
+      case DIR_LEFT   : dest.set(-src.z,  src.y); break;
+      case DIR_UP     : dest.set( src.x,  src.z); break;
+      case DIR_DOWN   : dest.set( src.x, -src.z); break;
+      case DIR_FORWARD: dest.set(-src.x,  src.y); break;
+      case DIR_BACK   : dest.set( src.x,  src.y); break;
+   }
+}
+void PosToSphereTerrainPos(DIR_ENUM dir, Vec &dest, C Vec &src)
+{
+   switch(dir) // #TerrainOrient
+   {
+      case DIR_RIGHT  : dest.set( src.z,  src.y,  src.x); break;
+      case DIR_LEFT   : dest.set(-src.z,  src.y, -src.x); break;
+      case DIR_UP     : dest.set( src.x,  src.z,  src.y); break;
+      case DIR_DOWN   : dest.set( src.x, -src.z, -src.y); break;
+      case DIR_FORWARD: dest.set(-src.x,  src.y,  src.z); break;
+      case DIR_BACK   : dest.set( src.x,  src.y, -src.z); break;
+   }
+}
+void PosToSphereTerrainPos(DIR_ENUM dir, VecD *dest, C VecD *src, Int elms) // convert world space position 'src' to 'dest' where XY=plane position, Z=height
+{
+   switch(dir) // #TerrainOrient
+   {
+      case DIR_RIGHT  : REP(elms){C auto &s=src[i]; dest[i].set( s.z,  s.y,  s.x);} break;
+      case DIR_LEFT   : REP(elms){C auto &s=src[i]; dest[i].set(-s.z,  s.y, -s.x);} break;
+      case DIR_UP     : REP(elms){C auto &s=src[i]; dest[i].set( s.x,  s.z,  s.y);} break;
+      case DIR_DOWN   : REP(elms){C auto &s=src[i]; dest[i].set( s.x, -s.z, -s.y);} break;
+      case DIR_FORWARD: REP(elms){C auto &s=src[i]; dest[i].set(-s.x,  s.y,  s.z);} break;
+      case DIR_BACK   : REP(elms){C auto &s=src[i]; dest[i].set( s.x,  s.y, -s.z);} break;
+   }
+}
 /******************************************************************************
 DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
 {
@@ -419,6 +456,77 @@ Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
    return VecZero;
 }
 /******************************************************************************/
+inline Bool ClipZ(Ball &ball, Flt min_z) // clip ball to retain information only above 'min_z'
+{
+/* if Ball is fully above  'min_z' then keep it fully
+   if Ball is fully below  'min_z' then clip fully (ret false)
+   if Ball intersects with 'min_z' then clip it to smaller radius and adjust pos.z (height)
+
+                          XXXXXXXX
+                        X         X
+                       ****************
+                  ***  X           X  ****
+               *      X             X      *
+             *        X             X        *
+min_height - *--------X-------------X---------*
+             *        X            X          *
+             *          X         X           *
+             *            X     X             *
+              *             XX               *
+               *                            *
+                 *                         *
+                   *                     *
+                     *                *
+                        *         *
+                             *
+*/
+   if(ball.pos.z>=min_z)return true;
+   Flt d=min_z-ball.pos.z; if(d>=ball.r)return false;
+   Flt cos=CosSin(d/ball.r);
+   ball.r    *=cos;
+   ball.pos.z+=d;
+   return true;
+}
+void SphereConvert::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C
+{
+   /* min_radius is treated as min_height
+                    *
+               *         *
+            *               *
+          *                   *
+          \                  /
+           \                /
+            \              /
+min_height - \------------/
+           |  \          /
+           |   \        /
+           |    \      /
+           |     \    /
+           |      \  /
+           -       \/
+   */
+   area_pos.clear();
+   SphereArea ap;
+   for(ap.side=DIR_ENUM(0); ; )
+   {
+      Ball oriented_ball; PosToSphereTerrainPos(ap.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
+      if(ClipZ(oriented_ball, min_radius))
+      {
+      #if 1 // simple but incorrect, because it treats ball as flat Circle
+         oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
+         RectI rect(posToCellI(oriented_ball.pos.xy-oriented_ball.r),
+                    posToCellI(oriented_ball.pos.xy+oriented_ball.r));
+         rect.clampX(0, res-1);
+         rect.clampY(0, res-1);
+         for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
+         for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)area_pos.add(ap);
+      #else
+      #endif
+      }
+      if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
+   }
+}
+/******************************************************************************/
 void SphereConvert::draw()C
 {
    REPA(tans)
@@ -428,13 +536,27 @@ void SphereConvert::draw()C
    }
    Rect(-1,-1,1,1).draw(WHITE, false);
 }
-void SphereConvert::drawCell(C VecI2 &cell, C Color &color)C
+void SphereConvert::drawCell(C Color &color, C VecI2 &cell)C
 {
    if(InRange(cell.x, res))
    if(InRange(cell.y, res))
    {
       Rect r(_cellToPos(cell), _cellToPos(cell+1));
       r.draw(color, false);
+   }
+}
+void SphereConvert::drawCell(C Color &color, C SphereArea &area, Flt radius)C
+{
+   if(InRange(area.x, res))
+   if(InRange(area.y, res))
+   {
+      Quad q;
+      q.p[0]=sphereTerrainPixelToDir(area.x  , area.y  , area.side);
+      q.p[1]=sphereTerrainPixelToDir(area.x  , area.y+1, area.side);
+      q.p[2]=sphereTerrainPixelToDir(area.x+1, area.y+1, area.side);
+      q.p[3]=sphereTerrainPixelToDir(area.x+1, area.y  , area.side);
+      REPAO(q.p).setLength(radius);
+      q.draw(color, false);
    }
 }
 /******************************************************************************/
