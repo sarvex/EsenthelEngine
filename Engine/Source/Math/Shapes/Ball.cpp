@@ -487,6 +487,8 @@ min_height - *--------X-------------X---------*
    ball.pos.z+=d;
    return true;
 }
+static Bool PosToCellX(C SphereConvert &sc, C Vec &pos, Int &cell) {Flt min=1; if(pos.z>=min){cell=sc.posToCellI(pos.x/pos.z); return true;} return false;}
+static Bool PosToCellY(C SphereConvert &sc, C Vec &pos, Int &cell) {Flt min=1; if(pos.z>=min){cell=sc.posToCellI(pos.y/pos.z); return true;} return false;}
 void SphereConvert::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C
 {
    /* min_radius is treated as min_height
@@ -512,16 +514,36 @@ min_height - \------------/
       Ball oriented_ball; PosToSphereTerrainPos(ap.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
       if(ClipZ(oriented_ball, min_radius))
       {
-      #if 1 // simple but incorrect, because it treats ball as flat Circle
+         RectI rect;
+      #if 0 // simple but incorrect, because it treats ball as flat Circle
          oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
-         RectI rect(posToCellI(oriented_ball.pos.xy-oriented_ball.r),
-                    posToCellI(oriented_ball.pos.xy+oriented_ball.r));
+         rect.set(posToCellI(oriented_ball.pos.xy-oriented_ball.r),
+                  posToCellI(oriented_ball.pos.xy+oriented_ball.r));
          rect.clampX(0, res-1);
          rect.clampY(0, res-1);
+      #else
+         // code based on 'ToScreenRect'
+         Flt len2, sin2, cos, r2=Sqr(oriented_ball.r);
+         Vec zd, d;
+
+         zd.set(oriented_ball.pos.x, 0, oriented_ball.pos.z); len2=zd.length2();
+         if(r2>=len2)rect.setX(0, res-1);else
+         {
+            sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+            if(PosToCellX(T, zd-d, rect.min.x))MAX(rect.min.x,     0);else rect.min.x=    0;
+            if(PosToCellX(T, zd+d, rect.max.x))MIN(rect.max.x, res-1);else rect.max.x=res-1;
+         }
+
+         zd.set(0, oriented_ball.pos.y, oriented_ball.pos.z); len2=zd.length2();
+         if(r2>=len2)rect.setY(0, res-1);else
+         {
+            sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+            if(PosToCellY(T, zd+d, rect.min.y))MAX(rect.min.y,     0);else rect.min.y=    0;
+            if(PosToCellY(T, zd-d, rect.max.y))MIN(rect.max.y, res-1);else rect.max.y=res-1;
+         }
+      #endif
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)area_pos.add(ap);
-      #else
-      #endif
       }
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }

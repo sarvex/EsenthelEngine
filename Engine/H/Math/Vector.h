@@ -2615,7 +2615,8 @@ Dbl Cross(C VecD2 &a, C VecD2 &b);
 Vec  Cross(C Vec  &a, C Vec  &b);
 VecD Cross(C VecD &a, C VecD &b);
 #if EE_PRIVATE
-inline Vec CrossUp(C Vec &b) {return Vec(b.z, 0, -b.x);} // same as "Cross(Vec(0, 1, 0), b)"
+inline Vec CrossRight(C Vec &b) {return Vec(0, -b.z, b.y);} // same as "Cross(Vec(1, 0, 0), b)"
+inline Vec CrossUp   (C Vec &b) {return Vec(b.z, 0, -b.x);} // same as "Cross(Vec(0, 1, 0), b)"
 #endif
 
 // cross product normalized
