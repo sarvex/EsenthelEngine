@@ -880,7 +880,7 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
 
    Memt<VecD2> convex_points;
    Memt<VecI2> row_min_max_x;
- //Memt<VecD2> temp;
+   Memt<VecD2> temp;
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
    Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
@@ -929,19 +929,7 @@ min_height - \------------/
 
          RectI rect;
 
-         /*FIXME
-         Bool    mask_do;
-         RectI   mask; // inclusive
-         CircleM circle;
-         if(extraBall())
-         {
-            circle.pos.x=extra_ball.pos.x/area_size;
-            circle.pos.y=extra_ball.pos.z/area_size;
-            circle.r    =extra_ball.r    /area_size; if(extend)circle.r+=half;
-            RectI r(Floor(circle.pos.x-circle.r), Floor(circle.pos.y-circle.r),
-                    Floor(circle.pos.x+circle.r), Floor(circle.pos.y+circle.r));
-            if(mask_do)mask&=r;else{mask=r; mask_do=true;}
-         }*/
+         // Warning: ignores 'extraBall'
 
          // set min_y..max_y visibility
          rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
@@ -956,16 +944,15 @@ min_height - \------------/
        //if(mask_do)rect.clampY(mask.min.y, mask.max.y); FIXME
          if(!rect.validY())goto next;
 
-         // clamp convex edges, so 'PixelWalker' doesn't have to walk too much
-         /*FIXME
-         if(mask_do)
+         // clamp convex edges, so 'SpherePixelWalker' doesn't have to walk too much
          {
             PlaneD2 plane;
-            plane.pos=mask.min  ; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
-                                  plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
-            plane.pos=mask.max+1; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
-                                  plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
-         }*/
+            Flt min=-1, max=1;
+            plane.pos=min; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
+                           plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
+            plane.pos=max; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
+                           plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
+         }
 
          // set min_x..max_x per row in 'row_min_max_x'
          row_min_max_x.setNumDiscard(rect.h()+1); // +1 because it's inclusive
@@ -986,6 +973,9 @@ min_height - \------------/
 
                VecD2 perp=Perp(start-end); if(Dbl max=Abs(perp).max()){perp*=half/max; start+=perp; end+=perp;} // use "Abs(perp).max()" instead of "perp.length()" because we need to extend orthogonally (because we're using extend for the purpose of detecting objects from neighborhood areas that extend over to other areas, and this extend is allowed orthogonally)
             }
+         #if DEBUG && 0
+            D.line(PINK, start, end);
+         #endif
             for(walker.start(start, end); walker.active(); walker.step())ProcessPos(walker.posi(), rect, row_min_max_x);
          }
 

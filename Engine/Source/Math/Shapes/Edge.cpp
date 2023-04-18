@@ -391,20 +391,14 @@ void PixelEdgeWalkerMask::step()
 /******************************************************************************/
 void SpherePixelWalker::start(C Vec2 &start, C Vec2 &end)
 {
-   Edge2 edge(start, end); if(Clip(edge, Rect(-1, 1)))
-   {
-    C Vec2 &start=edge.p[0], &end=edge.p[1];
+  _active=true;
 
-     _active=true;
+  _posr =start;            _posi=_sc.posToCellIMid(start);
+                           _endi=_sc.posToCellIMid(end  );
+  _delta=end-start; VecI2 deltai=_endi-_posi;
 
-     _posr =start;            _posi=_sc.posToCellIMid(start);
-                              _endi=_sc.posToCellIMid(end  );
-     _delta=end-start; VecI2 deltai=_endi-_posi;
-
-     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
-     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
-   }else
-     _active=false;
+  _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+  _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
 }
 void SpherePixelWalker::step()
 {
@@ -447,20 +441,14 @@ void SpherePixelWalker::step()
 /******************************************************************************/
 void SpherePixelWalker1::start(C Vec2 &start, C Vec2 &end)
 {
-   Edge2 edge(start, end); if(Clip(edge, Rect(-1, 1)))
-   {
-    C Vec2 &start=edge.p[0], &end=edge.p[1];
+  _active=2;
 
-     _active=2;
+  _posr =start    ;        _posi=_sc.posToCellIMid(start);
+  _endr =end      ;        _endi=_sc.posToCellIMid(end  );
+  _delta=end-start; VecI2 deltai=_endi-_posi;
 
-     _posr =start    ;        _posi=_sc.posToCellIMid(start);
-     _endr =end      ;        _endi=_sc.posToCellIMid(end  );
-     _delta=end-start; VecI2 deltai=_endi-_posi;
-
-     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
-     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
-   }else
-     _active=0;
+  _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+  _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
 }
 void SpherePixelWalker1::step()
 {
