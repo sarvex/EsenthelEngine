@@ -532,6 +532,7 @@ min_height - \------------/
             sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
             if(PosToCellX(T, zd-d, rect.min.x))MAX(rect.min.x,     0);else rect.min.x=    0;
             if(PosToCellX(T, zd+d, rect.max.x))MIN(rect.max.x, res-1);else rect.max.x=res-1;
+            if(!rect.validX())goto next;
          }
 
          zd.set(0, oriented_ball.pos.y, oriented_ball.pos.z); len2=zd.length2();
@@ -540,11 +541,13 @@ min_height - \------------/
             sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
             if(PosToCellY(T, zd+d, rect.min.y))MAX(rect.min.y,     0);else rect.min.y=    0;
             if(PosToCellY(T, zd-d, rect.max.y))MIN(rect.max.y, res-1);else rect.max.y=res-1;
+          //if(!rect.validY())goto next; not needed because below we check that already in the 'for' loop
          }
       #endif
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)area_pos.add(ap);
       }
+   next:
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
 }
