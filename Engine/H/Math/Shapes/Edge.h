@@ -455,6 +455,7 @@ inline Edge  ::Edge  (C EdgeD  &edge) {p[0]=edge.p[0]; p[1]=edge.p[1];}
 inline EdgeD ::EdgeD (C Edge   &edge) {p[0]=edge.p[0]; p[1]=edge.p[1];}
 /******************************************************************************/
 // distance between point and a straight line, 'line_dir'=line direction (must be normalized)
+Flt DistPointLine(C Vec   &point,                    C Vec   &line_dir); // this function assumes that line position is Vec(0,0,0)
 Flt DistPointLine(C Vec2  &point, C Vec2  &line_pos, C Vec2  &line_dir);
 Dbl DistPointLine(C VecD2 &point, C VecD2 &line_pos, C VecD2 &line_dir);
 Flt DistPointLine(C Vec   &point, C Vec   &line_pos, C Vec   &line_dir);
@@ -462,6 +463,7 @@ Dbl DistPointLine(C VecD  &point, C Vec   &line_pos, C Vec   &line_dir);
 Dbl DistPointLine(C VecD  &point, C VecD  &line_pos, C VecD  &line_dir);
 
 // squared distance between point and a straight line, 'line_dir'=line direction (must be normalized)
+Flt Dist2PointLine(C Vec   &point,                    C Vec   &line_dir); // this function assumes that line position is Vec(0,0,0)
 Flt Dist2PointLine(C Vec2  &point, C Vec2  &line_pos, C Vec2  &line_dir);
 Dbl Dist2PointLine(C VecD2 &point, C VecD2 &line_pos, C VecD2 &line_dir);
 Flt Dist2PointLine(C Vec   &point, C Vec   &line_pos, C Vec   &line_dir);

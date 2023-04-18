@@ -615,12 +615,14 @@ void VoxelWalker::step()
 /******************************************************************************/
 Flt DistPointLine(C Vec2  &point, C Vec2  &line_pos, C Vec2  &line_dir) {return  Abs(DistPointPlane(point, line_pos, Perp(line_dir))          );}
 Dbl DistPointLine(C VecD2 &point, C VecD2 &line_pos, C VecD2 &line_dir) {return  Abs(DistPointPlane(point, line_pos, Perp(line_dir))          );}
+Flt DistPointLine(C Vec   &point,                    C Vec   &line_dir) {return        PointOnPlane(point,                line_dir ).length()  ;}
 Flt DistPointLine(C Vec   &point, C Vec   &line_pos, C Vec   &line_dir) {return Dist(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
 Dbl DistPointLine(C VecD  &point, C Vec   &line_pos, C Vec   &line_dir) {return Dist(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
 Dbl DistPointLine(C VecD  &point, C VecD  &line_pos, C VecD  &line_dir) {return Dist(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
 /******************************************************************************/
 Flt Dist2PointLine(C Vec2  &point, C Vec2  &line_pos, C Vec2  &line_dir) {return   Sqr(DistPointPlane(point, line_pos, Perp(line_dir))          );}
 Dbl Dist2PointLine(C VecD2 &point, C VecD2 &line_pos, C VecD2 &line_dir) {return   Sqr(DistPointPlane(point, line_pos, Perp(line_dir))          );}
+Flt Dist2PointLine(C Vec   &point,                    C Vec   &line_dir) {return         PointOnPlane(point,                line_dir ).length2() ;}
 Flt Dist2PointLine(C Vec   &point, C Vec   &line_pos, C Vec   &line_dir) {return Dist2(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
 Dbl Dist2PointLine(C VecD  &point, C Vec   &line_pos, C Vec   &line_dir) {return Dist2(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
 Dbl Dist2PointLine(C VecD  &point, C VecD  &line_pos, C VecD  &line_dir) {return Dist2(  PointOnPlane(point, line_pos,      line_dir ), line_pos);}
