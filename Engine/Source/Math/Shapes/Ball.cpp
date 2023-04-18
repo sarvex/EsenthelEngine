@@ -505,21 +505,20 @@ inline Bool ClipZ(Ball &ball, Flt min_z) // clip ball to retain information only
 
                           XXXXXXXX
                         X         X
-                       ****************
-                  ***  X           X  ****
+                     *****************
+                 ****  X           X  ****
                *      X             X      *
              *        X             X        *
 min_height - *--------X-------------X---------*
-             *        X            X          *
+             *         X           X          *
              *          X         X           *
              *            X     X             *
-              *             XX               *
+              *             XXX              *
                *                            *
-                 *                         *
-                   *                     *
-                     *                *
-                        *         *
-                             *
+                 *                        *
+                   *                    *
+                      *              *
+                          *  *  *
 */
    if(ball.pos.z>=min_z)return true;
    Flt d=min_z-ball.pos.z; if(d>=ball.r)return false;
