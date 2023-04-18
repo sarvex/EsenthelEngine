@@ -116,13 +116,14 @@ struct SphereConvert
 
    Flt   cellToPos(  Flt    cell)C {return Tan (cell*cell_to_pos_mul+(-PI_4));}
    Flt   cellToPos(  Int    cell)C {return Tan (cell*cell_to_pos_mul+(-PI_4));}
-   Flt  _cellToPos(  Int    cell)C {return tans[cell];} // !! 'cell' MUST BE IN RANGE "0..res" !!
+   Flt  _cellToPos(  Int    cell)C {return tans[cell]                                  ;} // !! 'cell' MUST BE IN RANGE "0..res" !!
    Vec2  cellToPos(C Vec2  &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
    Vec2  cellToPos(C VecI2 &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
    Vec2 _cellToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res" !!
 
-   DIR_ENUM dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy            )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1)
-   Vec      sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
+   DIR_ENUM dirToSphereTerrainPixel      (C Vec &dir, Vec2 &xy            )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1)
+   Vec      sphereTerrainPixelToDir      (Flt x, Flt y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
+   Vec     _sphereTerrainPixelCenterToDir(Int x, Int y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !! THIS IS FAST APPROXIMATION !!
 
    void getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C;
 
@@ -131,6 +132,17 @@ struct SphereConvert
    void drawCell(C Color &color, C VecI2 &cell)C;
    void drawCell(C Color &color, C SphereArea &area, Flt radius)C;
 #endif
+};
+struct SphereConvertEx : SphereConvert
+{
+   Mems<Flt> tan_mids;
+
+   Flt  _cellCenterToPos(  Int    cell)C {return tan_mids[cell]                              ;} // !! 'cell' MUST BE IN RANGE "0..res-1" !!
+   Vec2 _cellCenterToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res-1" !!
+
+   void init(Int res);
+
+   Vec _sphereTerrainPixelCenterToDir(Int x, Int y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1), 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !!
 };
 
 DIR_ENUM DirToCubeFace          (C Vec &dir                               ); // convert vector direction (doesn't need to be normalized) to cube face

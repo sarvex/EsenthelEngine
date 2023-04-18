@@ -217,6 +217,11 @@ void SphereConvert::init(Int res)
    cell_to_pos_mul=PI_2/res; //cell_to_pos_add=-PI_4;
    tans.setNumDiscard(res+1); REPAO(tans)=cellToPos(i);
 }
+void SphereConvertEx::init(Int res)
+{
+   super::init(res);
+   tan_mids.setNumDiscard(res); REPAO(tan_mids)=cellToPos(i+0.5f);
+}
 /******************************************************************************/
 DIR_ENUM DirToCubeFace(C Vec &dir)
 {
@@ -437,12 +442,48 @@ Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // #Terra
    }
    return VecZero;
 }
-Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
+Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C // #TerrainOrient
 {
  //if(res>0)
    {
       x=cellToPos(x);
       y=cellToPos(y);
+      switch(cube_face)
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
+      }
+   }
+   return VecZero;
+}
+Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C // #TerrainOrient
+{
+ //if(res>0)
+   {
+      Flt x=Avg(_cellToPos(xi), _cellToPos(xi+1));
+      Flt y=Avg(_cellToPos(yi), _cellToPos(yi+1));
+      switch(cube_face)
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
+      }
+   }
+   return VecZero;
+}
+Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C // #TerrainOrient
+{
+ //if(res>0)
+   {
+      Flt x=_cellCenterToPos(xi);
+      Flt y=_cellCenterToPos(yi);
       switch(cube_face)
       {
          case DIR_RIGHT  : return Vec( 1,  y,  x);

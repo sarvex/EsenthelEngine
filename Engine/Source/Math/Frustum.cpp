@@ -874,13 +874,19 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    }
 }
 /******************************************************************************/
-void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvert &sc, Bool distance_check, Bool sort_by_distance, Bool extend, Flt min_radius)C
+struct SphereAreaDist : SphereArea
+{
+   Flt dist;
+};
+static Int Compare(C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(a.dist, b.dist);}
+void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvertEx &sc, Bool distance_check, Bool sort_by_distance, Bool extend, Flt min_radius)C
 {
    area_pos.clear();
 
-   Memt<VecD2> convex_points;
-   Memt<VecI2> row_min_max_x;
-   Memt<VecD2> temp;
+   Memt<VecD2         > convex_points;
+   Memt<VecI2         > row_min_max_x;
+   Memt<VecD2         > temp;
+   Memt<SphereAreaDist> area_pos_dist;
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
    Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
@@ -1010,6 +1016,7 @@ min_height - \------------/
          // set areas for drawing
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
+         #if 0 // can't do this because this is sorting just for one side, but we need to sort for all sides/areas
             Vec2  look_dir; PosToSphereTerrainPos(ap.side, look_dir, matrix.z);
             Flt   max =Abs(look_dir).max();
             VecI2 dir =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
@@ -1034,6 +1041,22 @@ min_height - \------------/
                if(dir.x && rect.includesX(edge.x+dir.x))edge.x+=dir.x;else        // first travel on the x-edge until you can't
                if(dir.y && rect.includesY(edge.y+dir.y))edge.y+=dir.y;else break; // then  travel on the y-edge until you can't, after that get out of the loop
             }
+         #else
+            for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
+            {
+               VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
+               MAX(min_max_x.x, rect.min.x);
+               MIN(min_max_x.y, rect.max.x);
+               for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
+                //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
+                //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
+               {
+                  SphereAreaDist &apd=area_pos_dist.New();
+                  SCAST(SphereArea, apd)=ap;
+                  apd.dist=Dot(matrix.z, sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side)); // !! Warning: normally '_sphereTerrainPixelCenterToDir' should be normalized but we skip for performance reasons !!
+               }
+            }
+         #endif
          }else
          {
             for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
@@ -1051,6 +1074,8 @@ min_height - \------------/
    next:
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
+
+   if(sort_by_distance){area_pos_dist.sort(); area_pos.setNum(area_pos_dist.elms()); REPAO(area_pos)=area_pos_dist[i];}
 }
 /******************************************************************************/
 void FrustumClass::draw(C Color &col)C
