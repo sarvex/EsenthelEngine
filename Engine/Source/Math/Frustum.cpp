@@ -889,13 +889,12 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
    Memt<VecI2         > row_min_max_x;
    Memt<VecD2         > temp;
    Memt<SphereAreaDist> area_pos_dist;
-
-   SpherePixelWalker walker(sc);
-   SphereArea        ap;
-   RectI             rect; rect.setX(0, sc.res-1);
-
-   Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
-   Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
+   SpherePixelWalker    walker(sc);
+   SphereArea           ap;
+   RectI                rect; rect.setX(0, sc.res-1);
+   Bool                 distance_check_y=false;
+   Dbl                  half=1.0/sc.res; // range is from -1..1, range=2, half=1
+   Dbl                  min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
    /*               *
                *         *
             *               *
@@ -915,15 +914,13 @@ min_height - \------------/
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
-         Ball oriented_ball;
-         Flt  r2;
+         Ball  oriented_ball;
+         Flt   r2;
+         VecI2 ball_cell;
          if(distance_check)
          {
             PosToSphereTerrainPos(ap.side, oriented_ball.pos, matrix.pos); oriented_ball.r=range;
             if(!ClipZ(oriented_ball, min_radius))goto next;
-          //oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
-            if(extend)oriented_ball.r+=half*oriented_ball.pos.z; // must be proportional to height
-            r2=Sqr(oriented_ball.r);
          }
 
          VecD   oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
@@ -955,6 +952,11 @@ min_height - \------------/
             {
                Flt len2, sin2, cos;
                Vec zd, d, test;
+
+             //oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
+               if(extend)oriented_ball.r+=half*oriented_ball.pos.z; // must be proportional to height
+               r2=Sqr(oriented_ball.r);
+               ball_cell=sc.posToCellI(oriented_ball.pos.xy/oriented_ball.pos.z);
 
                zd.set(oriented_ball.pos.x, 0, oriented_ball.pos.z); len2=zd.length2(); if(r2<len2)
                {
@@ -1054,18 +1056,20 @@ min_height - \------------/
             }
          }else
       #endif
-         VecI2 ball_cell=sc.posToCellI(oriented_ball.pos.xy/oriented_ball.pos.z);
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          {
-            Flt cell_pos_y; if(distance_check)cell_pos_y=sc._cellToPos(ap.y+(ap.y<ball_cell.y)); // (ap.y<ball_cell.y) ? _cellToPos(ap.y+1) : _cellToPos(ap.y)
+            Flt cell_pos_y; if(distance_check)
+            {
+               distance_check_y=(ap.y!=ball_cell.y); // if ball is on down or up side
+               cell_pos_y=sc._cellToPos(ap.y+(ap.y<ball_cell.y)); // (ap.y<ball_cell.y) ? _cellToPos(ap.y+1) : _cellToPos(ap.y)
+            }
 
             VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
             MAX(min_max_x.x, rect.min.x);
             MIN(min_max_x.y, rect.max.x);
             for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
             {
-               if(distance_check
-               && ap.y!=ball_cell.y  // if ball is on down or up    side
+               if(distance_check_y   // if ball is on down or up    side and 'distance_check'
                && ap.x!=ball_cell.x) // if ball is on left or right side
                {
                 //left =(ap.x>ball_cell.x); if ball is on the left  side of area
