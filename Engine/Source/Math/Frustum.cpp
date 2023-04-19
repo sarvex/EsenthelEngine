@@ -883,11 +883,17 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
 {
    // WARNING: ignores 'extraBall'
    area_pos.clear();
+   distance_check&=persp; // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center)
 
    Memt<VecD2         > convex_points;
    Memt<VecI2         > row_min_max_x;
    Memt<VecD2         > temp;
    Memt<SphereAreaDist> area_pos_dist;
+
+   SpherePixelWalker walker(sc);
+   SphereArea        ap;
+   Bool              down_up=false;
+   RectI             rect; rect.setX(0, sc.res-1);
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
    Dbl min_height=min_radius; // this is treated orthogonally, require points to be at least above this value, if they're not, then detect intersections on edges at this height
@@ -907,10 +913,6 @@ min_height - \------------/
            -       \/
    */
 
-   SpherePixelWalker walker(sc);
-   SphereArea        ap;
-   Bool              down_up=false;
-   distance_check&=persp; // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center)
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
@@ -975,8 +977,6 @@ min_height - \------------/
             plane.pos=rect.max; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
                                 plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
          }
-
-         RectI rect;
 
          // set min_y..max_y visibility
          rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
@@ -1056,7 +1056,6 @@ min_height - \------------/
          }else
       #endif
          {
-            rect.setX(0, sc.res-1);
             for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
             {
                Flt  cell_pos_down, cell_pos_up;
