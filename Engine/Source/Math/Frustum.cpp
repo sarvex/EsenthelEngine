@@ -881,6 +881,7 @@ struct SphereAreaDist : SphereArea
 static Int Compare(C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(a.dist, b.dist);}
 void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvertEx &sc, Bool distance_check, Bool sort_by_distance, Bool extend, Flt min_radius)C
 {
+   // WARNING: ignores 'extraBall'
    area_pos.clear();
 
    Memt<VecD2         > convex_points;
@@ -908,12 +909,25 @@ min_height - \------------/
 
    SpherePixelWalker walker(sc);
    SphereArea        ap;
+   distance_check&=persp; // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center, so it can't be used as 'distance_pos')
+   Bool down_up=false;
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
-         VecD  oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
-         Bool  oriented_point_ok[ELMS(point)];
-         VecD2 projected_point  [ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
+         Ball oriented_ball;
+         Flt  r2;
+         if(distance_check)
+         {
+            PosToSphereTerrainPos(ap.side, oriented_ball.pos, matrix.pos); oriented_ball.r=range;
+            if(!ClipZ(oriented_ball, min_radius))goto next;
+            oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
+            if(extend)oriented_ball.r+=half/**oriented_ball.pos.z is 1*/; // must be proportional to height
+            r2=Sqr(oriented_ball.r);
+         }
+
+         VecD   oriented_point   [ELMS(point)]; // point converted to 'ap.side' orientation where XY=plane position, Z=height
+         Bool   oriented_point_ok[ELMS(point)];
+         VecD2 projected_point   [ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
          Int   projected_points=0;
          PosToSphereTerrainPos(ap.side, oriented_point, point, points);
          REP(points)
@@ -935,7 +949,6 @@ min_height - \------------/
 
          RectI rect;
 
-         // Warning: ignores 'extraBall'
 
          // set min_y..max_y visibility
          rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
@@ -997,26 +1010,10 @@ min_height - \------------/
        //if(mask_do)rect.clampX(mask.min.x, mask.max.x); FIXME
          if(!rect.validX())goto next;
 
-       /*FIXME
-         const Bool fast=true; // if use ~2x faster 'Dist2PointSquare' instead of 'Dist2(Vec2 point, RectI rect)'
-
-         VecD2 distance_pos;
-         Flt   distance_range2;
-         if(   distance_check&=persp) // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center, so it can't be used as 'distance_pos')
-         { // convert to area space
-            distance_pos   =matrix.pos.xz()/area_size; if(fast  )distance_pos   -=half; // since in fast mode we're testing against a square of radius half, instead of setting each square as "pos+half", we offset the 'distance_pos' by the negative (this was tested and works OK - the same results as when 'fast'=false)
-            distance_range2=          range/area_size; if(extend)distance_range2+=half; distance_range2*=distance_range2;
-         }
-         if(extraBall())
-         {
-            if(fast)circle.pos-=half; // since in fast mode we're testing against a square of radius 0.5, instead of setting each square as "pos+0.5", we offset the 'circle.pos' by the negative (this was tested and works OK - the same results as when 'fast'=false)
-            SQR(circle.r);
-         }*/
-
          // set areas for drawing
+      #if 0 // can't do this because this is sorting just for one cube side, but we need to sort for all sides/areas
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
-         #if 0 // can't do this because this is sorting just for one side, but we need to sort for all sides/areas
             Vec2  look_dir; PosToSphereTerrainPos(ap.side, look_dir, matrix.z);
             Flt   max =Abs(look_dir).max();
             VecI2 dir =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
@@ -1032,8 +1029,7 @@ min_height - \------------/
                {
                   VecI2 &min_max_x=row_min_max_x[ap.y-rect.min.y];
                   if(ap.x>=min_max_x.x && ap.x<=min_max_x.y)
-                   //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
-                   //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
+                     distance_check
                         area_pos.add(ap); // add to array
 
                   ap+=perp; if(!rect.includes(ap))break; // go along the parallel until you can't
@@ -1041,33 +1037,63 @@ min_height - \------------/
                if(dir.x && rect.includesX(edge.x+dir.x))edge.x+=dir.x;else        // first travel on the x-edge until you can't
                if(dir.y && rect.includesY(edge.y+dir.y))edge.y+=dir.y;else break; // then  travel on the y-edge until you can't, after that get out of the loop
             }
-         #else
-            for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
-            {
-               VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
-               MAX(min_max_x.x, rect.min.x);
-               MIN(min_max_x.y, rect.max.x);
-               for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
-                //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
-                //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
-               {
-                  SphereAreaDist &apd=area_pos_dist.New();
-                  SCAST(SphereArea, apd)=ap;
-                  apd.dist=Dot(matrix.z, sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side)); // !! WARNING: normally '_sphereTerrainPixelCenterToDir' should be normalized but we skip for performance reasons !!
-               }
-            }
-         #endif
          }else
+      #endif
          {
             for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
             {
+               Flt  cell_pos_down, cell_pos_up;
+               Bool down, up;
+               if(distance_check)
+               {
+                  cell_pos_down=sc._cellToPos(ap.y  );
+                  cell_pos_up  =sc._cellToPos(ap.y+1);
+               #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
+                  Vec nrm_down(0, -1,  cell_pos_down); down=(Dot(oriented_ball.pos, nrm_down)>0); // if ball is on the down side of area
+                  Vec nrm_up  (0,  1, -cell_pos_up  ); up  =(Dot(oriented_ball.pos, nrm_up  )>0); // if ball is on the up   side of area
+               #else
+                  down=((-oriented_ball.pos.y + /*oriented_ball.pos.z is 1**/cell_pos_down)>0); // if ball is on the down side of area
+                  up  =(( oriented_ball.pos.y - /*oriented_ball.pos.z is 1**/cell_pos_up  )>0); // if ball is on the up   side of area
+               #endif
+                  down_up=(down || up); // if ball is on down or up side
+               }
+
                VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
                MAX(min_max_x.x, rect.min.x);
                MIN(min_max_x.y, rect.max.x);
                for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
-                //FIXME if(!distance_check || (fast ? Dist2PointSquare(distance_pos, ap, half) : Dist2(distance_pos, RectI(ap, ap+1)))<=distance_range2)
-                //FIXME if(!extraBall()    || (fast ? Dist2PointSquare(  circle.pos, ap, half) : Dist2(  circle.pos, RectI(ap, ap+1)))<=  circle.r     )
+               {
+                //if(distance_check) not needed because 'down_up' below is enabled only for 'distance_check'
+                     if(down_up)
+                  {
+                     Flt cell_pos_left =sc._cellToPos(ap.x  );
+                     Flt cell_pos_right=sc._cellToPos(ap.x+1);
+                  #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
+                     Vec nrm_left (-1, 0,  cell_pos_left ); Bool left =(Dot(oriented_ball.pos, nrm_left )>0); // if ball is on the left  side of area
+                     Vec nrm_right( 1, 0, -cell_pos_right); Bool right=(Dot(oriented_ball.pos, nrm_right)>0); // if ball is on the right side of area
+                  #else
+                     Bool left =((-oriented_ball.pos.x + /*oriented_ball.pos.z is 1**/cell_pos_left )>0); // if ball is on the left  side of area
+                     Bool right=(( oriented_ball.pos.x - /*oriented_ball.pos.z is 1**/cell_pos_right)>0); // if ball is on the right side of area
+                  #endif
+                     if(left || right) // if ball is on left or right side
+                     {
+                        Vec dir(right ? cell_pos_right : cell_pos_left,
+                                up    ? cell_pos_up    : cell_pos_down,
+                                1);
+                        dir.normalize();
+                        if(Dist2PointLine(oriented_ball.pos, dir)>=r2)continue;
+                     }
+                  }
+                  if(sort_by_distance) // in look order (from camera/foreground to background)
+                  {
+                     SphereAreaDist &apd=area_pos_dist.New();
+                     SCAST(SphereArea, apd)=ap;
+                     apd.dist=Dot(matrix.z, sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side)); // !! WARNING: normally '_sphereTerrainPixelCenterToDir' should be normalized but we skip for performance reasons !!
+                  }else
+                  {
                      area_pos.add(ap); // add to array
+                  }
+               }
             }
          }
       }

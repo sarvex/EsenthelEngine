@@ -497,11 +497,11 @@ Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cub
    return VecZero;
 }
 /******************************************************************************/
-inline Bool ClipZ(Ball &ball, Flt min_z) // clip ball to retain information only above 'min_z'
+Bool ClipZ(Ball &ball, Flt min_z) // clip ball to retain information only above 'min_z'
 {
 /* if Ball is fully above  'min_z' then keep it fully
    if Ball is fully below  'min_z' then clip fully (ret false)
-   if Ball intersects with 'min_z' then clip it to smaller radius and adjust pos.z (height)
+   if Ball intersects with 'min_z' then clip it to smaller radius and adjust pos.z (height) (this will extend the ball upwards, but will reduce the radius)
 
                           XXXXXXXX
                         X         X
@@ -527,8 +527,8 @@ min_height - *--------X-------------X---------*
    ball.pos.z+=d;
    return true;
 }
-static Bool PosToCellX(C SphereConvert &sc, C Vec &pos, Int &cell) {Flt min=1; if(pos.z>=min){cell=sc.posToCellI(pos.x/pos.z); return true;} return false;}
-static Bool PosToCellY(C SphereConvert &sc, C Vec &pos, Int &cell) {Flt min=1; if(pos.z>=min){cell=sc.posToCellI(pos.y/pos.z); return true;} return false;}
+static Bool PosToCellX(C SphereConvert &sc, C Vec &pos, Int &cell) {if(pos.z>0){cell=sc.posToCellI(pos.x/pos.z); return true;} return false;}
+static Bool PosToCellY(C SphereConvert &sc, C Vec &pos, Int &cell) {if(pos.z>0){cell=sc.posToCellI(pos.y/pos.z); return true;} return false;}
 void SphereConvert::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C
 {
    /* min_radius is treated as min_height
@@ -555,8 +555,8 @@ min_height - \------------/
       if(ClipZ(oriented_ball, min_radius))
       {
          RectI rect;
-      #if 0 // simple but incorrect, because it treats ball as flat Circle
          oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
+      #if 0 // simple but incorrect, because it treats ball as flat Circle
          rect.set(posToCellI(oriented_ball.pos.xy-oriented_ball.r),
                   posToCellI(oriented_ball.pos.xy+oriented_ball.r));
          rect.clampX(0, res-1);
@@ -603,8 +603,8 @@ min_height - \------------/
             Vec nrm_down(0, -1,  cell_pos_down); Bool down=(Dot(oriented_ball.pos, nrm_down)>0); // if ball is on the down side of area
             Vec nrm_up  (0,  1, -cell_pos_up  ); Bool up  =(Dot(oriented_ball.pos, nrm_up  )>0); // if ball is on the up   side of area
          #else
-            Bool down=((-oriented_ball.pos.y + oriented_ball.pos.z*cell_pos_down)>0); // if ball is on the down side of area
-            Bool up  =(( oriented_ball.pos.y - oriented_ball.pos.z*cell_pos_up  )>0); // if ball is on the up   side of area
+            Bool down=((-oriented_ball.pos.y + /*oriented_ball.pos.z is 1**/cell_pos_down)>0); // if ball is on the down side of area
+            Bool up  =(( oriented_ball.pos.y - /*oriented_ball.pos.z is 1**/cell_pos_up  )>0); // if ball is on the up   side of area
          #endif
             Bool down_up=(down || up); // if ball is on down or up side
             for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)
@@ -617,8 +617,8 @@ min_height - \------------/
                   Vec nrm_left (-1, 0,  cell_pos_left ); Bool left =(Dot(oriented_ball.pos, nrm_left )>0); // if ball is on the left  side of area
                   Vec nrm_right( 1, 0, -cell_pos_right); Bool right=(Dot(oriented_ball.pos, nrm_right)>0); // if ball is on the right side of area
                #else
-                  Bool left =((-oriented_ball.pos.x + oriented_ball.pos.z*cell_pos_left )>0); // if ball is on the left  side of area
-                  Bool right=(( oriented_ball.pos.x - oriented_ball.pos.z*cell_pos_right)>0); // if ball is on the right side of area
+                  Bool left =((-oriented_ball.pos.x + /*oriented_ball.pos.z is 1**/cell_pos_left )>0); // if ball is on the left  side of area
+                  Bool right=(( oriented_ball.pos.x - /*oriented_ball.pos.z is 1**/cell_pos_right)>0); // if ball is on the right side of area
                #endif
                   if(left || right) // if ball is on left or right side
                   {
