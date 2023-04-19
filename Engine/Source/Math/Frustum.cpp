@@ -949,9 +949,8 @@ min_height - \------------/
 
          // clamp convex edges, so 'SpherePixelWalker' doesn't have to walk too much
          {
-            PlaneD2 plane;
             Rect rect(-1, 1);
-            if(distance_check)
+            if(distance_check) // clamp to ball rect, this is needed to reduce processing (skip checking areas out of rect range) and because in the loop later we check only area corners against ball (but not area sides)
             {
                Flt len2, sin2, cos;
                Vec zd, d, test;
@@ -970,6 +969,7 @@ min_height - \------------/
                   test=zd-d; if(test.z>0)MIN(rect.max.y, test.y/test.z);
                }
             }
+            PlaneD2 plane;
             plane.pos=rect.min; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
                                 plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
             plane.pos=rect.max; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
