@@ -739,8 +739,8 @@ static INLINE void ProcessPos(C VecI2 &pos, C RectI &rect, Memt<VecI2> &row_min_
    if(rect.includesY(pos.y))
    {
       VecI2 &min_max_x=row_min_max_x[pos.y-rect.min.y];
-      if(pos.x<min_max_x.x)min_max_x.x=pos.x;
-      if(pos.x>min_max_x.y)min_max_x.y=pos.x;
+      MIN(min_max_x.x, pos.x);
+      MAX(min_max_x.y, pos.x);
    }
 }
 void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, Bool distance_check, Bool sort_by_distance, Bool extend, C RectI *clamp)C
