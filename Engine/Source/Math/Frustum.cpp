@@ -909,8 +909,8 @@ min_height - \------------/
 
    SpherePixelWalker walker(sc);
    SphereArea        ap;
-   distance_check&=persp; // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center, so it can't be used as 'distance_pos')
-   Bool down_up=false;
+   Bool              down_up=false;
+   distance_check&=persp; // can do range tests only in perspective mode (orthogonal mode is used for shadows, and there we need full range, and also in that mode 'matrix.pos' is in the center)
    for(ap.side=DIR_ENUM(0); ; )
    {
       {
@@ -947,8 +947,36 @@ min_height - \------------/
          }
          CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
 
-         RectI rect;
+         // clamp convex edges, so 'SpherePixelWalker' doesn't have to walk too much
+         {
+            PlaneD2 plane;
+            Rect rect(-1, 1);
+            if(distance_check)
+            {
+               Flt len2, sin2, cos;
+               Vec zd, d, test;
 
+               zd.set(oriented_ball.pos.x, 0, oriented_ball.pos.z); len2=zd.length2(); if(r2<len2)
+               {
+                  sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+                  test=zd-d; if(test.z>0)MAX(rect.min.x, test.x/test.z);
+                  test=zd+d; if(test.z>0)MIN(rect.max.x, test.x/test.z);
+               }
+
+               zd.set(0, oriented_ball.pos.y, oriented_ball.pos.z); len2=zd.length2(); if(r2<len2)
+               {
+                  sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+                  test=zd+d; if(test.z>0)MAX(rect.min.y, test.y/test.z);
+                  test=zd-d; if(test.z>0)MIN(rect.max.y, test.y/test.z);
+               }
+            }
+            plane.pos=rect.min; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
+                                plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
+            plane.pos=rect.max; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
+                                plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
+         }
+
+         RectI rect;
 
          // set min_y..max_y visibility
          rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
@@ -958,20 +986,9 @@ min_height - \------------/
             Int    y=sc.posToCellI(extend ? p.y-half : p.y); // don't use 'posToCellIMid', instead do 'clampY' below just one time
             rect.includeY(y);
          }
-         if(extend )rect.max.y++;
+         if(extend)rect.max.y++;
          rect.clampY(0, sc.res-1);
-       //if(mask_do)rect.clampY(mask.min.y, mask.max.y); FIXME
          if(!rect.validY())goto next;
-
-         // clamp convex edges, so 'SpherePixelWalker' doesn't have to walk too much
-         {
-            PlaneD2 plane;
-            Flt min=-1, max=1;
-            plane.pos=min; plane.normal.set(-1,  0); ClipPoly(convex_points, plane, temp         ); // left
-                           plane.normal.set( 0, -1); ClipPoly(temp         , plane, convex_points); // bottom
-            plane.pos=max; plane.normal.set( 1,  0); ClipPoly(convex_points, plane, temp         ); // right
-                           plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
-         }
 
          // set min_x..max_x per row in 'row_min_max_x'
          row_min_max_x.setNumDiscard(rect.h()+1); // +1 because it's inclusive
@@ -1007,7 +1024,6 @@ min_height - \------------/
                rect.includeX(min_max_x.x, min_max_x.y);
          }
          rect.clampX(0, sc.res-1);
-       //if(mask_do)rect.clampX(mask.min.x, mask.max.x); FIXME
          if(!rect.validX())goto next;
 
          // set areas for drawing
@@ -1039,60 +1055,58 @@ min_height - \------------/
             }
          }else
       #endif
+         for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          {
-            for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
+            Flt  cell_pos_down, cell_pos_up;
+            Bool down, up;
+            if(distance_check)
             {
-               Flt  cell_pos_down, cell_pos_up;
-               Bool down, up;
-               if(distance_check)
-               {
-                  cell_pos_down=sc._cellToPos(ap.y  );
-                  cell_pos_up  =sc._cellToPos(ap.y+1);
-               #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
-                  Vec nrm_down(0, -1,  cell_pos_down); down=(Dot(oriented_ball.pos, nrm_down)>0); // if ball is on the down side of area
-                  Vec nrm_up  (0,  1, -cell_pos_up  ); up  =(Dot(oriented_ball.pos, nrm_up  )>0); // if ball is on the up   side of area
-               #else
-                  down=((-oriented_ball.pos.y + /*oriented_ball.pos.z is 1**/cell_pos_down)>0); // if ball is on the down side of area
-                  up  =(( oriented_ball.pos.y - /*oriented_ball.pos.z is 1**/cell_pos_up  )>0); // if ball is on the up   side of area
-               #endif
-                  down_up=(down || up); // if ball is on down or up side
-               }
+               cell_pos_down=sc._cellToPos(ap.y  );
+               cell_pos_up  =sc._cellToPos(ap.y+1);
+            #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
+               Vec nrm_down(0, -1,  cell_pos_down); down=(Dot(oriented_ball.pos, nrm_down)>0); // if ball is on the down side of area
+               Vec nrm_up  (0,  1, -cell_pos_up  ); up  =(Dot(oriented_ball.pos, nrm_up  )>0); // if ball is on the up   side of area
+            #else
+               down=((-oriented_ball.pos.y + /*oriented_ball.pos.z is 1**/cell_pos_down)>0); // if ball is on the down side of area
+               up  =(( oriented_ball.pos.y - /*oriented_ball.pos.z is 1**/cell_pos_up  )>0); // if ball is on the up   side of area
+            #endif
+               down_up=(down || up); // if ball is on down or up side
+            }
 
-               VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
-               MAX(min_max_x.x, rect.min.x);
-               MIN(min_max_x.y, rect.max.x);
-               for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
+            VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
+            MAX(min_max_x.x, rect.min.x);
+            MIN(min_max_x.y, rect.max.x);
+            for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
+            {
+             //if(distance_check) not needed because 'down_up' below is enabled only for 'distance_check'
+                  if(down_up)
                {
-                //if(distance_check) not needed because 'down_up' below is enabled only for 'distance_check'
-                     if(down_up)
+                  Flt cell_pos_left =sc._cellToPos(ap.x  );
+                  Flt cell_pos_right=sc._cellToPos(ap.x+1);
+               #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
+                  Vec nrm_left (-1, 0,  cell_pos_left ); Bool left =(Dot(oriented_ball.pos, nrm_left )>0); // if ball is on the left  side of area
+                  Vec nrm_right( 1, 0, -cell_pos_right); Bool right=(Dot(oriented_ball.pos, nrm_right)>0); // if ball is on the right side of area
+               #else
+                  Bool left =((-oriented_ball.pos.x + /*oriented_ball.pos.z is 1**/cell_pos_left )>0); // if ball is on the left  side of area
+                  Bool right=(( oriented_ball.pos.x - /*oriented_ball.pos.z is 1**/cell_pos_right)>0); // if ball is on the right side of area
+               #endif
+                  if(left || right) // if ball is on left or right side
                   {
-                     Flt cell_pos_left =sc._cellToPos(ap.x  );
-                     Flt cell_pos_right=sc._cellToPos(ap.x+1);
-                  #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
-                     Vec nrm_left (-1, 0,  cell_pos_left ); Bool left =(Dot(oriented_ball.pos, nrm_left )>0); // if ball is on the left  side of area
-                     Vec nrm_right( 1, 0, -cell_pos_right); Bool right=(Dot(oriented_ball.pos, nrm_right)>0); // if ball is on the right side of area
-                  #else
-                     Bool left =((-oriented_ball.pos.x + /*oriented_ball.pos.z is 1**/cell_pos_left )>0); // if ball is on the left  side of area
-                     Bool right=(( oriented_ball.pos.x - /*oriented_ball.pos.z is 1**/cell_pos_right)>0); // if ball is on the right side of area
-                  #endif
-                     if(left || right) // if ball is on left or right side
-                     {
-                        Vec dir(right ? cell_pos_right : cell_pos_left,
-                                up    ? cell_pos_up    : cell_pos_down,
-                                1);
-                        dir.normalize();
-                        if(Dist2PointLine(oriented_ball.pos, dir)>=r2)continue;
-                     }
+                     Vec dir(right ? cell_pos_right : cell_pos_left,
+                             up    ? cell_pos_up    : cell_pos_down,
+                             1);
+                     dir.normalize();
+                     if(Dist2PointLine(oriented_ball.pos, dir)>=r2)continue;
                   }
-                  if(sort_by_distance) // in look order (from camera/foreground to background)
-                  {
-                     SphereAreaDist &apd=area_pos_dist.New();
-                     SCAST(SphereArea, apd)=ap;
-                     apd.dist=Dot(matrix.z, sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side)); // !! WARNING: normally '_sphereTerrainPixelCenterToDir' should be normalized but we skip for performance reasons !!
-                  }else
-                  {
-                     area_pos.add(ap); // add to array
-                  }
+               }
+               if(sort_by_distance) // in look order (from camera/foreground to background)
+               {
+                  SphereAreaDist &apd=area_pos_dist.New();
+                  SCAST(SphereArea, apd)=ap;
+                  apd.dist=Dot(matrix.z, sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side)); // !! WARNING: normally '_sphereTerrainPixelCenterToDir' should be normalized but we skip for performance reasons !!
+               }else
+               {
+                  area_pos.add(ap); // add to array
                }
             }
          }
