@@ -393,12 +393,36 @@ void SpherePixelWalker::start(C Vec2 &start, C Vec2 &end)
 {
   _active=true;
 
-  _posr =start;            _posi=_sc.posToCellIMid(start);
+  _posr =start    ;        _posi=_sc.posToCellIMid(start);
                            _endi=_sc.posToCellIMid(end  );
   _delta=end-start; VecI2 deltai=_endi-_posi;
 
   _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
   _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+}
+void SpherePixelWalker::start(C Vec2 &start, C Vec2 &end, C VecI2 &area, Int areas)
+{
+   Int   area_res=_sc.res/areas;
+   RectI recti;
+   recti.min=area*area_res;
+   recti.max=recti.min+area_res;
+   Rect rect;
+   rect.min=_sc._cellToPos(recti.min);
+   rect.max=_sc._cellToPos(recti.max);
+   Edge2 edge(start, end); if(Clip(edge, rect))
+   {
+    C Vec2 &start=edge.p[0], &end=edge.p[1];
+      recti.max--;
+
+     _active=true;
+
+     _posr =start    ;        _posi=_sc.posToCellI(start); _posi&=recti;
+                              _endi=_sc.posToCellI(end  ); _endi&=recti;
+     _delta=end-start; VecI2 deltai=_endi-_posi;
+
+     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+   }else _active=false;
 }
 void SpherePixelWalker::step()
 {
@@ -449,6 +473,30 @@ void SpherePixelWalker1::start(C Vec2 &start, C Vec2 &end)
 
   _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
   _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+}
+void SpherePixelWalker1::start(C Vec2 &start, C Vec2 &end, C VecI2 &area, Int areas)
+{
+   Int   area_res=_sc.res/areas;
+   RectI recti;
+   recti.min=area*area_res;
+   recti.max=recti.min+area_res;
+   Rect rect;
+   rect.min=_sc._cellToPos(recti.min);
+   rect.max=_sc._cellToPos(recti.max);
+   Edge2 edge(start, end); if(Clip(edge, rect))
+   {
+    C Vec2 &start=edge.p[0], &end=edge.p[1];
+      recti.max--;
+
+     _active=2;
+
+     _posr =start    ;        _posi=_sc.posToCellI(start); _posi&=recti;
+     _endr =end      ;        _endi=_sc.posToCellI(end  ); _endi&=recti;
+     _delta=end-start; VecI2 deltai=_endi-_posi;
+
+     _sign_pos.x=((_sign.x=Sign(deltai.x))>0); // '_sign_pos' means to check left side (current) or right side (next) of the cell
+     _sign_pos.y=((_sign.y=Sign(deltai.y))>0);
+   }else _active=false;
 }
 void SpherePixelWalker1::step()
 {

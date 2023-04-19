@@ -380,7 +380,8 @@ struct SpherePixelWalker // iterates through pixels of a rasterized edge on a sp
  C Vec2 & posr  ()C {return _posr  ;} // get current position in real  coordinates, this will be set to 'start', then at each edge intersection, this will not return 'end'
 
    // set
-   void start(C Vec2 &start, C Vec2 &end); // start walking from 'start' to 'end'
+   void start(C Vec2 &start, C Vec2 &end                          ); // start walking from 'start' to 'end'
+   void start(C Vec2 &start, C Vec2 &end, C VecI2 &area, Int areas); // start walking from 'start' to 'end', clip walking only within 'area' out of total 'areas'
 
    // operations
    void step(); // make a single step
@@ -405,7 +406,8 @@ struct SpherePixelWalker1 // iterates through pixels of a rasterized edge on a s
  C Vec2 & posr  ()C {return _posr     ;} // get current position in real  coordinates, this will be set to 'start', then at each edge intersection, then 'end'
 
    // set
-   void start(C Vec2 &start, C Vec2 &end); // start walking from 'start' to 'end'
+   void start(C Vec2 &start, C Vec2 &end                          ); // start walking from 'start' to 'end'
+   void start(C Vec2 &start, C Vec2 &end, C VecI2 &area, Int areas); // start walking from 'start' to 'end', clip walking only within 'area' out of total 'areas'
 
    // operations
    void step(); // make a single step
