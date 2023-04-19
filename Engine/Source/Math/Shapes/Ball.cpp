@@ -584,19 +584,18 @@ min_height - \------------/
           //if(!rect.validY())goto next; not needed because below we check that already in the 'for' loop
          }
       #endif
-         // for distance, we just have to check corners, if ball.pos distance from Line(VecZero, area.corner) is >= ball.r
-         // which corner, it depends on which side of the area the ball.pos is
-         //
-         //       O <- if ball.pos is here then we can't use corner, because it's not on left or right side
-         // LU +----+ RU
-         //    |    |
-         //    |    |
-         // LD +----+ RD
-         //
-         //                O <- if ball.pos is here, use RightDown corner
-
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          {
+            // for distance, we just have to check corners, if ball.pos distance from Line(VecZero, area.corner) is >= ball.r
+            // which corner, it depends on which side of the area the ball.pos is
+            //
+            //       O <- if ball.pos is here then we can't use corner, because it's not on left or right side
+            // LU +----+ RU
+            //    |    |
+            //    |    |
+            // LD +----+ RD
+            //
+            //                O <- if ball.pos is here, use RightDown corner
             Flt cell_pos_down=_cellToPos(ap.y  );
             Flt cell_pos_up  =_cellToPos(ap.y+1);
          #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
