@@ -892,7 +892,6 @@ void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Sph
 
    SpherePixelWalker walker(sc);
    SphereArea        ap;
-   Bool              down_up=false;
    RectI             rect; rect.setX(0, sc.res-1);
 
    Dbl half=1.0/sc.res; // range is from -1..1, range=2, half=1
@@ -922,8 +921,8 @@ min_height - \------------/
          {
             PosToSphereTerrainPos(ap.side, oriented_ball.pos, matrix.pos); oriented_ball.r=range;
             if(!ClipZ(oriented_ball, min_radius))goto next;
-            oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
-            if(extend)oriented_ball.r+=half/**oriented_ball.pos.z is 1*/; // must be proportional to height
+          //oriented_ball/=oriented_ball.pos.z; // project to plane XY with Z=1
+            if(extend)oriented_ball.r+=half*oriented_ball.pos.z; // must be proportional to height
             r2=Sqr(oriented_ball.r);
          }
 
@@ -1055,49 +1054,29 @@ min_height - \------------/
             }
          }else
       #endif
+         VecI2 ball_cell=sc.posToCellI(oriented_ball.pos.xy/oriented_ball.pos.z);
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          {
-            Flt  cell_pos_down, cell_pos_up;
-            Bool down, up;
-            if(distance_check)
-            {
-               cell_pos_down=sc._cellToPos(ap.y  );
-               cell_pos_up  =sc._cellToPos(ap.y+1);
-            #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
-               Vec nrm_down(0, -1,  cell_pos_down); down=(Dot(oriented_ball.pos, nrm_down)>0); // if ball is on the down side of area
-               Vec nrm_up  (0,  1, -cell_pos_up  ); up  =(Dot(oriented_ball.pos, nrm_up  )>0); // if ball is on the up   side of area
-            #else
-               down=((-oriented_ball.pos.y + /*oriented_ball.pos.z is 1**/cell_pos_down)>0); // if ball is on the down side of area
-               up  =(( oriented_ball.pos.y - /*oriented_ball.pos.z is 1**/cell_pos_up  )>0); // if ball is on the up   side of area
-            #endif
-               down_up=(down || up); // if ball is on down or up side
-            }
+            Flt cell_pos_y; if(distance_check)cell_pos_y=sc._cellToPos(ap.y+(ap.y<ball_cell.y)); // (ap.y<ball_cell.y) ? _cellToPos(ap.y+1) : _cellToPos(ap.y)
 
             VecI2 min_max_x=row_min_max_x[ap.y-rect.min.y];
             MAX(min_max_x.x, rect.min.x);
             MIN(min_max_x.y, rect.max.x);
             for(ap.x=min_max_x.x; ap.x<=min_max_x.y; ap.x++)
             {
-             //if(distance_check) not needed because 'down_up' below is enabled only for 'distance_check'
-                  if(down_up)
+               if(distance_check
+               && ap.y!=ball_cell.y  // if ball is on down or up    side
+               && ap.x!=ball_cell.x) // if ball is on left or right side
                {
-                  Flt cell_pos_left =sc._cellToPos(ap.x  );
-                  Flt cell_pos_right=sc._cellToPos(ap.x+1);
-               #if 0 // normals don't need to be normalized because we just need to check which side the ball is (compare against 0)
-                  Vec nrm_left (-1, 0,  cell_pos_left ); Bool left =(Dot(oriented_ball.pos, nrm_left )>0); // if ball is on the left  side of area
-                  Vec nrm_right( 1, 0, -cell_pos_right); Bool right=(Dot(oriented_ball.pos, nrm_right)>0); // if ball is on the right side of area
-               #else
-                  Bool left =((-oriented_ball.pos.x + /*oriented_ball.pos.z is 1**/cell_pos_left )>0); // if ball is on the left  side of area
-                  Bool right=(( oriented_ball.pos.x - /*oriented_ball.pos.z is 1**/cell_pos_right)>0); // if ball is on the right side of area
-               #endif
-                  if(left || right) // if ball is on left or right side
-                  {
-                     Vec dir(right ? cell_pos_right : cell_pos_left,
-                             up    ? cell_pos_up    : cell_pos_down,
-                             1);
-                     dir.normalize();
-                     if(Dist2PointLine(oriented_ball.pos, dir)>=r2)continue;
-                  }
+                //left =(ap.x>ball_cell.x); if ball is on the left  side of area
+                //right=(ap.x<ball_cell.x); if ball is on the right side of area
+                //down =(ap.y>ball_cell.y); if ball is on the down  side of area
+                //up   =(ap.y<ball_cell.y); if ball is on the up    side of area
+                  Vec dir(sc._cellToPos(ap.x+(ap.x<ball_cell.x)), // (ap.x<ball_cell.x) ? _cellToPos(ap.x+1) : _cellToPos(ap.x)
+                              cell_pos_y                        , // (ap.y<ball_cell.y) ? _cellToPos(ap.y+1) : _cellToPos(ap.y)
+                          1);
+                  dir.normalize();
+                  if(Dist2PointLine(oriented_ball.pos, dir)>=r2)continue;
                }
                if(sort_by_distance) // in look order (from camera/foreground to background)
                {
