@@ -1030,14 +1030,15 @@ min_height - \------------/
       #if 0 // can't do this because this is sorting just for one cube side, but we need to sort for all sides/areas
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
-            // set min_x..max_x visibility (this is more precise than what can be calculated from just 'convex_points', because here, we've clipped the edges to min_y..max_y range)
+            // set min_x..max_x visibility
             rect.setX(INT_MAX, INT_MIN); // set invalid "min>max"
-            REPA(row_min_max_x)
+            REPA(convex_points)
             {
-               VecI2 &min_max_x=row_min_max_x[i];
-               if(min_max_x.y>=min_max_x.x) // if valid
-                  rect.includeX(min_max_x.x, min_max_x.y);
+               VecD2 &p=convex_points[i];
+               Int    x=sc.posToCellI(extend ? p.x-half : p.x); // don't use 'posToCellIMid', instead do 'clampX' below just one time
+               rect.includeX(x);
             }
+            if(extend)rect.max.x++;
             rect.clampX(0, sc.res-1);
             if(!rect.validX())goto next;
 
