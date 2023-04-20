@@ -764,7 +764,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
       if(mask_do)mask&=r;else{mask=r; mask_do=true;}
    }
 
-   // clamp convex edges, so we can calculate 'rect' precisely (after clipping, which may give different results instead of just "rect&mask") and so 'PixelWalker' doesn't have to walk too much
+   // clip convex, so we can calculate 'rect' precisely (after clipping, which may give different results instead of just "rect&mask") and so 'PixelWalker' doesn't have to walk too much
    // ---------
    //  \      |
    //   \     |
@@ -797,7 +797,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    if(extend ) rect.max++;
    if(mask_do){rect&=mask; if(!rect.valid())return;}
 
-   // set min_x..max_x visibility per row in 'row_min_max_x'
+   // set min_x..max_x per row in 'row_min_max_x'
    Memt<VecI2> row_min_max_x; row_min_max_x.setNum(rect.h()+1); // +1 because it's inclusive
    REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("min>max")
 
@@ -946,7 +946,16 @@ min_height - \------------/
          }
          CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
 
-         // clamp convex edges, so 'SpherePixelWalker' doesn't have to walk too much
+         // clip convex, so we can calculate 'rect' precisely (after clipping, which may give different results instead of just "rect&mask") and so 'SpherePixelWalker' doesn't have to walk too much
+         // ---------
+         //  \      |
+         //   \     |
+         //    \    |
+         // +---\---| gets clipped into +---\---|
+         // |    \  |                   |    \  |
+         // |     \ |                   |     \ |
+         // |      \|                   |      \|
+         // +-------+                   +-------+
          {
             Rect rect(-1, 1);
             if(distance_check) // clamp to ball rect, this is needed to reduce processing (skip checking areas out of rect range) and because in the loop later we check only area corners against ball (but not area sides)
