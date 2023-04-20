@@ -49,6 +49,30 @@ Flt SqrtS(Int x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 Flt SqrtS(Flt x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 Dbl SqrtS(Dbl x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 
+Flt RSqrt0(Flt x)
+{
+   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
+   Flt y=(Flt&)i;
+   return y;
+}
+Flt RSqrt1(Flt x)
+{
+   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
+   Flt y=(Flt&)i;
+   Flt x_2=x/2;
+   y*=1.5f-(x_2*y*y); // 1st Newton iteration
+   return y;
+}
+Flt RSqrt2(Flt x)
+{
+   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
+   Flt y=(Flt&)i;
+   Flt x_2=x/2;
+   y*=1.5f-(x_2*y*y); // 1st Newton iteration
+   y*=1.5f-(x_2*y*y); // 2nd Newton iteration
+   return y;
+}
+
 UInt SqrtI(UInt x, Int max_steps)
 {
    if(x<=1)return x;
