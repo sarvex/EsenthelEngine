@@ -747,7 +747,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
 {
    area_pos.clear();
 
-   Memt<VecD2> convex_points; CreateConvex2Dxz(convex_points, point, points); if(!convex_points.elms())return;
+   Memt<VecD2> convex_points; CreateConvex2Dxz(convex_points, point, points);
    REPAO(convex_points)/=area_size;
 
    Bool    mask_do;
@@ -934,17 +934,21 @@ min_height - \------------/
           C auto &src=oriented_point[i];
             if(oriented_point_ok[i]=(src.z>=min_height))projected_point[projected_points++]=src.xy/src.z; // project onto XY plane with Z=1
          }
-         if(projected_points<points)REP(edges) // if not all points got projected, then check edges
+         if(projected_points<points) // if not all points got projected, then check edges
          {
-            VecI2 edge=T.edge[i];
-            if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min_height and one under)
+            REP(edges)
             {
-             C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y]; // Edge a->b
-               Dbl delta=b.z-a.z, frac=(min_height-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=min_height
-               projected_point[projected_points++]=Lerp(a.xy, b.xy, frac)/min_height; // project point from Z=min_height to Z=1 (this Lerp generates point at intersection Z=min_height)
+               VecI2 edge=T.edge[i];
+               if(oriented_point_ok[edge.x]!=oriented_point_ok[edge.y]) // if one point is OK and other NOT (one above min_height and one under)
+               {
+                C auto &a=oriented_point[edge.x], &b=oriented_point[edge.y]; // Edge a->b
+                  Dbl delta=b.z-a.z, frac=(min_height-a.z)/delta; // calculate Lerp frac to intersect Edge at Z=min_height
+                  projected_point[projected_points++]=Lerp(a.xy, b.xy, frac)/min_height; // project point from Z=min_height to Z=1 (this Lerp generates point at intersection Z=min_height)
+               }
             }
+            if(!projected_points)goto next; // if none then skip
          }
-         CreateConvex2D(convex_points, projected_point, projected_points); if(!convex_points.elms())goto next;
+         CreateConvex2D(convex_points, projected_point, projected_points);
 
          // clip convex, so we can calculate 'rect' precisely (after clipping, which may give different results instead of just "rect&mask") and so 'SpherePixelWalker' doesn't have to walk too much
          // ---------
