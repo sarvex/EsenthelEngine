@@ -36,6 +36,13 @@
    #define X64 0 // 32-bit
 #endif
 
+// x86
+#if (defined _M_IX86 || defined __i386__) || (defined _M_X64 || defined __x86_64__)
+   #define X86 1
+#else
+   #define X86 0
+#endif
+
 // ARM
 #if (defined _M_ARM || defined __arm__) || (defined _M_ARM64 || defined __aarch64__)
    #define ARM 1

@@ -49,28 +49,65 @@ Flt SqrtS(Int x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 Flt SqrtS(Flt x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 Dbl SqrtS(Dbl x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
 
+/* SPEED TEST:
+   dbl t0=Time.curTime(); flt x0=0; REP(1024*10)x0+=1/SqrtFast(i+1); t0=Time.curTime()-t0;
+   dbl t1=Time.curTime(); flt x1=0; REP(1024*10)x1+= RSqrtSimd(i+1); t1=Time.curTime()-t1;
+   dbl t2=Time.curTime(); flt x2=0; REP(1024*10)x2+= RSqrt0   (i+1); t2=Time.curTime()-t2;
+   dbl t3=Time.curTime(); flt x3=0; REP(1024*10)x3+= RSqrt1   (i+1); t3=Time.curTime()-t3;
+   dbl t4=Time.curTime(); flt x4=0; REP(1024*10)x4+= RSqrt2   (i+1); t4=Time.curTime()-t4;
+   Exit(S+t0+"s "+x0+" REAL\n"
+         +t1+"s "+x1+" SIMD\n"
+         +t2+"s "+x2+" FAST0\n"
+         +t3+"s "+x3+" FAST1\n"
+         +t4+"s "+x4+" FAST2\n");*/
+INLINE Flt RSqrtSimd(Flt x)
+{
+#if X86
+   __m128 vx=_mm_set_ss   (x);
+   __m128 vy=_mm_rsqrt_ss (vx);
+   return    _mm_cvtss_f32(vy);
+#elif ARM
+   float32x2_t vx=vdup_n_f32 (x);
+   float32x2_t vy=vrsqrte_f32(vx);
+   return vy[0];
+#else
+   return 1/SqrtFast(x);
+#endif
+}
 Flt RSqrt0(Flt x)
 {
+#if 1 // similar speed, but more precision
+   return RSqrtSimd(x);
+#else
    Int i=0x5F3759DF-((Int&)x>>1); // initial guess
    Flt y=(Flt&)i;
    return y;
+#endif
 }
 Flt RSqrt1(Flt x)
 {
+#if 1 // similar speed, but more precision
+   return RSqrtSimd(x);
+#else
    Int i=0x5F3759DF-((Int&)x>>1); // initial guess
    Flt y=(Flt&)i;
    Flt x_2=x/2;
    y*=1.5f-(x_2*y*y); // 1st Newton iteration
    return y;
+#endif
 }
 Flt RSqrt2(Flt x)
 {
+#if 0 // faster speed, but less precision
+   return RSqrtSimd(x);
+#else
    Int i=0x5F3759DF-((Int&)x>>1); // initial guess
    Flt y=(Flt&)i;
    Flt x_2=x/2;
    y*=1.5f-(x_2*y*y); // 1st Newton iteration
    y*=1.5f-(x_2*y*y); // 2nd Newton iteration
    return y;
+#endif
 }
 
 UInt SqrtI(UInt x, Int max_steps)

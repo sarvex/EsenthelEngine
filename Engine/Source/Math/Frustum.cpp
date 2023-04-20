@@ -1115,7 +1115,7 @@ min_height - \------------/
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
 
-   if(sort_by_distance){area_pos_dist.sort(); area_pos.setNum(area_pos_dist.elms()); REPAO(area_pos)=area_pos_dist[i];}
+   if(sort_by_distance){area_pos_dist.sort(Compare); area_pos.setNum(area_pos_dist.elms()); REPAO(area_pos)=area_pos_dist[i];}
 }
 /******************************************************************************/
 void FrustumClass::draw(C Color &col)C

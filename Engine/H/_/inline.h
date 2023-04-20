@@ -2221,7 +2221,7 @@ namespace Edit
 /******************************************************************************/
 #if EE_PRIVATE
 
-#if (defined _M_IX86 || defined __i386__) || (defined _M_X64 || defined __x86_64__) || (ARM && X64) || WEB // x86 32/64 and ARM 64 can do unaligned reads. When using WebAssembly (WASM) for WEB platform, unaligned access is supported, however when executed on platforms without native unaligned access support (Arm32) it will be extremely slow, however since Arm32 is in extinction then it's better to enable unaligned access to get better performance on majority of platforms that support it.
+#if X86 || (ARM && X64) || WEB // x86 32/64 and ARM 64 can do unaligned reads. When using WebAssembly (WASM) for WEB platform, unaligned access is supported, however when executed on platforms without native unaligned access support (Arm32) it will be extremely slow, however since Arm32 is in extinction then it's better to enable unaligned access to get better performance on majority of platforms that support it.
    T1(TYPE) C TYPE& Unaligned(              C TYPE &src) {return src;}
    T1(TYPE)   void  Unaligned(TYPE   &dest, C TYPE &src) {  dest=src;}
    T1(TYPE)   void _Unaligned(Byte   &dest, C TYPE &src) {  dest=src;}
