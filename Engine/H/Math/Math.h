@@ -199,9 +199,9 @@ inline Flt  & SQR(Flt   &x) {return x*=x;}
 inline Dbl  & SQR(Dbl   &x) {return x*=x;}
 
 #if EE_PRIVATE
-Flt RSqrt0(Flt x); // ~1/Sqrt(x) Fast inverse square root, low  precision
-Flt RSqrt1(Flt x); // ~1/Sqrt(x) Fast inverse square root, med  precision
-Flt RSqrt2(Flt x); // ~1/Sqrt(x) Fast inverse square root, high precision
+Flt RSqrt0(Flt x); // ~1/Sqrt(x) inverse square root, high speed, low  precision
+Flt RSqrt1(Flt x); // ~1/Sqrt(x) inverse square root, med  speed, med  precision
+Flt RSqrt2(Flt x); // ~1/Sqrt(x) inverse square root, low  speed, high precision
 
       UInt  SqrtI(UInt  x               ); // integer square root (binary    method, fastest)
        Int  SqrtI( Int  x               ); // integer square root (binary    method, fastest)
