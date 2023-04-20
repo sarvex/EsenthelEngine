@@ -748,6 +748,7 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    area_pos.clear();
 
    Memt<VecD2> convex_points; CreateConvex2Dxz(convex_points, point, points); if(!convex_points.elms())return;
+   REPAO(convex_points)/=area_size;
 
    Bool    mask_do;
    RectI   mask, rect; // inclusive
@@ -763,19 +764,16 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
       if(mask_do)mask&=r;else{mask=r; mask_do=true;}
    }
 
-   // set min_y..max_y visibility
-   rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
-   REPA(convex_points)
-   {
-      VecD2 &p=convex_points[i]; p/=area_size;
-      Int    y=Floor(extend ? p.y-0.5 : p.y);
-      rect.includeY(y);
-   }
-   if(extend )rect.max.y++;
-   if(mask_do)rect.clampY(mask.min.y, mask.max.y);
-   if(!rect.validY())return;
-
-   // clamp convex edges, so 'PixelWalker' doesn't have to walk too much
+   // clamp convex edges, so we can calculate 'rect' precisely (after clipping, which may give different results instead of just "rect&mask") and so 'PixelWalker' doesn't have to walk too much
+   // ---------
+   //  \      |
+   //   \     |
+   //    \    |
+   // +---\---| gets clipped into +---\---|
+   // |    \  |                   |    \  |
+   // |     \ |                   |     \ |
+   // |      \|                   |      \|
+   // +-------+                   +-------+
    if(mask_do)
    {
       Memt<VecD2> temp; PlaneD2 plane;
@@ -785,9 +783,23 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
                             plane.normal.set( 0,  1); ClipPoly(temp         , plane, convex_points); // top
    }
 
-   // set min_x..max_x per row in 'row_min_max_x'
+   // set min_x..max_x, min_y..max_y visibility
+   rect.setX(INT_MAX, INT_MIN); // set invalid "min>max"
+   rect.setY(INT_MAX, INT_MIN); // set invalid "min>max"
+   REPA(convex_points)
+   {
+    C VecD2 &p=convex_points[i];
+      VecI2  pi;
+      if(extend)pi.set(Floor(p.x-0.5), Floor(p.y-0.5));
+      else      pi.set(Floor(p.x    ), Floor(p.y    ));
+      rect.include(pi);
+   }
+   if(extend ) rect.max++;
+   if(mask_do){rect&=mask; if(!rect.valid())return;}
+
+   // set min_x..max_x visibility per row in 'row_min_max_x'
    Memt<VecI2> row_min_max_x; row_min_max_x.setNum(rect.h()+1); // +1 because it's inclusive
-   REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("max<min")
+   REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("min>max")
 
    REPA(convex_points) // warning: this needs to work as well for "convex_points.elms()==1"
    {
@@ -805,17 +817,6 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
       }
       for(PixelWalker walker(start, end); walker.active(); walker.step())ProcessPos(walker.pos(), rect, row_min_max_x);
    }
-
-   // set min_x..max_x visibility (this is more precise than what can be calculated from just 'convex_points', because here, we've clipped the edges to min_y..max_y range)
-   rect.setX(INT_MAX, INT_MIN); // set invalid "max<min"
-   REPA(row_min_max_x)
-   {
-      VecI2 &min_max_x=row_min_max_x[i];
-      if(min_max_x.y>=min_max_x.x) // if valid
-         rect.includeX(min_max_x.x, min_max_x.y);
-   }
-   if(mask_do)rect.clampX(mask.min.x, mask.max.x);
-   if(!rect.validX())return;
 
    const Bool fast=true; // if use ~2x faster 'Dist2PointSquare' instead of 'Dist2(Vec2 point, RectI rect)'
 
@@ -980,7 +981,7 @@ min_height - \------------/
          }
 
          // set min_y..max_y visibility
-         rect.setY(INT_MAX, INT_MIN); // set invalid "max<min"
+         rect.setY(INT_MAX, INT_MIN); // set invalid "min>max"
          REPA(convex_points)
          {
             VecD2 &p=convex_points[i];
@@ -993,7 +994,7 @@ min_height - \------------/
 
          // set min_x..max_x per row in 'row_min_max_x'
          row_min_max_x.setNumDiscard(rect.h()+1); // +1 because it's inclusive
-         REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("max<min")
+         REPAO(row_min_max_x).set(INT_MAX, INT_MIN); // on start set invalid range ("min>max")
 
          REPA(convex_points) // warning: this needs to work as well for "convex_points.elms()==1"
          {
@@ -1021,7 +1022,7 @@ min_height - \------------/
          if(sort_by_distance) // in look order (from camera/foreground to background)
          {
             // set min_x..max_x visibility (this is more precise than what can be calculated from just 'convex_points', because here, we've clipped the edges to min_y..max_y range)
-            rect.setX(INT_MAX, INT_MIN); // set invalid "max<min"
+            rect.setX(INT_MAX, INT_MIN); // set invalid "min>max"
             REPA(row_min_max_x)
             {
                VecI2 &min_max_x=row_min_max_x[i];
