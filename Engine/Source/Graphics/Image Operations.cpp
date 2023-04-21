@@ -903,13 +903,13 @@ Image& Image::downSampleNormal()
 #define BLUR_CUBE_LINEAR_GAMMA 1 // this is for PBR rendering, so use linear to be more physically accurate
 struct BlurCube
 {
-   Int   src_res, dest_res, src_face_size, src_pitch, src_mip; DIR_ENUM f;
-   Flt   diag_angle_cos_min, cos_min, angle, angle_eps,
-         src_DirToCubeFace_mul,  src_DirToCubeFace_add,
-         src_CubeFaceToDir_mul,  src_CubeFaceToDir_add,
-        dest_CubeFaceToDir_mul, dest_CubeFaceToDir_add;
-   Vec2  src_area_size;
- C Byte *src_data;
+   Int    src_res, dest_res, src_face_size, src_pitch, src_mip; DIR_ENUM f;
+   Flt    diag_angle_cos_min, cos_min, angle, angle_eps,
+          src_DirToCubeFace_mul,  src_DirToCubeFace_add,
+          src_CubeFaceToDir_mul,  src_CubeFaceToDir_add,
+         dest_CubeFaceToDir_mul, dest_CubeFaceToDir_add;
+   Vec2   src_area_size;
+ C Byte  *src_data;
  C Image &src;
    Image &dest;
    SyncLock lock;
