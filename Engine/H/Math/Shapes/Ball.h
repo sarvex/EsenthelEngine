@@ -130,6 +130,7 @@ struct SphereConvert
    Vec2 _cellToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res" !!
 
    DIR_ENUM dirToSphereTerrainPixel      (C Vec &dir, Vec2 &xy            )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1)
+   Vec2     dirToSphereTerrainPixel      (C Vec &dir,   DIR_ENUM cube_face)C; // convert vector direction (doesn't need to be normalized) to               spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1), 'cube_face'=cube face that 'dir' belongs to
    Vec      sphereTerrainPixelToDir      (Flt x, Flt y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
    Vec     _sphereTerrainPixelCenterToDir(Int x, Int y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1)  , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !! THIS IS FAST APPROXIMATION !!
 
