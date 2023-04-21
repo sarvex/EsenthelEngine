@@ -60,50 +60,14 @@ Dbl SqrtS(Dbl x) {return (x>=0) ? SqrtFast(x) : -SqrtFast(-x);}
          +t2+"s "+x2+" FAST0\n"
          +t3+"s "+x3+" FAST1\n"
          +t4+"s "+x4+" FAST2\n");*/
-INLINE Flt RSqrtSimd(Flt x)
-{
-#if X86
-   __m128 vx=_mm_set_ss   (x);
-   __m128 vy=_mm_rsqrt_ss (vx);
-   return    _mm_cvtss_f32(vy);
-#elif ARM
-   float32x2_t vx=vdup_n_f32 (x);
-   float32x2_t vy=vrsqrte_f32(vx);
-   return vy[0];
-#else
-   return 1/SqrtFast(x);
-#endif
-}
-Flt RSqrt0(Flt x)
-{
-#if 1 // similar speed, but more precision
-   return RSqrtSimd(x);
-#else
-   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
-   Flt y=(Flt&)i;
-   return y;
-#endif
-}
-Flt RSqrt1(Flt x)
-{
-#if 1 // similar speed, but more precision
-   return RSqrtSimd(x);
-#else
-   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
-   Flt y=(Flt&)i;
-   Flt x_2=x/2;
-   y*=1.5f-(x_2*y*y); // 1st Newton iteration
-   return y;
-#endif
-}
 Flt RSqrt2(Flt x)
 {
 #if 0 // faster speed, but less precision
    return RSqrtSimd(x);
 #else
+   Flt x_2=x/2;
    Int i=0x5F3759DF-((Int&)x>>1); // initial guess
    Flt y=(Flt&)i;
-   Flt x_2=x/2;
    y*=1.5f-(x_2*y*y); // 1st Newton iteration
    y*=1.5f-(x_2*y*y); // 2nd Newton iteration
    return y;

@@ -199,8 +199,42 @@ inline Flt  & SQR(Flt   &x) {return x*=x;}
 inline Dbl  & SQR(Dbl   &x) {return x*=x;}
 
 #if EE_PRIVATE
-Flt RSqrt0(Flt x); // ~1/Sqrt(x) inverse square root, high speed, low  precision
-Flt RSqrt1(Flt x); // ~1/Sqrt(x) inverse square root, med  speed, med  precision
+INLINE Flt RSqrtSimd(Flt x)
+{
+#if X86
+   __m128 vx=_mm_set_ss   (x);
+   __m128 vy=_mm_rsqrt_ss (vx);
+   return    _mm_cvtss_f32(vy);
+#elif ARM
+   float32x2_t vx=vdup_n_f32 (x);
+   float32x2_t vy=vrsqrte_f32(vx);
+   return vy[0];
+#else
+   return 1/SqrtFast(x);
+#endif
+}
+inline Flt RSqrt0(Flt x) // ~1/Sqrt(x) inverse square root, high speed, low  precision
+{
+#if X86 || ARM // faster/similar speed, but more precision
+   return RSqrtSimd(x);
+#else
+   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
+   Flt y=(Flt&)i;
+   return y;
+#endif
+}
+inline Flt RSqrt1(Flt x) // ~1/Sqrt(x) inverse square root, med  speed, med  precision
+{
+#if X86 || ARM // faster/similar speed, but more precision
+   return RSqrtSimd(x);
+#else
+   Flt x_2=x/2;
+   Int i=0x5F3759DF-((Int&)x>>1); // initial guess
+   Flt y=(Flt&)i;
+   y*=1.5f-(x_2*y*y); // 1st Newton iteration
+   return y;
+#endif
+}
 Flt RSqrt2(Flt x); // ~1/Sqrt(x) inverse square root, low  speed, high precision
 
       UInt  SqrtI(UInt  x               ); // integer square root (binary    method, fastest)
