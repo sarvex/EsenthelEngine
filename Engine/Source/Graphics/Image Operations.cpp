@@ -2152,10 +2152,6 @@ Bool   Image::average(Image &dest, C VecI &range, Bool clamp)C
 Image& Image::blur(             C Vec &range, Bool clamp) {blur(T, range, clamp); return T;}
 Bool   Image::blur(Image &dest, C Vec &range, Bool clamp)C
 {
-   if(cube())
-   {
-      
-   }
    Bool blur[]={range.x>0 && w()>1, range.y>0 && h()>1, range.z>0 && d()>1};
    Int  blurs =blur[0]+blur[1]+blur[2];
    if( !blurs)return copy(dest);
@@ -2213,6 +2209,27 @@ Bool   Image::blur(Image &dest, C Vec &range, Bool clamp)C
    return img.copy(dest, -1, -1, -1, type, mode, mip_maps, FILTER_BEST, flags);
 }
 /******************************************************************************/
+Bool Image::blurCubeAngle(Flt angle)
+{
+   if(cube() && angle>0)
+   {
+      if(!waitForStream())return false; // since we'll access 'softData' without locking, make sure stream is finished
+      Threads *threads=&ImageThreads.init();
+      Image *img=this, temp;
+      Bool convert=false;
+      if(img->mode()!=IMAGE_SOFT_CUBE || img->compressed())if(img->copy(temp, -1, -1, -1, ImageTypeUncompressed(img->type()), IMAGE_SOFT_CUBE, 1)){img=&temp; convert=true;}else return false;
+      Image dest; if(!dest.create(img->w(), img->h(), img->d(), img->type(), img->mode(), convert ? 1 : img->mipMaps()))return false; // if we'll convert later, then create with 1 mip map only
+      BlurCube(*img, 0, dest, 0, angle, threads);
+      if(convert)return dest.copy(T, -1, -1, -1, type(), mode(), mipMaps()); // convert to original type and mode
+      else       Swap(dest.updateMipMaps(), T);
+   }
+   return true;
+}
+Bool Image::blurCubePixel(Flt pixel_range)
+{
+   Flt angle=Atan(pixel_range/(h()/2.0f)); // Angle(h()/2.0f, pixel_range);
+   return blurCubeAngle(angle);
+}
 Bool Image::blurCubeMipMaps()
 {
    if(cube() && mipMaps()>1)
