@@ -456,6 +456,25 @@ Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
    }
    return VecZero;
 }
+Vec SphereTerrainPixelCenterToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+{
+ //if(res>0)
+   {
+      Flt mul=PI_2/res, add=-PI_4+mul*0.5f;
+      x=Tan(x*mul+add);
+      y=Tan(y*mul+add);
+      switch(cube_face) // #TerrainOrient
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
+      }
+   }
+   return VecZero;
+}
 Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
 {
  //if(res>0)
