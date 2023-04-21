@@ -383,9 +383,9 @@ struct Image // Image (Texture)
    Bool   waitForStream(Int mip=0)C; // wait until streaming has finished, false on fail
    Image& updateMipMaps(FILTER_TYPE filter=FILTER_BEST, UInt flags=IC_CLAMP, Int mip_start=0); // update mip maps of the image, 'flags'=IMAGE_COPY_FLAG, 'mip_start'=index of the mip map to start with (this mip map will be taken, and downsampled to following mip maps)
 
-   Bool blurCubeAngle  (Flt angle      ); // blur cube image,                                             false on fail
-   Bool blurCubePixel  (Flt pixel_range); // blur cube image, angle is calculated based on 'pixel_range', false on fail
-   Bool blurCubeMipMaps(               ); // blur mip maps based on increasing angles per mip-map, this method is only for Cube Images, false on fail
+   Bool blurCubeAngle  (Flt angle      , Bool linear); // blur cube image,                                             'linear'=if image pixels are in linear space (or false in spherical space), false on fail
+   Bool blurCubePixel  (Flt pixel_range, Bool linear); // blur cube image, angle is calculated based on 'pixel_range', 'linear'=if image pixels are in linear space (or false in spherical space), false on fail
+   Bool blurCubeMipMaps(                            ); // blur mip maps based on increasing angles per mip-map, this method is only for Cube Images, false on fail
 
    Image& freeOpenGLESData(); // this method is used only under OpenGL ES (on other platforms it is ignored), the method frees the software copy of the GPU data which increases available memory, however after calling this method the data can no longer be accessed on the CPU (can no longer be locked or saved to file)
 
