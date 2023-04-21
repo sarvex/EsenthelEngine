@@ -463,6 +463,8 @@ Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C //
 Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C // #TerrainOrient
 {
  //if(res>0)
+ //if(InRange(xi, res))
+ //if(InRange(yi, res))
    {
       Flt x=Avg(_cellToPos(xi), _cellToPos(xi+1));
       Flt y=Avg(_cellToPos(yi), _cellToPos(yi+1));
@@ -481,6 +483,8 @@ Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_
 Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C // #TerrainOrient
 {
  //if(res>0)
+ //if(InRange(xi, res))
+ //if(InRange(yi, res))
    {
       Flt x=_cellCenterToPos(xi);
       Flt y=_cellCenterToPos(yi);
@@ -621,6 +625,22 @@ min_height - \------------/
    next:
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
+}
+/******************************************************************************/
+void SphereConvertEx::sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse)C
+{
+   Memt<SphereAreaDist> area_dist; area_dist.setNum(areas.elms()); REPA(area_dist)
+   {
+      SphereAreaDist &area=area_dist[i];
+      SCAST(SphereArea, area)=areas[i];
+      Vec  dir=_sphereTerrainPixelCenterToDir(area.x, area.y, area.side);
+      area.dist=Dot   (pos, dir) // treat 'pos' as direction and reverse 'Compare' below
+               *RSqrt0(dir.length2()); // '_sphereTerrainPixelCenterToDir' should be normalized, but here we can just use fast approximation
+    //area.dist=Dist2 (pos, dir*RSqrt0(dir.length2())); this requires NOT reversing 'Compare' below // slower alternative
+   }
+   if(reverse)  area_dist.sort(Compare ); // 'Compare' are reversed because 'pos' is treated as direction instead of position
+   else         area_dist.sort(CompareR);
+   REPAO(areas)=area_dist[i];
 }
 /******************************************************************************/
 void SphereConvert::draw()C

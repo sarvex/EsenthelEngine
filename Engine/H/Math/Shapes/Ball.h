@@ -99,6 +99,14 @@ struct SphereArea : VecI2
 
    SphereArea& operator=(C VecI2 &xy) {super::operator=(xy); return T;}
 };
+#if EE_PRIVATE
+struct SphereAreaDist : SphereArea
+{
+   Flt dist;
+};
+inline Int Compare (C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(a.dist, b.dist);}
+inline Int CompareR(C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(b.dist, a.dist);}
+#endif
 struct SphereConvert
 {
    Int       res;
@@ -143,6 +151,8 @@ struct SphereConvertEx : SphereConvert
    void init(Int res);
 
    Vec _sphereTerrainPixelCenterToDir(Int x, Int y, DIR_ENUM cube_face)C; // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1), 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !!
+
+   void sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse=false)C; // sort 'areas' based on distance to 'pos', 'reverse'=if reverse sort order
 };
 
 DIR_ENUM DirToCubeFace          (C Vec &dir                               ); // convert vector direction (doesn't need to be normalized) to cube face

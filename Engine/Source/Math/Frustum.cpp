@@ -875,11 +875,6 @@ void FrustumClass::getIntersectingAreas(MemPtr<VecI2> area_pos, Flt area_size, B
    }
 }
 /******************************************************************************/
-struct SphereAreaDist : SphereArea
-{
-   Flt dist;
-};
-static Int Compare(C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(a.dist, b.dist);}
 void FrustumClass::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C SphereConvertEx &sc, Bool distance_check, Bool sort_by_distance, Bool extend, Flt min_radius)C
 {
    // WARNING: ignores 'extraBall'
