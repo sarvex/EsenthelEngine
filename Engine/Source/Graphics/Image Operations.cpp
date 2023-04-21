@@ -905,15 +905,27 @@ struct BlurCube
 {
    Bool     linear;
    DIR_ENUM f;
-   Int    src_res, dest_res, src_face_size, src_pitch, src_mip;
-   Flt    diag_angle_cos_min, cos_min, angle, angle_eps,
-          src_DirToCubeFacePixel_mul,  src_DirToCubeFacePixel_add,
-          src_CubeFacePixelToDir_mul,  src_CubeFacePixelToDir_add,
-         dest_CubeFacePixelToDir_mul, dest_CubeFacePixelToDir_add;
-   Vec2   src_area_size;
- C Byte  *src_data;
- C Image &src;
-   Image &dest;
+   Int      src_res, dest_res, src_face_size, src_pitch, src_mip;
+   Flt      diag_angle_cos_min, cos_min, angle, angle_eps;
+   union
+   {
+      struct // linear
+      {
+         Flt src_DirToCubeFacePixel_mul,  src_DirToCubeFacePixel_add,
+             src_CubeFacePixelToDir_mul,  src_CubeFacePixelToDir_add,
+            dest_CubeFacePixelToDir_mul, dest_CubeFacePixelToDir_add;
+      };
+      struct // spherical
+      {
+         Flt src_AngleToCubeFacePixel_mul,  src_AngleToCubeFacePixel_add,
+             src_CubeFacePixelToAngle_mul,  src_CubeFacePixelToAngle_add,
+            dest_CubeFacePixelToAngle_mul, dest_CubeFacePixelToAngle_add;
+      };
+   };
+   Vec2     src_area_size;
+ C Byte    *src_data;
+ C Image   &src;
+   Image   &dest;
    SyncLock lock;
 
    static inline Flt Weight(Flt f)
@@ -930,10 +942,20 @@ struct BlurCube
    static void ProcessLine(IntPtr y, BlurCube &bc, Int thread_index) {bc.processLine(y);}
           void processLine(Int    y)
    {
-      Vec dir_f; dir_f.z=1; dir_f.y=-y*dest_CubeFacePixelToDir_mul-dest_CubeFacePixelToDir_add;
+      Vec dir_f; dir_f.z=1; 
+      Flt dir_angle_y;
 
-      Flt dir_angle_y=Atan(dir_f.y), // Angle(dir_f.z, dir_f.y); dir_f.z==1
-          angle_min_y=dir_angle_y-angle_eps,
+      if(linear)
+      {
+         dir_f.y=-y*dest_CubeFacePixelToDir_mul-dest_CubeFacePixelToDir_add;
+         dir_angle_y=Atan(dir_f.y); // Angle(dir_f.z, dir_f.y); dir_f.z==1
+      }else
+      {
+         dir_angle_y=-y*dest_CubeFacePixelToAngle_mul-dest_CubeFacePixelToAngle_add;
+         dir_f.y=Tan(dir_angle_y);
+      }
+
+      Flt angle_min_y=dir_angle_y-angle_eps,
           angle_max_y=dir_angle_y+angle_eps;
 
       Bool  check_other_faces_y=false;
@@ -943,11 +965,19 @@ struct BlurCube
 
       REPD(x, dest_res)
       {
-         //dir_f=CubeFacePixelToDir(x, y, dest_res, DIR_FORWARD);
-         dir_f.x=x*dest_CubeFacePixelToDir_mul+dest_CubeFacePixelToDir_add;
+         Flt dir_angle_x;
+         if(linear)
+         {
+          //dir_f=CubeFacePixelToDir(x, y, dest_res, DIR_FORWARD);
+            dir_f.x=x*dest_CubeFacePixelToDir_mul+dest_CubeFacePixelToDir_add;
+            dir_angle_x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
+         }else
+         {
+            dir_angle_x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
+            dir_f.x=Tan(dir_angle_x);
+         }
          Vec dir_fn=dir_f; dir_fn.normalize();
-         Flt dir_angle_x=Atan(dir_f.x), // Angle(dir_f.z, dir_f.x); dir_f.z==1
-             angle_min_x=dir_angle_x-angle_eps,
+         Flt angle_min_x=dir_angle_x-angle_eps,
              angle_max_x=dir_angle_x+angle_eps;
       #if DEBUG && 0
          Vec dir_f_reconstructed(Tan(dir_angle_x), Tan(dir_angle_y), 1);
@@ -1167,9 +1197,17 @@ struct BlurCube
          T.angle=angle; angle_eps=angle*SQRT2; // need to mul by SQRT2 because calculating bounds is an approximation so we need to extend the rect because normally it doesn't cover fully
                     cos_min=Cos(angle);
          diag_angle_cos_min=Cos(diag_angle_ext);
-         src_DirToCubeFacePixel_mul=src_res*0.5f; src_DirToCubeFacePixel_add=src_DirToCubeFacePixel_mul-0.5f;
-         Flt inv_res=1.0f/ src_res;  src_CubeFacePixelToDir_mul=2*inv_res;  src_CubeFacePixelToDir_add=inv_res-1;
-             inv_res=1.0f/dest_res; dest_CubeFacePixelToDir_mul=2*inv_res; dest_CubeFacePixelToDir_add=inv_res-1;
+         if(linear)
+         {
+            src_DirToCubeFacePixel_mul=src_res*0.5f; src_DirToCubeFacePixel_add=src_DirToCubeFacePixel_mul-0.5f;
+            Flt inv_res=1.0f/ src_res;  src_CubeFacePixelToDir_mul=2*inv_res;  src_CubeFacePixelToDir_add=inv_res-1;
+                inv_res=1.0f/dest_res; dest_CubeFacePixelToDir_mul=2*inv_res; dest_CubeFacePixelToDir_add=inv_res-1;
+         }else
+         {
+             src_AngleToCubeFacePixel_mul=src_res/PI_2 ;  src_AngleToCubeFacePixel_add= PI_4* src_AngleToCubeFacePixel_mul - 0.5f;
+             src_CubeFacePixelToAngle_mul=PI_2/ src_res;  src_CubeFacePixelToAngle_add=-PI_4+ src_CubeFacePixelToAngle_mul/2;
+            dest_CubeFacePixelToAngle_mul=PI_2/dest_res; dest_CubeFacePixelToAngle_add=-PI_4+dest_CubeFacePixelToAngle_mul/2;
+         }
          for(f=DIR_ENUM(0); f<6; f=DIR_ENUM(f+1))
          {
             if(dest.lock(LOCK_WRITE, dest_mip, f))
