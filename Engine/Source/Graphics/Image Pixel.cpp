@@ -4077,6 +4077,54 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
    return 0;
 }
 /******************************************************************************/
+Flt Image::cubePixelFCubicFast(C Vec &dir)C
+{
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      SphereArea sa;
+      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + sa.side*face_size;
+      VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
+      Flt   color =0;
+      Flt   weight=0;
+      Flt   weights_x[4]={Sqr(xy.x+1), Sqr(xy.x), Sqr(xy.x-1), Sqr(xy.x-2)};
+      Flt   weights_y[4]={Sqr(xy.y+1), Sqr(xy.y), Sqr(xy.y-1), Sqr(xy.y-2)};
+      FREPD(sy, 4)
+      {
+         sa.y=xyi.y+sy;
+         Flt weight_y=weights_y[sy];
+         FREPD(sx, 4)
+         {
+            sa.x=xyi.x+sx;
+            Flt weight_x=weights_x[sx];
+            Flt wgt=weight_x+weight_y; if(wgt<Sqr(CUBIC_FAST_RANGE))
+            {
+               CPtr d;
+               if(InRange(sa.x, w())
+               && InRange(sa.y, h()))
+                  d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
+               if(InRange(sa.x, w())
+               || InRange(sa.y, h()))
+               { // if at least one coord in range then wrap
+                  SphereArea sa1; Wrap(sa1, sa, w());
+                  d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
+               }else
+                  continue; // if both coords out of range then skip
+               wgt=CubicFast2(wgt);
+               color +=wgt*ImagePixelF(d, hwType());
+               weight+=wgt;
+            }
+         }
+      }
+      return color/weight;
+   }
+   return 0;
+}
 Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
