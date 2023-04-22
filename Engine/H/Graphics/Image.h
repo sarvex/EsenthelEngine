@@ -531,7 +531,7 @@ struct Image // Image (Texture)
 
    Bool raycast(C Vec &start, C Vec &move, C Matrix *image_matrix=null, Flt *hit_frac=null, Vec *hit_pos=null, Flt precision=1.0f)C; // perform ray casting from 'start' position along 'move' vector, return true if collision encountered with the image, by default the Image is on XY plane with its pixel values extending it towards the Z axis, 'image_matrix'=image transformation matrix, 'hit_frac'=fraction of the movement where collision occurs, 'hit_pos'=position where collision occurs, 'precision'=affects number of pixels to advance in a single step (lower value makes calculations faster but less precise)
 
-   // !! warning: following methods do not check for coordinates being out of range, image type matching, and image being locked, use only if you know what you're doing !!
+   // !! WARNING: following methods do not check for coordinates being out of range, image type matching, and image being locked, use only if you know what you're doing !!
    Byte & pixB (Int x, Int y) {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch);}   Byte & pixB (C VecI2 &v) {return pixB (v.x, v.y);}
    UInt & pix  (Int x, Int y) {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch);}   UInt & pix  (C VecI2 &v) {return pix  (v.x, v.y);}
    Color& pixC (Int x, Int y) {return *(Color*)(_data + x*SIZE(Color) + y*_pitch);}   Color& pixC (C VecI2 &v) {return pixC (v.x, v.y);}
@@ -572,7 +572,7 @@ struct Image // Image (Texture)
  C Vec  & pixF3(Int x, Int y, Int z)C {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch + z*_pitch2);}   C Vec  & pixF3(C VecI &v)C {return pixF3(v.x, v.y, v.z);}
  C Vec4 & pixF4(Int x, Int y, Int z)C {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch + z*_pitch2);}   C Vec4 & pixF4(C VecI &v)C {return pixF4(v.x, v.y, v.z);}
 
-   // !! warning: 'gather' methods are written for speed and not safety, they assume that image is locked and that offsets are in range, these methods set 'pixels/colors' array from image values, coordinates are specified in the 'offset' parameters !!
+   // !! WARNING: 'gather' methods are written for speed and not safety, they assume that image is locked and that offsets are in range, these methods set 'pixels/colors' array from image values, coordinates are specified in the 'offset' parameters !!
    void gather (Flt   *pixels, Int *x_offset, Int x_offsets, Int *y_offset, Int y_offsets)C;
    void gather (VecB  *colors, Int *x_offset, Int x_offsets, Int *y_offset, Int y_offsets)C;
    void gather (Color *colors, Int *x_offset, Int x_offsets, Int *y_offset, Int y_offsets)C;
