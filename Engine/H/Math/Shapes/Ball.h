@@ -97,6 +97,7 @@ struct SphereArea : VecI2
 {
    DIR_ENUM side;
 
+   SphereArea& set(DIR_ENUM side, Int x, Int y) {T.side=side; T.x=x; T.y=y; return T;}
    SphereArea& operator=(C VecI2 &xy) {super::operator=(xy); return T;}
 };
 #if EE_PRIVATE
