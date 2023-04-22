@@ -1061,8 +1061,6 @@ struct BlurCube
          if(check_other_faces)
          {
             Vec dir; CubeFacePosToPos(f, dir, dir_fn); // convert local 'f' space to world space 'dir'
-            // FIXME !linear spherical convert?
-//dir=SphereTerrainPixelCenterToDir(x, y, dest_res, f)); dir.normalize();
             FREPD(f1, 6)if(f1!=f)
             {
                Flt dot=Dot(VecDir[f1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
@@ -1070,7 +1068,6 @@ struct BlurCube
                   RectI tex_rect1;
 
                   Vec dir_f1; PosToCubeFacePos((DIR_ENUM)f1, dir_f1, dir); // convert world space 'dir' to local 'f1' space 'dir_f1'
-                  // FIXME !linear spherical convert?
 
                #if 0 // full
                   #pragma message("!! Warning: Use this only for debugging !!")
