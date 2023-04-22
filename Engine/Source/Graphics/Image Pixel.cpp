@@ -3995,8 +3995,8 @@ Flt Image::cubePixelFLinear(C Vec &dir)C
 
       SphereArea sa;
       Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi;
+      auto  face_data=data + sa.side*face_size;
       Flt   color =0;
       Flt   weight=0;
       Flt   weights_x[2]={1-xy.x, xy.x};
@@ -4043,8 +4043,8 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
 
       SphereArea sa;
       Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi;
+      auto  face_data=data + sa.side*face_size;
       Vec4  color =0;
       Flt   weight=0;
       Flt   weights_x[2]={1-xy.x, xy.x};
@@ -4092,8 +4092,8 @@ Flt Image::cubePixelFCubicFast(C Vec &dir)C
 
       SphereArea sa;
       Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
+      auto  face_data=data + sa.side*face_size;
       Flt   color =0;
       Flt   weight=0;
       Flt   weights_x[4]={Sqr(xy.x+1), Sqr(xy.x), Sqr(xy.x-1), Sqr(xy.x-2)};
@@ -4143,8 +4143,8 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
 
       SphereArea sa;
       Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
+      auto  face_data=data + sa.side*face_size;
       Vec4  color =0;
       Flt   weight=0;
       Flt   weights_x[4]={Sqr(xy.x+1), Sqr(xy.x), Sqr(xy.x-1), Sqr(xy.x-2)};
