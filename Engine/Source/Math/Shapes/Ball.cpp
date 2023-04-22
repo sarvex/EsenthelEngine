@@ -243,9 +243,9 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
 #endif
 }
 /******************************************************************************/
-void CubeFacePosToPos(DIR_ENUM dir, Vec &dest, C Vec &src)
+void CubeFacePosToPos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
 {
-   switch(dir)
+   switch(cube_face)
    {
       case DIR_RIGHT  : dest.set( src.z,  src.y, -src.x); break;
       case DIR_LEFT   : dest.set(-src.z,  src.y,  src.x); break;
@@ -255,9 +255,9 @@ void CubeFacePosToPos(DIR_ENUM dir, Vec &dest, C Vec &src)
       case DIR_BACK   : dest.set(-src.x,  src.y, -src.z); break;
    }
 }
-void PosToCubeFacePos(DIR_ENUM dir, Vec &dest, C Vec &src)
+void PosToCubeFacePos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
 {
-   switch(dir)
+   switch(cube_face)
    {
       case DIR_RIGHT  : dest.set(-src.z,  src.y,  src.x); break;
       case DIR_LEFT   : dest.set( src.z,  src.y, -src.x); break;
@@ -267,9 +267,9 @@ void PosToCubeFacePos(DIR_ENUM dir, Vec &dest, C Vec &src)
       case DIR_BACK   : dest.set(-src.x,  src.y, -src.z); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM dir, Vec2 &dest, C Vec &src)
+void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec &src)
 {
-   switch(dir) // #TerrainOrient
+   switch(cube_face) // #TerrainOrient
    {
       case DIR_RIGHT  : dest.set( src.z,  src.y); break;
       case DIR_LEFT   : dest.set(-src.z,  src.y); break;
@@ -279,9 +279,9 @@ void PosToSphereTerrainPos(DIR_ENUM dir, Vec2 &dest, C Vec &src)
       case DIR_BACK   : dest.set( src.x,  src.y); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM dir, Vec &dest, C Vec &src)
+void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
 {
-   switch(dir) // #TerrainOrient
+   switch(cube_face) // #TerrainOrient
    {
       case DIR_RIGHT  : dest.set( src.z,  src.y,  src.x); break;
       case DIR_LEFT   : dest.set(-src.z,  src.y, -src.x); break;
@@ -291,9 +291,9 @@ void PosToSphereTerrainPos(DIR_ENUM dir, Vec &dest, C Vec &src)
       case DIR_BACK   : dest.set( src.x,  src.y, -src.z); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM dir, VecD *dest, C VecD *src, Int elms) // convert world space position 'src' to 'dest' where XY=plane position, Z=height
+void PosToSphereTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms) // convert world space position 'src' to 'dest' where XY=plane position, Z=height
 {
-   switch(dir) // #TerrainOrient
+   switch(cube_face) // #TerrainOrient
    {
       case DIR_RIGHT  : REP(elms){C auto &s=src[i]; dest[i].set( s.z,  s.y,  s.x);} break;
       case DIR_LEFT   : REP(elms){C auto &s=src[i]; dest[i].set(-s.z,  s.y, -s.x);} break;
