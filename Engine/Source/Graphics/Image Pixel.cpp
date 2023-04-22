@@ -4002,6 +4002,74 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
    return 0;
 }
 /******************************************************************************/
+Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
+{
+   Bool alpha_weight=false;
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      Vec2  xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + face*face_size;
+      VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
+
+      Vec4 c[4][4];
+      FREPD(sy, 4)
+      {
+         Int y=xyi.y+sy;
+         FREPD(sx, 4)
+         {
+            Int x=xyi.x+sx;
+            CPtr d;
+            if(InRange(x, w())
+            && InRange(y, h()))
+               d=face_data + y*pitch + x*byte_pp;else // if coords in range then use main face
+            { // coords out of range
+               Vec  dir=CubeFacePixelToDir(x, y, w(), face); // convert to direction vector
+               Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // convert direction vector to secondary face
+               Int  x=Mid(Round(xy.x), 0, w()-1);
+               Int  y=Mid(Round(xy.y), 0, h()-1);
+
+               d=data + face*face_size + y*pitch + x*byte_pp;
+            }
+            c[sy][sx]=ImageColorF(d, hwType());
+         }
+      }
+
+      Vec  rgb   =0;
+      Vec4 color =0;
+      Flt  weight=0, w,
+           x=xy.x, y=xy.y,
+           x0w=Sqr(x+1), x1w=Sqr(x), x2w=Sqr(x-1), x3w=Sqr(x-2),
+           y0w=Sqr(y+1), y1w=Sqr(y), y2w=Sqr(y-1), y3w=Sqr(y-2);
+      w=x0w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[0][0], w, alpha_weight); weight+=w;}
+      w=x1w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[0][1], w, alpha_weight); weight+=w;}
+      w=x2w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[0][2], w, alpha_weight); weight+=w;}
+      w=x3w+y0w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[0][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[1][0], w, alpha_weight); weight+=w;}
+      w=x1w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[1][1], w, alpha_weight); weight+=w;}
+      w=x2w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[1][2], w, alpha_weight); weight+=w;}
+      w=x3w+y1w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[1][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[2][0], w, alpha_weight); weight+=w;}
+      w=x1w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[2][1], w, alpha_weight); weight+=w;}
+      w=x2w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[2][2], w, alpha_weight); weight+=w;}
+      w=x3w+y2w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[2][3], w, alpha_weight); weight+=w;}
+
+      w=x0w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[3][0], w, alpha_weight); weight+=w;}
+      w=x1w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[3][1], w, alpha_weight); weight+=w;}
+      w=x2w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[3][2], w, alpha_weight); weight+=w;}
+      w=x3w+y3w; if(w<Sqr(CUBIC_FAST_RANGE)){w=CubicFast2(w); Add(color, rgb, c[3][3], w, alpha_weight); weight+=w;}
+      Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST);
+      return color;
+   }
+   return 0;
+}
+/******************************************************************************/
 // GATHER
 /******************************************************************************/
 static        void RangeAssert (Int *  offset, Int   offsets,   Int   size) {REP(offsets)RANGE_ASSERT(offset[i], size);}
