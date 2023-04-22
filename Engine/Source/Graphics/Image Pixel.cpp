@@ -3993,36 +3993,40 @@ Flt Image::cubePixelFLinear(C Vec &dir)C
       auto pitch    =softPitch   (0);
       auto byte_pp  =bytePP      ( );
 
-      Vec2  xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + face*face_size;
+      SphereArea sa;
+      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi;
-      Flt   c[2][2];
+      Flt   color =0;
+      Flt   weight=0;
+      Flt   weights_x[2]={1-xy.x, xy.x};
+      Flt   weights_y[2]={1-xy.y, xy.y};
       FREPD(sy, 2)
       {
-         Int y=xyi.y+sy;
+         sa.y=xyi.y+sy;
+         Flt weight_y=weights_y[sy];
          FREPD(sx, 2)
          {
-            Int x=xyi.x+sx;
+            sa.x=xyi.x+sx;
             CPtr d;
-            if(InRange(x, w())
-            && InRange(y, h()))
-               d=face_data + y*pitch + x*byte_pp;else // if coords in range then use main face
-            { // coords out of range
-               Vec  dir=CubeFacePixelToDir(x, y, w(), face); // convert to direction vector
-               Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // convert direction vector to secondary face
-               Int  x=Mid(Round(xy.x), 0, w()-1);
-               Int  y=Mid(Round(xy.y), 0, h()-1);
+            if(InRange(sa.x, w())
+            && InRange(sa.y, h()))
+               d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
+            if(InRange(sa.x, w())
+            || InRange(sa.y, h()))
+            { // if at least one coord in range then wrap
+               SphereArea sa1; Wrap(sa1, sa, w());
+               d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
+            }else
+               continue; // if both coords out of range then skip
 
-               d=data + face*face_size + y*pitch + x*byte_pp;
-            }
-            c[sy][sx]=ImagePixelF(d, hwType());
+            Flt weight_x=weights_x[sx];
+            Flt     w=weight_x*weight_y;
+            color +=w*ImagePixelF(d, hwType());
+            weight+=w;
          }
       }
-      Flt x=xy.x, y=xy.y;
-      return c[0][0]*(1-x)*(1-y)
-            +c[0][1]*(  x)*(1-y)
-            +c[1][0]*(1-x)*(  y)
-            +c[1][1]*(  x)*(  y);
+      return color/weight;
    }
    return 0;
 }
@@ -4035,43 +4039,46 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
       auto pitch    =softPitch   (0);
       auto byte_pp  =bytePP      ( );
 
-      Vec2  xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // calculate main face
-      auto  face_data=data + face*face_size;
+      SphereArea sa;
+      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi;
-      Vec4  c[2][2];
+      Vec4  color =0;
+      Flt   weight=0;
+      Flt   weights_x[2]={1-xy.x, xy.x};
+      Flt   weights_y[2]={1-xy.y, xy.y};
       FREPD(sy, 2)
       {
-         Int y=xyi.y+sy;
+         sa.y=xyi.y+sy;
+         Flt weight_y=weights_y[sy];
          FREPD(sx, 2)
          {
-            Int x=xyi.x+sx;
+            sa.x=xyi.x+sx;
             CPtr d;
-            if(InRange(x, w())
-            && InRange(y, h()))
-               d=face_data + y*pitch + x*byte_pp;else // if coords in range then use main face
-            { // coords out of range
-               Vec  dir=CubeFacePixelToDir(x, y, w(), face); // convert to direction vector
-               Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // convert direction vector to secondary face
-               Int  x=Mid(Round(xy.x), 0, w()-1);
-               Int  y=Mid(Round(xy.y), 0, h()-1);
+            if(InRange(sa.x, w())
+            && InRange(sa.y, h()))
+               d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
+            if(InRange(sa.x, w())
+            || InRange(sa.y, h()))
+            { // if at least one coord in range then wrap
+               SphereArea sa1; Wrap(sa1, sa, w());
+               d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
+            }else
+               continue; // if both coords out of range then skip
 
-               d=data + face*face_size + y*pitch + x*byte_pp;
-            }
-            c[sy][sx]=ImageColorF(d, hwType());
+            Flt weight_x=weights_x[sx];
+            Flt     w=weight_x*weight_y;
+            color +=w*ImageColorF(d, hwType());
+            weight+=w;
          }
       }
-      Flt x=xy.x, y=xy.y;
-      return c[0][0]*(1-x)*(1-y)
-            +c[0][1]*(  x)*(1-y)
-            +c[1][0]*(1-x)*(  y)
-            +c[1][1]*(  x)*(  y);
+      return color/weight;
    }
    return 0;
 }
 /******************************************************************************/
 Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
 {
-   Bool alpha_weight=false;
    if(mode()==IMAGE_SOFT_CUBE)
    {
       auto data     =softData    ( );
@@ -4083,7 +4090,6 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
       Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
       auto  face_data=data + sa.side*face_size;
       VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
-      Vec   rgb   =0;
       Vec4  color =0;
       Flt   weight=0;
       Flt   weights_x[4]={Sqr(xy.x+1), Sqr(xy.x), Sqr(xy.x-1), Sqr(xy.x-2)};
@@ -4109,12 +4115,13 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
                   d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
                }else
                   continue; // if both coords out of range then skip
-               wgt=CubicFast2(wgt); Add(color, rgb, ImageColorF(d, hwType()), wgt, alpha_weight); weight+=wgt;
+               wgt=CubicFast2(wgt);
+               color +=wgt*ImageColorF(d, hwType());
+               weight+=wgt;
             }
          }
       }
-      Normalize(color, rgb, weight, alpha_weight, ALPHA_LIMIT_CUBIC_FAST);
-      return color;
+      return color/weight;
    }
    return 0;
 }
