@@ -243,6 +243,30 @@ DIR_ENUM DirToCubeFace(C Vec &dir)
 #endif
 }
 /******************************************************************************/
+void CubeFacePosToPos(DIR_ENUM dir, Vec &dest, C Vec &src)
+{
+   switch(dir)
+   {
+      case DIR_RIGHT  : dest.set( src.z,  src.y, -src.x); break;
+      case DIR_LEFT   : dest.set(-src.z,  src.y,  src.x); break;
+      case DIR_UP     : dest.set( src.x,  src.z, -src.y); break;
+      case DIR_DOWN   : dest.set( src.x, -src.z,  src.y); break;
+      case DIR_FORWARD: dest.set( src.x,  src.y,  src.z); break; // identity
+      case DIR_BACK   : dest.set(-src.x,  src.y, -src.z); break;
+   }
+}
+void PosToCubeFacePos(DIR_ENUM dir, Vec &dest, C Vec &src)
+{
+   switch(dir)
+   {
+      case DIR_RIGHT  : dest.set(-src.z,  src.y,  src.x); break;
+      case DIR_LEFT   : dest.set( src.z,  src.y, -src.x); break;
+      case DIR_UP     : dest.set( src.x, -src.z,  src.y); break;
+      case DIR_DOWN   : dest.set( src.x,  src.z, -src.y); break;
+      case DIR_FORWARD: dest.set( src.x,  src.y,  src.z); break; // identity
+      case DIR_BACK   : dest.set(-src.x,  src.y, -src.z); break;
+   }
+}
 void PosToSphereTerrainPos(DIR_ENUM dir, Vec2 &dest, C Vec &src)
 {
    switch(dir) // #TerrainOrient
