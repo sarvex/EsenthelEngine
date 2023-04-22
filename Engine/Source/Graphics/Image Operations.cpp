@@ -1060,14 +1060,18 @@ struct BlurCube
          }
          if(check_other_faces)
          {
-            Vec dir=(linear ?      CubeFacePixelToDir      (x, y, dest_res, f)
-                            : SphereTerrainPixelCenterToDir(x, y, dest_res, f));
-            dir.normalize();
+            Vec dir; CubeFacePosToPos(f, dir, dir_fn); // convert local 'f' space to world space 'dir'
+            // FIXME !linear spherical convert?
+//dir=SphereTerrainPixelCenterToDir(x, y, dest_res, f)); dir.normalize();
             FREPD(f1, 6)if(f1!=f)
             {
                Flt dot=Dot(VecDir[f1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
                {
                   RectI tex_rect1;
+
+                  Vec dir_f1; PosToCubeFacePos((DIR_ENUM)f1, dir_f1, dir); // convert world space 'dir' to local 'f1' space 'dir_f1'
+                  // FIXME !linear spherical convert?
+
                #if 0 // full
                   #pragma message("!! Warning: Use this only for debugging !!")
                   tex_rect1.set(0, src_res-1); goto check;
@@ -1146,46 +1150,26 @@ struct BlurCube
                   }
                   continue;
                full:
-                  Vec dir_rot; // 'dir' in 'f1' space
                   if(linear)
                   {
-                     switch(f1)
-                     {
-                        case DIR_RIGHT  : dir_rot.set(-dir.z,  dir.y,  dir.x); break;
-                        case DIR_LEFT   : dir_rot.set( dir.z,  dir.y, -dir.x); break;
-                        case DIR_UP     : dir_rot.set( dir.x, -dir.z,  dir.y); break;
-                        case DIR_DOWN   : dir_rot.set( dir.x,  dir.z, -dir.y); break;
-                        case DIR_FORWARD: dir_rot.set( dir.x,  dir.y,  dir.z); break;
-                        case DIR_BACK   : dir_rot.set(-dir.x,  dir.y, -dir.z); break;
-                     }
-                     Flt dir_angle_y=Angle(dir_rot.z, dir_rot.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
+                     Flt dir_angle_y=Angle(dir_f1.z, dir_f1.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
                      if(angle_min_y<=-PI_4)tex_rect1.max.y=src_res-1;else if(angle_min_y>= PI_4)continue;else{Flt dir_min_y=Tan(angle_min_y), tex_max_y=-dir_min_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
                      if(angle_max_y>= PI_4)tex_rect1.min.y=        0;else if(angle_max_y<=-PI_4)continue;else{Flt dir_max_y=Tan(angle_max_y), tex_min_y=-dir_max_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
                      if(tex_rect1.validY())
                      {
-                        Flt dir_angle_x=Angle(dir_rot.z, dir_rot.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
+                        Flt dir_angle_x=Angle(dir_f1.z, dir_f1.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
                         if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else{Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
                         if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else{Flt dir_max_x=Tan(angle_max_x), tex_max_x=dir_max_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
                         if(tex_rect1.validX())goto check;
                      }
                   }else
                   {
-                     // FIXME
-                     switch(f1)
-                     {
-                        case DIR_RIGHT  : dir_rot.set(-dir.z,  dir.y,  dir.x); break;
-                        case DIR_LEFT   : dir_rot.set( dir.z,  dir.y, -dir.x); break;
-                        case DIR_UP     : dir_rot.set( dir.x, -dir.z,  dir.y); break;
-                        case DIR_DOWN   : dir_rot.set( dir.x,  dir.z, -dir.y); break;
-                        case DIR_FORWARD: dir_rot.set( dir.x,  dir.y,  dir.z); break;
-                        case DIR_BACK   : dir_rot.set(-dir.x,  dir.y, -dir.z); break;
-                     }
-                     Flt dir_angle_y=Angle(dir_rot.z, dir_rot.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
+                     Flt dir_angle_y=Angle(dir_f1.z, dir_f1.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
                      if(angle_min_y<=-PI_4)tex_rect1.max.y=src_res-1;else if(angle_min_y>= PI_4)continue;else{Flt tex_max_y=-angle_min_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
                      if(angle_max_y>= PI_4)tex_rect1.min.y=        0;else if(angle_max_y<=-PI_4)continue;else{Flt tex_min_y=-angle_max_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
                      if(tex_rect1.validY())
                      {
-                        Flt dir_angle_x=Angle(dir_rot.z, dir_rot.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
+                        Flt dir_angle_x=Angle(dir_f1.z, dir_f1.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
                         if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else{Flt tex_min_x=angle_min_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
                         if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else{Flt tex_max_x=angle_max_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
                         if(tex_rect1.validX())goto check;
