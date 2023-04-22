@@ -1133,12 +1133,14 @@ struct BlurCube
                    C Byte *src_data=T.src_data + f1*src_face_size + tex_rect1.min.y*src_pitch;
                      for(Int y=tex_rect1.min.y; y<=tex_rect1.max.y; y++, src_data+=src_pitch)
                      {
+                        Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                          : Tan(-y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
                         for(Int x=tex_rect1.min.x; x<=tex_rect1.max.x; x++)
                         {
-                           Vec dir_test=(linear ?      CubeFacePixelToDir      (x, y, src_res, DIR_ENUM(f1))
-                                                : SphereTerrainPixelCenterToDir(x, y, src_res, DIR_ENUM(f1)));
-                           dir_test.normalize();
-                           Flt cos=Dot(dir, dir_test); if(cos>cos_min)
+                           Flt dir_x=(linear ?     x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                             : Tan(x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                           Vec dir_test(dir_x, dir_y, 1); dir_test.normalize();
+                           Flt cos=Dot(dir_f1, dir_test); if(cos>cos_min)
                            {
                               Flt a=Acos(cos), w=Weight(a/angle);
                               // FIXME mul 'w' by texel area size
