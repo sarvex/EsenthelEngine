@@ -4004,16 +4004,18 @@ Flt Image::cubePixelFLinear(C Vec &dir)C
       FREPD(sy, 2)
       {
          sa.y=xyi.y+sy;
-         Flt weight_y=weights_y[sy];
+         Flt    weight_y=weights_y[sy];
+         Bool in_range_y=InRange(sa.y, h());
          FREPD(sx, 2)
          {
             sa.x=xyi.x+sx;
+            Bool in_range_x=InRange(sa.x, w());
             CPtr d;
-            if(InRange(sa.x, w())
-            && InRange(sa.y, h()))
+            if(in_range_x
+            && in_range_y)
                d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
-            if(InRange(sa.x, w())
-            || InRange(sa.y, h()))
+            if(in_range_x
+            || in_range_y)
             { // if at least one coord in range then wrap
                SphereArea sa1; Wrap(sa1, sa, w());
                d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
@@ -4050,16 +4052,18 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
       FREPD(sy, 2)
       {
          sa.y=xyi.y+sy;
-         Flt weight_y=weights_y[sy];
+         Flt    weight_y=weights_y[sy];
+         Bool in_range_y=InRange(sa.y, h());
          FREPD(sx, 2)
          {
             sa.x=xyi.x+sx;
+            Bool in_range_x=InRange(sa.x, w());
             CPtr d;
-            if(InRange(sa.x, w())
-            && InRange(sa.y, h()))
+            if(in_range_x
+            && in_range_y)
                d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
-            if(InRange(sa.x, w())
-            || InRange(sa.y, h()))
+            if(in_range_x
+            || in_range_y)
             { // if at least one coord in range then wrap
                SphereArea sa1; Wrap(sa1, sa, w());
                d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
@@ -4097,19 +4101,22 @@ Flt Image::cubePixelFCubicFast(C Vec &dir)C
       FREPD(sy, 4)
       {
          sa.y=xyi.y+sy;
-         Flt weight_y=weights_y[sy];
+         Flt    weight_y=weights_y[sy];
+         Bool in_range_y=InRange(sa.y, h());
+         auto     y_data=face_data + sa.y*pitch;
          FREPD(sx, 4)
          {
             sa.x=xyi.x+sx;
             Flt weight_x=weights_x[sx];
             Flt wgt=weight_x+weight_y; if(wgt<Sqr(CUBIC_FAST_RANGE))
             {
+               Bool in_range_x=InRange(sa.x, w());
                CPtr d;
-               if(InRange(sa.x, w())
-               && InRange(sa.y, h()))
-                  d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
-               if(InRange(sa.x, w())
-               || InRange(sa.y, h()))
+               if(in_range_x
+               && in_range_y)
+                  d=y_data + sa.x*byte_pp;else // if both coords in range then use main face
+               if(in_range_x
+               || in_range_y)
                { // if at least one coord in range then wrap
                   SphereArea sa1; Wrap(sa1, sa, w());
                   d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
@@ -4145,19 +4152,22 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
       FREPD(sy, 4)
       {
          sa.y=xyi.y+sy;
-         Flt weight_y=weights_y[sy];
+         Flt    weight_y=weights_y[sy];
+         Bool in_range_y=InRange(sa.y, h());
+         auto     y_data=face_data + sa.y*pitch;
          FREPD(sx, 4)
          {
             sa.x=xyi.x+sx;
             Flt weight_x=weights_x[sx];
             Flt wgt=weight_x+weight_y; if(wgt<Sqr(CUBIC_FAST_RANGE))
             {
+               Bool in_range_x=InRange(sa.x, w());
                CPtr d;
-               if(InRange(sa.x, w())
-               && InRange(sa.y, h()))
-                  d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
-               if(InRange(sa.x, w())
-               || InRange(sa.y, h()))
+               if(in_range_x
+               && in_range_y)
+                  d=y_data + sa.x*byte_pp;else // if both coords in range then use main face
+               if(in_range_x
+               || in_range_y)
                { // if at least one coord in range then wrap
                   SphereArea sa1; Wrap(sa1, sa, w());
                   d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
