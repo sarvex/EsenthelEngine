@@ -463,8 +463,13 @@ struct Image // Image (Texture)
    Vec4 areaColorFCubicPlusSharp (C Vec2 &pos, C Vec2 &size, Bool clamp=true, Bool alpha_weight=false)C; // get average color Vec4 of specified 'pos' position and 'size' coverage with Cubic Plus Sharp  interpolation, image  gamma (no gamma conversion), 'clamp'=if use clamping when filtering pixels, 'alpha_weight'=if use pixel's alpha for weight of pixel's color (these methods may not support all compressed types, instead try using 'copy' method first)
 
    // pixel cube
-   Vec4 cubeColorFNearest(C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with no     interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
-   Vec4 cubeColorFLinear (C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with Linear interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Flt cubePixelFNearest  (C Vec &dir)C; // get pixel Flt of specified 'dir' direction (doesn't need to be normalized), with no         interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Flt cubePixelFLinear   (C Vec &dir)C; // get pixel Flt of specified 'dir' direction (doesn't need to be normalized), with Linear     interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Flt cubePixelFCubicFast(C Vec &dir)C; // get pixel Flt of specified 'dir' direction (doesn't need to be normalized), with Cubic Fast interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+
+   Vec4 cubeColorFNearest  (C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with no         interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Vec4 cubeColorFLinear   (C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with Linear     interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Vec4 cubeColorFCubicFast(C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with Cubic Fast interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
 
    // operations
    Image& clear                (                                                                                                                                                                           ) ; // clear to 0 (transparent black)
@@ -907,6 +912,7 @@ Bool CanDoRawCopy(IMAGE_TYPE src, IMAGE_TYPE dest, Bool ignore_gamma=false);
 Bool CanDoRawCopy(C Image   &src, C Image   &dest, Bool ignore_gamma=false);
 Bool CanCompress (IMAGE_TYPE dest);
 Bool CompatibleLock(LOCK_MODE cur, LOCK_MODE lock); // if 'lock' is okay to be applied when 'cur' is already applied
+Flt  ImagePixelF(CPtr data, IMAGE_TYPE hw_type);
 Vec4 ImageColorF(CPtr data, IMAGE_TYPE hw_type);
 Vec4 ImageColorL(CPtr data, IMAGE_TYPE hw_type);
 void CopyNoStretch(C Image &src, Image &dest, Bool clamp, Bool ignore_gamma=false); // assumes 'src,dest' are locked and non-compressed

@@ -546,6 +546,68 @@ static Color DecompressPixel(C Image &image, Int x, Int y, Int z)
    return TRANSPARENT;
 }
 /******************************************************************************/
+Flt ImagePixelF(CPtr data, IMAGE_TYPE hw_type)
+{
+   switch(hw_type)
+   {
+      case IMAGE_F32  :                        return *(Flt*)data;
+      case IMAGE_F32_2:                        return *(Flt*)data;
+      case IMAGE_F32_3: case IMAGE_F32_3_SRGB: return *(Flt*)data;
+      case IMAGE_F32_4: case IMAGE_F32_4_SRGB: return *(Flt*)data;
+
+      case IMAGE_F16  : return *(Half*)data;
+      case IMAGE_F16_2: return *(Half*)data;
+      case IMAGE_F16_3: return *(Half*)data;
+      case IMAGE_F16_4: return *(Half*)data;
+
+      case IMAGE_B8G8R8  : case IMAGE_B8G8R8_SRGB  :
+      case IMAGE_B8G8R8A8: case IMAGE_B8G8R8A8_SRGB:
+         return ((VecB4*)data)->z/Flt(0xFF);
+
+      case IMAGE_R8      :
+      case IMAGE_R8G8    :
+      case IMAGE_R8G8B8  : case IMAGE_R8G8B8_SRGB:
+      case IMAGE_R8G8B8A8: case IMAGE_R8G8B8A8_SRGB:
+      case IMAGE_A8      :
+      case IMAGE_L8      : case IMAGE_L8_SRGB:
+      case IMAGE_L8A8    : case IMAGE_L8A8_SRGB:
+      case IMAGE_I8      :
+         return (*(U8*)data)/Flt(0x000000FFu);
+
+      // 16
+      case IMAGE_D16: if(GL)return (*(U16*)data)/Flt(0x0000FFFFu)*2-1; // !! else fall through no break on purpose !!
+      case IMAGE_I16:
+         return (*(U16*)data)/Flt(0x0000FFFFu);
+
+      // 32
+      case IMAGE_D32     :
+      case IMAGE_D32S8X24:       return GL ? (*(Flt*)data)*2-1 : *(Flt*)data;
+    //case IMAGE_D32I    : if(GL)return (*(U32*)data)/Dbl(0xFFFFFFFFu)*2-1; // !! else fall through no break on purpose !!
+      case IMAGE_I32     :
+         return (*(U32*)data)/Dbl(0xFFFFFFFFu); // Dbl required to get best precision
+
+   #if SUPPORT_DEPTH_TO_COLOR
+      case IMAGE_D24S8:
+      case IMAGE_D24X8: if(GL)return (*(U16*)(((Byte*)data)+1) | (((Byte*)data)[3]<<16))/Flt(0x00FFFFFFu)*2-1; // !! else fall through no break on purpose !!
+   #endif
+      case IMAGE_I24:
+         return (*(U16*)data | (((Byte*)data)[2]<<16))/Flt(0x00FFFFFFu); // here Dbl is not required, this was tested
+
+      case IMAGE_R10G10B10A2: return U10ToFlt((*(UInt*)data)&0x3FF);
+
+      case IMAGE_R11G11B10F: return GetR11G11B10F(data).x;
+
+      case IMAGE_R8_SIGN      :
+      case IMAGE_R8G8_SIGN    :
+      case IMAGE_R8G8B8A8_SIGN:
+         return SByteToSFlt(*(SByte*)data);
+
+      case IMAGE_B4G4R4A4: return (((*(U16*)data)>> 8)&0x0F)/15.0f;
+      case IMAGE_B5G5R5A1: return (((*(U16*)data)>>10)&0x1F)/31.0f;
+      case IMAGE_B5G6R5  : return (((*(U16*)data)>>11)&0x1F)/31.0f;
+   }
+   return 0;
+}
 static inline Flt GetPixelF(C Byte *data, C Image &image, Bool _2d, Int x, Int y, Int z=0)
 {
    switch(image.hwType())
@@ -3818,6 +3880,24 @@ Vec4 Image::areaColorLanczosOrtho(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool al
 /******************************************************************************/
 // CUBE
 /******************************************************************************/
+Flt Image::cubePixelFNearest(C Vec &dir)C
+{
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy);
+      Int x=Mid(Round(xy.x), 0, w()-1);
+      Int y=Mid(Round(xy.y), 0, h()-1);
+
+      auto d=data + face*face_size + y*pitch + x*byte_pp;
+      return ImagePixelF(d, hwType());
+   }
+   return 0;
+}
 Vec4 Image::cubeColorFNearest(C Vec &dir)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
@@ -3837,6 +3917,48 @@ Vec4 Image::cubeColorFNearest(C Vec &dir)C
    return 0;
 }
 /******************************************************************************/
+Flt Image::cubePixelFLinear(C Vec &dir)C
+{
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      Vec2  xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + face*face_size;
+      VecI2 xyi=Floor(xy); xy-=xyi;
+      Flt   c[2][2];
+      FREPD(sy, 2)
+      {
+         Int y=xyi.y+sy;
+         FREPD(sx, 2)
+         {
+            Int x=xyi.x+sx;
+            CPtr d;
+            if(InRange(x, w())
+            && InRange(y, h()))
+               d=face_data + y*pitch + x*byte_pp;else // if coords in range then use main face
+            { // coords out of range
+               Vec  dir=CubeFacePixelToDir(x, y, w(), face); // convert to direction vector
+               Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // convert direction vector to secondary face
+               Int  x=Mid(Round(xy.x), 0, w()-1);
+               Int  y=Mid(Round(xy.y), 0, h()-1);
+
+               d=data + face*face_size + y*pitch + x*byte_pp;
+            }
+            c[sy][sx]=ImagePixelF(d, hwType());
+         }
+      }
+      Flt x=xy.x, y=xy.y;
+      return c[0][0]*(1-x)*(1-y)
+            +c[0][1]*(  x)*(1-y)
+            +c[1][0]*(1-x)*(  y)
+            +c[1][1]*(  x)*(  y);
+   }
+   return 0;
+}
 Vec4 Image::cubeColorFLinear(C Vec &dir)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
