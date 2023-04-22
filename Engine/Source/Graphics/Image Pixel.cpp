@@ -3816,6 +3816,70 @@ Vec4 Image::areaColorLanczosOrtho(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool al
    return 0;
 }
 /******************************************************************************/
+// CUBE
+/******************************************************************************/
+Vec4 Image::cubeColorFNearest(C Vec &dir)C
+{
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy);
+      Int x=Mid(Round(xy.x), 0, w()-1);
+      Int y=Mid(Round(xy.y), 0, h()-1);
+
+      auto d=data + face*face_size + y*pitch + x*byte_pp;
+      return ImageColorF(d, hwType());
+   }
+   return 0;
+}
+/******************************************************************************/
+Vec4 Image::cubeColorFLinear(C Vec &dir)C
+{
+   if(mode()==IMAGE_SOFT_CUBE)
+   {
+      auto data     =softData    ( );
+      auto face_size=softFaceSize(0);
+      auto pitch    =softPitch   (0);
+      auto byte_pp  =bytePP      ( );
+
+      Vec2  xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      auto  face_data=data + face*face_size;
+      VecI2 xyi=Floor(xy); xy-=xyi;
+      Vec4  c[2][2];
+      FREPD(sy, 2)
+      {
+         Int y=xyi.y+sy;
+         FREPD(sx, 2)
+         {
+            Int x=xyi.x+sx;
+            CPtr d;
+            if(InRange(x, w())
+            && InRange(y, h()))
+               d=face_data + y*pitch + x*byte_pp;else // if coords in range then use main face
+            { // coords out of range
+               Vec  dir=CubeFacePixelToDir(x, y, w(), face); // convert to direction vector
+               Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy); // convert direction vector to secondary face
+               Int  x=Mid(Round(xy.x), 0, w()-1);
+               Int  y=Mid(Round(xy.y), 0, h()-1);
+
+               d=data + face*face_size + y*pitch + x*byte_pp;
+            }
+            c[sy][sx]=ImageColorF(d, hwType());
+         }
+      }
+      Flt x=xy.x, y=xy.y;
+      return c[0][0]*(1-x)*(1-y)
+            +c[0][1]*(  x)*(1-y)
+            +c[1][0]*(1-x)*(  y)
+            +c[1][1]*(  x)*(  y);
+   }
+   return 0;
+}
+/******************************************************************************/
 // GATHER
 /******************************************************************************/
 static        void RangeAssert (Int *  offset, Int   offsets,   Int   size) {REP(offsets)RANGE_ASSERT(offset[i], size);}

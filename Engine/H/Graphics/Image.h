@@ -462,6 +462,10 @@ struct Image // Image (Texture)
    Vec4 areaColorFCubicPlus      (C Vec2 &pos, C Vec2 &size, Bool clamp=true, Bool alpha_weight=false)C; // get average color Vec4 of specified 'pos' position and 'size' coverage with Cubic Plus        interpolation, image  gamma (no gamma conversion), 'clamp'=if use clamping when filtering pixels, 'alpha_weight'=if use pixel's alpha for weight of pixel's color (these methods may not support all compressed types, instead try using 'copy' method first)
    Vec4 areaColorFCubicPlusSharp (C Vec2 &pos, C Vec2 &size, Bool clamp=true, Bool alpha_weight=false)C; // get average color Vec4 of specified 'pos' position and 'size' coverage with Cubic Plus Sharp  interpolation, image  gamma (no gamma conversion), 'clamp'=if use clamping when filtering pixels, 'alpha_weight'=if use pixel's alpha for weight of pixel's color (these methods may not support all compressed types, instead try using 'copy' method first)
 
+   // pixel cube
+   Vec4 cubeColorFNearest(C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with no     interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+   Vec4 cubeColorFLinear (C Vec &dir)C; // get color Vec4 of specified 'dir' direction (doesn't need to be normalized), with Linear interpolation, image gamma (no gamma conversion), this function supports only non-compressed IMAGE_SOFT_CUBE
+
    // operations
    Image& clear                (                                                                                                                                                                           ) ; // clear to 0 (transparent black)
    Image& normalize            (               Bool red=true, Bool green=true, Bool blue=true, Bool alpha=true, C BoxI *box=null                                                                           ) ; // normalize selected components to 0..1 range, 'box'=optional box in which perform the operation (use null for entire image)
