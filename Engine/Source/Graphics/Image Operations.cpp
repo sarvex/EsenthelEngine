@@ -993,21 +993,28 @@ struct BlurCube
          if(!f)
          {
             RectI test_rect=tex_rect; test_rect.extend(1)&=RectI(0, src_res-1);
+            Vec dir_test;
             // test top and bottom horizontal neighbor lines
-            Flt dir_y0=-test_rect.min.y*src_CubeFacePixelToDir_mul-src_CubeFacePixelToDir_add;
-            Flt dir_y1=-test_rect.max.y*src_CubeFacePixelToDir_mul-src_CubeFacePixelToDir_add;
+            Flt dir_y0=(linear ?     -test_rect.min.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                               : Tan(-test_rect.min.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+            Flt dir_y1=(linear ?     -test_rect.max.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                               : Tan(-test_rect.max.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
             for(Int tx=test_rect.min.x; tx<=test_rect.max.x; tx++)
             {
-               Flt dir_x=tx*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add; Vec dir_test;
+               Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                 : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
                dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesY(test_rect.min.y))Exit("fail");
                dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesY(test_rect.max.y))Exit("fail");
             }
             // test left and right vertical neighbor lines
-            Flt dir_x0=test_rect.min.x*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add;
-            Flt dir_x1=test_rect.max.x*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add;
+            Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                               : Tan(test_rect.min.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+            Flt dir_x1=(linear ?     test_rect.max.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                               : Tan(test_rect.max.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
             for(Int ty=test_rect.min.y; ty<=test_rect.max.y; ty++)
             {
-               Flt dir_y=-ty*src_CubeFacePixelToDir_mul-src_CubeFacePixelToDir_add; Vec dir_test;
+               Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                 : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
                dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesX(test_rect.min.x))Exit("fail");
                dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesX(test_rect.max.x))Exit("fail");
             }
@@ -1109,21 +1116,33 @@ struct BlurCube
                   check:
                   #if 0 // test rect coverage
                      #pragma message("!! Warning: Use this only for debugging !!")
+                     if(!f)
                      {
                         RectI test_rect=tex_rect1; test_rect.extend(1)&=RectI(0, src_res-1);
+                        Vec dir_test;
                         // test top and bottom horizontal neighbor lines
+                        Flt dir_y0=(linear ?     -test_rect.min.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                           : Tan(-test_rect.min.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                        Flt dir_y1=(linear ?     -test_rect.max.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                           : Tan(-test_rect.max.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
                         for(Int tx=test_rect.min.x; tx<=test_rect.max.x; tx++)
                         {
-                           Vec dir_test=CubeFacePixelToDir(tx, test_rect.min.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail1");
-                               dir_test=CubeFacePixelToDir(tx, test_rect.max.y, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail1");
+                           Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                             : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                           dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail");
+                           dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail");
                         }
                         // test left and right vertical neighbor lines
-                        Flt dir_x0=test_rect.min.x*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add;
-                        Flt dir_x1=test_rect.max.x*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add;
+                        Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                           : Tan(test_rect.min.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                        Flt dir_x1=(linear ?     test_rect.max.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                           : Tan(test_rect.max.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
                         for(Int ty=test_rect.min.y; ty<=test_rect.max.y; ty++)
                         {
-                           Vec dir_test=CubeFacePixelToDir(test_rect.min.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail1");
-                               dir_test=CubeFacePixelToDir(test_rect.max.x, ty, src_res, DIR_ENUM(f1)); dir_test.normalize(); if(Dot(dir, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail1");
+                           Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                             : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                           dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail");
+                           dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail");
                         }
                      }
                   #endif
@@ -1218,7 +1237,7 @@ struct BlurCube
          // calculate max angle between face direction vector and a point belonging to that face - this will be furthest point, so !Vec(1,1,1) is used and face direction Vec(0,0,1)
          const Flt diag_angle=AcosFast(SQRT3_3), //Flt a=AbsAngleBetween(!Vec(1,1,1), Vec(0,0,1)); AbsAngleBetween(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)); Acos(Dot(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)));
                    diag_angle_ext=diag_angle+angle;
-         T.angle=angle; angle_eps=angle*SQRT2; // need to mul by SQRT2 because calculating bounds is an approximation so we need to extend the rect because normally it doesn't cover fully
+         T.angle=angle; angle_eps=angle*SQRT2; // need to mul by SQRT2 because calculating bounds is an approximation so we need to extend the rect because normally it doesn't cover fully, this value works well for both cases of 'linear'
                     cos_min=Cos(angle);
          diag_angle_cos_min=Cos(diag_angle_ext);
          if(linear)
