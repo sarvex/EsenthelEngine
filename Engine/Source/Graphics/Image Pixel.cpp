@@ -3947,7 +3947,7 @@ end:
 #endif
 }
 /******************************************************************************/
-Flt Image::cubePixelFNearest(C Vec &dir)C
+Flt Image::cubePixelFNearest(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -3956,7 +3956,7 @@ Flt Image::cubePixelFNearest(C Vec &dir)C
       auto pitch    =softPitch   (0);
       auto byte_pp  =bytePP      ( );
 
-      Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy);
+      Vec2 xy; DIR_ENUM face=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy);
       Int x=Mid(Round(xy.x), 0, w()-1);
       Int y=Mid(Round(xy.y), 0, h()-1);
 
@@ -3965,7 +3965,7 @@ Flt Image::cubePixelFNearest(C Vec &dir)C
    }
    return 0;
 }
-Vec4 Image::cubeColorFNearest(C Vec &dir)C
+Vec4 Image::cubeColorFNearest(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -3974,7 +3974,7 @@ Vec4 Image::cubeColorFNearest(C Vec &dir)C
       auto pitch    =softPitch   (0);
       auto byte_pp  =bytePP      ( );
 
-      Vec2 xy; DIR_ENUM face=DirToCubeFacePixel(dir, w(), xy);
+      Vec2 xy; DIR_ENUM face=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy);
       Int x=Mid(Round(xy.x), 0, w()-1);
       Int y=Mid(Round(xy.y), 0, h()-1);
 
@@ -3984,7 +3984,7 @@ Vec4 Image::cubeColorFNearest(C Vec &dir)C
    return 0;
 }
 /******************************************************************************/
-Flt Image::cubePixelFLinear(C Vec &dir)C
+Flt Image::cubePixelFLinear(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -3994,7 +3994,7 @@ Flt Image::cubePixelFLinear(C Vec &dir)C
       auto byte_pp  =bytePP      ( );
 
       SphereArea sa;
-      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      Vec2  xy; sa.side=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy); // calculate main face
       VecI2 xyi=Floor(xy); xy-=xyi;
       auto  face_data=data + sa.side*face_size;
       Flt   color =0;
@@ -4032,7 +4032,7 @@ Flt Image::cubePixelFLinear(C Vec &dir)C
    }
    return 0;
 }
-Vec4 Image::cubeColorFLinear(C Vec &dir)C
+Vec4 Image::cubeColorFLinear(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -4042,7 +4042,7 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
       auto byte_pp  =bytePP      ( );
 
       SphereArea sa;
-      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      Vec2  xy; sa.side=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy); // calculate main face
       VecI2 xyi=Floor(xy); xy-=xyi;
       auto  face_data=data + sa.side*face_size;
       Vec4  color =0;
@@ -4081,7 +4081,7 @@ Vec4 Image::cubeColorFLinear(C Vec &dir)C
    return 0;
 }
 /******************************************************************************/
-Flt Image::cubePixelFCubicFast(C Vec &dir)C
+Flt Image::cubePixelFCubicFast(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -4091,7 +4091,7 @@ Flt Image::cubePixelFCubicFast(C Vec &dir)C
       auto byte_pp  =bytePP      ( );
 
       SphereArea sa;
-      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      Vec2  xy; sa.side=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy); // calculate main face
       VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
       auto  face_data=data + sa.side*face_size;
       Flt   color =0;
@@ -4132,7 +4132,7 @@ Flt Image::cubePixelFCubicFast(C Vec &dir)C
    }
    return 0;
 }
-Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
+Vec4 Image::cubeColorFCubicFast(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
    {
@@ -4142,7 +4142,7 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir)C
       auto byte_pp  =bytePP      ( );
 
       SphereArea sa;
-      Vec2  xy; sa.side=DirToCubeFacePixel(dir, w(), xy); // calculate main face
+      Vec2  xy; sa.side=(linear ? DirToCubeFacePixel : DirToSphereCubeFacePixel)(dir, w(), xy); // calculate main face
       VecI2 xyi=Floor(xy); xy-=xyi; xyi--;
       auto  face_data=data + sa.side*face_size;
       Vec4  color =0;

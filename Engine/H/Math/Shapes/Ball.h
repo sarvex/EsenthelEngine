@@ -157,9 +157,10 @@ struct SphereConvertEx : SphereConvert
    void sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse=false)C; // sort 'areas' based on distance to 'pos', 'reverse'=if reverse sort order
 };
 
-DIR_ENUM DirToCubeFace          (C Vec &dir                   ); // convert vector direction (doesn't need to be normalized) to cube face
-DIR_ENUM DirToCubeFacePixel     (C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to cube face and image             coordinates, 'res'=cube image resolution, 'xy'=image pixel coordinates (0..res-1)
-DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'res'=terrain    resolution, 'xy'=image pixel coordinates (0..res-1)
+DIR_ENUM DirToCubeFace           (C Vec &dir                   ); // convert vector direction (doesn't need to be normalized) to cube face
+DIR_ENUM DirToCubeFacePixel      (C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to           cube face and image   coordinates, 'res'=cube image resolution, 'xy'=image pixel coordinates (0..res-1)
+DIR_ENUM DirToSphereCubeFacePixel(C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to spherical cube face and image   coordinates, 'res'=cube image resolution, 'xy'=image pixel coordinates (0..res-1)
+DIR_ENUM DirToSphereTerrainPixel (C Vec &dir, Int res, Vec2 &xy); // convert vector direction (doesn't need to be normalized) to spherical cube face and terrain coordinates, 'res'=terrain    resolution, 'xy'=image pixel coordinates (0..res-1)
 
 Vec      CubeFacePixelToDir      (Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert        cube image coordinates to vector direction, 'x,y'=image   pixel coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image   cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 Vec SphereTerrainPixelToDir      (Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert spherical terrain coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1), 'res'=terrain    resolution, 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")

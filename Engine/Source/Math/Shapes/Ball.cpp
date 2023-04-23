@@ -349,6 +349,33 @@ DIR_ENUM DirToCubeFacePixel(C Vec &dir, Int res, Vec2 &xy) // this matches exact
          if(dir.z>=0){xy.set( dir.x*mul+add, -dir.y*mul+add); return DIR_FORWARD;}
                      {xy.set(-dir.x*mul+add, -dir.y*mul+add); return DIR_BACK   ;}
 }
+DIR_ENUM DirToSphereCubeFacePixel(C Vec &dir, Int res, Vec2 &xy)
+{
+   Flt x, y; DIR_ENUM ret;
+   Vec abs=Abs(dir); if(abs.x>=abs.z) // #TerrainOrient
+   {
+      if(abs.x>=abs.y)
+      {
+         if( !abs.x ){xy.zero(); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         x=dir.z/abs.x; y=-dir.y/abs.x;
+         if(dir.x>=0){CHS(x); ret=DIR_RIGHT;}
+         else        {        ret=DIR_LEFT ;}
+      }else
+      {
+      Y: x=dir.x/abs.y; y=dir.z/abs.y;
+         if(dir.y>=0){        ret=DIR_UP   ;}
+         else        {CHS(y); ret=DIR_DOWN ;}
+      }
+   }else
+   {
+      if(abs.y>=abs.z)goto Y;
+         x=dir.x/abs.z; y=-dir.y/abs.z;
+         if(dir.z>=0){        ret=DIR_FORWARD;}
+         else        {CHS(x); ret=DIR_BACK   ;}
+   }
+   Flt mul=res/PI_2, add=res*0.5f-0.5f; // ((Atan(..)+PI_4)/PI_2)*res = (Atan(..)/PI_2+0.5)*res = Atan(..)*(res/PI_2)+(res*0.5)
+   xy.set(Atan(x)*mul+add, Atan(y)*mul+add); return ret;
+}
 DIR_ENUM DirToSphereTerrainPixel(C Vec &dir, Int res, Vec2 &xy)
 {
 #if 0
