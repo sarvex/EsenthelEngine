@@ -4006,6 +4006,7 @@ Flt Image::cubePixelFLinear(C Vec &dir, Bool linear)C
          sa.y=xyi.y+sy;
          Flt    weight_y=weights_y[sy];
          Bool in_range_y=InRange(sa.y, h());
+         auto     y_data=face_data + sa.y*pitch;
          FREPD(sx, 2)
          {
             sa.x=xyi.x+sx;
@@ -4013,7 +4014,7 @@ Flt Image::cubePixelFLinear(C Vec &dir, Bool linear)C
             CPtr d;
             if(in_range_x
             && in_range_y)
-               d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
+               d=y_data + sa.x*byte_pp;else // if both coords in range then use main face
             if(in_range_x
             || in_range_y)
             { // if at least one coord in range then wrap
@@ -4054,6 +4055,7 @@ Vec4 Image::cubeColorFLinear(C Vec &dir, Bool linear)C
          sa.y=xyi.y+sy;
          Flt    weight_y=weights_y[sy];
          Bool in_range_y=InRange(sa.y, h());
+         auto     y_data=face_data + sa.y*pitch;
          FREPD(sx, 2)
          {
             sa.x=xyi.x+sx;
@@ -4061,7 +4063,7 @@ Vec4 Image::cubeColorFLinear(C Vec &dir, Bool linear)C
             CPtr d;
             if(in_range_x
             && in_range_y)
-               d=face_data + sa.y*pitch + sa.x*byte_pp;else // if both coords in range then use main face
+               d=y_data + sa.x*byte_pp;else // if both coords in range then use main face
             if(in_range_x
             || in_range_y)
             { // if at least one coord in range then wrap
