@@ -154,15 +154,15 @@ VecD  ScaleFactor(C VecD  &vec);   VecD  ScaleFactorR(C VecD  &vec);
 Vec4  ScaleFactor(C Vec4  &vec);   Vec4  ScaleFactorR(C Vec4  &vec);
 VecD4 ScaleFactor(C VecD4 &vec);   VecD4 ScaleFactorR(C VecD4 &vec);
 
-constexpr Int   Sqr(  Int   x) {return x*x;} // square  = x**2
-constexpr UInt  Sqr(  UInt  x) {return x*x;} // square  = x**2
-constexpr Long  Sqr(  Long  x) {return x*x;} // square  = x**2
-constexpr ULong Sqr(  ULong x) {return x*x;} // square  = x**2
-constexpr Flt   Sqr(  Flt   x) {return x*x;} // square  = x**2
-constexpr Dbl   Sqr(  Dbl   x) {return x*x;} // square  = x**2
-inline    Vec2  Sqr(C Vec2 &x) {return x*x;} // square  = x**2
-inline    Vec   Sqr(C Vec  &x) {return x*x;} // square  = x**2
-inline    Vec4  Sqr(C Vec4 &x) {return x*x;} // square  = x**2
+constexpr Int   Sqr(  Int   x) {return x*x;} // square = x**2
+constexpr UInt  Sqr(  UInt  x) {return x*x;} // square = x**2
+constexpr Long  Sqr(  Long  x) {return x*x;} // square = x**2
+constexpr ULong Sqr(  ULong x) {return x*x;} // square = x**2
+constexpr Flt   Sqr(  Flt   x) {return x*x;} // square = x**2
+constexpr Dbl   Sqr(  Dbl   x) {return x*x;} // square = x**2
+inline    Vec2  Sqr(C Vec2 &x) {return x*x;} // square = x**2
+inline    Vec   Sqr(C Vec  &x) {return x*x;} // square = x**2
+inline    Vec4  Sqr(C Vec4 &x) {return x*x;} // square = x**2
 
 constexpr Int   Cube(Int   x) {return x*x*x;} // cube = x**3
 constexpr UInt  Cube(UInt  x) {return x*x*x;} // cube = x**3
