@@ -904,7 +904,7 @@ Image& Image::downSampleNormal()
 struct BlurCube
 {
    Bool     linear;
-   DIR_ENUM f;
+   DIR_ENUM face;
    Int      src_res, dest_res, src_face_size, src_pitch, src_mip;
    Flt      diag_angle_cos_min, cos_min, angle, angle_eps;
    union
@@ -990,7 +990,7 @@ struct BlurCube
 
       #if 0 // test rect coverage
          #pragma message("!! Warning: Use this only for debugging !!")
-         if(!f)
+         if(!face)
          {
             RectI test_rect=tex_rect; test_rect.extend(1)&=RectI(0, src_res-1);
             Vec dir_test;
@@ -1023,7 +1023,7 @@ struct BlurCube
 
       #if 0 // export coverage map
          #pragma message("!! Warning: Use this only for debugging !!")
-         //if(!f)
+         //if(!face)
          if(i==1)
          if(x==Round(dest_res*0.7) && y==Round(dest_res*0.9))
          {
@@ -1040,13 +1040,13 @@ struct BlurCube
                if(cone && !rect)ok=false;
                img.color(tx, ty, Color(cone ? 255 : 0, rect ? 255 : 0, 0));
             }
-            img.Export(S+"C:/!/CubeFace "+f+" coverage.bmp"); Explore("C:/!"); //Exit(ok ? "ok" : "fail");
+            img.Export(S+"C:/!/CubeFace "+face+" coverage.bmp"); Explore("C:/!"); //Exit(ok ? "ok" : "fail");
          }
       #endif
 
          Vec4  col=0;
          Flt   weight=0;
-       C Byte *src_data=T.src_data + f*src_face_size + tex_rect.min.y*src_pitch;
+       C Byte *src_data=T.src_data + face*src_face_size + tex_rect.min.y*src_pitch;
          for(Int y=tex_rect.min.y; y<=tex_rect.max.y; y++, src_data+=src_pitch)
          {
             Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
@@ -1067,14 +1067,14 @@ struct BlurCube
          }
          if(check_other_faces)
          {
-            Vec dir; CubeFacePosToPos(f, dir, dir_fn); // convert local 'f' space to world space 'dir'
-            FREPD(f1, 6)if(f1!=f)
+            Vec dir; CubeFacePosToPos(face, dir, dir_fn); // convert local 'face' space to world space 'dir'
+            FREPD(face1, 6)if(face1!=face)
             {
-               Flt dot=Dot(VecDir[f1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
+               Flt dot=Dot(VecDir[face1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
                {
                   RectI tex_rect1;
 
-                  Vec dir_f1; PosToCubeFacePos((DIR_ENUM)f1, dir_f1, dir); // convert world space 'dir' to local 'f1' space 'dir_f1'
+                  Vec dir_f1; PosToCubeFacePos((DIR_ENUM)face1, dir_f1, dir); // convert world space 'dir' to local 'face1' space 'dir_f1'
 
                #if 0 // full
                   #pragma message("!! Warning: Use this only for debugging !!")
@@ -1082,7 +1082,7 @@ struct BlurCube
                #endif
                   // do a fast check for rotation along Y axis (between ->DIR_FORWARD->DIR_RIGHT->DIR_BACK->DIR_LEFT->) in this case, all Y's are the same as in test above, just have to rotate X's
                   Flt angle_delta;
-                  switch(f)
+                  switch(face)
                   {
                      case DIR_FORWARD: angle_delta=    0; break;
                      case DIR_RIGHT  : angle_delta= PI_2; break;
@@ -1090,7 +1090,7 @@ struct BlurCube
                      case DIR_LEFT   : angle_delta=-PI_2; break;
                      default         : goto full;
                   }
-                  switch(f1)
+                  switch(face1)
                   {
                      case DIR_FORWARD:/*angle_delta-=    0;*/break;
                      case DIR_RIGHT  :  angle_delta-= PI_2;  break;
@@ -1116,7 +1116,7 @@ struct BlurCube
                   check:
                   #if 0 // test rect coverage
                      #pragma message("!! Warning: Use this only for debugging !!")
-                     if(!f)
+                     if(!face)
                      {
                         RectI test_rect=tex_rect1; test_rect.extend(1)&=RectI(0, src_res-1);
                         Vec dir_test;
@@ -1146,7 +1146,7 @@ struct BlurCube
                         }
                      }
                   #endif
-                   C Byte *src_data=T.src_data + f1*src_face_size + tex_rect1.min.y*src_pitch;
+                   C Byte *src_data=T.src_data + face1*src_face_size + tex_rect1.min.y*src_pitch;
                      for(Int y=tex_rect1.min.y; y<=tex_rect1.max.y; y++, src_data+=src_pitch)
                      {
                         Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
@@ -1206,7 +1206,7 @@ struct BlurCube
                lock_cube_face=src.lCubeFace();
                REP(lock_count)src.unlock();
             }
-            if(src.lockRead(src_mip, f))
+            if(src.lockRead(src_mip, face))
             {
                Vec2 tex;
                if(linear)tex.set(dir_f    .x*src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  , -dir_f    .y*src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  );
@@ -1251,9 +1251,9 @@ struct BlurCube
              src_CubeFacePixelToAngle_mul=PI_2/ src_res;  src_CubeFacePixelToAngle_add=-PI_4+ src_CubeFacePixelToAngle_mul/2;
             dest_CubeFacePixelToAngle_mul=PI_2/dest_res; dest_CubeFacePixelToAngle_add=-PI_4+dest_CubeFacePixelToAngle_mul/2;
          }
-         for(f=DIR_ENUM(0); f<6; f=DIR_ENUM(f+1))
+         for(face=DIR_ENUM(0); face<6; face=DIR_ENUM(face+1))
          {
-            if(dest.lock(LOCK_WRITE, dest_mip, f))
+            if(dest.lock(LOCK_WRITE, dest_mip, face))
             {
                if(threads)threads->process1(dest_res, ProcessLine, T);else REP(dest_res)processLine(i);
                dest.unlock();
