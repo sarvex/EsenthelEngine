@@ -352,7 +352,7 @@ DIR_ENUM DirToCubeFacePixel(C Vec &dir, Int res, Vec2 &xy) // this matches exact
 DIR_ENUM DirToSphereCubeFacePixel(C Vec &dir, Int res, Vec2 &xy)
 {
    Flt x, y; DIR_ENUM ret;
-   Vec abs=Abs(dir); if(abs.x>=abs.z) // #TerrainOrient
+   Vec abs=Abs(dir); if(abs.x>=abs.z)
    {
       if(abs.x>=abs.y)
       {
@@ -476,6 +476,25 @@ Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matche
       Flt inv_res=1.0f/res, mul=2*inv_res, add=inv_res-1;
       x=x*mul+add;
       y=y*mul+add;
+      switch(cube_face)
+      {
+         case DIR_RIGHT  : return Vec( 1, -y, -x);
+         case DIR_LEFT   : return Vec(-1, -y,  x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec( x, -y,  1);
+         case DIR_BACK   : return Vec(-x, -y, -1);
+      }
+   }
+   return VecZero;
+}
+Vec SphereCubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+{
+ //if(res>0)
+   {
+      Flt mul=PI_2/res, add=-PI_4+mul/2;
+      x=Tan(x*mul+add);
+      y=Tan(y*mul+add);
       switch(cube_face)
       {
          case DIR_RIGHT  : return Vec( 1, -y, -x);
