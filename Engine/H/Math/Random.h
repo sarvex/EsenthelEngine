@@ -155,7 +155,8 @@ struct PerlinNoise
    Flt tiledNoise2Bloom(Dbl x, Dbl y,        VecI2 tile, Int octaves, Flt bloom=1.0f, Flt sharpness=0.7f)C;
    Flt tiledNoise3Bloom(Dbl x, Dbl y, Dbl z, VecI  tile, Int octaves, Flt bloom=1.0f, Flt sharpness=0.7f)C;
 
-   Flt mask2(Dbl x, Dbl y, Int octaves, Flt sharpness=0.5f)C;
+   Flt mask2(Dbl x, Dbl y,        Int octaves, Flt sharpness=0.5f)C;
+   Flt mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness=0.5f)C;
 
    PerlinNoise(UInt seed=0);
 
@@ -192,7 +193,8 @@ struct SimplexNoise // Open Simplex Noise
    Flt tiledNoise3Bloom(Dbl x, Dbl y, Dbl z,        VecI  tile, Int octaves, Flt bloom=1.0f, Flt sharpness=0.7f)C;
    Flt tiledNoise4Bloom(Dbl x, Dbl y, Dbl z, Dbl w, VecI4 tile, Int octaves, Flt bloom=1.0f, Flt sharpness=0.7f)C;
 
-   Flt mask2(Dbl x, Dbl y, Int octaves, Flt sharpness=0.5f)C;
+   Flt mask2(Dbl x, Dbl y,        Int octaves, Flt sharpness=0.5f)C;
+   Flt mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness=0.5f)C;
 
    SimplexNoise(UInt seed=0);
 

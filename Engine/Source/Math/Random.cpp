@@ -4281,6 +4281,18 @@ Flt PerlinNoise::mask2(Dbl x, Dbl y, Int octaves, Flt sharpness)C
    }
    return mask;
 }
+Flt PerlinNoise::mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness)C
+{
+   Flt mask=1; REP(octaves)
+   {
+      Flt m=noise(x, y, z);
+      mask*=SmoothCube(m*sharpness+0.5f);
+      x*=2;
+      y*=2;
+      z*=2;
+   }
+   return mask;
+}
 /******************************************************************************/
 Flt SimplexNoise::mask2(Dbl x, Dbl y, Int octaves, Flt sharpness)C
 {
@@ -4290,6 +4302,18 @@ Flt SimplexNoise::mask2(Dbl x, Dbl y, Int octaves, Flt sharpness)C
       mask*=SmoothCube(m*sharpness+0.5f);
       x*=2;
       y*=2;
+   }
+   return mask;
+}
+Flt SimplexNoise::mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness)C
+{
+   Flt mask=1; REP(octaves)
+   {
+      Flt m=noise(x, y, z);
+      mask*=SmoothCube(m*sharpness+0.5f);
+      x*=2;
+      y*=2;
+      z*=2;
    }
    return mask;
 }
