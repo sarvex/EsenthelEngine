@@ -450,6 +450,32 @@ DIR_ENUM SphereConvert::dirToSphereTerrainPixel(C Vec &dir, Vec2 &xy)C
    }
    xy.set(posToCell(x), posToCell(y)); return ret;
 }
+DIR_ENUM SphereConvert::dirToSphereTerrainPixelIMid(C Vec &dir, VecI2 &xy)C
+{
+   Flt x, y; DIR_ENUM ret;
+   Vec abs=Abs(dir); if(abs.x>=abs.z) // #TerrainOrient
+   {
+      if(abs.x>=abs.y)
+      {
+         if( !abs.x ){xy.zero(); return DIR_RIGHT;} // only this case can have zero, because we've checked x>=z && x>=y, any other case will have non-zero
+         x=dir.z/abs.x; y=dir.y/abs.x;
+         if(dir.x>=0){        ret=DIR_RIGHT;}
+         else        {CHS(x); ret=DIR_LEFT ;}
+      }else
+      {
+      Y: x=dir.x/abs.y; y=dir.z/abs.y;
+         if(dir.y>=0){        ret=DIR_UP   ;}
+         else        {CHS(y); ret=DIR_DOWN ;}
+      }
+   }else
+   {
+      if(abs.y>=abs.z)goto Y;
+         x=dir.x/abs.z; y=dir.y/abs.z;
+         if(dir.z>=0){CHS(x); ret=DIR_FORWARD;}
+         else        {        ret=DIR_BACK   ;}
+   }
+   xy.set(posToCellIMid(x), posToCellIMid(y)); return ret;
+}
 Vec2 SphereConvert::dirToSphereTerrainPixel(C Vec &dir, DIR_ENUM cube_face)C
 {
    Flt x, y; switch(cube_face) // #TerrainOrient
