@@ -145,10 +145,14 @@ inline void SetFastMatrixPrev(C MatrixM &matrix) {Sh.ViewMatrixPrev->fromMul(mat
 /******************************************************************************/
 // TEMPLATES
 /******************************************************************************/
-T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Int   i, C TYPE &container) {return UInt (i)<UInt (Elms(container));} // template specialization for not enum's
-T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(UInt  i, C TYPE &container) {return UInt (i)<UInt (Elms(container));} // template specialization for not enum's
-T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Long  i, C TYPE &container) {return ULong(i)<ULong(Elms(container));} // template specialization for not enum's
-T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(ULong i, C TYPE &container) {return ULong(i)<ULong(Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(SByte  i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Byte   i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Short  i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(UShort i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Int    i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(UInt   i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(Long   i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
+T1(TYPE) DISABLE_IF_ENUM(TYPE, Bool) InRange(ULong  i, C TYPE &container) {return InRange(i, Elms(container));} // template specialization for not enum's
 /******************************************************************************/
 T1(TYPE) struct ClassFunc // various basic functions used by many classes
 {
