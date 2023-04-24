@@ -589,6 +589,26 @@ Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
    }
    return VecZero;
 }
+Vec SphereConvert::_sphereTerrainPixelToDir(Int xi, Int yi, DIR_ENUM cube_face)C
+{
+ //if(res>0)
+ //if(InRange(xi, res+1))
+ //if(InRange(yi, res+1))
+   {
+      Flt x=_cellToPos(xi);
+      Flt y=_cellToPos(yi);
+      switch(cube_face) // #TerrainOrient
+      {
+         case DIR_RIGHT  : return Vec( 1,  y,  x);
+         case DIR_LEFT   : return Vec(-1,  y, -x);
+         case DIR_UP     : return Vec( x,  1,  y);
+         case DIR_DOWN   : return Vec( x, -1, -y);
+         case DIR_FORWARD: return Vec(-x,  y,  1);
+         case DIR_BACK   : return Vec( x,  y, -1);
+      }
+   }
+   return VecZero;
+}
 Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C
 {
  //if(res>0)
@@ -796,10 +816,10 @@ void SphereConvert::drawCell(C Color &color, C SphereArea &area, Flt radius)C
    if(InRange(area.y, res))
    {
       Quad q;
-      q.p[0]=sphereTerrainPixelToDir(area.x  , area.y  , area.side);
-      q.p[1]=sphereTerrainPixelToDir(area.x  , area.y+1, area.side);
-      q.p[2]=sphereTerrainPixelToDir(area.x+1, area.y+1, area.side);
-      q.p[3]=sphereTerrainPixelToDir(area.x+1, area.y  , area.side);
+      q.p[0]=_sphereTerrainPixelToDir(area.x  , area.y  , area.side);
+      q.p[1]=_sphereTerrainPixelToDir(area.x  , area.y+1, area.side);
+      q.p[2]=_sphereTerrainPixelToDir(area.x+1, area.y+1, area.side);
+      q.p[3]=_sphereTerrainPixelToDir(area.x+1, area.y  , area.side);
       REPAO(q.p).setLength(radius);
       q.draw(color, false);
    }

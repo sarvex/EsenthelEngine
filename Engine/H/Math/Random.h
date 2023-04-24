@@ -196,6 +196,20 @@ struct SimplexNoise // Open Simplex Noise
    Flt mask2(Dbl x, Dbl y,        Int octaves, Flt sharpness=0.5f)C;
    Flt mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness=0.5f)C;
 
+   Flt Noise(  Flt    v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise1(v  ,                octaves, gain, Transform);}
+   Flt Noise(  Dbl    v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise1(v  ,                octaves, gain, Transform);}
+   Flt Noise(C Vec2  &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise2(v.x, v.y,           octaves, gain, Transform);}
+   Flt Noise(C VecD2 &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise2(v.x, v.y,           octaves, gain, Transform);}
+   Flt Noise(C Vec   &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise3(v.x, v.y, v.z,      octaves, gain, Transform);}
+   Flt Noise(C VecD  &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise3(v.x, v.y, v.z,      octaves, gain, Transform);}
+   Flt Noise(C Vec4  &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise4(v.x, v.y, v.z, v.w, octaves, gain, Transform);}
+   Flt Noise(C VecD4 &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise4(v.x, v.y, v.z, v.w, octaves, gain, Transform);}
+
+   Flt Mask(C Vec2  &v, Int octaves, Flt sharpness=0.5f)C {return mask2(v.x, v.y,      octaves, sharpness);}
+   Flt Mask(C VecD2 &v, Int octaves, Flt sharpness=0.5f)C {return mask2(v.x, v.y,      octaves, sharpness);}
+   Flt Mask(C Vec   &v, Int octaves, Flt sharpness=0.5f)C {return mask3(v.x, v.y, v.z, octaves, sharpness);}
+   Flt Mask(C VecD  &v, Int octaves, Flt sharpness=0.5f)C {return mask3(v.x, v.y, v.z, octaves, sharpness);}
+
    SimplexNoise(UInt seed=0);
 
 private:
