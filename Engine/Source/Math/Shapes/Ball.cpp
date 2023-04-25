@@ -491,19 +491,20 @@ Vec2 SphereConvert::dirToSphereTerrainPixel(C Vec &dir, DIR_ENUM cube_face)C
 zero: return 0;
 }
 /******************************************************************************/
-Vec CubeFacePosToDir(DIR_ENUM cube_face, C Vec2 &xy)
+static INLINE Vec _CubeFacePosToDir(DIR_ENUM cube_face, Flt x, Flt y)
 {
    switch(cube_face)
    {
-      case DIR_RIGHT  : return Vec(    1, -xy.y, -xy.x);
-      case DIR_LEFT   : return Vec(   -1, -xy.y,  xy.x);
-      case DIR_UP     : return Vec( xy.x,     1,  xy.y);
-      case DIR_DOWN   : return Vec( xy.x,    -1, -xy.y);
-      case DIR_FORWARD: return Vec( xy.x, -xy.y,     1);
-      case DIR_BACK   : return Vec(-xy.x, -xy.y,    -1);
+      case DIR_RIGHT  : return Vec( 1, -y, -x);
+      case DIR_LEFT   : return Vec(-1, -y,  x);
+      case DIR_UP     : return Vec( x,  1,  y);
+      case DIR_DOWN   : return Vec( x, -1, -y);
+      case DIR_FORWARD: return Vec( x, -y,  1);
+      case DIR_BACK   : return Vec(-x, -y, -1);
    }
    return VecZero;
 }
+Vec CubeFacePosToDir(DIR_ENUM cube_face, C Vec2 &xy) {return _CubeFacePosToDir(cube_face, xy.x, xy.y);}
 Vec CubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res) // this matches exact same results as drawing Cube on GPU
 {
    // x=(dir.x+1)/2*res-0.5
@@ -513,17 +514,7 @@ Vec CubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res) // this matche
  //if(res>0)
    {
       Flt inv_res=1.0f/res, mul=2*inv_res, add=inv_res-1;
-      x=x*mul+add;
-      y=y*mul+add;
-      switch(cube_face)
-      {
-         case DIR_RIGHT  : return Vec( 1, -y, -x);
-         case DIR_LEFT   : return Vec(-1, -y,  x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec( x, -y,  1);
-         case DIR_BACK   : return Vec(-x, -y, -1);
-      }
+      return _CubeFacePosToDir(cube_face, x*mul+add, y*mul+add);
    }
    return VecZero;
 }
@@ -532,49 +523,31 @@ Vec SphereCubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
  //if(res>0)
    {
       Flt mul=PI_2/res, add=-PI_4+mul/2;
-      x=Tan(x*mul+add);
-      y=Tan(y*mul+add);
-      switch(cube_face)
-      {
-         case DIR_RIGHT  : return Vec( 1, -y, -x);
-         case DIR_LEFT   : return Vec(-1, -y,  x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec( x, -y,  1);
-         case DIR_BACK   : return Vec(-x, -y, -1);
-      }
+      return _CubeFacePosToDir(cube_face, Tan(x*mul+add), Tan(y*mul+add));
    }
    return VecZero;
 }
-Vec TerrainPosToDir(DIR_ENUM cube_face, C Vec2 &xy) // same as 'PosToTerrainPos' with src.z=1
+/******************************************************************************/
+static INLINE Vec _TerrainPosToDir(DIR_ENUM cube_face, Flt x, Flt y) // same as 'PosToTerrainPos' with src.z=1
 {
    switch(cube_face) // #TerrainOrient
    {
-      case DIR_RIGHT  : return Vec(    1, xy.y,  xy.x);
-      case DIR_LEFT   : return Vec(   -1, xy.y, -xy.x);
-      case DIR_UP     : return Vec( xy.x,    1,  xy.y);
-      case DIR_DOWN   : return Vec( xy.x,   -1, -xy.y);
-      case DIR_FORWARD: return Vec(-xy.x, xy.y,     1);
-      case DIR_BACK   : return Vec( xy.x, xy.y,    -1);
+      case DIR_RIGHT  : return Vec( 1,  y,  x);
+      case DIR_LEFT   : return Vec(-1,  y, -x);
+      case DIR_UP     : return Vec( x,  1,  y);
+      case DIR_DOWN   : return Vec( x, -1, -y);
+      case DIR_FORWARD: return Vec(-x,  y,  1);
+      case DIR_BACK   : return Vec( x,  y, -1);
    }
    return VecZero;
 }
+Vec TerrainPosToDir(DIR_ENUM cube_face, C Vec2 &xy) {return _TerrainPosToDir(cube_face, xy.x, xy.y);}
 Vec SphereTerrainPixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
 {
  //if(res>0)
    {
       Flt mul=PI_2/res, add=-PI_4;
-      x=Tan(x*mul+add);
-      y=Tan(y*mul+add);
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
+      return _TerrainPosToDir(cube_face, Tan(x*mul+add), Tan(y*mul+add));
    }
    return VecZero;
 }
@@ -583,96 +556,39 @@ Vec SphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
  //if(res>0)
    {
       Flt mul=PI_2/res, add=-PI_4+mul*0.5f;
-      x=Tan(x*mul+add);
-      y=Tan(y*mul+add);
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
+      return _TerrainPosToDir(cube_face, Tan(x*mul+add), Tan(y*mul+add));
    }
    return VecZero;
 }
 Vec SphereConvert::sphereTerrainPixelToDir(DIR_ENUM cube_face, Flt x, Flt y)C
 {
  //if(res>0)
-   {
-      x=cellToPos(x);
-      y=cellToPos(y);
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
-   }
+      return _TerrainPosToDir(cube_face, cellToPos(x), cellToPos(y));
    return VecZero;
 }
-Vec SphereConvert::_sphereTerrainPixelToDir(DIR_ENUM cube_face, Int xi, Int yi)C
+Vec SphereConvert::_sphereTerrainPixelToDir(DIR_ENUM cube_face, Int x, Int y)C
 {
  //if(res>0)
- //if(InRange(xi, res+1))
- //if(InRange(yi, res+1))
-   {
-      Flt x=_cellToPos(xi);
-      Flt y=_cellToPos(yi);
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
-   }
+ //if(InRange(x, res+1))
+ //if(InRange(y, res+1))
+      return _TerrainPosToDir(cube_face, _cellToPos(x), _cellToPos(y));
    return VecZero;
 }
-Vec SphereConvert::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int xi, Int yi)C
+Vec SphereConvert::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int x, Int y)C
 {
  //if(res>0)
- //if(InRange(xi, res))
- //if(InRange(yi, res))
-   {
-      Flt x=Avg(_cellToPos(xi), _cellToPos(xi+1));
-      Flt y=Avg(_cellToPos(yi), _cellToPos(yi+1));
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
-   }
+ //if(InRange(x, res))
+ //if(InRange(y, res))
+      return _TerrainPosToDir(cube_face, Avg(_cellToPos(x), _cellToPos(x+1)),
+                                         Avg(_cellToPos(y), _cellToPos(y+1)));
    return VecZero;
 }
-Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int xi, Int yi)C
+Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int x, Int y)C
 {
  //if(res>0)
- //if(InRange(xi, res))
- //if(InRange(yi, res))
-   {
-      Flt x=_cellCenterToPos(xi);
-      Flt y=_cellCenterToPos(yi);
-      switch(cube_face) // #TerrainOrient
-      {
-         case DIR_RIGHT  : return Vec( 1,  y,  x);
-         case DIR_LEFT   : return Vec(-1,  y, -x);
-         case DIR_UP     : return Vec( x,  1,  y);
-         case DIR_DOWN   : return Vec( x, -1, -y);
-         case DIR_FORWARD: return Vec(-x,  y,  1);
-         case DIR_BACK   : return Vec( x,  y, -1);
-      }
-   }
+ //if(InRange(x, res))
+ //if(InRange(y, res))
+      return _TerrainPosToDir(cube_face, _cellCenterToPos(x), _cellCenterToPos(y));
    return VecZero;
 }
 /******************************************************************************/
