@@ -175,14 +175,15 @@ DIR_ENUM DirToSphereTerrainPixel (C Vec &dir, Int res, Vec2 &xy); // convert vec
 
 Vec       CubeFacePixelToDir      (Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert           cube image coordinates to vector direction, 'x,y'=image   pixel coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image   cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 Vec SphereCubeFacePixelToDir      (Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert spherical cube image coordinates to vector direction, 'x,y'=image   pixel coordinates (0..res-1), 'res'=cube image resolution, 'cube_face'=image   cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
+Vec  SphereTerrainPosToDir        (C Vec2 &xy,            DIR_ENUM cube_face); // convert spherical terrain    position    to vector direction, 'xy' =terrain position          (-1..1   ) on plane Z=1                , 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 Vec  SphereTerrainPixelToDir      (Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert spherical terrain    coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res  ), 'res'=terrain    resolution, 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 Vec  SphereTerrainPixelCenterToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face); // convert spherical terrain    coordinates to vector direction, 'x,y'=terrain pixel coordinates (0..res-1), 'res'=terrain    resolution, 'cube_face'=terrain cube face, returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1")
 
-void CubeFacePosToPos     (DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert cube  face  position 'src' where XY=plane position, Z=height to world space position 'dest'
-void PosToCubeFacePos     (DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert world space position 'src' to cube face position 'dest' where XY=plane position, Z=height
-void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec  &src          ); // convert world space position 'src' to 'dest' spherical terrain position where XY=plane position
-void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert world space position 'src' to 'dest' spherical terrain position where XY=plane position, Z=height
-void PosToSphereTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms); // convert world space position 'src' to 'dest' spherical terrain position where XY=plane position, Z=height
+void CubeFacePosToPos     (DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert 'cube_face' position 'src' where XY=plane position, Z=height to world space position 'dest'
+void PosToCubeFacePos     (DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert world space position 'src' to 'cube_face'                   position 'dest' where XY=plane position, Z=height
+void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec  &src          ); // convert world space position 'src' to 'cube_face' spherical terrain position 'dest' where XY=plane position
+void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert world space position 'src' to 'cube_face' spherical terrain position 'dest' where XY=plane position, Z=height
+void PosToSphereTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms); // convert world space position 'src' to 'cube_face' spherical terrain position 'dest' where XY=plane position, Z=height
 /******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 

@@ -533,6 +533,19 @@ Vec SphereCubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
    }
    return VecZero;
 }
+Vec SphereTerrainPosToDir(C Vec2 &xy, DIR_ENUM cube_face) // same as 'PosToSphereTerrainPos' with src.z=1
+{
+   switch(cube_face) // #TerrainOrient
+   {
+      case DIR_RIGHT  : return Vec(    1, xy.y,  xy.x);
+      case DIR_LEFT   : return Vec(   -1, xy.y, -xy.x);
+      case DIR_UP     : return Vec( xy.x,    1,  xy.y);
+      case DIR_DOWN   : return Vec( xy.x,   -1, -xy.y);
+      case DIR_FORWARD: return Vec(-xy.x, xy.y,     1);
+      case DIR_BACK   : return Vec( xy.x, xy.y,    -1);
+   }
+   return VecZero;
+}
 Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
 {
  //if(res>0)
