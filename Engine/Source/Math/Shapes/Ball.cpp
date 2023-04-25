@@ -491,7 +491,7 @@ Vec2 SphereConvert::dirToSphereTerrainPixel(C Vec &dir, DIR_ENUM cube_face)C
 zero: return 0;
 }
 /******************************************************************************/
-Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matches exact same results as drawing Cube on GPU
+Vec CubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res) // this matches exact same results as drawing Cube on GPU
 {
    // x=(dir.x+1)/2*res-0.5
    // (x+0.5)*2/res-1=dir.x
@@ -514,7 +514,7 @@ Vec CubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face) // this matche
    }
    return VecZero;
 }
-Vec SphereCubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+Vec SphereCubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
 {
  //if(res>0)
    {
@@ -533,7 +533,7 @@ Vec SphereCubeFacePixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
    }
    return VecZero;
 }
-Vec SphereTerrainPosToDir(C Vec2 &xy, DIR_ENUM cube_face) // same as 'PosToSphereTerrainPos' with src.z=1
+Vec SphereTerrainPosToDir(DIR_ENUM cube_face, C Vec2 &xy) // same as 'PosToSphereTerrainPos' with src.z=1
 {
    switch(cube_face) // #TerrainOrient
    {
@@ -546,7 +546,7 @@ Vec SphereTerrainPosToDir(C Vec2 &xy, DIR_ENUM cube_face) // same as 'PosToSpher
    }
    return VecZero;
 }
-Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+Vec SphereTerrainPixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
 {
  //if(res>0)
    {
@@ -565,7 +565,7 @@ Vec SphereTerrainPixelToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
    }
    return VecZero;
 }
-Vec SphereTerrainPixelCenterToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
+Vec SphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
 {
  //if(res>0)
    {
@@ -584,7 +584,7 @@ Vec SphereTerrainPixelCenterToDir(Flt x, Flt y, Int res, DIR_ENUM cube_face)
    }
    return VecZero;
 }
-Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
+Vec SphereConvert::sphereTerrainPixelToDir(DIR_ENUM cube_face, Flt x, Flt y)C
 {
  //if(res>0)
    {
@@ -602,7 +602,7 @@ Vec SphereConvert::sphereTerrainPixelToDir(Flt x, Flt y, DIR_ENUM cube_face)C
    }
    return VecZero;
 }
-Vec SphereConvert::_sphereTerrainPixelToDir(Int xi, Int yi, DIR_ENUM cube_face)C
+Vec SphereConvert::_sphereTerrainPixelToDir(DIR_ENUM cube_face, Int xi, Int yi)C
 {
  //if(res>0)
  //if(InRange(xi, res+1))
@@ -622,7 +622,7 @@ Vec SphereConvert::_sphereTerrainPixelToDir(Int xi, Int yi, DIR_ENUM cube_face)C
    }
    return VecZero;
 }
-Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C
+Vec SphereConvert::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int xi, Int yi)C
 {
  //if(res>0)
  //if(InRange(xi, res))
@@ -642,7 +642,7 @@ Vec SphereConvert::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_
    }
    return VecZero;
 }
-Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(Int xi, Int yi, DIR_ENUM cube_face)C
+Vec SphereConvertEx::_sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int xi, Int yi)C
 {
  //if(res>0)
  //if(InRange(xi, res))
@@ -795,7 +795,7 @@ void SphereConvertEx::sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse)C
    {
       SphereAreaDist &area=area_dist[i];
       SCAST(SphereArea, area)=areas[i];
-      Vec  dir=_sphereTerrainPixelCenterToDir(area.x, area.y, area.side);
+      Vec  dir=_sphereTerrainPixelCenterToDir(area.side, area.x, area.y);
       area.dist=Dot   (pos, dir) // treat 'pos' as direction and reverse 'Compare' below
                *RSqrt0(dir.length2()); // '_sphereTerrainPixelCenterToDir' should be normalized, but here we can just use fast approximation
     //area.dist=Dist2 (pos, dir*RSqrt0(dir.length2())); this requires NOT reversing 'Compare' below // slower alternative
@@ -829,10 +829,10 @@ void SphereConvert::drawCell(C Color &color, C SphereArea &area, Flt radius)C
    if(InRange(area.y, res))
    {
       Quad q;
-      q.p[0]=_sphereTerrainPixelToDir(area.x  , area.y  , area.side);
-      q.p[1]=_sphereTerrainPixelToDir(area.x  , area.y+1, area.side);
-      q.p[2]=_sphereTerrainPixelToDir(area.x+1, area.y+1, area.side);
-      q.p[3]=_sphereTerrainPixelToDir(area.x+1, area.y  , area.side);
+      q.p[0]=_sphereTerrainPixelToDir(area.side, area.x  , area.y  );
+      q.p[1]=_sphereTerrainPixelToDir(area.side, area.x  , area.y+1);
+      q.p[2]=_sphereTerrainPixelToDir(area.side, area.x+1, area.y+1);
+      q.p[3]=_sphereTerrainPixelToDir(area.side, area.x+1, area.y  );
       REPAO(q.p).setLength(radius);
       q.draw(color, false);
    }

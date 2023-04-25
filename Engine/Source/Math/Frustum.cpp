@@ -1096,7 +1096,7 @@ min_height - \------------/
                {
                   SphereAreaDist &apd=area_pos_dist.New();
                   SCAST(SphereArea, apd)=ap;
-                  Vec dir=sc._sphereTerrainPixelCenterToDir(apd.x, apd.y, apd.side);
+                  Vec dir=sc._sphereTerrainPixelCenterToDir(apd.side, apd.x, apd.y);
                   apd.dist=Dot   (matrix.z, dir)
                           *RSqrt0(dir.length2()); // '_sphereTerrainPixelCenterToDir' should be normalized, but here we can just use fast approximation
                }else

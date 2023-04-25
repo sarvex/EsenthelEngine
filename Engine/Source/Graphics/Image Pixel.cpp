@@ -3883,7 +3883,7 @@ Vec4 Image::areaColorLanczosOrtho(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool al
 static void Wrap(SphereArea &dest, C SphereArea &src, Int res)
 {
 #if 0
-   Vec  dir=CubeFacePixelToDir(src.x, src.y, res, src.side); // convert to direction vector
+   Vec  dir=CubeFacePixelToDir(src.side, src.x, src.y, res); // convert to direction vector
    Vec2 xy; dest.side=DirToCubeFacePixel(dir, res, xy); // convert direction vector to secondary face
    dest.x=Mid(Round(xy.x), 0, res-1);
    dest.y=Mid(Round(xy.y), 0, res-1);

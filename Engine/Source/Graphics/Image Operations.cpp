@@ -970,7 +970,7 @@ struct BlurCube
          Bool check_other_faces=check_other_faces_y;
          if(linear)
          {
-          //dir_f=CubeFacePixelToDir(x, y, dest_res, DIR_FORWARD);
+          //dir_f=CubeFacePixelToDir(DIR_FORWARD, x, y, dest_res);
             dir_f.x=x*dest_CubeFacePixelToDir_mul+dest_CubeFacePixelToDir_add;
                 dir_angle.x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
             Flt angle_min_x=dir_angle.x-angle_eps,
@@ -1033,7 +1033,7 @@ struct BlurCube
             for(Int tx=0; tx<src_res; tx++)
             {
                Vec dir_test(tx*src_CubeFacePixelToDir_mul+src_CubeFacePixelToDir_add, -ty*src_CubeFacePixelToDir_mul-src_CubeFacePixelToDir_add, 1); dir_test.normalize();
-             //Vec dir_test=CubeFacePixelToDir(tx, ty, src_res, DIR_FORWARD); dir_test.normalize();
+             //Vec dir_test=CubeFacePixelToDir(DIR_FORWARD, tx, ty, src_res); dir_test.normalize();
                Bool cone=(Dot(dir_fn, dir_test)>=cos_min);
              //Bool cone=(AbsAngleBetweenN(dir_fn, dir_test)<=angle);
                Bool rect=tex_rect.includes(VecI2(tx, ty));
