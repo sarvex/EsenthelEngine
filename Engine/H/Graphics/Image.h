@@ -552,6 +552,7 @@ struct Image // Image (Texture)
    Vec  & pixF3(Int x, Int y) {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch);}   Vec  & pixF3(C VecI2 &v) {return pixF3(v.x, v.y);}
    Vec4 & pixF4(Int x, Int y) {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch);}   Vec4 & pixF4(C VecI2 &v) {return pixF4(v.x, v.y);}
 
+   // 3D
    Byte & pixB (Int x, Int y, Int z) {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch + z*_pitch2);}   Byte & pixB (C VecI &v) {return pixB (v.x, v.y, v.z);}
    UInt & pix  (Int x, Int y, Int z) {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch + z*_pitch2);}   UInt & pix  (C VecI &v) {return pix  (v.x, v.y, v.z);}
    Color& pixC (Int x, Int y, Int z) {return *(Color*)(_data + x*SIZE(Color) + y*_pitch + z*_pitch2);}   Color& pixC (C VecI &v) {return pixC (v.x, v.y, v.z);}
@@ -562,6 +563,18 @@ struct Image // Image (Texture)
    Vec  & pixF3(Int x, Int y, Int z) {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch + z*_pitch2);}   Vec  & pixF3(C VecI &v) {return pixF3(v.x, v.y, v.z);}
    Vec4 & pixF4(Int x, Int y, Int z) {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch + z*_pitch2);}   Vec4 & pixF4(C VecI &v) {return pixF4(v.x, v.y, v.z);}
 
+   // IMAGE_SOFT_CUBE only (no IMAGE_CUBE)
+   Byte & pixB (Int x, Int y, DIR_ENUM cube_face) {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch + cube_face*_pitch2);}   Byte & pixB (C VecI2 &v, DIR_ENUM cube_face) {return pixB (v.x, v.y, cube_face);}
+   UInt & pix  (Int x, Int y, DIR_ENUM cube_face) {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch + cube_face*_pitch2);}   UInt & pix  (C VecI2 &v, DIR_ENUM cube_face) {return pix  (v.x, v.y, cube_face);}
+   Color& pixC (Int x, Int y, DIR_ENUM cube_face) {return *(Color*)(_data + x*SIZE(Color) + y*_pitch + cube_face*_pitch2);}   Color& pixC (C VecI2 &v, DIR_ENUM cube_face) {return pixC (v.x, v.y, cube_face);}
+   VecB & pixB3(Int x, Int y, DIR_ENUM cube_face) {return *(VecB *)(_data + x*SIZE(VecB ) + y*_pitch + cube_face*_pitch2);}   VecB & pixB3(C VecI2 &v, DIR_ENUM cube_face) {return pixB3(v.x, v.y, cube_face);}
+   VecB4& pixB4(Int x, Int y, DIR_ENUM cube_face) {return *(VecB4*)(_data + x*SIZE(VecB4) + y*_pitch + cube_face*_pitch2);}   VecB4& pixB4(C VecI2 &v, DIR_ENUM cube_face) {return pixB4(v.x, v.y, cube_face);}
+   Flt  & pixF (Int x, Int y, DIR_ENUM cube_face) {return *(Flt  *)(_data + x*SIZE(Flt  ) + y*_pitch + cube_face*_pitch2);}   Flt  & pixF (C VecI2 &v, DIR_ENUM cube_face) {return pixF (v.x, v.y, cube_face);}
+   Vec2 & pixF2(Int x, Int y, DIR_ENUM cube_face) {return *(Vec2 *)(_data + x*SIZE(Vec2 ) + y*_pitch + cube_face*_pitch2);}   Vec2 & pixF2(C VecI2 &v, DIR_ENUM cube_face) {return pixF2(v.x, v.y, cube_face);}
+   Vec  & pixF3(Int x, Int y, DIR_ENUM cube_face) {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch + cube_face*_pitch2);}   Vec  & pixF3(C VecI2 &v, DIR_ENUM cube_face) {return pixF3(v.x, v.y, cube_face);}
+   Vec4 & pixF4(Int x, Int y, DIR_ENUM cube_face) {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch + cube_face*_pitch2);}   Vec4 & pixF4(C VecI2 &v, DIR_ENUM cube_face) {return pixF4(v.x, v.y, cube_face);}
+
+   // CONST
  C Byte & pixB (Int x, Int y)C {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch);}   C Byte & pixB (C VecI2 &v)C {return pixB (v.x, v.y);}
  C UInt & pix  (Int x, Int y)C {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch);}   C UInt & pix  (C VecI2 &v)C {return pix  (v.x, v.y);}
  C Color& pixC (Int x, Int y)C {return *(Color*)(_data + x*SIZE(Color) + y*_pitch);}   C Color& pixC (C VecI2 &v)C {return pixC (v.x, v.y);}
@@ -572,6 +585,7 @@ struct Image // Image (Texture)
  C Vec  & pixF3(Int x, Int y)C {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch);}   C Vec  & pixF3(C VecI2 &v)C {return pixF3(v.x, v.y);}
  C Vec4 & pixF4(Int x, Int y)C {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch);}   C Vec4 & pixF4(C VecI2 &v)C {return pixF4(v.x, v.y);}
 
+   // CONST 3D
  C Byte & pixB (Int x, Int y, Int z)C {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch + z*_pitch2);}   C Byte & pixB (C VecI &v)C {return pixB (v.x, v.y, v.z);}
  C UInt & pix  (Int x, Int y, Int z)C {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch + z*_pitch2);}   C UInt & pix  (C VecI &v)C {return pix  (v.x, v.y, v.z);}
  C Color& pixC (Int x, Int y, Int z)C {return *(Color*)(_data + x*SIZE(Color) + y*_pitch + z*_pitch2);}   C Color& pixC (C VecI &v)C {return pixC (v.x, v.y, v.z);}
@@ -581,6 +595,17 @@ struct Image // Image (Texture)
  C Vec2 & pixF2(Int x, Int y, Int z)C {return *(Vec2 *)(_data + x*SIZE(Vec2 ) + y*_pitch + z*_pitch2);}   C Vec2 & pixF2(C VecI &v)C {return pixF2(v.x, v.y, v.z);}
  C Vec  & pixF3(Int x, Int y, Int z)C {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch + z*_pitch2);}   C Vec  & pixF3(C VecI &v)C {return pixF3(v.x, v.y, v.z);}
  C Vec4 & pixF4(Int x, Int y, Int z)C {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch + z*_pitch2);}   C Vec4 & pixF4(C VecI &v)C {return pixF4(v.x, v.y, v.z);}
+
+   // CONST IMAGE_SOFT_CUBE only (no IMAGE_CUBE)
+ C Byte & pixB (Int x, Int y, DIR_ENUM cube_face)C {return *(Byte *)(_data + x*SIZE(Byte ) + y*_pitch + cube_face*_pitch2);}   C Byte & pixB (C VecI2 &v, DIR_ENUM cube_face)C {return pixB (v.x, v.y, cube_face);}
+ C UInt & pix  (Int x, Int y, DIR_ENUM cube_face)C {return *(UInt *)(_data + x*SIZE(UInt ) + y*_pitch + cube_face*_pitch2);}   C UInt & pix  (C VecI2 &v, DIR_ENUM cube_face)C {return pix  (v.x, v.y, cube_face);}
+ C Color& pixC (Int x, Int y, DIR_ENUM cube_face)C {return *(Color*)(_data + x*SIZE(Color) + y*_pitch + cube_face*_pitch2);}   C Color& pixC (C VecI2 &v, DIR_ENUM cube_face)C {return pixC (v.x, v.y, cube_face);}
+ C VecB & pixB3(Int x, Int y, DIR_ENUM cube_face)C {return *(VecB *)(_data + x*SIZE(VecB ) + y*_pitch + cube_face*_pitch2);}   C VecB & pixB3(C VecI2 &v, DIR_ENUM cube_face)C {return pixB3(v.x, v.y, cube_face);}
+ C VecB4& pixB4(Int x, Int y, DIR_ENUM cube_face)C {return *(VecB4*)(_data + x*SIZE(VecB4) + y*_pitch + cube_face*_pitch2);}   C VecB4& pixB4(C VecI2 &v, DIR_ENUM cube_face)C {return pixB4(v.x, v.y, cube_face);}
+ C Flt  & pixF (Int x, Int y, DIR_ENUM cube_face)C {return *(Flt  *)(_data + x*SIZE(Flt  ) + y*_pitch + cube_face*_pitch2);}   C Flt  & pixF (C VecI2 &v, DIR_ENUM cube_face)C {return pixF (v.x, v.y, cube_face);}
+ C Vec2 & pixF2(Int x, Int y, DIR_ENUM cube_face)C {return *(Vec2 *)(_data + x*SIZE(Vec2 ) + y*_pitch + cube_face*_pitch2);}   C Vec2 & pixF2(C VecI2 &v, DIR_ENUM cube_face)C {return pixF2(v.x, v.y, cube_face);}
+ C Vec  & pixF3(Int x, Int y, DIR_ENUM cube_face)C {return *(Vec  *)(_data + x*SIZE(Vec  ) + y*_pitch + cube_face*_pitch2);}   C Vec  & pixF3(C VecI2 &v, DIR_ENUM cube_face)C {return pixF3(v.x, v.y, cube_face);}
+ C Vec4 & pixF4(Int x, Int y, DIR_ENUM cube_face)C {return *(Vec4 *)(_data + x*SIZE(Vec4 ) + y*_pitch + cube_face*_pitch2);}   C Vec4 & pixF4(C VecI2 &v, DIR_ENUM cube_face)C {return pixF4(v.x, v.y, cube_face);}
 
    // !! WARNING: 'gather' methods are written for speed and not safety, they assume that image is locked and that offsets are in range, these methods set 'pixels/colors' array from image values, coordinates are specified in the 'offset' parameters !!
    void gather (Flt   *pixels, Int *x_offset, Int x_offsets, Int *y_offset, Int y_offsets)C;

@@ -267,7 +267,7 @@ void PosToCubeFacePos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
       case DIR_BACK   : dest.set(-src.x,  src.y, -src.z); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec &src)
+void PosToTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec &src)
 {
    switch(cube_face) // #TerrainOrient
    {
@@ -279,7 +279,7 @@ void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec2 &dest, C Vec &src)
       case DIR_BACK   : dest.set( src.x,  src.y); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
+void PosToTerrainPos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
 {
    switch(cube_face) // #TerrainOrient
    {
@@ -291,7 +291,7 @@ void PosToSphereTerrainPos(DIR_ENUM cube_face, Vec &dest, C Vec &src)
       case DIR_BACK   : dest.set( src.x,  src.y, -src.z); break;
    }
 }
-void PosToSphereTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms) // convert world space position 'src' to 'dest' where XY=plane position, Z=height
+void PosToTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms) // convert world space position 'src' to 'dest' where XY=plane position, Z=height
 {
    switch(cube_face) // #TerrainOrient
    {
@@ -491,6 +491,19 @@ Vec2 SphereConvert::dirToSphereTerrainPixel(C Vec &dir, DIR_ENUM cube_face)C
 zero: return 0;
 }
 /******************************************************************************/
+Vec CubeFacePosToDir(DIR_ENUM cube_face, C Vec2 &xy)
+{
+   switch(cube_face)
+   {
+      case DIR_RIGHT  : return Vec(    1, -xy.y, -xy.x);
+      case DIR_LEFT   : return Vec(   -1, -xy.y,  xy.x);
+      case DIR_UP     : return Vec( xy.x,     1,  xy.y);
+      case DIR_DOWN   : return Vec( xy.x,    -1, -xy.y);
+      case DIR_FORWARD: return Vec( xy.x, -xy.y,     1);
+      case DIR_BACK   : return Vec(-xy.x, -xy.y,    -1);
+   }
+   return VecZero;
+}
 Vec CubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res) // this matches exact same results as drawing Cube on GPU
 {
    // x=(dir.x+1)/2*res-0.5
@@ -533,7 +546,7 @@ Vec SphereCubeFacePixelToDir(DIR_ENUM cube_face, Flt x, Flt y, Int res)
    }
    return VecZero;
 }
-Vec SphereTerrainPosToDir(DIR_ENUM cube_face, C Vec2 &xy) // same as 'PosToSphereTerrainPos' with src.z=1
+Vec TerrainPosToDir(DIR_ENUM cube_face, C Vec2 &xy) // same as 'PosToTerrainPos' with src.z=1
 {
    switch(cube_face) // #TerrainOrient
    {
@@ -717,7 +730,7 @@ min_height - \------------/
    SphereArea ap;
    for(ap.side=DIR_ENUM(0); ; )
    {
-      Ball oriented_ball; PosToSphereTerrainPos(ap.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
+      Ball oriented_ball; PosToTerrainPos(ap.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
       if(ClipZ(oriented_ball, min_radius))
       {
          RectI rect;

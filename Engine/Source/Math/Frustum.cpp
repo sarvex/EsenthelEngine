@@ -915,7 +915,7 @@ min_height - \------------/
          VecI2 ball_cell;
          if(distance_check)
          {
-            PosToSphereTerrainPos(ap.side, oriented_ball.pos, matrix.pos); oriented_ball.r=range;
+            PosToTerrainPos(ap.side, oriented_ball.pos, matrix.pos); oriented_ball.r=range;
             if(!ClipZ(oriented_ball, min_radius))goto next;
          }
 
@@ -923,7 +923,7 @@ min_height - \------------/
          Bool   oriented_point_ok[ELMS(point)];
          VecD2 projected_point   [ELMS(point)+ELMS(edge)]; // point projected on plane XY, with Z=1 (think of Box/Cube where each side is treated as plane/spherical grid), can be created from each point and edge
          Int   projected_points=0;
-         PosToSphereTerrainPos(ap.side, oriented_point, point, points);
+         PosToTerrainPos(ap.side, oriented_point, point, points);
          REP(points)
          {
           C auto &src=oriented_point[i];
@@ -1041,7 +1041,7 @@ min_height - \------------/
             rect.clampX(0, sc.res-1);
             if(!rect.validX())goto next;
 
-            Vec2  look_dir; PosToSphereTerrainPos(ap.side, look_dir, matrix.z);
+            Vec2  look_dir; PosToTerrainPos(ap.side, look_dir, matrix.z);
             Flt   max =Abs(look_dir).max();
             VecI2 dir =(max ? Round(look_dir/max) : VecI2(0, 1)), // (-1, -1) .. (1, 1)
                   perp=Perp(dir);                                 // parallel to direction

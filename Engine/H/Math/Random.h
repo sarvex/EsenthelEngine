@@ -196,6 +196,16 @@ struct SimplexNoise // Open Simplex Noise
    Flt mask2(Dbl x, Dbl y,        Int octaves, Flt sharpness=0.5f)C;
    Flt mask3(Dbl x, Dbl y, Dbl z, Int octaves, Flt sharpness=0.5f)C;
 
+   // wrappers
+   Flt Noise(  Flt    v)C {return noise(v);}
+   Flt Noise(  Dbl    v)C {return noise(v);}
+   Flt Noise(C Vec2  &v)C {return noise(v.x, v.y);}
+   Flt Noise(C VecD2 &v)C {return noise(v.x, v.y);}
+   Flt Noise(C Vec   &v)C {return noise(v.x, v.y, v.z);}
+   Flt Noise(C VecD  &v)C {return noise(v.x, v.y, v.z);}
+   Flt Noise(C Vec4  &v)C {return noise(v.x, v.y, v.z, v.w);}
+   Flt Noise(C VecD4 &v)C {return noise(v.x, v.y, v.z, v.w);}
+
    Flt Noise(  Flt    v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise1(v  ,                octaves, gain, Transform);}
    Flt Noise(  Dbl    v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise1(v  ,                octaves, gain, Transform);}
    Flt Noise(C Vec2  &v, Int octaves, Flt gain=0.5f, Flt Transform(Flt noise)=null)C {return noise2(v.x, v.y,           octaves, gain, Transform);}
