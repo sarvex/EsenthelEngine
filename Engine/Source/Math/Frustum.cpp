@@ -525,9 +525,9 @@ Bool FrustumClass::operator()(C Extent &ext, C Matrix3 &matrix)C
        dy =ext.ext.y*matrix.y,
        dz =ext.ext.z*matrix.z,
     #if 0
-       pos=ext.pos*matrix; // no need for 'VecD'
+       pos=ext.pos*matrix-T.matrix.pos; // no need for 'VecD'
     #else // faster than above
-       pos=ext.pos; pos*=matrix; // #VecMulMatrix
+       pos=ext.pos; pos*=matrix; pos-=T.matrix.pos; // #VecMulMatrix
     #endif
 
    if(persp)
@@ -558,7 +558,7 @@ Bool FrustumClass::operator()(C Extent &ext, C Matrix3 &matrix)C
       {
          if(extraPlane())
          {
-            Flt e=Dist(pos, extra_plane);
+            Flt e=Dist(pos+T.matrix.pos, extra_plane);
             if( e>0)if(e>OBoxLength(dx, dy, dz, extra_plane.normal))return false; // do a fast "e>0" check first to avoid calculating 'OBoxLengthAbs' when unnecessary
          }
          if(extraBall() && Dist2(extra_ball.pos, ext, matrix)>extra_ball_r2)return false;
@@ -726,6 +726,200 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
       Flt x=Abs(Dot(pos, T.matrix.x))-T.size.x, bx=BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
       Flt y=Abs(Dot(pos, T.matrix.y))-T.size.y, by=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
       Flt z=Abs(Dot(pos, T.matrix.z))-T.size.z, bz=BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
+   }
+   return true;
+}
+Bool FrustumClass::operator()(C Extent &ext, C Matrix3 &matrix, Bool &fully_inside)C
+{
+   fully_inside=true;
+
+   Vec dx =ext.ext.x*matrix.x,
+       dy =ext.ext.y*matrix.y,
+       dz =ext.ext.z*matrix.z,
+    #if 0
+       pos=ext.pos*matrix-T.matrix.pos; // no need for 'VecD'
+    #else // faster than above
+       pos=ext.pos; pos*=matrix; pos-=T.matrix.pos; // #VecMulMatrix
+    #endif
+
+   if(persp)
+   {
+      Flt z=Dot(pos, T.matrix.z);
+    //if( z<0 || z>range)
+      {
+         Flt bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal);
+         if(z<      bz){if(z<     -bz)return false; fully_inside=false;} // b
+         if(z>range-bz){if(z>range+bz)return false; fully_inside=false;} // f
+         MAX(z, 0);
+      }
+
+      Flt x=Dot(pos, T.matrix.x), bx=fov_tan.x*z+eye_dist_2;
+    //if(Abs(x)>bx)
+      {
+         Flt bxr=OBoxLength(dx, dy, dz, plane[DIR_RIGHT].normal)*fov_cos_inv.x; if(x> bx-bxr){if(x> bx+bxr)return false; fully_inside=false;} // r
+         Flt bxl=OBoxLength(dx, dy, dz, plane[DIR_LEFT ].normal)*fov_cos_inv.x; if(x<-bx+bxl){if(x<-bx-bxl)return false; fully_inside=false;} // l
+      }
+
+      Flt y=Dot(pos, T.matrix.y), by=fov_tan.y*z;
+    //if(Abs(y)>by)
+      {
+         Flt bxu=OBoxLength(dx, dy, dz, plane[DIR_UP   ].normal)*fov_cos_inv.y; if(y> by-bxu){if(y> by+bxu)return false; fully_inside=false;} // u
+         Flt bxd=OBoxLength(dx, dy, dz, plane[DIR_DOWN ].normal)*fov_cos_inv.y; if(y<-by+bxd){if(y<-by-bxd)return false; fully_inside=false;} // d
+      }
+
+      if(extra)
+      {
+         if(extraPlane())
+         {
+            Flt e=Dist(pos+T.matrix.pos, extra_plane), be=OBoxLength(dx, dy, dz, extra_plane.normal); if(e>-be){if(e>be)return false; fully_inside=false;}
+         }
+         /* FIXME 'matrix' support
+         if(extraBall())
+         {
+            Vec d=extra_ball.pos-ext.pos; d.abs(); // no need for 'VecD'
+
+            if(Dist2(Max(0, d.x-ext.ext.x),
+                     Max(0, d.y-ext.ext.y),
+                     Max(0, d.z-ext.ext.z))>extra_ball_r2)return false; // check minimum distance, if overlapping
+
+            if(Dist2(       d.x+ext.ext.x ,
+                            d.y+ext.ext.y ,
+                            d.z+ext.ext.z )>extra_ball_r2)fully_inside=false; // check maximum distance, if fully inside
+         }*/
+      }
+   }else
+   {
+      Flt x=Abs(Dot(pos, T.matrix.x))-T.size.x, bx=OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
+      Flt y=Abs(Dot(pos, T.matrix.y))-T.size.y, by=OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
+      Flt z=Abs(Dot(pos, T.matrix.z))-T.size.z, bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
+   }
+   return true;
+}
+Bool FrustumClass::operator()(C Extent &ext, C Matrix &matrix, Bool &fully_inside)C
+{
+   fully_inside=true;
+
+   Vec dx =ext.ext.x*matrix.x,
+       dy =ext.ext.y*matrix.y,
+       dz =ext.ext.z*matrix.z,
+    #if 0
+       pos=ext.pos*matrix-T.matrix.pos; // no need for 'VecD'
+    #else // faster than above
+       pos=ext.pos; pos*=matrix; pos-=T.matrix.pos; // #VecMulMatrix
+    #endif
+
+   if(persp)
+   {
+      Flt z=Dot(pos, T.matrix.z);
+    //if( z<0 || z>range)
+      {
+         Flt bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal);
+         if(z<      bz){if(z<     -bz)return false; fully_inside=false;} // b
+         if(z>range-bz){if(z>range+bz)return false; fully_inside=false;} // f
+         MAX(z, 0);
+      }
+
+      Flt x=Dot(pos, T.matrix.x), bx=fov_tan.x*z+eye_dist_2;
+    //if(Abs(x)>bx)
+      {
+         Flt bxr=OBoxLength(dx, dy, dz, plane[DIR_RIGHT].normal)*fov_cos_inv.x; if(x> bx-bxr){if(x> bx+bxr)return false; fully_inside=false;} // r
+         Flt bxl=OBoxLength(dx, dy, dz, plane[DIR_LEFT ].normal)*fov_cos_inv.x; if(x<-bx+bxl){if(x<-bx-bxl)return false; fully_inside=false;} // l
+      }
+
+      Flt y=Dot(pos, T.matrix.y), by=fov_tan.y*z;
+    //if(Abs(y)>by)
+      {
+         Flt bxu=OBoxLength(dx, dy, dz, plane[DIR_UP   ].normal)*fov_cos_inv.y; if(y> by-bxu){if(y> by+bxu)return false; fully_inside=false;} // u
+         Flt bxd=OBoxLength(dx, dy, dz, plane[DIR_DOWN ].normal)*fov_cos_inv.y; if(y<-by+bxd){if(y<-by-bxd)return false; fully_inside=false;} // d
+      }
+
+      if(extra)
+      {
+         if(extraPlane())
+         {
+            Flt e=Dist(pos+T.matrix.pos, extra_plane), be=OBoxLength(dx, dy, dz, extra_plane.normal); if(e>-be){if(e>be)return false; fully_inside=false;}
+         }
+         /* FIXME 'matrix' support
+         if(extraBall())
+         {
+            Vec d=extra_ball.pos-ext.pos; d.abs(); // no need for 'VecD'
+
+            if(Dist2(Max(0, d.x-ext.ext.x),
+                     Max(0, d.y-ext.ext.y),
+                     Max(0, d.z-ext.ext.z))>extra_ball_r2)return false; // check minimum distance, if overlapping
+
+            if(Dist2(       d.x+ext.ext.x ,
+                            d.y+ext.ext.y ,
+                            d.z+ext.ext.z )>extra_ball_r2)fully_inside=false; // check maximum distance, if fully inside
+         }*/
+      }
+   }else
+   {
+      Flt x=Abs(Dot(pos, T.matrix.x))-T.size.x, bx=OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
+      Flt y=Abs(Dot(pos, T.matrix.y))-T.size.y, by=OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
+      Flt z=Abs(Dot(pos, T.matrix.z))-T.size.z, bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
+   }
+   return true;
+}
+Bool FrustumClass::operator()(C Extent &ext, C MatrixM &matrix, Bool &fully_inside)C
+{
+   fully_inside=true;
+
+   Vec dx =ext.ext.x*matrix.x,
+       dy =ext.ext.y*matrix.y,
+       dz =ext.ext.z*matrix.z,
+       pos=ext.pos  *matrix-T.matrix.pos; // no need for 'VecD' if all computations done before setting to 'Vec'
+
+   if(persp)
+   {
+      Flt z=Dot(pos, T.matrix.z);
+    //if( z<0 || z>range)
+      {
+         Flt bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal);
+         if(z<      bz){if(z<     -bz)return false; fully_inside=false;} // b
+         if(z>range-bz){if(z>range+bz)return false; fully_inside=false;} // f
+         MAX(z, 0);
+      }
+
+      Flt x=Dot(pos, T.matrix.x), bx=fov_tan.x*z+eye_dist_2;
+    //if(Abs(x)>bx)
+      {
+         Flt bxr=OBoxLength(dx, dy, dz, plane[DIR_RIGHT].normal)*fov_cos_inv.x; if(x> bx-bxr){if(x> bx+bxr)return false; fully_inside=false;} // r
+         Flt bxl=OBoxLength(dx, dy, dz, plane[DIR_LEFT ].normal)*fov_cos_inv.x; if(x<-bx+bxl){if(x<-bx-bxl)return false; fully_inside=false;} // l
+      }
+
+      Flt y=Dot(pos, T.matrix.y), by=fov_tan.y*z;
+    //if(Abs(y)>by)
+      {
+         Flt bxu=OBoxLength(dx, dy, dz, plane[DIR_UP   ].normal)*fov_cos_inv.y; if(y> by-bxu){if(y> by+bxu)return false; fully_inside=false;} // u
+         Flt bxd=OBoxLength(dx, dy, dz, plane[DIR_DOWN ].normal)*fov_cos_inv.y; if(y<-by+bxd){if(y<-by-bxd)return false; fully_inside=false;} // d
+      }
+
+      if(extra)
+      {
+         if(extraPlane())
+         {
+            Flt e=Dist(pos+T.matrix.pos, extra_plane), be=OBoxLength(dx, dy, dz, extra_plane.normal); if(e>-be){if(e>be)return false; fully_inside=false;}
+         }
+         /* FIXME 'matrix' support
+         if(extraBall())
+         {
+            Vec d=extra_ball.pos-ext.pos; d.abs(); // no need for 'VecD'
+
+            if(Dist2(Max(0, d.x-ext.ext.x),
+                     Max(0, d.y-ext.ext.y),
+                     Max(0, d.z-ext.ext.z))>extra_ball_r2)return false; // check minimum distance, if overlapping
+
+            if(Dist2(       d.x+ext.ext.x ,
+                            d.y+ext.ext.y ,
+                            d.z+ext.ext.z )>extra_ball_r2)fully_inside=false; // check maximum distance, if fully inside
+         }*/
+      }
+   }else
+   {
+      Flt x=Abs(Dot(pos, T.matrix.x))-T.size.x, bx=OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
+      Flt y=Abs(Dot(pos, T.matrix.y))-T.size.y, by=OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
+      Flt z=Abs(Dot(pos, T.matrix.z))-T.size.z, bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
    }
    return true;
 }
