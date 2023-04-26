@@ -676,10 +676,10 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
 {
    fully_inside=true;
 
-   Vec pos=ext.pos-matrix.pos; // no need for 'VecD'
+   Vec pos=ext.pos-T.matrix.pos; // no need for 'VecD'
    if(persp)
    {
-      Flt z=Dot(pos, matrix.z);
+      Flt z=Dot(pos, T.matrix.z);
     //if( z<0 || z>range)
       {
          Flt bz=BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]);
@@ -688,14 +688,14 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
          MAX(z, 0);
       }
 
-      Flt x=Dot(pos, matrix.x), bx=fov_tan.x*z+eye_dist_2;
+      Flt x=Dot(pos, T.matrix.x), bx=fov_tan.x*z+eye_dist_2;
     //if(Abs(x)>bx)
       {
          Flt bxr=BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT])*fov_cos_inv.x; if(x> bx-bxr){if(x> bx+bxr)return false; fully_inside=false;} // r
          Flt bxl=BoxLengthAbs(ext.ext, plane_n_abs[DIR_LEFT ])*fov_cos_inv.x; if(x<-bx+bxl){if(x<-bx-bxl)return false; fully_inside=false;} // l
       }
 
-      Flt y=Dot(pos, matrix.y), by=fov_tan.y*z;
+      Flt y=Dot(pos, T.matrix.y), by=fov_tan.y*z;
     //if(Abs(y)>by)
       {
          Flt bxu=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP   ])*fov_cos_inv.y; if(y> by-bxu){if(y> by+bxu)return false; fully_inside=false;} // u
@@ -706,7 +706,7 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
       {
          if(extraPlane())
          {
-            Flt e=Dist(pos+matrix.pos, extra_plane), be=BoxLengthAbs(ext.ext, extra_plane_n_abs); if(e>-be){if(e>be)return false; fully_inside=false;}
+            Flt e=Dist(pos+T.matrix.pos, extra_plane), be=BoxLengthAbs(ext.ext, extra_plane_n_abs); if(e>-be){if(e>be)return false; fully_inside=false;}
          }
          if(extraBall())
          {
@@ -723,19 +723,18 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
       }
    }else
    {
-      Flt x=Abs(Dot(pos, matrix.x))-T.size.x, bx=BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
-      Flt y=Abs(Dot(pos, matrix.y))-T.size.y, by=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
-      Flt z=Abs(Dot(pos, matrix.z))-T.size.z, bz=BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
+      Flt x=Abs(Dot(pos, T.matrix.x))-T.size.x, bx=BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
+      Flt y=Abs(Dot(pos, T.matrix.y))-T.size.y, by=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
+      Flt z=Abs(Dot(pos, T.matrix.z))-T.size.z, bz=BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
    }
    return true;
 }
 /******************************************************************************/
-Bool FrustumClass::operator()(C Box  &box                         )C {return T(Extent(box     )              );}
-Bool FrustumClass::operator()(C Box  &box, C Matrix3 &matrix      )C {return T(Extent(box     ), matrix      );}
-Bool FrustumClass::operator()(C Box  &box, C Matrix  &matrix      )C {return T(Extent(box     ), matrix      );}
-Bool FrustumClass::operator()(C Box  &box, C MatrixM &matrix      )C {return T(Extent(box     ), matrix      );}
-Bool FrustumClass::operator()(C Box  &box,   Bool    &fully_inside)C {return T(Extent(box     ), fully_inside);}
-Bool FrustumClass::operator()(C OBox &obox                        )C {return T(Extent(obox.box), obox.matrix );} // here we assume that 'obox.matrix' can be scaled
+Bool FrustumClass::operator()(C Box  &box                   )C {return T(Extent(box     )             );}
+Bool FrustumClass::operator()(C Box  &box, C Matrix3 &matrix)C {return T(Extent(box     ), matrix     );}
+Bool FrustumClass::operator()(C Box  &box, C Matrix  &matrix)C {return T(Extent(box     ), matrix     );}
+Bool FrustumClass::operator()(C Box  &box, C MatrixM &matrix)C {return T(Extent(box     ), matrix     );}
+Bool FrustumClass::operator()(C OBox &obox                  )C {return T(Extent(obox.box), obox.matrix);} // here we assume that 'obox.matrix' can be scaled
 /******************************************************************************/
 Bool FrustumClass::operator()(C Shape &shape)C
 {

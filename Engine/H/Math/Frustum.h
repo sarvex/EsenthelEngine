@@ -20,17 +20,19 @@ struct FrustumClass // Frustum
    Bool operator()(C Capsule  &capsule)C;
    Bool operator()(C CapsuleM &capsule)C;
 
-   Bool operator()(C Extent &ext                         )C;
-   Bool operator()(C Extent &ext, C Matrix3 &matrix      )C; // 'ext' transformed by 'matrix'
-   Bool operator()(C Extent &ext, C Matrix  &matrix      )C; // 'ext' transformed by 'matrix'
-   Bool operator()(C Extent &ext, C MatrixM &matrix      )C; // 'ext' transformed by 'matrix'
-   Bool operator()(C Extent &ext,   Bool    &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
+   Bool operator()(C Extent &ext                                       )C;
+   Bool operator()(C Extent &ext, C Matrix3 &matrix                    )C; // 'ext' transformed by 'matrix'
+   Bool operator()(C Extent &ext, C Matrix  &matrix                    )C; // 'ext' transformed by 'matrix'
+   Bool operator()(C Extent &ext, C MatrixM &matrix                    )C; // 'ext' transformed by 'matrix'
+   Bool operator()(C Extent &ext,                    Bool &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
+   Bool operator()(C Extent &ext, C Matrix3 &matrix, Bool &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
+   Bool operator()(C Extent &ext, C Matrix  &matrix, Bool &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
+   Bool operator()(C Extent &ext, C MatrixM &matrix, Bool &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
 
-   Bool operator()(C Box &box                         )C;
-   Bool operator()(C Box &box, C Matrix3 &matrix      )C; // 'box' transformed by 'matrix'
-   Bool operator()(C Box &box, C Matrix  &matrix      )C; // 'box' transformed by 'matrix'
-   Bool operator()(C Box &box, C MatrixM &matrix      )C; // 'box' transformed by 'matrix'
-   Bool operator()(C Box &box,   Bool    &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'box' is fully inside the frustum
+   Bool operator()(C Box &box                   )C;
+   Bool operator()(C Box &box, C Matrix3 &matrix)C; // 'box' transformed by 'matrix'
+   Bool operator()(C Box &box, C Matrix  &matrix)C; // 'box' transformed by 'matrix'
+   Bool operator()(C Box &box, C MatrixM &matrix)C; // 'box' transformed by 'matrix'
 
    Bool operator()(C OBox &obox)C;
 
