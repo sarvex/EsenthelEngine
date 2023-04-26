@@ -524,6 +524,63 @@ Bool FrustumClass::operator()(C Extent &ext)C
    }
    return true;
 }
+Bool FrustumClass::operator()(C Extent &ext, C Matrix3 &matrix)C
+{
+   Vec dx =ext.ext.x*matrix.x,
+       dy =ext.ext.y*matrix.y,
+       dz =ext.ext.z*matrix.z,
+    #if 0
+       pos=ext.pos*matrix; // no need for 'VecD'
+    #else // faster than above
+       pos=ext.pos; pos*=matrix; // #VecMulMatrix
+    #endif
+
+   if(persp)
+   {
+      Flt z=Dot(pos, T.matrix.z);
+      if( z<0 || z>range)
+      {
+         Flt bz=OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal);
+         if(z<-bz || z>range+bz)return false; // fb
+         MAX(z, 0);
+      }
+
+      Flt x=Dot(pos, T.matrix.x), bx=fov_tan.x*z+eye_dist_2;
+      if(Abs(x)>bx)
+      {
+         if(x> bx + OBoxLength(dx, dy, dz, plane[DIR_RIGHT].normal)*fov_cos_inv.x)return false; // r
+         if(x<-bx - OBoxLength(dx, dy, dz, plane[DIR_LEFT ].normal)*fov_cos_inv.x)return false; // l
+      }
+
+      Flt y=Dot(pos, T.matrix.y), by=fov_tan.y*z;
+      if(Abs(y)>by)
+      {
+         if(y> by + OBoxLength(dx, dy, dz, plane[DIR_UP   ].normal)*fov_cos_inv.y)return false; // u
+         if(y<-by - OBoxLength(dx, dy, dz, plane[DIR_DOWN ].normal)*fov_cos_inv.y)return false; // d
+      }
+
+      if(extra)
+      {
+         if(extraPlane())
+         {
+            Flt e=Dist(pos, extra_plane);
+            if( e>0)if(e>OBoxLength(dx, dy, dz, extra_plane.normal))return false; // do a fast "e>0" check first to avoid calculating 'OBoxLengthAbs' when unnecessary
+         }
+         if(extraBall() && Dist2(extra_ball.pos, ext, matrix)>extra_ball_r2)return false;
+      }
+   }else
+   {
+      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y;
+      if( y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
+
+      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x;
+      if( x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
+
+      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z;
+      if( z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
+   }
+   return true;
+}
 Bool FrustumClass::operator()(C Extent &ext, C Matrix &matrix)C
 {
    Vec dx =ext.ext.x*matrix.x,
@@ -694,6 +751,7 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
 }
 /******************************************************************************/
 Bool FrustumClass::operator()(C Box  &box                         )C {return T(Extent(box     )              );}
+Bool FrustumClass::operator()(C Box  &box, C Matrix3 &matrix      )C {return T(Extent(box     ), matrix      );}
 Bool FrustumClass::operator()(C Box  &box, C Matrix  &matrix      )C {return T(Extent(box     ), matrix      );}
 Bool FrustumClass::operator()(C Box  &box, C MatrixM &matrix      )C {return T(Extent(box     ), matrix      );}
 Bool FrustumClass::operator()(C Box  &box,   Bool    &fully_inside)C {return T(Extent(box     ), fully_inside);}

@@ -21,11 +21,13 @@ struct FrustumClass // Frustum
    Bool operator()(C CapsuleM &capsule)C;
 
    Bool operator()(C Extent &ext                         )C;
+   Bool operator()(C Extent &ext, C Matrix3 &matrix      )C; // 'ext' transformed by 'matrix'
    Bool operator()(C Extent &ext, C Matrix  &matrix      )C; // 'ext' transformed by 'matrix'
    Bool operator()(C Extent &ext, C MatrixM &matrix      )C; // 'ext' transformed by 'matrix'
    Bool operator()(C Extent &ext,   Bool    &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'ext' is fully inside the frustum
 
    Bool operator()(C Box &box                         )C;
+   Bool operator()(C Box &box, C Matrix3 &matrix      )C; // 'box' transformed by 'matrix'
    Bool operator()(C Box &box, C Matrix  &matrix      )C; // 'box' transformed by 'matrix'
    Bool operator()(C Box &box, C MatrixM &matrix      )C; // 'box' transformed by 'matrix'
    Bool operator()(C Box &box,   Bool    &fully_inside)C; // 'fully_inside'=after this function returns this will be set to if the 'box' is fully inside the frustum
@@ -36,6 +38,7 @@ struct FrustumClass // Frustum
    Bool operator()(C Shape *shape, Int shapes)C;
 
    Bool operator()(C Mesh &mesh                   )C {return T(mesh.ext        );} // 'mesh.ext'
+   Bool operator()(C Mesh &mesh, C Matrix3 &matrix)C {return T(mesh.ext, matrix);} // 'mesh.ext' transformed by 'matrix'
    Bool operator()(C Mesh &mesh, C Matrix  &matrix)C {return T(mesh.ext, matrix);} // 'mesh.ext' transformed by 'matrix'
    Bool operator()(C Mesh &mesh, C MatrixM &matrix)C {return T(mesh.ext, matrix);} // 'mesh.ext' transformed by 'matrix'
 

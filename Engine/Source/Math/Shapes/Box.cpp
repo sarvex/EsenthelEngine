@@ -645,6 +645,20 @@ Dbl Dist2(C VecD &point, C Extent &ext)
                 Max(0, Abs(point.z-ext.pos.z)-ext.ext.z));
 }
 /******************************************************************************/
+Flt Dist2(C VecD &point, C Extent &ext, C Matrix3 &ext_matrix)
+{
+#if 0 // slow
+   Vec v; v.fromDiv(point, ext_matrix);
+   return Dist2(Max(0, Abs(v.x-ext.pos.x)-ext.ext.x)*ext_matrix.x.length(),
+                Max(0, Abs(v.y-ext.pos.y)-ext.ext.y)*ext_matrix.y.length(),
+                Max(0, Abs(v.z-ext.pos.z)-ext.ext.z)*ext_matrix.z.length());
+#else // optimized
+   Vec scale2=ext_matrix.scale2(), v; v.fromDivNormalized(point, ext_matrix);
+   return Sqr(Max(0, Abs(v.x/scale2.x-ext.pos.x)-ext.ext.x))*scale2.x
+         +Sqr(Max(0, Abs(v.y/scale2.y-ext.pos.y)-ext.ext.y))*scale2.y
+         +Sqr(Max(0, Abs(v.z/scale2.z-ext.pos.z)-ext.ext.z))*scale2.z;
+#endif
+}
 Flt Dist2(C VecD &point, C Extent &ext, C Matrix &ext_matrix)
 {
 #if 0 // slow
