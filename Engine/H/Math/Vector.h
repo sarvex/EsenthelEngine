@@ -1510,6 +1510,16 @@ struct VecUS2 // Vector 2D (Unsigned Short)
    friend Vec2 operator* (Flt f, C VecUS2 &v) {return Vec2(f*v.x, f*v.y);}
    friend Vec2 operator/ (Flt f, C VecUS2 &v) {return Vec2(f/v.x, f/v.y);}
 
+   friend Vec2 operator+ (C VecUS2 &a, C Vec2 &b) {return Vec2(a.x+b.x, a.y+b.y);}
+   friend Vec2 operator- (C VecUS2 &a, C Vec2 &b) {return Vec2(a.x-b.x, a.y-b.y);}
+   friend Vec2 operator* (C VecUS2 &a, C Vec2 &b) {return Vec2(a.x*b.x, a.y*b.y);}
+   friend Vec2 operator/ (C VecUS2 &a, C Vec2 &b) {return Vec2(a.x/b.x, a.y/b.y);}
+
+   friend Vec2 operator+ (C Vec2 &a, C VecUS2 &b) {return Vec2(a.x+b.x, a.y+b.y);}
+   friend Vec2 operator- (C Vec2 &a, C VecUS2 &b) {return Vec2(a.x-b.x, a.y-b.y);}
+   friend Vec2 operator* (C Vec2 &a, C VecUS2 &b) {return Vec2(a.x*b.x, a.y*b.y);}
+   friend Vec2 operator/ (C Vec2 &a, C VecUS2 &b) {return Vec2(a.x/b.x, a.y/b.y);}
+
    Bool any()C {return x || y;} // if any component is non-zero
 
               VecUS2() {}
