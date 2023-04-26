@@ -513,14 +513,9 @@ Bool FrustumClass::operator()(C Extent &ext)C
       }
    }else
    {
-      Flt y=Abs(Dot(pos, matrix.y)), by=T.size.y;
-      if( y>by)if(y>by+BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]))return false; // ud
-
-      Flt x=Abs(Dot(pos, matrix.x)), bx=T.size.x;
-      if( x>bx)if(x>bx+BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]))return false; // rl
-
-      Flt z=Abs(Dot(pos, matrix.z)), bz=T.size.z;
-      if( z>bz)if(z>bz+BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]))return false; // fb
+      Flt x=Abs(Dot(pos, matrix.x)), bx=T.size.x; if(x>bx)if(x>bx+BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]))return false; // rl
+      Flt y=Abs(Dot(pos, matrix.y)), by=T.size.y; if(y>by)if(y>by+BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]))return false; // ud
+      Flt z=Abs(Dot(pos, matrix.z)), bz=T.size.z; if(z>bz)if(z>bz+BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]))return false; // fb
    }
    return true;
 }
@@ -570,14 +565,9 @@ Bool FrustumClass::operator()(C Extent &ext, C Matrix3 &matrix)C
       }
    }else
    {
-      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y;
-      if( y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
-
-      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x;
-      if( x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
-
-      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z;
-      if( z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
+      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x; if(x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
+      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y; if(y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
+      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z; if(z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
    }
    return true;
 }
@@ -627,14 +617,9 @@ Bool FrustumClass::operator()(C Extent &ext, C Matrix &matrix)C
       }
    }else
    {
-      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y;
-      if( y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
-
-      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x;
-      if( x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
-
-      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z;
-      if( z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
+      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x; if(x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
+      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y; if(y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
+      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z; if(z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
    }
    return true;
 }
@@ -680,14 +665,9 @@ Bool FrustumClass::operator()(C Extent &ext, C MatrixM &matrix)C
       }
    }else
    {
-      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y;
-      if( y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
-
-      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x;
-      if( x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
-
-      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z;
-      if( z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
+      Flt x=Abs(Dot(pos, T.matrix.x)), bx=T.size.x; if(x>bx)if(x>bx+OBoxLength(dx, dy, dz, plane[DIR_RIGHT  ].normal))return false; // rl
+      Flt y=Abs(Dot(pos, T.matrix.y)), by=T.size.y; if(y>by)if(y>by+OBoxLength(dx, dy, dz, plane[DIR_UP     ].normal))return false; // ud
+      Flt z=Abs(Dot(pos, T.matrix.z)), bz=T.size.z; if(z>bz)if(z>bz+OBoxLength(dx, dy, dz, plane[DIR_FORWARD].normal))return false; // fb
    }
    return true;
 }
@@ -743,8 +723,8 @@ Bool FrustumClass::operator()(C Extent &ext, Bool &fully_inside)C
       }
    }else
    {
-      Flt y=Abs(Dot(pos, matrix.y))-T.size.y, by=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
       Flt x=Abs(Dot(pos, matrix.x))-T.size.x, bx=BoxLengthAbs(ext.ext, plane_n_abs[DIR_RIGHT  ]); if(x>-bx){if(x>bx)return false; fully_inside=false;} // rl
+      Flt y=Abs(Dot(pos, matrix.y))-T.size.y, by=BoxLengthAbs(ext.ext, plane_n_abs[DIR_UP     ]); if(y>-by){if(y>by)return false; fully_inside=false;} // ud
       Flt z=Abs(Dot(pos, matrix.z))-T.size.z, bz=BoxLengthAbs(ext.ext, plane_n_abs[DIR_FORWARD]); if(z>-bz){if(z>bz)return false; fully_inside=false;} // fb
    }
    return true;
