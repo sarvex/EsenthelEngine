@@ -2714,6 +2714,9 @@ MatrixD& MatrixD::setPosDir   (C VecD &pos, C VecD &dir, C VecD &up             
 Matrix & Matrix ::setPosDir   (C Vec  &pos, C Vec  &dir, C Vec  &up, C Vec  &right) {     z=dir; y=up; x=right; T.pos=pos; return T;}
 MatrixM& MatrixM::setPosDir   (C VecD &pos, C Vec  &dir, C Vec  &up, C Vec  &right) {     z=dir; y=up; x=right; T.pos=pos; return T;}
 MatrixD& MatrixD::setPosDir   (C VecD &pos, C VecD &dir, C VecD &up, C VecD &right) {     z=dir; y=up; x=right; T.pos=pos; return T;}
+
+Matrix & Matrix ::setPosTerrainOrient(C Vec  &pos, DIR_ENUM dir) {super::setTerrainOrient(dir); T.pos=pos; return T;}
+MatrixM& MatrixM::setPosTerrainOrient(C VecD &pos, DIR_ENUM dir) {super::setTerrainOrient(dir); T.pos=pos; return T;}
 /******************************************************************************/
 Matrix3& Matrix3::setRotation(C Vec &dir_from, C Vec &dir_to) // !! Warning: this will give identity if directions are opposite "dir_from==-dir_to" !!
 {

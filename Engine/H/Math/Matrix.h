@@ -613,6 +613,8 @@ struct Matrix : Matrix3 // Matrix 4x3 (orientation + scale + position)
    Matrix& setPosDir   (C Vec &pos, C Vec &dir, C Vec &up              ); // set as pos='pos', z='dir', y='up' and calculate correct x  , 'dir' 'up'         must be normalized
    Matrix& setPosDir   (C Vec &pos, C Vec &dir, C Vec &up, C Vec &right); // set as pos='pos', z='dir', y='up', x='right'               , 'dir' 'up' 'right' must be normalized
 
+   Matrix& setPosTerrainOrient(C Vec &pos, DIR_ENUM dir); // set as orientation from DIR_ENUM to be used for drawing spherical terrain heightmaps
+
    Matrix& set          (C Box &src, C Box &dest); // set as matrix that transforms 'src' to 'dest' (src*m=dest)
    Matrix& setNormalizeX(C Box &box             ); // set as matrix that (box*m).w()         =1
    Matrix& setNormalizeY(C Box &box             ); // set as matrix that (box*m).h()         =1
@@ -815,6 +817,8 @@ struct MatrixM : Matrix3 // Matrix 4x3 (orientation + scale + position, mixed pr
    MatrixM& setPosDir   (C VecD &pos, C Vec &dir                         ); // set as pos='pos', z='dir'         and calculate correct x,y, 'dir'              must be normalized
    MatrixM& setPosDir   (C VecD &pos, C Vec &dir, C Vec &up              ); // set as pos='pos', z='dir', y='up' and calculate correct x  , 'dir' 'up'         must be normalized
    MatrixM& setPosDir   (C VecD &pos, C Vec &dir, C Vec &up, C Vec &right); // set as pos='pos', z='dir', y='up', x='right'               , 'dir' 'up' 'right' must be normalized
+
+   MatrixM& setPosTerrainOrient(C VecD &pos, DIR_ENUM dir); // set as orientation from DIR_ENUM to be used for drawing spherical terrain heightmaps
 
    // operations
    MatrixM& setTransformAtPos(C VecD &pos, C Matrix3 &matrix); // set as transformation at position
