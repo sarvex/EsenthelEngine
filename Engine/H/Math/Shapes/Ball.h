@@ -219,6 +219,9 @@ Bool Cuts(C Ball   &a    , C Ball  &b   ); // if ball     cuts a ball
 Bool Cuts(C Ball   &a    , C BallM &b   ); // if ball     cuts a ball
 Bool Cuts(C BallM  &a    , C BallM &b   ); // if ball     cuts a ball
 
+Bool Cuts(C Extent &ext, C Matrix3 &ext_matrix, C Matrix3 &ext_matrix_inv, C Ball &ball); // if extent transformed by matrix cuts a ball, 'ext_matrix'=extent matrix, 'ext_matrix_inv'=extent matrix inverse
+Bool Cuts(C Extent &ext, C Matrix  &ext_matrix, C Matrix  &ext_matrix_inv, C Ball &ball); // if extent transformed by matrix cuts a ball, 'ext_matrix'=extent matrix, 'ext_matrix_inv'=extent matrix inverse
+
 Int CutsLineBall(C Vec  &line_pos  , C Vec  &line_dir, C Ball  &ball, Vec  *contact_a=null, Vec  *contact_b=null); // if infinite straight line cuts a ball, return number of contacts, 'line_dir'=straight line direction (must be normalized)
 Int CutsLineBall(C VecD &line_pos  , C VecD &line_dir, C BallM &ball, VecD *contact_a=null, VecD *contact_b=null); // if infinite straight line cuts a ball, return number of contacts, 'line_dir'=straight line direction (must be normalized)
 Int CutsEdgeBall(C Vec  &edge_start, C Vec  &edge_end, C Ball  &ball, Vec  *contact_a=null, Vec  *contact_b=null); // if edge                   cuts a ball, return number of contacts
