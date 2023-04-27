@@ -342,9 +342,13 @@ void Box::toCorners(Vec (&v)[8])C
 }
 void Extent::toCorners(Vec (&v)[8])C
 {
-   FREP(8)v[i].set((i&1) ? pos.x+ext.x : pos.x-ext.x,
-                   (i&2) ? pos.y+ext.y : pos.y-ext.y,
-                   (i&4) ? pos.z+ext.z : pos.z-ext.z);
+   Flt x[2]={minX(), maxX()};
+   Flt y[2]={minY(), maxY()};
+   Flt z[2]={minZ(), maxZ()};
+
+   FREP(8)v[i].set(x[ i    &1],
+                   y[(i>>1)&1],
+                   z[(i>>2)&1]);
 }
 void OBox::toCorners(Vec (&v)[8])C
 {
