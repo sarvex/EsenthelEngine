@@ -320,6 +320,7 @@ BoxI& BoxI::include(C BoxI &b)
    if(b.min.z<min.z)min.z=b.min.z; if(b.max.z>max.z)max.z=b.max.z;
    return T;
 }
+/******************************************************************************/
 Box& Box::include(C Extent &ext, C Matrix &matrix)
 {
    Vec x  =Abs(ext.ext.x*matrix.x),
