@@ -287,6 +287,24 @@ BoxI& BoxI::include(C BoxI &b)
    if(b.min.z<min.z)min.z=b.min.z; if(b.max.z>max.z)max.z=b.max.z;
    return T;
 }
+Box& Box::include(C Extent &ext, C Matrix &matrix)
+{
+   Vec x  =Abs(ext.ext.x*matrix.x),
+       y  =Abs(ext.ext.y*matrix.y),
+       z  =Abs(ext.ext.z*matrix.z),
+       pos=    ext.pos  *matrix;
+
+   Flt w=x.x+y.x+z.x;
+   Flt h=x.y+y.y+z.y;
+   Flt d=x.z+y.z+z.z;
+
+   Flt lo=pos.x-w, hi=pos.x+w; MIN(min.x, lo); MAX(max.x, hi);
+       lo=pos.y-h, hi=pos.y+h; MIN(min.y, lo); MAX(max.y, hi);
+       lo=pos.z-d, hi=pos.z+d; MIN(min.z, lo); MAX(max.z, hi);
+   
+   return T;
+}
+/******************************************************************************/
 Extent& Extent::includeX(  Flt  x) {T=Box(T).includeX(x); return T;}
 Extent& Extent::includeY(  Flt  y) {T=Box(T).includeY(y); return T;}
 Extent& Extent::includeZ(  Flt  z) {T=Box(T).includeZ(z); return T;}
