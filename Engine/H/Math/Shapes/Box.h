@@ -116,6 +116,11 @@ struct Box // Box Shape
    Bool from     (C Vec *point, Int points, C Matrix &matrix); // set box from an array of points transformed by 'matrix', false on fail (if there are no points)
    void toCorners(  Vec (&v)[8])C; // convert to 8 corner points
 
+   Box& validIncludeX(  Flt  x); // extend box to include 'x'   , this method is faster than 'includeX' but assumes box is valid
+   Box& validIncludeY(  Flt  y); // extend box to include 'y'   , this method is faster than 'includeY' but assumes box is valid
+   Box& validIncludeZ(  Flt  z); // extend box to include 'z'   , this method is faster than 'includeZ' but assumes box is valid
+   Box& validInclude (C Vec &v); // extend box to include vector, this method is faster than 'include'  but assumes box is valid
+
    Box& mirrorX(); // mirror in X axis
    Box& mirrorY(); // mirror in Y axis
    Box& mirrorZ(); // mirror in Z axis
@@ -217,6 +222,11 @@ struct BoxD // Box Shape (double precision)
    BoxD& from    (C VecD &a, C VecD &b); // set box from 2 points
    Bool  from    (C VecD *v,   Int   n); // set box from 'n' 'v' points, false on fail
 
+   BoxD& validIncludeX(  Dbl   x); // extend box to include 'x'   , this method is faster than 'includeX' but assumes box is valid
+   BoxD& validIncludeY(  Dbl   y); // extend box to include 'y'   , this method is faster than 'includeY' but assumes box is valid
+   BoxD& validIncludeZ(  Dbl   z); // extend box to include 'z'   , this method is faster than 'includeZ' but assumes box is valid
+   BoxD& validInclude (C VecD &v); // extend box to include vector, this method is faster than 'include'  but assumes box is valid
+
               BoxD() {}
               BoxD(C VecD  &vec                                                         ) {min=max=vec                                  ;}
               BoxD(C VecD  &min, C VecD &max                                            ) {set(min, max                                );}
@@ -291,6 +301,11 @@ struct BoxI // Box Shape (integer)
    BoxI& includeZ(  Int   z); // extend box to include 'z'
    BoxI& include (C VecI &v); // extend box to include vector
    BoxI& include (C BoxI &b); // extend box to include box
+
+   BoxI& validIncludeX(  Int   x); // extend box to include 'x'   , this method is faster than 'includeX' but assumes box is valid
+   BoxI& validIncludeY(  Int   y); // extend box to include 'y'   , this method is faster than 'includeY' but assumes box is valid
+   BoxI& validIncludeZ(  Int   z); // extend box to include 'z'   , this method is faster than 'includeZ' but assumes box is valid
+   BoxI& validInclude (C VecI &v); // extend box to include vector, this method is faster than 'include'  but assumes box is valid
 
    BoxI() {}
    BoxI(C VecI &vec                                                     ) {min=max=vec                                  ;}

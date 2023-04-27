@@ -616,7 +616,7 @@ Bool MeshRender::getBox(Box &box)C
    if( pos>=0)if(C Byte *vtx=vtxLockRead())
    {
       vtx+=pos;
-      box=*(Vec*)vtx; REP(vtxs()-1){vtx+=vtxSize(); box|=*(Vec*)vtx;}
+      box=*(Vec*)vtx; REP(vtxs()-1){vtx+=vtxSize(); box.validInclude(*(Vec*)vtx);}
       vtxUnlock();
       return true;
    }
