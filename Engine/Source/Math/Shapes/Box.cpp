@@ -230,18 +230,27 @@ Box & Box ::extend (C Vec  &e) {min  -=e; max  +=e; return T;}
 BoxD& BoxD::extend (C VecD &e) {min  -=e; max  +=e; return T;}
 BoxI& BoxI::extend (C VecI &e) {min  -=e; max  +=e; return T;}
 OBox& OBox::extend (  Flt   e) {box.extend(e);      return T;}
-/******************************************************************************/
-Box & Box ::includeX(Flt x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
-BoxD& BoxD::includeX(Dbl x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
-BoxI& BoxI::includeX(Int x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
-Box & Box ::includeY(Flt y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
-BoxD& BoxD::includeY(Dbl y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
-BoxI& BoxI::includeY(Int y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
-Box & Box ::includeZ(Flt z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}
-BoxD& BoxD::includeZ(Dbl z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}
-BoxI& BoxI::includeZ(Int z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}
-/******************************************************************************/
-Box& Box::include(C Vec &v)
+/******************************************************************************
+Box & Box ::validIncludeX(Flt x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
+BoxD& BoxD::validIncludeX(Dbl x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
+BoxI& BoxI::validIncludeX(Int x) {if(x<min.x)min.x=x;else if(x>max.x)max.x=x; return T;}
+Box & Box ::validIncludeY(Flt y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
+BoxD& BoxD::validIncludeY(Dbl y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
+BoxI& BoxI::validIncludeY(Int y) {if(y<min.y)min.y=y;else if(y>max.y)max.y=y; return T;}
+Box & Box ::validIncludeZ(Flt z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}
+BoxD& BoxD::validIncludeZ(Dbl z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}
+BoxI& BoxI::validIncludeZ(Int z) {if(z<min.z)min.z=z;else if(z>max.z)max.z=z; return T;}*/
+Box & Box ::     includeX(Flt x) {if(x<min.x)min.x=x;     if(x>max.x)max.x=x; return T;}
+BoxD& BoxD::     includeX(Dbl x) {if(x<min.x)min.x=x;     if(x>max.x)max.x=x; return T;}
+BoxI& BoxI::     includeX(Int x) {if(x<min.x)min.x=x;     if(x>max.x)max.x=x; return T;}
+Box & Box ::     includeY(Flt y) {if(y<min.y)min.y=y;     if(y>max.y)max.y=y; return T;}
+BoxD& BoxD::     includeY(Dbl y) {if(y<min.y)min.y=y;     if(y>max.y)max.y=y; return T;}
+BoxI& BoxI::     includeY(Int y) {if(y<min.y)min.y=y;     if(y>max.y)max.y=y; return T;}
+Box & Box ::     includeZ(Flt z) {if(z<min.z)min.z=z;     if(z>max.z)max.z=z; return T;}
+BoxD& BoxD::     includeZ(Dbl z) {if(z<min.z)min.z=z;     if(z>max.z)max.z=z; return T;}
+BoxI& BoxI::     includeZ(Int z) {if(z<min.z)min.z=z;     if(z>max.z)max.z=z; return T;}
+/******************************************************************************
+Box& Box::validInclude(C Vec &v)
 {
    Flt x=v.x, y=v.y, z=v.z;
    if(x<min.x)min.x=x;else if(x>max.x)max.x=x;
@@ -249,7 +258,7 @@ Box& Box::include(C Vec &v)
    if(z<min.z)min.z=z;else if(z>max.z)max.z=z;
    return T;
 }
-BoxD& BoxD::include(C VecD &v)
+BoxD& BoxD::validInclude(C VecD &v)
 {
    Dbl x=v.x, y=v.y, z=v.z;
    if(x<min.x)min.x=x;else if(x>max.x)max.x=x;
@@ -257,12 +266,36 @@ BoxD& BoxD::include(C VecD &v)
    if(z<min.z)min.z=z;else if(z>max.z)max.z=z;
    return T;
 }
-BoxI& BoxI::include(C VecI &v)
+BoxI& BoxI::validInclude(C VecI &v)
 {
    Int x=v.x, y=v.y, z=v.z;
    if(x<min.x)min.x=x;else if(x>max.x)max.x=x;
    if(y<min.y)min.y=y;else if(y>max.y)max.y=y;
    if(z<min.z)min.z=z;else if(z>max.z)max.z=z;
+   return T;
+}*/
+Box& Box::include(C Vec &v)
+{
+   Flt x=v.x, y=v.y, z=v.z;
+   if(x<min.x)min.x=x; if(x>max.x)max.x=x;
+   if(y<min.y)min.y=y; if(y>max.y)max.y=y;
+   if(z<min.z)min.z=z; if(z>max.z)max.z=z;
+   return T;
+}
+BoxD& BoxD::include(C VecD &v)
+{
+   Dbl x=v.x, y=v.y, z=v.z;
+   if(x<min.x)min.x=x; if(x>max.x)max.x=x;
+   if(y<min.y)min.y=y; if(y>max.y)max.y=y;
+   if(z<min.z)min.z=z; if(z>max.z)max.z=z;
+   return T;
+}
+BoxI& BoxI::include(C VecI &v)
+{
+   Int x=v.x, y=v.y, z=v.z;
+   if(x<min.x)min.x=x; if(x>max.x)max.x=x;
+   if(y<min.y)min.y=y; if(y>max.y)max.y=y;
+   if(z<min.z)min.z=z; if(z>max.z)max.z=z;
    return T;
 }
 /******************************************************************************/
@@ -298,10 +331,10 @@ Box& Box::include(C Extent &ext, C Matrix &matrix)
    Flt h=x.y+y.y+z.y;
    Flt d=x.z+y.z+z.z;
 
-   Flt lo=pos.x-w, hi=pos.x+w; MIN(min.x, lo); MAX(max.x, hi);
-       lo=pos.y-h, hi=pos.y+h; MIN(min.y, lo); MAX(max.y, hi);
-       lo=pos.z-d, hi=pos.z+d; MIN(min.z, lo); MAX(max.z, hi);
-   
+   Flt minx=pos.x-w, maxx=pos.x+w; MIN(min.x, minx); MAX(max.x, maxx);
+   Flt miny=pos.y-h, maxy=pos.y+h; MIN(min.y, miny); MAX(max.y, maxy);
+   Flt minz=pos.z-d, maxz=pos.z+d; MIN(min.z, minz); MAX(max.z, maxz);
+
    return T;
 }
 /******************************************************************************/
