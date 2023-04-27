@@ -189,6 +189,9 @@ inline Bool SweepPlanePoint(C PlaneD2 &plane, C VecD2 &move, C VecD2 &point, Dbl
 inline Bool SweepPlanePoint(C Plane   &plane, C Vec   &move, C Vec   &point, Flt *hit_frac=null) {return SweepPointPlane(point, -move, plane, hit_frac);}
 inline Bool SweepPlanePoint(C PlaneD  &plane, C VecD  &move, C VecD  &point, Dbl *hit_frac=null) {return SweepPointPlane(point, -move, plane, hit_frac);}
 
+// check if planes intersect, and return line position and direction, returns false if they're coplanar
+Bool Intersect(C Plane &a, C Plane &b, Vec &line_pos, Vec &line_dir);
+
 // slide 'move' movement by colliding normals, this function adjusts desired 'move' vector according to colliding planes with their normals, so that 'move' vector will slide along the planes if needed, and not move through them
 void SlideMovement(Vec2 &move, C Vec2 *normal, Int normals);
 void SlideMovement(Vec  &move, C Vec  *normal, Int normals);

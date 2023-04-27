@@ -222,6 +222,14 @@ Bool CutsLinePlane(C VecD &line_pos, C VecD &line_dir, C PlaneD &plane, Dbl *hit
    return true;
 }
 /******************************************************************************/
+Bool Intersect(C Plane &a, C Plane &b, Vec &line_pos, Vec &line_dir)
+{
+   line_dir=Cross(a.normal, b.normal); if(!line_dir.normalize())return false;
+   Vec  ray=Cross(a.normal, line_dir); // ray is normalized already because both parameters are perp to each other
+   line_pos=PointOnPlaneRay(a.pos, b.pos, b.normal, ray);
+   return true;
+}
+/******************************************************************************/
 void SlideMovement(Vec2 &move, C Vec2 *normal, Int normals)
 {
    Flt dist=0; Int find=-1; REP(normals) // find biggest distance (furthest from zero) that's <0 (intersecting)
