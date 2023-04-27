@@ -938,24 +938,6 @@ Bool Cuts(C OBox &obox, C Ball &ball)
    temp.pos.fromDivNormalized(ball.pos, obox.matrix);
    return Cuts(obox.box, temp);
 }
-Bool Cuts(C Extent &ext, C Matrix3 &ext_matrix, C Matrix3 &ext_matrix_inv, C Ball &ball) // this version accepts 2 matrixes, to support precomputed non-orthogonal matrixes
-{
-   Vec ball_pos=ball.pos*ext_matrix_inv; // convert ball.pos to 'ext' space
-   Vec dist(Max(0, Abs(ext.pos.x-ball_pos.x)-ext.ext.x),
-            Max(0, Abs(ext.pos.y-ball_pos.y)-ext.ext.y),
-            Max(0, Abs(ext.pos.z-ball_pos.z)-ext.ext.z)); // calculate distance delta vector
-          dist*=ext_matrix; // convert back to world space
-   return dist.length2()<=Sqr(ball.r);
-}
-Bool Cuts(C Extent &ext, C Matrix &ext_matrix, C Matrix &ext_matrix_inv, C Ball &ball) // this version accepts 2 matrixes, to support precomputed non-orthogonal matrixes
-{
-   Vec ball_pos=ball.pos*ext_matrix_inv; // convert ball.pos to 'ext' space
-   Vec dist(Max(0, Abs(ext.pos.x-ball_pos.x)-ext.ext.x),
-            Max(0, Abs(ext.pos.y-ball_pos.y)-ext.ext.y),
-            Max(0, Abs(ext.pos.z-ball_pos.z)-ext.ext.z)); // calculate distance delta vector
-          dist*=ext_matrix.orn(); // convert back to world space
-   return dist.length2()<=Sqr(ball.r);
-}
 /******************************************************************************/
 Int CutsLineBall(C Vec &line_pos, C Vec &line_dir, C Ball &ball, Vec *contact_a, Vec *contact_b)
 {
