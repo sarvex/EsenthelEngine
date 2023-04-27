@@ -856,6 +856,16 @@ Bool Cuts(C Ball &a, C Ball &b)
 {
    return Dist2(a.pos, b.pos)<=Sqr(a.r+b.r);
 }
+Bool Cuts(C Ball &a, C Ball &b, Bool &fully_inside)
+{
+   Flt dist2=Dist2(a.pos, b.pos);
+   if (dist2<=Sqr(a.r+b.r))
+   {
+      fully_inside=(dist2<=Sqr(b.r-a.r));
+      return true;
+   }
+   return false;
+}
 Bool Cuts(C Ball &a, C BallM &b)
 {
    return Dist2(a.pos, b.pos)<=Sqr(a.r+b.r);
@@ -980,6 +990,10 @@ Int CutsEdgeBall(C Vec &edge_start, C Vec &edge_end, C Ball &ball, Vec *contact_
    return 0;
 }
 /******************************************************************************/
+Bool Inside(C Ball &a, C Ball &b)
+{
+   return Dist2(a.pos, b.pos)<=Sqr(b.r-a.r);
+}
 Bool Inside(C Box &a, C Ball &b)
 {
 #if 0 // this is slower

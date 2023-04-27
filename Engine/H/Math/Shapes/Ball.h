@@ -219,10 +219,13 @@ Bool Cuts(C Ball   &a    , C Ball  &b   ); // if ball     cuts a ball
 Bool Cuts(C Ball   &a    , C BallM &b   ); // if ball     cuts a ball
 Bool Cuts(C BallM  &a    , C BallM &b   ); // if ball     cuts a ball
 
+Bool Cuts(C Ball &a, C Ball &b, Bool &fully_inside); // if ball cuts a ball, 'fully_inside'=if 'a' is fully inside 'b' (this is set only if function returns true, if false then this value is not changed)
+
 Int CutsLineBall(C Vec  &line_pos  , C Vec  &line_dir, C Ball  &ball, Vec  *contact_a=null, Vec  *contact_b=null); // if infinite straight line cuts a ball, return number of contacts, 'line_dir'=straight line direction (must be normalized)
 Int CutsLineBall(C VecD &line_pos  , C VecD &line_dir, C BallM &ball, VecD *contact_a=null, VecD *contact_b=null); // if infinite straight line cuts a ball, return number of contacts, 'line_dir'=straight line direction (must be normalized)
 Int CutsEdgeBall(C Vec  &edge_start, C Vec  &edge_end, C Ball  &ball, Vec  *contact_a=null, Vec  *contact_b=null); // if edge                   cuts a ball, return number of contacts
 
+Bool Inside(C Ball   &a, C Ball &b); // if 'a' is fully inside 'b'
 Bool Inside(C Box    &a, C Ball &b); // if 'a' is fully inside 'b'
 Bool Inside(C Extent &a, C Ball &b); // if 'a' is fully inside 'b'
 
