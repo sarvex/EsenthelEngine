@@ -352,10 +352,10 @@ void Extent::toCorners(Vec (&v)[8])C
 }
 void OBox::toCorners(Vec (&v)[8])C
 {
-#if 0
+#if 0 // transform every corner separately
    box.toCorners(v);
    Transform(v, matrix, Elms(v));
-#else // optimized
+#else // optimized, transform only one corner, and set others as relative to it
    Vec x=matrix.x*box.w(),
        y=matrix.y*box.h(),
        z=matrix.z*box.d();
