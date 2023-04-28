@@ -402,6 +402,7 @@ struct Extent // similar to 'Box' however it operates on center position and ext
    friend Extent operator/ (C Extent &ext, C Vec     &v) {return Extent(ext)/=v;}
    friend Extent operator* (C Extent &ext, C Matrix3 &m) {return Extent(ext)*=m;}
    friend Extent operator* (C Extent &ext, C Matrix  &m) {return Extent(ext)*=m;}
+   friend Extent operator| (C Extent &ext, C Box     &b) {return Extent(ext)|=b;}
 
    // get
    Flt minX()C {return pos.x-ext.x;} // get minimum position X
