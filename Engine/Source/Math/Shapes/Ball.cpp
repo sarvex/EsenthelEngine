@@ -628,7 +628,6 @@ Bool SphereConvert::intersects(C SphereArea &area_pos, C Ball &ball, Flt min_rad
    if(ClipZ(oriented_ball, min_radius))
    {
       VecI2 ball_cell=posToCellI(oriented_ball.pos.xy/oriented_ball.pos.z);
-      Flt   r2=Sqr(oriented_ball.r);
       if(area_pos.y!=ball_cell.y  // if ball is on down or up    side
       && area_pos.x!=ball_cell.x) // if ball is on left or right side
       {
@@ -636,31 +635,31 @@ Bool SphereConvert::intersects(C SphereArea &area_pos, C Ball &ball, Flt min_rad
                  _cellToPos(area_pos.y+(area_pos.y<ball_cell.y)),
                   1);
          dir.normalize();
-         return Dist2PointLine(oriented_ball.pos, dir)<r2;
+         return Dist2PointLine(oriented_ball.pos, dir)<Sqr(oriented_ball.r);
       }
       if(ball_cell.x<area_pos.x) // ball on the left side of area
       {
          Flt cell_pos_left=_cellToPos(area_pos.x);
          Vec nrm_left(-1, 0, cell_pos_left);
-         return Dot(oriented_ball.pos, nrm_left)/nrm_left.length()<oriented_ball.r;
+         return Dot(oriented_ball.pos, nrm_left)<oriented_ball.r*nrm_left.length();
       }
       if(ball_cell.x>area_pos.x) // ball on the right side of area
       {
          Flt cell_pos_right=_cellToPos(area_pos.x+1);
          Vec nrm_right(1, 0, -cell_pos_right);
-         return Dot(oriented_ball.pos, nrm_right)/nrm_right.length()<oriented_ball.r;
+         return Dot(oriented_ball.pos, nrm_right)<oriented_ball.r*nrm_right.length();
       }
       if(ball_cell.y<area_pos.y) // ball on the down side of area
       {
          Flt cell_pos_down=_cellToPos(area_pos.y);
          Vec nrm_down(0, -1, cell_pos_down);
-         return Dot(oriented_ball.pos, nrm_down)/nrm_down.length()<oriented_ball.r;
+         return Dot(oriented_ball.pos, nrm_down)<oriented_ball.r*nrm_down.length();
       }
       if(ball_cell.y>area_pos.y) // ball on the up side of area
       {
          Flt cell_pos_up=_cellToPos(area_pos.y+1);
          Vec nrm_up(0, 1, -cell_pos_up);
-         return Dot(oriented_ball.pos, nrm_up)/nrm_up.length()<oriented_ball.r;
+         return Dot(oriented_ball.pos, nrm_up)<oriented_ball.r*nrm_up.length();
       }
       return true; // ball is on area
    }
