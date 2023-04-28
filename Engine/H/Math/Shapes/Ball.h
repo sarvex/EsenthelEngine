@@ -108,14 +108,39 @@ struct SphereArea : VecI2
 
    SphereArea() {}
    SphereArea(DIR_ENUM side, Int x, Int y) {set(side, x, y);}
+   SphereArea(C SphereAreaUS &pos        );
 };
+struct SphereAreaUS : VecUS2
+{
+   DIR_ENUM side;
+
+   SphereAreaUS& zero(                           ) {T.side=DIR_ENUM(0); T.x=0; T.y=0; return T;}
+   SphereAreaUS& set (DIR_ENUM side, Int x, Int y) {T.side=side       ; T.x=x; T.y=y; return T;}
+
+   inline   VecUS2& xy()  {return T;}
+   inline C VecUS2& xy()C {return T;}
+
+   Bool operator==(C SphereAreaUS &pos)C {return xy()==pos.xy() && side==pos.side;}
+   Bool operator!=(C SphereAreaUS &pos)C {return xy()!=pos.xy() || side!=pos.side;}
+
+   SphereAreaUS() {}
+   SphereAreaUS(DIR_ENUM side, Int x, Int y) {set(    side,     x,     y);}
+   SphereAreaUS(C SphereArea &pos          ) {set(pos.side, pos.x, pos.y);}
+};
+inline SphereArea::SphereArea(C SphereAreaUS &pos) {set(pos.side, pos.x, pos.y);}
 #if EE_PRIVATE
 struct SphereAreaDist : SphereArea
 {
    Flt dist;
 };
-inline Int Compare (C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(a.dist, b.dist);}
-inline Int CompareR(C SphereAreaDist &a, C SphereAreaDist &b) {return Compare(b.dist, a.dist);}
+struct SphereAreaUSDist : SphereAreaUS
+{
+   Flt dist;
+};
+inline Int Compare (C SphereAreaDist   &a, C SphereAreaDist   &b) {return Compare(a.dist, b.dist);}
+inline Int CompareR(C SphereAreaDist   &a, C SphereAreaDist   &b) {return Compare(b.dist, a.dist);}
+inline Int Compare (C SphereAreaUSDist &a, C SphereAreaUSDist &b) {return Compare(a.dist, b.dist);}
+inline Int CompareR(C SphereAreaUSDist &a, C SphereAreaUSDist &b) {return Compare(b.dist, a.dist);}
 #endif
 struct SphereConvert
 {
@@ -165,7 +190,8 @@ struct SphereConvertEx : SphereConvert
 
    Vec _sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int x, Int y)C; // convert spherical terrain coordinates to vector direction, 'cube_face'=terrain cube face, 'x,y'=terrain pixel coordinates (0..res-1), returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !!
 
-   void sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse=false)C; // sort 'areas' based on distance to 'pos', 'reverse'=if reverse sort order
+   void sort(MemPtr<SphereArea  > areas, C Vec &pos, Bool reverse=false)C; // sort 'areas' based on distance to 'pos', 'reverse'=if reverse sort order
+   void sort(MemPtr<SphereAreaUS> areas, C Vec &pos, Bool reverse=false)C; // sort 'areas' based on distance to 'pos', 'reverse'=if reverse sort order
 };
 
 DIR_ENUM DirToCubeFace           (C Vec &dir                   ); // convert vector direction (doesn't need to be normalized) to cube face

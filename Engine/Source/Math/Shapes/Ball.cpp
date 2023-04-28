@@ -733,6 +733,21 @@ void SphereConvertEx::sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse)C
    else         area_dist.sort(CompareR);
    REPAO(areas)=area_dist[i];
 }
+void SphereConvertEx::sort(MemPtr<SphereAreaUS> areas, C Vec &pos, Bool reverse)C
+{
+   Memt<SphereAreaUSDist> area_dist; area_dist.setNum(areas.elms()); REPA(area_dist)
+   {
+      SphereAreaUSDist &area=area_dist[i];
+      SCAST(SphereAreaUS, area)=areas[i];
+      Vec  dir=_sphereTerrainPixelCenterToDir(area.side, area.x, area.y);
+      area.dist=Dot   (pos, dir) // treat 'pos' as direction and reverse 'Compare' below
+               *RSqrt0(dir.length2()); // '_sphereTerrainPixelCenterToDir' should be normalized, but here we can just use fast approximation
+    //area.dist=Dist2 (pos, dir*RSqrt0(dir.length2())); this requires NOT reversing 'Compare' below // slower alternative
+   }
+   if(reverse)  area_dist.sort(Compare ); // 'Compare' are reversed because 'pos' is treated as direction instead of position
+   else         area_dist.sort(CompareR);
+   REPAO(areas)=area_dist[i];
+}
 /******************************************************************************/
 void SphereConvert::draw()C
 {
