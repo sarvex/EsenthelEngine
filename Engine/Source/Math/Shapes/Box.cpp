@@ -373,6 +373,18 @@ Bool Extent::from(C Vec *point, Int points)
    Box box; if(MinMax(point, points, box.min, box.max)){T=box; return true;} zero(); return false;
 }
 
+Bool Box::from(C Vec *point, Int points, C Matrix3 &matrix)
+{
+   if(points<=0 || !point){zero(); return false;}
+   for(min=max=(*point++)*matrix, points--; --points>=0; )
+   {
+      Vec v=(*point++)*matrix;
+      if(v.x<min.x)min.x=v.x;else if(v.x>max.x)max.x=v.x;
+      if(v.y<min.y)min.y=v.y;else if(v.y>max.y)max.y=v.y;
+      if(v.z<min.z)min.z=v.z;else if(v.z>max.z)max.z=v.z;
+   }
+   return true;
+}
 Bool Box::from(C Vec *point, Int points, C Matrix &matrix)
 {
    if(points<=0 || !point){zero(); return false;}

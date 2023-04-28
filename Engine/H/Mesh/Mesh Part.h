@@ -39,18 +39,20 @@ struct MeshPart // Mesh Base + Mesh Render
    MeshPart& keepOnly(MESH_FLAG flag); // keep only elements specified with 'flag'
 
    // get
-   Bool      is           (                )C {return base.is() || render.is();} // if  has any data
-   MESH_FLAG flag         (                )C;                                   // get available data
-   UInt      memUsage     (                )C;                                   // get memory usage
-   Int       vtxs         (                )C;                                   // get total number of vertexes
-   Int       edges        (                )C;                                   // get total number of edges
-   Int       tris         (                )C;                                   // get total number of triangles
-   Int       quads        (                )C;                                   // get total number of quads
-   Int       faces        (                )C;                                   // get total number of faces                    , faces    =(triangles + quads  )
-   Int       trisTotal    (                )C;                                   // get total number of triangles including quads, trisTotal=(triangles + quads*2)
-   Bool      getBox       (Box &box        )C;                                   // get box encapsulating the MeshPart, this method iterates through all vertexes, false on fail (if no vertexes are present)
-   Flt       area         (Vec *center=null)C;                                   // get surface area of all mesh faces, 'center'=if specified then it will be calculated as the average surface center
-   Bool      sameMaterials(C MeshPart &part)C;                                   // if  has exactly the same materials as 'part' mesh part, this method compares materials, multi materials and material variations
+   Bool      is           (                           )C {return base.is() || render.is();} // if  has any data
+   MESH_FLAG flag         (                           )C;                                   // get available data
+   UInt      memUsage     (                           )C;                                   // get memory usage
+   Int       vtxs         (                           )C;                                   // get total number of vertexes
+   Int       edges        (                           )C;                                   // get total number of edges
+   Int       tris         (                           )C;                                   // get total number of triangles
+   Int       quads        (                           )C;                                   // get total number of quads
+   Int       faces        (                           )C;                                   // get total number of faces                    , faces    =(triangles + quads  )
+   Int       trisTotal    (                           )C;                                   // get total number of triangles including quads, trisTotal=(triangles + quads*2)
+   Bool      getBox       (Box &box                   )C;                                   // get box encapsulating the MeshPart, this method iterates through all vertexes, false on fail (if no vertexes are present)
+   Bool      getBox       (Box &box, C Matrix3 &matrix)C;                                   // get box encapsulating the MeshPart, this method iterates through all vertexes, 'matrix'=matrix affecting vertex positions, false on fail (if no vertexes are present)
+   Bool      getBox       (Box &box, C Matrix  &matrix)C;                                   // get box encapsulating the MeshPart, this method iterates through all vertexes, 'matrix'=matrix affecting vertex positions, false on fail (if no vertexes are present)
+   Flt       area         (Vec *center=null           )C;                                   // get surface area of all mesh faces, 'center'=if specified then it will be calculated as the average surface center
+   Bool      sameMaterials(C MeshPart &part           )C;                                   // if  has exactly the same materials as 'part' mesh part, this method compares materials, multi materials and material variations
 
    // set
 #if EE_PRIVATE

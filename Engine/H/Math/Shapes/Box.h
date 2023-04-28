@@ -111,9 +111,10 @@ struct Box // Box Shape
    Box& include  (C Vec &v); // extend box to include vector
    Box& include  (C Box &b); // extend box to include box
    Box& include  (C Extent &ext, C Matrix &matrix); // extend box to include 'ext' transformed by 'matrix'
-   Box& from     (C Vec &a    , C Vec &b                    ); // set box from 2 points
-   Bool from     (C Vec *point, Int points                  ); // set box from an array of points                        , false on fail (if there are no points)
-   Bool from     (C Vec *point, Int points, C Matrix &matrix); // set box from an array of points transformed by 'matrix', false on fail (if there are no points)
+   Box& from     (C Vec &a    , C Vec &b                     ); // set box from 2 points
+   Bool from     (C Vec *point, Int points                   ); // set box from an array of points                        , false on fail (if there are no points)
+   Bool from     (C Vec *point, Int points, C Matrix3 &matrix); // set box from an array of points transformed by 'matrix', false on fail (if there are no points)
+   Bool from     (C Vec *point, Int points, C Matrix  &matrix); // set box from an array of points transformed by 'matrix', false on fail (if there are no points)
    void toCorners(  Vec (&v)[8])C; // convert to 8 corner points
 
    Box& validIncludeX(  Flt  x); // extend box to include 'x'   , this method is faster than 'includeX' but assumes box is valid

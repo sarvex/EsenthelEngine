@@ -622,6 +622,30 @@ Bool MeshRender::getBox(Box &box)C
    }
    box.zero(); return false;
 }
+Bool MeshRender::getBox(Box &box, C Matrix3 &matrix)C
+{
+   Int pos =vtxOfs(VTX_POS);
+   if( pos>=0)if(C Byte *vtx=vtxLockRead())
+   {
+      vtx+=pos;
+      box=(*(Vec*)vtx)*matrix; REP(vtxs()-1){vtx+=vtxSize(); box.validInclude((*(Vec*)vtx)*matrix);}
+      vtxUnlock();
+      return true;
+   }
+   box.zero(); return false;
+}
+Bool MeshRender::getBox(Box &box, C Matrix &matrix)C
+{
+   Int pos =vtxOfs(VTX_POS);
+   if( pos>=0)if(C Byte *vtx=vtxLockRead())
+   {
+      vtx+=pos;
+      box=(*(Vec*)vtx)*matrix; REP(vtxs()-1){vtx+=vtxSize(); box.validInclude((*(Vec*)vtx)*matrix);}
+      vtxUnlock();
+      return true;
+   }
+   box.zero(); return false;
+}
 Flt MeshRender::area(Vec *center)C
 {
    if(center)center->zero();

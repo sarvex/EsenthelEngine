@@ -397,17 +397,19 @@ MeshPart& MeshPart::keepOnly(MESH_FLAG flag) {return exclude(~flag);}
 /******************************************************************************/
 // GET
 /******************************************************************************/
-MESH_FLAG MeshPart::flag     (           )C {return base.is() ? base.flag     () : render.flag();}
-UInt      MeshPart::memUsage (           )C {return base.memUsage()              + render.memUsage();}
-Int       MeshPart::vtxs     (           )C {return base.is() ? base.vtxs     () : render.vtxs();}
-Int       MeshPart::edges    (           )C {return             base.edges    ()                ;}
-Int       MeshPart::tris     (           )C {return base.is() ? base.tris     () : render.tris();}
-Int       MeshPart::quads    (           )C {return             base.quads    ()                ;}
-Int       MeshPart::faces    (           )C {return base.is() ? base.faces    () : render.tris();}
-Int       MeshPart::trisTotal(           )C {return base.is() ? base.trisTotal() : render.tris();}
-Bool      MeshPart::getBox   (Box &box   )C {return base.getBox(box) || render.getBox(box);}
-Flt       MeshPart::area     (Vec *center)C {return base.is() ? base.area(center) : render.area(center);}
-Int       MeshPart::drawGroup(           )C {return _draw_mask ? BitHi(_draw_mask) : -1;}
+MESH_FLAG MeshPart::flag     (                           )C {return base.is() ? base.flag     () : render.flag();}
+UInt      MeshPart::memUsage (                           )C {return base.memUsage()              + render.memUsage();}
+Int       MeshPart::vtxs     (                           )C {return base.is() ? base.vtxs     () : render.vtxs();}
+Int       MeshPart::edges    (                           )C {return             base.edges    ()                ;}
+Int       MeshPart::tris     (                           )C {return base.is() ? base.tris     () : render.tris();}
+Int       MeshPart::quads    (                           )C {return             base.quads    ()                ;}
+Int       MeshPart::faces    (                           )C {return base.is() ? base.faces    () : render.tris();}
+Int       MeshPart::trisTotal(                           )C {return base.is() ? base.trisTotal() : render.tris();}
+Bool      MeshPart::getBox   (Box &box                   )C {return base.getBox(box        ) || render.getBox(box        );}
+Bool      MeshPart::getBox   (Box &box, C Matrix3 &matrix)C {return base.getBox(box, matrix) || render.getBox(box, matrix);}
+Bool      MeshPart::getBox   (Box &box, C Matrix  &matrix)C {return base.getBox(box, matrix) || render.getBox(box, matrix);}
+Flt       MeshPart::area     (Vec *center                )C {return base.is() ? base.area(center) : render.area(center);}
+Int       MeshPart::drawGroup(                           )C {return _draw_mask ? BitHi(_draw_mask) : -1;}
 
 C MaterialPtr& MeshPart::multiMaterial(Int i)C
 {
