@@ -1618,6 +1618,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
 
    if(sphere)
    {
+      DEBUG_ASSERT(InRange(sphere->area.x, sphere->areas) && InRange(sphere->area.y, sphere->areas), "Heightmap.sphere.area out of range");
       Flt mul  =                     PI_2/(sphere->areas*res1),
           add_x=-PI_4+sphere->area.x*PI_2/ sphere->areas      ,
           add_y=-PI_4+sphere->area.y*PI_2/ sphere->areas      ;

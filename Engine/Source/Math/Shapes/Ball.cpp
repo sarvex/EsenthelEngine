@@ -624,6 +624,7 @@ min_height - *--------X-------------X---------*
 }
 Bool SphereConvert::intersects(C SphereArea &area_pos, C Ball &ball, Flt min_radius)C
 {
+   DEBUG_ASSERT(InRange(area_pos.x, res) && InRange(area_pos.y, res), "SphereConvert.intersects.area out of range");
    Ball oriented_ball; PosToTerrainPos(area_pos.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
    if(ClipZ(oriented_ball, min_radius))
    {
