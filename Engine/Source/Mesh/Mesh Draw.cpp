@@ -1486,9 +1486,11 @@ void Cloth::drawSkinnedShadow(C AnimatedSkeleton &anim_skel)C
 /******************************************************************************/
 void Mesh::draw      (C Matrix           &matrix, C Matrix  &matrix_prev )C {getDrawLod(          matrix  ).draw      (matrix, matrix_prev);}
 void Mesh::draw      (C MatrixM          &matrix, C MatrixM &matrix_prev )C {getDrawLod(          matrix  ).draw      (matrix, matrix_prev);}
+void Mesh::draw      (C Matrix3          &matrix                         )C {getDrawLod(          matrix  ).draw      (matrix             );}
 void Mesh::draw      (C Matrix           &matrix                         )C {getDrawLod(          matrix  ).draw      (matrix             );}
 void Mesh::draw      (C MatrixM          &matrix                         )C {getDrawLod(          matrix  ).draw      (matrix             );}
 void Mesh::draw      (                                                   )C {getDrawLod(                  ).draw      (                   );}
+void Mesh::drawShadow(C Matrix3          &matrix                         )C {getDrawLod(          matrix  ).drawShadow(matrix             );}
 void Mesh::drawShadow(C Matrix           &matrix                         )C {getDrawLod(          matrix  ).drawShadow(matrix             );}
 void Mesh::drawShadow(C MatrixM          &matrix                         )C {getDrawLod(          matrix  ).drawShadow(matrix             );}
 void Mesh::drawShadow(                                                   )C {getDrawLod(                  ).drawShadow(                   );}

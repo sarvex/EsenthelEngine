@@ -1098,6 +1098,7 @@ void GetVel(Vec &vel, Vec &ang_vel, C Vec  &prev2_pos, C Matrix  &prev, C Matrix
 void GetVel(Vec &vel, Vec &ang_vel, C VecD &prev2_pos, C MatrixM &prev, C MatrixM &cur, Flt dt=Time.d()); // get linear velocity and angular velocity from 'prev' and 'cur' matrixes using 'dt' time delta !! matrixes DON'T have to be normalized !! 'prev2_pos'=position one step before 'prev', used to calculate more smooth 'vel' velocity
 
 Flt GetLodDist2(C Vec &lod_center                   ); // calculate squared distance from 'lod_center'                         to active camera, returned value can be used as parameter for 'Mesh.getDrawLod' methods
+Flt GetLodDist2(C Vec &lod_center, C Matrix3 &matrix); // calculate squared distance from 'lod_center' transformed by 'matrix' to active camera, returned value can be used as parameter for 'Mesh.getDrawLod' methods
 Flt GetLodDist2(C Vec &lod_center, C Matrix  &matrix); // calculate squared distance from 'lod_center' transformed by 'matrix' to active camera, returned value can be used as parameter for 'Mesh.getDrawLod' methods
 Flt GetLodDist2(C Vec &lod_center, C MatrixM &matrix); // calculate squared distance from 'lod_center' transformed by 'matrix' to active camera, returned value can be used as parameter for 'Mesh.getDrawLod' methods
 
