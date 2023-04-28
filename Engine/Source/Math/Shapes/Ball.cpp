@@ -622,9 +622,53 @@ min_height - *--------X-------------X---------*
    ball.pos.z+=d;
    return true;
 }
+Bool SphereConvert::intersects(C SphereArea &area_pos, C Ball &ball, Flt min_radius)C
+{
+   Ball oriented_ball; PosToTerrainPos(area_pos.side, oriented_ball.pos, ball.pos); oriented_ball.r=ball.r;
+   if(ClipZ(oriented_ball, min_radius))
+   {
+      VecI2 ball_cell=posToCellI(oriented_ball.pos.xy/oriented_ball.pos.z);
+      Flt   r2=Sqr(oriented_ball.r);
+      if(area_pos.y!=ball_cell.y  // if ball is on down or up    side
+      && area_pos.x!=ball_cell.x) // if ball is on left or right side
+      {
+         Vec dir(_cellToPos(area_pos.x+(area_pos.x<ball_cell.x)),
+                 _cellToPos(area_pos.y+(area_pos.y<ball_cell.y)),
+                  1);
+         dir.normalize();
+         return Dist2PointLine(oriented_ball.pos, dir)<r2;
+      }
+      if(ball_cell.x<area_pos.x) // ball on the left side of area
+      {
+         Flt cell_pos_left=_cellToPos(area_pos.x);
+         Vec nrm_left(-1, 0, cell_pos_left);
+         return Dot(oriented_ball.pos, nrm_left)/nrm_left.length()<oriented_ball.r;
+      }
+      if(ball_cell.x>area_pos.x) // ball on the right side of area
+      {
+         Flt cell_pos_right=_cellToPos(area_pos.x+1);
+         Vec nrm_right(1, 0, -cell_pos_right);
+         return Dot(oriented_ball.pos, nrm_right)/nrm_right.length()<oriented_ball.r;
+      }
+      if(ball_cell.y<area_pos.y) // ball on the down side of area
+      {
+         Flt cell_pos_down=_cellToPos(area_pos.y);
+         Vec nrm_down(0, -1, cell_pos_down);
+         return Dot(oriented_ball.pos, nrm_down)/nrm_down.length()<oriented_ball.r;
+      }
+      if(ball_cell.y>area_pos.y) // ball on the up side of area
+      {
+         Flt cell_pos_up=_cellToPos(area_pos.y+1);
+         Vec nrm_up(0, 1, -cell_pos_up);
+         return Dot(oriented_ball.pos, nrm_up)/nrm_up.length()<oriented_ball.r;
+      }
+      return true; // ball is on area
+   }
+   return false;
+}
 static Bool PosToCellX(C SphereConvert &sc, C Vec &pos, Int &cell) {if(pos.z>0){cell=sc.posToCellI(pos.x/pos.z); return true;} return false;}
 static Bool PosToCellY(C SphereConvert &sc, C Vec &pos, Int &cell) {if(pos.z>0){cell=sc.posToCellI(pos.y/pos.z); return true;} return false;}
-void SphereConvert::getIntersectingSphereAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C
+void SphereConvert::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C
 {
    /* min_radius is treated as min_height
                     *
