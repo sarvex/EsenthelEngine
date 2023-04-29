@@ -439,9 +439,10 @@ struct MeshBase // Mesh Base (the most low level software mesh, contains : Verte
    MeshBase& splitEdges(Flt length, Flt d , Bool *is=null) ; // split edges, 'length'=minimum length of edge to part, 'd'=length of added edges on left & right side, 'is'=only selected edges
 
    // join / split
-   void split    (MemPtr<MeshBaseIndex> meshes, C Boxes &boxes, MESH_FLAG flag_and=MESH_ALL)C; // split to container of meshes by boxes                                        , copy only elements included in 'flag_and'
-   void split    (MemPtr<MeshBaseIndex> meshes, C VecI  &cells, MESH_FLAG flag_and=MESH_ALL)C; // split to container of meshes by number of splits                             , copy only elements included in 'flag_and'
-   void splitBone(MeshBase &dest, Int bone                    , MESH_FLAG flag_and=MESH_ALL) ; // split by moving elements influenced by 'bone' to 'dest' leaving the rest only, copy only elements included in 'flag_and'
+   void split    (MemPtr<MeshBaseIndex> meshes, C Boxes &boxes,             MESH_FLAG flag_and=MESH_ALL)C; // split to container of meshes by boxes                                        , copy only elements included in 'flag_and'
+   void split    (MemPtr<MeshBaseIndex> meshes, C VecI  &cells,             MESH_FLAG flag_and=MESH_ALL)C; // split to container of meshes by number of splits                             , copy only elements included in 'flag_and'
+   void split    (MemPtr<MeshBaseIndex> meshes, C Plane *plane, Int planes, MESH_FLAG flag_and=MESH_ALL)C; // split to container of meshes by planes                                       , copy only elements included in 'flag_and'
+   void splitBone(MeshBase &dest, Int bone                    ,             MESH_FLAG flag_and=MESH_ALL) ; // split by moving elements influenced by 'bone' to 'dest' leaving the rest only, copy only elements included in 'flag_and'
 #endif
 
    // fix
