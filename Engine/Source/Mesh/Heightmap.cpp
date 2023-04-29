@@ -24,23 +24,6 @@ namespace EE{
 /******************************************************************************/
 ASSERT(MAX_HM_RES<=129); // various places use UShort to limit for 16-bit (including 'MtrlCombo.vtxs,tris', 'VtxMtrlCombo.mc_vtx_index')
 /******************************************************************************/
-static void AdjustSharpness(Flt &sharpness, Int count)
-{
-   if(count)sharpness/=count;
-#if DEBUG
- //LogN(S+sharpness);
-   // test results:
-   // min 0.0001
-   // avg 0.0014
-   // max 0.0064
-#endif
-   Flt avg=0.0014f;
-   sharpness=Mid(Cbrt(sharpness/avg), 0.6f, 2.0f);
-}
-static Flt GetLodDist(Int lod_index, Flt sharpness)
-{
-   return (1<<lod_index) * ((lod_index>=3) ? 1.5f : 1.0f) * sharpness;
-}
 static VecB ColorB(C Image &image, Int x, Int y) // !! assumes that 'x, y' are in range !!
 {
    switch(image.hwType())
@@ -1735,8 +1718,15 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
    }
 
    // adjust sharpness
-   AdjustSharpness(sharpness, sharpness_count);
-   if(sphere)sharpness*=sphere->planet_radius/sphere->areas*PI_2;
+   const Flt div_sharpness=16;
+   if(sharpness_count)sharpness*=Flt(Sqr(res1))/sharpness_count // this formula gives the same sharpness regardless of heightmap resolution
+                                /div_sharpness; // also adjust by some factor
+   Flt size; if(sphere){size=sphere->planet_radius/sphere->areas*PI_2; sharpness/=size;}
+   // here sharpness in range 0..Inf
+
+   Flt lod_dist_scale=64.0f/res1
+                     *(1+Min(sharpness, 1)); // start with base scale=1, increase by sharpness up to 1
+   if(sphere)lod_dist_scale*=size;
 
    // downsample
    REP(quality)builder.downSampleMaterials(res, 1<<i);
@@ -1797,7 +1787,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
 
       // create mesh lods
       if(lod.parts.elms()!=builder.mtrl_combos.elms())lod.create(builder.mtrl_combos.elms());
-      lod.dist(GetLodDist(l, sharpness));
+      lod.dist((1<<l)*lod_dist_scale);
 
       // create mesh parts
       FREPA(builder.mtrl_combos)
