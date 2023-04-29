@@ -168,14 +168,27 @@ static Int CompareAngle(C VecD4 &a, C VecD4 &b)
    if(Int c=Compare(b.z, a.z))return c; // compare 'b' against 'a' so generated poly will be in clockwise order
    return   Compare(a.w, b.w);
 }
-static Flt Dist(C Vec2 &p1, C Vec2 &p2, C Vec2 &p3)
+static Flt Dist(C Vec2 &p0, C Vec2 &p1, C Vec2 &p2)
 {
-   return (p2.x-p1.x)*(p3.y-p1.y) - (p2.y-p1.y)*(p3.x-p1.x); // return DistPointPlane(p2, p1, Perp(p3-p1));
+   return (p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
 }
-static Dbl Dist(C VecD2 &p1, C VecD2 &p2, C VecD2 &p3)
+static Dbl Dist(C VecD2 &p0, C VecD2 &p1, C VecD2 &p2)
 {
-   return (p2.x-p1.x)*(p3.y-p1.y) - (p2.y-p1.y)*(p3.x-p1.x); // return DistPointPlane(p2, p1, Perp(p3-p1));
+   return (p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
 }
+/******************************************************************************
+These must handle special cases like:
+VecD2 points[]=
+{
+   {1.2117217042347888, 1.4988640479308024},
+   {-1.6822595981943160, -0.94067289152769795},
+   {1.7656761089963697, -2.0945917346827119},
+   {-2.0842770953811272, -1.2795612367539384},
+   {1.6137392014215997, 1.8377523931570428},
+   {1.9967564479344622, -3.5935905206256975},
+   {3.2039716528278013, -2.5759453534847432},
+};
+Memt<VecD2> convex; CreateConvex2D(convex, points, Elms(points));
 /******************************************************************************/
 void CreateConvex2D(MemPtr<Vec2> poly, C Vec2 *point, Int points)
 {
@@ -207,7 +220,7 @@ void CreateConvex2D(MemPtr<Vec2> poly, C Vec2 *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C Vec2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(p, poly.last(), poly[poly.elms()-2])<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
             poly.add(p);
          }
       }
@@ -243,7 +256,7 @@ void CreateConvex2D(MemPtr<VecD2> poly, C VecD2 *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C VecD2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(p, poly.last(), poly[poly.elms()-2])<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
             poly.add(p);
          }
       }
@@ -279,7 +292,7 @@ void CreateConvex2Dxz(MemPtr<Vec2> poly, C Vec *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C Vec2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(p, poly.last(), poly[poly.elms()-2])<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
             poly.add(p);
          }
       }
@@ -314,7 +327,7 @@ void CreateConvex2Dxz(MemPtr<VecD2> poly, C VecD *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C VecD2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(p, poly.last(), poly[poly.elms()-2])<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
             poly.add(p);
          }
       }
