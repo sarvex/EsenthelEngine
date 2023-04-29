@@ -1724,7 +1724,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
    Flt size; if(sphere){size=sphere->planet_radius/sphere->areas*PI_2; sharpness/=size;}
    // here sharpness in range 0..Inf
 
-   Flt lod_dist_scale=64.0f/res1
+   Flt lod_dist_scale=64.0f/res1 // adjust by res to target same terrain cell/pixels ratio, regardless of heightmap resolution
                      *(1+Min(sharpness, 1)); // start with base scale=1, increase by sharpness up to 1
    if(sphere)lod_dist_scale*=size;
 
