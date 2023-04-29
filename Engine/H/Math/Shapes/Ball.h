@@ -164,6 +164,11 @@ struct SphereConvert
    Vec2  cellToPos(C VecI2 &cell)C {return Vec2( cellToPos(cell.x),  cellToPos(cell.y));}
    Vec2 _cellToPos(C VecI2 &cell)C {return Vec2(_cellToPos(cell.x), _cellToPos(cell.y));} // !! 'cell' MUST BE IN RANGE "0..res" !!
 
+   Vec _cellNrmLeft (Int cell)C {return Vec(-1,  0,  _cellToPos(cell));} // get cell left  normal, it's not normalized !! 'cell' MUST BE IN RANGE "0..res" !!
+   Vec _cellNrmRight(Int cell)C {return Vec( 1,  0, -_cellToPos(cell));} // get cell right normal, it's not normalized !! 'cell' MUST BE IN RANGE "0..res" !!
+   Vec _cellNrmDown (Int cell)C {return Vec( 0, -1,  _cellToPos(cell));} // get cell down  normal, it's not normalized !! 'cell' MUST BE IN RANGE "0..res" !!
+   Vec _cellNrmUp   (Int cell)C {return Vec( 0,  1, -_cellToPos(cell));} // get cell up    normal, it's not normalized !! 'cell' MUST BE IN RANGE "0..res" !!
+
    DIR_ENUM dirToSphereTerrainPixel      (C Vec &dir, Vec2  &xy           )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res  )
    DIR_ENUM dirToSphereTerrainPixelIMid  (C Vec &dir, VecI2 &xy           )C; // convert vector direction (doesn't need to be normalized) to cube face and spherical terrain coordinates, 'xy'=image pixel coordinates (0..res-1)
    Vec2     dirToSphereTerrainPixel      (C Vec &dir, DIR_ENUM cube_face  )C; // convert vector direction (doesn't need to be normalized) to               spherical terrain coordinates, 'cube_face'=cube face that 'dir' belongs to, returns image pixel coordinates (0..res)
