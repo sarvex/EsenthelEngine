@@ -35,7 +35,7 @@ static void AdjustSharpness(Flt &sharpness, Int count)
    // max 0.0064
 #endif
    Flt avg=0.0014f;
-   sharpness=Mid(Pow(sharpness/avg, 0.33f), 0.6f, 2.0f);
+   sharpness=Mid(Cbrt(sharpness/avg), 0.6f, 2.0f);
 }
 static Flt GetLodDist(Int lod_index, Flt sharpness)
 {
