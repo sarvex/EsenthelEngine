@@ -170,14 +170,16 @@ static Int CompareAngle(C VecD4 &a, C VecD4 &b)
 }
 static Bool Covers(C Vec2 &p0, C Vec2 &p1, C Vec2 &p2) // check if p0->p2 plane covers p1 point, so that p1 can be removed. p0=start point, p1=middle point, p2=latest point
 {
-   Flt dist=(p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
-   return dist<-EPS // confident
+   Vec2 p02=p0-p2;
+   Flt dist=(p1.x-p2.x)*p02.y - (p1.y-p2.y)*p02.x; // DistPointPlane(p1, p2, Perp(p0-p2))
+   return dist<-EPS // confident. WARNING: to compare with some value that's not zero, normal (Perp above) should be normalized. Optimization: dist/p02.length()<-EPS -> dist<-EPS*p02.length() -> SqrS(dist)<-Sqr(EPS)*p02.length2()
        || dist<=0 && Dist2(p0, p2)>=Dist2(p0, p1); // not sure, colinear, only if new point is further than middle point (this handles special case mentioned below)
 }
 static Bool Covers(C VecD2 &p0, C VecD2 &p1, C VecD2 &p2) // check if p0->p2 plane covers p1 point, so that p1 can be removed. p0=start point, p1=middle point, p2=latest point
 {
-   Dbl dist=(p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
-   return dist<-EPSD // confident
+   VecD2 p02=p0-p2;
+   Dbl dist=(p1.x-p2.x)*p02.y - (p1.y-p2.y)*p02.x; // DistPointPlane(p1, p2, Perp(p0-p2))
+   return dist<-EPSD // confident. WARNING: to compare with some value that's not zero, normal (Perp above) should be normalized. Optimization: dist/p02.length()<-EPS -> dist<-EPS*p02.length() -> SqrS(dist)<-Sqr(EPS)*p02.length2()
        || dist<=0 && Dist2(p0, p2)>=Dist2(p0, p1); // not sure, colinear, only if new point is further than middle point (this handles special case mentioned below)
 }
 /******************************************************************************
