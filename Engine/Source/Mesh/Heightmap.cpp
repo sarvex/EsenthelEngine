@@ -1736,7 +1736,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
 
    // adjust sharpness
    AdjustSharpness(sharpness, sharpness_count);
-   if(sphere)sharpness*=sphere->planet_radius*SQRT2; // *SQRT2 because we stretch from -SQRT2_2 to SQRT2_2
+   if(sphere)sharpness*=sphere->planet_radius/sphere->areas*PI_2;
 
    // downsample
    REP(quality)builder.downSampleMaterials(res, 1<<i);
