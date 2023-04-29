@@ -168,13 +168,17 @@ static Int CompareAngle(C VecD4 &a, C VecD4 &b)
    if(Int c=Compare(b.z, a.z))return c; // compare 'b' against 'a' so generated poly will be in clockwise order
    return   Compare(a.w, b.w);
 }
-static Flt Dist(C Vec2 &p0, C Vec2 &p1, C Vec2 &p2)
+static Bool Covers(C Vec2 &p0, C Vec2 &p1, C Vec2 &p2) // check if p0->p2 plane covers p1 point, so that p1 can be removed. p0=start point, p1=middle point, p2=latest point
 {
-   return (p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
+   Flt dist=(p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
+   return dist<-EPS // confident
+       || dist<=0 && Dist2(p0, p2)>=Dist2(p0, p1); // not sure, colinear, only if new point is further than middle point (this handles special case mentioned below)
 }
-static Dbl Dist(C VecD2 &p0, C VecD2 &p1, C VecD2 &p2)
+static Bool Covers(C VecD2 &p0, C VecD2 &p1, C VecD2 &p2) // check if p0->p2 plane covers p1 point, so that p1 can be removed. p0=start point, p1=middle point, p2=latest point
 {
-   return (p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
+   Dbl dist=(p1.x-p2.x)*(p0.y-p2.y) - (p1.y-p2.y)*(p0.x-p2.x); // return DistPointPlane(p1, p2, Perp(p0-p2));
+   return dist<-EPSD // confident
+       || dist<=0 && Dist2(p0, p2)>=Dist2(p0, p1); // not sure, colinear, only if new point is further than middle point (this handles special case mentioned below)
 }
 /******************************************************************************
 These must handle special cases like:
@@ -220,7 +224,7 @@ void CreateConvex2D(MemPtr<Vec2> poly, C Vec2 *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C Vec2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Covers(poly[poly.elms()-2], poly.last(), p); )poly.removeLast();
             poly.add(p);
          }
       }
@@ -256,7 +260,7 @@ void CreateConvex2D(MemPtr<VecD2> poly, C VecD2 *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C VecD2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Covers(poly[poly.elms()-2], poly.last(), p); )poly.removeLast();
             poly.add(p);
          }
       }
@@ -292,7 +296,7 @@ void CreateConvex2Dxz(MemPtr<Vec2> poly, C Vec *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C Vec2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Covers(poly[poly.elms()-2], poly.last(), p); )poly.removeLast();
             poly.add(p);
          }
       }
@@ -327,7 +331,7 @@ void CreateConvex2Dxz(MemPtr<VecD2> poly, C VecD *point, Int points)
          for(Int i=2; i<temp.elms(); i++)
          {
           C VecD2 &p=temp[i].xy;
-            for(; poly.elms()>=2 && Dist(poly[poly.elms()-2], poly.last(), p)<=0; )poly.removeLast();
+            for(; poly.elms()>=2 && Covers(poly[poly.elms()-2], poly.last(), p); )poly.removeLast();
             poly.add(p);
          }
       }
