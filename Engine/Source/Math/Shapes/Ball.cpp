@@ -825,66 +825,56 @@ void SphereConvert::drawCell(C Color &color, C SphereArea &area, Flt radius)C
       q.draw(color, false);
    }
 }
+/******************************************************************************/
 #define Z0(i) (i)         // zero
 #define Z1(i) (res-1-i)   // zero     mirror
 #define N0(i) (i+res)     // negative
 #define N1(i) (-1-i)      // negative mirror
 #define P0(i) (i-res)     // positive
 #define P1(i) (res*2-1-i) // positive mirror
+
+#define X(x) ((x+1)*6  ) // -1..1
+#define Y(y) ((y+1)*6*3) // -1..1
+#define V(face, x, y) (face+X(x)+Y(y))
+
 void WrapCubeFacePixel(SphereArea &dest, C SphereArea &src, Int res)
 {
-   switch(src.side)
+   Int x=(InRange(src.x, res) ? X(0) : (src.x<0) ? X(-1) : X(1));
+   Int y=(InRange(src.y, res) ? Y(0) : (src.y<0) ? Y(-1) : Y(1));
+   switch(src.side+x+y)
    {
-      case DIR_RIGHT:
-      {
-         if(src.x<   0){dest.set(DIR_FORWARD, N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>=res){dest.set(DIR_BACK   , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , N0(src.y), Z1(src.x)); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , P1(src.y), Z0(src.x)); goto end;}
-      }break;
+      default: dest=src; break;
 
-      case DIR_LEFT:
-      {
-         if(src.x<   0){dest.set(DIR_BACK   , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>=res){dest.set(DIR_FORWARD, P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , N1(src.y), Z0(src.x)); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , P0(src.y), Z1(src.x)); goto end;}
-      }break;
+      case V(DIR_RIGHT  , -1,  0): dest.set(DIR_FORWARD, N0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  1,  0): dest.set(DIR_BACK   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  0, -1): dest.set(DIR_UP     , N0(src.y), Z1(src.x)); break;
+      case V(DIR_RIGHT  ,  0,  1): dest.set(DIR_DOWN   , P1(src.y), Z0(src.x)); break;
 
-      case DIR_UP:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , Z0(src.y), N1(src.x)); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , Z1(src.y), P0(src.x)); goto end;}
-         if(src.y<   0){dest.set(DIR_BACK   , Z1(src.x), N1(src.y)); goto end;}
-         if(src.y>=res){dest.set(DIR_FORWARD, Z0(src.x), P0(src.y)); goto end;}
-      }break;
+      case V(DIR_LEFT   , -1,  0): dest.set(DIR_BACK   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  1,  0): dest.set(DIR_FORWARD, P0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  0, -1): dest.set(DIR_UP     , N1(src.y), Z0(src.x)); break;
+      case V(DIR_LEFT   ,  0,  1): dest.set(DIR_DOWN   , P0(src.y), Z1(src.x)); break;
 
-      case DIR_DOWN:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , Z1(src.y), N0(src.x)); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , Z0(src.y), P1(src.x)); goto end;}
-         if(src.y<   0){dest.set(DIR_FORWARD, Z0(src.x), N0(src.y)); goto end;}
-         if(src.y>=res){dest.set(DIR_BACK   , Z1(src.x), P1(src.y)); goto end;}
-      }break;
+      case V(DIR_UP     , -1,  0): dest.set(DIR_LEFT   , Z0(src.y), N1(src.x)); break;
+      case V(DIR_UP     ,  1,  0): dest.set(DIR_RIGHT  , Z1(src.y), P0(src.x)); break;
+      case V(DIR_UP     ,  0, -1): dest.set(DIR_BACK   , Z1(src.x), N1(src.y)); break;
+      case V(DIR_UP     ,  0,  1): dest.set(DIR_FORWARD, Z0(src.x), P0(src.y)); break;
 
-      case DIR_FORWARD:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , Z0(src.x), N0(src.y)); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , Z0(src.x), P0(src.y)); goto end;}
-      }break;
+      case V(DIR_DOWN   , -1,  0): dest.set(DIR_LEFT   , Z1(src.y), N0(src.x)); break;
+      case V(DIR_DOWN   ,  1,  0): dest.set(DIR_RIGHT  , Z0(src.y), P1(src.x)); break;
+      case V(DIR_DOWN   ,  0, -1): dest.set(DIR_FORWARD, Z0(src.x), N0(src.y)); break;
+      case V(DIR_DOWN   ,  0,  1): dest.set(DIR_BACK   , Z1(src.x), P1(src.y)); break;
 
-      case DIR_BACK:
-      {
-         if(src.x<   0){dest.set(DIR_RIGHT  , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>=res){dest.set(DIR_LEFT   , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , Z1(src.x), N1(src.y)); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , Z1(src.x), P1(src.y)); goto end;}
-      }break;
+      case V(DIR_FORWARD, -1,  0): dest.set(DIR_LEFT   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  1,  0): dest.set(DIR_RIGHT  , P0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  0, -1): dest.set(DIR_UP     , Z0(src.x), N0(src.y)); break;
+      case V(DIR_FORWARD,  0,  1): dest.set(DIR_DOWN   , Z0(src.x), P0(src.y)); break;
+
+      case V(DIR_BACK   , -1,  0): dest.set(DIR_RIGHT  , N0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  1,  0): dest.set(DIR_LEFT   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  0, -1): dest.set(DIR_UP     , Z1(src.x), N1(src.y)); break;
+      case V(DIR_BACK   ,  0,  1): dest.set(DIR_DOWN   , Z1(src.x), P1(src.y)); break;
    }
-   dest=src; // if no case processed, then copy from src and clamp below
-end:
    DEBUG_ASSERT(InRange(dest.x, res), "WrapCubeFacePixel.x, but this can happen if range>res");
    DEBUG_ASSERT(InRange(dest.y, res), "WrapCubeFacePixel.y, but this can happen if range>res");
    Clamp(dest.x, 0, res-1);
@@ -892,58 +882,42 @@ end:
 }
 void WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res)
 {
-   switch(src.side)
+   Int x=(InRange(src.x, res+1) ? X(0) : (src.x<0) ? X(-1) : X(1));
+   Int y=(InRange(src.y, res+1) ? Y(0) : (src.y<0) ? Y(-1) : Y(1));
+   switch(src.side+x+y)
    {
-      case DIR_RIGHT:
-      {
-         if(src.x<  0){dest.set(DIR_BACK   , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>res){dest.set(DIR_FORWARD, P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<  0){dest.set(DIR_DOWN   , N0(src.y), Z1(src.x)); goto end;}
-         if(src.y>res){dest.set(DIR_UP     , P1(src.y), Z0(src.x)); goto end;}
-      }break;
+      default: dest=src; break;
 
-      case DIR_LEFT:
-      {
-         if(src.x<  0){dest.set(DIR_FORWARD, N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>res){dest.set(DIR_BACK   , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<  0){dest.set(DIR_DOWN   , N1(src.y), Z0(src.x)); goto end;}
-         if(src.y>res){dest.set(DIR_UP     , P0(src.y), Z1(src.x)); goto end;}
-      }break;
+      case V(DIR_RIGHT  , -1,  0): dest.set(DIR_BACK   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  1,  0): dest.set(DIR_FORWARD, P0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  0, -1): dest.set(DIR_DOWN   , N0(src.y), Z1(src.x)); break;
+      case V(DIR_RIGHT  ,  0,  1): dest.set(DIR_UP     , P1(src.y), Z0(src.x)); break;
 
-      case DIR_UP:
-      {
-         if(src.x<  0){dest.set(DIR_LEFT   , Z1(src.y), N0(src.x)); goto end;}
-         if(src.x>res){dest.set(DIR_RIGHT  , Z0(src.y), P1(src.x)); goto end;}
-         if(src.y<  0){dest.set(DIR_BACK   , Z0(src.x), N0(src.y)); goto end;}
-         if(src.y>res){dest.set(DIR_FORWARD, Z1(src.x), P1(src.y)); goto end;}
-      }break;
+      case V(DIR_LEFT   , -1,  0): dest.set(DIR_FORWARD, N0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  1,  0): dest.set(DIR_BACK   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  0, -1): dest.set(DIR_DOWN   , N1(src.y), Z0(src.x)); break;
+      case V(DIR_LEFT   ,  0,  1): dest.set(DIR_UP     , P0(src.y), Z1(src.x)); break;
 
-      case DIR_DOWN:
-      {
-         if(src.x<  0){dest.set(DIR_LEFT   , Z0(src.y), N1(src.x)); goto end;}
-         if(src.x>res){dest.set(DIR_RIGHT  , Z1(src.y), P0(src.x)); goto end;}
-         if(src.y<  0){dest.set(DIR_FORWARD, Z1(src.x), N1(src.y)); goto end;}
-         if(src.y>res){dest.set(DIR_BACK   , Z0(src.x), P0(src.y)); goto end;}
-      }break;
+      case V(DIR_UP     , -1,  0): dest.set(DIR_LEFT   , Z1(src.y), N0(src.x)); break;
+      case V(DIR_UP     ,  1,  0): dest.set(DIR_RIGHT  , Z0(src.y), P1(src.x)); break;
+      case V(DIR_UP     ,  0, -1): dest.set(DIR_BACK   , Z0(src.x), N0(src.y)); break;
+      case V(DIR_UP     ,  0,  1): dest.set(DIR_FORWARD, Z1(src.x), P1(src.y)); break;
 
-      case DIR_FORWARD:
-      {
-         if(src.x<  0){dest.set(DIR_RIGHT  , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>res){dest.set(DIR_LEFT   , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<  0){dest.set(DIR_DOWN   , Z1(src.x), N1(src.y)); goto end;}
-         if(src.y>res){dest.set(DIR_UP     , Z1(src.x), P1(src.y)); goto end;}
-      }break;
+      case V(DIR_DOWN   , -1,  0): dest.set(DIR_LEFT   , Z0(src.y), N1(src.x)); break;
+      case V(DIR_DOWN   ,  1,  0): dest.set(DIR_RIGHT  , Z1(src.y), P0(src.x)); break;
+      case V(DIR_DOWN   ,  0, -1): dest.set(DIR_FORWARD, Z1(src.x), N1(src.y)); break;
+      case V(DIR_DOWN   ,  0,  1): dest.set(DIR_BACK   , Z0(src.x), P0(src.y)); break;
 
-      case DIR_BACK:
-      {
-         if(src.x<  0){dest.set(DIR_LEFT   , N0(src.x), Z0(src.y)); goto end;}
-         if(src.x>res){dest.set(DIR_RIGHT  , P0(src.x), Z0(src.y)); goto end;}
-         if(src.y<  0){dest.set(DIR_DOWN   , Z0(src.x), N0(src.y)); goto end;}
-         if(src.y>res){dest.set(DIR_UP     , Z0(src.x), P0(src.y)); goto end;}
-      }break;
+      case V(DIR_FORWARD, -1,  0): dest.set(DIR_RIGHT  , N0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  1,  0): dest.set(DIR_LEFT   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  0, -1): dest.set(DIR_DOWN   , Z1(src.x), N1(src.y)); break;
+      case V(DIR_FORWARD,  0,  1): dest.set(DIR_UP     , Z1(src.x), P1(src.y)); break;
+
+      case V(DIR_BACK   , -1,  0): dest.set(DIR_LEFT   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  1,  0): dest.set(DIR_RIGHT  , P0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  0, -1): dest.set(DIR_DOWN   , Z0(src.x), N0(src.y)); break;
+      case V(DIR_BACK   ,  0,  1): dest.set(DIR_UP     , Z0(src.x), P0(src.y)); break;
    }
-   dest=src; // if no case processed, then copy from src and clamp below
-end:
    DEBUG_ASSERT(InRange(dest.x, res+1), "WrapSphereTerrainPixel.x, but this can happen if range>res");
    DEBUG_ASSERT(InRange(dest.y, res+1), "WrapSphereTerrainPixel.y, but this can happen if range>res");
    Clamp(dest.x, 0, res);
