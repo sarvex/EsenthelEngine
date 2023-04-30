@@ -3880,73 +3880,6 @@ Vec4 Image::areaColorLanczosOrtho(C Vec2 &pos, C Vec2 &size, Bool clamp, Bool al
 /******************************************************************************/
 // CUBE
 /******************************************************************************/
-static void Wrap(SphereArea &dest, C SphereArea &src, Int res)
-{
-#if 0
-   Vec  dir=CubeFacePixelToDir(src.side, src.x, src.y, res); // convert to direction vector
-   Vec2 xy; dest.side=DirToCubeFacePixel(dir, res, xy); // convert direction vector to secondary face
-   dest.x=Mid(Round(xy.x), 0, res-1);
-   dest.y=Mid(Round(xy.y), 0, res-1);
-#else
-   switch(src.side)
-   {
-      case DIR_FORWARD:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , src.x+res, src.y    ); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , src.x-res, src.y    ); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , src.x    , src.y+res); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , src.x    , src.y-res); goto end;}
-      }break;
-
-      case DIR_BACK:
-      {
-         if(src.x<   0){dest.set(DIR_RIGHT  , src.x+res  , src.y        ); goto end;}
-         if(src.x>=res){dest.set(DIR_LEFT   , src.x-res  , src.y        ); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , res-1-src.x, -1-src.y     ); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , res-1-src.x, res*2-1-src.y); goto end;}
-      }break;
-
-      case DIR_LEFT:
-      {
-         if(src.x<   0){dest.set(DIR_BACK   , src.x+res, src.y      ); goto end;}
-         if(src.x>=res){dest.set(DIR_FORWARD, src.x-res, src.y      ); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , -1-src.y , src.x      ); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , src.y-res, res-1-src.x); goto end;}
-      }break;
-
-      case DIR_RIGHT:
-      {
-         if(src.x<   0){dest.set(DIR_FORWARD, src.x+res    , src.y      ); goto end;}
-         if(src.x>=res){dest.set(DIR_BACK   , src.x-res    , src.y      ); goto end;}
-         if(src.y<   0){dest.set(DIR_UP     , src.y+res    , res-1-src.x); goto end;}
-         if(src.y>=res){dest.set(DIR_DOWN   , res*2-1-src.y, src.x      ); goto end;}
-      }break;
-
-      case DIR_DOWN:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , res-1-src.y, src.x+res    ); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , src.y      , res*2-1-src.x); goto end;}
-         if(src.y<   0){dest.set(DIR_FORWARD, src.x      , src.y+res    ); goto end;}
-         if(src.y>=res){dest.set(DIR_BACK   , res-1-src.x, res*2-1-src.y); goto end;}
-      }break;
-
-      case DIR_UP:
-      {
-         if(src.x<   0){dest.set(DIR_LEFT   , src.y      , -1-src.x ); goto end;}
-         if(src.x>=res){dest.set(DIR_RIGHT  , res-1-src.y, src.x-res); goto end;}
-         if(src.y<   0){dest.set(DIR_BACK   , res-1-src.x, -1-src.y ); goto end;}
-         if(src.y>=res){dest.set(DIR_FORWARD, src.x      , src.y-res); goto end;}
-      }break;
-   }
-   dest=src; // if no case processed, then copy from src and clamp below
-end:
-   DEBUG_ASSERT(InRange(dest.x, res), "Wrap.x, but this can happen if range>res");
-   DEBUG_ASSERT(InRange(dest.y, res), "Wrap.y, but this can happen if range>res");
-   Clamp(dest.x, 0, res-1);
-   Clamp(dest.y, 0, res-1);
-#endif
-}
-/******************************************************************************/
 Flt Image::cubePixelFNearest(C Vec &dir, Bool linear)C
 {
    if(mode()==IMAGE_SOFT_CUBE)
@@ -4018,7 +3951,7 @@ Flt Image::cubePixelFLinear(C Vec &dir, Bool linear)C
             if(in_range_x
             || in_range_y)
             { // if at least one coord in range then wrap
-               SphereArea sa1; Wrap(sa1, sa, w());
+               SphereArea sa1; WrapCubeFacePixel(sa1, sa, w());
                d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
             }else
                continue; // if both coords out of range then skip
@@ -4067,7 +4000,7 @@ Vec4 Image::cubeColorFLinear(C Vec &dir, Bool linear)C
             if(in_range_x
             || in_range_y)
             { // if at least one coord in range then wrap
-               SphereArea sa1; Wrap(sa1, sa, w());
+               SphereArea sa1; WrapCubeFacePixel(sa1, sa, w());
                d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
             }else
                continue; // if both coords out of range then skip
@@ -4120,7 +4053,7 @@ Flt Image::cubePixelFCubicFast(C Vec &dir, Bool linear)C
                if(in_range_x
                || in_range_y)
                { // if at least one coord in range then wrap
-                  SphereArea sa1; Wrap(sa1, sa, w());
+                  SphereArea sa1; WrapCubeFacePixel(sa1, sa, w());
                   d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
                }else
                   continue; // if both coords out of range then skip
@@ -4171,7 +4104,7 @@ Vec4 Image::cubeColorFCubicFast(C Vec &dir, Bool linear)C
                if(in_range_x
                || in_range_y)
                { // if at least one coord in range then wrap
-                  SphereArea sa1; Wrap(sa1, sa, w());
+                  SphereArea sa1; WrapCubeFacePixel(sa1, sa, w());
                   d=data + sa1.side*face_size + sa1.y*pitch + sa1.x*byte_pp;
                }else
                   continue; // if both coords out of range then skip

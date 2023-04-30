@@ -217,6 +217,9 @@ void PosToCubeFacePos(DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); //
 void PosToTerrainPos (DIR_ENUM cube_face, Vec2 &dest, C Vec  &src          ); // convert world space position 'src' to 'cube_face' terrain position 'dest' where XY=plane position
 void PosToTerrainPos (DIR_ENUM cube_face, Vec  &dest, C Vec  &src          ); // convert world space position 'src' to 'cube_face' terrain position 'dest' where XY=plane position, Z=height
 void PosToTerrainPos (DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms); // convert world space position 'src' to 'cube_face' terrain position 'dest' where XY=plane position, Z=height
+
+void WrapCubeFacePixel     (SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res-1 range and store in 'dest'
+void WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res-1 range and store in 'dest'
 /******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 
