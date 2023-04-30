@@ -303,6 +303,29 @@ void PosToTerrainPos(DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms) // c
       case DIR_BACK   : REP(elms){C auto &s=src[i]; dest[i].set( s.x,  s.y, -s.z);} break;
    }
 }
+/******************************************************************************/
+void TransformByTerrainOrient(DIR_ENUM cube_face, Vec &dest, C Vec &src)
+{
+   switch(cube_face) // #TerrainOrient
+   {
+      case DIR_FORWARD: dest.set(-src.x,  src.z,  src.y); break;
+      case DIR_BACK   : dest.set( src.x,  src.z, -src.y); break;
+      default         : dest=src; break; // DIR_UP identity
+      case DIR_DOWN   : dest.set( src.x, -src.y, -src.z); break;
+      case DIR_RIGHT  : dest.set( src.y,  src.z,  src.x); break;
+      case DIR_LEFT   : dest.set(-src.y,  src.z, -src.x); break;
+   }
+   /* Verified using:
+   Vec src(1, 2, 3);
+   REPD(face, 6)
+   {
+      Vec a,b;
+      a=src*Matrix3().setTerrainOrient((DIR_ENUM)face);
+      TransformByTerrainOrient((DIR_ENUM)face, b, src);
+      if(!Equal(a, b))Exit(S+face+"\nneed:"+a+"\ngot:"+b);
+   }
+   Exit("ok");*/
+}
 /******************************************************************************
 DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
 {
