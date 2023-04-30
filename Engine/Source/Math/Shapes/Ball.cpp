@@ -950,7 +950,7 @@ void _WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res)
       SphereArea a, b;
      _WrapCubeFacePixel(a, src, res);
       WrapCubeFacePixel(b, src, res);
-      DYNAMIC_ASSERT(a==b, S+"fail\nsrc:"+src.side+"   "+src.xy()+"\nshould be:"+b.side+"   "+b.xy()+"\ngot be:"+a.side+"   "+a.xy());
+      DYNAMIC_ASSERT(a==b, S+"fail\nsrc:"+src.side+"   "+src.xy()+"\nneed:"+a.side+"   "+a.xy()+"\ngot:"+b.side+"   "+b.xy());
    }
    REPD(face, 6)
    for(Int x=-1; x<=res+1; x++)
@@ -964,7 +964,7 @@ void _WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res)
       SphereArea a, b;
      _WrapSphereTerrainPixel(a, src, res);
       WrapSphereTerrainPixel(b, src, res);
-      DYNAMIC_ASSERT(a.side==b.side && Abs(a.x-b.x)<=2 && Abs(a.y-b.y)<=2, S+"fail\nsrc:"+src.side+"   "+src.xy()+"\nshould be:"+b.side+"   "+b.xy()+"\ngot be:"+a.side+"   "+a.xy());
+      DYNAMIC_ASSERT(a.side==b.side && Abs(a.x-b.x)<=2 && Abs(a.y-b.y)<=2, S+"fail\nsrc:"+src.side+"   "+src.xy()+"\nneed:"+a.side+"   "+a.xy()+"\ngot:"+b.side+"   "+b.xy());
    }
    Exit("ok");
 /******************************************************************************/
