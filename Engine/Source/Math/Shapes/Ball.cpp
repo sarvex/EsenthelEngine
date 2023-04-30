@@ -875,8 +875,6 @@ void WrapCubeFacePixel(SphereArea &dest, C SphereArea &src, Int res)
       case V(DIR_BACK   ,  0, -1): dest.set(DIR_UP     , Z1(src.x), N1(src.y)); break;
       case V(DIR_BACK   ,  0,  1): dest.set(DIR_DOWN   , Z1(src.x), P1(src.y)); break;
    }
-   DEBUG_ASSERT(InRange(dest.x, res), "WrapCubeFacePixel.x, but this can happen if range>res");
-   DEBUG_ASSERT(InRange(dest.y, res), "WrapCubeFacePixel.y, but this can happen if range>res");
    Clamp(dest.x, 0, res-1);
    Clamp(dest.y, 0, res-1);
 }
@@ -918,8 +916,6 @@ void WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res)
       case V(DIR_BACK   ,  0, -1): dest.set(DIR_DOWN   , Z0(src.x), N0(src.y)); break;
       case V(DIR_BACK   ,  0,  1): dest.set(DIR_UP     , Z0(src.x), P0(src.y)); break;
    }
-   DEBUG_ASSERT(InRange(dest.x, res+1), "WrapSphereTerrainPixel.x, but this can happen if range>res");
-   DEBUG_ASSERT(InRange(dest.y, res+1), "WrapSphereTerrainPixel.y, but this can happen if range>res");
    Clamp(dest.x, 0, res);
    Clamp(dest.y, 0, res);
 }
