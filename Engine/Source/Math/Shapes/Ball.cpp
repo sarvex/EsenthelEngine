@@ -851,6 +851,7 @@ void SphereConvertEx::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &d
             test=zd+d; if(test.z>0){rect.min.y=posToCellI(test.y/test.z); if(rect.min.y<   0){down: rect.min.y=    0;}}else goto down;
             test=zd-d; if(test.z>0){rect.max.y=posToCellI(test.y/test.z); if(rect.max.y>=res){  up: rect.max.y=res-1;}}else goto   up;
          }
+
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)
          {
