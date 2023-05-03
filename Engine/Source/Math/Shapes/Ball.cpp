@@ -806,7 +806,7 @@ min_height - \------------/
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
 }
-void SphereConvert::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &dir, Flt angle)C
+void SphereConvertEx::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &dir, Flt angle)C
 {
    area_pos.clear();
    SphereArea ap;
@@ -853,7 +853,10 @@ void SphereConvert::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &dir
          }
          for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
          for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)
-            area_pos.add(ap);
+         {
+            Vec area_dir=_sphereTerrainPixelCenterToDir(ap.side, ap.x, ap.y); area_dir.normalize();
+            if(Dot(area_dir, dir_face)>cos_min)area_pos.add(ap);
+         }
       }
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
