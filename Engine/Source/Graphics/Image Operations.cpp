@@ -1003,8 +1003,8 @@ struct BlurCube
             {
                Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
                                  : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-               dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesY(test_rect.min.y))Exit("fail");
-               dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesY(test_rect.max.y))Exit("fail");
+               dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesY(test_rect.min.y))Exit("fail");
+               dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesY(test_rect.max.y))Exit("fail");
             }
             // test left and right vertical neighbor lines
             Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
@@ -1015,8 +1015,8 @@ struct BlurCube
             {
                Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
                                  : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-               dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesX(test_rect.min.x))Exit("fail");
-               dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)>=cos_min && !tex_rect.includesX(test_rect.max.x))Exit("fail");
+               dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesX(test_rect.min.x))Exit("fail");
+               dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesX(test_rect.max.x))Exit("fail");
             }
          }
       #endif
@@ -1128,8 +1128,8 @@ struct BlurCube
                         {
                            Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
                                              : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-                           dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail");
-                           dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail");
+                           dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail");
+                           dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail");
                         }
                         // test left and right vertical neighbor lines
                         Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
@@ -1140,8 +1140,8 @@ struct BlurCube
                         {
                            Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
                                              : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-                           dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail");
-                           dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)>=cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail");
+                           dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail");
+                           dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail");
                         }
                      }
                   #endif
