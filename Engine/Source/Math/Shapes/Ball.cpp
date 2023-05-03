@@ -806,6 +806,58 @@ min_height - \------------/
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
    }
 }
+void SphereConvert::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &dir, Flt angle)C
+{
+   area_pos.clear();
+   SphereArea ap;
+   const Flt diag_angle=AcosFast(SQRT3_3), //Flt a=AbsAngleBetween(!Vec(1,1,1), Vec(0,0,1)); AbsAngleBetween(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)); Acos(Dot(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)));
+             diag_angle_ext=diag_angle+angle,
+             diag_angle_cos_min=Cos(diag_angle_ext),
+                        cos_min=Cos(angle);
+
+   // convert cone angle to ball radius
+   Flt ball_r, ball_r2;
+   if(angle>=PI_2-EPS)ball_r=FLT_MAX;else
+   {
+    //Flt cone_r=Tan(angle), cone_h=1; ball_r=cone_r*cone_h/(Dist(cone_r, cone_h)+cone_r); formula to calculate ball radius inside a cone
+      Flt cone_r=Tan(angle); ball_r=cone_r/(SqrtFast(Sqr(cone_r)+1)+cone_r);
+      // since ball is located inside the cone, its position will be ball.pos=cone_dir*(1-ball_r); with length=1-ball_r; to normalize ball position (make its length=1 so its radius can be used for normalized direction vectors) we can do ball/=1-ball_r;
+      ball_r/=1-ball_r;
+   }
+   ball_r2=Sqr(ball_r);
+
+   for(ap.side=DIR_ENUM(0); ; )
+   {
+      if(Dot(VecDir[ap.side], dir)>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
+      {
+         Vec dir_face; PosToTerrainPos(ap.side, dir_face, dir); // convert world space 'dir' to local 'ap.side' space 'dir_face'
+
+         RectI rect;
+         Flt   len2, sin2, cos;
+         Vec   zd, d, test;
+
+         zd.set(dir_face.x, 0, dir_face.z); len2=zd.length2();
+         if(ball_r2>=len2)rect.setX(0, res-1);else
+         {
+            sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
+            test=zd-d; if(test.z>0){rect.min.x=posToCellI(test.x/test.z); if(rect.min.x<   0){ left: rect.min.x=    0;}}else goto  left;
+            test=zd+d; if(test.z>0){rect.max.x=posToCellI(test.x/test.z); if(rect.max.x>=res){right: rect.max.x=res-1;}}else goto right;
+         }
+
+         zd.set(0, dir_face.y, dir_face.z); len2=zd.length2();
+         if(ball_r2>=len2)rect.setY(0, res-1);else
+         {
+            sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
+            test=zd+d; if(test.z>0){rect.min.y=posToCellI(test.y/test.z); if(rect.min.y<   0){down: rect.min.y=    0;}}else goto down;
+            test=zd-d; if(test.z>0){rect.max.y=posToCellI(test.y/test.z); if(rect.max.y>=res){  up: rect.max.y=res-1;}}else goto   up;
+         }
+         for(ap.y=rect.min.y; ap.y<=rect.max.y; ap.y++)
+         for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)
+            area_pos.add(ap);
+      }
+      if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
+   }
+}
 /******************************************************************************/
 void SphereConvertEx::sort(MemPtr<SphereArea> areas, C Vec &pos, Bool reverse)C
 {

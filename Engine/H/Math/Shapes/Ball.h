@@ -177,6 +177,7 @@ struct SphereConvert
    Vec     _sphereTerrainPixelCenterToDir(DIR_ENUM cube_face, Int x, Int y)C; // convert spherical terrain coordinates to vector direction, 'cube_face'=terrain cube face, 'x,y'=terrain pixel coordinates (0..res-1), returned vector is not normalized, however it's on a cube with radius=1 ("Abs(dir).max()=1"), !! 'x' 'y' MUST BE IN RANGE "0..res-1" !! THIS IS FAST APPROXIMATION !!
 
    void getIntersectingAreas(MemPtr<SphereArea> area_pos, C Ball &ball, Flt min_radius)C;
+   void getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec  &dir , Flt angle     )C; // get areas around 'dir' up to 'angle' !! 'dir' MUST BE NORMALIZED !!
    Bool    intersects       (     C SphereArea &area_pos, C Ball &ball, Flt min_radius)C; // !! 'area_pos.xy' MUST BE IN RANGE "0..res-1" !!
 
 #if EE_PRIVATE
