@@ -1072,9 +1072,8 @@ struct BlurCube
             {
                Flt dot=Dot(VecDir[face1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
                {
-                  RectI tex_rect1;
-
                   Vec dir_f1; PosToCubeFacePos((DIR_ENUM)face1, dir_f1, dir); // convert world space 'dir' to local 'face1' space 'dir_f1'
+                  RectI tex_rect1;
 
                #if 0 // full
                   #pragma message("!! Warning: Use this only for debugging !!")
@@ -1096,7 +1095,7 @@ struct BlurCube
                      case DIR_RIGHT  :  angle_delta-= PI_2;  break;
                      case DIR_BACK   :  angle_delta-= PI  ;  break;
                      case DIR_LEFT   :  angle_delta-=-PI_2;  break;
-                     default         : goto full;
+                     default         :  goto full;
                   }
                   {
                      Flt dir_angle_x1=AngleNormalize(dir_angle.x+angle_delta), angle_min_x=dir_angle_x1-angle_eps, angle_max_x=dir_angle_x1+angle_eps;

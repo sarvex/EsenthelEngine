@@ -326,6 +326,28 @@ void TransformByTerrainOrient(DIR_ENUM cube_face, Vec &dest, C Vec &src)
    }
    Exit("ok");*/
 }
+void DivideByTerrainOrient(DIR_ENUM cube_face, Vec &dest, C Vec &src)
+{
+   switch(cube_face) // #TerrainOrient
+   {
+      case DIR_FORWARD: dest.set(-src.x,  src.z,  src.y); break;
+      case DIR_BACK   : dest.set( src.x, -src.z,  src.y); break;
+      default         : dest=src; break; // DIR_UP identity
+      case DIR_DOWN   : dest.set( src.x, -src.y, -src.z); break;
+      case DIR_RIGHT  : dest.set( src.z,  src.x,  src.y); break;
+      case DIR_LEFT   : dest.set(-src.z, -src.x,  src.y); break;
+   }
+   /* Verified using:
+   Vec src(1, 2, 3);
+   REPD(face, 6)
+   {
+      Vec a,b;
+      a=src/Matrix3().setTerrainOrient((DIR_ENUM)face);
+      DivideByTerrainOrient((DIR_ENUM)face, b, src);
+      if(!Equal(a, b))Exit(S+face+"\nneed:"+a+"\ngot:"+b);
+   }
+   Exit("ok");*/
+}
 /******************************************************************************
 DIR_ENUM DirToCubeFace(C Vec &dir, Vec2 &xy)
 {
