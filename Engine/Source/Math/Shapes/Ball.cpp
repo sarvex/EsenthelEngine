@@ -855,7 +855,7 @@ void SphereConvertEx::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &d
          for(ap.x=rect.min.x; ap.x<=rect.max.x; ap.x++)
          {
             Vec area_dir=_sphereTerrainPixelCenterToDir(ap.side, ap.x, ap.y); area_dir.normalize();
-            if(Dot(area_dir, dir_face)>cos_min)area_pos.add(ap);
+            if(Dot(area_dir, dir)>cos_min)area_pos.add(ap);
          }
       }
       if(ap.side==DIR_NUM-1)break; ap.side=DIR_ENUM(ap.side+1);
