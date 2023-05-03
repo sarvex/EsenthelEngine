@@ -968,25 +968,32 @@ struct BlurCube
       REPD(x, dest_res)
       {
          Bool check_other_faces=check_other_faces_y;
+         Flt  angle_eps_x;
+         Vec  dir_fn;
          if(linear)
          {
           //dir_f=CubeFacePixelToDir(DIR_FORWARD, x, y, dest_res);
             dir_f.x=x*dest_CubeFacePixelToDir_mul+dest_CubeFacePixelToDir_add;
-                dir_angle.x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
-            Flt angle_min_x=dir_angle.x-angle_eps,
-                angle_max_x=dir_angle.x+angle_eps;
+            dir_fn=dir_f; dir_fn.normalize();
+            dir_angle.x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
+
+                angle_eps_x=angle/dir_fn.xz().length();
+            Flt angle_min_x=dir_angle.x-angle_eps_x,
+                angle_max_x=dir_angle.x+angle_eps_x;
             if( angle_min_x<-PI_4){check_other_faces=true; tex_rect.min.x=        0;}else{Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.min.x=Max(        0,  CeilSpecial(tex_min_x));}
             if( angle_max_x> PI_4){check_other_faces=true; tex_rect.max.x=src_res-1;}else{Flt dir_max_x=Tan(angle_max_x), tex_max_x=dir_max_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
          }else
          {
-                dir_angle.x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
-            Flt angle_min_x=dir_angle.x-angle_eps,
-                angle_max_x=dir_angle.x+angle_eps;
+            dir_angle.x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
+            dir_f.x=Tan(dir_angle.x);
+            dir_fn=dir_f; dir_fn.normalize();
+
+                angle_eps_x=angle/dir_fn.xz().length();
+            Flt angle_min_x=dir_angle.x-angle_eps_x,
+                angle_max_x=dir_angle.x+angle_eps_x;
             if( angle_min_x<-PI_4){check_other_faces=true; tex_rect.min.x=        0;}else{Flt tex_min_x=angle_min_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.min.x=Max(        0,  CeilSpecial(tex_min_x));}
             if( angle_max_x> PI_4){check_other_faces=true; tex_rect.max.x=src_res-1;}else{Flt tex_max_x=angle_max_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
-            dir_f.x=Tan(dir_angle.x);
          }
-         Vec dir_fn=dir_f; dir_fn.normalize();
 
       #if 0 // test rect coverage
          #pragma message("!! Warning: Use this only for debugging !!")
@@ -1098,7 +1105,7 @@ struct BlurCube
                      default         :  goto full;
                   }
                   {
-                     Flt dir_angle_x1=AngleNormalize(dir_angle.x+angle_delta), angle_min_x=dir_angle_x1-angle_eps, angle_max_x=dir_angle_x1+angle_eps;
+                     Flt dir_angle_x1=AngleNormalize(dir_angle.x+angle_delta), angle_min_x=dir_angle_x1-angle_eps_x, angle_max_x=dir_angle_x1+angle_eps_x;
                      if(linear)
                      {
                         if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else {Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
