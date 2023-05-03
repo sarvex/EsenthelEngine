@@ -942,10 +942,8 @@ struct BlurCube
    static void ProcessLine(IntPtr y, BlurCube &bc, Int thread_index) {bc.processLine(y);}
           void processLine(Int    y)
    {
-      RectI tex_rect;
-      Vec2  dir_angle;
-      Vec   dir_f; dir_f.z=1; 
-      Bool  check_other_faces_y=false;
+      Vec2 dir_angle;
+      Vec  dir_f; dir_f.z=1; 
 
       if(linear)
       {
@@ -959,9 +957,10 @@ struct BlurCube
 
       REPD(x, dest_res)
       {
-         Bool check_other_faces=check_other_faces_y;
-         Flt  angle_eps_x;
-         Vec  dir_fn;
+         Bool  check_other_faces=false;
+         Flt   angle_eps_x;
+         RectI tex_rect;
+         Vec   dir_fn;
          if(linear)
          {
           //dir_f=CubeFacePixelToDir(DIR_FORWARD, x, y, dest_res);
@@ -978,8 +977,8 @@ struct BlurCube
             Flt angle_eps_y=angle/dir_fn.yz().length(),
                 angle_min_y=dir_angle.y-angle_eps_y,
                 angle_max_y=dir_angle.y+angle_eps_y;
-            if( angle_min_y<-PI_4){check_other_faces_y=true; tex_rect.max.y=src_res-1;}else{Flt dir_min_y=Tan(angle_min_y), tex_max_y=-dir_min_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-            if( angle_max_y> PI_4){check_other_faces_y=true; tex_rect.min.y=        0;}else{Flt dir_max_y=Tan(angle_max_y), tex_min_y=-dir_max_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
+            if( angle_min_y<-PI_4){check_other_faces=true; tex_rect.max.y=src_res-1;}else{Flt dir_min_y=Tan(angle_min_y), tex_max_y=-dir_min_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
+            if( angle_max_y> PI_4){check_other_faces=true; tex_rect.min.y=        0;}else{Flt dir_max_y=Tan(angle_max_y), tex_min_y=-dir_max_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
          }else
          {
             dir_angle.x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
@@ -995,8 +994,8 @@ struct BlurCube
             Flt angle_eps_y=angle/dir_fn.yz().length(),
                 angle_min_y=dir_angle.y-angle_eps_y,
                 angle_max_y=dir_angle.y+angle_eps_y;
-            if( angle_min_y<-PI_4){check_other_faces_y=true; tex_rect.max.y=src_res-1;}else{Flt tex_max_y=-angle_min_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-            if( angle_max_y> PI_4){check_other_faces_y=true; tex_rect.min.y=        0;}else{Flt tex_min_y=-angle_max_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
+            if( angle_min_y<-PI_4){check_other_faces=true; tex_rect.max.y=src_res-1;}else{Flt tex_max_y=-angle_min_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
+            if( angle_max_y> PI_4){check_other_faces=true; tex_rect.min.y=        0;}else{Flt tex_min_y=-angle_max_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
          }
 
       #if 0 // test rect coverage
