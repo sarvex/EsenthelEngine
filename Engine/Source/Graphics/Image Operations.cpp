@@ -906,7 +906,7 @@ struct BlurCube
    Bool     linear;
    DIR_ENUM face;
    Int      src_res, dest_res, src_face_size, src_pitch, src_mip;
-   Flt      diag_angle_cos_min, cos_min, angle, angle_eps;
+   Flt      diag_angle_cos_min, cos_min, angle, ball_r, ball_r2;
    union
    {
       struct // linear
@@ -942,67 +942,75 @@ struct BlurCube
    static void ProcessLine(IntPtr y, BlurCube &bc, Int thread_index) {bc.processLine(y);}
           void processLine(Int    y)
    {
-      Vec2 dir_angle;
-      Vec  dir_f; dir_f.z=1; 
+      Vec dir_f; dir_f.z=1; 
 
       if(linear)
       {
          dir_f.y=-y*dest_CubeFacePixelToDir_mul-dest_CubeFacePixelToDir_add;
-         dir_angle.y=Atan(dir_f.y); // Angle(dir_f.z, dir_f.y); dir_f.z==1
+       //dir_angle.y=Atan(dir_f.y); // Angle(dir_f.z, dir_f.y); dir_f.z==1
       }else
       {
-         dir_angle.y=-y*dest_CubeFacePixelToAngle_mul-dest_CubeFacePixelToAngle_add;
-         dir_f.y=Tan(dir_angle.y);
+         Flt dir_angle_y=-y*dest_CubeFacePixelToAngle_mul-dest_CubeFacePixelToAngle_add;
+         dir_f.y=Tan(dir_angle_y);
       }
 
       REPD(x, dest_res)
       {
          Bool  check_other_faces=false;
-         Flt   angle_eps_x;
-         RectI tex_rect;
          Vec   dir_fn;
+         RectI rect;
+         Flt   len2, sin2, cos;
+         Vec   zd, d, test;
          if(linear)
          {
           //dir_f=CubeFacePixelToDir(DIR_FORWARD, x, y, dest_res);
             dir_f.x=x*dest_CubeFacePixelToDir_mul+dest_CubeFacePixelToDir_add;
             dir_fn=dir_f; dir_fn.normalize();
-            dir_angle.x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
+          //dir_angle.x=Atan(dir_f.x); // Angle(dir_f.z, dir_f.x); dir_f.z==1
 
-                angle_eps_x=angle/dir_fn.xz().length();
-            Flt angle_min_x=dir_angle.x-angle_eps_x,
-                angle_max_x=dir_angle.x+angle_eps_x;
-            if( angle_min_x<-PI_4){check_other_faces=true; tex_rect.min.x=        0;}else{Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-            if( angle_max_x> PI_4){check_other_faces=true; tex_rect.max.x=src_res-1;}else{Flt dir_max_x=Tan(angle_max_x), tex_max_x=dir_max_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
+            zd.set(dir_fn.x, 0, dir_fn.z); len2=zd.length2();
+            if(ball_r2>=len2){rect.setX(0, src_res-1); check_other_faces=true;}else
+            {
+               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               test=zd-d; if(test.z>0){rect.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.min.x<       0){ left_linear: rect.min.x=        0; check_other_faces=true;}}else goto  left_linear;
+               test=zd+d; if(test.z>0){rect.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.max.x>=src_res){right_linear: rect.max.x=src_res-1; check_other_faces=true;}}else goto right_linear;
+            }
 
-            Flt angle_eps_y=angle/dir_fn.yz().length(),
-                angle_min_y=dir_angle.y-angle_eps_y,
-                angle_max_y=dir_angle.y+angle_eps_y;
-            if( angle_min_y<-PI_4){check_other_faces=true; tex_rect.max.y=src_res-1;}else{Flt dir_min_y=Tan(angle_min_y), tex_max_y=-dir_min_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-            if( angle_max_y> PI_4){check_other_faces=true; tex_rect.min.y=        0;}else{Flt dir_max_y=Tan(angle_max_y), tex_min_y=-dir_max_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
+            zd.set(0, dir_fn.y, dir_fn.z); len2=zd.length2();
+            if(ball_r2>=len2){rect.setY(0, src_res-1); check_other_faces=true;}else
+            {
+               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               test=zd-d; if(test.z>0){rect.min.y= CeilSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.min.y<       0){down_linear: rect.min.y=        0; check_other_faces=true;}}else goto down_linear;
+               test=zd+d; if(test.z>0){rect.max.y=FloorSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.max.y>=src_res){  up_linear: rect.max.y=src_res-1; check_other_faces=true;}}else goto   up_linear;
+            }
          }else
          {
-            dir_angle.x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
-            dir_f.x=Tan(dir_angle.x);
+            Flt dir_angle_x=x*dest_CubeFacePixelToAngle_mul+dest_CubeFacePixelToAngle_add;
+            dir_f.x=Tan(dir_angle_x);
             dir_fn=dir_f; dir_fn.normalize();
 
-                angle_eps_x=angle/dir_fn.xz().length();
-            Flt angle_min_x=dir_angle.x-angle_eps_x,
-                angle_max_x=dir_angle.x+angle_eps_x;
-            if( angle_min_x<-PI_4){check_other_faces=true; tex_rect.min.x=        0;}else{Flt tex_min_x=angle_min_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-            if( angle_max_x> PI_4){check_other_faces=true; tex_rect.max.x=src_res-1;}else{Flt tex_max_x=angle_max_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
+            zd.set(dir_fn.x, 0, dir_fn.z); len2=zd.length2();
+            if(ball_r2>=len2){rect.setX(0, src_res-1); check_other_faces=true;}else
+            {
+               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               test=zd-d; if(test.z>0){rect.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.min.x<       0){ left_sphere: rect.min.x=        0; check_other_faces=true;}}else goto  left_sphere;
+               test=zd+d; if(test.z>0){rect.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.max.x>=src_res){right_sphere: rect.max.x=src_res-1; check_other_faces=true;}}else goto right_sphere;
+            }
 
-            Flt angle_eps_y=angle/dir_fn.yz().length(),
-                angle_min_y=dir_angle.y-angle_eps_y,
-                angle_max_y=dir_angle.y+angle_eps_y;
-            if( angle_min_y<-PI_4){check_other_faces=true; tex_rect.max.y=src_res-1;}else{Flt tex_max_y=-angle_min_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-            if( angle_max_y> PI_4){check_other_faces=true; tex_rect.min.y=        0;}else{Flt tex_min_y=-angle_max_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
+            zd.set(0, dir_fn.y, dir_fn.z); len2=zd.length2();
+            if(ball_r2>=len2){rect.setY(0, src_res-1); check_other_faces=true;}else
+            {
+               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               test=zd-d; if(test.z>0){rect.min.y= CeilSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.min.y<       0){down_sphere: rect.min.y=        0; check_other_faces=true;}}else goto down_sphere;
+               test=zd+d; if(test.z>0){rect.max.y=FloorSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.max.y>=src_res){  up_sphere: rect.max.y=src_res-1; check_other_faces=true;}}else goto   up_sphere;
+            }
          }
 
       #if 0 // test rect coverage
          #pragma message("!! Warning: Use this only for debugging !!")
          if(!face)
          {
-            RectI test_rect=tex_rect; test_rect.extend(1)&=RectI(0, src_res-1);
+            RectI test_rect=rect; test_rect.extend(1)&=RectI(0, src_res-1);
             Vec dir_test;
             // test top and bottom horizontal neighbor lines
             Flt dir_y0=(linear ?     -test_rect.min.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
@@ -1013,8 +1021,8 @@ struct BlurCube
             {
                Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
                                  : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-               dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesY(test_rect.min.y))Exit("fail");
-               dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesY(test_rect.max.y))Exit("fail");
+               dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !rect.includesY(test_rect.min.y))Exit("fail");
+               dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !rect.includesY(test_rect.max.y))Exit("fail");
             }
             // test left and right vertical neighbor lines
             Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
@@ -1025,8 +1033,8 @@ struct BlurCube
             {
                Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
                                  : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-               dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesX(test_rect.min.x))Exit("fail");
-               dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !tex_rect.includesX(test_rect.max.x))Exit("fail");
+               dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !rect.includesX(test_rect.min.x))Exit("fail");
+               dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_fn, dir_test)-EPS*2>cos_min && !rect.includesX(test_rect.max.x))Exit("fail");
             }
          }
       #endif
@@ -1046,7 +1054,7 @@ struct BlurCube
              //Vec dir_test=CubeFacePixelToDir(DIR_FORWARD, tx, ty, src_res); dir_test.normalize();
                Bool cone=(Dot(dir_fn, dir_test)>=cos_min);
              //Bool cone=(AbsAngleBetweenN(dir_fn, dir_test)<=angle);
-               Bool rect=tex_rect.includes(VecI2(tx, ty));
+               Bool rect=rect.includes(VecI2(tx, ty));
                if(cone && !rect)ok=false;
                img.color(tx, ty, Color(cone ? 255 : 0, rect ? 255 : 0, 0));
             }
@@ -1056,12 +1064,12 @@ struct BlurCube
 
          Vec4  col=0;
          Flt   weight=0;
-       C Byte *src_data=T.src_data + face*src_face_size + tex_rect.min.y*src_pitch;
-         for(Int y=tex_rect.min.y; y<=tex_rect.max.y; y++, src_data+=src_pitch)
+       C Byte *src_data=T.src_data + face*src_face_size + rect.min.y*src_pitch;
+         for(Int y=rect.min.y; y<=rect.max.y; y++, src_data+=src_pitch)
          {
             Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
                               : Tan(-y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-            for(Int x=tex_rect.min.x; x<=tex_rect.max.x; x++)
+            for(Int x=rect.min.x; x<=rect.max.x; x++)
             {
                Flt dir_x=(linear ?     x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
                                  : Tan(x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
@@ -1079,130 +1087,150 @@ struct BlurCube
          {
             Vec dir; CubeFacePosToPos(face, dir, dir_fn); // convert local 'face' space to world space 'dir'
             FREPD(face1, 6)if(face1!=face)
+               if(Dot(VecDir[face1], dir)>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
             {
-               Flt dot=Dot(VecDir[face1], dir); if(dot>diag_angle_cos_min) // do a fast check for potential overlap with cone and cube face
-               {
-                  RectI tex_rect1;
-                  Vec   dir_f1; PosToCubeFacePos((DIR_ENUM)face1, dir_f1, dir); // convert world space 'dir' to local 'face1' space 'dir_f1'
+               RectI rect1;
+               Vec   dir_f1; PosToCubeFacePos((DIR_ENUM)face1, dir_f1, dir); // convert world space 'dir' to local 'face1' space 'dir_f1'
 
-               #if 0 // full
+            #if 0 // full
+               #pragma message("!! Warning: Use this only for debugging !!")
+               rect1.set(0, src_res-1); goto check;
+            #endif
+               // do a fast check for rotation along Y axis (between ->DIR_FORWARD->DIR_RIGHT->DIR_BACK->DIR_LEFT->) in this case, all Y's are the same as in test above, just have to rotate X's
+               Flt angle_delta;
+               switch(face)
+               {
+                  case DIR_FORWARD: angle_delta=    0; break;
+                  case DIR_RIGHT  : angle_delta= PI_2; break;
+                  case DIR_BACK   : angle_delta= PI  ; break;
+                  case DIR_LEFT   : angle_delta=-PI_2; break;
+                  default         : goto full;
+               }
+               switch(face1)
+               {
+                  case DIR_FORWARD:/*angle_delta-=    0;*/break;
+                  case DIR_RIGHT  :  angle_delta-= PI_2;  break;
+                  case DIR_BACK   :  angle_delta-= PI  ;  break;
+                  case DIR_LEFT   :  angle_delta-=-PI_2;  break;
+                  default         :  goto full;
+               }
+               if(linear)
+               {
+                  zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setX(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.x<       0){ left_linear_x: rect1.min.x=        0;}}else goto  left_linear_x;
+                     test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.x>=src_res){right_linear_x: rect1.max.x=src_res-1;}}else goto right_linear_x;
+                  }
+               }else
+               {
+                  zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setX(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.x<       0){ left_sphere_x: rect1.min.x=        0;}}else goto  left_sphere_x;
+                     test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.x>=src_res){right_sphere_x: rect1.max.x=src_res-1;}}else goto right_sphere_x;
+                  }
+               }
+               if(rect1.validX())
+               {
+                  rect1.setY(rect.min.y, rect.max.y);
+               check:
+               #if 0 // test rect coverage
                   #pragma message("!! Warning: Use this only for debugging !!")
-                  tex_rect1.set(0, src_res-1); goto check;
+                  if(!face)
+                  {
+                     RectI test_rect=rect1; test_rect.extend(1)&=RectI(0, src_res-1);
+                     Vec dir_test;
+                     // test top and bottom horizontal neighbor lines
+                     Flt dir_y0=(linear ?     -test_rect.min.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                        : Tan(-test_rect.min.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                     Flt dir_y1=(linear ?     -test_rect.max.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                        : Tan(-test_rect.max.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                     for(Int tx=test_rect.min.x; tx<=test_rect.max.x; tx++)
+                     {
+                        Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                          : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                        dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !rect1.includesY(test_rect.min.y))Exit("fail");
+                        dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !rect1.includesY(test_rect.max.y))Exit("fail");
+                     }
+                     // test left and right vertical neighbor lines
+                     Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                        : Tan(test_rect.min.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                     Flt dir_x1=(linear ?     test_rect.max.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                        : Tan(test_rect.max.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                     for(Int ty=test_rect.min.y; ty<=test_rect.max.y; ty++)
+                     {
+                        Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                          : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                        dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !rect1.includesX(test_rect.min.x))Exit("fail");
+                        dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !rect1.includesX(test_rect.max.x))Exit("fail");
+                     }
+                  }
                #endif
-                  // do a fast check for rotation along Y axis (between ->DIR_FORWARD->DIR_RIGHT->DIR_BACK->DIR_LEFT->) in this case, all Y's are the same as in test above, just have to rotate X's
-                  Flt angle_delta;
-                  switch(face)
+                C Byte *src_data=T.src_data + face1*src_face_size + rect1.min.y*src_pitch;
+                  for(Int y=rect1.min.y; y<=rect1.max.y; y++, src_data+=src_pitch)
                   {
-                     case DIR_FORWARD: angle_delta=    0; break;
-                     case DIR_RIGHT  : angle_delta= PI_2; break;
-                     case DIR_BACK   : angle_delta= PI  ; break;
-                     case DIR_LEFT   : angle_delta=-PI_2; break;
-                     default         : goto full;
-                  }
-                  switch(face1)
-                  {
-                     case DIR_FORWARD:/*angle_delta-=    0;*/break;
-                     case DIR_RIGHT  :  angle_delta-= PI_2;  break;
-                     case DIR_BACK   :  angle_delta-= PI  ;  break;
-                     case DIR_LEFT   :  angle_delta-=-PI_2;  break;
-                     default         :  goto full;
-                  }
-                  {
-                     Flt dir_angle_x1=AngleNormalize(dir_angle.x+angle_delta), angle_min_x=dir_angle_x1-angle_eps_x, angle_max_x=dir_angle_x1+angle_eps_x;
-                     if(linear)
+                     Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
+                                       : Tan(-y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
+                     for(Int x=rect1.min.x; x<=rect1.max.x; x++)
                      {
-                        if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else {Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-                        if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else {Flt dir_max_x=Tan(angle_max_x), tex_max_x=dir_max_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
-                     }else
-                     {
-                        if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else {Flt tex_min_x=angle_min_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-                        if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else {Flt tex_max_x=angle_max_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
-                     }
-                  }
-                  if(tex_rect1.validX())
-                  {
-                     tex_rect1.setY(tex_rect.min.y, tex_rect.max.y);
-                  check:
-                  #if 0 // test rect coverage
-                     #pragma message("!! Warning: Use this only for debugging !!")
-                     if(!face)
-                     {
-                        RectI test_rect=tex_rect1; test_rect.extend(1)&=RectI(0, src_res-1);
-                        Vec dir_test;
-                        // test top and bottom horizontal neighbor lines
-                        Flt dir_y0=(linear ?     -test_rect.min.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
-                                           : Tan(-test_rect.min.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-                        Flt dir_y1=(linear ?     -test_rect.max.y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
-                                           : Tan(-test_rect.max.y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-                        for(Int tx=test_rect.min.x; tx<=test_rect.max.x; tx++)
+                        Flt dir_x=(linear ?     x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
+                                          : Tan(x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
+                        Vec dir_test(dir_x, dir_y, 1); dir_test.normalize();
+                        Flt cos=Dot(dir_f1, dir_test); if(cos>cos_min)
                         {
-                           Flt dir_x=(linear ?     tx*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
-                                             : Tan(tx*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-                           dir_test.set(dir_x, dir_y0, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesY(test_rect.min.y))Exit("fail");
-                           dir_test.set(dir_x, dir_y1, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesY(test_rect.max.y))Exit("fail");
+                           Flt a=Acos(cos), w=Weight(a/angle);
+                           // FIXME mul 'w' by texel area size
+                           col   +=w*(BLUR_CUBE_LINEAR_GAMMA ? ImageColorL : ImageColorF)(src_data + x*src.bytePP(), src.hwType());
+                           weight+=w;
                         }
-                        // test left and right vertical neighbor lines
-                        Flt dir_x0=(linear ?     test_rect.min.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
-                                           : Tan(test_rect.min.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-                        Flt dir_x1=(linear ?     test_rect.max.x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
-                                           : Tan(test_rect.max.x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-                        for(Int ty=test_rect.min.y; ty<=test_rect.max.y; ty++)
-                        {
-                           Flt dir_y=(linear ?     -ty*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
-                                             : Tan(-ty*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-                           dir_test.set(dir_x0, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesX(test_rect.min.x))Exit("fail");
-                           dir_test.set(dir_x1, dir_y, 1); dir_test.normalize(); if(Dot(dir_f1, dir_test)-EPS*2>cos_min && !tex_rect1.includesX(test_rect.max.x))Exit("fail");
-                        }
-                     }
-                  #endif
-                   C Byte *src_data=T.src_data + face1*src_face_size + tex_rect1.min.y*src_pitch;
-                     for(Int y=tex_rect1.min.y; y<=tex_rect1.max.y; y++, src_data+=src_pitch)
-                     {
-                        Flt dir_y=(linear ?     -y*src_CubeFacePixelToDir_mul  -src_CubeFacePixelToDir_add
-                                          : Tan(-y*src_CubeFacePixelToAngle_mul-src_CubeFacePixelToAngle_add));
-                        for(Int x=tex_rect1.min.x; x<=tex_rect1.max.x; x++)
-                        {
-                           Flt dir_x=(linear ?     x*src_CubeFacePixelToDir_mul  +src_CubeFacePixelToDir_add
-                                             : Tan(x*src_CubeFacePixelToAngle_mul+src_CubeFacePixelToAngle_add));
-                           Vec dir_test(dir_x, dir_y, 1); dir_test.normalize();
-                           Flt cos=Dot(dir_f1, dir_test); if(cos>cos_min)
-                           {
-                              Flt a=Acos(cos), w=Weight(a/angle);
-                              // FIXME mul 'w' by texel area size
-                              col   +=w*(BLUR_CUBE_LINEAR_GAMMA ? ImageColorL : ImageColorF)(src_data + x*src.bytePP(), src.hwType());
-                              weight+=w;
-                           }
-                        }
-                     }
-                  }
-                  continue;
-               full:
-                  if(linear)
-                  {
-                     Flt dir_angle_y=Angle(dir_f1.z, dir_f1.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
-                     if(angle_min_y<=-PI_4)tex_rect1.max.y=src_res-1;else if(angle_min_y>= PI_4)continue;else{Flt dir_min_y=Tan(angle_min_y), tex_max_y=-dir_min_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-                     if(angle_max_y>= PI_4)tex_rect1.min.y=        0;else if(angle_max_y<=-PI_4)continue;else{Flt dir_max_y=Tan(angle_max_y), tex_min_y=-dir_max_y*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
-                     if(tex_rect1.validY())
-                     {
-                        Flt dir_angle_x=Angle(dir_f1.z, dir_f1.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
-                        if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else{Flt dir_min_x=Tan(angle_min_x), tex_min_x=dir_min_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-                        if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else{Flt dir_max_x=Tan(angle_max_x), tex_max_x=dir_max_x*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
-                        if(tex_rect1.validX())goto check;
-                     }
-                  }else
-                  {
-                     Flt dir_angle_y=Angle(dir_f1.z, dir_f1.y), angle_min_y=dir_angle_y-angle_eps, angle_max_y=dir_angle_y+angle_eps;
-                     if(angle_min_y<=-PI_4)tex_rect1.max.y=src_res-1;else if(angle_min_y>= PI_4)continue;else{Flt tex_max_y=-angle_min_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.max.y=Min(src_res-1, FloorSpecial(tex_max_y));} // max from min, because converting from world -> image coordinates
-                     if(angle_max_y>= PI_4)tex_rect1.min.y=        0;else if(angle_max_y<=-PI_4)continue;else{Flt tex_min_y=-angle_max_y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.min.y=Max(        0,  CeilSpecial(tex_min_y));} // min from max, because converting from world -> image coordinates
-                     if(tex_rect1.validY())
-                     {
-                        Flt dir_angle_x=Angle(dir_f1.z, dir_f1.x), angle_min_x=dir_angle_x-angle_eps, angle_max_x=dir_angle_x+angle_eps;
-                        if(angle_min_x<=-PI_4)tex_rect1.min.x=        0;else if(angle_min_x>= PI_4)continue;else{Flt tex_min_x=angle_min_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.min.x=Max(        0,  CeilSpecial(tex_min_x));}
-                        if(angle_max_x>= PI_4)tex_rect1.max.x=src_res-1;else if(angle_max_x<=-PI_4)continue;else{Flt tex_max_x=angle_max_x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add; tex_rect1.max.x=Min(src_res-1, FloorSpecial(tex_max_x));}
-                        if(tex_rect1.validX())goto check;
                      }
                   }
                }
+               continue;
+            full:
+               if(linear)
+               {
+                  zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setX(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.x<       0){ left_linear_1: rect1.min.x=        0;}}else goto  left_linear_1;
+                     test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.x>=src_res){right_linear_1: rect1.max.x=src_res-1;}}else goto right_linear_1;
+                  }
+                  if(!rect1.validX())continue;
+
+                  zd.set(0, dir_f1.y, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setY(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.y= CeilSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.y<       0){down_linear_1: rect1.min.y=        0;}}else goto down_linear_1;
+                     test=zd+d; if(test.z>0){rect1.max.y=FloorSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.y>=src_res){  up_linear_1: rect1.max.y=src_res-1;}}else goto   up_linear_1;
+                  }
+                  if(!rect1.validY())continue;
+               }else
+               {
+                  zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setX(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.x<       0){ left_sphere_1: rect1.min.x=        0;}}else goto  left_sphere_1;
+                     test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.x>=src_res){right_sphere_1: rect1.max.x=src_res-1;}}else goto right_sphere_1;
+                  }
+                  if(!rect1.validX())continue;
+
+                  zd.set(0, dir_f1.y, dir_f1.z); len2=zd.length2();
+                  if(ball_r2>=len2)rect1.setY(0, src_res-1);else
+                  {
+                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     test=zd-d; if(test.z>0){rect1.min.y= CeilSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.y<       0){down_sphere_1: rect1.min.y=        0;}}else goto down_sphere_1;
+                     test=zd+d; if(test.z>0){rect1.max.y=FloorSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.y>=src_res){  up_sphere_1: rect1.max.y=src_res-1;}}else goto   up_sphere_1;
+                  }
+                  if(!rect1.validY())continue;
+               }
+               goto check;
             }
          }
          if(weight)col/=weight;else
@@ -1218,8 +1246,10 @@ struct BlurCube
             if(src.lockRead(src_mip, face))
             {
                Vec2 tex;
-               if(linear)tex.set(dir_f    .x*src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  , -dir_f    .y*src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  );
-               else      tex.set(dir_angle.x*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add, -dir_angle.y*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add);
+               if(linear)tex.set(     dir_f    .x *src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  , -     dir_f    .y *src_DirToCubeFacePixel_mul  +src_DirToCubeFacePixel_add  );
+             //else      tex.set(     dir_angle.x *src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add, -     dir_angle.y *src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add);
+               else      tex.set(Atan(dir_f    .x)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add, -Atan(dir_f    .y)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add);
+
                if(BLUR_CUBE_LINEAR_GAMMA)col=src.areaColorLLinear(tex, src_area_size);
                else                      col=src.areaColorFLinear(tex, src_area_size);
                src.unlock();
@@ -1246,9 +1276,20 @@ struct BlurCube
          // calculate max angle between face direction vector and a point belonging to that face - this will be furthest point, so !Vec(1,1,1) is used and face direction Vec(0,0,1)
          const Flt diag_angle=AcosFast(SQRT3_3), //Flt a=AbsAngleBetween(!Vec(1,1,1), Vec(0,0,1)); AbsAngleBetween(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)); Acos(Dot(Vec(SQRT3_3, SQRT3_3, SQRT3_3), Vec(0,0,1)));
                    diag_angle_ext=diag_angle+angle;
-         T.angle=angle; angle_eps=angle*SQRT2; // need to mul by SQRT2 because calculating bounds is an approximation so we need to extend the rect because normally it doesn't cover fully, this value works well for both cases of 'linear'
+         T.angle=angle;
                     cos_min=Cos(angle);
          diag_angle_cos_min=Cos(diag_angle_ext);
+
+         // convert cone angle to ball radius
+         if(angle>=PI_2-EPS)ball_r=FLT_MAX;else
+         {
+          //Flt cone_r=Tan(angle), cone_h=1; ball_r=cone_r*cone_h/(Dist(cone_r, cone_h)+cone_r); formula to calculate ball radius inside a cone
+            Flt cone_r=Tan(angle); ball_r=cone_r/(SqrtFast(Sqr(cone_r)+1)+cone_r);
+            // since ball is located inside the cone, its position will be ball.pos=cone_dir*(1-ball_r); with length=1-ball_r; to normalize ball position (make its length=1 so its radius can be used for normalized direction vectors) we can do ball/=1-ball_r;
+            ball_r/=1-ball_r;
+         }
+         ball_r2=Sqr(ball_r);
+
          if(linear)
          {
             src_DirToCubeFacePixel_mul=src_res*0.5f; src_DirToCubeFacePixel_add=src_DirToCubeFacePixel_mul-0.5f;
