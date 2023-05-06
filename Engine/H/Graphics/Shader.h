@@ -119,8 +119,7 @@ struct ShaderParam // Shader Parameter
 
             void setInRangeConditional(C Vec &a, C Vec &b, UInt elm); // set vector3Dx2 array element value only if it's different, values assumed to be always in range
 
-            void setSafe           (C Vec4 &v); // set from vector4D value, but limit the actual size copied based on 'ShaderParam' size
-            Bool setSafeConditional(C Vec4 &v); // set from vector4D value, but limit the actual size copied based on 'ShaderParam' size, set only if it's different
+            void setSafe(C Vec4 &v); // set from vector4D value, but limit the actual size copied based on 'ShaderParam' size
          #endif
 
 #if EE_PRIVATE
@@ -202,8 +201,9 @@ struct ShaderParamInt : private ShaderParam // Shader Parameter
 /******************************************************************************/
 struct ShaderParamChange // Shader Parameter Change
 {
-   ShaderParam *param; // parameter to change
-   Vec4         value; // value     to change to
+   ShaderParam *param  ; // parameter to change
+   Vec4         value  ; // value     to change to
+   Bool         restore; // if restore previous value when finished drawing
 
    ShaderParamChange& set(  Bool  b) {value.x  =b; return T;}
    ShaderParamChange& set(  Int   i) {value.x  =i; return T;}
@@ -214,7 +214,7 @@ struct ShaderParamChange // Shader Parameter Change
 
    ShaderParamChange& set(ShaderParam *param) {T.param=param; return T;}
 
-   ShaderParamChange() {param=null; value.zero();}
+   ShaderParamChange() {param=null; value.zero(); restore=true;}
 };
 /******************************************************************************/
 #if EE_PRIVATE

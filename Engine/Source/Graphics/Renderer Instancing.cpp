@@ -71,16 +71,23 @@ static Bool SetShaderParamChanges(C Memc<ShaderParamChange> *changes=null)
    {
       // restore previous changes if any
       REPAO(RestoreChanges).restore(); // restore in backward order
-      RestoreChanges.clear();
+            RestoreChanges .clear  ();
 
       // apply new changes
       if(LastChanges=changes)REPA(*LastChanges)
       {
        C ShaderParamChange &change=(*LastChanges)[i];
-       //if(change.param) skip for performance reasons, expect to be valid
-         {
-            RestoreChanges.add(change.param); // add for restoration
-            change.param->setSafe(change.value); // apply change, have to use 'setSafe' because the 'ShaderParam' can be smaller than what we're setting
+         ShaderParam       *param =change.param;
+       //if(param) skip for performance reasons, expect to be valid
+         { // apply change, have to use '#setSafeConditional' because the 'ShaderParam' can be smaller than what we're setting
+          C auto &value=change.value;
+            auto  size =Min(param->_gpu_data_size, SIZEU(value));
+            if(!EqualMemFast(param->_data, &value, size))
+            {
+               if(change.restore)RestoreChanges.add(param); // add for restoration !! BEFORE COPY !!
+               CopyFast(param->_data, &value, size);
+               param->setChanged();
+            }
          }
       }
       return true;
