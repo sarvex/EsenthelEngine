@@ -42,23 +42,23 @@ Flt AsinFast(Flt sin) // 'sin'=-1..1, returns [-PI/2, PI/2]
 /******************************************************************************/
 Flt AtanFastPos(Flt tan) // 'tan'=0..Inf, returns [0, PI/2]
 { 
-   Flt t0  =(tan<1) ? tan : 1/tan;
+   Flt t0  =(tan<=1) ? tan : 1/tan;
    Flt t1  =t0*t0;
    Flt poly=0.0872929;
    poly=poly*t1-0.301895;
    poly=poly*t1+1;
    poly=poly*t0;
-   return (tan<1) ? poly : PI_2-poly;
+   return (tan<=1) ? poly : PI_2-poly;
 }
 Vec2 AtanFastPos(Vec2 tan) // 'tan'=0..Inf, returns [0, PI/2]
 { 
-   Vec2 t0  =(tan<1) ? tan : 1/tan;
+   Vec2 t0  =(tan<=1) ? tan : 1/tan;
    Vec2 t1  =t0*t0;
    Vec2 poly=0.0872929;
    poly=poly*t1-0.301895;
    poly=poly*t1+1;
    poly=poly*t0;
-   return (tan<1) ? poly : PI_2-poly;
+   return (tan<=1) ? poly : PI_2-poly;
 }
 Flt AtanFast(Flt tan) // 'tan'=-Inf..Inf, returns [-PI/2, PI/2]
 {
