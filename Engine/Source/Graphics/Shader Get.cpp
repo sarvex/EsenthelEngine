@@ -85,7 +85,7 @@ static Bool Macro       (C Material &material) {return  material. macro_map;}
 static Bool Reflect     (C Material &material) {return  material.reflect_add+((material.base_2 && material.reflect_mul>0) ? material.reflect_mul : 0)  // get maximum possible reflectivity                                                           , add 'reflect_mul' only if it increases reflectivity (>0) because we only want possible maximum. #MaterialTextureLayout 'reflect_mul' is multiplied with metal     texture which is stored in base_2
                                                     +1-(material.  rough_add+((material.base_2 && material.  rough_mul<0) ? material.  rough_mul : 0)) // get maximum possible smoothness, which is minimum possible roughness converted to smoothness, add   'rough_mul' only if it decreases roughness    (<0) because we only want possible minimum. #MaterialTextureLayout   'rough_mul' is multiplied with roughness texture which is stored in base_2
                                                        >EPS_COL8;}
-static MESH_FLAG FlagHeightmap(MESH_FLAG mesh_flag, Bool heightmap)
+static MESH_FLAG FlagHeightmap(MESH_FLAG mesh_flag, Byte heightmap)
 {
    if(heightmap)
    {
@@ -95,7 +95,7 @@ static MESH_FLAG FlagHeightmap(MESH_FLAG mesh_flag, Bool heightmap)
    return mesh_flag;
 }
 /******************************************************************************/
-DefaultShaders::DefaultShaders(C Material *material, MESH_FLAG mesh_flag, Int lod_index, Bool heightmap)
+DefaultShaders::DefaultShaders(C Material *material, MESH_FLAG mesh_flag, Int lod_index, Byte heightmap)
 {
  C Material *materials[4]=
    {
@@ -106,7 +106,7 @@ DefaultShaders::DefaultShaders(C Material *material, MESH_FLAG mesh_flag, Int lo
    };
    init(materials, mesh_flag, lod_index, heightmap);
 }
-void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Bool heightmap)
+void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Byte heightmap)
 {
    // !! Never return the same shader for Multi-Materials as Single-Materials !!
    if(!mesh_flag){set_empty: valid=false; return;}
@@ -163,7 +163,7 @@ void DefaultShaders::init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_
    clear_coat          =(m->technique==MTECH_CLEAR_COAT && normal && materials==1 && !heightmap);
    uv_scale            =((heightmap || materials>1 || (uv && !Equal(m->uv_scale, 1))) && (layout && !skin && !alpha_test));
 
-   if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=uv_scale=heightmap=false; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
+   if(bump==SBUMP_ZERO){/*materials=1; can't return same shader for multi/single*/ layout=0; alpha_test=detail=macro=mtrl_blend=uv_scale=false; heightmap=HEIGHTMAP_NO; fx=FX_NONE; MIN(emissive, 1);} // shaders with SBUMP_ZERO currently are very limited
    if(fx        ){uv_scale=detail=macro=tesselate=false; MIN(bump, SBUMP_NORMAL);} // shaders with effects    currently don't support uv_scale/detail/macro/tesselate/fancy bump
    if(clear_coat){uv_scale=detail=macro=          false; MIN(bump, SBUMP_NORMAL);} // shaders with clear coat currently don't support uv_scale/detail/macro/fancy bump
 }

@@ -552,18 +552,18 @@ struct DefaultShaders
    Bool valid,
         detail, macro, reflect,
         mtrl_blend,
-        uv_scale, heightmap,
+        uv_scale,
         uv, normal, color, size,
         fur, grass, leaf,
         alpha, alpha_blend, alpha_blend_no_light, alpha_blend_light,
         skin,
         tesselate,
         clear_coat;
-   Byte materials, alpha_test, layout, bump, emissive, fx;
+   Byte materials, heightmap, alpha_test, layout, bump, emissive, fx;
 
-   void      init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Bool heightmap);
-   DefaultShaders(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Bool heightmap) {init(material, mesh_flag, lod_index, heightmap);}
-   DefaultShaders(C Material *material   , MESH_FLAG mesh_flag, Int lod_index, Bool heightmap);
+   void      init(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Byte heightmap);
+   DefaultShaders(C Material *material[4], MESH_FLAG mesh_flag, Int lod_index, Byte heightmap) {init(material, mesh_flag, lod_index, heightmap);}
+   DefaultShaders(C Material *material   , MESH_FLAG mesh_flag, Int lod_index, Byte heightmap);
 
    Shader* EarlyZ  ()C;
    Shader* Opaque  (Bool mirror=false)C;

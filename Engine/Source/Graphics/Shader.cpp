@@ -1008,6 +1008,12 @@ void ShaderParam::setConditional(C Vec4 &v)
    Vec4 &dest =*(Vec4*)_data;
    if(   dest!=v){dest=v; setChanged();}
 }
+void ShaderParam::setConditional(C Color &color)
+{
+   Vec4 v=SRGBToDisplay(color);
+   Vec4 &dest =*(Vec4*)_data;
+   if(   dest!=v){dest=v; setChanged();}
+}
 void ShaderParam::setConditional(C Rect &r)
 {
    Rect &dest =*(Rect*)_data;
@@ -1068,6 +1074,8 @@ void ShaderParam::setInRangeConditional(C Vec &a, C Vec &b, UInt elm)
 }
 
 void ShaderParam::setSafe(C Vec4 &v) {CopyFast(_data, &v, Min(_gpu_data_size, SIZEU(v))); setChanged();} // !! ALSO CHECK '#setSafeConditional' !!
+/******************************************************************************/
+ShaderParamChange& ShaderParamChange::set(C Color &color) {value=SRGBToDisplay(color); return T;}
 /******************************************************************************/
 // SHADERS
 /******************************************************************************/

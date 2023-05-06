@@ -461,6 +461,7 @@ BUFFER_END
 
 BUFFER_I(Mesh, SBI_MESH)
    Bool  VtxSkinning;
+   Flt   VtxUVScale;
    VecH4 Highlight; // this can be modified by engine's 'SetHighlight' function
 BUFFER_END
 
@@ -1395,28 +1396,28 @@ struct VtxInput // Vertex Input, use this class to access vertex data in vertex 
    UInt  _instance:SV_InstanceID;
 #include "!Set Prec Default.h"
 
-   VecH  nrm      (                                        ) {return _nrm                                                                  ;} // vertex normal
-   VecH  tan      (VecH nrm          , Bool heightmap=false) {return heightmap ? VecH(1-nrm.x*nrm.x, -nrm.y*nrm.x, -nrm.z*nrm.x) : _tan.xyz;} // vertex tangent, for heightmap: PointOnPlane(Vec(1,0,0), nrm()), Vec(1,0,0)-nrm*nrm.x, which gives a perpendicular however not Normalized !!
-   VecH  bin      (VecH nrm, VecH tan, Bool heightmap=false) {return heightmap ? Cross(nrm, tan) : Cross(nrm, tan)*_tan.w                  ;} // binormal from transformed normal and tangent
-   Vec2  pos2     (                                        ) {return _pos.xy                                                               ;} // vertex position
-   Vec   pos      (                                        ) {return _pos.xyz                                                              ;} // vertex position
-   Vec4  pos4     (                                        ) {return _pos                                                                  ;} // vertex position in Vec4(pos.xyz, 1) format
-   Flt   posZ     (                                        ) {return _pos.z                                                                ;} // vertex position Z
-   Vec   hlp      (                                        ) {return _hlp                                                                  ;} // helper position
-   VecH  tan      (                                        ) {return _tan.xyz                                                              ;} // helper position
-   Vec2  uv       (                    Bool heightmap=false) {return heightmap ? Vec2(_pos.x, -_pos.z) : _uv                               ;} // tex coords 0
-   Vec2  uv1      (                                        ) {return                                     _uv1                              ;} // tex coords 1
-   Vec2  uv2      (                                        ) {return                                     _uv2                              ;} // tex coords 2
-   Vec2  uv3      (                                        ) {return                                     _uv3                              ;} // tex coords 3
+   VecH  nrm      (                                              ) {return _nrm                                                                  ;} // vertex normal
+   VecH  tan      (VecH nrm          , Int heightmap=HEIGHTMAP_NO) {return heightmap ? VecH(1-nrm.x*nrm.x, -nrm.y*nrm.x, -nrm.z*nrm.x) : _tan.xyz;} // vertex tangent, for heightmap: PointOnPlane(Vec(1,0,0), nrm()), Vec(1,0,0)-nrm*nrm.x, which gives a perpendicular however not Normalized !!
+   VecH  bin      (VecH nrm, VecH tan, Int heightmap=HEIGHTMAP_NO) {return heightmap ? Cross(nrm, tan) : Cross(nrm, tan)*_tan.w                  ;} // binormal from transformed normal and tangent
+   Vec2  pos2     (                                              ) {return _pos.xy                                                               ;} // vertex position
+   Vec   pos      (                                              ) {return _pos.xyz                                                              ;} // vertex position
+   Vec4  pos4     (                                              ) {return _pos                                                                  ;} // vertex position in Vec4(pos.xyz, 1) format
+   Flt   posZ     (                                              ) {return _pos.z                                                                ;} // vertex position Z
+   Vec   hlp      (                                              ) {return _hlp                                                                  ;} // helper position
+   VecH  tan      (                                              ) {return _tan.xyz                                                              ;} // helper position
+   Vec2  uv       (                    Int heightmap=HEIGHTMAP_NO) {return (heightmap==HEIGHTMAP_FLAT) ? Vec2(_pos.x, -_pos.z) : (heightmap==HEIGHTMAP_SPHERE) ? VtxUVScale*AtanFast(Vec2(_pos.x, -_pos.z)/_pos.y) : _uv;} // tex coords 0
+   Vec2  uv1      (                                              ) {return _uv1                                                                  ;} // tex coords 1
+   Vec2  uv2      (                                              ) {return _uv2                                                                  ;} // tex coords 2
+   Vec2  uv3      (                                              ) {return _uv3                                                                  ;} // tex coords 3
 #if GL
-   VecU4 bone     (                                        ) {return VtxSkinning ? VecU4(_bone) : VecU4(0, 0, 0, 0)                        ;} // bone matrix indexes
+   VecU4 bone     (                                              ) {return VtxSkinning ? VecU4(_bone) : VecU4(0, 0, 0, 0)                        ;} // bone matrix indexes
 #else
-   VecU4 bone     (                                        ) {return VtxSkinning ?       _bone  : VecU4(0, 0, 0, 0)                        ;} // bone matrix indexes
+   VecU4 bone     (                                              ) {return VtxSkinning ?       _bone  : VecU4(0, 0, 0, 0)                        ;} // bone matrix indexes
 #endif
-   Vec4  weight   (                                        ) {return _weight                                                               ;} // bone matrix weights
-   VecH4 material (                                        ) {return _material                                                             ;} // material    weights
-   VecH  material3(                                        ) {return _material.xyz                                                         ;} // material    weights
-   Half  size     (                                        ) {return _size                                                                 ;} // point size
+   Vec4  weight   (                                              ) {return _weight                                                               ;} // bone matrix weights
+   VecH4 material (                                              ) {return _material                                                             ;} // material    weights
+   VecH  material3(                                              ) {return _material.xyz                                                         ;} // material    weights
+   Half  size     (                                              ) {return _size                                                                 ;} // point size
 
    // need to apply gamma correction in the shader because R8G8B8A8_SRGB can't be specified in vertex buffer
 #if LINEAR_GAMMA

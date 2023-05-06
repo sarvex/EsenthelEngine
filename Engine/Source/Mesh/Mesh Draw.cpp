@@ -737,7 +737,6 @@ INLINE void SkeletonShaderMaterialMeshInstance::set(C MeshRender &mesh)
 INLINE void SkeletonOpaqueShaderMaterialMeshInstance::set(C MeshRender &mesh)
 {
    super::set(mesh);
-   T.highlight=Renderer._mesh_highlight;
 }
 INLINE void SkeletonBlendShaderMaterialMeshInstance::set(C MeshRender &mesh)
 {
@@ -773,7 +772,6 @@ INLINE void SkeletonEmissiveInstance::set(C MeshPart &mesh, C MeshPart::Variatio
 INLINE OpaqueShaderMaterialMeshInstance& OpaqueShaderMaterialMeshInstance::set()
 {
    T.next_instance       =-1;
-   T.highlight           =Renderer._mesh_highlight;
    T.stencil_value       =Renderer._mesh_stencil_value;
    T.shader_param_changes=Renderer._shader_param_changes;
    return T;
@@ -814,7 +812,6 @@ INLINE BlendInstance& BlendInstancesClass::add(Shader &shader, C Material &mater
    obj.stat.variation=&variation;
 #endif
    obj.stat.mesh     =&mesh;
-   obj.stat.highlight           =              Renderer._mesh_highlight;
    obj.stat.stencil_mode        =(STENCIL_MODE)Renderer._mesh_stencil_mode;
    obj.stat.shader_param_changes=              Renderer._shader_param_changes;
    material.incUsage();
@@ -830,7 +827,6 @@ INLINE BlendInstance& BlendInstancesClass::add(BLST &blst, C Material &material,
    obj.stat.variation=&variation;
 #endif
    obj.stat.mesh                =&mesh;
-   obj.stat.highlight           =              Renderer._mesh_highlight;
    obj.stat.stencil_mode        =(STENCIL_MODE)Renderer._mesh_stencil_mode;
    obj.stat.shader_param_changes=              Renderer._shader_param_changes;
    material.incUsage();
@@ -846,7 +842,6 @@ INLINE BlendInstance& BlendInstancesClass::addFur(Shader &shader, C Material &ma
    obj.stat.variation=&variation;
 #endif
    obj.stat.mesh                =&mesh;
-   obj.stat.highlight           =Renderer._mesh_highlight;
  //obj.stat.stencil_mode        =Renderer._mesh_stencil_mode; ignored for fur
    obj.stat.shader_param_changes=Renderer._shader_param_changes;
    material.incUsage();

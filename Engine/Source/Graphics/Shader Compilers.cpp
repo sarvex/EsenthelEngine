@@ -794,7 +794,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       for(Int layout=((materials==1) ? 0 : 1); layout<=2; layout++) // multi-materials don't support 0 textures
       for(Int bump_mode=SBUMP_FLAT, bump_max=((layout>=2) ? SBUMP_RELIEF : SBUMP_NORMAL); bump_mode<=bump_max; bump_mode++)if(bump_mode<=SBUMP_NORMAL || bump_mode>=SBUMP_PARALLAX_MIN)
       REPD(mtrl_blend, (materials> 1 && layout>=2           ) ? 2 : 1) // can do per-pixel mtrl-blend only if we have bump map
-      REPD(heightmap , (!skin                               ) ? 2 : 1)
+      REPD(heightmap , (!skin                               ) ?  HEIGHTMAP_NUM : 1)
       REPD(alpha_test, (materials==1 && layout && !heightmap) ? ALPHA_TEST_NUM : 1)
       REPD(macro     , (!skin  &&                  heightmap) ? 2 : 1)
       REPD(tesselate , tess ? 2 : 1)
@@ -866,7 +866,7 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
       for(Int layout=((materials==1) ? 0 : 1); layout<=2; layout++) // multi-materials don't support 0 textures
       REPD(bump_mode   , per_pixel                              ? 2 : 1)
       REPD(mtrl_blend  , (materials> 1 && layout>=2           ) ? 2 : 1) // can do per-pixel mtrl-blend only if we have bump map
-      REPD(heightmap   , (!skin                               ) ? 2 : 1)
+      REPD(heightmap   , (!skin                               ) ?  HEIGHTMAP_NUM : 1)
       REPD(alpha_test  , (materials==1 && layout && !heightmap) ? ALPHA_TEST_NUM : 1)
       REPD(emissive_map, (materials==1 &&           !heightmap) ? 2 : 1)
       REPD(tesselate   , (tess && SUPPORT_FORWARD_TESSELATE   ) ? 2 : 1)

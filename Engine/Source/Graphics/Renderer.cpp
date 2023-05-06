@@ -193,7 +193,7 @@ RendererClass::Context::Sub::Sub()
    proj_matrix_prev=ProjMatrix; // copy from current (needed for MotionBlur and Temporal)
 }
 /******************************************************************************/
-RendererClass::RendererClass() : material_color_l(null), highlight(null)
+RendererClass::RendererClass() : material_color_l(null), highlight(null), vtx_uv_scale(null)
 {
 #if 0 // there's only one 'RendererClass' global 'Renderer' and it doesn't need clearing members to zero
    stage=RS_DEFAULT;
@@ -243,7 +243,6 @@ RendererClass::RendererClass() : material_color_l(null), highlight(null)
   _mesh_blend_alpha  =ALPHA_RENDER_BLEND_FACTOR;
   _mesh_stencil_value=STENCIL_REF_ZERO;
   _mesh_stencil_mode =STENCIL_NONE;
-  _mesh_highlight    .zero();
   _mesh_draw_mask    =0xFFFFFFFF;
    SetVariation(0);
 
@@ -2017,7 +2016,6 @@ void RendererClass::blend()
    #endif
    }
    ClearBlendInstances();
-  _SetHighlight(TRANSPARENT);
    D.set2D(); D.depthOnWriteFunc(false, true, FUNC_DEFAULT);
 
    D.stencil(STENCIL_NONE); // disable any stencil that might have been enabled
@@ -2084,7 +2082,7 @@ void RendererClass::behind()
 static const IMAGERT_TYPE IMAGERT_OUTLINE=IMAGERT_SRGBA; // here Alpha is used for outline opacity
 void RendererClass::setOutline(C Color &color)
 {
-  _SetHighlight(color);
+   highlight->setConditional(color);
    if(!_outline) // not initialized at all
    {
      _outline_rt.get(ImageRTDesc(_col->w(), _col->h(), IMAGERT_OUTLINE, _col->samples())); // here Alpha is used for outline opacity
@@ -2105,7 +2103,7 @@ void RendererClass::applyOutline()
 {
    if(_outline_rt)
    {
-     _SetHighlight(TRANSPARENT); // disable 'SetHighlight' which was called during mesh drawing
+      highlight->set(Vec4Zero); // disable 'SetHighlight' which was called during mesh drawing 'setOutline'
       D.depthOnWriteFunc(false, true, FUNC_DEFAULT); // restore default
 
       resolveMultiSample(); // don't do 'downSample' here because 'edgeSoften' and 'temporal' will be called later and they require to operate on full-sampled data
