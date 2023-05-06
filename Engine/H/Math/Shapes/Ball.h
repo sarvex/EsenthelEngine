@@ -224,8 +224,9 @@ void PosToTerrainPos (DIR_ENUM cube_face, VecD *dest, C VecD *src, Int elms); //
 void TransformByTerrainOrient(DIR_ENUM cube_face, Vec &dest, C Vec &src); // convert             terrain vector 'src' to 'cube_face' terrain vector 'dest', same as "dest=src*Matrix3().setTerrainOrient(cube_face)" but faster
 void    DivideByTerrainOrient(DIR_ENUM cube_face, Vec &dest, C Vec &src); // convert 'cube_face' terrain vector 'src' to             terrain vector 'dest', same as "dest=src/Matrix3().setTerrainOrient(cube_face)" but faster
 
-void WrapCubeFacePixel     (SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res-1 range and store in 'dest'
-void WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res   range and store in 'dest'
+void WrapCubeFacePixel           (SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res-1 range and store in 'dest'
+void WrapSphereTerrainPixel      (SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res   range and store in 'dest'
+void WrapSphereTerrainPixelCenter(SphereArea &dest, C SphereArea &src, Int res); // wrap 'src' pixel to be in 0..res-1 range and store in 'dest'
 /******************************************************************************/
 Ball Avg(C Ball &a, C Ball &b);
 

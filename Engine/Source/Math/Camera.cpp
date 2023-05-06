@@ -55,7 +55,8 @@ Camera& Camera::setSpherical(C VecD &at, Flt yaw, Flt pitch, Flt roll, Flt dist)
 }
 Camera& Camera::setSpherical()
 {
-   matrix.setPos(0, 0, -dist).rotateZ(-roll).rotateXY(-pitch, -yaw).move(at);
+   matrix.orn().setRotateZ(-roll).rotateXY(-pitch, -yaw);
+   matrix.pos=at-dist*matrix.z;
    return T;
 }
 Camera& Camera::setFromAt(C VecD &from, C VecD &at, Flt roll)

@@ -112,8 +112,10 @@
 #define Pow       pow
 #define Sin       sin
 #define Cos       cos
+#define Tan       tan
 #define Acos      acos
 #define Asin      asin
+#define Atan      atan
 #define Lerp      lerp
 #define Exp       exp
 /******************************************************************************/

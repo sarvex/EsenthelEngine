@@ -1025,6 +1025,47 @@ void WrapSphereTerrainPixel(SphereArea &dest, C SphereArea &src, Int res)
    Clamp(dest.x, 0, res);
    Clamp(dest.y, 0, res);
 }
+void WrapSphereTerrainPixelCenter(SphereArea &dest, C SphereArea &src, Int res)
+{
+   Int x=(InRange(src.x, res) ? X(0) : (src.x<0) ? X(-1) : X(1));
+   Int y=(InRange(src.y, res) ? Y(0) : (src.y<0) ? Y(-1) : Y(1));
+   switch(src.side+x+y)
+   {
+      default: dest=src; break;
+
+      case V(DIR_RIGHT  , -1,  0): dest.set(DIR_BACK   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  1,  0): dest.set(DIR_FORWARD, P0(src.x), Z0(src.y)); break;
+      case V(DIR_RIGHT  ,  0, -1): dest.set(DIR_DOWN   , N0(src.y), Z1(src.x)); break;
+      case V(DIR_RIGHT  ,  0,  1): dest.set(DIR_UP     , P1(src.y), Z0(src.x)); break;
+
+      case V(DIR_LEFT   , -1,  0): dest.set(DIR_FORWARD, N0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  1,  0): dest.set(DIR_BACK   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_LEFT   ,  0, -1): dest.set(DIR_DOWN   , N1(src.y), Z0(src.x)); break;
+      case V(DIR_LEFT   ,  0,  1): dest.set(DIR_UP     , P0(src.y), Z1(src.x)); break;
+
+      case V(DIR_UP     , -1,  0): dest.set(DIR_LEFT   , Z1(src.y), N0(src.x)); break;
+      case V(DIR_UP     ,  1,  0): dest.set(DIR_RIGHT  , Z0(src.y), P1(src.x)); break;
+      case V(DIR_UP     ,  0, -1): dest.set(DIR_BACK   , Z0(src.x), N0(src.y)); break;
+      case V(DIR_UP     ,  0,  1): dest.set(DIR_FORWARD, Z1(src.x), P1(src.y)); break;
+
+      case V(DIR_DOWN   , -1,  0): dest.set(DIR_LEFT   , Z0(src.y), N1(src.x)); break;
+      case V(DIR_DOWN   ,  1,  0): dest.set(DIR_RIGHT  , Z1(src.y), P0(src.x)); break;
+      case V(DIR_DOWN   ,  0, -1): dest.set(DIR_FORWARD, Z1(src.x), N1(src.y)); break;
+      case V(DIR_DOWN   ,  0,  1): dest.set(DIR_BACK   , Z0(src.x), P0(src.y)); break;
+
+      case V(DIR_FORWARD, -1,  0): dest.set(DIR_RIGHT  , N0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  1,  0): dest.set(DIR_LEFT   , P0(src.x), Z0(src.y)); break;
+      case V(DIR_FORWARD,  0, -1): dest.set(DIR_DOWN   , Z1(src.x), N1(src.y)); break;
+      case V(DIR_FORWARD,  0,  1): dest.set(DIR_UP     , Z1(src.x), P1(src.y)); break;
+
+      case V(DIR_BACK   , -1,  0): dest.set(DIR_LEFT   , N0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  1,  0): dest.set(DIR_RIGHT  , P0(src.x), Z0(src.y)); break;
+      case V(DIR_BACK   ,  0, -1): dest.set(DIR_DOWN   , Z0(src.x), N0(src.y)); break;
+      case V(DIR_BACK   ,  0,  1): dest.set(DIR_UP     , Z0(src.x), P0(src.y)); break;
+   }
+   Clamp(dest.x, 0, res-1);
+   Clamp(dest.y, 0, res-1);
+}
 /******************************************************************************
 TESTED WITH CODE BELOW:
 void _WrapCubeFacePixel(SphereArea &dest, C SphereArea &src, Int res)
