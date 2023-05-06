@@ -1370,7 +1370,7 @@ struct VtxInput // Vertex Input, use this class to access vertex data in vertex 
    LOC( 7) Vec2  _uv3     :ATTR7 ;
    LOC( 8) Half  _size    :ATTR8 ;
    LOC( 9) Vec4  _bone    :ATTR9 ; // this has to be Vec4 because VecI4 and VecU4 don't work for some reason
-   LOC(10) Vec4  _weight  :ATTR10; // this has to be Vec4 instead of VecH4 because of 2 reasons, we need sum of weights to be equal to 1.0 (half's can't do that), also when converting to GLSL the explicit casts to "Vec weight" precision are optimized away and perhaps some GLSL compilers may want to perform optimizations where Half*Vec is converted to VecH which would destroy precision for skinned characters
+   LOC(10) Vec4  _weight  :ATTR10; // this has to be Vec4 instead of VecH4 because of 2 reasons, we need sum of weights to be equal to 1.0 (half's can't do that), also when converting to GLSL the explicit casts to "Vec4 weight" precision are optimized away and perhaps some GLSL compilers may want to perform optimizations where Half*Vec4 is converted to VecH4 which would destroy precision for skinned characters
    LOC(11) VecH4 _material:ATTR11;
    LOC(12) VecH4 _color   :ATTR12;
    LOC(13) VecU2 _face_id :ATTR13;
@@ -1386,7 +1386,7 @@ struct VtxInput // Vertex Input, use this class to access vertex data in vertex 
    Vec2  _uv3     :UV3         ;
    Half  _size    :PSIZE       ;
    VecU4 _bone    :BLENDINDICES;
-   Vec4  _weight  :BLENDWEIGHT ; // this has to be Vec4 instead of VecH4 because of 2 reasons, we need sum of weights to be equal to 1.0 (half's can't do that), also when converting to GLSL the explicit casts to "Vec weight" precision are optimized away and perhaps some GLSL compilers may want to perform optimizations where Half*Vec is converted to VecH which would destroy precision for skinned characters
+   Vec4  _weight  :BLENDWEIGHT ; // this has to be Vec4 instead of VecH4 because of 2 reasons, we need sum of weights to be equal to 1.0 (half's can't do that), also when converting to GLSL the explicit casts to "Vec4 weight" precision are optimized away and perhaps some GLSL compilers may want to perform optimizations where Half*Vec4 is converted to VecH4 which would destroy precision for skinned characters
    VecH4 _material:COLOR0      ;
    VecH4 _color   :COLOR1      ;
    VecU2 _face_id :FACE_ID     ;
