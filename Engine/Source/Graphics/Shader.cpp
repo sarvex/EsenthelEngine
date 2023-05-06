@@ -1067,7 +1067,13 @@ void ShaderParam::setInRangeConditional(C Vec &a, C Vec &b, UInt elm)
    }
 }
 
-void ShaderParam::setSafe(C Vec4 &v) {setChanged(); CopyFast(_data, &v, Min(_gpu_data_size, SIZEU(v)));}
+void ShaderParam::setSafe           (C Vec4 &v) {setChanged(); CopyFast(_data, &v, Min(_gpu_data_size, SIZEU(v)));}
+Bool ShaderParam::setSafeConditional(C Vec4 &v)
+{
+   auto size=Min(_gpu_data_size, SIZEU(v));
+          if(EqualMemFast(_data, &v, size)) return false;
+   setChanged(); CopyFast(_data, &v, size); return true;
+}
 /******************************************************************************/
 // SHADERS
 /******************************************************************************/

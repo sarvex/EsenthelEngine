@@ -871,6 +871,8 @@ VecH2 FromLen2Angle1Fast(VecH2 v) // 'v'=(X=length2, Y=Angle1Fast), returns pos 
    return p*Sqrt(v.x/Length2(p));
 }
 /******************************************************************************/
+#include "Fast Math.h"
+/******************************************************************************/
 Half  DistPointLine(VecH2 pos, VecH2 line_pos, VecH2 line_dir) {return Abs(DistPointPlane(pos, line_pos, Perp(line_dir)));}
 Half Dist2PointLine(VecH2 pos, VecH2 line_pos, VecH2 line_dir) {return Sqr(DistPointPlane(pos, line_pos, Perp(line_dir)));}
 
@@ -888,8 +890,6 @@ Half Dist2PointEdge(VecH2 pos, VecH2 edge_a, VecH2 edge_b) // safe in case 'edge
    if(DistPointPlane(pos, edge_b, d)>=0)return Dist2         (pos, edge_b);
                                         return Dist2PointLine(pos, edge_a, Normalize(d));
 }
-/******************************************************************************/
-#include "Fast Math.h"
 /******************************************************************************/
 #if 1 // faster (1.6 fps) tested on GeForce 1050 Ti
 Vec  Transform(Vec  v, Matrix3  m) {return v.x*m[0] + (v.y*m[1] + (v.z*m[2]));} // transform 'v' vector by 'm' orientation-scale matrix

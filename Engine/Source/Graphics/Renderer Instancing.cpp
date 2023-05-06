@@ -77,7 +77,7 @@ static Bool SetShaderParamChanges(C Memc<ShaderParamChange> *changes=null)
       if(LastChanges=changes)REPA(*LastChanges)
       {
        C ShaderParamChange &change=(*LastChanges)[i];
-         if(change.param)
+       //if(change.param) skip for performance reasons, expect to be valid
          {
             RestoreChanges.add(change.param); // add for restoration
             change.param->setSafe(change.value); // apply change, have to use 'setSafe' because the 'ShaderParam' can be smaller than what we're setting

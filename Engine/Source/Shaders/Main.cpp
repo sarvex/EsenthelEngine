@@ -78,8 +78,41 @@ VecH4 Draw_PS
    return col;
 }
 
-VecH4 Draw2DTex_PS (NOPERSP Vec2 uv:UV):TARGET {return       Tex(Img, uv);}
-VecH4 Draw2DTexC_PS(NOPERSP Vec2 uv:UV):TARGET {return       Tex(Img, uv)*Color[0]+Color[1];}
+VecH4 Draw2DTex_PS (NOPERSP Vec2 uv:UV):TARGET {return Tex(Img, uv);}
+VecH4 Draw2DTexC_PS(NOPERSP Vec2 uv:UV):TARGET {return Tex(Img, uv)*Color[0]+Color[1];}
+
+/* TESTING SHADER SPEED:
+//Flt Angle1(Vec2 xy) {return Angle(xy.yx);}
+//Flt Angle1(Vec2 xy) {return atan2(xy.x, xy.y);}
+//Flt Angle1(Vec2 xy) {return Atan2Fast(xy.x, xy.y);}
+Flt Angle1(Vec2 xy) {return Atan     (xy.x/xy.y);}
+Flt Angle2(Vec2 xy) {return AtanFast (xy.x/xy.y);}
+
+VecH4 Draw2DTex_PS(NOPERSP Vec2 uv:UV):TARGET
+{
+   Vec4 c;//=Tex(Img, uv);
+   c=0;
+   uv-=0.5;
+   int steps=1;
+   LOOP for(Int i=0; i<steps; i++)c.xyz+=Angle1(uv+i*0.01);
+   c.xyz/=steps;
+   c.w  =1;
+   c.xyz=SRGBToLinearFast(c.xyz);
+   return c;
+}
+VecH4 Draw2DTexC_PS(NOPERSP Vec2 uv:UV):TARGET
+{
+   Vec4 c;//=Tex(Img, uv);
+   c=0;
+   uv-=0.5;
+   int steps=1;
+   LOOP for(Int i=0; i<steps; i++)c.xyz+=Angle2(uv+i*0.01);
+   c.xyz/=steps;
+   c.w  =1;
+   c.xyz=SRGBToLinearFast(c.xyz);
+   return c;
+}*/
+
 VecH4 Draw2DTexA_PS(NOPERSP Vec2 uv:UV):TARGET {return VecH4(Tex(Img, uv).rgb, Step);}
 
 #if defined IN0_GAMMA && defined IN1_GAMMA && defined OUT_GAMMA
