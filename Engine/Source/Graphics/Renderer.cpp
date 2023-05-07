@@ -670,6 +670,7 @@ void RendererClass::cleanup()
   _outline_rt.clear();
    Lights     .clear();
    Atmospheres.clear();
+   WaterBalls .clear();
    ClearInstances();
 }
 void RendererClass::cleanup1()

@@ -2048,7 +2048,7 @@ NOINLINE Bool Heightmap::buildEx2(Mesh &mesh, Int quality, UInt flag, BuildMem &
             MtrlCombo &mtrl_combo=builder   .mtrl_combos[i];
             VecB4     &mtrl_index=mtrl_combo.mtrl_index;
          #if VTX_HEIGHTMAP
-            part.part_flag|=MSHP_HEIGHTMAP; // !! set before calling 'multiMaterial' because this value affects the shader !!
+            part.part_flag|=(sphere ? MSHP_HEIGHTMAP_SPHERE : MSHP_HEIGHTMAP_FLAT); // !! set before calling 'multiMaterial' because this value affects the shader !!
          #endif
             part.multiMaterial(_materials[mtrl_index.c[0]], _materials[mtrl_index.c[1]], _materials[mtrl_index.c[2]], _materials[mtrl_index.c[3]], soft ? -1 : l); // set shaders only for hardware mode
          }

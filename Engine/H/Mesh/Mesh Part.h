@@ -13,9 +13,11 @@ struct LeafAttachment
 /******************************************************************************/
 enum MSHP_FLAG // Mesh Part Flag
 {
-   MSHP_NO_PHYS_BODY=1<<0, // if no physical body will be made out of this part (this flag is checked when creating a physical body from Mesh and ignoring all parts that have this flag enabled)
-   MSHP_HIDDEN      =1<<1, // if hidden (this flag is checked in 'Sweep' functions, it is not used however for rendering, for preventing mesh parts from being rendered please use 'MeshPart.drawGroup' and 'SetDrawMask')
-   MSHP_HEIGHTMAP   =1<<2, // if this is a heightmap (affects shader)
+   MSHP_NO_PHYS_BODY    =1<<0, // if no physical body will be made out of this part (this flag is checked when creating a physical body from Mesh and ignoring all parts that have this flag enabled)
+   MSHP_HIDDEN          =1<<1, // if hidden (this flag is checked in 'Sweep' functions, it is not used however for rendering, for preventing mesh parts from being rendered please use 'MeshPart.drawGroup' and 'SetDrawMask')
+   MSHP_HEIGHTMAP_FLAT  =1<<2, // if this is a flat      heightmap (affects shader)
+   MSHP_HEIGHTMAP_SPHERE=1<<3, // if this is a spherical heightmap (affects shader)
+   MSHP_HEIGHTMAP       =MSHP_HEIGHTMAP_FLAT|MSHP_HEIGHTMAP_SPHERE,
 };
 struct MeshPart // Mesh Base + Mesh Render
 {
@@ -89,8 +91,14 @@ struct MeshPart // Mesh Base + Mesh Render
    MeshPart&    multiMaterial(C MaterialPtr &m0, C MaterialPtr &m1, C MaterialPtr &m2, C MaterialPtr &m3, Int lod_index=0); // set multi materials, multi materials are used for terrain meshes allowing to blend triangles smoothly between multiple terrain materials, 'lod_index'=index of the LOD in the mesh (used to determine quality of the shader, if it's <0 then shader will not be reset), materials must point to object in constant memory address (mesh will store only the pointer to the material and later use it if needed)
  C MaterialPtr& multiMaterial(Int i)C; // get i-th multi material
 
-   MeshPart& heightmap(Bool heightmap, Int lod_index=0); // set as heightmap (use false to disable heightmap mode), 'lod_index'=index of the LOD in the mesh (used to determine quality of the shader)
-   Bool      heightmap()C {return FlagOn(part_flag, MSHP_HEIGHTMAP);} // if this is a heightmap
+#if EE_PRIVATE
+   Byte      heightmapType  ()C;
+#endif
+   Bool      heightmapFlat  ()C {return FlagOn(part_flag, MSHP_HEIGHTMAP_FLAT  );} // if this is a flat      heightmap
+   Bool      heightmapSphere()C {return FlagOn(part_flag, MSHP_HEIGHTMAP_SPHERE);} // if this is a spherical heightmap
+   Bool      heightmap      ()C {return FlagOn(part_flag, MSHP_HEIGHTMAP       );} // if this is a           heightmap
+   MeshPart& heightmapFlat  (Bool heightmap, Int lod_index=0); // set as heightmap (use false to disable heightmap mode), 'lod_index'=index of the LOD in the mesh (used to determine quality of the shader)
+   MeshPart& heightmapSphere(Bool heightmap, Int lod_index=0); // set as heightmap (use false to disable heightmap mode), 'lod_index'=index of the LOD in the mesh (used to determine quality of the shader)
 
    // transform
    MeshPart& move         (              C Vec &move                               ); //           move

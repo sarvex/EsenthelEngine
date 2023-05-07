@@ -159,6 +159,20 @@ private:
    WaterMtrlPtr _material;
 };
 /******************************************************************************/
+struct WaterBall : BallM // BallM.r = water ball radius, BallM.pos = world-space position
+{
+   WaterMtrlPtr material;
+
+   void draw()C; // draw this water ball object, this should be called only in RM_PREPARE mode !! OBJECT MUST REMAIN IN CONSTANT MEMORY ADDRESS UNTIL RENDERING HAS FINISHED !!
+#if EE_PRIVATE
+   void drawDo()C;
+   Bool toScreenRect(Rect &rect)C {return ToFullScreenRect(T, rect);}
+#endif
+};
+#if EE_PRIVATE
+extern Memc<C WaterBall*> WaterBalls;
+#endif
+/******************************************************************************/
 TEX_FLAG  CreateWaterBaseTextures(  Image &base_0, Image &base_1, Image &base_2, C ImageSource &color, C ImageSource &alpha, C ImageSource &bump, C ImageSource &normal, C ImageSource &smooth, C ImageSource &reflect, C ImageSource &glow, Bool resize_to_pow2=true, Bool flip_normal_y=false, Bool smooth_is_rough=false); // create 'base_0', 'base_1' and 'base_2' base material textures from given images, textures will be created as IMAGE_R8G8B8A8_SRGB, IMAGE_R8G8_SIGN IMAGE_SOFT, 'flip_normal_y'=if flip normal map Y channel, 'smooth_is_rough'=if smoothness map is actually roughness map, returns bit combination of used textures
 TEX_FLAG ExtractWaterBase0Texture(C Image &base_0, Image *color ); // returns bit combination of used textures
 TEX_FLAG ExtractWaterBase1Texture(C Image &base_1, Image *normal); // returns bit combination of used textures

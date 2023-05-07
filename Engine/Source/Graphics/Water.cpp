@@ -2,9 +2,10 @@
 #include "stdafx.h"
 namespace EE{
 /******************************************************************************/
-      WaterClass   Water;
-const WaterMtrl   *WaterMtrlLast;
-      WaterMtrlPtr WaterMtrlNull;
+      WaterClass         Water;
+const WaterMtrl         *WaterMtrlLast;
+      WaterMtrlPtr       WaterMtrlNull;
+      Memc<C WaterBall*> WaterBalls;
 DEFINE_CACHE(WaterMtrl, WaterMtrls, WaterMtrlPtr, "Water Material");
 /******************************************************************************/
 // WATER PARAMETERS
@@ -210,7 +211,7 @@ void WaterClass::prepare() // this is called at the start
       VecD    p   =PointOnPlane(CamMatrix.pos, plane.pos, plane.normal);
 
       under(plane, T);
-      if(Frustum(Box(size*2, wave_scale, size*2), MatrixM(matrix, p)))
+      if(Frustum(Extent(Vec(size, wave_scale, size)), MatrixM(matrix, p)))
       {
         _draw_plane_surface=true;
         _quad.set(p+size*(matrix.z-matrix.x), p+size*(matrix.x+matrix.z), p+size*(matrix.x-matrix.z), p+size*(-matrix.x-matrix.z));
@@ -667,6 +668,25 @@ Bool WaterMesh::load(File &f, CChar *path)
       }break;
    }
    del(); return false;
+}
+/******************************************************************************/
+// WATER BALL
+/******************************************************************************/
+void WaterBall::draw()C
+{
+   DEBUG_ASSERT(Renderer()==RM_PREPARE, "'WaterBall.draw' called outside of RM_PREPARE");
+   if(Frustum(T) && Renderer.firstPass())
+   {
+      Flt eps=D.viewFromActual()+WATER_TRANSITION;
+      Vec delta=CamMatrix.pos-pos;
+      Flt dist=delta.length()-r;
+      if( dist>0  )WaterBalls.add(&T); // above surface
+      if( dist<eps) // under surface
+      {
+         delta.normalize();
+         Water.under(PlaneM(pos+delta*r, delta), *material);
+      }
+   }
 }
 /******************************************************************************/
 // WATER DROPS
