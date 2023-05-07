@@ -171,13 +171,13 @@ void WaterClass::create()
    del();
 
    // create mesh
-   MeshBase mshb; mshb.createPlane(128, 192).scaleMove(Vec(1, -1, 1), Vec(0, 1, 0));
-
+   MeshBase mshb; mshb.createPlane(128, 192); // keep vtx number under 64K to use 16-bit index buffers
    REPA(mshb.vtx)
    {
       Vec &pos=mshb.vtx.pos(i);
+      pos.y=1-pos.y;
       if(  pos.x<=EPS || pos.x>=1-EPS
-      ||   pos.y<=EPS || pos.y>=1-EPS)pos.xy=(pos.xy-0.5f)*6+0.5f;
+      ||   pos.y<=EPS || pos.y>=1-EPS)pos.xy=(pos.xy-0.5f)*6+0.5f; // stretch border vertexes more far away from the center
    }
   _mshr.create(mshb);
 }
@@ -445,13 +445,13 @@ Bool WaterClass::ocean()
 Shader* WaterClass::shader()
 {
    return _use_secondary_rt ? (ocean() ? WS.Ocean  : WS.Lake )
-                            : (ocean() ? WS.OceanL : WS.LakeL)[_shader_shadow][_shader_soft][_shader_reflect_env][_shader_reflect_mirror][refract>EPS_MATERIAL_BUMP];
+                            : (ocean() ? WS.OceanL : WS.LakeL)[_shader_shadow_maps][_shader_soft][_shader_reflect_env][_shader_reflect_mirror][refract>EPS_MATERIAL_BUMP];
 }
 /******************************************************************************/
 void WaterClass::drawSurfaces()
 {
    // these are used only when '_use_secondary_rt' is disabled
-  _shader_shadow        =((Lights.elms() && Lights[0].type==LIGHT_DIR && Lights[0].shadow) ? D.shadowMapNumActual() : 0);
+  _shader_shadow_maps   =((Lights.elms() && Lights[0].type==LIGHT_DIR && Lights[0].shadow) ? D.shadowMapNumActual() : 0);
   _shader_soft          =Renderer.canReadDepth();
   _shader_reflect_env   =(         D.envMap()!=null);
   _shader_reflect_mirror=(Renderer._mirror_rt!=null);
@@ -484,6 +484,12 @@ void WaterClass::drawSurfaces()
       if(!(_under_mtrl && _under_step>=1)) // don't draw any surfaces when totally under water
       {
          Renderer.mode(RM_WATER); Renderer._render();
+      }
+
+      if(WaterBalls.elms())
+      {
+         Water.begin();
+         REPAO(WaterBalls)->drawDo();
       }
    }
 
@@ -592,7 +598,7 @@ Shader* WaterMesh::shader()C
    if(WaterMtrl *mtrl=getMaterial())
    {
       return Water._use_secondary_rt ? (_lake ? WS.Lake  : WS.River )
-                                     : (_lake ? WS.LakeL : WS.RiverL)[Water._shader_shadow][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][mtrl->refract>EPS_MATERIAL_BUMP];
+                                     : (_lake ? WS.LakeL : WS.RiverL)[Water._shader_shadow_maps][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][mtrl->refract>EPS_MATERIAL_BUMP];
    }
    return null;
 }
@@ -686,6 +692,15 @@ void WaterBall::draw()C
          delta.normalize();
          Water.under(PlaneM(pos+delta*r, delta), *material);
       }
+   }
+}
+void WaterBall::drawDo()C
+{
+   if(Shader *shader=Water._use_secondary_rt ? WS.Ball
+                                             : WS.BallL[Water._shader_shadow_maps][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][material->refract>EPS_MATERIAL_BUMP])
+   {
+      material->set  ();
+      shader  ->begin(); Water._mshr.set().draw();
    }
 }
 /******************************************************************************/

@@ -502,10 +502,12 @@ struct WaterShader
    Shader     *Ocean                , //
               *Lake                 , //
               *River                , //
-              *OceanL[7][2][2][2][2], // [Shadows] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              *LakeL [7][2][2][2][2], // [Shadows] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              *RiverL[7][2][2][2][2], // [Shadows] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              *Apply    [2][2][2][2], //           [Depth] [ReflectEnv] [ReflectMirror] [Refract]
+              *Ball                 , //
+              *OceanL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              * LakeL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              *RiverL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              * BallL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              *Apply    [2][2][2][2], //              [Depth] [ReflectEnv] [ReflectMirror] [Refract]
               *Under                ;
 
    ShaderParam
