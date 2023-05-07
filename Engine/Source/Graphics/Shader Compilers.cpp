@@ -733,21 +733,23 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
 #ifdef WATER
 {
    ShaderCompiler::Source &src=ShaderCompilers.New().set(dest_path+"Water", model, api, flag).New(src_path+"Water.cpp");
-   src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 0);
-   src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 1);
-   src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 1, "RIVER", 0);
+   src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 0, "BALL", 0);
+   src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 1, "BALL", 0);
+   src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 1, "RIVER", 0, "BALL", 0);
+   src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 1, "RIVER", 0, "BALL", 1);
    REPD(refract, 2)
    {
       REPD(reflect_env   , 2)
       REPD(reflect_mirror, 2)
       REPD(gather        , 2)
       {
-         REPD(shadow, 7)
-         REPD(soft  , 2)
+         REPD(shadow_maps, 7)
+         REPD(soft       , 2)
          {
-            src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 0).gather(gather);
-            src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 1).gather(gather);
-            src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 1, "RIVER", 0).gather(gather);
+            src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 0, "BALL", 0).gather(gather);
+            src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 1, "BALL", 0).gather(gather);
+            src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 1, "RIVER", 0, "BALL", 0).gather(gather);
+            src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 1, "RIVER", 0, "BALL", 1).gather(gather);
          }
          REPD(set_depth, 2)
             src.New("Apply", "DrawUVPosXY_VS", "Apply_PS")("SET_DEPTH", set_depth)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).gather(gather);

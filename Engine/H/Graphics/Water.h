@@ -87,7 +87,7 @@ struct WaterClass : WaterMtrl // Main water control
       MODE_UNDERWATER,
    };
 
-   Bool    ocean ();
+   Bool    bump  ();
    Shader* shader();
 
    void del              ();

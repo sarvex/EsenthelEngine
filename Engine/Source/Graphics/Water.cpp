@@ -437,15 +437,15 @@ void WaterClass::endImages()
 {
 }
 /******************************************************************************/
-Bool WaterClass::ocean()
+Bool WaterClass::bump()
 {
    #define EPS_WAVE_SCALE 0.001f // 1 mm
    return _bump_map && wave_scale>EPS_WAVE_SCALE;
 }
 Shader* WaterClass::shader()
 {
-   return _use_secondary_rt ? (ocean() ? WS.Ocean  : WS.Lake )
-                            : (ocean() ? WS.OceanL : WS.LakeL)[_shader_shadow_maps][_shader_soft][_shader_reflect_env][_shader_reflect_mirror][refract>EPS_MATERIAL_BUMP];
+   return _use_secondary_rt ? (bump() ? WS.Ocean  : WS.Lake )
+                            : (bump() ? WS.OceanL : WS.LakeL)[_shader_shadow_maps][_shader_soft][_shader_reflect_env][_shader_reflect_mirror][refract>EPS_MATERIAL_BUMP];
 }
 /******************************************************************************/
 void WaterClass::drawSurfaces()
@@ -466,7 +466,7 @@ void WaterClass::drawSurfaces()
          begin();
          set  ();
 
-         if(ocean())
+         if(bump())
          {
             WS.WaterPlanePos->set(plane.pos   *CamMatrixInv      );
             WS.WaterPlaneNrm->set(plane.normal*CamMatrixInv.orn());
