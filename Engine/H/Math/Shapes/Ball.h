@@ -273,8 +273,10 @@ Bool Inside(C Box    &a, C Ball &b); // if 'a' is fully inside 'b'
 Bool Inside(C Extent &a, C Ball &b); // if 'a' is fully inside 'b'
 
 // sweep
-Bool SweepPointBall(C Vec  &point, C Vec  &move, C Ball  &ball , Flt *hit_frac=null, Vec  *hit_normal=null); // if moving point cuts through a static ball
-Bool SweepPointBall(C VecD &point, C VecD &move, C BallD &ball , Dbl *hit_frac=null, VecD *hit_normal=null); // if moving point cuts through a static ball
+Bool SweepPointBall(C Vec  &point, C Vec  &move, C Ball  &ball, Flt *hit_frac=null, Vec  *hit_normal=null); // if moving point cuts through a static ball
+Bool SweepPointBall(C VecD &point, C VecD &move, C BallD &ball, Dbl *hit_frac=null, VecD *hit_normal=null); // if moving point cuts through a static ball
+Bool SweepEdgeBall (C Edge  &edge, C Vec  &move, C Ball  &ball, Flt *hit_frac=null, Vec  *hit_normal=null); // if moving edge  cuts through a static ball
+Bool SweepEdgeBall (C EdgeD &edge, C VecD &move, C BallD &ball, Dbl *hit_frac=null, VecD *hit_normal=null); // if moving edge  cuts through a static ball
 
 Bool SweepBallPoint(C Ball  &ball, C Vec  &move, C Vec   &point, Flt *hit_frac=null, Vec  *hit_normal=null); // if moving ball cuts through a static point
 Bool SweepBallPoint(C BallD &ball, C VecD &move, C VecD  &point, Dbl *hit_frac=null, VecD *hit_normal=null); // if moving ball cuts through a static point

@@ -1413,6 +1413,54 @@ Bool SweepBallPoint(C BallD &ball, C VecD &move, C VecD &point, Dbl *hit_frac, V
    return true;
 }
 /******************************************************************************/
+Bool SweepEdgeBall(C Edge &edge, C Vec &move, C Ball &ball, Flt *hit_frac, Vec *hit_normal)
+{
+   Int point_test;
+   Vec dir=edge.delta(); if(dir.normalize()) // check if 'edge' has length
+   {
+      Matrix matrix;        matrix.    setPosDir(edge.p[0], dir  );
+      Circle circle(ball.r, matrix.      convert(ball.pos , true));
+      Vec2   move2 =        matrix.orn().convert(move     , true) ;
+      Vec2   normal; Flt frac;
+      if(SweepPointCircle(Vec2Zero, move2, circle, &frac, &normal))
+      {
+         Vec point=ball.pos-frac*move;
+           //point=NearestPointOnLine(point, edge.p[0], dir); not needed
+         if(DistPointPlane(point, edge.p[0], matrix.z)<0)point_test=0;else
+         if(DistPointPlane(point, edge.p[1], matrix.z)>0)point_test=1;else
+         {
+            if(hit_frac  )*hit_frac  =frac;
+            if(hit_normal)*hit_normal=matrix.orn().convert(normal);
+            return true;
+         }
+      }else point_test=Closer(ball.pos, edge.p[0], edge.p[1]);
+   }else point_test=0; // if 'edge' is zero length then check first point
+   return SweepPointBall(edge.p[point_test], move, ball, hit_frac, hit_normal);
+}
+Bool SweepEdgeBall(C EdgeD &edge, C VecD &move, C BallD &ball, Dbl *hit_frac, VecD *hit_normal)
+{
+   Int  point_test;
+   VecD dir=edge.delta(); if(dir.normalize()) // check if 'edge' has length
+   {
+      MatrixD matrix;        matrix.    setPosDir(edge.p[0], dir  );
+      CircleD circle(ball.r, matrix.      convert(ball.pos , true));
+      VecD2   move2 =        matrix.orn().convert(move     , true) ;
+      VecD2   normal; Dbl frac;
+      if(SweepPointCircle(VecD2Zero, move2, circle, &frac, &normal))
+      {
+         VecD point=ball.pos-frac*move;
+            //point=NearestPointOnLine(point, edge.p[0], dir); not needed
+         if(DistPointPlane(point, edge.p[0], matrix.z)<0)point_test=0;else
+         if(DistPointPlane(point, edge.p[1], matrix.z)>0)point_test=1;else
+         {
+            if(hit_frac  )*hit_frac  =frac;
+            if(hit_normal)*hit_normal=matrix.orn().convert(normal);
+            return true;
+         }
+      }else point_test=Closer(ball.pos, edge.p[0], edge.p[1]);
+   }else point_test=0; // if 'edge' is zero length then check first point
+   return SweepPointBall(edge.p[point_test], move, ball, hit_frac, hit_normal);
+}
 Bool SweepBallEdge(C Ball &ball, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *hit_normal) // safe in case 'edge' is zero length
 {
    Int point_test;
