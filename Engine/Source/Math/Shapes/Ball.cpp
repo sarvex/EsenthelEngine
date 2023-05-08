@@ -1302,7 +1302,7 @@ Int CutsLineBall(C Vec &line_pos, C Vec &line_dir, C Ball &ball, Vec *contact_a,
    if(dist2==r2){if(contact_a)*contact_a=p; return 1;}
    if(contact_a || contact_b)
    {
-      Flt d=CosSin2(dist2/r2)*ball.r;
+      Flt sin2=dist2/r2, d=CosSin2(sin2)*ball.r;
       if(contact_a)*contact_a=p-d*line_dir;
       if(contact_b)*contact_b=p+d*line_dir;
    }
@@ -1317,7 +1317,7 @@ Int CutsLineBall(C VecD &line_pos, C VecD &line_dir, C BallM &ball, VecD *contac
    if(dist2==r2){if(contact_a)*contact_a=p; return 1;}
    if(contact_a || contact_b)
    {
-      Dbl d=CosSin2(dist2/r2)*ball.r;
+      Dbl sin2=dist2/r2, d=CosSin2(sin2)*ball.r;
       if(contact_a)*contact_a=p-d*line_dir;
       if(contact_b)*contact_b=p+d*line_dir;
    }
@@ -1365,7 +1365,8 @@ Bool SweepPointBall(C Vec &point, C Vec &move, C Ball &ball, Flt *hit_frac, Vec 
    Vec p    =PointOnPlane(point, ball.pos, dir);
    Flt dist2=Dist2(p, ball.pos), r2=Sqr(ball.r);
    if( dist2>r2)return false;
-       p  -=dir*(CosSin2(dist2/r2)*ball.r);
+   Flt sin2=dist2/r2;
+       p  -=dir*(CosSin2(sin2)*ball.r);
    Flt dist=DistPointPlane(p, point, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-ball.pos)/ball.r;
@@ -1377,7 +1378,8 @@ Bool SweepPointBall(C VecD &point, C VecD &move, C BallD &ball, Dbl *hit_frac, V
    VecD p    =PointOnPlane(point, ball.pos, dir);
    Dbl  dist2=Dist2(p, ball.pos), r2=Sqr(ball.r);
    if(  dist2>r2)return false;
-        p  -=dir*(CosSin2(dist2/r2)*ball.r);
+   Dbl  sin2=dist2/r2;
+        p  -=dir*(CosSin2(sin2)*ball.r);
    Dbl  dist=DistPointPlane(p, point, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-ball.pos)/ball.r;
@@ -1390,7 +1392,8 @@ Bool SweepBallPoint(C Ball &ball, C Vec &move, C Vec &point, Flt *hit_frac, Vec 
    Vec p    =PointOnPlane(ball.pos, point, dir);
    Flt dist2=Dist2(p, point), r2=Sqr(ball.r);
    if( dist2>r2)return false;
-       p  -=dir*(CosSin2(dist2/r2)*ball.r);
+   Flt sin2=dist2/r2;
+       p  -=dir*(CosSin2(sin2)*ball.r);
    Flt dist=DistPointPlane(p, ball.pos, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-point)/ball.r;
@@ -1402,7 +1405,8 @@ Bool SweepBallPoint(C BallD &ball, C VecD &move, C VecD &point, Dbl *hit_frac, V
    VecD p    =PointOnPlane(ball.pos, point, dir);
    Dbl  dist2=Dist2(p, point), r2=Sqr(ball.r);
    if(  dist2>r2)return false;
-        p  -=dir*(CosSin2(dist2/r2)*ball.r);
+   Dbl  sin2=dist2/r2;
+        p  -=dir*(CosSin2(sin2)*ball.r);
    Dbl  dist=DistPointPlane(p, ball.pos, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-point)/ball.r;
