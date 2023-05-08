@@ -225,16 +225,29 @@ Bool SweepPointCircle(C VecD2 &point, C VecD2 &move, C CircleD &circle, Dbl *hit
    return true;
 }
 /******************************************************************************/
-// TODO: write manually
 Bool SweepCirclePoint(C Circle &circle, C Vec2 &move, C Vec2 &point, Flt *hit_frac, Vec2 *hit_normal)
 {
-   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
-   return false;
+   Vec2 dir   =move; Flt length=dir.normalize();
+   Vec2 dir_n =Perp(dir);
+   Flt  dist  =DistPointPlane(point, circle.pos, dir_n); if(Abs(dist)>circle.r)return false;
+   Flt  sin   =dist/circle.r;
+   Vec2 normal=-sin*dir_n-CosSin(sin)*dir;
+   Flt  d     =DistPointPlane(point, circle.pos-normal*circle.r, dir); if(d<0 || d>length)return false;
+   if(hit_frac  )*hit_frac  =d/length;
+   if(hit_normal)*hit_normal=normal;
+   return true;
 }
 Bool SweepCirclePoint(C CircleD &circle, C VecD2 &move, C VecD2 &point, Dbl *hit_frac, VecD2 *hit_normal)
 {
-   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
-   return false;
+   VecD2 dir   =move; Dbl length=dir.normalize();
+   VecD2 dir_n =Perp(dir);
+   Dbl   dist  =DistPointPlane(point, circle.pos, dir_n); if(Abs(dist)>circle.r)return false;
+   Dbl   sin   =dist/circle.r;
+   VecD2 normal=-sin*dir_n-CosSin(sin)*dir;
+   Dbl   d     =DistPointPlane(point, circle.pos-normal*circle.r, dir); if(d<0 || d>length)return false;
+   if(hit_frac  )*hit_frac  =d/length;
+   if(hit_normal)*hit_normal=normal;
+   return true;
 }
 /******************************************************************************/
 Bool SweepEdgeCircle(C Edge2 &edge, C Vec2 &move, C Circle &circle, Flt *hit_frac, Vec2 *hit_normal)
