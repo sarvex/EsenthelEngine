@@ -1420,9 +1420,9 @@ Bool SweepEdgeBall(C Edge &edge, C Vec &move, C Ball &ball, Flt *hit_frac, Vec *
    {
       Matrix matrix;        matrix.    setPosDir(edge.p[0], dir  );
       Circle circle(ball.r, matrix.      convert(ball.pos , true));
-      Vec2   move2 =        matrix.orn().convert(move     , true) ;
+      Vec2   move2D=        matrix.orn().convert(move     , true) ;
       Vec2   normal; Flt frac;
-      if(SweepPointCircle(Vec2Zero, move2, circle, &frac, &normal))
+      if(SweepPointCircle(Vec2Zero, move2D, circle, &frac, &normal))
       {
          Vec point=ball.pos-frac*move;
            //point=NearestPointOnLine(point, edge.p[0], dir); not needed
@@ -1444,9 +1444,9 @@ Bool SweepEdgeBall(C EdgeD &edge, C VecD &move, C BallD &ball, Dbl *hit_frac, Ve
    {
       MatrixD matrix;        matrix.    setPosDir(edge.p[0], dir  );
       CircleD circle(ball.r, matrix.      convert(ball.pos , true));
-      VecD2   move2 =        matrix.orn().convert(move     , true) ;
+      VecD2   move2D=        matrix.orn().convert(move     , true) ;
       VecD2   normal; Dbl frac;
-      if(SweepPointCircle(VecD2Zero, move2, circle, &frac, &normal))
+      if(SweepPointCircle(VecD2Zero, move2D, circle, &frac, &normal))
       {
          VecD point=ball.pos-frac*move;
             //point=NearestPointOnLine(point, edge.p[0], dir); not needed
@@ -1468,9 +1468,9 @@ Bool SweepBallEdge(C Ball &ball, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *
    {
       Matrix matrix;        matrix.    setPosDir(edge.p[0], dir  );
       Circle circle(ball.r, matrix.      convert(ball.pos , true));
-      Vec2   move2 =        matrix.orn().convert(move     , true) ;
+      Vec2   move2D=        matrix.orn().convert(move     , true) ;
       Vec2   normal; Flt frac;
-      if(SweepCirclePoint(circle, move2, Vec2Zero, &frac, &normal))
+      if(SweepCirclePoint(circle, move2D, Vec2Zero, &frac, &normal))
       {
          Vec point=ball.pos+frac*move;
            //point=NearestPointOnLine(point, edge.p[0], dir); not needed
@@ -1492,9 +1492,9 @@ Bool SweepBallEdge(C BallD &ball, C VecD &move, C EdgeD &edge, Dbl *hit_frac, Ve
    {
       MatrixD matrix;        matrix.    setPosDir(edge.p[0], dir  );
       CircleD circle(ball.r, matrix.      convert(ball.pos , true));
-      VecD2   move2 =        matrix.orn().convert(move     , true) ;
+      VecD2   move2D=        matrix.orn().convert(move     , true) ;
       VecD2   normal; Dbl frac;
-      if(SweepCirclePoint(circle, move2, VecD2Zero, &frac, &normal))
+      if(SweepCirclePoint(circle, move2D, VecD2Zero, &frac, &normal))
       {
          VecD point=ball.pos+frac*move;
             //point=NearestPointOnLine(point, edge.p[0], dir); not needed
