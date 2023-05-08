@@ -1361,10 +1361,11 @@ Bool Inside(C Extent &a, C Ball &b)
 /******************************************************************************/
 Bool SweepPointBall(C Vec &point, C Vec &move, C Ball &ball, Flt *hit_frac, Vec *hit_normal)
 {
-   Vec dir =move; Flt length=dir.normalize();
-   Vec p   =PointOnPlane(point, ball.pos, dir);
-   Flt s   =Dist(p, ball.pos)/ball.r; if(s>1)return false;
-       p  -=dir*(CosSin(s)*ball.r);
+   Vec dir  =move; Flt length=dir.normalize();
+   Vec p    =PointOnPlane(point, ball.pos, dir);
+   Flt dist2=Dist2(p, ball.pos), r2=Sqr(ball.r);
+   if( dist2>r2)return false;
+       p  -=dir*(CosSin2(dist2/r2)*ball.r);
    Flt dist=DistPointPlane(p, point, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-ball.pos)/ball.r;
@@ -1372,10 +1373,11 @@ Bool SweepPointBall(C Vec &point, C Vec &move, C Ball &ball, Flt *hit_frac, Vec 
 }
 Bool SweepPointBall(C VecD &point, C VecD &move, C BallD &ball, Dbl *hit_frac, VecD *hit_normal)
 {
-   VecD dir =move; Dbl length=dir.normalize();
-   VecD p   =PointOnPlane(point, ball.pos, dir);
-   Dbl  s   =Dist(p, ball.pos)/ball.r; if(s>1)return false;
-        p  -=dir*(CosSin(s)*ball.r);
+   VecD dir  =move; Dbl length=dir.normalize();
+   VecD p    =PointOnPlane(point, ball.pos, dir);
+   Dbl  dist2=Dist2(p, ball.pos), r2=Sqr(ball.r);
+   if(  dist2>r2)return false;
+        p  -=dir*(CosSin2(dist2/r2)*ball.r);
    Dbl  dist=DistPointPlane(p, point, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-ball.pos)/ball.r;
@@ -1384,10 +1386,11 @@ Bool SweepPointBall(C VecD &point, C VecD &move, C BallD &ball, Dbl *hit_frac, V
 /******************************************************************************/
 Bool SweepBallPoint(C Ball &ball, C Vec &move, C Vec &point, Flt *hit_frac, Vec *hit_normal)
 {
-   Vec dir =move; Flt length=dir.normalize();
-   Vec p   =PointOnPlane(ball.pos, point, dir);
-   Flt s   =Dist(p, point)/ball.r; if(s>1)return false;
-       p  -=dir*(CosSin(s)*ball.r);
+   Vec dir  =move; Flt length=dir.normalize();
+   Vec p    =PointOnPlane(ball.pos, point, dir);
+   Flt dist2=Dist2(p, point), r2=Sqr(ball.r);
+   if( dist2>r2)return false;
+       p  -=dir*(CosSin2(dist2/r2)*ball.r);
    Flt dist=DistPointPlane(p, ball.pos, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-point)/ball.r;
@@ -1395,10 +1398,11 @@ Bool SweepBallPoint(C Ball &ball, C Vec &move, C Vec &point, Flt *hit_frac, Vec 
 }
 Bool SweepBallPoint(C BallD &ball, C VecD &move, C VecD &point, Dbl *hit_frac, VecD *hit_normal)
 {
-   VecD dir =move; Dbl length=dir.normalize();
-   VecD p   =PointOnPlane(ball.pos, point, dir);
-   Dbl  s   =Dist(p, point)/ball.r; if(s>1)return false;
-        p  -=dir*(CosSin(s)*ball.r);
+   VecD dir  =move; Dbl length=dir.normalize();
+   VecD p    =PointOnPlane(ball.pos, point, dir);
+   Dbl  dist2=Dist2(p, point), r2=Sqr(ball.r);
+   if(  dist2>r2)return false;
+        p  -=dir*(CosSin2(dist2/r2)*ball.r);
    Dbl  dist=DistPointPlane(p, ball.pos, dir); if(dist<0 || dist>length)return false;
    if(hit_frac  )*hit_frac  =dist/length;
    if(hit_normal)*hit_normal=(p-point)/ball.r;
