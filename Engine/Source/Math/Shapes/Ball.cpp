@@ -1461,6 +1461,7 @@ Bool SweepEdgeBall(C EdgeD &edge, C VecD &move, C BallD &ball, Dbl *hit_frac, Ve
    }else point_test=0; // if 'edge' is zero length then check first point
    return SweepPointBall(edge.p[point_test], move, ball, hit_frac, hit_normal);
 }
+/******************************************************************************/
 Bool SweepBallEdge(C Ball &ball, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *hit_normal) // safe in case 'edge' is zero length
 {
    Int point_test;
