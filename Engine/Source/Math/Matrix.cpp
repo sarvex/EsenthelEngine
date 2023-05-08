@@ -2687,6 +2687,8 @@ Matrix3& Matrix3::setTerrainOrient(DIR_ENUM dir) // this assumes that terrain me
 }
 Matrix3 & Matrix3 ::setRight(C Vec  &right                         ) {x=right; y=PerpN(x); z=Cross(x, y); return T;}
 MatrixD3& MatrixD3::setRight(C VecD &right                         ) {x=right; y=PerpN(x); z=Cross(x, y); return T;}
+Matrix3 & Matrix3 ::setRight(C Vec  &right, C Vec  &up             ) {x=right; y=up      ; z=Cross(x, y); return T;}
+MatrixD3& MatrixD3::setRight(C VecD &right, C VecD &up             ) {x=right; y=up      ; z=Cross(x, y); return T;}
 Matrix3 & Matrix3 ::setUp   (C Vec  &up                            ) {y=up   ; z=PerpN(y); x=Cross(y, z); return T;}
 MatrixD3& MatrixD3::setUp   (C VecD &up                            ) {y=up   ; z=PerpN(y); x=Cross(y, z); return T;}
 Matrix3 & Matrix3 ::setDir  (C Vec  &dir                           ) {z=dir  ; y=PerpN(z); x=Cross(y, z); return T;}

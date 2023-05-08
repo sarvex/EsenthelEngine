@@ -62,9 +62,9 @@ Camera& Camera::setSpherical()
 Camera& Camera::setFromAt(C VecD &from, C VecD &at, Flt roll)
 {
    matrix.z=at-from; dist=matrix.z.normalize();
-   matrix.x=CrossUp(matrix.z);
-   if(!dist || !matrix.x.normalize())matrix.identity();else
+   if(!dist)matrix.orn().identity();else
    {
+      matrix.x=CrossUp(matrix.z); if(matrix.x.normalize()<=EPS)matrix.x.set(1, 0, 0); // right
       matrix.x*=Matrix3().setRotate(matrix.z, -roll);
       matrix.y=Cross(matrix.z, matrix.x);
    }
@@ -78,7 +78,7 @@ Camera& Camera::setFromAt(C VecD &from, C VecD &at, Flt roll)
 Camera& Camera::setPosDir(C VecD &pos, C Vec &dir, C Vec &up)
 {
    Vec dir_n=                 dir   ; dist=dir_n.normalize(); if(!dist)dir_n.set(0, 0, 1);
-   Vec  up_f=PointOnPlane(up, dir_n);   if(!up_f.normalize())           up_f=PerpN(dir_n);
+   Vec  up_f=PointOnPlane(up, dir_n);    if(up_f.normalize()<=EPS)      up_f=PerpN(dir_n);
    T.matrix.setPosDir(pos, dir_n, up_f);
    T.at   =pos+dir;
    T.yaw  =-Angle(matrix.z.zx());

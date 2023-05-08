@@ -180,11 +180,12 @@ struct Matrix3 // Matrix 3x3 (orientation + scale)
 #endif
 
    Matrix3& setOrient  (DIR_ENUM dir                       ); // set as orientation from DIR_ENUM
-   Matrix3& setRight   (C Vec &right                       ); // set as x='right'       and calculate correct y,z, 'right'            must be normalized
-   Matrix3& setUp      (C Vec &up                          ); // set as y='up'          and calculate correct x,z, 'up'               must be normalized
-   Matrix3& setDir     (C Vec &dir                         ); // set as z='dir'         and calculate correct x,y, 'dir'              must be normalized
-   Matrix3& setDir     (C Vec &dir, C Vec &up              ); // set as z='dir', y='up' and calculate correct x  , 'dir' 'up'         must be normalized
-   Matrix3& setDir     (C Vec &dir, C Vec &up, C Vec &right); // set as z='dir', y='up', x='right'               , 'dir' 'up' 'right' must be normalized
+   Matrix3& setRight   (C Vec &right                       ); // set as x='right'         and calculate correct y,z, 'right'            must be normalized
+   Matrix3& setRight   (C Vec &right, C Vec &up            ); // set as x='right', y='up' and calculate correct z  , 'right' 'up'       must be normalized
+   Matrix3& setUp      (C Vec &up                          ); // set as y='up'            and calculate correct x,z, 'up'               must be normalized
+   Matrix3& setDir     (C Vec &dir                         ); // set as z='dir'           and calculate correct x,y, 'dir'              must be normalized
+   Matrix3& setDir     (C Vec &dir, C Vec &up              ); // set as z='dir'  , y='up' and calculate correct x  , 'dir' 'up'         must be normalized
+   Matrix3& setDir     (C Vec &dir, C Vec &up, C Vec &right); // set as z='dir'  , y='up', x='right'               , 'dir' 'up' 'right' must be normalized
    Matrix3& setRotation(C Vec &dir_from, C Vec &dir_to                     ); // set as matrix which rotates 'dir_from' to 'dir_to',                                              'dir_from' 'dir_to' must be normalized
    Matrix3& setRotation(C Vec &dir_from, C Vec &dir_to, Flt blend          ); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value                          , 'dir_from' 'dir_to' must be normalized
    Matrix3& setRotation(C Vec &dir_from, C Vec &dir_to, Flt blend, Flt roll); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value and additional roll angle, 'dir_from' 'dir_to' must be normalized
@@ -326,11 +327,12 @@ struct MatrixD3 // Matrix 3x3 (orientation + scale, double precision)
 #endif
 
    MatrixD3& setOrient  (DIR_ENUM dir                          ); // set as orientation from DIR_ENUM
-   MatrixD3& setRight   (C VecD &right                         ); // set as x='right'       and calculate correct y,z, 'right'            must be normalized
-   MatrixD3& setUp      (C VecD &up                            ); // set as y='up'          and calculate correct x,z, 'up'               must be normalized
-   MatrixD3& setDir     (C VecD &dir                           ); // set as z='dir'         and calculate correct x,y, 'dir'              must be normalized
-   MatrixD3& setDir     (C VecD &dir, C VecD &up               ); // set as z='dir', y='up' and calculate correct x  , 'dir' 'up'         must be normalized
-   MatrixD3& setDir     (C VecD &dir, C VecD &up, C VecD &right); // set as z='dir', y='up', x='right'               , 'dir' 'up' 'right' must be normalized
+   MatrixD3& setRight   (C VecD &right                         ); // set as x='right'         and calculate correct y,z, 'right'            must be normalized
+   MatrixD3& setRight   (C VecD &right, C VecD &up             ); // set as x='right', y='up' and calculate correct z  , 'right' 'up'       must be normalized
+   MatrixD3& setUp      (C VecD &up                            ); // set as y='up'            and calculate correct x,z, 'up'               must be normalized
+   MatrixD3& setDir     (C VecD &dir                           ); // set as z='dir'           and calculate correct x,y, 'dir'              must be normalized
+   MatrixD3& setDir     (C VecD &dir, C VecD &up               ); // set as z='dir', y='up'   and calculate correct x  , 'dir' 'up'         must be normalized
+   MatrixD3& setDir     (C VecD &dir, C VecD &up, C VecD &right); // set as z='dir', y='up', x='right'                 , 'dir' 'up' 'right' must be normalized
    MatrixD3& setRotation(C VecD &dir_from, C VecD &dir_to                     ); // set as matrix which rotates 'dir_from' to 'dir_to',                                              'dir_from' 'dir_to' must be normalized
    MatrixD3& setRotation(C VecD &dir_from, C VecD &dir_to, Dbl blend          ); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value                          , 'dir_from' 'dir_to' must be normalized
    MatrixD3& setRotation(C VecD &dir_from, C VecD &dir_to, Dbl blend, Dbl roll); // set as matrix which rotates 'dir_from' to 'dir_to', using blend value and additional roll angle, 'dir_from' 'dir_to' must be normalized
