@@ -1425,6 +1425,7 @@ Bool SweepBallEdge(C Ball &ball, C Vec &move, C Edge &edge, Flt *hit_frac, Vec *
       if(SweepCirclePoint(circle, move2, Vec2Zero, &frac, &normal))
       {
          Vec point=ball.pos+frac*move;
+           //point=NearestPointOnLine(point, edge.p[0], dir); not needed
          if(DistPointPlane(point, edge.p[0], matrix.z)<0)point_test=0;else
          if(DistPointPlane(point, edge.p[1], matrix.z)>0)point_test=1;else
          {
@@ -1448,6 +1449,7 @@ Bool SweepBallEdge(C BallD &ball, C VecD &move, C EdgeD &edge, Dbl *hit_frac, Ve
       if(SweepCirclePoint(circle, move2, VecD2Zero, &frac, &normal))
       {
          VecD point=ball.pos+frac*move;
+            //point=NearestPointOnLine(point, edge.p[0], dir); not needed
          if(DistPointPlane(point, edge.p[0], matrix.z)<0)point_test=0;else
          if(DistPointPlane(point, edge.p[1], matrix.z)>0)point_test=1;else
          {
