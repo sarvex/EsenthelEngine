@@ -387,6 +387,9 @@ inline Flt CosSin(Flt cos_sin) {return Sqrt(1-cos_sin*cos_sin);} // convert cos<
 inline Dbl CosSin(Dbl cos_sin) {return Sqrt(1-cos_sin*cos_sin);} // convert cos<->sin, this function converts sine value to cosine value (of the same angle), and cosine value to sine value (of the same angle) at the same time
 
 #if EE_PRIVATE
+inline Flt CosSin2(Flt cos_sin2) {return Sqrt(1-cos_sin2);} // convert cos2->sin, sin2->cos, this function converts sine value to cosine value (of the same angle), and cosine value to sine value (of the same angle) at the same time
+inline Dbl CosSin2(Dbl cos_sin2) {return Sqrt(1-cos_sin2);} // convert cos2->sin, sin2->cos, this function converts sine value to cosine value (of the same angle), and cosine value to sine value (of the same angle) at the same time
+
 inline Flt CosSinPrecise(Flt cos_sin) {return (Flt)CosSin(Dbl (cos_sin));} // this is more precise than regular 'CosSin' and still fast
 inline Dbl CosSinPrecise(Dbl cos_sin) {return      Sin   (Acos(cos_sin));} // this is more precise than regular 'CosSin' but slow
 #endif

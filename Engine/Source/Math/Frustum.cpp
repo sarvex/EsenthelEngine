@@ -1200,14 +1200,14 @@ min_height - \------------/
 
                zd.set(oriented_ball.pos.x, 0, oriented_ball.pos.z); len2=zd.length2(); if(r2<len2)
                {
-                  sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+                  sin2=r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
                   test=zd-d; if(test.z>0)MAX(rect.min.x, test.x/test.z);
                   test=zd+d; if(test.z>0)MIN(rect.max.x, test.x/test.z);
                }
 
                zd.set(0, oriented_ball.pos.y, oriented_ball.pos.z); len2=zd.length2(); if(r2<len2)
                {
-                  sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+                  sin2=r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
                   test=zd+d; if(test.z>0)MAX(rect.min.y, test.y/test.z);
                   test=zd-d; if(test.z>0)MIN(rect.max.y, test.y/test.z);
                }

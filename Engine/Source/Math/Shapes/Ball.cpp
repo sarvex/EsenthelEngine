@@ -753,7 +753,7 @@ min_height - \------------/
          zd.set(oriented_ball.pos.x, 0, oriented_ball.pos.z); len2=zd.length2();
          if(r2>=len2)rect.setX(0, res-1);else
          {
-            sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+            sin2=r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
             if(PosToCellX(T, zd-d, rect.min.x))MAX(rect.min.x,     0);else rect.min.x=    0;
             if(PosToCellX(T, zd+d, rect.max.x))MIN(rect.max.x, res-1);else rect.max.x=res-1;
             if(!rect.validX())goto next;
@@ -762,7 +762,7 @@ min_height - \------------/
          zd.set(0, oriented_ball.pos.y, oriented_ball.pos.z); len2=zd.length2();
          if(r2>=len2)rect.setY(0, res-1);else
          {
-            sin2=r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
+            sin2=r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*oriented_ball.r); zd*=-sin2; zd+=oriented_ball.pos;
             if(PosToCellY(T, zd+d, rect.min.y))MAX(rect.min.y,     0);else rect.min.y=    0;
             if(PosToCellY(T, zd-d, rect.max.y))MIN(rect.max.y, res-1);else rect.max.y=res-1;
             if(!rect.validY())goto next;
@@ -840,7 +840,7 @@ void SphereConvertEx::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &d
          zd.set(dir_face.x, 0, dir_face.z); len2=zd.length2();
          if(ball_r2>=len2)rect.setX(0, res-1);else
          {
-            sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
+            sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
             test=zd-d; if(test.z>0){rect.min.x=posToCellI(test.x/test.z); if(rect.min.x<   0){ left: rect.min.x=    0;}}else goto  left;
             test=zd+d; if(test.z>0){rect.max.x=posToCellI(test.x/test.z); if(rect.max.x>=res){right: rect.max.x=res-1;}}else goto right;
             if(!rect.validX())goto next;
@@ -850,7 +850,7 @@ void SphereConvertEx::getIntersectingAreas(MemPtr<SphereArea> area_pos, C Vec &d
          zd.set(0, dir_face.y, dir_face.z); len2=zd.length2();
          if(ball_r2>=len2)rect.setY(0, res-1);else
          {
-            sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
+            sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_face;
             test=zd+d; if(test.z>0){rect.min.y=posToCellI(test.y/test.z); if(rect.min.y<   0){down: rect.min.y=    0;}}else goto down;
             test=zd-d; if(test.z>0){rect.max.y=posToCellI(test.y/test.z); if(rect.max.y>=res){  up: rect.max.y=res-1;}}else goto   up;
           //if(!rect.validY())goto next; not needed since "for" below already does the same

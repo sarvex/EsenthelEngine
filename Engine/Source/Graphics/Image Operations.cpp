@@ -971,7 +971,7 @@ struct BlurCube
             zd.set(dir_fn.x, 0, dir_fn.z); len2=zd.length2();
             if(ball_r2>=len2){rect.setX(0, src_res-1); check_other_faces=true;}else
             {
-               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
                test=zd-d; if(test.z>0){rect.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.min.x<       0){ left_linear: rect.min.x=        0; check_other_faces=true;}}else goto  left_linear;
                test=zd+d; if(test.z>0){rect.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.max.x>=src_res){right_linear: rect.max.x=src_res-1; check_other_faces=true;}}else goto right_linear;
             }
@@ -979,7 +979,7 @@ struct BlurCube
             zd.set(0, dir_fn.y, dir_fn.z); len2=zd.length2();
             if(ball_r2>=len2){rect.setY(0, src_res-1); check_other_faces=true;}else
             {
-               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
                test=zd-d; if(test.z>0){rect.min.y= CeilSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.min.y<       0){down_linear: rect.min.y=        0; check_other_faces=true;}}else goto down_linear;
                test=zd+d; if(test.z>0){rect.max.y=FloorSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect.max.y>=src_res){  up_linear: rect.max.y=src_res-1; check_other_faces=true;}}else goto   up_linear;
             }
@@ -992,7 +992,7 @@ struct BlurCube
             zd.set(dir_fn.x, 0, dir_fn.z); len2=zd.length2();
             if(ball_r2>=len2){rect.setX(0, src_res-1); check_other_faces=true;}else
             {
-               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
                test=zd-d; if(test.z>0){rect.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.min.x<       0){ left_sphere: rect.min.x=        0; check_other_faces=true;}}else goto  left_sphere;
                test=zd+d; if(test.z>0){rect.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.max.x>=src_res){right_sphere: rect.max.x=src_res-1; check_other_faces=true;}}else goto right_sphere;
             }
@@ -1000,7 +1000,7 @@ struct BlurCube
             zd.set(0, dir_fn.y, dir_fn.z); len2=zd.length2();
             if(ball_r2>=len2){rect.setY(0, src_res-1); check_other_faces=true;}else
             {
-               sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
+               sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_fn;
                test=zd-d; if(test.z>0){rect.min.y= CeilSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.min.y<       0){down_sphere: rect.min.y=        0; check_other_faces=true;}}else goto down_sphere;
                test=zd+d; if(test.z>0){rect.max.y=FloorSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect.max.y>=src_res){  up_sphere: rect.max.y=src_res-1; check_other_faces=true;}}else goto   up_sphere;
             }
@@ -1119,7 +1119,7 @@ struct BlurCube
                   zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setX(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.x<       0){ left_linear_x: rect1.min.x=        0;}}else goto  left_linear_x;
                      test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.x>=src_res){right_linear_x: rect1.max.x=src_res-1;}}else goto right_linear_x;
                   }
@@ -1128,7 +1128,7 @@ struct BlurCube
                   zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setX(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.x<       0){ left_sphere_x: rect1.min.x=        0;}}else goto  left_sphere_x;
                      test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.x>=src_res){right_sphere_x: rect1.max.x=src_res-1;}}else goto right_sphere_x;
                   }
@@ -1196,7 +1196,7 @@ struct BlurCube
                   zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setX(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.x<       0){ left_linear_1: rect1.min.x=        0;}}else goto  left_linear_1;
                      test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( test.x/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.x>=src_res){right_linear_1: rect1.max.x=src_res-1;}}else goto right_linear_1;
                   }
@@ -1205,7 +1205,7 @@ struct BlurCube
                   zd.set(0, dir_f1.y, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setY(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.y= CeilSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.min.y<       0){down_linear_1: rect1.min.y=        0;}}else goto down_linear_1;
                      test=zd+d; if(test.z>0){rect1.max.y=FloorSpecial(-test.y/test.z*src_DirToCubeFacePixel_mul+src_DirToCubeFacePixel_add); if(rect1.max.y>=src_res){  up_linear_1: rect1.max.y=src_res-1;}}else goto   up_linear_1;
                   }
@@ -1215,7 +1215,7 @@ struct BlurCube
                   zd.set(dir_f1.x, 0, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setX(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossUp(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.x= CeilSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.x<       0){ left_sphere_1: rect1.min.x=        0;}}else goto  left_sphere_1;
                      test=zd+d; if(test.z>0){rect1.max.x=FloorSpecial( Atan(test.x/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.x>=src_res){right_sphere_1: rect1.max.x=src_res-1;}}else goto right_sphere_1;
                   }
@@ -1224,7 +1224,7 @@ struct BlurCube
                   zd.set(0, dir_f1.y, dir_f1.z); len2=zd.length2();
                   if(ball_r2>=len2)rect1.setY(0, src_res-1);else
                   {
-                     sin2=ball_r2/len2; cos=Sqrt(1-sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
+                     sin2=ball_r2/len2; cos=CosSin2(sin2); d=CrossRight(zd); d.setLength(cos*ball_r); zd*=-sin2; zd+=dir_f1;
                      test=zd-d; if(test.z>0){rect1.min.y= CeilSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.min.y<       0){down_sphere_1: rect1.min.y=        0;}}else goto down_sphere_1;
                      test=zd+d; if(test.z>0){rect1.max.y=FloorSpecial(-Atan(test.y/test.z)*src_AngleToCubeFacePixel_mul+src_AngleToCubeFacePixel_add); if(rect1.max.y>=src_res){  up_sphere_1: rect1.max.y=src_res-1;}}else goto   up_sphere_1;
                   }
