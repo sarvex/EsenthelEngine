@@ -225,6 +225,18 @@ Bool SweepPointCircle(C VecD2 &point, C VecD2 &move, C CircleD &circle, Dbl *hit
    return true;
 }
 /******************************************************************************/
+// TODO: write manually
+Bool SweepCirclePoint(C Circle &circle, C Vec2 &move, C Vec2 &point, Flt *hit_frac, Vec2 *hit_normal)
+{
+   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
+   return false;
+}
+Bool SweepCirclePoint(C CircleD &circle, C VecD2 &move, C VecD2 &point, Dbl *hit_frac, VecD2 *hit_normal)
+{
+   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
+   return false;
+}
+/******************************************************************************/
 Bool SweepEdgeCircle(C Edge2 &edge, C Vec2 &move, C Circle &circle, Flt *hit_frac, Vec2 *hit_normal)
 {
    Byte point_test;
@@ -270,52 +282,6 @@ Bool SweepEdgeCircle(C EdgeD2 &edge, C VecD2 &move, C CircleD &circle, Dbl *hit_
    return SweepPointCircle(edge.p[point_test], move, circle, hit_frac, hit_normal);
 }
 /******************************************************************************/
-Bool SweepCircleCircle(C Circle &circle, C Vec2 &move, C Circle &c2, Flt *hit_frac, Vec2 *hit_normal)
-{
-   Vec2 dir=move; Flt length=dir.normalize();
-   Vec2 d  =c2.pos-circle.pos;
-   Flt  b  =-2*Dot(dir, d),
-        c  =d.length2()-Sqr(circle.r+c2.r),
-        x1, x2;
-   Int  xs=Polynominal2(1, b, c, x1, x2);
-   if(xs>=1 && x1>=0 && x1<=length)
-   {
-      Flt frac=x1/length;
-      if(hit_frac  )*hit_frac  =frac;
-      if(hit_normal)*hit_normal=!((circle.pos+frac*move)-c2.pos);
-      return true;
-   }
-   return false;
-}
-Bool SweepCircleCircle(C CircleD &circle, C VecD2 &move, C CircleD &c2, Dbl *hit_frac, VecD2 *hit_normal)
-{
-   VecD2 dir=move; Dbl length=dir.normalize();
-   VecD2 d  =c2.pos-circle.pos;
-   Dbl   b  =-2*Dot(dir, d),
-         c  =d.length2()-Sqr(circle.r+c2.r),
-         x1, x2;
-   Int   xs=Polynominal2(1, b, c, x1, x2);
-   if(xs>=1 && x1>=0 && x1<=length)
-   {
-      Dbl frac=x1/length;
-      if(hit_frac  )*hit_frac  =frac;
-      if(hit_normal)*hit_normal=!((circle.pos+frac*move)-c2.pos);
-      return true;
-   }
-   return false;
-}
-/******************************************************************************/
-Bool SweepCirclePoint(C Circle &circle, C Vec2 &move, C Vec2 &point, Flt *hit_frac, Vec2 *hit_normal)
-{
-   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
-   return false;
-}
-Bool SweepCirclePoint(C CircleD &circle, C VecD2 &move, C VecD2 &point, Dbl *hit_frac, VecD2 *hit_normal)
-{
-   if(SweepPointCircle(point, -move, circle, hit_frac, hit_normal)){if(hit_normal)hit_normal->chs(); return true;}
-   return false;
-}
-/******************************************************************************/
 Bool SweepCircleEdge(C Circle &circle, C Vec2 &move, C Edge2 &edge, Flt *hit_frac, Vec2 *hit_normal)
 {
    Byte point_test;
@@ -349,6 +315,41 @@ Bool SweepCircleEdge(C CircleD &circle, C VecD2 &move, C EdgeD2 &edge, Dbl *hit_
       }else point_test=Closer(circle.pos, edge.p[0], edge.p[1]);
    }
    return SweepCirclePoint(circle, move, edge.p[point_test], hit_frac, hit_normal);
+}
+/******************************************************************************/
+Bool SweepCircleCircle(C Circle &circle, C Vec2 &move, C Circle &c2, Flt *hit_frac, Vec2 *hit_normal)
+{
+   Vec2 dir=move; Flt length=dir.normalize();
+   Vec2 d  =c2.pos-circle.pos;
+   Flt  b  =-2*Dot(dir, d),
+        c  =d.length2()-Sqr(circle.r+c2.r),
+        x1, x2;
+   Int  xs=Polynominal2(1, b, c, x1, x2);
+   if(xs>=1 && x1>=0 && x1<=length)
+   {
+      Flt frac=x1/length;
+      if(hit_frac  )*hit_frac  =frac;
+      if(hit_normal)*hit_normal=!((circle.pos+frac*move)-c2.pos);
+      return true;
+   }
+   return false;
+}
+Bool SweepCircleCircle(C CircleD &circle, C VecD2 &move, C CircleD &c2, Dbl *hit_frac, VecD2 *hit_normal)
+{
+   VecD2 dir=move; Dbl length=dir.normalize();
+   VecD2 d  =c2.pos-circle.pos;
+   Dbl   b  =-2*Dot(dir, d),
+         c  =d.length2()-Sqr(circle.r+c2.r),
+         x1, x2;
+   Int   xs=Polynominal2(1, b, c, x1, x2);
+   if(xs>=1 && x1>=0 && x1<=length)
+   {
+      Dbl frac=x1/length;
+      if(hit_frac  )*hit_frac  =frac;
+      if(hit_normal)*hit_normal=!((circle.pos+frac*move)-c2.pos);
+      return true;
+   }
+   return false;
 }
 /******************************************************************************/
 }
