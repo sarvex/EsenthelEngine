@@ -2244,67 +2244,6 @@ struct VecI4 // Vector 4D (integer)
 };extern VecI4
    const VecI4Zero; // VecI4(0, 0, 0, 0)
 /******************************************************************************/
-inline VecB2 ::VecB2 (C VecI2  &v) {set(v.x, v.y          );}
-inline VecSB2::VecSB2(C VecI2  &v) {set(v.x, v.y          );}
-inline VecB  ::VecB  (C VecI   &v) {set(v.x, v.y, v.z     );}
-inline VecSB ::VecSB (C VecI   &v) {set(v.x, v.y, v.z     );}
-inline VecB4 ::VecB4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecB4 ::VecB4 (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
-inline VecSB4::VecSB4(C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecUS2::VecUS2(C VecB2  &v) {set(v.x, v.y          );}
-inline VecUS2::VecUS2(C VecI2  &v) {set(v.x, v.y          );}
-inline VecUS ::VecUS (C VecB   &v) {set(v.x, v.y, v.z     );}
-inline VecUS ::VecUS (C VecI   &v) {set(v.x, v.y, v.z     );}
-inline VecUS4::VecUS4(C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecUS4::VecUS4(C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec2  ::Vec2  (C VecH2  &v) {set(v.x, v.y          );}
-inline Vec2  ::Vec2  (C VecD2  &v) {set(v.x, v.y          );}
-inline Vec2  ::Vec2  (C VecI2  &v) {set(v.x, v.y          );}
-inline Vec2  ::Vec2  (C VecB2  &v) {set(v.x, v.y          );}
-inline Vec2  ::Vec2  (C VecSB2 &v) {set(v.x, v.y          );}
-inline Vec2  ::Vec2  (C VecUS2 &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C VecH2  &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C Vec2   &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C VecI2  &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C VecB2  &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C VecSB2 &v) {set(v.x, v.y          );}
-inline VecD2 ::VecD2 (C VecUS2 &v) {set(v.x, v.y          );}
-inline Vec   ::Vec   (C VecH   &v) {set(v.x, v.y, v.z     );}
-inline Vec   ::Vec   (C VecD   &v) {set(v.x, v.y, v.z     );}
-inline Vec   ::Vec   (C VecI   &v) {set(v.x, v.y, v.z     );}
-inline Vec   ::Vec   (C VecB   &v) {set(v.x, v.y, v.z     );}
-inline Vec   ::Vec   (C VecSB  &v) {set(v.x, v.y, v.z     );}
-inline VecD  ::VecD  (C VecH   &v) {set(v.x, v.y, v.z     );}
-inline VecD  ::VecD  (C Vec    &v) {set(v.x, v.y, v.z     );}
-inline VecD  ::VecD  (C VecI   &v) {set(v.x, v.y, v.z     );}
-inline VecD  ::VecD  (C VecB   &v) {set(v.x, v.y, v.z     );}
-inline VecD  ::VecD  (C VecSB  &v) {set(v.x, v.y, v.z     );}
-inline Vec4  ::Vec4  (C VecH4  &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec4  ::Vec4  (C VecD4  &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec4  ::Vec4  (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec4  ::Vec4  (C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec4  ::Vec4  (C VecSB4 &v) {set(v.x, v.y, v.z, v.w);}
-inline Vec4  ::Vec4  (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C VecH4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C Vec4   &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C VecI4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C VecB4  &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C VecSB4 &v) {set(v.x, v.y, v.z, v.w);}
-inline VecD4 ::VecD4 (C VecUS4 &v) {set(v.x, v.y, v.z, v.w);}
-
-inline Vec  Vec2 :: xy0()C {return Vec (x, y, 0);}
-inline Vec  Vec2 :: x0y()C {return Vec (x, 0, y);}
-inline Vec  Vec2 ::_0xy()C {return Vec (0, x, y);}
-inline Vec  Vec2 ::_0yx()C {return Vec (0, y, x);}
-inline VecD VecD2:: xy0()C {return VecD(x, y, 0);}
-inline VecD VecD2:: x0y()C {return VecD(x, 0, y);}
-inline VecD VecD2::_0xy()C {return VecD(0, x, y);}
-inline VecD VecD2::_0yx()C {return VecD(0, y, x);}
-inline VecI VecI2:: xy0()C {return VecI(x, y, 0);}
-inline VecI VecI2:: x0y()C {return VecI(x, 0, y);}
-inline VecI VecI2::_0xy()C {return VecI(0, x, y);}
-inline VecI VecI2::_0yx()C {return VecI(0, y, x);}
-
 inline Bool VecUS2::operator==(C VecUS2 &v)C {return x==v.x && y==v.y;}
 inline Bool VecUS2::operator!=(C VecUS2 &v)C {return x!=v.x || y!=v.y;}
 inline Bool VecUS2::operator==(C VecB2  &v)C {return x==v.x && y==v.y;}

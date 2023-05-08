@@ -58,6 +58,7 @@ struct Ball // Ball Shape
 
               Ball() {}
               Ball(Flt r, C Vec &pos=VecZero) {set(r, pos);}
+   CONVERSION Ball(C BallM    &ball   );
    CONVERSION Ball(C Box      &box    );
    CONVERSION Ball(C OBox     &obox   );
    CONVERSION Ball(C Extent   &ext    );
