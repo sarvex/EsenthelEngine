@@ -5,7 +5,7 @@
 /******************************************************************************/
 #include "!Set Prec Struct.h"
 BUFFER(Atmosphere)
-   Vec AtmosphereViewPos;
+   Vec AtmospherePos;
    Flt AtmosphereViewRange;
    Vec AtmosphereLightPos;
    Flt AtmospherePlanetRadius; // 0..Inf
@@ -261,8 +261,8 @@ VecH4 PS
 
       Flt   dist=Length(pos);
       Flt   back=back_b ? 1 : Sat(dist*SkyFracMulAdd.x + SkyFracMulAdd.y);
-      Vec   dir=Transform3(pos/dist, CamMatrix); // convert to ball space
-      VecH4 c=RayMarchScattering(AtmosphereViewPos, dist, back, dir, AtmosphereLightPos);
+      Vec   dir=pos/dist;
+      VecH4 c=RayMarchScattering(AtmospherePos, dist, back, dir, AtmosphereLightPos);
 
       if(MULTI_SAMPLE!=1)col =c              ;else
       if(i==0           )col =c/(Half)samples;else

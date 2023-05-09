@@ -136,7 +136,7 @@ struct MainShaderClass
       *SkySunHighlight=&Dummy,
       *SkySunPos      =&Dummy,
 
-      *AtmosphereViewPos,
+      *AtmospherePos,
       *AtmosphereViewRange,
       *AtmosphereLightPos,
       *AtmospherePlanetRadius,

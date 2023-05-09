@@ -167,7 +167,7 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    Sh.AtmospherePlanetRadius ->set(planet_radius);
  //Sh.AtmosphereHeight       ->set(height);
    Sh.AtmosphereRadius       ->set(r);
-   Sh.AtmosphereLightPos     ->set(!(SunPos-pos));
+   Sh.AtmosphereLightPos     ->set(!(Vec(SunPos-pos)*CamMatrixInv.orn()));
    Sh.AtmosphereAltScaleRay  ->set(AtmosphereAltScaleRay(height));
    Sh.AtmosphereAltScaleMie  ->set(AtmosphereAltScaleMie(height));
    Sh.AtmosphereMieExtinction->set(mie_extinction);
@@ -182,7 +182,7 @@ inline void Atmosphere::drawDo(Int multi_sample, Bool dither)C
    REPS(Renderer._eye, Renderer._eye_num)
    {
       Renderer.setEyeViewportCam();
-      Sh.AtmosphereViewPos->set(CamMatrix.pos-pos); if(!flat)SetFastMatrix(matrix); // set these after 'setEyeViewportCam'
+      Sh.AtmospherePos->set(Vec(Cam.matrix.pos-pos)*CamMatrixInv.orn()); if(!flat)SetFastMatrix(matrix); // set these after 'setEyeViewportCam'. position that we set is for camera relative to ball. because shader assumes ball is at Vec(0,0,0) and the position that we specify is camera position relative to ball in view space
       if(shader_multi){D.stencil(STENCIL_MSAA_TEST, STENCIL_REF_MSAA); if(flat)shader_multi->draw();else{shader_multi->begin(); Sky._mshr.draw();} D.stencilRef(0);} // call this first to set stencil, reset stencil ref for call below
                                                                        if(flat)shader      ->draw();else{shader      ->begin(); Sky._mshr.draw();}                   // call this next
    }
