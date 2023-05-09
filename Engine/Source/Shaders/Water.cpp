@@ -263,23 +263,26 @@ void Surface_PS
    Vec2 posXY=   UVToPosXY(uv);
 #endif
 
-   Flt z=ImgXF[pix];
- //Bool back_b=DEPTH_BACKGROUND(z);
-   z=LinearizeDepth(z);
+   Flt z_raw=ImgXF[pix];
+ //Bool back_b=DEPTH_BACKGROUND(z_raw);
+   Flt z=LinearizeDepth(z_raw);
    Vec pos=GetPos(z, posXY); // view space position of background pixel
    Flt dist=Length(pos);
-   Vec dir=pos/dist; // Normalize(Vec(posXY, 1)) view space view ray direction
+   Vec eye_dir=pos/dist; // Normalize(Vec(posXY, 1)) view space view ray direction
    Vec cam_pos=WaterBallPosRadius.xyz; // view space camera position relative to water ball
 
-   Flt b=Dot(cam_pos, dir);
+   Flt b=Dot(cam_pos, eye_dir);
    Flt c=Length2(cam_pos)-Sqr(WaterBallPosRadius.w);
    Flt d=b*b-c;
    Flt start=    -b-Sqrt(d);
    Flt end  =Min(-b+Sqrt(d), dist);
    if(d<=0 || end<=start || start<=0)discard;
 
-   Vec ball_surface_pos=start*dir; // view space position on ball surface
+   Vec ball_surface_pos=start*eye_dir; // view space position on ball surface
    depth=DelinearizeDepth(ball_surface_pos.z);
+
+ //Vec world_pos=Transform(ball_surface_pos, CamMatrix);
+ //Vec world_pos=Transform3(cam_pos+start*eye_dir, CamMatrix); this one treats ball.pos=(0,0,0)
 #endif
    VecH nrm_flat; // #MaterialTextureLayoutWater
 #if DUAL_NORMAL
@@ -308,7 +311,9 @@ void Surface_PS
 #else
    Vec2 uv     =PixelToUV(pixel);
    Vec2 refract=nrm_flat.xy*Viewport.size; // TODO: this could be improved
+#if !BALL
    Vec  eye_dir=Normalize(inPos);
+#endif
 
    // shadow
    Half shadow; if(SHADOW)shadow=Sat(ShadowDirValue(inPos, ShadowJitter(pixel.xy), true, SHADOW, false));
@@ -337,7 +342,12 @@ void Surface_PS
    if(SOFT)
    {
       Flt water_z    =inPos.z;
+   #if BALL
+      Flt water_z_raw=depth;
+   #else
       Flt water_z_raw=pixel.z;
+   #endif
+
    #if REFRACT
       Vec2 back_uv=Mid(uv+refract*(WaterMaterial.refract/Max(1, water_z)), WaterClamp.xy, WaterClamp.zw);
    #if GATHER
@@ -357,11 +367,19 @@ void Surface_PS
       if(DEPTH_SMALLER(DEPTH_MIN(back_z_raw4), water_z_raw)) // if refracted sample is in front of water (leaking), use DEPTH_MIN to check if all samples are in front
       { // skip refracted sample
          back_uv   =uv;
+      #if BALL
+         back_z_raw=z_raw;
+      #else
          back_z_raw=TexPoint(ImgXF, uv).x;
+      #endif
       }
    #else // NO REFRACT
-      Vec2 back_uv   =uv;
-      Flt  back_z_raw=TexPoint(ImgXF, uv).x;
+         Vec2 back_uv   =uv;
+      #if BALL
+         Flt  back_z_raw=z_raw;
+      #else
+         Flt  back_z_raw=TexPoint(ImgXF, uv).x;
+      #endif
    #endif // REFRACT
       if(DEPTH_BACKGROUND(back_z_raw))O_col=water_col;else // always force full opacity when there's no background pixel set to ignore discarded pixels in RenderTarget (they could cause artifacts)
       {
