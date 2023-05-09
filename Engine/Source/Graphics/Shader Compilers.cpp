@@ -736,7 +736,11 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
    src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 0, "BALL", 0);
    src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 0, "RIVER", 1, "BALL", 0);
    src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 1, "RIVER", 0, "BALL", 0);
-   src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0).extra("WAVES", 1, "RIVER", 0, "BALL", 1);
+
+   REPD(flat , 2)
+   REPD(gl_es, (api==API_GL) ? 2 : 1) // GL ES doesn't support NOPERSP
+      src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 0, "SHADOW", 0, "SOFT", 0)("REFLECT_ENV", 0, "REFLECT_MIRROR", 0, "REFRACT", 0)("FLAT", flat)("GL_ES", gl_es).extra("WAVES", 0, "RIVER", 0, "BALL", 1);
+
    REPD(refract, 2)
    {
       REPD(reflect_env   , 2)
@@ -749,7 +753,10 @@ static void Compile(API api, SC_FLAG flag=SC_NONE)
             src.New("Lake" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 0, "BALL", 0).gather(gather);
             src.New("River", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 0, "RIVER", 1, "BALL", 0).gather(gather);
             src.New("Ocean", "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 1, "RIVER", 0, "BALL", 0).gather(gather);
-            src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).extra("WAVES", 1, "RIVER", 0, "BALL", 1).gather(gather);
+
+            REPD(flat , 2)
+            REPD(gl_es, (api==API_GL) ? 2 : 1) // GL ES doesn't support NOPERSP
+               src.New("Ball" , "Surface_VS", "Surface_PS")("LIGHT", 1, "SHADOW", shadow_maps, "SOFT", soft)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather)("FLAT", flat)("GL_ES", gl_es).extra("WAVES", 0, "RIVER", 0, "BALL", 1).gather(gather);
          }
          REPD(set_depth, 2)
             src.New("Apply", "DrawUVPosXY_VS", "Apply_PS")("SET_DEPTH", set_depth)("REFLECT_ENV", reflect_env, "REFLECT_MIRROR", reflect_mirror, "REFRACT", refract, "GATHER", gather).gather(gather);

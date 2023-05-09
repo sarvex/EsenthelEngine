@@ -696,8 +696,12 @@ void WaterBall::draw()C
 }
 void WaterBall::drawDo()C
 {
-   if(Shader *shader=Water._use_secondary_rt ? WS.Ball
-                                             : WS.BallL[Water._shader_shadow_maps][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][material->refract>EPS_MATERIAL_BUMP])
+   Flt  draw_r=r/SKY_MESH_MIN_DIST;
+   Flt  dist2 =Dist2(ActiveCam.matrix.pos, pos); // use 'ActiveCam' instead of 'CamMatrix' because it's not affected by eyes
+   Bool flat  =(dist2<=Sqr(draw_r+FrustumMain.view_quad_max_dist+D.eyeDistance_2())); // use flat if camera intersects with mesh
+
+   if(Shader *shader=Water._use_secondary_rt ? WS.Ball                                                                                                                                              [flat]
+                                             : WS.BallL[Water._shader_shadow_maps][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][material->refract>EPS_MATERIAL_BUMP][flat])
    {
       material->set  ();
       shader  ->begin(); Water._mshr.set().draw();

@@ -800,6 +800,27 @@ Bool ToScreenRect(C Shape *shape, Int shapes, Rect &rect)
    return NO_BRANCH ? rect.validX() : in;
 }
 /******************************************************************************/
+Bool ToEyeRect(Rect &rect)
+{
+   Flt D_w_2=D.w()*0.5f;
+
+   // apply projection offset
+   Flt po=ProjMatrixEyeOffset[Renderer._eye]*D_w_2;
+   if(rect.min.x>D.rect().min.x+EPS)rect.min.x+=po;
+   if(rect.max.x<D.rect().max.x-EPS)rect.max.x+=po;
+
+   // apply viewport offset
+   Flt vo=D_w_2*SignBool(Renderer._eye!=0);
+   rect.min.x+=vo;
+   rect.max.x+=vo;
+
+   // clamp and test if valid
+   if(Renderer._eye){if(rect.min.x<0)if(rect.max.x>0)rect.min.x=0;else return false;}
+   else             {if(rect.max.x>0)if(rect.min.x<0)rect.max.x=0;else return false;}
+
+   return true;
+}
+/******************************************************************************/
 Int CompareTransparencyOrderDepth(C Vec &pos_a, C Vec &pos_b)
 {
    return Sign(Dot(pos_a-pos_b, ActiveCam.matrix.z));

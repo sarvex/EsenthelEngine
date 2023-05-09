@@ -88,6 +88,7 @@ struct Atmosphere : BallM // BallM.r = total radius of the atmosphere = planet r
 #endif
 };
 #if EE_PRIVATE
+#define SKY_MESH_MIN_DIST 0.98f // it's good to make it a bit smaller than 'dist' to have some epsilon for precision issues, this is the closest point on the mesh to the Vec(0,0,0), it's not equal to radius=1, because the mesh is composed out of triangles, and the triangle surfaces are closer
 extern Memc<Atmosphere> Atmospheres;
 #endif
 /******************************************************************************/

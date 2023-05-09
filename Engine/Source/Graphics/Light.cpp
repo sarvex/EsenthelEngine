@@ -552,22 +552,7 @@ static void ApplyVolumetric(LightCone &light)
 static Bool StereoCurrentLightRect() // this relies on current Viewport, Camera Matrix and 'Frustum' (!! Actually right now 'toScreenRect' are based on 'FrustumMain' so we don't have to restore 'Frustum' !!)
 {
    if(!CurrentLight.toScreenRect(CurrentLight.rect))return false;
-
-   // apply projection offset
-   Flt po=ProjMatrixEyeOffset[Renderer._eye]*D.w()*0.5f;
-   if(CurrentLight.rect.min.x>-D.w()+EPS)CurrentLight.rect.min.x+=po;
-   if(CurrentLight.rect.max.x< D.w()-EPS)CurrentLight.rect.max.x+=po;
-
-   // apply viewport offset
-   Flt vo=D.w()*0.5f*SignBool(Renderer._eye!=0);
-   CurrentLight.rect.min.x+=vo;
-   CurrentLight.rect.max.x+=vo;
-
-   // clamp and test if valid
-   if(Renderer._eye){if(CurrentLight.rect.min.x<0)if(CurrentLight.rect.max.x>0)CurrentLight.rect.min.x=0;else return false;}
-   else             {if(CurrentLight.rect.max.x>0)if(CurrentLight.rect.min.x<0)CurrentLight.rect.max.x=0;else return false;}
-
-   return true;
+   return ToEyeRect(CurrentLight.rect);
 }
 static Bool GetCurrentLightRect()
 {

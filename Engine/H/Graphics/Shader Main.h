@@ -499,16 +499,16 @@ struct DepthOfField
 struct WaterShader
 {
    ShaderFile *shader;
-   Shader     *Ocean                , //
-              *Lake                 , //
-              *River                , //
-              *Ball                 , //
-              *OceanL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              * LakeL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              *RiverL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              * BallL[7][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
-              *Apply    [2][2][2][2], //              [Depth] [ReflectEnv] [ReflectMirror] [Refract]
-              *Under                ;
+   Shader     *Ocean                   , //
+              *Lake                    , //
+              *River                   , //
+              *Ball                 [2], //                                                             [Flat]
+              *OceanL[7][2][2][2][2]   , // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              * LakeL[7][2][2][2][2]   , // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              *RiverL[7][2][2][2][2]   , // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract]
+              * BallL[7][2][2][2][2][2], // [ShadowMaps] [Soft ] [ReflectEnv] [ReflectMirror] [Refract] [Flat]
+              *Apply    [2][2][2][2]   , //              [Depth] [ReflectEnv] [ReflectMirror] [Refract]
+              *Under                   ;
 
    ShaderParam
       *WaterMaterial,
@@ -521,6 +521,7 @@ struct WaterShader
       *WaterYMulAdd,
       *WaterPlanePos,
       *WaterPlaneNrm,
+      *WaterBallPosRadius,
       *WaterFlow,
       *WaterReflectMulAdd=&Sh.Dummy,
       *WaterClamp;

@@ -42,9 +42,9 @@ SkyClass& SkyClass::create()
    Flt temp=_hor_exp; _hor_exp=-1; atmosphericHorizonExponent(temp); // set -1 to force reset
        temp=_dns_exp; _dns_exp=-1; atmosphericDensityExponent(temp); // set -1 to force reset
 
+   // SKY_MESH_MIN_DIST
    MeshBase mshb; mshb.createIco(Ball(1), MESH_NONE, 3); // res 3 gives 'dist'=0.982246876
   _mshr.create(mshb.reverse());
-   #define SKY_MESH_MIN_DIST 0.98f // it's good to make it a bit smaller than 'dist' to have some epsilon for precision issues, this is the closest point on the mesh to the Vec(0,0,0), it's not equal to radius=1, because the mesh is composed out of triangles, and the triangle surfaces are closer
 #if DEBUG && 0 // calculate actual distance
    Flt dist=1; C Vec *pos=mshb.vtx.pos();
    REPA(mshb.tri ){C VecI  &t=mshb.tri .ind(i); MIN(dist, Dist(VecZero, Tri (pos[t.x], pos[t.y], pos[t.z])));}

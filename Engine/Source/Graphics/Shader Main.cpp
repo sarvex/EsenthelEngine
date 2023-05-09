@@ -1059,6 +1059,7 @@ void WaterShader::load()
       WaterYMulAdd           =GetShaderParam("WaterYMulAdd");
       WaterPlanePos          =GetShaderParam("WaterPlanePos");
       WaterPlaneNrm          =GetShaderParam("WaterPlaneNrm");
+      WaterBallPosRadius     =GetShaderParam("WaterBallPosRadius");
       WaterFlow              =GetShaderParam("WaterFlow");
       WaterReflectMulAdd     =GetShaderParam("WaterReflectMulAdd");
       WaterClamp             =GetShaderParam("WaterClamp");
@@ -1067,7 +1068,7 @@ void WaterShader::load()
       Lake =shader->get(S8+"Lake" +0+0+0+0+0+0);
       River=shader->get(S8+"River"+0+0+0+0+0+0);
       Ocean=shader->get(S8+"Ocean"+0+0+0+0+0+0);
-      Ball =shader->get(S8+"Ball" +0+0+0+0+0+0);
+      REPD(flat, 2)Ball[flat]=shader->get(S8+"Ball" +0+0+0+0+0+0+flat+GL_ES);
       REPD(refract, 2)
       {
          REPD(reflect_env   , 2)
@@ -1076,10 +1077,10 @@ void WaterShader::load()
             REPD(shadow_maps, 7)
             REPD(soft       , 2)
             {
-                LakeL[shadow_maps][soft][reflect_env][reflect_mirror][refract]=shader->get(S8+"Lake" +1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
-               RiverL[shadow_maps][soft][reflect_env][reflect_mirror][refract]=shader->get(S8+"River"+1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
-               OceanL[shadow_maps][soft][reflect_env][reflect_mirror][refract]=shader->get(S8+"Ocean"+1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
-                BallL[shadow_maps][soft][reflect_env][reflect_mirror][refract]=shader->get(S8+"Ball" +1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
+                LakeL[shadow_maps][soft][reflect_env][reflect_mirror][refract]      =shader->get(S8+"Lake" +1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
+               RiverL[shadow_maps][soft][reflect_env][reflect_mirror][refract]      =shader->get(S8+"River"+1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
+               OceanL[shadow_maps][soft][reflect_env][reflect_mirror][refract]      =shader->get(S8+"Ocean"+1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather);
+   REPD(flat, 2)BallL[shadow_maps][soft][reflect_env][reflect_mirror][refract][flat]=shader->get(S8+"Ball" +1+shadow_maps+soft+reflect_env+reflect_mirror+refract+gather+flat+GL_ES);
             }
             REPD(depth, 2)Apply[depth][reflect_env][reflect_mirror][refract]=shader->get(S8+"Apply"+depth+reflect_env+reflect_mirror+refract+gather);
          }
