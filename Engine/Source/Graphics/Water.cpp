@@ -703,8 +703,29 @@ void WaterBall::drawDo()C
    if(Shader *shader=Water._use_secondary_rt ? WS.Ball                                                                                                                                              [flat]
                                              : WS.BallL[Water._shader_shadow_maps][Water._shader_soft][Water._shader_reflect_env][Water._shader_reflect_mirror][material->refract>EPS_MATERIAL_BUMP][flat])
    {
-      material->set  ();
-      shader  ->begin(); Water._mshr.set().draw();
+      MatrixM matrix; if(!flat)
+      {
+         matrix.setScalePos(-draw_r, pos); // reverse faces because 'Sky._mshr' is reversed
+         Sky._mshr.set();
+         D.depth(true);
+         D.cull (true);
+      }else
+      {
+         D.depthLock(true);
+      }
+
+      material->set();
+
+      //REPS(Renderer._eye, Renderer._eye_num) this is already under loop
+      {
+         //Renderer.setEyeViewportCam();
+         WS.WaterBallPosRadius->set(Vec4(Vec(Cam.matrix.pos-pos)*CamMatrixInv.orn(), r)); if(!flat)SetFastMatrix(matrix); // set these after 'setEyeViewportCam'. position that we set is for camera relative to ball. because shader assumes ball is at Vec(0,0,0) and the position that we specify is camera position relative to ball in view space
+         if(flat)
+         {
+            Rect rect; if(toScreenRect(rect))if(!Renderer._stereo || ToEyeRect(rect))shader->draw(&rect);
+         }else{shader->begin(); Sky._mshr.draw();} // call this next
+      }
+      if(flat)D.depthUnlock();
    }
 }
 /******************************************************************************/

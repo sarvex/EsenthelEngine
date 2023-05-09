@@ -256,6 +256,31 @@ void Surface_PS
 #endif
 ) // #RTOutput
 {
+#if BALL
+   VecI2 pix=pixel.xy;
+#if !FLAT && GL_ES // GL_ES doesn't support NOPERSP
+   Vec2 uv   =PixelToUV   (pixel);
+   Vec2 posXY=   UVToPosXY(uv);
+#endif
+
+   Flt z=ImgXF[pix];
+ //Bool back_b=DEPTH_BACKGROUND(z);
+   z=LinearizeDepth(z);
+   Vec pos=GetPos(z, posXY); // view space position of background pixel
+   Flt dist=Length(pos);
+   Vec dir=pos/dist; // Normalize(Vec(posXY, 1)) view space view ray direction
+   Vec cam_pos=WaterBallPosRadius.xyz; // view space camera position relative to water ball
+
+   Flt b=Dot(cam_pos, dir);
+   Flt c=Length2(cam_pos)-Sqr(WaterBallPosRadius.w);
+   Flt d=b*b-c;
+   Flt start=    -b-Sqrt(d);
+   Flt end  =Min(-b+Sqrt(d), dist);
+   if(d<=0 || end<=start || start<=0)discard;
+
+   Vec ball_surface_pos=start*dir; // view space position on ball surface
+   depth=DelinearizeDepth(ball_surface_pos.z);
+#endif
    VecH nrm_flat; // #MaterialTextureLayoutWater
 #if DUAL_NORMAL
    nrm_flat.xy=(RTex(Nrm, uv_nrm.xy).xy - RTex(Nrm, uv_nrm.zw).xy + RTex(Nrm, uv_nrm1.xy).xy - RTex(Nrm, uv_nrm1.zw).xy)*(WaterMaterial.normal/4); // Avg(RTex(Nrm, uv_nrm.xy).xy, -RTex(Nrm, uv_nrm.zw).xy, RTex(Nrm, uv_nrm1.xy).xy, -RTex(Nrm, uv_nrm1.zw).xy)*WaterMaterial.normal; normals from mirrored tex coordinates must be subtracted
