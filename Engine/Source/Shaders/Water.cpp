@@ -83,6 +83,32 @@ Half Wave(Vec2 world_pos)
               RTexLod(Ext, (WaterOfsBump-world_pos)*WaterMaterial.scale_bump).x); // it's better to scale 'WaterOfsBump' too
 }
 /******************************************************************************/
+#if BALL
+void Surface_VS(VtxInput vtx,
+#if FLAT || !GL_ES // GL_ES doesn't support NOPERSP
+   NOPERSP out Vec2 posXY:POS_XY,
+#endif
+
+#if FLAT
+   NOPERSP out Vec4 pixel:POSITION
+#else
+           out Vec4 pixel:POSITION
+#endif
+)
+{
+#if FLAT
+   posXY=UVToPosXY(vtx.uv());
+   pixel=Vec4(vtx.pos2(), Z_BACK, 1); // set Z to be at the end of the viewport, this enables optimizations by processing only foreground pixels (no sky/background)
+#else // GEOM
+   pixel=Project(TransformPos(vtx.pos()));
+
+#if !GL_ES
+   Vec2 uv   =ProjectedPosToUV   (pixel);
+        posXY=          UVToPosXY(uv);
+#endif
+#endif
+}
+#else
 void Surface_VS
 (
    VtxInput vtx,
@@ -161,6 +187,7 @@ void Surface_VS
 #endif
    vpos=Project(view_pos);
 }
+#endif
 /******************************************************************************/
 void WaterReflectColor(inout VecH total_specular, Vec nrm, Vec eye_dir, Vec2 uv, Vec2 refract, Half plane_dist)
 {
@@ -192,6 +219,21 @@ void WaterReflectColor(inout VecH total_specular, Vec nrm, Vec eye_dir, Vec2 uv,
 }
 void Surface_PS
 (
+#if BALL
+   #if FLAT || !GL_ES // GL_ES doesn't support NOPERSP
+      NOPERSP Vec2 posXY:POS_XY,
+   #endif
+
+   #if FLAT
+      NOPERSP PIXEL
+   #else
+              PIXEL
+   #endif
+
+ , out Flt depth:DEPTH
+
+#else // BALL
+
    Vec2 uv_col:UV_COL,
    Vec4 uv_nrm:UV_NRM,
 #if DUAL_NORMAL
@@ -204,9 +246,11 @@ void Surface_PS
    Vec  inPos      :POS,
    Half inPlaneDist:PLANE_DIST,
 #endif
-   PIXEL,
+   PIXEL
 
-   out VecH4 O_col:TARGET0
+#endif // BALL
+
+ , out VecH4 O_col:TARGET0
 #if !LIGHT
  , out VecH  O_nrm:TARGET1
 #endif
