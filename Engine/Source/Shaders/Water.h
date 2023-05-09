@@ -24,6 +24,7 @@ BUFFER_END
 BUFFER(Water)
    Vec4 WaterReflectMulAdd,
         WaterClamp;
+   Vec4 WaterBallPosRadius;
    Vec2 WaterOfsCol;
    Vec2 WaterYMulAdd;
    Vec  WaterPlanePos,

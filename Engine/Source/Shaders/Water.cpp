@@ -59,10 +59,13 @@ This code calculates lighting by taking samples along the view ray, which is ref
    D.text(0,0.8f,S+min/max+' '+max);
 }
 /******************************************************************************/
-// LIGHT, SHADOW, SOFT, REFLECT_ENV, REFLECT_MIRROR, GATHER, WAVES, RIVER
+// LIGHT, SHADOW, SOFT, REFLECT_ENV, REFLECT_MIRROR, GATHER, WAVES, RIVER, BALL
 // Col, Nrm, Ext = water material textures
 // ImgXF = background underwater depth
 // these must be the same as "Apply" shader - Img1=reflection (2D image), Img2=background underwater
+#ifndef BALL
+#define BALL 0
+#endif
 #ifndef WAVES
 #define WAVES 0
 #endif
